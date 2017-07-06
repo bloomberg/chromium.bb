@@ -198,15 +198,4 @@ DEFINE_TRACE(MediaControlInputElement) {
   HTMLInputElement::Trace(visitor);
 }
 
-// ----------------------------
-
-MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(
-    MediaControls& media_controls,
-    MediaControlElementType display_type)
-    : MediaControlDivElement(media_controls, display_type), current_value_(0) {}
-
-void MediaControlTimeDisplayElement::SetCurrentValue(double time) {
-  current_value_ = time;
-}
-
 }  // namespace blink

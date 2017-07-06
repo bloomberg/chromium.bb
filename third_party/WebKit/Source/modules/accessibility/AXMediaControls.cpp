@@ -30,6 +30,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/media_controls/elements/MediaControlTimeDisplayElement.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace blink {

@@ -191,21 +191,6 @@ class CORE_EXPORT MediaControlInputElement : public HTMLInputElement,
   }
 };
 
-// ----------------------------
-
-class CORE_EXPORT MediaControlTimeDisplayElement
-    : public MediaControlDivElement {
- public:
-  void SetCurrentValue(double);
-  double CurrentValue() const { return current_value_; }
-
- protected:
-  MediaControlTimeDisplayElement(MediaControls&, MediaControlElementType);
-
- private:
-  double current_value_;
-};
-
 }  // namespace blink
 
 #endif  // MediaControlElementTypes_h
