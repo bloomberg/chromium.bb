@@ -201,7 +201,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      * Rule 1: Non-autofill before autofill.
      * Rule 2: Complete instruments before incomplete intsruments.
      * Rule 3: Exact type matching instruments before non-exact type matching instruments.
-     * Rule 4: Frequently and recently used instruments before rarely and non-recently used
+     * Rule 4: Preselectable instruments before non-preselectable instruments.
+     * Rule 5: Frequently and recently used instruments before rarely and non-recently used
      *         instruments.
      */
     private static final Comparator<PaymentInstrument> PAYMENT_INSTRUMENT_COMPARATOR =
@@ -221,6 +222,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
                             - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
                     if (typeMatch != 0) return typeMatch;
+
+                    // Preselectable instruments before non-preselectable instruments.
+                    // Note that this only affects service worker payment apps' instruments for now
+                    // since autofill payment instruments have already been sorted by preselect
+                    // after sorting by completeness and typeMatch. And the other payment apps'
+                    // instruments can always be preselected.
+                    int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
+                    if (canPreselect != 0) return canPreselect;
 
                     // More frequently and recently used instruments first.
                     return compareInstrumentsByFrecency(b, a);
