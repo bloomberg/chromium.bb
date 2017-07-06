@@ -307,7 +307,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       UIImage* favicon = [UIImage
           imageWithData:[NSData dataWithBytes:data->front() length:data->size()]
                   scale:[UIScreen mainScreen].scale];
-      imageCallback(favicon);
+      if (imageCallback) {
+        imageCallback(favicon);
+      }
       tileType = ntp_tiles::TileVisualType::ICON_REAL;
     } else if (result.fallback_icon_style) {
       UIColor* backgroundColor = skia::UIColorFromSkColor(
@@ -316,8 +318,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
           skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
       BOOL isDefaultColor =
           result.fallback_icon_style->is_default_background_color;
-      fallbackCallback(textColor, backgroundColor, isDefaultColor);
-      fallbackCallback(backgroundColor, textColor, isDefaultColor);
+      if (fallbackCallback) {
+        fallbackCallback(textColor, backgroundColor, isDefaultColor);
+      }
       tileType = isDefaultColor ? ntp_tiles::TileVisualType::ICON_DEFAULT
                                 : ntp_tiles::TileVisualType::ICON_COLOR;
     }
