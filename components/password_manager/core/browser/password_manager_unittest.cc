@@ -605,11 +605,12 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
   // |observed_form| and not the |stored_form| what is passed to ShouldSave.
   observed_form.username_element += ASCIIToUTF16("1");
   observed.push_back(observed_form);
-  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   // Simulate that |form| is already in the store, making this an update.
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeConsumer(stored_form)));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   manager()->OnPasswordFormsParsed(&driver_, observed);
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   // Submit form and finish navigation.
@@ -629,6 +630,9 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
   EXPECT_CALL(*store_, UpdateLogin(_));
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
+  // As the clone PasswordFormManager ends up saving the form, it triggers an
+  // update of the pending login managers, which in turn triggers new filling.
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
@@ -968,10 +972,13 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
   manager()->OnInPageNavigation(&driver_, form);
+  ASSERT_TRUE(form_manager_to_save);
 
   // Simulate saving the form, as if the info bar was accepted.
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
-  ASSERT_TRUE(form_manager_to_save);
+  // The Save() call triggers updating for |pending_login_managers_|, hence the
+  // further GetLogins call.
+  EXPECT_CALL(*store_, GetLogins(_, _));
   form_manager_to_save->Save();
 }
 
@@ -1189,24 +1196,26 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
 
-  // No call-back from store after GetLogins is called emulates that
-  // PasswordStore did not fetch a form in time before submission.
+  // GetLogins calls remain unanswered to emulate that PasswordStore did not
+  // fetch a form in time before submission.
   EXPECT_CALL(*store_, GetLogins(_, _));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   ASSERT_EQ(1u, manager()->pending_login_managers().size());
-  PasswordFormManager* form_manager =
-      manager()->pending_login_managers().front().get();
+  PasswordStoreConsumer* store_consumer = nullptr;
 
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
+  // This second call is from the new FormFetcher, which is cloned during
+  // ProvisionalSavePasswords.
+  EXPECT_CALL(*store_, GetLogins(_, _)).WillOnce(SaveArg<1>(&store_consumer));
   OnPasswordFormSubmitted(form);
 
   // Emulate fetching password form from PasswordStore after submission but
   // before post-navigation load.
-  ASSERT_TRUE(form_manager);
-  static_cast<FormFetcherImpl*>(form_manager->form_fetcher())
-      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
+  ASSERT_TRUE(store_consumer);
+  store_consumer->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
 
   std::unique_ptr<PasswordFormManager> form_manager_to_save;
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))

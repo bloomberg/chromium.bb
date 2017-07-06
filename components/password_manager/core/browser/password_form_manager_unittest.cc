@@ -97,6 +97,10 @@ class MockFormSaver : public StubFormSaver {
                void(const autofill::PasswordForm& generated));
   MOCK_METHOD0(RemovePresavedPassword, void());
 
+  std::unique_ptr<FormSaver> Clone() override {
+    return base::MakeUnique<MockFormSaver>();
+  }
+
   // Convenience downcasting method.
   static MockFormSaver& Get(PasswordFormManager* form_manager) {
     return *static_cast<MockFormSaver*>(form_manager->form_saver());
@@ -110,6 +114,7 @@ class MockFormFetcher : public FakeFormFetcher {
  public:
   MOCK_METHOD1(AddConsumer, void(Consumer*));
   MOCK_METHOD1(RemoveConsumer, void(Consumer*));
+  MOCK_METHOD0(Clone, std::unique_ptr<FormFetcher>());
 };
 
 MATCHER_P(CheckUsername, username_value, "Username incorrect") {
@@ -3620,6 +3625,88 @@ TEST_F(PasswordFormManagerTest, SuppressedHTTPSFormsHistogram_NotRecordedFor) {
       "PasswordManager.SuppressedAccount.Generated.SameOrganizationName", 1);
   histogram_tester.ExpectTotalCount(
       "PasswordManager.SuppressedAccount.Manual.SameOrganizationName", 1);
+}
+
+// Check that a cloned PasswordFormManager reacts correctly to Save.
+TEST_F(PasswordFormManagerTest, Clone_OnSave) {
+  FakeFormFetcher fetcher;
+  auto form_manager = base::MakeUnique<PasswordFormManager>(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), &fetcher);
+  form_manager->Init(nullptr);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  PasswordForm saved_login = *observed_form();
+  saved_login.username_value = ASCIIToUTF16("newuser");
+  saved_login.password_value = ASCIIToUTF16("newpass");
+  form_manager->ProvisionallySave(
+      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  const PasswordForm pending = form_manager->pending_credentials();
+
+  std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
+
+  PasswordForm passed;
+  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty(), nullptr))
+      .WillOnce(SaveArg<0>(&passed));
+  clone->Save();
+  // The date is expected to be different. Reset it so that we can easily
+  // compare the rest with operator==.
+  passed.date_created = pending.date_created;
+  EXPECT_EQ(pending, passed);
+}
+
+// Check that a cloned PasswordFormManager reacts correctly to OnNeverClicked.
+TEST_F(PasswordFormManagerTest, Clone_OnNeverClicked) {
+  FakeFormFetcher fetcher;
+  auto form_manager = base::MakeUnique<PasswordFormManager>(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), &fetcher);
+  form_manager->Init(nullptr);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+  PasswordForm saved_login = *observed_form();
+  saved_login.username_value = ASCIIToUTF16("newuser");
+  saved_login.password_value = ASCIIToUTF16("newpass");
+  form_manager->ProvisionallySave(
+      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
+
+  EXPECT_CALL(MockFormSaver::Get(clone.get()),
+              PermanentlyBlacklist(Pointee(*observed_form())));
+  clone->OnNeverClicked();
+}
+
+// Check that a cloned PasswordFormManager works even after the original is
+// gone.
+TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
+  FakeFormFetcher fetcher;
+  auto form_manager = base::MakeUnique<PasswordFormManager>(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), &fetcher);
+  fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  form_manager->Init(nullptr);
+
+  PasswordForm saved_login = *observed_form();
+  saved_login.username_value = ASCIIToUTF16("newuser");
+  saved_login.password_value = ASCIIToUTF16("newpass");
+  form_manager->ProvisionallySave(
+      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  const PasswordForm pending = form_manager->pending_credentials();
+
+  std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
+  form_manager.reset();
+
+  PasswordForm passed;
+  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty(), nullptr))
+      .WillOnce(SaveArg<0>(&passed));
+  clone->Save();
+  // The date is expected to be different. Reset it so that we can easily
+  // compare the rest with operator==.
+  passed.date_created = pending.date_created;
+  EXPECT_EQ(pending, passed);
 }
 
 }  // namespace password_manager

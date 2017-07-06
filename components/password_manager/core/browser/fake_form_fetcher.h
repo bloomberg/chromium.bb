@@ -96,7 +96,7 @@ class FakeFormFetcher : public FormFetcher {
   // Only sets the internal state to WAITING, no call to PasswordStore.
   void Fetch() override;
 
-  // A no-op, returns null.
+  // Returns a new FakeFormFetcher.
   std::unique_ptr<FormFetcher> Clone() override;
 
  private:
