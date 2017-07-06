@@ -95,8 +95,7 @@ void Gpu::EstablishGpuChannel(
   DCHECK(IsMainThread());
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
   if (channel) {
-    main_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(callback, std::move(channel)));
+    callback.Run(std::move(channel));
     return;
   }
   establish_callbacks_.push_back(callback);
@@ -154,9 +153,10 @@ void Gpu::OnEstablishedGpuChannel(int client_id,
   }
 
   gpu_.reset();
-  for (const auto& i : establish_callbacks_)
-    i.Run(gpu_channel_);
+  auto callbacks = std::move(establish_callbacks_);
   establish_callbacks_.clear();
+  for (const auto& callback : callbacks)
+    callback.Run(gpu_channel_);
 }
 
 bool Gpu::IsMainThread() {
