@@ -323,9 +323,11 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     }
 
     GoogleLandingMediator* strongSelf = weakSelf;
-    if (strongSelf &&
-        (result.bitmap.is_valid() || result.fallback_icon_style)) {
-      [strongSelf largeIconCache]->SetCachedResult(URL, result);
+    if (strongSelf) {
+      if (result.bitmap.is_valid() || result.fallback_icon_style) {
+        [strongSelf largeIconCache]->SetCachedResult(URL, result);
+      }
+      [strongSelf faviconOfType:tileType fetchedForURL:URL];
     }
   };
 
