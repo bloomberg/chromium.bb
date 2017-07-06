@@ -85,6 +85,8 @@ bool ICOImageDecoder::SetSize(unsigned width, unsigned height) {
 bool ICOImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
   if (index >= dir_entries_.size())
     return false;
+
+  SECURITY_DCHECK(data_);
   const IconDirectoryEntry& dir_entry = dir_entries_[index];
   return (dir_entry.image_offset_ + dir_entry.byte_size_) <= data_->size();
 }
@@ -126,7 +128,7 @@ size_t ICOImageDecoder::DecodeFrameCount() {
   // If DecodeSize() fails, return the existing number of frames.  This way
   // if we get halfway through the image before decoding fails, we won't
   // suddenly start reporting that the image has zero frames.
-  if (Failed())
+  if (Failed() || !data_)
     return frame_buffer_cache_.size();
 
   // If the file is incomplete, return the length of the sequence of completely
@@ -152,7 +154,7 @@ void ICOImageDecoder::SetDataForPNGDecoderAtIndex(size_t index) {
 }
 
 void ICOImageDecoder::Decode(size_t index, bool only_size) {
-  if (Failed())
+  if (Failed() || !data_)
     return;
 
   // Defensively clear the FastSharedBufferReader's cache, as another caller
@@ -234,6 +236,7 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
 
 bool ICOImageDecoder::ProcessDirectory() {
   // Read directory.
+  SECURITY_DCHECK(data_);
   DCHECK(!decoded_offset_);
   if (data_->size() < kSizeOfDirectory)
     return false;
@@ -252,6 +255,7 @@ bool ICOImageDecoder::ProcessDirectory() {
 
 bool ICOImageDecoder::ProcessDirectoryEntries() {
   // Read directory entries.
+  SECURITY_DCHECK(data_);
   DCHECK_EQ(decoded_offset_, kSizeOfDirectory);
   if ((decoded_offset_ > data_->size()) ||
       ((data_->size() - decoded_offset_) <
@@ -328,6 +332,7 @@ ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::ReadDirectoryEntry() {
 ICOImageDecoder::ImageType ICOImageDecoder::ImageTypeAtIndex(size_t index) {
   // Check if this entry is a BMP or a PNG; we need 4 bytes to check the magic
   // number.
+  SECURITY_DCHECK(data_);
   SECURITY_DCHECK(index < dir_entries_.size());
   const uint32_t image_offset = dir_entries_[index].image_offset_;
   if ((image_offset > data_->size()) || ((data_->size() - image_offset) < 4))

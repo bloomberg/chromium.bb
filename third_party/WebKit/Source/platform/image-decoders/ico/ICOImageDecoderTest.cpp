@@ -88,4 +88,29 @@ TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
                        kAnimationNone);
 }
 
+TEST(ICOImageDecoderTests, NullData) {
+  static constexpr size_t kSizeOfBadBlock = 6 + 16 + 1;
+
+  RefPtr<SharedBuffer> ico_file_data =
+      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
+  ASSERT_FALSE(ico_file_data->IsEmpty());
+  ASSERT_LT(kSizeOfBadBlock, ico_file_data->size());
+
+  RefPtr<SharedBuffer> truncated_data =
+      SharedBuffer::Create(ico_file_data->Data(), kSizeOfBadBlock);
+  auto decoder = CreateDecoder();
+
+  decoder->SetData(truncated_data.Get(), false);
+  decoder->SetMemoryAllocator(nullptr);
+  EXPECT_FALSE(decoder->Failed());
+
+  auto* frame = decoder->FrameBufferAtIndex(0);
+  EXPECT_EQ(nullptr, frame);
+
+  decoder->SetData(PassRefPtr<SegmentReader>(nullptr), false);
+  decoder->ClearCacheExceptFrame(0);
+  decoder->SetMemoryAllocator(nullptr);
+  EXPECT_FALSE(decoder->Failed());
+}
+
 }  // namespace blink
