@@ -1302,11 +1302,11 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
 
 void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
 #if !defined(OS_ANDROID)
-  CHECK(BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  GoogleUpdateSettings::CollectStatsConsentTaskRunner()->PostTask(
+      FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
-          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
 #endif
 }
 

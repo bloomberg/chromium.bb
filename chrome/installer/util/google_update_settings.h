@@ -12,6 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -75,6 +77,15 @@ class GoogleUpdateSettings {
 
   // Returns true if this install is system-wide, false if it is per-user.
   static bool IsSystemInstall();
+
+  // Returns the SequencedTaskRunner to be used to sequence calls to
+  // Get/SetCollectStatsConsent(). Tasks posted through this will run with
+  // USER_VISIBLE priority and will block shutdown.
+  // Note: There is not enforcement to ensure that all such calls go through
+  // this SequencedTaskRunner but callers that don't are responsible to ensure
+  // nothing else is racing with them (e.g. those calls can be called
+  // synchronously on first run, startup, etc.).
+  static base::SequencedTaskRunner* CollectStatsConsentTaskRunner();
 
   // Returns whether the user has given consent to collect UMA data and send
   // crash dumps to Google. This information is collected by the web server

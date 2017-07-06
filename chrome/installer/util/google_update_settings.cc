@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -56,6 +57,11 @@ GoogleUpdateSettings::kDefaultUpdatePolicy =
 #endif
 
 namespace {
+
+base::LazySequencedTaskRunner g_collect_stats_consent_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -193,6 +199,13 @@ bool GetUpdatePolicyFromDword(
 // TODO(grt): Remove this now that it has no added value.
 bool GoogleUpdateSettings::IsSystemInstall() {
   return !InstallUtil::IsPerUserInstall();
+}
+
+base::SequencedTaskRunner*
+GoogleUpdateSettings::CollectStatsConsentTaskRunner() {
+  // TODO(fdoray): Use LazySequencedTaskRunner::GetRaw() here instead of
+  // .Get().get() when it's added to the API, http://crbug.com/730170.
+  return g_collect_stats_consent_task_runner.Get().get();
 }
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
