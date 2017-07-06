@@ -855,6 +855,12 @@ SessionRestore::CallbackSubscription
 // static
 void SessionRestore::AddURLsToOpen(const Profile* profile,
                                    const std::vector<GURL>& urls) {
+  // TODO(eugenebng@yandex-team.ru): crbug/735958 fix callers to not
+  // call this without session restorers, or reword the NOTREACHED
+  // assertion to explain why it is OK ignore URLs to open when there
+  // are no active session restorers.
+  if (!active_session_restorers)
+    return;
   for (auto* session_restorer : *active_session_restorers) {
     if (session_restorer->profile() == profile) {
       session_restorer->AddURLsToOpen(urls);
