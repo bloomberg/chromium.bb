@@ -270,11 +270,9 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GPUTask",
                "data", DevToolsChannelData::CreateForChannel(channel()));
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
                                 use_virtualized_gl_context_ ? "1" : "0");
-
   bool have_context = false;
   // Ensure the appropriate GL context is current before handling any IPC
   // messages directed at the command buffer. This ensures that the message
@@ -412,13 +410,10 @@ void GpuCommandBufferStub::PollWork() {
 
 void GpuCommandBufferStub::PerformWork() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::PerformWork");
-
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
                                 use_virtualized_gl_context_ ? "1" : "0");
-
   if (decoder_.get() && !MakeCurrent())
     return;
 
@@ -510,6 +505,10 @@ bool GpuCommandBufferStub::MakeCurrent() {
 }
 
 void GpuCommandBufferStub::Destroy() {
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+  // TODO(sunnyps): Should this use ScopedCrashKey instead?
+  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
+                                use_virtualized_gl_context_ ? "1" : "0");
   if (wait_for_token_) {
     Send(wait_for_token_->reply.release());
     wait_for_token_.reset();
