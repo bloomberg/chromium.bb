@@ -107,7 +107,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 
 // Tests that all items are accessible on the most visited page.
 - (void)testAccessibilityOnMostVisited {
-  SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
+  SelectNewTabPagePanel(NewTabPage::kHomePanel);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
@@ -145,7 +145,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* focusedOmniboxLabel = l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
-  SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
+  SelectNewTabPagePanel(NewTabPage::kHomePanel);
   AssertNTPScrolledToTop(NO);
 
   if (IsIPadIdiom()) {
@@ -221,7 +221,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
   NSString* omniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* cancelLabel = l10n_util::GetNSString(IDS_CANCEL);
   if (IsIPadIdiom()) {
-    SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
+    SelectNewTabPagePanel(NewTabPage::kHomePanel);
   }
 
   // Check that the NTP is in its normal state.

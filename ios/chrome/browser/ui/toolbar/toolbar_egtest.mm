@@ -380,7 +380,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a simulator bug.");
   }
-  SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
+  SelectNewTabPagePanel(NewTabPage::kHomePanel);
 
   id<GREYMatcher> locationbarButton = grey_allOf(
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
@@ -469,7 +469,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("")];
 
-  SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
+  SelectNewTabPagePanel(NewTabPage::kHomePanel);
 }
 
 // Tests typing in the omnibox using the keyboard accessory view.
