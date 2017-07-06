@@ -97,11 +97,11 @@ void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
     facet_managers_.erase(facet_uri);
 }
 
-void AffiliationBackend::TrimCacheForFacet(const FacetURI& facet_uri) {
+void AffiliationBackend::TrimCacheForFacetURI(const FacetURI& facet_uri) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AffiliatedFacetsWithUpdateTime affiliation;
-  if (cache_->GetAffiliationsForFacet(facet_uri, &affiliation))
+  if (cache_->GetAffiliationsForFacetURI(facet_uri, &affiliation))
     DiscardCachedDataIfNoLongerNeeded(affiliation.facets);
 }
 
@@ -126,8 +126,8 @@ void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
 
   // Discard the equivalence class if there is no facet in the class whose
   // FacetManager claims that it needs to keep the data.
-  for (const auto& facet_uri : affiliated_facets) {
-    auto facet_manager_it = facet_managers_.find(facet_uri);
+  for (const auto& facet : affiliated_facets) {
+    auto facet_manager_it = facet_managers_.find(facet.uri);
     if (facet_manager_it != facet_managers_.end() &&
         !facet_manager_it->second->CanCachedDataBeDiscarded()) {
       return;
@@ -135,7 +135,7 @@ void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
   }
 
   CHECK(!affiliated_facets.empty());
-  cache_->DeleteAffiliationsForFacet(affiliated_facets[0]);
+  cache_->DeleteAffiliationsForFacetURI(affiliated_facets[0].uri);
 }
 
 void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
@@ -153,7 +153,7 @@ void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
 bool AffiliationBackend::ReadAffiliationsFromDatabase(
     const FacetURI& facet_uri,
     AffiliatedFacetsWithUpdateTime* affiliations) {
-  return cache_->GetAffiliationsForFacet(facet_uri, affiliations);
+  return cache_->GetAffiliationsForFacetURI(facet_uri, affiliations);
 }
 
 void AffiliationBackend::SignalNeedNetworkRequest() {
@@ -165,8 +165,9 @@ void AffiliationBackend::RequestNotificationAtTime(const FacetURI& facet_uri,
   // TODO(engedy): Avoid spamming the task runner; only ever schedule the first
   // callback. crbug.com/437865.
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&AffiliationBackend::OnSendNotification,
-                            weak_ptr_factory_.GetWeakPtr(), facet_uri),
+      FROM_HERE,
+      base::Bind(&AffiliationBackend::OnSendNotification,
+                 weak_ptr_factory_.GetWeakPtr(), facet_uri),
       time - clock_->Now());
 }
 
@@ -196,14 +197,14 @@ void AffiliationBackend::OnFetchSucceeded(
     // should be implemented at some point by letting facet managers know if
     // data. See: https://crbug.com/478832.
 
-    for (const auto& facet_uri : affiliated_facets) {
-      auto facet_manager_it = facet_managers_.find(facet_uri);
+    for (const auto& facet : affiliated_facets) {
+      auto facet_manager_it = facet_managers_.find(facet.uri);
       if (facet_manager_it == facet_managers_.end())
         continue;
       FacetManager* facet_manager = facet_manager_it->second.get();
       facet_manager->OnFetchSucceeded(affiliation);
       if (facet_manager->CanBeDiscarded())
-        facet_managers_.erase(facet_uri);
+        facet_managers_.erase(facet.uri);
     }
   }
 

@@ -53,6 +53,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace autofill {
@@ -150,8 +151,35 @@ class FacetURI {
   url::Parsed parsed_;
 };
 
+// The branding information for a given facet. Corresponds to the |BrandingInfo|
+// message in affiliation_api.proto.
+struct FacetBrandingInfo {
+  // Human readable name of this facet, or empty if this information is not
+  // available.
+  //
+  // For example, this would be something like "Netflix" for the popular
+  // video-on-demand application corresponding to FacetURIs
+  // `android://...@com.netflix.mediaclient` and `https://netflix.com`.
+  std::string name;
+
+  // URL of the icon of this facet, or empty if this information is not
+  // available.
+  //
+  // For example, this would be something like
+  // "https://lh3.googleusercontent.com/..." for the popular video-on-demand
+  // application corresponding to FacetURIs
+  // `android://...@com.netflix.mediaclient` and `https://netflix.com`.
+  GURL icon_url;
+};
+
+// Facet struct, corresponds to the |Facet| message in affiliation_api.proto.
+struct Facet {
+  FacetURI uri;
+  FacetBrandingInfo branding_info;
+};
+
 // A collection of facets affiliated with each other, i.e. an equivalence class.
-typedef std::vector<FacetURI> AffiliatedFacets;
+typedef std::vector<Facet> AffiliatedFacets;
 
 // A collection of facets affiliated with each other, i.e. an equivalence class,
 // plus a timestamp that indicates the last time the data was updated from an
@@ -166,7 +194,8 @@ struct AffiliatedFacetsWithUpdateTime {
 };
 
 // Returns whether or not equivalence classes |a| and |b| are equal, that is,
-// whether or not they consist of the same set of facets.
+// whether or not they consist of the same set of facet URIs. Note that branding
+// information is ignored for this check.
 //
 // Note that this will do some sorting, so it can be expensive for large inputs.
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
@@ -184,6 +213,14 @@ std::string GetHumanReadableOriginForAndroidUri(const FacetURI facet_uri);
 
 // For logging use only.
 std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);
+
+// Needed for testing.
+bool operator==(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs);
+bool operator!=(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs);
+
+// Needed for testing.
+bool operator==(const Facet& lhs, const Facet& rhs);
+bool operator!=(const Facet& lhs, const Facet& rhs);
 
 struct FacetURIHash {
   size_t operator()(const FacetURI& facet_uri) const {

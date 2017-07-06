@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -149,11 +150,11 @@ const char kTestFacetURI2[] = "https://two.example.com";
 const char kTestFacetURI3[] = "https://three.example.com";
 
 AffiliatedFacets GetTestEquivalenceClass() {
-  AffiliatedFacets affiliated_facets;
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI1));
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
-  return affiliated_facets;
+  return {
+      {FacetURI::FromCanonicalSpec(kTestFacetURI1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI3)},
+  };
 }
 
 AffiliatedFacetsWithUpdateTime GetTestEquivalenceClassWithUpdateTime(
@@ -233,9 +234,9 @@ class FacetManagerTest : public testing::Test {
     // The order is important: FacetManager will read the DB in its constructor.
     facet_manager_host_.set_expected_facet_uri(
         FacetURI::FromCanonicalSpec(kTestFacetURI1));
-    facet_manager_.reset(
-        new FacetManager(FacetURI::FromCanonicalSpec(kTestFacetURI1),
-                         fake_facet_manager_host(), main_clock_.get()));
+    facet_manager_ = base::MakeUnique<FacetManager>(
+        FacetURI::FromCanonicalSpec(kTestFacetURI1), fake_facet_manager_host(),
+        main_clock_.get());
     facet_manager_notifier_.set_facet_manager(facet_manager_.get());
     facet_manager_creation_ = Now();
   }

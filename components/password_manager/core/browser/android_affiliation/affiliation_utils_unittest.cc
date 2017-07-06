@@ -21,6 +21,44 @@ const char kTestFacetURI2[] = "https://beta.example.com/";
 const char kTestFacetURI3[] = "https://gamma.example.com/";
 }  // namespace
 
+TEST(AffiliationUtilsTest, FacetBrandingInfoOperatorEq) {
+  FacetBrandingInfo facet_1 = {"First Facet", GURL()};
+  FacetBrandingInfo facet_1_with_icon = {
+      "First Facet", GURL("https://example.com/icon_1.png")};
+  FacetBrandingInfo facet_2 = {"Second Facet", GURL()};
+  FacetBrandingInfo facet_2_with_icon = {
+      "Second Facet", GURL("https://example.com/icon_2.png")};
+
+  EXPECT_EQ(facet_1, facet_1);
+  EXPECT_NE(facet_1, facet_1_with_icon);
+  EXPECT_NE(facet_1, facet_2);
+  EXPECT_NE(facet_1, facet_2_with_icon);
+
+  EXPECT_NE(facet_1_with_icon, facet_1);
+  EXPECT_EQ(facet_1_with_icon, facet_1_with_icon);
+  EXPECT_NE(facet_1_with_icon, facet_2);
+  EXPECT_NE(facet_1_with_icon, facet_2_with_icon);
+
+  EXPECT_NE(facet_2, facet_1);
+  EXPECT_NE(facet_2, facet_1_with_icon);
+  EXPECT_EQ(facet_2, facet_2);
+  EXPECT_NE(facet_2, facet_2_with_icon);
+
+  EXPECT_NE(facet_2_with_icon, facet_1);
+  EXPECT_NE(facet_2_with_icon, facet_1_with_icon);
+  EXPECT_NE(facet_2_with_icon, facet_2);
+  EXPECT_EQ(facet_2_with_icon, facet_2_with_icon);
+}
+
+TEST(AffiliationUtilsTest, FacetOperatorEq) {
+  Facet facet_1 = {FacetURI::FromPotentiallyInvalidSpec(kTestFacetURI1)};
+  Facet facet_2 = {FacetURI::FromPotentiallyInvalidSpec(kTestFacetURI2)};
+  EXPECT_EQ(facet_1, facet_1);
+  EXPECT_NE(facet_1, facet_2);
+  EXPECT_NE(facet_2, facet_1);
+  EXPECT_EQ(facet_2, facet_2);
+}
+
 TEST(AffiliationUtilsTest, ValidWebFacetURIs) {
   struct {
     const char* valid_facet_uri;
@@ -160,15 +198,17 @@ TEST(AffiliationUtilsTest, InvalidAndroidFacetURIs) {
 }
 
 TEST(AffiliationUtilsTest, EqualEquivalenceClasses) {
-  AffiliatedFacets a;
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI1));
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
+  AffiliatedFacets a = {
+      {FacetURI::FromCanonicalSpec(kTestFacetURI1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI3)},
+  };
 
-  AffiliatedFacets b;
-  b.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
-  b.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI1));
-  b.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
+  AffiliatedFacets b = {
+      {FacetURI::FromCanonicalSpec(kTestFacetURI3)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+  };
 
   EXPECT_TRUE(AreEquivalenceClassesEqual(a, a));
   EXPECT_TRUE(AreEquivalenceClassesEqual(b, b));
@@ -177,18 +217,20 @@ TEST(AffiliationUtilsTest, EqualEquivalenceClasses) {
 }
 
 TEST(AffiliationUtilsTest, NotEqualEquivalenceClasses) {
-  AffiliatedFacets a;
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI1));
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
+  AffiliatedFacets a = {
+      {FacetURI::FromCanonicalSpec(kTestFacetURI1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI2)},
+  };
 
-  AffiliatedFacets b;
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
-  b.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
+  AffiliatedFacets b = {
+      {FacetURI::FromCanonicalSpec(kTestFacetURI3)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURI3)},
+  };
 
   AffiliatedFacets c;
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI1));
-  a.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI2));
-  b.push_back(FacetURI::FromCanonicalSpec(kTestFacetURI3));
 
   EXPECT_FALSE(AreEquivalenceClassesEqual(a, b));
   EXPECT_FALSE(AreEquivalenceClassesEqual(a, c));

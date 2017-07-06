@@ -33,11 +33,11 @@ const char kTestFacetURIAlpha3[] = "https://three.alpha.example.com";
 const char kTestFacetURIBeta1[] = "https://one.beta.example.com";
 
 AffiliatedFacets GetTestEquivalenceClassAlpha() {
-  AffiliatedFacets affiliated_facets;
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1));
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha2));
-  affiliated_facets.push_back(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha3));
-  return affiliated_facets;
+  return {
+      {FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURIAlpha2)},
+      {FacetURI::FromCanonicalSpec(kTestFacetURIAlpha3)},
+  };
 }
 
 }  // namespace
