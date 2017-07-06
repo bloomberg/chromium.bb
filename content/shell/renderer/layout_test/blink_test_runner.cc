@@ -536,8 +536,8 @@ bool BlinkTestRunner::IsUseZoomForDSFEnabled() {
   return content::IsUseZoomForDSFEnabled();
 }
 
-void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
-  content::SetDeviceColorProfile(render_view(), GetTestingICCProfile(name));
+void BlinkTestRunner::SetDeviceColorSpace(const std::string& name) {
+  content::SetDeviceColorSpace(render_view(), GetTestingColorSpace(name));
 }
 
 void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,

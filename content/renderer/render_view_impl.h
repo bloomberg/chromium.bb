@@ -86,7 +86,7 @@ struct WebWindowFeatures;
 }  // namespace blink
 
 namespace gfx {
-class ICCProfile;
+class ColorSpace;
 }
 
 namespace content {
@@ -233,7 +233,7 @@ class CONTENT_EXPORT RenderViewImpl
   void SetDeviceScaleFactorForTesting(float factor);
 
   // Change the device ICC color profile while running a layout test.
-  void SetDeviceColorProfileForTesting(const gfx::ICCProfile& icc_profile);
+  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
 
   // Used to force the size of a window when running layout tests.
   void ForceResizeForTesting(const gfx::Size& new_size);
