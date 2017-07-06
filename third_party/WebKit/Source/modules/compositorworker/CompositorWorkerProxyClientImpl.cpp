@@ -5,6 +5,9 @@
 #include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 
 #include "core/animation/CompositorMutatorImpl.h"
+#include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/CurrentTime.h"
@@ -79,6 +82,15 @@ bool CompositorWorkerProxyClientImpl::ExecuteAnimationFrameCallbacks(
   double high_res_time_ms =
       1000.0 * (monotonic_time_now - global_scope_->TimeOrigin());
   return global_scope_->ExecuteAnimationFrameCallbacks(high_res_time_ms);
+}
+
+// static
+CompositorWorkerProxyClientImpl* CompositorWorkerProxyClientImpl::FromDocument(
+    Document* document) {
+  WebLocalFrameBase* local_frame_base =
+      WebLocalFrameBase::FromFrame(document->GetFrame());
+  return new CompositorWorkerProxyClientImpl(
+      local_frame_base->LocalRootFrameWidget()->CompositorMutator());
 }
 
 }  // namespace blink

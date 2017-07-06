@@ -125,12 +125,11 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   Element* FocusedElement() const;
 
   PaintLayerCompositor* Compositor() const;
+  CompositorMutatorImpl* CompositorMutator() override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return true; }
   void ScheduleAnimation() override;
-  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
-  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
 
   WebWidgetClient* Client() const override { return client_; }
   void SetRootGraphicsLayer(GraphicsLayer*) override;

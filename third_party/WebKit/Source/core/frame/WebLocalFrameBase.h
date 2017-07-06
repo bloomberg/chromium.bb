@@ -76,6 +76,8 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
   virtual TextFinder* GetTextFinder() const = 0;
   virtual void SetInputEventsTransformForEmulation(const IntSize&, float) = 0;
 
+  virtual WebFrameWidgetBase* LocalRootFrameWidget() = 0;
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:

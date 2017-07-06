@@ -15,6 +15,7 @@ namespace blink {
 
 class CompositorMutatorImpl;
 class CompositorWorkerGlobalScope;
+class Document;
 class WorkerGlobalScope;
 
 // Mediates between one CompositorWorkerGlobalScope and the associated
@@ -42,6 +43,8 @@ class MODULES_EXPORT CompositorWorkerProxyClientImpl final
   void Dispose() override;
   void SetGlobalScope(WorkerGlobalScope*) override;
   void RequestAnimationFrame() override;
+
+  static CompositorWorkerProxyClientImpl* FromDocument(Document*);
 
  private:
   bool ExecuteAnimationFrameCallbacks(double monotonic_time_now);

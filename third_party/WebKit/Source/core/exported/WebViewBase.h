@@ -16,11 +16,10 @@
 
 namespace blink {
 
-class AnimationWorkletProxyClient;
 class BrowserControls;
 class ChromeClient;
 class CompositorAnimationHost;
-class CompositorWorkerProxyClient;
+class CompositorMutatorImpl;
 class CompositorAnimationTimeline;
 class ContextMenuProvider;
 class DevToolsEmulator;
@@ -180,8 +179,7 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual WebInputMethodController* GetActiveWebInputMethodController()
       const = 0;
   virtual void ScheduleAnimationForWidget() = 0;
-  virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() = 0;
-  virtual AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() = 0;
+  virtual CompositorMutatorImpl* CompositorMutator() = 0;
   virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
   virtual void SetRootLayer(WebLayer*) = 0;
   virtual CompositorAnimationHost* AnimationHost() const = 0;
