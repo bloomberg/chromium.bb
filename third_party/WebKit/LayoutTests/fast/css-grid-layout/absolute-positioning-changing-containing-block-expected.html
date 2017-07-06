@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<style>
+ .wrapper {
+     width: 100px;
+     height: 100px;
+     margin-bottom: 25px;
+     background: purple;
+ }
+
+ .grid {
+     width: 50px;
+     height: 50px;
+     background: lightblue;
+ }
+
+ .item {
+     width: 75%;
+     height: 75%;
+     background: orange;
+ }
+</style>
+
+<p>This test checks that absolutelly positioned children of a grid are properly sized when the containing block switches between the grid container and a grid ancestor.</p>
+<p>The test PASS if you see an orange box inside a purple box on top and a small orange box inside a light blue box inside a purple box on bottom.</p>
+
+<div class="wrapper">
+    <div class="item"></div>
+</div>
+<div class="wrapper">
+    <div class="grid">
+	<div class="item"></div>
+    </div>
+</div>
