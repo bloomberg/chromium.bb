@@ -68,13 +68,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     @IntDef({
             NORMAL_MODE, /* Default mode */
             CUSTOM_TAB_MODE, /* Custom tab mode */
-            FULLSCREEN_TAB_MODE /* Full screen mode */
+            WEB_APP_MODE /* Full screen mode */
     })
     public @interface ContextMenuMode {}
 
     public static final int NORMAL_MODE = 0;
     public static final int CUSTOM_TAB_MODE = 1;
-    public static final int FULLSCREEN_TAB_MODE = 2;
+    public static final int WEB_APP_MODE = 2;
 
     // Items that are included in all context menus.
     private static final Set<? extends ContextMenuItem> BASE_WHITELIST =
@@ -103,7 +103,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     ChromeContextMenuItem.OPEN_IN_BROWSER_ID));
 
     // Additional items for fullscreen tabs mode.
-    private static final Set<? extends ContextMenuItem> FULLSCREEN_TAB_MODE_WHITELIST =
+    private static final Set<? extends ContextMenuItem> WEB_APP_MODE_WHITELIST =
             Collections.unmodifiableSet(
                     CollectionUtil.newHashSet(ChromeContextMenuItem.OPEN_IN_CHROME));
 
@@ -285,8 +285,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         Set<ContextMenuItem> supportedOptions = new HashSet<>();
         if (FirstRunStatus.getFirstRunFlowComplete()) {
             supportedOptions.addAll(BASE_WHITELIST);
-            if (mMode == FULLSCREEN_TAB_MODE) {
-                supportedOptions.addAll(FULLSCREEN_TAB_MODE_WHITELIST);
+            if (mMode == WEB_APP_MODE) {
+                supportedOptions.addAll(WEB_APP_MODE_WHITELIST);
             } else if (mMode == CUSTOM_TAB_MODE) {
                 supportedOptions.addAll(CUSTOM_TAB_MODE_WHITELIST);
             } else {

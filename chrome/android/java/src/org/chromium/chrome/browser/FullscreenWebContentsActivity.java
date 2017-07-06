@@ -8,22 +8,28 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.provider.Browser;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.webapps.FullScreenActivity;
+import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
  * An Activity used to display fullscreen WebContents.
  */
-public class FullscreenWebContentsActivity extends FullScreenActivity {
+public class FullscreenWebContentsActivity extends SingleTabActivity {
     private static final String TAG = "FullWebConActivity";
+
+    private WebContentsObserver mWebContentsObserver;
 
     @Override
     protected Tab createTab() {
@@ -33,7 +39,7 @@ public class FullscreenWebContentsActivity extends FullScreenActivity {
                 getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
         TabReparentingParams params = (TabReparentingParams) AsyncTabParamsManager.remove(tabId);
 
-        Tab tab;
+        final Tab tab;
         if (params != null) {
             tab = params.getTabToReparent();
             tab.attachAndFinishReparenting(this, createTabDelegateFactory(), params);
@@ -43,8 +49,35 @@ public class FullscreenWebContentsActivity extends FullScreenActivity {
                     TabLaunchType.FROM_CHROME_UI, null, null);
             tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, false);
         }
+        mWebContentsObserver = new WebContentsObserver(tab.getWebContents()) {
+            @Override
+            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                    boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
+                    Integer pageTransition, int errorCode, String errorDescription,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame) {
+                    // Notify the renderer to permanently hide the top controls since they do
+                    // not apply to fullscreen content views.
+                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
+                }
+            }
+        };
         return tab;
     }
+
+    @Override
+    public void finishNativeInitialization() {
+        ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
+        initializeCompositorContent(new LayoutManagerDocument(getCompositorViewHolder()),
+                (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
+                controlContainer);
+
+        if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
+        super.finishNativeInitialization();
+    }
+
+    @Override
+    protected void initializeToolbar() {}
 
     @Override
     protected int getControlContainerLayoutId() {
@@ -105,6 +138,16 @@ public class FullscreenWebContentsActivity extends FullScreenActivity {
                 Log.d(TAG, "Cannot return fullscreen tab to parent Activity.");
                 // Tab.detachAndStartReparenting will give the intent a default component if it
                 // has none.
+            }
+
+            ChromeActivity tabActivity = tab.getActivity();
+            if (tabActivity instanceof FullscreenWebContentsActivity) {
+                FullscreenWebContentsActivity fullscreenActivity =
+                        (FullscreenWebContentsActivity) tabActivity;
+                if (fullscreenActivity.mWebContentsObserver != null) {
+                    fullscreenActivity.mWebContentsObserver.destroy();
+                    fullscreenActivity.mWebContentsObserver = null;
+                }
             }
 
             // TODO(peconn): Deal with tricky multiwindow scenarios.
