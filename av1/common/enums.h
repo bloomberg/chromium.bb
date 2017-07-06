@@ -396,7 +396,7 @@ typedef enum ATTRIBUTE_PACKED {
   NEW_NEWMV,
 #endif  // CONFIG_EXT_INTER
   MB_MODE_COUNT,
-  INTRA_MODES = TM_PRED + 1,
+  INTRA_MODES = TM_PRED + 1,     // TM_PRED has to be the last intra mode.
   INTRA_INVALID = MB_MODE_COUNT  // For uv_mode in inter blocks
 } PREDICTION_MODE;
 
