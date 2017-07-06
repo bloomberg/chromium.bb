@@ -40,15 +40,34 @@ try {
 }
 
 $Env:CIPD_HTTP_USER_AGENT_PREFIX = $user_agent
-if (!(Test-Path $client)) {
-    echo "Bootstrapping cipd client for $plat-$arch..."
-    echo "From $url"
-    # TODO(iannucci): It would be really nice if there was a way to get this to
-    # show progress without also completely destroying the download speed, but
-    # I can't seem to find a way to do it. Patches welcome :)
-    $wc = (New-Object System.Net.WebClient)
-    $wc.Headers.add('User-Agent', $user_agent)
-    $wc.DownloadFile($url, $client)
+
+# Use a lock fle to prevent simultaneous processes from stepping on each other.
+$cipd_lock = Join-Path $myPath -ChildPath '.cipd_client.lock'
+while ($true) {
+  $cipd_lock_file = $false
+  try {
+      $cipd_lock_file = [IO.File]::OpenWrite($cipd_lock)
+
+      if (!(Test-Path $client)) {
+          echo "Bootstrapping cipd client for $plat-$arch..."
+          echo "From $url"
+
+          # TODO(iannucci): It would be really nice if there was a way to get this to
+          # show progress without also completely destroying the download speed, but
+          # I can't seem to find a way to do it. Patches welcome :)
+          $wc = (New-Object System.Net.WebClient)
+          $wc.Headers.add('User-Agent', $user_agent)
+          $wc.DownloadFile($url, $client)
+      }
+      break
+  } catch {
+      echo "CIPD lock is held, trying again after delay..."
+      Start-Sleep -s 1
+  } finally {
+      if ($cipd_lock_file) {
+          $cipd_lock_file.close()
+      }
+  }
 }
 
 $_ = & $client selfupdate -version "$cipdClientVer"
