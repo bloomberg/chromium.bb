@@ -182,7 +182,7 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
     dispatch_details = DispatchKeyEventPostIME(key);
   }
 
-  if (dispatch_details.dispatcher_destroyed)
+  if (key->handled() || dispatch_details.dispatcher_destroyed)
     return dispatch_details;
 
   ui::TextInputClient* client = GetTextInputClient();
@@ -346,6 +346,29 @@ class TextfieldDestroyerController : public views::TextfieldController {
 
  private:
   std::unique_ptr<views::Textfield> target_;
+};
+
+// Class that focuses a textfield when it sees a KeyDown event.
+class TextfieldFocuser : public views::View {
+ public:
+  explicit TextfieldFocuser(views::Textfield* textfield)
+      : textfield_(textfield) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+  }
+
+  void set_consume(bool consume) { consume_ = consume; }
+
+  // View:
+  bool OnKeyPressed(const ui::KeyEvent& event) override {
+    textfield_->RequestFocus();
+    return consume_;
+  }
+
+ private:
+  bool consume_ = true;
+  views::Textfield* textfield_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextfieldFocuser);
 };
 
 base::string16 GetClipboardText(ui::ClipboardType type) {
@@ -3198,6 +3221,27 @@ TEST_F(TextfieldTest, TextfieldBoundsChangeTest) {
   // Decrease the textfield size and check if the cursor moves to the new end.
   textfield_->SetSize(gfx::Size(30, 100));
   EXPECT_GT(prev_x, GetCursorBounds().x());
+}
+
+// Verify that if a textfield gains focus during key dispatch that an edit
+// command only results when the event is not consumed.
+TEST_F(TextfieldTest, SwitchFocusInKeyDown) {
+  InitTextfield();
+  TextfieldFocuser* focuser = new TextfieldFocuser(textfield_);
+  widget_->GetContentsView()->AddChildView(focuser);
+
+  focuser->RequestFocus();
+  EXPECT_EQ(focuser, GetFocusedView());
+  SendKeyPress(ui::VKEY_SPACE, 0);
+  EXPECT_EQ(textfield_, GetFocusedView());
+  EXPECT_EQ(base::string16(), textfield_->text());
+
+  focuser->set_consume(false);
+  focuser->RequestFocus();
+  EXPECT_EQ(focuser, GetFocusedView());
+  SendKeyPress(ui::VKEY_SPACE, 0);
+  EXPECT_EQ(textfield_, GetFocusedView());
+  EXPECT_EQ(base::ASCIIToUTF16(" "), textfield_->text());
 }
 
 }  // namespace views
