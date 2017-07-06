@@ -334,7 +334,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/UIEvent.idl",
     "events/WheelEvent.idl",
     "html/track/TrackEvent.idl",
-    "mojo/testing/MojoInterfaceRequestEvent.idl",
+    "mojo/test/MojoInterfaceRequestEvent.idl",
   ]
   output_file = "core/EventInterfaces.json5"
 }
