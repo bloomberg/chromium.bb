@@ -61,16 +61,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(zakerinasab): check / generate reference images.
     self.Fail('Pixel_Canvas2DUntagged', bug=713632)
 
-    # Failures on Haswell GPUs on macOS after upgrade to 10.12.4.
-    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker',
-              ['mac', ('intel', 0x0a2e)], bug=718183)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
-              ['mac', ('intel', 0x0a2e)], bug=718183)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
-              ['mac', ('intel', 0x0a2e)], bug=718183)
-    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
-              ['mac', ('intel', 0x0a2e)], bug=718183)
-
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
               ['mac', 'linux', 'win', 'android'], bug=735228)
     self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',

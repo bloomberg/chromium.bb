@@ -531,16 +531,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=659871)
 
     # Mac Intel
-
-    # Regressions in 10.12.4 on Haswell GPUs.
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/tex2d_00.html',
-        ['mac', ('intel', 0x0a2e)], bug=718194)
-    self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
-        ['mac', ('intel', 0x0a2e)], bug=718194)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_05.html',
-        ['mac', ('intel', 0x0a2e)], bug=718194)
-
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
         ['mac', 'intel'], bug=680278)
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
