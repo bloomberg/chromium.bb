@@ -10,6 +10,10 @@ MainDelegate::MainDelegate() = default;
 
 MainDelegate::~MainDelegate() = default;
 
+bool MainDelegate::IsEmbedderSubprocess() {
+  return false;
+}
+
 int MainDelegate::RunEmbedderProcess() {
   return 0;
 }

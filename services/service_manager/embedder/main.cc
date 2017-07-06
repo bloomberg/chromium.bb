@@ -464,7 +464,7 @@ int Main(const MainParams& params) {
       break;
 
     case ProcessType::kEmbedder:
-      if (ServiceManagerIsRemote())
+      if (delegate->IsEmbedderSubprocess())
         CommonSubprocessInit();
       exit_code = delegate->RunEmbedderProcess();
       break;
