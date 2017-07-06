@@ -102,7 +102,7 @@ class TestImporterTest(LoggingTestCase):
             importer._commit_message('aaaa', '1111'),
             'Import 1111\n\n'
             'Using wpt-import in Chromium aaaa.\n\n'
-            'NOEXPORT=true')
+            'No-Export: true')
 
     def test_cl_description_with_empty_environ(self):
         host = MockHost()
@@ -118,8 +118,8 @@ class TestImporterTest(LoggingTestCase):
             'lines to TestExpectations rather than reverting. See:\n'
             'https://chromium.googlesource.com'
             '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
-            'TBR=qyearsley@chromium.org\n'
-            'NOEXPORT=true')
+            'TBR: qyearsley@chromium.org\n'
+            'No-Export: true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
     def test_cl_description_with_environ_variables(self):
@@ -137,12 +137,12 @@ class TestImporterTest(LoggingTestCase):
 
     def test_cl_description_moves_noexport_tag(self):
         host = MockHost()
-        host.executive = MockExecutive(output='Summary\n\nNOEXPORT=true\n\n')
+        host.executive = MockExecutive(output='Summary\n\nNo-Export: true\n\n')
         importer = TestImporter(host)
         description = importer._cl_description(directory_owners={})
         self.assertIn(
-            'TBR=qyearsley@chromium.org\n'
-            'NOEXPORT=true',
+            'TBR: qyearsley@chromium.org\n'
+            'No-Export: true',
             description)
 
     def test_cl_description_with_directory_owners(self):

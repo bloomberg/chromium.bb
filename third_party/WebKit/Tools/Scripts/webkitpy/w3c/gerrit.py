@@ -118,6 +118,9 @@ class GerritCL(object):
         if 'Import' in self.subject:
             return False
 
+        if 'No-Export: true' in self.current_revision['commit_with_footers']:
+            return False
+
         if 'NOEXPORT=true' in self.current_revision['commit_with_footers']:
             return False
 
