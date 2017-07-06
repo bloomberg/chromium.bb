@@ -20,15 +20,21 @@ public class TintedImageButton extends ImageButton implements ImageViewTinterOwn
     private ImageViewTinter mTinter;
 
     public TintedImageButton(Context context) {
-        this(context, null);
+        super(context);
+        init(null, 0);
     }
 
     public TintedImageButton(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init(attrs, 0);
     }
 
     public TintedImageButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(attrs, defStyle);
+    }
+
+    private void init(AttributeSet attrs, int defStyle) {
         mTinter = new ImageViewTinter(this, attrs, defStyle);
     }
 

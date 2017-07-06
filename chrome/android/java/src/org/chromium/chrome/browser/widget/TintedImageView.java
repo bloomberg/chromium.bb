@@ -20,15 +20,21 @@ public class TintedImageView extends AppCompatImageView implements ImageViewTint
     private ImageViewTinter mTinter;
 
     public TintedImageView(Context context) {
-        this(context, null);
+        super(context);
+        init(null, 0);
     }
 
     public TintedImageView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs, 0);
+        init(attrs, 0);
     }
 
     public TintedImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init(attrs, defStyle);
+    }
+
+    private void init(AttributeSet attrs, int defStyle) {
         mTinter = new ImageViewTinter(this, attrs, defStyle);
     }
 
