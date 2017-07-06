@@ -68,7 +68,7 @@ class HTMLImportLoader final
     return new HTMLImportLoader(controller);
   }
 
-  ~HTMLImportLoader() override;
+  ~HTMLImportLoader() final;
   void Dispose();
 
   Document* GetDocument() const { return document_.Get(); }
@@ -101,19 +101,19 @@ class HTMLImportLoader final
  private:
   HTMLImportLoader(HTMLImportsController*);
 
-  // RawResourceClient
+  // RawResourceClient overrides:
   void ResponseReceived(Resource*,
                         const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
-  void DataReceived(Resource*, const char* data, size_t length) override;
-  void NotifyFinished(Resource*) override;
-  String DebugName() const override { return "HTMLImportLoader"; }
+                        std::unique_ptr<WebDataConsumerHandle>) final;
+  void DataReceived(Resource*, const char* data, size_t length) final;
+  void NotifyFinished(Resource*) final;
+  String DebugName() const final { return "HTMLImportLoader"; }
 
-  // DocumentParserClient
+  // DocumentParserClient overrides:
 
   // Called after document parse is complete after DOMContentLoaded was
   // dispatched.
-  void NotifyParserStopped() override;
+  void NotifyParserStopped() final;
 
   State StartWritingAndParsing(const ResourceResponse&);
   State FinishWriting();

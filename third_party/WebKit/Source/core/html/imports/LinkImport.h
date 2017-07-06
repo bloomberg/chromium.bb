@@ -51,21 +51,21 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   static LinkImport* Create(HTMLLinkElement* owner);
 
   explicit LinkImport(HTMLLinkElement* owner);
-  ~LinkImport() override;
+  ~LinkImport() final;
 
-  // LinkResource
-  void Process() override;
-  LinkResourceType GetType() const override { return kImport; }
-  bool HasLoaded() const override;
+  // LinkResource overrides:
+  void Process() final;
+  LinkResourceType GetType() const final { return kImport; }
+  bool HasLoaded() const final;
   DECLARE_VIRTUAL_TRACE();
-  void OwnerInserted() override;
-  void OwnerRemoved() override;
+  void OwnerInserted() final;
+  void OwnerRemoved() final;
 
-  // HTMLImportChildClient
-  void DidFinish() override;
-  void ImportChildWasDisposed(HTMLImportChild*) override;
-  bool IsSync() const override;
-  HTMLLinkElement* Link() override;
+  // HTMLImportChildClient overrides:
+  void DidFinish() final;
+  void ImportChildWasDisposed(HTMLImportChild*) final;
+  bool IsSync() const final;
+  HTMLLinkElement* Link() final;
 
   Document* ImportedDocument() const;
 
