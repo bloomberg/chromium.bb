@@ -340,9 +340,15 @@ bool Display::DrawAndSwap() {
     if (have_damage && !size_matches)
       aggregator_->SetFullDamageForSurface(current_surface_id_);
     TRACE_EVENT_INSTANT0("cc", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
-    stored_latency_info_.insert(stored_latency_info_.end(),
-                                frame.metadata.latency_info.begin(),
-                                frame.metadata.latency_info.end());
+
+    // Do not store more that the allowed size.
+    if (ui::LatencyInfo::Verify(frame.metadata.latency_info,
+                                "Display::DrawAndSwap")) {
+      stored_latency_info_.insert(stored_latency_info_.end(),
+                                  frame.metadata.latency_info.begin(),
+                                  frame.metadata.latency_info.end());
+    }
+
     if (scheduler_) {
       scheduler_->DidSwapBuffers();
       scheduler_->DidReceiveSwapBuffersAck();
