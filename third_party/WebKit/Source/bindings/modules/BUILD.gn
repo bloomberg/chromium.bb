@@ -34,6 +34,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/mediastream/MediaStreamEvent.idl",
     "//third_party/WebKit/Source/modules/mediastream/MediaStreamTrackEvent.idl",
     "//third_party/WebKit/Source/modules/notifications/NotificationEvent.idl",
+    "//third_party/WebKit/Source/modules/payments/CanMakePaymentEvent.idl",
     "//third_party/WebKit/Source/modules/payments/PaymentRequestEvent.idl",
     "//third_party/WebKit/Source/modules/payments/PaymentRequestUpdateEvent.idl",
     "//third_party/WebKit/Source/modules/peerconnection/RTCDTMFToneChangeEvent.idl",

@@ -14,6 +14,7 @@ class PaymentAppServiceWorkerGlobalScope {
   STATIC_ONLY(PaymentAppServiceWorkerGlobalScope);
 
  public:
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canmakepayment);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(paymentrequest);
 };
 
