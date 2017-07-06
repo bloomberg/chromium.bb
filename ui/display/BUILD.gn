@@ -36,6 +36,8 @@ component("display") {
     "screen_aura.cc",
     "screen_base.cc",
     "screen_base.h",
+    "win/color_profile_reader.cc",
+    "win/color_profile_reader.h",
     "win/display_info.cc",
     "win/display_info.h",
     "win/dpi.cc",
