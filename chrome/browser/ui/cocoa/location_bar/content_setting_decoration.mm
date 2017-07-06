@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -36,10 +37,6 @@
 using content::WebContents;
 
 namespace {
-
-// The bubble point should look like it points to the bottom of the respective
-// icon. The offset should be 2px.
-const CGFloat kPageBubblePointYOffset = 2.0;
 
 // Duration of animation, 3 seconds. The ContentSettingAnimationState breaks
 // this up into different states of varying lengths.
@@ -269,9 +266,9 @@ NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
   if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
     frame.origin.x += frame.size.width - image_size.width;
   frame.size = image_size;
-  const NSRect draw_frame = GetDrawRectInFrame(frame);
-  return NSMakePoint(NSMidX(draw_frame),
-                     NSMaxY(draw_frame) + kPageBubblePointYOffset);
+
+  // Position the same way as the bookmark star.
+  return StarDecoration::GetStarBubblePointInFrame(GetDrawRectInFrame(frame));
 }
 
 bool ContentSettingDecoration::AcceptsMousePress() {
@@ -285,14 +282,8 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   if (!web_contents)
     return true;
 
-  // Find point for bubble's arrow in screen coordinates.
-  // TODO(shess): |owner_| is only being used to fetch |field|.
-  // Consider passing in |control_view|.  Or refactoring to be
-  // consistent with other decorations (which don't currently bring up
-  // their bubble directly).
   AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  NSPoint anchor = GetBubblePointInFrame(frame);
-  anchor = [field convertPoint:anchor toView:nil];
+  NSPoint anchor = [field bubblePointForDecoration:this];
   anchor = ui::ConvertPointFromWindowToScreen([field window], anchor);
 
   // Open bubble.
