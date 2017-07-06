@@ -2,41 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("resources") {
-  sources = [
-    "resources/tabstrip_background_tab@2x~ipad.png",
-    "resources/tabstrip_background_tab~ipad.png",
-    "resources/tabstrip_foreground_tab@2x~ipad.png",
-    "resources/tabstrip_foreground_tab~ipad.png",
-    "resources/tabstrip_incognito_background_tab@2x~ipad.png",
-    "resources/tabstrip_incognito_background_tab~ipad.png",
-    "resources/tabstrip_incognito_foreground_tab@2x~ipad.png",
-    "resources/tabstrip_incognito_foreground_tab~ipad.png",
-    "resources/tabstrip_new_tab@2x~ipad.png",
-    "resources/tabstrip_new_tab_incognito@2x~ipad.png",
-    "resources/tabstrip_new_tab_incognito_pressed@2x~ipad.png",
-    "resources/tabstrip_new_tab_incognito_pressed~ipad.png",
-    "resources/tabstrip_new_tab_incognito~ipad.png",
-    "resources/tabstrip_new_tab_pressed@2x~ipad.png",
-    "resources/tabstrip_new_tab_pressed~ipad.png",
-    "resources/tabstrip_new_tab~ipad.png",
-    "resources/tabstrip_tab_close@2x~ipad.png",
-    "resources/tabstrip_tab_close_incognito@2x~ipad.png",
-    "resources/tabstrip_tab_close_incognito_pressed@2x~ipad.png",
-    "resources/tabstrip_tab_close_incognito_pressed~ipad.png",
-    "resources/tabstrip_tab_close_incognito~ipad.png",
-    "resources/tabstrip_tab_close_pressed@2x~ipad.png",
-    "resources/tabstrip_tab_close_pressed~ipad.png",
-    "resources/tabstrip_tab_close~ipad.png",
-    "resources/tabstrip_toggle_button_gradient@2x~ipad.png",
-    "resources/tabstrip_toggle_button_gradient@3x~ipad.png",
-    "resources/tabstrip_toggle_button_gradient~ipad.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("tabs") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -55,7 +20,19 @@ source_set("tabs") {
     "//ios/chrome/browser/tabs",
   ]
   deps = [
-    ":resources",
+    "resources:tabstrip_background_tab",
+    "resources:tabstrip_foreground_tab",
+    "resources:tabstrip_incognito_background_tab",
+    "resources:tabstrip_incognito_foreground_tab",
+    "resources:tabstrip_new_tab",
+    "resources:tabstrip_new_tab_incognito",
+    "resources:tabstrip_new_tab_incognito_pressed",
+    "resources:tabstrip_new_tab_pressed",
+    "resources:tabstrip_tab_close",
+    "resources:tabstrip_tab_close_incognito",
+    "resources:tabstrip_tab_close_incognito_pressed",
+    "resources:tabstrip_tab_close_pressed",
+    "resources:tabstrip_toggle_button_gradient",
     "//base",
     "//base:i18n",
     "//ios/chrome/app/strings",
