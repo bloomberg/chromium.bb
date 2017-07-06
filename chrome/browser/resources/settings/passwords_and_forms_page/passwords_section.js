@@ -12,7 +12,65 @@
  * Interface for all callbacks to the password API.
  * @interface
  */
-function PasswordManager() {}
+class PasswordManager {
+  /**
+   * Add an observer to the list of saved passwords.
+   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
+   */
+  addSavedPasswordListChangedListener(listener) {}
+
+  /**
+   * Remove an observer from the list of saved passwords.
+   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
+   */
+  removeSavedPasswordListChangedListener(listener) {}
+
+  /**
+   * Request the list of saved passwords.
+   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} callback
+   */
+  getSavedPasswordList(callback) {}
+
+  /**
+   * Should remove the saved password and notify that the list has changed.
+   * @param {!PasswordManager.LoginPair} loginPair The saved password that
+   *     should be removed from the list. No-op if |loginPair| is not found.
+   */
+  removeSavedPassword(loginPair) {}
+
+  /**
+   * Add an observer to the list of password exceptions.
+   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} listener
+   */
+  addExceptionListChangedListener(listener) {}
+
+  /**
+   * Remove an observer from the list of password exceptions.
+   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} listener
+   */
+  removeExceptionListChangedListener(listener) {}
+
+  /**
+   * Request the list of password exceptions.
+   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} callback
+   */
+  getExceptionList(callback) {}
+
+  /**
+   * Should remove the password exception and notify that the list has changed.
+   * @param {string} exception The exception that should be removed from the
+   *     list. No-op if |exception| is not in the list.
+   */
+  removeException(exception) {}
+
+  /**
+   * Gets the saved password for a given login pair.
+   * @param {!PasswordManager.LoginPair} loginPair The saved password that
+   *     should be retrieved.
+   * @param {function(!PasswordManager.PlaintextPasswordEvent):void} callback
+   */
+  getPlaintextPassword(loginPair, callback) {}
+}
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
 PasswordManager.PasswordUiEntry;
@@ -26,122 +84,56 @@ PasswordManager.ExceptionEntry;
 /** @typedef {chrome.passwordsPrivate.PlaintextPasswordEventParameters} */
 PasswordManager.PlaintextPasswordEvent;
 
-PasswordManager.prototype = {
-  /**
-   * Add an observer to the list of saved passwords.
-   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
-   */
-  addSavedPasswordListChangedListener: assertNotReached,
-
-  /**
-   * Remove an observer from the list of saved passwords.
-   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
-   */
-  removeSavedPasswordListChangedListener: assertNotReached,
-
-  /**
-   * Request the list of saved passwords.
-   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} callback
-   */
-  getSavedPasswordList: assertNotReached,
-
-  /**
-   * Should remove the saved password and notify that the list has changed.
-   * @param {!PasswordManager.LoginPair} loginPair The saved password that
-   *     should be removed from the list. No-op if |loginPair| is not found.
-   */
-  removeSavedPassword: assertNotReached,
-
-  /**
-   * Add an observer to the list of password exceptions.
-   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} listener
-   */
-  addExceptionListChangedListener: assertNotReached,
-
-  /**
-   * Remove an observer from the list of password exceptions.
-   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} listener
-   */
-  removeExceptionListChangedListener: assertNotReached,
-
-  /**
-   * Request the list of password exceptions.
-   * @param {function(!Array<!PasswordManager.ExceptionEntry>):void} callback
-   */
-  getExceptionList: assertNotReached,
-
-  /**
-   * Should remove the password exception and notify that the list has changed.
-   * @param {string} exception The exception that should be removed from the
-   *     list. No-op if |exception| is not in the list.
-   */
-  removeException: assertNotReached,
-
-  /**
-   * Gets the saved password for a given login pair.
-   * @param {!PasswordManager.LoginPair} loginPair The saved password that
-   *     should be retrieved.
-   * @param {function(!PasswordManager.PlaintextPasswordEvent):void} callback
-   */
-  getPlaintextPassword: assertNotReached,
-};
-
 /**
  * Implementation that accesses the private API.
  * @implements {PasswordManager}
- * @constructor
  */
-function PasswordManagerImpl() {}
-cr.addSingletonGetter(PasswordManagerImpl);
-
-PasswordManagerImpl.prototype = {
-  __proto__: PasswordManager,
-
+class PasswordManagerImpl {
   /** @override */
-  addSavedPasswordListChangedListener: function(listener) {
+  addSavedPasswordListChangedListener(listener) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(listener);
-  },
+  }
 
   /** @override */
-  removeSavedPasswordListChangedListener: function(listener) {
+  removeSavedPasswordListChangedListener(listener) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.removeListener(
         listener);
-  },
+  }
 
   /** @override */
-  getSavedPasswordList: function(callback) {
+  getSavedPasswordList(callback) {
     chrome.passwordsPrivate.getSavedPasswordList(callback);
-  },
+  }
 
   /** @override */
-  removeSavedPassword: function(loginPair) {
+  removeSavedPassword(loginPair) {
     chrome.passwordsPrivate.removeSavedPassword(loginPair);
-  },
+  }
 
   /** @override */
-  addExceptionListChangedListener: function(listener) {
+  addExceptionListChangedListener(listener) {
     chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
         listener);
-  },
+  }
 
   /** @override */
-  removeExceptionListChangedListener: function(listener) {
+  removeExceptionListChangedListener(listener) {
     chrome.passwordsPrivate.onPasswordExceptionsListChanged.removeListener(
         listener);
-  },
+  }
 
   /** @override */
-  getExceptionList: function(callback) {
+  getExceptionList(callback) {
     chrome.passwordsPrivate.getPasswordExceptionList(callback);
-  },
+  }
 
   /** @override */
-  removeException: function(exception) {
+  removeException(exception) {
     chrome.passwordsPrivate.removePasswordException(exception);
-  },
+  }
 
   /** @override */
-  getPlaintextPassword: function(loginPair, callback) {
+  getPlaintextPassword(loginPair, callback) {
     var listener = function(reply) {
       // Only handle the reply for our loginPair request.
       if (reply.loginPair.urls.origin == loginPair.urls.origin &&
@@ -153,8 +145,10 @@ PasswordManagerImpl.prototype = {
     };
     chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(listener);
     chrome.passwordsPrivate.requestPlaintextPassword(loginPair);
-  },
-};
+  }
+}
+
+cr.addSingletonGetter(PasswordManagerImpl);
 
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.PasswordUiEntry}}} */
 var PasswordUiEntryEvent;
