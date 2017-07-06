@@ -106,6 +106,15 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   LayoutUnit left_;
 };
 
+inline LayoutRectOutsets& operator+=(LayoutRectOutsets& a,
+                                     const LayoutRectOutsets& b) {
+  a.SetTop(a.Top() + b.Top());
+  a.SetRight(a.Right() + b.Right());
+  a.SetBottom(a.Bottom() + b.Bottom());
+  a.SetLeft(a.Left() + b.Left());
+  return a;
+}
+
 }  // namespace blink
 
 #endif  // LayoutRectOutsets_h

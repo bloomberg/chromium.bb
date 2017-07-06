@@ -794,6 +794,14 @@ float LayoutView::ZoomFactor() const {
   return frame_view_->GetFrame().PageZoomFactor();
 }
 
+const LayoutBox& LayoutView::RootBox() const {
+  Element* document_element = GetDocument().documentElement();
+  DCHECK(document_element);
+  DCHECK(document_element->GetLayoutObject());
+  DCHECK(document_element->GetLayoutObject()->IsBox());
+  return ToLayoutBox(*document_element->GetLayoutObject());
+}
+
 void LayoutView::UpdateAfterLayout() {
   // Unlike every other layer, the root PaintLayer takes its size from the
   // layout viewport size.  The call to AdjustViewSize() will update the
