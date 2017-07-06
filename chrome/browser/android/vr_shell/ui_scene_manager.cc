@@ -46,6 +46,7 @@ static constexpr float kContentDistance = 2.5;
 static constexpr float kContentWidth = 0.96 * kContentDistance;
 static constexpr float kContentHeight = 0.64 * kContentDistance;
 static constexpr float kContentVerticalOffset = -0.1 * kContentDistance;
+static constexpr float kContentCornerRadius = 0.005 * kContentWidth;
 static constexpr float kBackplaneSize = 1000.0;
 static constexpr float kBackgroundDistanceMultiplier = 1.414;
 
@@ -271,6 +272,7 @@ void UiSceneManager::CreateContentQuad() {
   element->set_size({kContentWidth, kContentHeight, 1});
   element->set_translation({0, kContentVerticalOffset, -kContentDistance});
   element->set_visible(false);
+  element->set_corner_radius(kContentCornerRadius);
   main_content_ = element.get();
   content_elements_.push_back(element.get());
   scene_->AddUiElement(std::move(element));

@@ -12,7 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace {
 
@@ -28,9 +30,101 @@ static constexpr float kTexturedQuadVertices[8] = {
 };
 
 static constexpr GLushort kTexturedQuadIndices[6] = { 0, 1, 2, 1, 3, 2 };
+
+// A rounded rect is subdivided into a number of triangles.
+// _______________
+// | /    _,-' \ |
+// |/_,,-'______\|
+// |            /|
+// |           / |
+// |          /  |
+// |         /   |
+// |        /    |
+// |       /     |
+// |      /      |
+// |     /       |
+// |    /        |
+// |   /         |
+// |  /          |
+// | /           |
+// |/____________|
+// |\     _,-'' /|
+// |_\ ,-'____ /_|
+//
+// Most of these do not contain an arc. To simplify the rendering of those
+// that do, we include a "corner position" attribute. The corner position is
+// the distance from the center of the nearest "corner circle". Only those
+// triangles containing arcs have a non-zero corner position set. The result
+// is that for interior triangles, their corner position is uniformly (0, 0).
+// I.e., they are always deemed "inside".
+//
+// A further complication is that different corner radii will require these
+// various triangles to be sized differently relative to one another. We
+// would prefer not no continually recreate our vertex buffer, so we include
+// another attribute, the "offset scalars". These scalars are only ever 1.0,
+// 0.0, or -1.0 and control the addition or subtraction of the horizontal
+// and vertical corner offset. This lets the corners of the triangles be
+// computed in the vertex shader dynamically. It also happens that the
+// texture coordinates can also be easily computed in the vertex shader.
+//
+// So if the the corner offsets are vr and hr where
+//     vr = corner_radius / height;
+//     hr = corner_radius / width;
+//
+// Then the full position is then given by
+//   p = (x + osx * hr, y + osy * vr, 0.0, 1.0)
+//
+// And the full texture coordinate is given by
+//   (0.5 + p[0], 0.5 - p[1])
+//
+static constexpr float kRRectVertices[120] = {
+    //       x           y   osx   osy  cpx  cpy
+    -kHalfSize,  kHalfSize,  0.0, -1.0, 0.0, 0.0,
+    -kHalfSize,  kHalfSize,  1.0,  0.0, 0.0, 0.0,
+     kHalfSize,  kHalfSize, -1.0,  0.0, 0.0, 0.0,
+     kHalfSize,  kHalfSize,  0.0, -1.0, 0.0, 0.0,
+    -kHalfSize, -kHalfSize,  0.0,  1.0, 0.0, 0.0,
+     kHalfSize, -kHalfSize,  0.0,  1.0, 0.0, 0.0,
+    -kHalfSize, -kHalfSize,  1.0,  0.0, 0.0, 0.0,
+     kHalfSize, -kHalfSize, -1.0,  0.0, 0.0, 0.0,
+    -kHalfSize,  kHalfSize,  0.0, -1.0, 1.0, 0.0,
+    -kHalfSize,  kHalfSize,  0.0,  0.0, 1.0, 1.0,
+    -kHalfSize,  kHalfSize,  1.0,  0.0, 0.0, 1.0,
+     kHalfSize,  kHalfSize, -1.0,  0.0, 0.0, 1.0,
+     kHalfSize,  kHalfSize,  0.0,  0.0, 1.0, 1.0,
+     kHalfSize,  kHalfSize,  0.0, -1.0, 1.0, 0.0,
+    -kHalfSize, -kHalfSize,  0.0,  0.0, 1.0, 1.0,
+    -kHalfSize, -kHalfSize,  0.0,  1.0, 1.0, 0.0,
+    -kHalfSize, -kHalfSize,  1.0,  0.0, 0.0, 1.0,
+     kHalfSize, -kHalfSize, -1.0,  0.0, 0.0, 1.0,
+     kHalfSize, -kHalfSize,  0.0,  1.0, 1.0, 0.0,
+     kHalfSize, -kHalfSize,  0.0,  0.0, 1.0, 1.0,
+};
+
+static constexpr GLushort kRRectIndices[30] = {
+    0,  2,  1,
+    0,  3,  2,
+    4,  3,  0,
+    4,  5,  3,
+    4,  6,  5,
+    6,  7,  5,
+    8,  10, 9,
+    11, 13, 12,
+    14, 16, 15,
+    17, 19, 18,
+};
+
 /* clang-format on */
 
 static constexpr int kTexturedQuadPositionDataSize = 2;
+
+static constexpr int kRRectPositionDataSize = 2;
+static constexpr size_t kRRectPositionDataOffset = 0;
+static constexpr int kRRectOffsetScaleDataSize = 2;
+static constexpr size_t kRRectOffsetScaleDataOffset = 2 * sizeof(float);
+static constexpr int kRRectCornerPositionDataSize = 2;
+static constexpr size_t kRRectCornerPositionDataOffset = 4 * sizeof(float);
+static constexpr size_t kRRectDataStride = 6 * sizeof(float);
 
 // Reticle constants
 static constexpr float kRingDiameter = 1.0f;
@@ -70,7 +164,6 @@ static const unsigned char kLaserData[] =
 
 const char* GetShaderSource(vr_shell::ShaderID shader) {
   switch (shader) {
-    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
     case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
     case vr_shell::ShaderID::LASER_VERTEX_SHADER:
     case vr_shell::ShaderID::TEXTURED_QUAD_VERTEX_SHADER:
@@ -115,22 +208,45 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             gl_Position = u_ModelViewProjMatrix * a_Position;
           }
           /* clang-format on */);
+    case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
+      return SHADER(
+          /* clang-format off */
+          precision mediump float;
+          uniform mat4 u_ModelViewProjMatrix;
+          uniform vec2 u_CornerOffset;
+          attribute vec4 a_Position;
+          attribute vec2 a_CornerPosition;
+          attribute vec2 a_OffsetScale;
+          varying vec2 v_TexCoordinate;
+          varying vec2 v_CornerPosition;
+
+          void main() {
+            v_CornerPosition = a_CornerPosition;
+            vec4 position = vec4(
+                a_Position[0] + u_CornerOffset[0] * a_OffsetScale[0],
+                a_Position[1] + u_CornerOffset[1] * a_OffsetScale[1],
+                a_Position[2],
+                a_Position[3]);
+            v_TexCoordinate = vec2(0.5 + position[0], 0.5 - position[1]);
+            gl_Position = u_ModelViewProjMatrix * position;
+          }
+          /* clang-format on */);
     case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER:
       return OEIE_SHADER(
           /* clang-format off */
           precision highp float;
           uniform samplerExternalOES u_Texture;
-          uniform vec4 u_CopyRect;  // rectangle
           varying vec2 v_TexCoordinate;
-          uniform lowp vec4 color;
-          uniform mediump float opacity;
+          varying vec2 v_CornerPosition;
+          uniform float u_CornerScale;
+          uniform mediump float u_Opacity;
 
           void main() {
-            vec2 scaledTex =
-                vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
-                     u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
-            lowp vec4 color = texture2D(u_Texture, scaledTex);
-            gl_FragColor = color * opacity;
+            lowp vec4 color = texture2D(u_Texture, v_TexCoordinate);
+            float mask = smoothstep(1.0 + u_CornerScale,
+                                    1.0 - u_CornerScale,
+                                    length(v_CornerPosition));
+            gl_FragColor = color * u_Opacity * mask;
           }
           /* clang-format on */);
     case vr_shell::ShaderID::TEXTURED_QUAD_FRAGMENT_SHADER:
@@ -381,22 +497,86 @@ void BaseQuadRenderer::SetVertexBuffer() {
                kTexturedQuadIndices, GL_STATIC_DRAW);
 }
 
+GLuint ExternalTexturedQuadRenderer::vertex_buffer_ = 0;
+GLuint ExternalTexturedQuadRenderer::index_buffer_ = 0;
+
+void ExternalTexturedQuadRenderer::SetVertexBuffer() {
+  GLuint buffers[2];
+  glGenBuffersARB(2, buffers);
+  vertex_buffer_ = buffers[0];
+  index_buffer_ = buffers[1];
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, arraysize(kRRectVertices) * sizeof(float),
+               kRRectVertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               arraysize(kRRectIndices) * sizeof(GLushort), kRRectIndices,
+               GL_STATIC_DRAW);
+}
+
 ExternalTexturedQuadRenderer::ExternalTexturedQuadRenderer()
-    : BaseQuadRenderer(EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER,
-                       EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER) {
+    : BaseRenderer(EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER,
+                   EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
-  tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
-  copy_rect_uniform_handle_ =
-      glGetUniformLocation(program_handle_, "u_CopyRect");
-  opacity_handle_ = glGetUniformLocation(program_handle_, "opacity");
+  corner_offset_handle_ =
+      glGetUniformLocation(program_handle_, "u_CornerOffset");
+  corner_scale_handle_ = glGetUniformLocation(program_handle_, "u_CornerScale");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
+  texture_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+
+  corner_position_handle_ =
+      glGetAttribLocation(program_handle_, "a_CornerPosition");
+  offset_scale_handle_ = glGetAttribLocation(program_handle_, "a_OffsetScale");
 }
 
 void ExternalTexturedQuadRenderer::Draw(int texture_data_handle,
                                         const gfx::Transform& view_proj_matrix,
-                                        const gfx::RectF& copy_rect,
-                                        float opacity) {
-  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
+                                        const gfx::Size& surface_size,
+                                        const gfx::SizeF& element_size,
+                                        float opacity,
+                                        float corner_radius) {
+  if (element_size.IsEmpty())
+    return;
+
+  glUseProgram(program_handle_);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+  // Pass in model view project matrix.
+  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                     MatrixToGLArray(view_proj_matrix).data());
+
+  gfx::Point3F top_left(-0.5, 0.5, 0.0);
+  gfx::Point3F top_right(0.5, 0.5, 0.0);
+  view_proj_matrix.TransformPoint(&top_left);
+  view_proj_matrix.TransformPoint(&top_right);
+  gfx::Vector3dF top_vector = top_right - top_left;
+  float physical_width = top_vector.Length();
+  physical_width *= corner_radius / element_size.width();
+  physical_width *= 0.5 * surface_size.width();
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+
+  // Set up position attribute.
+  glVertexAttribPointer(position_handle_, kRRectPositionDataSize, GL_FLOAT,
+                        false, kRRectDataStride,
+                        VOID_OFFSET(kRRectPositionDataOffset));
+  glEnableVertexAttribArray(position_handle_);
+
+  // Set up offset scale attribute.
+  glVertexAttribPointer(offset_scale_handle_, kRRectOffsetScaleDataSize,
+                        GL_FLOAT, false, kRRectDataStride,
+                        VOID_OFFSET(kRRectOffsetScaleDataOffset));
+  glEnableVertexAttribArray(offset_scale_handle_);
+
+  // Set up corner position attribute.
+  glVertexAttribPointer(corner_position_handle_, kRRectCornerPositionDataSize,
+                        GL_FLOAT, false, kRRectDataStride,
+                        VOID_OFFSET(kRRectCornerPositionDataOffset));
+  glEnableVertexAttribArray(corner_position_handle_);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
@@ -406,16 +586,19 @@ void ExternalTexturedQuadRenderer::Draw(int texture_data_handle,
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  glUniform1i(tex_uniform_handle_, 0);
-  glUniform4fv(copy_rect_uniform_handle_, 1,
-               reinterpret_cast<const float*>(&copy_rect));
+  // Set up uniforms.
+  glUniform1i(texture_handle_, 0);
   glUniform1f(opacity_handle_, opacity);
+  glUniform1f(corner_scale_handle_, 1.0f / physical_width);
+  glUniform2f(corner_offset_handle_, corner_radius / element_size.width(),
+              corner_radius / element_size.height());
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
-  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
-                 GL_UNSIGNED_SHORT, 0);
+  glDrawElements(GL_TRIANGLES, arraysize(kRRectIndices), GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
+  glDisableVertexAttribArray(offset_scale_handle_);
+  glDisableVertexAttribArray(corner_position_handle_);
 }
 
 ExternalTexturedQuadRenderer::~ExternalTexturedQuadRenderer() = default;
@@ -809,6 +992,7 @@ VrShellRenderer::VrShellRenderer()
       gradient_quad_renderer_(base::MakeUnique<GradientQuadRenderer>()),
       gradient_grid_renderer_(base::MakeUnique<GradientGridRenderer>()) {
   BaseQuadRenderer::SetVertexBuffer();
+  ExternalTexturedQuadRenderer::SetVertexBuffer();
 }
 
 VrShellRenderer::~VrShellRenderer() = default;
