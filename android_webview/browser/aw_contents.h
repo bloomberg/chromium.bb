@@ -194,7 +194,8 @@ class AwContents : public FindHelper::Listener,
               jint visible_left,
               jint visible_top,
               jint visible_right,
-              jint visible_bottom);
+              jint visible_bottom,
+              jboolean force_auxiliary_bitmap_rendering);
   jlong CapturePicture(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        int width,

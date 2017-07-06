@@ -206,6 +206,8 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
   gpu_info->gl_extensions =
       reinterpret_cast<const char*>(glGetStringFn(GL_EXTENSIONS));
 
+  std::string egl_extensions = eglQueryStringFn(temp_display, EGL_EXTENSIONS);
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
     gpu_info->gl_vendor =
@@ -234,6 +236,12 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
         GL_RESET_NOTIFICATION_STRATEGY_ARB,
         reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));
   }
+
+  gpu_info->can_support_threaded_texture_mailbox =
+      egl_extensions.find("EGL_KHR_fence_sync") != std::string::npos &&
+      egl_extensions.find("EGL_KHR_image_base") != std::string::npos &&
+      egl_extensions.find("EGL_KHR_gl_texture_2D_image") != std::string::npos &&
+      gpu_info->gl_extensions.find("GL_OES_EGL_image") != std::string::npos;
 
   std::string glsl_version_string;
   if (const char* glsl_version_cstring = reinterpret_cast<const char*>(
