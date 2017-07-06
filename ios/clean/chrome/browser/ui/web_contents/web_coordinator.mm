@@ -47,12 +47,13 @@
   // this coordinator will not need to know the active web state.
   _webState = webState;
   self.webState->SetDelegate(_webStateDelegate.get());
+  self.mediator.webState = self.webState;
 }
 
 - (void)start {
   self.viewController = [[WebContentsViewController alloc] init];
   self.mediator.consumer = self.viewController;
-  self.mediator.webStateList = &self.browser->web_state_list();
+  self.mediator.webState = self.webState;
   [super start];
 }
 

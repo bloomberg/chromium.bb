@@ -6,6 +6,8 @@ source_set("tab") {
   sources = [
     "tab_coordinator.h",
     "tab_coordinator.mm",
+    "tab_navigation_controller.h",
+    "tab_navigation_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -14,6 +16,7 @@ source_set("tab") {
     ":tab_ui",
     "//base",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/find_in_page",
