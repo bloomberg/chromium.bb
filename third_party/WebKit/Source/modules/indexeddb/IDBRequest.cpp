@@ -28,6 +28,7 @@
 
 #include "modules/indexeddb/IDBRequest.h"
 
+#include <atomic>
 #include <memory>
 #include <utility>
 
@@ -58,23 +59,38 @@ using blink::WebIDBCursor;
 
 namespace blink {
 
-IDBRequest::AsyncTraceState::AsyncTraceState(const char* tracing_name,
-                                             void* id,
-                                             size_t sub_id)
-    : tracing_name_(tracing_name), id_(static_cast<char*>(id) + sub_id) {
-  if (tracing_name_)
-    TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", tracing_name_, id_);
+IDBRequest::AsyncTraceState::AsyncTraceState(const char* trace_event_name)
+    : trace_event_name_(nullptr) {
+  // If PopulateForNewEvent is called, it sets trace_event_name_ to
+  // trace_event_name. Otherwise, trace_event_name_ is nullptr, so this instance
+  // is considered empty. This roundabout initialization lets us avoid calling
+  // TRACE_EVENT_ASYNC_END0 with an uninitalized ID.
+  TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", trace_event_name,
+                           PopulateForNewEvent(trace_event_name));
 }
 
 void IDBRequest::AsyncTraceState::RecordAndReset() {
-  if (tracing_name_)
-    TRACE_EVENT_ASYNC_END0("IndexedDB", tracing_name_, id_);
-  tracing_name_ = nullptr;
+  if (trace_event_name_) {
+    TRACE_EVENT_ASYNC_END0("IndexedDB", trace_event_name_, id_);
+    trace_event_name_ = nullptr;
+  }
 }
 
 IDBRequest::AsyncTraceState::~AsyncTraceState() {
-  if (tracing_name_)
-    TRACE_EVENT_ASYNC_END0("IndexedDB", tracing_name_, id_);
+  if (trace_event_name_)
+    TRACE_EVENT_ASYNC_END0("IndexedDB", trace_event_name_, id_);
+}
+
+size_t IDBRequest::AsyncTraceState::PopulateForNewEvent(
+    const char* trace_event_name) {
+  DCHECK(trace_event_name);
+  DCHECK(!trace_event_name_);
+  trace_event_name_ = trace_event_name;
+
+  static std::atomic<size_t> counter(0);
+  id_ = counter.fetch_add(1, std::memory_order_relaxed);
+
+  return id_;
 }
 
 IDBRequest* IDBRequest::Create(ScriptState* script_state,
@@ -102,7 +118,7 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       source_(source) {}
 
 IDBRequest::~IDBRequest() {
-  DCHECK((ready_state_ == DONE && !metrics_.is_valid()) ||
+  DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
          ready_state_ == kEarlyDeath || !GetExecutionContext());
 }
 
