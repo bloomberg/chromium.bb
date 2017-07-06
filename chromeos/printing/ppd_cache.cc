@@ -116,6 +116,11 @@ void StoreImpl(const base::FilePath& cache_dir,
   }
 }
 
+// Implementation of the PpdCache that uses two separate task runners for Store
+// and Fetch since the two operations have different priorities. Note that the
+// two operations are not sequenced so there should be no expectation that a
+// call to Find will return a file that was previously Stored until the Store
+// callback is run.
 class PpdCacheImpl : public PpdCache {
  public:
   explicit PpdCacheImpl(const base::FilePath& cache_base_dir)
