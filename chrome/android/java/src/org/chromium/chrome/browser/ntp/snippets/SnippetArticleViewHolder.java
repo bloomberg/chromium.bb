@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -50,7 +51,6 @@ import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.concurrent.TimeUnit;
-
 /**
  * A class that represents the view for a single card snippet.
  */
@@ -345,8 +345,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private void setThumbnailFromBitmap(Bitmap thumbnail) {
         assert thumbnail != null;
         assert !thumbnail.isRecycled();
-        assert thumbnail.getWidth() == mThumbnailSize;
-        assert thumbnail.getHeight() == mThumbnailSize;
+        assert thumbnail.getWidth() <= mThumbnailSize || thumbnail.getHeight() <= mThumbnailSize;
 
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
@@ -372,18 +371,26 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         int fileType = DownloadFilter.fromMimeType(mArticle.getAssetDownloadMimeType());
         if (fileType == DownloadFilter.FILTER_IMAGE) {
             // For image downloads, attempt to fetch a thumbnail.
-            mThumbnailRequest = mImageFetcher.makeDownloadThumbnailRequest(
-                    mArticle, mThumbnailSize, new FetchImageCallback(mArticle, mThumbnailSize));
+            ImageFetcher.DownloadThumbnailRequest thumbnailRequest =
+                    mImageFetcher.makeDownloadThumbnailRequest(mArticle, mThumbnailSize);
+
+            Promise<Bitmap> thumbnailReceivedPromise = thumbnailRequest.getPromise();
+
+            if (thumbnailReceivedPromise.isFulfilled()) {
+                // If the thumbnail was cached, then it will be retrieved synchronously, the promise
+                // will be fulfilled and we can set the thumbnail immediately.
+                setThumbnailFromBitmap(thumbnailReceivedPromise.getResult());
+                return;
+            }
+
+            mThumbnailRequest = thumbnailRequest;
+
+            // Queue a callback to be called after the thumbnail is retrieved asynchronously.
+            thumbnailReceivedPromise.then(new FetchImageCallback(mArticle, mThumbnailSize));
         }
 
-        // Code order here is important because the call to fetch a thumbnail above can be
-        // synchronous (if the image is cached) or asynchronous (if not). In the first case, it will
-        // immediately set a thumbnail on the mThumbnailView and no placeholder will be needed. In
-        // the second case, the placeholder will be replaced once the thumbnail is retrieved.
-        // We check here that there is no thumbnail already set on the mThumbnailView.
-        if (mThumbnailView.getDrawable() == null) {
-            setThumbnailFromFileType(fileType);
-        }
+        // Set a placeholder for the file type.
+        setThumbnailFromFileType(fileType);
     }
 
     private void setThumbnail() {
@@ -426,12 +433,14 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     }
 
     private void fadeThumbnailIn(Bitmap thumbnail) {
+        assert mThumbnailView.getDrawable() != null;
+
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
         mThumbnailView.setTint(null);
         int duration = (int) (FADE_IN_ANIMATION_TIME_MS
                 * ChromeAnimation.Animation.getAnimationMultiplier());
-        if (duration == 0 || mThumbnailView.getDrawable() == null) {
+        if (duration == 0) {
             mThumbnailView.setImageBitmap(thumbnail);
             return;
         }
