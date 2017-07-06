@@ -14,12 +14,10 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+
 #include "base/synchronization/waitable_event.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace leveldb {
 
@@ -35,7 +33,7 @@ namespace leveldb {
 class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
  public:
   explicit LevelDBMojoProxy(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // A private struct to hide the underlying file that holds the lock from our
   // callers, forcing them to go through our LockFile()/UnlockFile() interface
@@ -152,9 +150,9 @@ class LevelDBMojoProxy : public base::RefCountedThreadSafe<LevelDBMojoProxy> {
   void UnlockFileImpl(std::unique_ptr<OpaqueLock> lock,
                       filesystem::mojom::FileError* out_error);
 
-  // The task runner which represents the thread that all mojo objects are
+  // The task runner which represents the sequence that all mojo objects are
   // bound to.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   int outstanding_opaque_dirs_;
 

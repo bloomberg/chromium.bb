@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/mock_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -787,10 +788,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
                      const std::string& name) override {
     if (name == file::mojom::kServiceName) {
       file_service_context_.reset(new service_manager::ServiceContext(
-          file::CreateFileService(
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
-              BrowserThread::GetTaskRunnerForThread(BrowserThread::DB)),
-          std::move(request)));
+          file::CreateFileService(), std::move(request)));
     }
   }
 
@@ -813,8 +811,7 @@ class LocalStorageContextMojoTestWithService
     : public service_manager::test::ServiceTest {
  public:
   LocalStorageContextMojoTestWithService()
-      : ServiceTest("content_unittests", false),
-        thread_bundle_(TestBrowserThreadBundle::REAL_FILE_THREAD) {}
+      : ServiceTest("content_unittests", false) {}
   ~LocalStorageContextMojoTestWithService() override {}
 
  protected:
@@ -868,7 +865,6 @@ class LocalStorageContextMojoTestWithService
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_path_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageContextMojoTestWithService);
@@ -1030,6 +1026,8 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
   context->ShutdownAndDelete();
   context = nullptr;
   base::RunLoop().RunUntilIdle();
+  // Also flush Task Scheduler tasks to make sure the leveldb is fully closed.
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Delete manifest files to mess up opening DB.
   base::FilePath db_path =

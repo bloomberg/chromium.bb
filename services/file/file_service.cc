@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/leveldb_service_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -47,7 +48,7 @@ class FileService::LevelDBServiceObjects
  public:
   // Created on the main thread.
   LevelDBServiceObjects(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner)
       : file_task_runner_(std::move(file_task_runner)) {}
 
   // Destroyed on the |leveldb_service_runner_|.
@@ -63,7 +64,7 @@ class FileService::LevelDBServiceObjects
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
   std::unique_ptr<leveldb::mojom::LevelDBService> leveldb_service_;
@@ -72,18 +73,16 @@ class FileService::LevelDBServiceObjects
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-std::unique_ptr<service_manager::Service> CreateFileService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner) {
-  return base::MakeUnique<FileService>(std::move(file_service_runner),
-                                       std::move(leveldb_service_runner));
+std::unique_ptr<service_manager::Service> CreateFileService() {
+  return base::MakeUnique<FileService>();
 }
 
-FileService::FileService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner)
-    : file_service_runner_(std::move(file_service_runner)),
-      leveldb_service_runner_(std::move(leveldb_service_runner)) {
+FileService::FileService()
+    : file_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      leveldb_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   registry_.AddInterface<leveldb::mojom::LevelDBService>(base::Bind(
       &FileService::BindLevelDBServiceRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::FileSystem>(
