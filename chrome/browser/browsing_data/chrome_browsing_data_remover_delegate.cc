@@ -23,6 +23,7 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/net/predictor.h"
@@ -746,6 +747,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ->ClearSettingsForOneTypeWithPredicate(
             CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, base::Time(),
             base::Bind(&WebsiteSettingsFilterAdapter, filter));
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Media Engagement
+  if (remove_mask & DATA_TYPE_SITE_USAGE_DATA &&
+      MediaEngagementService::IsEnabled()) {
+    MediaEngagementService::Get(profile_)->ClearDataBetweenTime(delete_begin_,
+                                                                delete_end_);
   }
 
   //////////////////////////////////////////////////////////////////////////////

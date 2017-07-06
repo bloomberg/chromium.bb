@@ -61,6 +61,7 @@ class MediaEngagementScore final {
   }
 
  private:
+  friend class MediaEngagementServiceTest;
   friend class MediaEngagementScoreTest;
 
   // Used for tests.

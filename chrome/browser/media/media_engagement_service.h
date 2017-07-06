@@ -69,6 +69,13 @@ class MediaEngagementService : public KeyedService,
   // KeyedService support:
   void Shutdown() override;
 
+  // Clear data if the last playback time is between these two time points.
+  void ClearDataBetweenTime(const base::Time& delete_begin,
+                            const base::Time& delete_end);
+
+  // Retrieves the MediaEngagementScore for |url|.
+  MediaEngagementScore* CreateEngagementScore(const GURL& url) const;
+
  private:
   friend class MediaEngagementServiceTest;
   friend class MediaEngagementContentsObserverTest;
@@ -79,9 +86,6 @@ class MediaEngagementService : public KeyedService,
   // Returns true if we should record engagement for this url. Currently,
   // engagement is only earned for HTTP and HTTPS.
   bool ShouldRecordEngagement(const GURL& url) const;
-
-  // Retrieves the MediaEngagementScore for |url|.
-  MediaEngagementScore* CreateEngagementScore(const GURL& url) const;
 
   std::set<MediaEngagementContentsObserver*> contents_observers_;
 
