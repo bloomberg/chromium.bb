@@ -14440,7 +14440,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="854" label="V8XPathEvaluator_CreateExpression_Method"/>
   <int value="855" label="V8XPathEvaluator_CreateNSResolver_Method"/>
   <int value="856" label="V8XPathEvaluator_Evaluate_Method"/>
-  <int value="857" label="RequestMIDIAccess"/>
+  <int value="857" label="RequestMIDIAccess_ObscuredByFootprinting"/>
   <int value="858" label="V8MouseEvent_LayerX_AttributeGetter"/>
   <int value="859" label="V8MouseEvent_LayerY_AttributeGetter"/>
   <int value="860" label="InnerTextWithShadowTree"/>
@@ -14737,7 +14737,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1140" label="EventComposed"/>
   <int value="1141" label="GeolocationInsecureOriginIframe"/>
   <int value="1142" label="GeolocationSecureOriginIframe"/>
-  <int value="1143" label="RequestMIDIAccessIframe"/>
+  <int value="1143" label="RequestMIDIAccessIframe_ObscuredByFootprinting"/>
   <int value="1144" label="GetUserMediaInsecureOriginIframe"/>
   <int value="1145" label="GetUserMediaSecureOriginIframe"/>
   <int value="1146" label="ElementRequestPointerLockIframe"/>
@@ -15577,8 +15577,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1959" label="MediaStreamConstraintsGoogNoiseReduction"/>
   <int value="1960" label="MediaStreamConstraintsGoogPowerLineFrequency"/>
   <int value="1961" label="ViewportFixedPositionUnderFilter"/>
-  <int value="1962" label="RequestMIDIAccessWithSysExOption"/>
-  <int value="1963" label="RequestMIDIAccessIframeWithSysExOption"/>
+  <int value="1962"
+      label="RequestMIDIAccessWithSysExOption_ObscuredByFootprinting"/>
+  <int value="1963"
+      label="RequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting"/>
   <int value="1964" label="GamepadAxes"/>
   <int value="1965" label="GamepadButtons"/>
   <int value="1966" label="VibrateWithoutUserGesture"/>

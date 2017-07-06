@@ -81,12 +81,16 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
 
   Document& document = *ToDocument(ExecutionContext::From(script_state));
   if (options.hasSysex() && options.sysex()) {
-    UseCounter::Count(document, WebFeature::kRequestMIDIAccessWithSysExOption);
+    UseCounter::Count(
+        document,
+        WebFeature::kRequestMIDIAccessWithSysExOption_ObscuredByFootprinting);
     UseCounter::CountCrossOriginIframe(
-        document, WebFeature::kRequestMIDIAccessIframeWithSysExOption);
+        document,
+        WebFeature::
+            kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting);
   }
-  UseCounter::CountCrossOriginIframe(document,
-                                     WebFeature::kRequestMIDIAccessIframe);
+  UseCounter::CountCrossOriginIframe(
+      document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
   return MIDIAccessInitializer::Start(script_state, options);
 }
 
