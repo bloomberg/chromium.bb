@@ -17,6 +17,8 @@ static_library("core") {
     "can_make_payment_query.h",
     "currency_formatter.cc",
     "currency_formatter.h",
+    "features.cc",
+    "features.h",
     "journey_logger.cc",
     "journey_logger.h",
     "payment_address.cc",

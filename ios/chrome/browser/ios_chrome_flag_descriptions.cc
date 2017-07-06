@@ -38,4 +38,9 @@ const char kMarkHttpAsNonSecureWhileIncognito[] =
 const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
     "Warn on HTTP while in Incognito mode or after editing forms";
 
+const char kWebPaymentsName[] = "Web Payments";
+
+const char kWebPaymentsDescription[] =
+    "Enable Payment Request API integration, a JavaScript API for merchants.";
+
 }  // namespace flag_descriptions

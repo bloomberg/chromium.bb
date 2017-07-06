@@ -343,6 +343,7 @@ source_set("ui_internal") {
     "//components/bookmarks/browser",
     "//components/image_fetcher/ios",
     "//components/infobars/core",
+    "//components/payments/core",
     "//components/prefs",
     "//components/reading_list/core",
     "//components/search_engines",
