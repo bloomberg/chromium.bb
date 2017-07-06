@@ -171,7 +171,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '1',
-                'reviewers': ['rutabaga'],
+                'has_review_started': True,
                 'revisions': {
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
@@ -207,7 +207,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '1',
-                'reviewers': ['rutabaga'],
+                'has_review_started': True,
                 'revisions': {
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
@@ -237,7 +237,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '2',
-                'reviewers': ['rutabaga'],
+                'has_review_started': True,
                 'revisions': {
                     '1': {
                         'commit_with_footers': 'a commit with footers 1',
@@ -294,7 +294,7 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [1234])
 
-    def test_does_not_create_pr_if_cl_has_no_reviewers(self):
+    def test_does_not_create_pr_if_cl_review_has_not_started(self):
         host = MockHost()
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=False)
@@ -308,7 +308,7 @@ class TestExporterTest(unittest.TestCase):
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '2',
-                'reviewers': [],
+                'has_review_started': False,
                 'revisions': {
                     '1': {
                         'commit_with_footers': 'a commit with footers 1',
