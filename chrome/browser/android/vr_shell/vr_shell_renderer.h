@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -95,7 +97,7 @@ class BaseQuadRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
 };
 
-class ExternalTexturedQuadRenderer : public BaseQuadRenderer {
+class ExternalTexturedQuadRenderer : public BaseRenderer {
  public:
   ExternalTexturedQuadRenderer();
   ~ExternalTexturedQuadRenderer() override;
@@ -103,14 +105,27 @@ class ExternalTexturedQuadRenderer : public BaseQuadRenderer {
   // Draw the content rect in the texture quad.
   void Draw(int texture_data_handle,
             const gfx::Transform& view_proj_matrix,
-            const gfx::RectF& copy_rect,
-            float opacity);
+            const gfx::Size& surface_size,
+            const gfx::SizeF& element_size,
+            float opacity,
+            float corner_radius);
+
+  static void SetVertexBuffer();
 
  private:
+  static GLuint vertex_buffer_;
+  static GLuint index_buffer_;
+
+  // Uniforms
   GLuint model_view_proj_matrix_handle_;
-  GLuint copy_rect_uniform_handle_;
-  GLuint tex_uniform_handle_;
+  GLuint corner_offset_handle_;
+  GLuint corner_scale_handle_;
   GLuint opacity_handle_;
+  GLuint texture_handle_;
+
+  // Attributes
+  GLuint corner_position_handle_;
+  GLuint offset_scale_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTexturedQuadRenderer);
 };
