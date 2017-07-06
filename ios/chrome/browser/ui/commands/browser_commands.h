@@ -9,8 +9,14 @@
 // which in practice is the BrowserViewController instance displaying the tab.
 @protocol BrowserCommands
 
-// Close the current tab.
+// Closes the current tab.
 - (void)closeCurrentTab;
+
+// Navigates backwards in the current tab's history.
+- (void)goBack;
+
+// Navigates forwards in the current tab's history.
+- (void)goForward;
 
 @end
 

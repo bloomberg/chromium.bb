@@ -70,8 +70,8 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   DCHECK(!_toolbarController);
   DCHECK(readingListModel);
 
-  _toolbarController = [[NewTabPageToolbarController alloc] init];
-  [_toolbarController setDispatcher:dispatcher];
+  _toolbarController =
+      [[NewTabPageToolbarController alloc] initWithDispatcher:dispatcher];
   _toolbarController.readingListModel = readingListModel;
 
   UIView* toolbarView = [_toolbarController view];

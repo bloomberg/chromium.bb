@@ -122,16 +122,14 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)goBack {
-  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_BACK]);
-  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
+
   [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
 + (void)goForward {
-  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD]);
-  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
+
   [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
