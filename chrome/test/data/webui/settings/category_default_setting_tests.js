@@ -110,8 +110,8 @@ suite('CategoryDefaultSetting', function() {
         .then(function(args) {
           assertEquals(settings.ContentSettingsTypes.GEOLOCATION, args[0]);
           assertEquals(
-              enabled ? settings.PermissionValues.BLOCK :
-                        settings.PermissionValues.ASK,
+              enabled ? settings.ContentSetting.BLOCK :
+                        settings.ContentSetting.ASK,
               args[1]);
           assertNotEquals(enabled, testElement.categoryEnabled);
         });
@@ -152,7 +152,7 @@ suite('CategoryDefaultSetting', function() {
           Polymer.dom.flush();
 
           assertEquals(category, args[0]);
-          assertEquals(settings.PermissionValues.BLOCK, args[1]);
+          assertEquals(settings.ContentSetting.BLOCK, args[1]);
           assertFalse(testElement.categoryEnabled);
           assertTrue(secondaryToggle.disabled);
           assertTrue(secondaryToggle.checked);
@@ -180,7 +180,7 @@ suite('CategoryDefaultSetting', function() {
           Polymer.dom.flush();
 
           assertEquals(category, args[0]);
-          assertEquals(settings.PermissionValues.ALLOW, args[1]);
+          assertEquals(settings.ContentSetting.ALLOW, args[1]);
           assertTrue(testElement.categoryEnabled);
           assertFalse(secondaryToggle.disabled);
           assertFalse(secondaryToggle.checked);
@@ -194,7 +194,7 @@ suite('CategoryDefaultSetting', function() {
           Polymer.dom.flush();
 
           assertEquals(category, args[0]);
-          assertEquals(settings.PermissionValues.BLOCK, args[1]);
+          assertEquals(settings.ContentSetting.BLOCK, args[1]);
           assertFalse(testElement.categoryEnabled);
           assertTrue(secondaryToggle.disabled);
           assertFalse(secondaryToggle.checked);
@@ -208,7 +208,7 @@ suite('CategoryDefaultSetting', function() {
           Polymer.dom.flush();
 
           assertEquals(category, args[0]);
-          assertEquals(settings.PermissionValues.ALLOW, args[1]);
+          assertEquals(settings.ContentSetting.ALLOW, args[1]);
           assertTrue(testElement.categoryEnabled);
           assertFalse(secondaryToggle.disabled);
           assertFalse(secondaryToggle.checked);
@@ -232,12 +232,12 @@ suite('CategoryDefaultSetting', function() {
   test('test special tri-state Flash category', function() {
     return testTristateCategory(
         prefsFlashDetect, settings.ContentSettingsTypes.PLUGINS,
-        settings.PermissionValues.IMPORTANT_CONTENT, '#subOptionToggle');
+        settings.ContentSetting.IMPORTANT_CONTENT, '#subOptionToggle');
   });
 
   test('test special tri-state Cookies category', function() {
     return testTristateCategory(
         prefsCookesSessionOnly, settings.ContentSettingsTypes.COOKIES,
-        settings.PermissionValues.SESSION_ONLY, '#subOptionToggle');
+        settings.ContentSetting.SESSION_ONLY, '#subOptionToggle');
   });
 });

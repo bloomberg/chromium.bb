@@ -21,7 +21,7 @@ Polymer({
 
     /**
      * Whether this is about an Allow, Block, SessionOnly, or other.
-     * @type {settings.PermissionValues}
+     * @type {settings.ContentSetting}
      */
     contentSetting: String,
 
@@ -47,7 +47,7 @@ Polymer({
       this.$.incognito.checked = false;
       this.showIncognitoSessionOnly_ = hasIncognito &&
           !loadTimeData.getBoolean('isGuest') &&
-          this.contentSetting != settings.PermissionValues.SESSION_ONLY;
+          this.contentSetting != settings.ContentSetting.SESSION_ONLY;
     }.bind(this));
     this.browserProxy.updateIncognitoStatus();
     this.$.dialog.showModal();

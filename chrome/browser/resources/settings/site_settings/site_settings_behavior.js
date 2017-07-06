@@ -47,7 +47,7 @@ var SiteSettingsBehaviorImpl = {
 
   /** @override */
   ready: function() {
-    this.PermissionValues = settings.PermissionValues;
+    this.ContentSetting = settings.ContentSetting;
   },
 
   /**
@@ -112,7 +112,7 @@ var SiteSettingsBehaviorImpl = {
    * @private
    */
   computeIsSettingEnabled: function(setting) {
-    return setting != settings.PermissionValues.BLOCK;
+    return setting != settings.ContentSetting.BLOCK;
   },
 
   /**

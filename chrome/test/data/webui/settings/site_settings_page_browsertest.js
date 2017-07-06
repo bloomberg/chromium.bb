@@ -30,22 +30,35 @@ TEST_F('SettingsSiteSettingsPageBrowserTest', 'MAYBE_labels', function() {
     });
 
     test('defaultSettingLabel_ tests', function() {
-      assertEquals('a', ui.defaultSettingLabel_(
-          settings.PermissionValues.ALLOW, 'a', 'b'));
-      assertEquals('b', ui.defaultSettingLabel_(
-          settings.PermissionValues.BLOCK, 'a', 'b'));
-      assertEquals('a', ui.defaultSettingLabel_(
-          settings.PermissionValues.ALLOW, 'a', 'b', 'c'));
-      assertEquals('b', ui.defaultSettingLabel_(
-          settings.PermissionValues.BLOCK, 'a', 'b', 'c'));
-      assertEquals('c', ui.defaultSettingLabel_(
-          settings.PermissionValues.SESSION_ONLY, 'a', 'b', 'c'));
-      assertEquals('c', ui.defaultSettingLabel_(
-          settings.PermissionValues.DEFAULT, 'a', 'b', 'c'));
-      assertEquals('c', ui.defaultSettingLabel_(
-          settings.PermissionValues.ASK, 'a', 'b', 'c'));
-      assertEquals('c', ui.defaultSettingLabel_(
-          settings.PermissionValues.DETECT_IMPORTANT_CONTENT, 'a', 'b', 'c'));
+      assertEquals(
+          'a',
+          ui.defaultSettingLabel_(settings.ContentSetting.ALLOW, 'a', 'b'));
+      assertEquals(
+          'b',
+          ui.defaultSettingLabel_(settings.ContentSetting.BLOCK, 'a', 'b'));
+      assertEquals(
+          'a',
+          ui.defaultSettingLabel_(
+              settings.ContentSetting.ALLOW, 'a', 'b', 'c'));
+      assertEquals(
+          'b',
+          ui.defaultSettingLabel_(
+              settings.ContentSetting.BLOCK, 'a', 'b', 'c'));
+      assertEquals(
+          'c',
+          ui.defaultSettingLabel_(
+              settings.ContentSetting.SESSION_ONLY, 'a', 'b', 'c'));
+      assertEquals(
+          'c',
+          ui.defaultSettingLabel_(
+              settings.ContentSetting.DEFAULT, 'a', 'b', 'c'));
+      assertEquals(
+          'c',
+          ui.defaultSettingLabel_(settings.ContentSetting.ASK, 'a', 'b', 'c'));
+      assertEquals(
+          'c',
+          ui.defaultSettingLabel_(
+              settings.ContentSetting.DETECT_IMPORTANT_CONTENT, 'a', 'b', 'c'));
     });
   });
 

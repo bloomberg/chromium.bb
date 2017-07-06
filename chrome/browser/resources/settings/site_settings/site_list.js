@@ -137,7 +137,7 @@ Polymer({
   onIncognitoStatusChanged_: function() {
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY)
+    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY)
       return;
 
     // A change notification is not sent for each site. So we repopulate the
@@ -161,7 +161,7 @@ Polymer({
     this.populateList_();
 
     // The Session permissions are only for cookies.
-    if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY) {
+    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
       this.$.category.hidden =
           this.category != settings.ContentSettingsTypes.COOKIES;
     }
@@ -244,7 +244,7 @@ Polymer({
     for (var i = 0; i < data.length; ++i) {
       var exceptionList = data[i];
       for (var k = 0; k < exceptionList.length; ++k) {
-        if (exceptionList[k].setting == settings.PermissionValues.DEFAULT ||
+        if (exceptionList[k].setting == settings.ContentSetting.DEFAULT ||
             exceptionList[k].setting != this.categorySubtype) {
           continue;
         }
@@ -283,11 +283,11 @@ Polymer({
    */
   setUpActionMenu_: function() {
     this.showAllowAction_ =
-        this.categorySubtype != settings.PermissionValues.ALLOW;
+        this.categorySubtype != settings.ContentSetting.ALLOW;
     this.showBlockAction_ =
-        this.categorySubtype != settings.PermissionValues.BLOCK;
+        this.categorySubtype != settings.ContentSetting.BLOCK;
     this.showSessionOnlyAction_ =
-        this.categorySubtype != settings.PermissionValues.SESSION_ONLY &&
+        this.categorySubtype != settings.ContentSetting.SESSION_ONLY &&
         this.category == settings.ContentSettingsTypes.COOKIES;
   },
 
@@ -330,32 +330,32 @@ Polymer({
   },
 
   /**
-   * @param {string} permissionValue
+   * @param {!settings.ContentSetting} contentSetting
    * @private
    */
-  setPermissionForActionMenuSite_: function(permissionValue) {
+  setContentSettingForActionMenuSite_: function(contentSetting) {
     assert(this.actionMenuSite_);
     this.browserProxy.setCategoryPermissionForOrigin(
         this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
-        this.category, permissionValue, this.actionMenuSite_.incognito);
+        this.category, contentSetting, this.actionMenuSite_.incognito);
   },
 
   /** @private */
   onAllowTap_: function() {
-    this.setPermissionForActionMenuSite_(settings.PermissionValues.ALLOW);
+    this.setContentSettingForActionMenuSite_(settings.ContentSetting.ALLOW);
     this.closeActionMenu_();
   },
 
   /** @private */
   onBlockTap_: function() {
-    this.setPermissionForActionMenuSite_(settings.PermissionValues.BLOCK);
+    this.setContentSettingForActionMenuSite_(settings.ContentSetting.BLOCK);
     this.closeActionMenu_();
   },
 
   /** @private */
   onSessionOnlyTap_: function() {
-    this.setPermissionForActionMenuSite_(
-        settings.PermissionValues.SESSION_ONLY);
+    this.setContentSettingForActionMenuSite_(
+        settings.ContentSetting.SESSION_ONLY);
     this.closeActionMenu_();
   },
 
