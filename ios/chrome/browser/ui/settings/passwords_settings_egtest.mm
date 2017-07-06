@@ -124,14 +124,13 @@ GREYLayoutConstraint* Below() {
 // Matcher for the Copy site button in Password Details view.
 id<GREYMatcher> CopySiteButton() {
   return grey_allOf(
-      grey_interactable(),
       ButtonWithAccessibilityLabel(
           [NSString stringWithFormat:@"%@: %@",
                                      l10n_util::GetNSString(
                                          IDS_IOS_SHOW_PASSWORD_VIEW_SITE),
                                      l10n_util::GetNSString(
                                          IDS_IOS_SETTINGS_SITE_COPY_BUTTON)]),
-      grey_layout(@[ Below() ], SiteHeader()),
+      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
       grey_layout(@[ Above() ], UsernameHeader()),
       grey_layout(@[ Above() ], PasswordHeader()), nullptr);
 }
@@ -139,14 +138,13 @@ id<GREYMatcher> CopySiteButton() {
 // Matcher for the Copy username button in Password Details view.
 id<GREYMatcher> CopyUsernameButton() {
   return grey_allOf(
-      grey_interactable(),
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
                            l10n_util::GetNSString(
                                IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON)]),
-      grey_layout(@[ Below() ], SiteHeader()),
+      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
       grey_layout(@[ Below() ], UsernameHeader()),
       grey_layout(@[ Above() ], PasswordHeader()), nullptr);
 }
@@ -154,26 +152,25 @@ id<GREYMatcher> CopyUsernameButton() {
 // Matcher for the Copy password button in Password Details view.
 id<GREYMatcher> CopyPasswordButton() {
   return grey_allOf(
-      grey_interactable(),
       ButtonWithAccessibilityLabel([NSString
           stringWithFormat:@"%@: %@",
                            l10n_util::GetNSString(
                                IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD),
                            l10n_util::GetNSString(
                                IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON)]),
-      grey_layout(@[ Below() ], SiteHeader()),
+      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
       grey_layout(@[ Below() ], UsernameHeader()),
       grey_layout(@[ Below() ], PasswordHeader()), nullptr);
 }
 
 // Matcher for the Copy site button in Password Details view.
 id<GREYMatcher> DeleteButton() {
-  return grey_allOf(grey_interactable(),
-                    ButtonWithAccessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)),
-                    grey_layout(@[ Below() ], SiteHeader()),
-                    grey_layout(@[ Below() ], UsernameHeader()),
-                    grey_layout(@[ Below() ], PasswordHeader()), nullptr);
+  return grey_allOf(
+      ButtonWithAccessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)),
+      grey_interactable(), grey_layout(@[ Below() ], SiteHeader()),
+      grey_layout(@[ Below() ], UsernameHeader()),
+      grey_layout(@[ Below() ], PasswordHeader()), nullptr);
 }
 
 }  // namespace
@@ -524,12 +521,12 @@ id<GREYMatcher> DeleteButton() {
   // Tap the alert's Delete... button to confirm.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_interactable(),
-                                   grey_sufficientlyVisible(),
                                    ButtonWithAccessibilityLabel(
                                        l10n_util::GetNSString(
                                            IDS_IOS_CONFIRM_PASSWORD_DELETION)),
-                                   nullptr)] performAction:grey_tap()];
+                                   grey_interactable(),
+                                   grey_sufficientlyVisible(), nullptr)]
+      performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the current view is now the list view, by locating the header
@@ -575,12 +572,12 @@ id<GREYMatcher> DeleteButton() {
   // Tap the alert's Cancel button to cancel.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_interactable(),
-                                   grey_sufficientlyVisible(),
                                    ButtonWithAccessibilityLabel(
                                        l10n_util::GetNSString(
                                            IDS_IOS_CANCEL_PASSWORD_DELETION)),
-                                   nullptr)] performAction:grey_tap()];
+                                   grey_interactable(),
+                                   grey_sufficientlyVisible(), nullptr)]
+      performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the current view is still the detail view, by locating the Copy
