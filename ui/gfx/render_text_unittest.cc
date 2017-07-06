@@ -336,16 +336,6 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
     SkColor color;
   };
 
-  struct DecorationLog {
-    DecorationLog(int x, int y, int width, bool underline, bool strike)
-        : x(x), y(y), width(width), underline(underline), strike(strike) {}
-    int x;
-    int y;
-    int width;
-    bool underline;
-    bool strike;
-  };
-
   explicit TestSkiaTextRenderer(Canvas* canvas)
       : internal::SkiaTextRenderer(canvas) {}
   ~TestSkiaTextRenderer() override {}
@@ -353,11 +343,6 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
   void GetTextLogAndReset(std::vector<TextLog>* text_log) {
     text_log_.swap(*text_log);
     text_log_.clear();
-  }
-
-  void GetDecorationLogAndReset(std::vector<DecorationLog>* decoration_log) {
-    decoration_log_.swap(*decoration_log);
-    decoration_log_.clear();
   }
 
  private:
@@ -381,17 +366,7 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
     internal::SkiaTextRenderer::DrawPosText(pos, glyphs, glyph_count);
   }
 
-  void DrawDecorations(int x,
-                       int y,
-                       int width,
-                       bool underline,
-                       bool strike) override {
-    decoration_log_.push_back(DecorationLog(x, y, width, underline, strike));
-    internal::SkiaTextRenderer::DrawDecorations(x, y, width, underline, strike);
-  }
-
   std::vector<TextLog> text_log_;
-  std::vector<DecorationLog> decoration_log_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSkiaTextRenderer);
 };
