@@ -1715,11 +1715,14 @@ cr.define('login', function() {
         // Show extra statistics information for desktop users
         this.querySelector(
           '.action-box-remove-non-owner-user-warning-text').hidden = true;
-        this.RemoveWarningDialogSetMessage_(true, false);
+        this.RemoveWarningDialogSetMessage_();
         // set a global handler for the callback
         window.updateRemoveWarningDialog =
             this.updateRemoveWarningDialog_.bind(this);
-        chrome.send('removeUserWarningLoadStats', [this.user.profilePath]);
+        var is_synced_user = this.user.emailAddress !== "";
+        if (!is_synced_user) {
+          chrome.send('removeUserWarningLoadStats', [this.user.profilePath]);
+        }
       }
       chrome.send('logRemoveUserWarningShown');
     },
@@ -1735,78 +1738,23 @@ cr.define('login', function() {
 
       var stats_elements = this.statsMapElements;
       // Update individual statistics
-      var hasErrors = false;
       for (var key in profileStats) {
         if (stats_elements.hasOwnProperty(key)) {
-          if (profileStats[key].success) {
-            this.user.statistics[key] = profileStats[key];
-          } else if (!this.user.statistics[key].success) {
-            hasErrors = true;
-            stats_elements[key].textContent = '';
-          }
+          stats_elements[key].textContent = profileStats[key].count;
         }
       }
-
-      this.RemoveWarningDialogSetMessage_(false, hasErrors);
     },
 
     /**
      * Set the new message in the dialog.
-     * @param {boolean} Whether this is the first output, that requires setting
-     * a in-progress message.
-     * @param {boolean} Whether any actual query to the statistics have failed.
-     * Should be true only if there is an error and the corresponding statistic
-     * is also unavailable in ProfileAttributesStorage.
      */
-    RemoveWarningDialogSetMessage_: function(isInitial, hasErrors) {
-      var stats_elements = this.statsMapElements;
-      var total_count = 0;
-      var num_stats_loaded = 0;
-      for (var key in stats_elements) {
-        if (this.user.statistics[key].success) {
-          var count = this.user.statistics[key].count;
-          stats_elements[key].textContent = count;
-          total_count += count;
-          num_stats_loaded++;
-        }
-      }
-
+    RemoveWarningDialogSetMessage_: function() {
       var is_synced_user = this.user.emailAddress !== "";
-      // Write total number if all statistics are loaded.
-      if (num_stats_loaded === Object.keys(stats_elements).length) {
-        if (!total_count) {
-          var message = loadTimeData.getString(
-              is_synced_user ? 'removeUserWarningTextSyncNoStats' :
-                               'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
-                                                    message);
-        } else {
-          window.updateRemoveWarningDialogSetMessage =
-              this.updateRemoveWarningDialogSetMessage_.bind(this);
-          chrome.send('getRemoveWarningDialogMessage',[{
-              profilePath: this.user.profilePath,
-              isSyncedUser: is_synced_user,
-              hasErrors: hasErrors,
-              totalCount: total_count
-          }]);
-        }
-      } else if (isInitial) {
-        if (!this.user.isProfileLoaded) {
-          message = loadTimeData.getString(
-              is_synced_user ? 'removeUserWarningTextSyncNoStats' :
-                               'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
-                                                    message);
-        } else {
-          message = loadTimeData.getString(
-              is_synced_user ? 'removeUserWarningTextSyncCalculating' :
-                               'removeUserWarningTextNonSyncCalculating');
-          substitute = loadTimeData.getString(
-              'removeUserWarningTextCalculating');
-          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
-                                                    message, substitute);
-        }
-      }
+      message = loadTimeData.getString(
+          is_synced_user ? 'removeUserWarningTextSync' :
+                           'removeUserWarningTextNonSync');
+      this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
+                                                message);
     },
 
     /**
