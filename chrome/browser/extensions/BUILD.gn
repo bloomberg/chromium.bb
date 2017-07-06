@@ -224,8 +224,6 @@ static_library("extensions") {
     "api/identity/identity_mint_queue.h",
     "api/identity/identity_remove_cached_auth_token_function.cc",
     "api/identity/identity_remove_cached_auth_token_function.h",
-    "api/identity/identity_signin_flow.cc",
-    "api/identity/identity_signin_flow.h",
     "api/identity/web_auth_flow.cc",
     "api/identity/web_auth_flow.h",
     "api/idltest/idltest_api.cc",
