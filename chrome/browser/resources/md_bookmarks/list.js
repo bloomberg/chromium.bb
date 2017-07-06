@@ -159,7 +159,7 @@ Polymer({
     if (e.key == 'ArrowUp') {
       focusedIndex--;
       focusMoved = true;
-    } else if (e.key == 'ArrowDown') {
+    } else if (e.key == 'ArrowDown' && !(cr.isMac && e.metaKey)) {
       focusedIndex++;
       focusMoved = true;
       e.preventDefault();
