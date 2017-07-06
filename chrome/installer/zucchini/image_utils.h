@@ -17,19 +17,19 @@ using offset_t = uint32_t;
 
 // Used to uniquely identify a reference group.
 // Strongly typed objects are used to avoid ambiguitees with PoolTag.
-struct TypeTag : TypedValue<TypeTag, uint8_t> {
+struct TypeTag : public TypedValue<TypeTag, uint8_t> {
   // inheriting constructor:
   using TypedValue<TypeTag, uint8_t>::TypedValue;
 };
 
 // Used to uniquely identify a pool.
-struct PoolTag : TypedValue<PoolTag, uint8_t> {
+struct PoolTag : public TypedValue<PoolTag, uint8_t> {
   // inheriting constructor:
   using TypedValue<PoolTag, uint8_t>::TypedValue;
 };
 
-constexpr TypeTag kNoTypeTag = 0xFF;
-constexpr PoolTag kNoPoolTag = 0xFF;
+constexpr TypeTag kNoTypeTag(0xFF);
+constexpr PoolTag kNoPoolTag(0xFF);
 
 // Specification of references in an image file.
 struct ReferenceTypeTraits {
@@ -55,7 +55,7 @@ struct Reference {
   offset_t target;
 };
 
-inline bool operator==(Reference a, Reference b) {
+inline bool operator==(const Reference& a, const Reference& b) {
   return a.location == b.location && a.target == b.target;
 }
 
@@ -79,14 +79,14 @@ struct EquivalenceCandidate {
 
 // Enumerations for supported executables.
 enum ExecutableType : uint32_t {
-  EXE_TYPE_UNKNOWN = UINT32_MAX,
-  EXE_TYPE_NO_OP = 0,
-  EXE_TYPE_WIN32_X86 = 1,
-  EXE_TYPE_WIN32_X64 = 2,
-  EXE_TYPE_ELF_X86 = 3,
-  EXE_TYPE_ELF_ARM32 = 4,
-  EXE_TYPE_ELF_AARCH64 = 5,
-  EXE_TYPE_DEX = 6,
+  kExeTypeUnknown = UINT32_MAX,
+  kExeTypeNoOp = 0,
+  kExeTypeWin32X86 = 1,
+  kExeTypeWin32X64 = 2,
+  kExeTypeElfX86 = 3,
+  kExeTypeElfArm32 = 4,
+  kExeTypeElfAArch64 = 5,
+  kExeTypeDex = 6,
 };
 
 // Descibes where to find an executable embedded in an image.

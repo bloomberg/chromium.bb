@@ -12,8 +12,8 @@ std::unique_ptr<ReferenceReader> ReferenceGroup::GetReader(
     offset_t lower,
     offset_t upper,
     Disassembler* disasm) const {
-  DCHECK(lower <= upper);
-  DCHECK(upper <= disasm->size());
+  DCHECK_LE(lower, upper);
+  DCHECK_LE(upper, disasm->size());
   return (disasm->*reader_factory_)(lower, upper);
 }
 
@@ -25,25 +25,9 @@ std::unique_ptr<ReferenceReader> ReferenceGroup::GetReader(
 std::unique_ptr<ReferenceWriter> ReferenceGroup::GetWriter(
     MutableBufferView image,
     Disassembler* disasm) const {
-  DCHECK(image.begin() == disasm->GetImage().begin());
-  DCHECK(image.size() == disasm->size());
+  DCHECK_EQ(image.begin(), disasm->GetImage().begin());
+  DCHECK_EQ(image.size(), disasm->size());
   return (disasm->*writer_factory_)(image);
-}
-
-ReferenceTypeTraits ReferenceGroup::Traits() const {
-  return traits_;
-}
-
-offset_t ReferenceGroup::Width() const {
-  return traits_.width;
-}
-
-TypeTag ReferenceGroup::TypeTag() const {
-  return traits_.type_tag;
-}
-
-PoolTag ReferenceGroup::PoolTag() const {
-  return traits_.pool_tag;
 }
 
 Disassembler::Disassembler() = default;
