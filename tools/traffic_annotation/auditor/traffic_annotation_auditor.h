@@ -5,11 +5,36 @@
 #ifndef TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_AUDITOR_H_
 #define TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_AUDITOR_H_
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "tools/traffic_annotation/traffic_annotation.pb.h"
 
-namespace traffic_annotation_auditor {
+// Holds an item of whitelist exception rule for auditor.
+struct AuditorException {
+  enum class ExceptionType {
+    ALL,            // Ignore all errors (doesn't check the files at all).
+    MISSING,        // Ignore missing annotations.
+    EMPTY_MUTABLE,  // Ignore empty mutable annotation constructor.
+    EXCEPTION_TYPE_LAST = EMPTY_MUTABLE
+  } type;
+  std::string partial_path;
+
+  static bool TypeFromString(const std::string& type_string,
+                             ExceptionType* type_value) {
+    if (type_string == "all") {
+      *type_value = ExceptionType::ALL;
+    } else if (type_string == "missing") {
+      *type_value = ExceptionType::MISSING;
+    } else if (type_string == "empty_mutable") {
+      *type_value = ExceptionType::EMPTY_MUTABLE;
+    } else {
+      return false;
+    }
+    return true;
+  }
+};
 
 // Holds the auditor processing results on one unit of annotation or function.
 class AuditorResult {
@@ -35,6 +60,8 @@ class AuditorResult {
   AuditorResult(ResultType type);
 
   ResultType type() const { return type_; };
+
+  std::string file_path() const { return file_path_; }
 
   // Formats the error message into one line of text.
   std::string ToText() const;
@@ -130,23 +157,60 @@ class CallInstance {
   bool is_annotated;
 };
 
-// Runs traffic_annotation_extractor clang tool and returns its output.
-std::string RunClangTool(const base::FilePath& source_path,
-                         const base::FilePath& build_path,
-                         const base::CommandLine::StringVector& path_filters,
-                         bool full_run);
+class TrafficAnnotationAuditor {
+ public:
+  TrafficAnnotationAuditor(const base::FilePath& source_path,
+                           const base::FilePath& build_path);
+  ~TrafficAnnotationAuditor();
 
-// Parses the output of clang tool and populates instances, calls, and errors.
-// Errors include not finding the file, incorrect content, or missing or not
-// provided annotations.
-bool ParseClangToolRawOutput(const std::string& clang_output,
-                             std::vector<AnnotationInstance>* annotations,
-                             std::vector<CallInstance>* calls,
-                             std::vector<AuditorResult>* errors);
+  // Runs traffic_annotation_extractor clang tool and puts its output in
+  // |clang_tool_raw_output_|.
+  bool RunClangTool(const std::vector<std::string>& path_filters,
+                    bool full_run);
 
-// Computes the hash value of a traffic annotation unique id.
-int ComputeHashValue(const std::string& unique_id);
+  // Parses the output of clang tool (|clang_tool_raw_output_|) and populates
+  // |extracted_annotations_|, |extracted_calls_|, and |errors_|.
+  // Errors include not finding the file, incorrect content, or missing or not
+  // provided annotations.
+  bool ParseClangToolRawOutput();
 
-}  // namespace traffic_annotation_auditor
+  // Computes the hash value of a traffic annotation unique id.
+  static int ComputeHashValue(const std::string& unique_id);
+
+  std::string clang_tool_raw_output() const { return clang_tool_raw_output_; };
+
+  void set_clang_tool_raw_output(const std::string& raw_output) {
+    clang_tool_raw_output_ = raw_output;
+  };
+
+  const std::vector<AnnotationInstance>& extracted_annotations() const {
+    return extracted_annotations_;
+  }
+
+  const std::vector<CallInstance>& extracted_calls() const {
+    return extracted_calls_;
+  }
+
+  const std::vector<AuditorResult>& errors() const { return errors_; }
+
+ private:
+  // Loads the whitelist file and populates ignore_list member variables.
+  bool LoadWhiteList();
+
+  // Checks to see if a |file_path| matches a |whitelist| of partial paths.
+  bool IsWhitelisted(const std::string file_path,
+                     const std::vector<std::string>& whitelist);
+
+  const base::FilePath source_path_;
+  const base::FilePath build_path_;
+
+  std::string clang_tool_raw_output_;
+  std::vector<AnnotationInstance> extracted_annotations_;
+  std::vector<CallInstance> extracted_calls_;
+  std::vector<AuditorResult> errors_;
+
+  std::vector<std::string> ignore_list_[static_cast<int>(
+      AuditorException::ExceptionType::EXCEPTION_TYPE_LAST)];
+};
 
 #endif  // TOOLS_TRAFFIC_ANNOTATION_AUDITOR_TRAFFIC_ANNOTATION_AUDITOR_H_
