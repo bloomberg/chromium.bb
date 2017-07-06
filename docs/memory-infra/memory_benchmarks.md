@@ -95,6 +95,9 @@ To view data from one of the benchmarks on the
 If you are investigating a Perf dashboard alert and would like to see the
 details, you can click on any point of the graph. It gives you the commit range,
 buildbot output and a link to the trace file taken during the buildbot run.
+(More information about reading trace files [here][memory-infra])
+
+[memory-infra]: /docs/memory-infra/README.md
 
 ![Chrome Performance Dashboard Alert](https://storage.googleapis.com/chromium-docs.appspot.com/perfdashboard_alert.png)
 
@@ -132,6 +135,7 @@ Other useful options for this command are:
 For WebView make sure to [replace the system WebView][webview_install]
 on your device and use `--browser android-webview`.
 
+[memory-infra]: /docs/memory-infra/README.md
 [webview_install]: https://www.chromium.org/developers/how-tos/build-instructions-android-webview
 
 ### How to run a try job
@@ -189,7 +193,7 @@ where:
     `proportional_resident_size` (others are `peak_resident_size` and
     `private_dirty_size`).
 
-[memory-infra]: /memory-infra/README.md
+[memory-infra]: /docs/memory-infra/README.md
 
 ## Appendix
 
