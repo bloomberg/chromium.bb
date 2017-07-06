@@ -62,7 +62,6 @@ let mockVRService = loadMojoModules(
 
   class MockVRPresentationProvider {
     constructor() {
-      this.timeDelta_ = 0;
       this.binding_ = new bindings.Binding(vr_service.VRPresentationProvider,
           this);
       this.pose_ = null;
@@ -91,16 +90,22 @@ let mockVRService = loadMojoModules(
         this.pose_.poseIndex++;
       }
 
+      // Convert current document time to monotonic time.
+      var now = window.performance.now() / 1000.0;
+      var diff =
+          now - window.internals.monotonicTimeToZeroBasedDocumentTime(now);
+      now += diff;
+      now *= 1000000;
+
       let retval = Promise.resolve({
         pose: this.pose_,
         time: {
-          microseconds: this.timeDelta_,
+          microseconds: now,
         },
         frame_id: 0,
         status: vr_service.VRPresentationProvider.VSyncStatus.SUCCESS,
       });
 
-      this.timeDelta_ += 1000.0 / 60.0;
       return retval;
     }
     initPose() {

@@ -206,7 +206,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool did_submit_this_frame_ = false;
   bool in_display_activate_ = false;
   bool display_blurred_ = false;
-  double timebase_ = -1;
   bool pending_previous_frame_render_ = false;
   bool pending_submit_frame_ = false;
   bool pending_present_request_ = false;
