@@ -137,6 +137,8 @@ class CONTENT_EXPORT IndexedDBDatabase
   void TransactionCreated(IndexedDBTransaction* transaction);
   void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
 
+  void AbortAllTransactionsForConnections();
+
   void AddPendingObserver(IndexedDBTransaction* transaction,
                           int32_t observer_id,
                           const IndexedDBObserver::Options& options);

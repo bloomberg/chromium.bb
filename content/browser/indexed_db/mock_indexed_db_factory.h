@@ -53,6 +53,16 @@ class MockIndexedDBFactory : public IndexedDBFactory {
            const url::Origin& origin,
            const base::FilePath& data_directory,
            bool force_close));
+  MOCK_METHOD2(AbortTransactionsAndCompactDatabaseProxy,
+               void(base::OnceCallback<void(leveldb::Status)>* callback,
+                    const url::Origin& origin));
+  virtual void AbortTransactionsAndCompactDatabase(
+      base::OnceCallback<void(leveldb::Status)> callback,
+      const url::Origin& origin) {
+    base::OnceCallback<void(leveldb::Status)>* callback_ref = &callback;
+    AbortTransactionsAndCompactDatabaseProxy(callback_ref, origin);
+  }
+
   MOCK_METHOD1(HandleBackingStoreFailure, void(const url::Origin& origin));
   MOCK_METHOD2(HandleBackingStoreCorruption,
                void(const url::Origin& origin,
