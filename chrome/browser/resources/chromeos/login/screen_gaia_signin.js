@@ -698,6 +698,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.chromeOSApiVersion_ == 2) {
         this.classList.toggle('v2', true);
       }
+      if (this != Oobe.getInstance().currentScreen)
+        return;
       // Switching between signin-frame-dialog and gaia-step-contents
       // updates screen size.
       if (old_state != this.classList.contains('v2'))
