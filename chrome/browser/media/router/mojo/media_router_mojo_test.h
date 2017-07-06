@@ -250,9 +250,10 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   MediaRouterMojoImpl* router() const { return mock_media_router_.get(); }
 
+  Profile* profile() { return &profile_; }
+
   // Mock objects.
   MockMediaRouteProvider mock_media_route_provider_;
-  testing::NiceMock<MockEventPageTracker> mock_event_page_tracker_;
 
   // Mojo proxy object for |mock_media_router_|
   media_router::mojom::MediaRouterPtr media_router_proxy_;

@@ -12,9 +12,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_android.h"
 #else
+#include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_manager_factory.h"
 #endif
 
 using content::BrowserContext;
@@ -59,8 +58,7 @@ MediaRouterFactory::MediaRouterFactory()
           "MediaRouter",
           BrowserContextDependencyManager::GetInstance()) {
 #if !defined(OS_ANDROID)
-  // On desktop platforms, MediaRouter depends on ProcessManager.
-  DependsOn(extensions::ProcessManagerFactory::GetInstance());
+  DependsOn(EventPageRequestManagerFactory::GetInstance());
 #endif
 }
 
@@ -78,8 +76,7 @@ KeyedService* MediaRouterFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   media_router = new MediaRouterAndroid(context);
 #else
-  media_router = new MediaRouterMojoImpl(
-      extensions::ProcessManager::Get(context), context);
+  media_router = new MediaRouterMojoImpl(context);
 #endif
   media_router->Initialize();
   return media_router;
