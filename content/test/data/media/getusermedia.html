@@ -556,6 +556,62 @@
     }
     var detectorInterval = setInterval(detectorFunction, 50);
   }
+
+  function getAudioSettingsDefault() {
+    navigator.mediaDevices.getUserMedia({audio:true})
+      .then(stream => {
+        assertEquals(stream.getAudioTracks().length, 1);
+        var settings = stream.getAudioTracks()[0].getSettings();
+        assertEquals(settings.deviceId, 'default');
+        assertTrue(settings.echoCancellation);
+        stream.getAudioTracks()[0].stop();
+        reportTestSuccess();
+      })
+      .catch(_=>{
+        failTest("getUserMedia failed")
+      });
+  }
+
+  function getAudioSettingsNoEchoCancellation() {
+    navigator.mediaDevices.getUserMedia({audio:{echoCancellation: false}})
+      .then(stream => {
+        assertEquals(stream.getAudioTracks().length, 1);
+        var settings = stream.getAudioTracks()[0].getSettings();
+        assertEquals(settings.deviceId, 'default');
+        assertEquals(settings.echoCancellation, false);
+        stream.getAudioTracks()[0].stop();
+        reportTestSuccess();
+      })
+      .catch(_=>{
+        failTest("getUserMedia failed")
+      });
+  }
+
+  function getAudioSettingsDeviceId() {
+    navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        var last_device_id;
+        for (var device, i = 0; device = devices[i]; ++i) {
+          if (device.kind != "audioinput")
+            continue;
+          last_device_id = device.deviceId;
+        }
+        navigator.mediaDevices.getUserMedia(
+          {audio:{deviceId: {exact: last_device_id}}})
+          .then(stream => {
+            assertEquals(stream.getAudioTracks().length, 1);
+            var settings = stream.getAudioTracks()[0].getSettings();
+            assertEquals(settings.deviceId, last_device_id);
+            assertNotEquals(settings.deviceId, 'default');
+            assertTrue(settings.echoCancellation);
+            stream.getAudioTracks()[0].stop();
+            reportTestSuccess();
+          })
+      })
+      .catch(e => {
+        failTest("Unexpected error: " + e)
+      });
+  }
   </script>
 </head>
 <body>

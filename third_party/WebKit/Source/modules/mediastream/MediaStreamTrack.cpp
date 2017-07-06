@@ -303,6 +303,11 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
         break;
     }
   }
+  if (platform_settings.HasEchoCancellationValue()) {
+    settings.setEchoCancellation(
+        static_cast<bool>(platform_settings.echo_cancellation));
+  }
+
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);
 }

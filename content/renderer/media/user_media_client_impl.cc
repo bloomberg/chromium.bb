@@ -232,6 +232,16 @@ bool IsValidVideoContentSource(const std::string& source) {
          source == kMediaStreamSourceScreen;
 }
 
+void SurfaceHardwareEchoCancellationSetting(
+    blink::WebMediaStreamSource* source) {
+  MediaStreamAudioSource* source_impl =
+      static_cast<MediaStreamAudioSource*>(source->GetExtraData());
+  media::AudioParameters params = source_impl->GetAudioParameters();
+  if (params.IsValid() &&
+      (params.effects() & media::AudioParameters::ECHO_CANCELLER))
+    source->SetEchoCancellation(true);
+}
+
 static int g_next_request_id = 0;
 
 }  // namespace
@@ -968,18 +978,26 @@ blink::WebMediaStreamSource UserMediaClientImpl::InitializeAudioSourceObject(
       &UserMediaClientImpl::OnAudioSourceStartedOnAudioThread,
       base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 
-  MediaStreamAudioSource* const audio_source =
-      CreateAudioSource(device, constraints, source_ready);
+  bool has_sw_echo_cancellation = false;
+  MediaStreamAudioSource* const audio_source = CreateAudioSource(
+      device, constraints, source_ready, &has_sw_echo_cancellation);
   audio_source->SetStopCallback(base::Bind(
       &UserMediaClientImpl::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
   source.SetExtraData(audio_source);  // Takes ownership.
+  // At this point it is known if software echo cancellation will be used, but
+  // final audio parameters for the source are not set yet, so it is not yet
+  // known if hardware echo cancellation will actually be used. That information
+  // is known and surfaced in CreateAudioTracks(), after the track is connected
+  // to the source.
+  source.SetEchoCancellation(has_sw_echo_cancellation);
   return source;
 }
 
 MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
     const StreamDeviceInfo& device,
     const blink::WebMediaConstraints& constraints,
-    const MediaStreamSource::ConstraintsCallback& source_ready) {
+    const MediaStreamSource::ConstraintsCallback& source_ready,
+    bool* has_sw_echo_cancellation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   // If the audio device is a loopback device (for screen capture), or if the
@@ -993,6 +1011,7 @@ MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
   if (IsScreenCaptureMediaType(device.device.type) ||
       !MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
+    *has_sw_echo_cancellation = false;
     return new LocalMediaStreamAudioSource(RenderFrameObserver::routing_id(),
                                            device, source_ready);
   }
@@ -1002,6 +1021,8 @@ MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
   ProcessedLocalAudioSource* source = new ProcessedLocalAudioSource(
       RenderFrameObserver::routing_id(), device, audio_processing_properties,
       source_ready, dependency_factory_);
+  *has_sw_echo_cancellation =
+      audio_processing_properties.enable_sw_echo_cancellation;
   return source;
 }
 
@@ -1065,6 +1086,10 @@ void UserMediaClientImpl::CreateAudioTracks(
         overridden_audio_array[i], constraints, &is_pending);
     (*webkit_tracks)[i].Initialize(source);
     current_request_info_->StartAudioTrack((*webkit_tracks)[i], is_pending);
+    // At this point the source has started, and its audio parameters have been
+    // set. From the parameters, it is known if hardware echo cancellation is
+    // being used. If this is the case, let |source| know.
+    SurfaceHardwareEchoCancellationSetting(&source);
   }
 }
 

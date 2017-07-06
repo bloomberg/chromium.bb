@@ -14,8 +14,7 @@ dictionary MediaTrackSettings {
     // double volume;
     // long sampleRate;
     // long sampleSize;
-    // echoCancellation is not implemented: crbug.com/682245
-    // boolean echoCancellation;
+    boolean echoCancellation;
     // latency and channelCount are not implemented.
     // double latency;
     // long channelCount;
