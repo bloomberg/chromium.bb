@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -23,28 +24,9 @@ class MemlogStreamReceiver;
 class MemlogReceiverPipe
     : public base::RefCountedThreadSafe<MemlogReceiverPipe> {
  public:
-  class CompletionThunk : public base::MessageLoopForIO::Watcher {
-   public:
-    using Callback = base::RepeatingCallback<void(int)>;
+  explicit MemlogReceiverPipe(base::ScopedFD fd);
 
-    CompletionThunk(int fd, Callback cb);
-    ~CompletionThunk() override;
-
-    void set_callback(Callback cb) { callback_ = cb; }
-
-    void OnFileCanReadWithoutBlocking(int fd) override;
-    void OnFileCanWriteWithoutBlocking(int fd) override;
-
-   private:
-    base::MessageLoopForIO::FileDescriptorWatcher controller_;
-
-    int fd_;
-    Callback callback_;
-  };
-
-  explicit MemlogReceiverPipe(std::unique_ptr<CompletionThunk> thunk);
-
-  void StartReadingOnIOThread();
+  void ReadUntilBlocking();
 
   int GetRemoteProcessID();
   void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
@@ -54,10 +36,14 @@ class MemlogReceiverPipe
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe();
 
-  std::unique_ptr<CompletionThunk> thunk_;
+  base::ScopedFD fd_;
+  std::unique_ptr<char[]> read_buffer_;
 
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
   scoped_refptr<MemlogStreamReceiver> receiver_;
+
+  // Make base::UnixDomainSocket::RecvMsg happy.
+  std::vector<base::ScopedFD>* dummy_for_receive_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogReceiverPipe);
 };

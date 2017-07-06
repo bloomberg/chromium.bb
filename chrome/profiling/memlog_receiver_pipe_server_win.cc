@@ -76,6 +76,7 @@ void MemlogReceiverPipeServer::OnIOCompleted(size_t bytes_transfered,
       new MemlogReceiverPipe(std::move(current_)));
   ScheduleNewConnection(false);
 
+  // TODO(ajwong): Why should there be a null-check here?
   if (!on_new_connection_.is_null())
     on_new_connection_.Run(pipe);
   pipe->StartReadingOnIOThread();

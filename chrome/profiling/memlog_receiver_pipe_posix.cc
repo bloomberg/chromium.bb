@@ -7,44 +7,61 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/posix/unix_domain_socket_linux.h"
 #include "base/threading/thread.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
 
 namespace profiling {
 
-MemlogReceiverPipe::CompletionThunk::CompletionThunk(int fd, Callback cb)
-    : controller_(FROM_HERE), fd_(fd), callback_(cb) {
-  base::MessageLoopForIO::current()->WatchFileDescriptor(
-      fd_, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
-}
+namespace {
 
-MemlogReceiverPipe::CompletionThunk::~CompletionThunk() {
-  if (fd_ != -1)
-    IGNORE_EINTR(::close(fd_));
-}
+// Use a large buffer for our pipe. We don't want the sender to block
+// if at all possible since it will slow the app down quite a bit.
+//
+// TODO(ajwong): Figure out how to size this. Currently the number is cribbed
+// from the right size for windows named pipes.
+const int kReadBufferSize = 1024 * 64;
 
-void MemlogReceiverPipe::CompletionThunk::OnFileCanReadWithoutBlocking(int fd) {
-  callback_.Run(fd);
-}
+}  // namespace
 
-void MemlogReceiverPipe::CompletionThunk::OnFileCanWriteWithoutBlocking(
-    int fd) {
-  NOTREACHED();
-}
-
-MemlogReceiverPipe::MemlogReceiverPipe(std::unique_ptr<CompletionThunk> thunk) {
+MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedFD fd)
+    : fd_(std::move(fd)), read_buffer_(new char[kReadBufferSize]) {
+  static std::vector<base::ScopedFD> dummy_instance;
+  dummy_for_receive_ = &dummy_instance;
 }
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {}
 
-void MemlogReceiverPipe::StartReadingOnIOThread() {
-  // TODO(ajwong): Implement with something useful.
+void MemlogReceiverPipe::ReadUntilBlocking() {
+  ssize_t bytes_read = 0;
+  do {
+    bytes_read = base::UnixDomainSocket::RecvMsg(
+        fd_.get(), read_buffer_.get(), kReadBufferSize, dummy_for_receive_);
+    if (bytes_read > 0) {
+      receiver_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&MemlogStreamReceiver::OnStreamData, receiver_,
+                         std::move(read_buffer_), bytes_read));
+      read_buffer_.reset(new char[kReadBufferSize]);
+      return;
+    } else if (bytes_read == 0) {
+      // Other end closed the pipe.
+      if (receiver_) {
+        receiver_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(&MemlogStreamReceiver::OnStreamComplete, receiver_));
+      }
+      return;
+    } else {
+      if (errno != EAGAIN && errno != EWOULDBLOCK) {
+        PLOG(ERROR) << "Problem reading socket.";
+      }
+    }
+  } while (bytes_read > 0);
 }
 
 int MemlogReceiverPipe::GetRemoteProcessID() {
-  // TODO(ajwong): Implement with something useful.
-  return 0;
+  return 1;  // TODO(ajwong): Record the originating process ID somehow.
 }
 
 void MemlogReceiverPipe::SetReceiver(

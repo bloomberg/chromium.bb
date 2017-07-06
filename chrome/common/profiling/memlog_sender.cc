@@ -5,7 +5,6 @@
 #include "chrome/common/profiling/memlog_sender.h"
 
 #include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/profiling/memlog_sender_pipe.h"
@@ -20,7 +19,7 @@ void InitMemlogSenderIfNecessary(const base::CommandLine& cmdline) {
 }
 
 void StartMemlogSender(const std::string& pipe_id) {
-  static MemlogSenderPipe pipe(base::UTF8ToUTF16(pipe_id));
+  static MemlogSenderPipe pipe(pipe_id);
   pipe.Connect();
 
   StreamHeader header;

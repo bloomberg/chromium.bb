@@ -14,7 +14,7 @@ namespace profiling {
 
 class MemlogSenderPipe {
  public:
-  explicit MemlogSenderPipe(const base::string16& pipe_id);
+  explicit MemlogSenderPipe(const base::string& pipe_id);
   ~MemlogSenderPipe();
 
   bool Connect();
