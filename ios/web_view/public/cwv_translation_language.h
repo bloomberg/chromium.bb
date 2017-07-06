@@ -21,8 +21,11 @@ CWV_EXPORT
 // https://cloud.google.com/translate/docs/languages
 @property(nonatomic, copy, readonly) NSString* languageCode;
 
-// The localized language name.
-@property(nonatomic, copy, readonly) NSString* languageName;
+// The language name in the current user locale. Ex: "German".
+@property(nonatomic, copy, readonly) NSString* localizedName;
+
+// The language name in the native language. Ex: "Deutsch".
+@property(nonatomic, copy, readonly) NSString* nativeName;
 
 @end
 
