@@ -86,7 +86,7 @@ The default location is: `/home/chronos`
 ### Android
 
 The default location comes from
-[Context.getDir](https://developer.android.com/reference/android/content/Context.html#getDir(java.lang.String, int))
+[Context.getDir](https://developer.android.com/reference/android/content/Context.html#getDir%28java.lang.String, int%29)
 and is specific to the app.
 
 Example: `/data/user/0/com.android.chrome/app_chrome`
@@ -216,4 +216,4 @@ Example (Linux):
 * [user cache dir] `~/.cache/google-chrome/Default`
 
 On Android, the user cache directory comes from
-[Context.getCacheDir](https://developer.android.com/reference/android/content/Context.html#getCacheDir()).
+[Context.getCacheDir](https://developer.android.com/reference/android/content/Context.html#getCacheDir%28%29).
