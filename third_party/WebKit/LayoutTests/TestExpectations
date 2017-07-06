@@ -949,8 +949,6 @@ crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-locale.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-orphaned-word.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/midword-break-priority.html [ Skip ]
 
-crbug.com/729514 paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass Failure ]
-
 crbug.com/405389 external/wpt/css/css-shapes-1/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 external/wpt/css/css-shapes-1/shape-outside/shape-image/shape-image-024.html [ Failure ]
