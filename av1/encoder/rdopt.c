@@ -11916,8 +11916,23 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
   av1_subtract_plane(x, bsize, 0);
+#if CONFIG_VAR_TX
+  if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+  } else {
+    int idx, idy;
+    super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+    for (idy = 0; idy < xd->n8_h; ++idy)
+      for (idx = 0; idx < xd->n8_w; ++idx)
+        mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+    memset(x->blk_skip[0], rd_stats_y.skip,
+           sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+  }
+  inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+#else
   super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
   super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+#endif
   assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
   if (rd_stats_y.skip && rd_stats_uv.skip) {
     rd_stats_y.rate = rate_skip1;
@@ -11951,8 +11966,23 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
   av1_subtract_plane(x, bsize, 0);
+#if CONFIG_VAR_TX
+  if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+  } else {
+    int idx, idy;
+    super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+    for (idy = 0; idy < xd->n8_h; ++idy)
+      for (idx = 0; idx < xd->n8_w; ++idx)
+        mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+    memset(x->blk_skip[0], rd_stats_y.skip,
+           sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+  }
+  inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+#else
   super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
   super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+#endif
   assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
   if (rd_stats_y.skip && rd_stats_uv.skip) {
     rd_stats_y.rate = rate_skip1;
