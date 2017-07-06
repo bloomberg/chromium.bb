@@ -4555,7 +4555,7 @@ static_library("test_support") {
       "media/pepper_cdm_test_helper.cc",
       "media/pepper_cdm_test_helper.h",
     ]
-    deps += [ "//media/cdm:cdm_paths" ]
+    deps += [ "//media:cdm_paths" ]
   }
 }
 

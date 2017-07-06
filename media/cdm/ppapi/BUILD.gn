@@ -31,8 +31,8 @@ shared_library("clearkeycdm") {
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//media",  # For media::AudioTimestampHelper
+    "//media:cdm_api",  # For content_decryption_module.h
     "//media:shared_memory_support",  # For media::AudioBus.
-    "//media/cdm:cdm_api",  # For content_decryption_module.h
     "//url",
   ]
 

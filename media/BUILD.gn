@@ -85,6 +85,12 @@ config("media_dependent_config") {
   }
 }
 
+source_set("cdm_api") {
+  sources = [
+    "cdm/api/content_decryption_module.h",
+  ]
+}
+
 # TODO(jrummell): Each subdirectory should have it's own BUILD.gn, and then
 # this component can depend on them.  http://crbug.com/613033
 component("media") {
@@ -124,6 +130,7 @@ component("media") {
   libs = []
   defines = []
   deps = [
+    ":cdm_api",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -176,6 +183,56 @@ component("media") {
       "device_monitors/device_monitor_udev.h",
     ]
   }
+
+  # TODO(xhwang): Move other library CDM related files to this block as well.
+  if (enable_pepper_cdms) {
+    deps += [
+      ":cdm_paths",
+
+      # TODO(xhwang): Remove this after Widevine specific logic is removed in
+      # CdmAdapterFactory. See http://crbug.com/510604
+      "//third_party/widevine/cdm:headers",
+    ]
+    sources += [
+      "cdm/cdm_adapter_factory.cc",
+      "cdm/cdm_adapter_factory.h",
+    ]
+  }
+}
+
+config("cdm_manager_implementation") {
+  defines = [ "CDM_MANAGER_IMPLEMENTATION" ]
+}
+
+# cdm_manager must not be a source_set() because CdmManager exposes a static
+# singleton, shared by multiple component()s.
+#
+# TODO(xhwang): Remove this component once AVDA no longer depends on it.
+component("cdm_manager") {
+  visibility = [
+    "//media/gpu",
+    "//media/mojo/services:lib",
+  ]
+  sources = [
+    "cdm/cdm_manager.cc",
+    "cdm/cdm_manager.h",
+    "cdm/cdm_manager_export.h",
+  ]
+  configs += [ ":cdm_manager_implementation" ]
+  deps = [
+    ":media",
+    "//base",
+  ]
+}
+
+static_library("cdm_paths") {
+  sources = [
+    "cdm/cdm_paths.cc",
+    "cdm/cdm_paths.h",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 # TODO(xhwang): Move these into source_sets in respective subfolders.
@@ -255,6 +312,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    ":cdm_api",
+    ":cdm_paths",
     ":media",
     ":test_support",
     "//base/test:test_support",
@@ -263,8 +322,6 @@ source_set("unit_tests") {
     "//gpu/command_buffer/common",
     "//media/audio:test_support",
     "//media/base:test_support",
-    "//media/cdm:cdm_api",
-    "//media/cdm:cdm_paths",
     "//ppapi/features",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",

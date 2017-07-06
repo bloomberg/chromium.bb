@@ -90,6 +90,31 @@ source_set("filters") {
     "//media/muxers/webm_muxer.h",
   ]
 
+  # TODO(a.suchit): Needs to create separate BUILD.gn file for cdm.
+  sources += [
+    "//media/cdm/aes_decryptor.cc",
+    "//media/cdm/aes_decryptor.h",
+    "//media/cdm/cdm_adapter.cc",
+    "//media/cdm/cdm_adapter.h",
+    "//media/cdm/cdm_allocator.cc",
+    "//media/cdm/cdm_allocator.h",
+    "//media/cdm/cdm_file_adapter.cc",
+    "//media/cdm/cdm_file_adapter.h",
+    "//media/cdm/cdm_file_io.cc",
+    "//media/cdm/cdm_file_io.h",
+    "//media/cdm/cdm_helpers.cc",
+    "//media/cdm/cdm_helpers.h",
+    "//media/cdm/cdm_wrapper.h",
+    "//media/cdm/default_cdm_factory.cc",
+    "//media/cdm/default_cdm_factory.h",
+    "//media/cdm/json_web_key.cc",
+    "//media/cdm/json_web_key.h",
+    "//media/cdm/player_tracker_impl.cc",
+    "//media/cdm/player_tracker_impl.h",
+    "//media/cdm/supported_cdm_versions.cc",
+    "//media/cdm/supported_cdm_versions.h",
+  ]
+
   # TODO(a.suchit): Needs to create separate BUILD.gn file for video.
   sources += [
     "//media/video/fake_video_encode_accelerator.cc",
@@ -117,6 +142,7 @@ source_set("filters") {
   all_dependent_configs = [ "//media:media_dependent_config" ]
 
   deps = [
+    "//media/formats",
     "//skia",
     "//third_party/libyuv",
   ]
@@ -126,16 +152,26 @@ source_set("filters") {
   # //media/muxers dependencies
   deps += [ "//third_party/libwebm" ]
 
+  # //media/cdm dependencies
+  deps += [ "//crypto" ]
+
   public_deps = [
     "//media:media_features",
     "//media/audio",
-    "//media/cdm",
   ]
 
   if (proprietary_codecs) {
     sources += [
       "h264_to_annex_b_bitstream_converter.cc",
       "h264_to_annex_b_bitstream_converter.h",
+    ]
+  }
+
+  # TODO(a.suchit): Needs to create separate BUILD.gn file for cdm.
+  if (proprietary_codecs) {
+    sources += [
+      "//media/cdm/cenc_utils.cc",
+      "//media/cdm/cenc_utils.h",
     ]
   }
 
