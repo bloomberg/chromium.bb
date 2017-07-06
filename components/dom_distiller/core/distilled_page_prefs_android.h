@@ -20,7 +20,6 @@ class DistilledPagePrefsAndroid {
                             jobject obj,
                             DistilledPagePrefs* distilled_page_prefs_ptr);
   virtual ~DistilledPagePrefsAndroid();
-  static bool Register(JNIEnv* env);
   void SetFontFamily(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj,
                      jint font_family);

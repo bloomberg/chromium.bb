@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_formatter/url_formatter_android.h"
-
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -66,10 +64,6 @@ static ScopedJavaLocalRef<jstring> FormatUrlForSecurityDisplayOmitScheme(
       env, url_formatter::FormatUrlForSecurityDisplay(
                ConvertJavaStringToGURL(env, url),
                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-}
-
-bool RegisterUrlFormatterNatives(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

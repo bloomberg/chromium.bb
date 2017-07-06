@@ -8,8 +8,6 @@ static_library("web_contents_delegate_android") {
   sources = [
     "color_chooser_android.cc",
     "color_chooser_android.h",
-    "component_jni_registrar.cc",
-    "component_jni_registrar.h",
     "validation_message_bubble_android.cc",
     "validation_message_bubble_android.h",
     "web_contents_delegate_android.cc",

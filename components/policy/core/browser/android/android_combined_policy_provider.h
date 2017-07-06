@@ -50,9 +50,6 @@ class POLICY_EXPORT AndroidCombinedPolicyProvider
     return policy_converter_.get();
   }
 
-  // Register the JNI methods
-  static bool Register(JNIEnv* env);
-
  private:
   bool initialized_;
   std::unique_ptr<policy::android::PolicyConverter> policy_converter_;

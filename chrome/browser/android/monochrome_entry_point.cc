@@ -33,7 +33,6 @@ bool NativeInit() {
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
-  base::android::SetJniRegistrationType(base::android::NO_JNI_REGISTRATION);
   base::android::SetNativeInitializationHook(NativeInit);
   return JNI_VERSION_1_4;
 }

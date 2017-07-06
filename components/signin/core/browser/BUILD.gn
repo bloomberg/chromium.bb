@@ -35,8 +35,6 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_tracker_service.cc",
     "account_tracker_service.h",
-    "android/component_jni_registrar.cc",
-    "android/component_jni_registrar.h",
     "child_account_info_fetcher.cc",
     "child_account_info_fetcher.h",
     "child_account_info_fetcher_android.cc",

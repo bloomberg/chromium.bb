@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/android/payment_details_validation_android.h"
-
 #include <stdint.h>
 
 #include <cstring>
@@ -31,10 +29,6 @@ jboolean ValidatePaymentDetails(
     return false;
   std::string unused_error_message;
   return validatePaymentDetails(details, &unused_error_message);
-}
-
-bool RegisterPaymentValidator(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace payments

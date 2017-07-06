@@ -117,9 +117,4 @@ void JsonSanitizer::Sanitize(const std::string& unsafe_json,
   sanitizer.Sanitize(unsafe_json);
 }
 
-// static
-bool JsonSanitizer::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace safe_json

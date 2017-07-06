@@ -182,11 +182,6 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
   return std::unique_ptr<base::Value>();
 }
 
-// static
-bool PolicyConverter::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void PolicyConverter::SetPolicyValue(const std::string& key,
                                      std::unique_ptr<base::Value> value) {
   const Schema schema = policy_schema_->GetKnownProperty(key);

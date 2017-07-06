@@ -2724,7 +2724,6 @@ split_static_library("browser") {
       "android/download/intercept_download_resource_throttle.cc",
       "android/download/intercept_download_resource_throttle.h",
       "android/download/items/offline_content_aggregator_factory_android.cc",
-      "android/download/items/offline_content_aggregator_factory_android.h",
       "android/download/service/download_background_task.cc",
       "android/download/service/download_background_task.h",
       "android/download/service/download_task_scheduler.cc",

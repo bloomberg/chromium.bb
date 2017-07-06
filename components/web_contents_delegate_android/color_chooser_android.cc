@@ -74,11 +74,4 @@ void ColorChooserAndroid::OnColorChosen(JNIEnv* env,
   web_contents_->DidEndColorChooser();
 }
 
-// ----------------------------------------------------------------------------
-// Native JNI methods
-// ----------------------------------------------------------------------------
-bool RegisterColorChooserAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace web_contents_delegate_android

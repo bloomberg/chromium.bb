@@ -9,10 +9,6 @@
 // This is called by the VM when the shared library is first loaded.
 // Most of the initialization is done in LibraryLoadedOnMainThread(), not here.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  // WebView uses native JNI exports; disable manual JNI registration because
-  // we don't have a good way to detect the JNI registrations which is called,
-  // outside of OnJNIOnLoadRegisterJNI code path.
-  base::android::SetJniRegistrationType(base::android::NO_JNI_REGISTRATION);
   base::android::InitVM(vm);
   base::android::SetNativeInitializationHook(&android_webview::OnJNIOnLoadInit);
   return JNI_VERSION_1_4;

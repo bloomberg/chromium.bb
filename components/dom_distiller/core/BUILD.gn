@@ -52,7 +52,6 @@ static_library("core") {
     "url_utils.cc",
     "url_utils.h",
     "url_utils_android.cc",
-    "url_utils_android.h",
     "viewer.cc",
     "viewer.h",
   ]
@@ -80,8 +79,6 @@ static_library("core") {
 
   if (is_android) {
     sources += [
-      "android/core_jni_registrar.cc",
-      "android/core_jni_registrar.h",
       "dom_distiller_service_android.cc",
       "dom_distiller_service_android.h",
     ]

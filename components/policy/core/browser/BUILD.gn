@@ -69,8 +69,6 @@ source_set("internal") {
     sources += [
       "android/android_combined_policy_provider.cc",
       "android/android_combined_policy_provider.h",
-      "android/component_jni_registrar.cc",
-      "android/component_jni_registrar.h",
       "android/policy_converter.cc",
       "android/policy_converter.h",
     ]

@@ -60,8 +60,6 @@ class InvalidationServiceAndroid : public InvalidationService {
   // This is used only by unit tests.
   void TriggerStateChangeForTest(syncer::InvalidatorState state);
 
-  static bool RegisterJni(JNIEnv* env);
-
  private:
   typedef std::map<invalidation::ObjectId, int64_t, syncer::ObjectIdLessThan>
       ObjectIdVersionMap;
