@@ -115,43 +115,57 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   struct FormatUrlTestData {
     const std::string url;
     bool trim_scheme;
-    const std::string expected_result;
+    const wchar_t* expected_result;
 
     void Validate() {
       SCOPED_TRACE(testing::Message()
                    << " url= " << url << " trim_scheme=" << trim_scheme
                    << " expected_result=" << expected_result);
       auto format_types = AutocompleteMatch::GetFormatTypes(trim_scheme);
-      EXPECT_EQ(expected_result,
-                base::UTF16ToASCII(url_formatter::FormatUrl(
-                    GURL(url), format_types, net::UnescapeRule::SPACES, nullptr,
-                    nullptr, nullptr)));
+      EXPECT_EQ(base::WideToUTF16(expected_result),
+                url_formatter::FormatUrl(GURL(url), format_types,
+                                         net::UnescapeRule::SPACES, nullptr,
+                                         nullptr, nullptr));
     };
   };
 
-  // Sanity check that the trim_strings parameter works.
   FormatUrlTestData normal_cases[] = {
-      {"http://google.com", true, "google.com"},
-      {"https://google.com", true, "https://google.com"},
-      {"http://google.com", false, "http://google.com"},
-      {"https://google.com", false, "https://google.com"},
+      // Sanity check that the trim_scheme parameter works.
+      {"http://google.com", true, L"google.com"},
+      {"https://google.com", true, L"https://google.com"},
+      {"http://google.com", false, L"http://google.com"},
+      {"https://google.com", false, L"https://google.com"},
+
+      // Test that paths are preserved in the default case.
+      {"http://google.com/foobar", true, L"google.com/foobar"},
   };
   for (FormatUrlTestData& test_case : normal_cases)
     test_case.Validate();
 
-  // Test the hide-scheme feature flag.
+  // Test the hide-scheme feature flag with the trim_scheme parameter.
   std::unique_ptr<base::test::ScopedFeatureList> feature_list(
       new base::test::ScopedFeatureList);
   feature_list->InitAndEnableFeature(
       omnibox::kUIExperimentHideSuggestionUrlScheme);
 
   FormatUrlTestData omit_scheme_cases[] = {
-      {"http://google.com", true, "google.com"},
-      {"https://google.com", true, "google.com"},
-      {"http://google.com", false, "http://google.com"},
-      {"https://google.com", false, "https://google.com"},
+      {"http://google.com", true, L"google.com"},
+      {"https://google.com", true, L"google.com"},
+      {"http://google.com", false, L"http://google.com"},
+      {"https://google.com", false, L"https://google.com"},
   };
   for (FormatUrlTestData& test_case : omit_scheme_cases)
+    test_case.Validate();
+
+  // Test the elide-after-host feature flag.
+  feature_list.reset(new base::test::ScopedFeatureList);
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentElideSuggestionUrlAfterHost);
+  FormatUrlTestData hide_path_cases[] = {
+      {"http://google.com/foobar", true, L"google.com/\x2026\x0000"},
+      {"http://google.com/foobar", false, L"http://google.com/\x2026\x0000"},
+  };
+  for (FormatUrlTestData& test_case : hide_path_cases)
     test_case.Validate();
 }
 

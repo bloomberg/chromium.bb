@@ -35,7 +35,7 @@ extern const base::Feature kSearchProviderContextAllowHttpsUrls;
 extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
-extern const base::Feature kUIExperimentHideSuggestionUrlPath;
+extern const base::Feature kUIExperimentElideSuggestionUrlAfterHost;
 extern const base::Feature kUIExperimentHideSuggestionUrlScheme;
 extern const base::Feature kUIExperimentHideSuggestionUrlTrivialSubdomains;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;

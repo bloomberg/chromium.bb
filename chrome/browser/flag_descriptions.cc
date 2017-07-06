@@ -3183,10 +3183,11 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
-const char kOmniboxUIHideSuggestionUrlPathName[] =
-    "Omnibox UI Hide Suggestion URL Path";
-const char kOmniboxUIHideSuggestionUrlPathDescription[] =
-    "Elides the paths of suggested URLs in the Omnibox dropdown.";
+const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
+    "Omnibox UI Elide Suggestion URL After Host";
+const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
+    "Elides the path, query, and ref of suggested URLs in the Omnibox "
+    "dropdown.";
 
 const char kOmniboxUIHideSuggestionUrlSchemeName[] =
     "Omnibox UI Hide Suggestion URL Scheme";

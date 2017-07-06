@@ -497,6 +497,11 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
                  omnibox::kUIExperimentHideSuggestionUrlScheme)) {
     format_types |= url_formatter::kFormatUrlExperimentalOmitHTTPS;
   }
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentElideSuggestionUrlAfterHost)) {
+    format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
+  }
   return format_types;
 }
 
