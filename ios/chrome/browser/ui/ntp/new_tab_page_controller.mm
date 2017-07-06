@@ -16,7 +16,7 @@
 #include "components/sync_sessions/synced_session.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_coordinator.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"

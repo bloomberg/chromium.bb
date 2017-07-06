@@ -18,8 +18,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_commands.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller_delegate.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -58,7 +58,7 @@
 @interface ContentSuggestionsCoordinator ()<
     ContentSuggestionsAlertCommands,
     ContentSuggestionsCommands,
-    ContentSuggestionsHeaderControllerCommandHandler,
+    ContentSuggestionsHeaderViewControllerCommandHandler,
     ContentSuggestionsViewControllerAudience,
     ContentSuggestionsViewControllerDelegate,
     OverscrollActionsControllerDelegate>
@@ -74,7 +74,7 @@
 
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
-    ContentSuggestionsHeaderController* headerController;
+    ContentSuggestionsHeaderViewController* headerController;
 
 @end
 
@@ -108,7 +108,7 @@
           self.browserState);
   contentSuggestionsService->remote_suggestions_scheduler()->OnNTPOpened();
 
-  self.headerController = [[ContentSuggestionsHeaderController alloc] init];
+  self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   self.headerController.dispatcher = self.dispatcher;
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
@@ -134,6 +134,10 @@
   self.suggestionsViewController.suggestionsDelegate = self;
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
+
+  [self.suggestionsViewController addChildViewController:self.headerController];
+  [self.headerController
+      didMoveToParentViewController:self.suggestionsViewController];
 
   self.headerCollectionInteractionHandler =
       [[ContentSuggestionsHeaderSynchronizer alloc]
