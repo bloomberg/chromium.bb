@@ -43,6 +43,11 @@ suite('<bookmarks-router>', function() {
 
     return Promise.resolve().then(function() {
       assertEquals('chrome://bookmarks/?id=2', window.location.href);
+      store.data.selectedFolder = '1';
+      store.notifyObservers();
+    }).then(function() {
+      // Selecting Bookmarks bar clears route.
+      assertEquals('chrome://bookmarks/', window.location.href);
     });
   });
 
@@ -61,6 +66,13 @@ suite('<bookmarks-router>', function() {
         .then(function() {
           assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
         });
+  });
+
+  test('bookmarks bar selected with empty route', function() {
+    navigateTo('/?id=2');
+    navigateTo('/');
+    assertEquals('select-folder', store.lastAction.name);
+    assertEquals('1', store.lastAction.id);
   });
 });
 
@@ -120,7 +132,7 @@ suite('URL preload', function() {
     var state = bookmarks.Store.getInstance().data;
     assertEquals('1', state.selectedFolder);
     return Promise.resolve().then(function() {
-      assertEquals('chrome://bookmarks/?id=1', window.location.href);
+      assertEquals('chrome://bookmarks/', window.location.href);
     });
   });
 });

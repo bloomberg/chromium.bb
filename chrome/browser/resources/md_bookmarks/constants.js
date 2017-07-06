@@ -57,5 +57,8 @@ var LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
 /** @const */
 var ROOT_NODE_ID = '0';
 
+/** @const */
+var BOOKMARKS_BAR_ID = '1';
+
 /** @const {number} */
 var OPEN_CONFIRMATION_LIMIT = 15;
