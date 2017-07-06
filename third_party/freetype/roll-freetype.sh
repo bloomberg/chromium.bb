@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REVIEWERS=`paste -s -d, third_party/freetype/OWNERS` &&
-roll-dep -r ${REVIEWERS} src/third_party/freetype/src/ &&
+roll-dep -r "${REVIEWERS}" "$@" src/third_party/freetype/src/ &&
 
 TMPFILE=`mktemp` &&
 git -C third_party/freetype/src/ cat-file blob HEAD@{1}:include/freetype/config/ftoption.h >> ${TMPFILE} &&
