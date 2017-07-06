@@ -62,6 +62,14 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   wm::WindowStateType GetMaximizedOrCenteredWindowType(
       wm::WindowState* window_state);
 
+  // If |target_state| is LEFT/RIGHT_SNAPPED and the window can be snapped,
+  // returns |target_state|. Otherwise depending on the capabilities of the
+  // window either returns |WINDOW_STATE_TYPE_MAXIMIZED| or
+  // |WINDOW_STATE_TYPE_NORMAL|.
+  wm::WindowStateType GetSnappedWindowStateType(
+      wm::WindowState* window_state,
+      wm::WindowStateType target_state);
+
   // Updates the bounds to the maximum possible bounds according to the current
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(wm::WindowState* window_state, bool animated);

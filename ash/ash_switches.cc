@@ -47,6 +47,9 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
+// Enables the split view on tablet mode.
+const char kAshEnableTabletSplitView[] = "enable-tablet-splitview";
+
 // Enables the observation of accelerometer events to enter touch-view mode.
 const char kAshEnableTouchView[] = "enable-touchview";
 

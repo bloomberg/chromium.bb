@@ -86,6 +86,17 @@ void MaximizeModeWindowManager::OnOverviewModeEnded() {
   SetDeferBoundsUpdates(false);
 }
 
+void MaximizeModeWindowManager::OnSplitViewModeEnded() {
+  // Maximize all snapped windows upon exiting split view mode.
+  for (auto& pair : window_state_map_) {
+    if (pair.second->GetType() == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
+        pair.second->GetType() == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED) {
+      wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
+      wm::GetWindowState(pair.first)->OnWMEvent(&event);
+    }
+  }
+}
+
 void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
   if (IsContainerWindow(window)) {
     // container window can be removed on display destruction.
