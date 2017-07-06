@@ -5,37 +5,52 @@
 #ifndef PerformanceServerTiming_h
 #define PerformanceServerTiming_h
 
-#include "core/timing/PerformanceEntry.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-class CORE_EXPORT PerformanceServerTiming : public PerformanceEntry {
+class ResourceTimingInfo;
+class PerformanceServerTiming;
+
+using PerformanceServerTimingVector =
+    HeapVector<Member<PerformanceServerTiming>>;
+
+class CORE_EXPORT PerformanceServerTiming final
+    : public GarbageCollectedFinalized<PerformanceServerTiming>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ~PerformanceServerTiming() override;
+  enum class ShouldAllowTimingDetails {
+    Yes,
+    No,
+  };
 
-  static PerformanceServerTiming* create(const String& name,
-                                         const String& metric,
-                                         double duration,
-                                         const String& description) {
-    return new PerformanceServerTiming(name, metric, duration, description);
-  }
+  PerformanceServerTiming(const String& metric,
+                          double value,
+                          const String& description,
+                          ShouldAllowTimingDetails);
+  ~PerformanceServerTiming();
 
   String metric() const;
+  double value() const;
   String description() const;
 
- protected:
-  void BuildJSONValue(V8ObjectBuilder&) const override;
+  static PerformanceServerTimingVector ParseServerTiming(
+      const ResourceTimingInfo&,
+      ShouldAllowTimingDetails);
+
+  ScriptValue toJSONForBinding(ScriptState*) const;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  PerformanceServerTiming(const String& name,
-                          const String& metric,
-                          double duration,
-                          const String& description);
-
   const String metric_;
+  double value_;
   const String description_;
+  ShouldAllowTimingDetails shouldAllowTimingDetails_;
 };
 
 }  // namespace blink

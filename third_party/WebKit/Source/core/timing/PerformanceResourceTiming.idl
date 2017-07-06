@@ -49,6 +49,7 @@ interface PerformanceResourceTiming : PerformanceEntry {
     [MeasureAs=PerformanceResourceTimingSizes] readonly attribute unsigned long long transferSize;
     [MeasureAs=PerformanceResourceTimingSizes] readonly attribute unsigned long long encodedBodySize;
     [MeasureAs=PerformanceResourceTimingSizes] readonly attribute unsigned long long decodedBodySize;
+    [RuntimeEnabled=ServerTiming] readonly attribute FrozenArray<PerformanceServerTiming> serverTiming;
     // TODO(foolip): The spec has a serializer:
     // serializer = {inherit, attribute};
 };

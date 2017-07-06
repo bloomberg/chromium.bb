@@ -14,7 +14,11 @@ test(function() {
         var serialized = JSON.parse(JSON.stringify(entry));
         for (var attr in entry) {
             if (typeof entry[attr] != 'function') {
-                assert_equals(serialized[attr], entry[attr], entry.constructor.name + '.' + attr);
+                var assertMethod = assert_equals
+                if (Array.isArray(serialized[attr]) && Array.isArray(entry[attr])) {
+                  assertMethod = assert_array_equals
+                }
+                assertMethod(serialized[attr], entry[attr], entry.constructor.name + '.' + attr);
             }
         }
     }

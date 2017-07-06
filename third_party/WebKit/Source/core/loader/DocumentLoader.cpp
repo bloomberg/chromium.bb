@@ -951,13 +951,6 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
 
-  if (RuntimeEnabledFeatures::ServerTimingEnabled() &&
-      frame_->GetDocument()->domWindow()) {
-    DOMWindowPerformance::performance(*(frame_->GetDocument()->domWindow()))
-        ->AddServerTiming(response_,
-                          PerformanceBase::ShouldAddToBuffer::Always);
-  }
-
   GetLocalFrameClient().DidCreateNewDocument();
 }
 

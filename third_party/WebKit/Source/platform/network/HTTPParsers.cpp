@@ -880,12 +880,12 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
         break;
       }
 
-      double duration = 0.0;
+      double value = 0.0;
       String description = "";
       if (tokenizer.Consume('=')) {
-        StringView durationOutput;
-        if (tokenizer.ConsumeToken(Mode::kNormal, durationOutput)) {
-          duration = durationOutput.ToString().ToDouble();
+        StringView valueOutput;
+        if (tokenizer.ConsumeToken(Mode::kNormal, valueOutput)) {
+          value = valueOutput.ToString().ToDouble();
         }
       }
       if (tokenizer.Consume(';')) {
@@ -893,7 +893,7 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
       }
 
       headers->push_back(WTF::MakeUnique<ServerTimingHeader>(
-          metric.ToString(), duration, description));
+          metric.ToString(), value, description));
 
       if (!tokenizer.Consume(',')) {
         break;
