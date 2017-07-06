@@ -17,12 +17,12 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/page_transition_types.h"
 
 // This macro invokes the specified method on each observer, passing the

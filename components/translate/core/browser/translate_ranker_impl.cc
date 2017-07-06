@@ -24,9 +24,9 @@
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/ukm/public/ukm_entry_builder.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace translate {

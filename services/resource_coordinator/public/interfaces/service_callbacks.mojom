@@ -4,7 +4,7 @@
 
 module resource_coordinator.mojom;
 
-import "components/ukm/public/interfaces/ukm_interface.mojom";
+import "services/metrics/public/interfaces/ukm_interface.mojom";
 
 // This class is intended to provide an interface to register mojo interfaces
 // that are not currently accessible to the resource_coordinator service. For

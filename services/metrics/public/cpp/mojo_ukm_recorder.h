@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_PUBLIC_MOJO_UKM_RECORDER_H_
-#define COMPONENTS_UKM_PUBLIC_MOJO_UKM_RECORDER_H_
+#ifndef SERVICES_METRICS_PUBLIC_CPP_MOJO_UKM_RECORDER_H_
+#define SERVICES_METRICS_PUBLIC_CPP_MOJO_UKM_RECORDER_H_
 
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
-#include "components/ukm/public/ukm_export.h"
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
 
@@ -25,7 +25,7 @@ namespace ukm {
  *      recorder.GetEntryBuilder(coordination_unit_id, "MyEvent");
  *  builder->AddMetric("MyMetric", metric_value);
  */
-class UKM_EXPORT MojoUkmRecorder : public UkmRecorder {
+class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
  public:
   explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface);
   ~MojoUkmRecorder() override;
@@ -42,4 +42,4 @@ class UKM_EXPORT MojoUkmRecorder : public UkmRecorder {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_PUBLIC_MOJO_UKM_RECORDER_H_
+#endif  // SERVICES_METRICS_PUBLIC_CPP_MOJO_UKM_RECORDER_H_

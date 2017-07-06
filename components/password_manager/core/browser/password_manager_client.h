@@ -12,7 +12,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 class PrefService;
 

@@ -38,7 +38,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill {
 namespace {

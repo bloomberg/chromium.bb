@@ -6,8 +6,8 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/memory/ptr_util.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace ukm {

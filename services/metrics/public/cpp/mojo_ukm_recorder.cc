@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ukm/public/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 
 #include <utility>
 

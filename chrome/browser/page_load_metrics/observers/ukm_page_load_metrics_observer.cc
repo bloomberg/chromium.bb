@@ -8,9 +8,9 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/ukm/public/ukm_entry_builder.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace internal {
 

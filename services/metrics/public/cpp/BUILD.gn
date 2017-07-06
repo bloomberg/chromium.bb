@@ -4,22 +4,22 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-component("public") {
+component("metrics_cpp") {
   sources = [
+    "metrics_export.h",
     "mojo_ukm_recorder.cc",
     "mojo_ukm_recorder.h",
     "ukm_entry_builder.cc",
     "ukm_entry_builder.h",
-    "ukm_export.h",
     "ukm_recorder.cc",
     "ukm_recorder.h",
   ]
 
-  defines = [ "UKM_IMPLEMENTATION" ]
+  defines = [ "METRICS_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",
-    "//components/ukm/public/interfaces",
+    "//services/metrics/public/interfaces",
     "//url",
   ]
 

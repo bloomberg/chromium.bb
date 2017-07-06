@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/ukm/public/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"

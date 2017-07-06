@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_PUBLIC_UKM_RECORDER_H_
-#define COMPONENTS_UKM_PUBLIC_UKM_RECORDER_H_
+#ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_RECORDER_H_
+#define SERVICES_METRICS_PUBLIC_CPP_UKM_RECORDER_H_
 
 #include <stddef.h>
 
@@ -13,9 +13,9 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
-#include "components/ukm/public/ukm_entry_builder.h"
-#include "components/ukm/public/ukm_export.h"
+#include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 #include "url/gurl.h"
 
 class ContextualSearchRankerLoggerImpl;
@@ -30,7 +30,7 @@ namespace content {
 class MediaInternals;
 class RenderFrameImpl;
 class RenderWidgetHostLatencyTracker;
-}
+}  // namespace content
 
 namespace resource_coordinator {
 class CoordinationUnitManager;
@@ -47,7 +47,7 @@ class JourneyLogger;
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
 class PasswordFormMetricsRecorder;
-}
+}  // namespace password_manager
 
 namespace ukm {
 
@@ -56,12 +56,12 @@ class UkmInterface;
 class TestRecordingHelper;
 
 // This feature controls whether UkmService should be created.
-UKM_EXPORT extern const base::Feature kUkmFeature;
+METRICS_EXPORT extern const base::Feature kUkmFeature;
 
 typedef int64_t SourceId;
 
 // Interface for recording UKM
-class UKM_EXPORT UkmRecorder {
+class METRICS_EXPORT UkmRecorder {
  public:
   UkmRecorder();
   virtual ~UkmRecorder();
@@ -125,4 +125,4 @@ class UKM_EXPORT UkmRecorder {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_PUBLIC_UKM_RECORDER_H_
+#endif  // SERVICES_METRICS_PUBLIC_CPP_UKM_RECORDER_H_

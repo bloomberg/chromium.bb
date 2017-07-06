@@ -11,11 +11,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/rappor/public/rappor_utils.h"
-#include "components/ukm/public/ukm_entry_builder.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_histogram_macros.h"
 

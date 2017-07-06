@@ -104,6 +104,7 @@ include_rules = [
   "+libxml/xmlwriter.h",
   "+net",
   "+rlz/features",
+  "+services/metrics",
   "+third_party/brotli",
   "+third_party/google_toolbox_for_mac",
   "+third_party/libaddressinput",

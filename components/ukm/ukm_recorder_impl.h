@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace metrics {
 class UkmBrowserTest;

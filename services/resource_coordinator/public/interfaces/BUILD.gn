@@ -19,8 +19,8 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
-    "//components/ukm/public/interfaces:interfaces",
     "//mojo/common:common_custom_types",
+    "//services/metrics/public/interfaces",
   ]
 
   component_output_prefix = "resource_coordinator_public_interfaces_internal"

@@ -47,6 +47,7 @@ include_rules = [
   "+services/data_decoder/public/cpp",
   "+services/device/public/cpp/device_features.h",
   "+services/identity/public",
+  "+services/metrics/public",
   "+services/preferences/public/cpp",
   "+services/preferences/public/interfaces",
   "+services/resource_coordinator/public/cpp",
