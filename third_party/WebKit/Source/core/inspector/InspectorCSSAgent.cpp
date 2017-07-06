@@ -2238,11 +2238,11 @@ Response InspectorCSSAgent::getBackgroundColors(
   if (!element_layout)
     return Response::OK();
 
-  for (const LayoutObject* child = element_layout->SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsText())
+  for (const Node* child = element->firstChild(); child;
+       child = child->nextSibling()) {
+    if (!child->IsTextNode())
       continue;
-    text_bounds.Unite(LayoutRect(child->AbsoluteBoundingBoxRect()));
+    text_bounds.Unite(LayoutRect(child->BoundingBox()));
   }
   if (text_bounds.Size().IsEmpty())
     return Response::OK();
