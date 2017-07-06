@@ -89,6 +89,8 @@ static_library("vr_common") {
     "ui_elements/ui_element_debug_id.h",
     "ui_elements/url_bar.cc",
     "ui_elements/url_bar.h",
+    "ui_input_manager.cc",
+    "ui_input_manager.h",
     "ui_interface.h",
     "ui_scene.cc",
     "ui_scene.h",
