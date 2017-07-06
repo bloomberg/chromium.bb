@@ -69,7 +69,6 @@ import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.sync.SyncController;
-import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -455,9 +454,7 @@ public class ProcessInitializationHandler {
                     // Initialize whether or not precaching is enabled.
                     PrecacheLauncher.updatePrecachingEnabled(context);
 
-                    if (ChromeWebApkHost.isEnabled()) {
-                        WebApkVersionManager.updateWebApksIfNeeded();
-                    }
+                    WebApkVersionManager.updateWebApksIfNeeded();
 
                     removeSnapshotDatabase(context);
 

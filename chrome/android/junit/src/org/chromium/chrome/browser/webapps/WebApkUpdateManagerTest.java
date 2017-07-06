@@ -336,7 +336,6 @@ public class WebApkUpdateManagerTest {
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         CommandLine.init(null);
-        ChromeWebApkHost.initForTesting(true);
 
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION);
         mClock = new MockClock();

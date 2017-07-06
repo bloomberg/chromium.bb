@@ -27,23 +27,17 @@ public class ChromeWebApkHost {
     /** Whether installing WebAPks from Google Play is possible. */
     private static Integer sGooglePlayInstallState;
 
-    private static Boolean sEnabledForTesting;
+    private static Boolean sInstallsEnabledForTesting;
 
     public static void init() {
         WebApkValidator.init(
                 ChromeWebApkHostSignature.EXPECTED_SIGNATURE, ChromeWebApkHostSignature.PUBLIC_KEY);
     }
 
-    public static void initForTesting(boolean enabled) {
-        sEnabledForTesting = enabled;
-        sGooglePlayInstallState = enabled ? GooglePlayInstallState.SUPPORTED
-                                          : GooglePlayInstallState.NO_PLAY_SERVICES;
-    }
-
-    public static boolean isEnabled() {
-        if (sEnabledForTesting != null) return sEnabledForTesting;
-
-        return isEnabledInPrefs();
+    public static void initForTesting(boolean installsEnabled) {
+        sInstallsEnabledForTesting = installsEnabled;
+        sGooglePlayInstallState = installsEnabled ? GooglePlayInstallState.SUPPORTED
+                                                  : GooglePlayInstallState.NO_PLAY_SERVICES;
     }
 
     /** Computes the GooglePlayInstallState. */
@@ -66,7 +60,10 @@ public class ChromeWebApkHost {
     /** Returns whether installing WebAPKs is possible. */
     @CalledByNative
     private static boolean canInstallWebApk() {
-        return isEnabled() && getGooglePlayInstallState() == GooglePlayInstallState.SUPPORTED;
+        if (sInstallsEnabledForTesting != null) return sInstallsEnabledForTesting;
+
+        return isEnabledInPrefs()
+                && getGooglePlayInstallState() == GooglePlayInstallState.SUPPORTED;
     }
 
     @CalledByNative
@@ -79,8 +76,7 @@ public class ChromeWebApkHost {
 
     /* Returns whether launching renderer in WebAPK process is enabled by Chrome. */
     public static boolean canLaunchRendererInWebApkProcess() {
-        return isEnabled() && LibraryLoader.isInitialized()
-                && nativeCanLaunchRendererInWebApkProcess();
+        return LibraryLoader.isInitialized() && nativeCanLaunchRendererInWebApkProcess();
     }
 
     /**
