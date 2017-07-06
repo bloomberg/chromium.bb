@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -e -o pipefail
+
 MYPATH=$(dirname "${BASH_SOURCE[0]}")
 
 : ${CIPD_CLIENT_VER:=`cat $MYPATH/cipd_client_version`}
@@ -50,7 +52,7 @@ if [ ! -e "$CLIENT" ]; then
   echo "Bootstrapping cipd client for ${PLAT}-${ARCH}..."
   echo "From $URL"
   if hash curl 2> /dev/null ; then
-    curl "$URL" -A "$USER_AGENT"  -L -o "$CLIENT"
+    curl "$URL" -f -A "$USER_AGENT"  -L -o "$CLIENT"
     chmod +x "$CLIENT"
   else
     echo Your platform is missing the \`curl\` command. Please use your package
