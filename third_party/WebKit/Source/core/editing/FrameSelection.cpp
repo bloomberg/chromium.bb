@@ -1135,7 +1135,22 @@ void FrameSelection::MoveRangeSelection(const VisiblePosition& base_position,
   if (new_selection.IsNone())
     return;
 
-  SetSelection(new_selection, kCloseTyping | kClearTypingStyle,
+  const VisibleSelection visible_selection =
+      CreateVisibleSelection(new_selection);
+  if (visible_selection.IsNone())
+    return;
+
+  SelectionInDOMTree::Builder builder;
+  if (visible_selection.IsBaseFirst()) {
+    builder.SetBaseAndExtent(visible_selection.Start(),
+                             visible_selection.End());
+  } else {
+    builder.SetBaseAndExtent(visible_selection.End(),
+                             visible_selection.Start());
+  }
+  builder.SetAffinity(visible_selection.Affinity());
+  builder.SetIsHandleVisible(IsHandleVisible());
+  SetSelection(builder.Build(), kCloseTyping | kClearTypingStyle,
                CursorAlignOnScroll::kIfNeeded, granularity);
 }
 
