@@ -77,19 +77,39 @@ IdentityManager::IdentityManager(mojom::IdentityManagerRequest request,
           &IdentityManager::OnSigninManagerShutdown, base::Unretained(this)));
   binding_.set_connection_error_handler(
       base::Bind(&IdentityManager::OnConnectionError, base::Unretained(this)));
+
+  token_service_->AddObserver(this);
 }
 
-IdentityManager::~IdentityManager() {}
+IdentityManager::~IdentityManager() {
+  token_service_->RemoveObserver(this);
+}
 
 void IdentityManager::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
   // It's annoying that this can't be trivially implemented in terms of
   // GetAccountInfoFromGaiaId(), but there's no SigninManagerBase method that
   // directly returns the authenticated GAIA ID. We can of course get it from
-  // the AccountInfo but once we have the ACcountInfo we ... have the
+  // the AccountInfo but once we have the AccountInfo we ... have the
   // AccountInfo.
   AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
+  std::move(callback).Run(account_info, account_state);
+}
+
+void IdentityManager::GetPrimaryAccountWhenAvailable(
+    GetPrimaryAccountWhenAvailableCallback callback) {
+  AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  AccountState account_state = GetStateOfAccount(account_info);
+
+  if (!account_state.has_refresh_token) {
+    primary_account_available_callbacks_.push_back(std::move(callback));
+    return;
+  }
+
+  DCHECK(!account_info.account_id.empty());
+  DCHECK(!account_info.email.empty());
+  DCHECK(!account_info.gaia.empty());
   std::move(callback).Run(account_info, account_state);
 }
 
@@ -114,6 +134,21 @@ void IdentityManager::GetAccessToken(const std::string& account_id,
       std::move(access_token_request);
 }
 
+void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
+  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
+  AccountState account_state = GetStateOfAccount(account_info);
+
+  if (account_state.is_primary_account) {
+    DCHECK(!account_info.account_id.empty());
+    DCHECK(!account_info.email.empty());
+    DCHECK(!account_info.gaia.empty());
+    for (auto&& callback : primary_account_available_callbacks_) {
+      std::move(callback).Run(account_info, account_state);
+    }
+    primary_account_available_callbacks_.clear();
+  }
+}
+
 void IdentityManager::AccessTokenRequestCompleted(AccessTokenRequest* request) {
   access_token_requests_.erase(request);
 }
@@ -123,6 +158,8 @@ AccountState IdentityManager::GetStateOfAccount(
   AccountState account_state;
   account_state.has_refresh_token =
       token_service_->RefreshTokenIsAvailable(account_info.account_id);
+  account_state.is_primary_account =
+      (account_info.account_id == signin_manager_->GetAuthenticatedAccountId());
   return account_state;
 }
 

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 class Profile;
 
@@ -19,7 +19,7 @@ namespace extensions {
 // interactive Identity API call. The UI is launched through the LoginUIService.
 // When the flow completes, the delegate is notified, and on success will
 // be given an OAuth2 login refresh token.
-class IdentitySigninFlow : public OAuth2TokenService::Observer {
+class IdentitySigninFlow {
  public:
   class Delegate {
    public:
@@ -35,17 +35,19 @@ class IdentitySigninFlow : public OAuth2TokenService::Observer {
 
   IdentitySigninFlow(Delegate* delegate,
                      Profile* profile);
-  ~IdentitySigninFlow() override;
+  ~IdentitySigninFlow();
 
   // Starts the flow. Should only be called once.
   void Start();
 
-  // OAuth2TokenService::Observer implementation:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-
  private:
+  // Invoked by the IdentityManager when the primary account is available.
+  void OnPrimaryAccountAvailable(const AccountInfo& account_info,
+                                 const identity::AccountState& account_state);
+
   Delegate* delegate_;
   Profile* profile_;
+  identity::mojom::IdentityManagerPtr identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentitySigninFlow);
 };

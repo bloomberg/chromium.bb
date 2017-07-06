@@ -10,4 +10,8 @@ module identity.mojom;
 struct AccountState {
   // Whether the account has a refresh token available.
   bool has_refresh_token;
+
+  // Whether this account is the primary account (i.e., the account being used
+  // to sync).
+  bool is_primary_account;
 };
