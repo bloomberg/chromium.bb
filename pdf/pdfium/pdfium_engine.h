@@ -453,6 +453,9 @@ class PDFiumEngine : public PDFEngine,
   // field.
   void SetInFormTextArea(bool in_form_text_area);
 
+  // Sets whether or not left mouse button is currently being held down.
+  void SetMouseLeftButtonDown(bool is_mouse_left_button_down);
+
   bool PageIndexInBounds(int index) const;
 
   void ScheduleTouchTimer(const pp::TouchInputEvent& event);
@@ -653,16 +656,22 @@ class PDFiumEngine : public PDFEngine,
   bool defer_page_unload_;
   std::vector<int> deferred_page_unloads_;
 
-  // Used for text selection, but does not include text within form text fields.
+  // Used for text selection, but does not include text within form text areas.
   // There could be more than one range if selection spans more than one page.
   std::vector<PDFiumRange> selection_;
   // True if we're in the middle of text selection.
   bool selecting_;
 
+  MouseDownState mouse_down_state_;
+
+  // Text selection within form text fields and form combobox text fields.
+  std::string selected_form_text_;
+
   // True if focus is in form text field or form combobox text field.
   bool in_form_text_area_;
 
-  MouseDownState mouse_down_state_;
+  // True if left mouse button is currently being held down.
+  bool mouse_left_button_down_;
 
   // Used for searching.
   std::vector<PDFiumRange> find_results_;
