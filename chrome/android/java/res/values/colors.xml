@@ -195,9 +195,8 @@
 
     <!-- Photo Picker colors -->
     <color name="photo_picker_tile_bg_color">@color/google_grey_200</color>
-    <color name="photo_picker_special_tile_bg_color">@color/dark_action_bar_color</color>
-    <color name="photo_picker_special_tile_color">@android:color/white</color>
-    <color name="photo_picker_special_tile_disabled_bg_color">@color/google_grey_300</color>
+    <color name="photo_picker_special_tile_bg_color">@color/google_grey_300</color>
+    <color name="photo_picker_special_tile_color">@color/black_alpha_40</color>
     <color name="photo_picker_special_tile_disabled_color">@color/google_grey_400</color>
 
     <!-- Bookmark widget colors -->
