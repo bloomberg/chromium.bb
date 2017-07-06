@@ -3517,13 +3517,14 @@ class ChangeDescription(object):
         re.match(self.CHERRY_PICK_LINE, self._description_lines[-1])):
       cp_line = self._description_lines.pop()
 
-    top_lines, _, parsed_footers = git_footers.split_footers(self.description)
+    top_lines, footer_lines, _ = git_footers.split_footers(self.description)
 
     # Original-ify all Cr- footers, to avoid re-lands, cherry-picks, or just
     # user interference with actual footers we'd insert below.
-    for i, (k, v) in enumerate(parsed_footers):
-      if k.startswith('Cr-'):
-        parsed_footers[i] = (k.replace('Cr-', 'Cr-Original-'), v)
+    for i, line in enumerate(footer_lines):
+      k, v = git_footers.parse_footer(line) or (None, None)
+      if k and k.startswith('Cr-'):
+        footer_lines[i] = '%s: %s' % ('Cr-Original-' + k[len('Cr-'):], v)
 
     # Add Position and Lineage footers based on the parent.
     lineage = list(reversed(parent_footer_map.get('Cr-Branched-From', [])))
@@ -3535,16 +3536,15 @@ class ChangeDescription(object):
       lineage.insert(0, '%s-%s@{#%d}' % (parent_hash, parent_position[0],
                                          int(parent_position[1])))
 
-    parsed_footers.append(('Cr-Commit-Position',
-                           '%s@{#%d}' % (dest_ref, number)))
-    parsed_footers.extend(('Cr-Branched-From', v) for v in lineage)
+    footer_lines.append('Cr-Commit-Position: %s@{#%d}' % (dest_ref, number))
+    footer_lines.extend('Cr-Branched-From: %s' % v for v in lineage)
 
     self._description_lines = top_lines
     if cp_line:
       self._description_lines.append(cp_line)
     if self._description_lines[-1] != '':
       self._description_lines.append('')  # Ensure footer separator.
-    self._description_lines.extend('%s: %s' % kv for kv in parsed_footers)
+    self._description_lines.extend(footer_lines)
 
 
 def get_approving_reviewers(props, disapproval=False):

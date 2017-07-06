@@ -278,6 +278,24 @@ class TestGitClBasic(unittest.TestCase):
         '\n'
         'Cr-Commit-Position: refs/heads/master@{#13}')
 
+  def test_git_number_same_branch_mixed_footers(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child\n'
+                  '\n'
+                  'Broken-by: design\n'
+                  'BUG=123')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Broken-by: design\n'
+        'BUG=123\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
   def test_git_number_same_branch_with_originals(self):
     actual = self._test_git_number(
         'Parent\n'
