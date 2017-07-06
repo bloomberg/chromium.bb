@@ -51,7 +51,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     // For the following lines, clear states that are not shared across lines.
     for (auto& box : stack_) {
       box.fragment_start = 0;
-      box.metrics = NGLineHeightMetrics();
+      box.metrics = box.text_metrics;
       if (box.needs_box_fragment) {
         box.line_left_position = LayoutUnit();
         // Existing box states are wrapped boxes, and hence no left edges.

@@ -427,7 +427,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-in
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-remove-005.xht [ Failure Pass ]
 
 # Inline: vertical-align.
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-005.xht [ Failure ]
 
 # Inline: atomic inline preferred width.
