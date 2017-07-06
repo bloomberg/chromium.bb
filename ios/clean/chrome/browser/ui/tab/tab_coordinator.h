@@ -25,6 +25,9 @@ class WebState;
 // view controller, if any.
 @property(nonatomic, copy) NSObject* presentationKey;
 
+// Stops observing all objects.
+- (void)disconnect;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_TAB_COORDINATOR_H_
