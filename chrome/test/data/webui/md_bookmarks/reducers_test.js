@@ -436,7 +436,7 @@ suite('search state', function() {
     assertFalse(bookmarks.util.isShowingSearch(clearedState));
     assertDeepEquals(['3'], bookmarks.util.getDisplayedList(clearedState));
     assertEquals('', clearedState.search.term);
-    assertDeepEquals([], clearedState.search.results);
+    assertDeepEquals(null, clearedState.search.results);
 
     // Case 2: Clear search by selecting a new folder.
     action = bookmarks.actions.selectFolder('1');
@@ -446,7 +446,36 @@ suite('search state', function() {
     assertFalse(bookmarks.util.isShowingSearch(selectedState));
     assertDeepEquals(['2'], bookmarks.util.getDisplayedList(selectedState));
     assertEquals('', selectedState.search.term);
-    assertDeepEquals([], selectedState.search.results);
+    assertDeepEquals(null, selectedState.search.results);
+  });
+
+  test('results do not clear while performing a second search', function() {
+    action = bookmarks.actions.setSearchTerm('te');
+    state = bookmarks.reduceAction(state, action);
+
+    assertFalse(bookmarks.util.isShowingSearch(state));
+
+    action = bookmarks.actions.setSearchResults(['2', '3']);
+    state = bookmarks.reduceAction(state, action);
+
+    assertFalse(state.search.inProgress);
+    assertTrue(bookmarks.util.isShowingSearch(state));
+
+    // Continuing the search should not clear the previous results, which should
+    // continue to show until the new results arrive.
+    action = bookmarks.actions.setSearchTerm('test');
+    state = bookmarks.reduceAction(state, action);
+
+    assertTrue(state.search.inProgress);
+    assertTrue(bookmarks.util.isShowingSearch(state));
+    assertDeepEquals(['2', '3'], bookmarks.util.getDisplayedList(state));
+
+    action = bookmarks.actions.setSearchResults(['3']);
+    state = bookmarks.reduceAction(state, action);
+
+    assertFalse(state.search.inProgress);
+    assertTrue(bookmarks.util.isShowingSearch(state));
+    assertDeepEquals(['3'], bookmarks.util.getDisplayedList(state));
   });
 
   test('removes deleted nodes', function() {
