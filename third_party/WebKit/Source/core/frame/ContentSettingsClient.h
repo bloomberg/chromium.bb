@@ -48,9 +48,6 @@ class CORE_EXPORT ContentSettingsClient {
   // Controls whether scripts loaded from the given URL are allowed to execute.
   bool AllowScriptFromSource(bool enabled_per_settings, const KURL&);
 
-  // Controls whether plugins are allowed.
-  bool AllowPlugins(bool enabled_per_settings);
-
   // Controls whether images are allowed.
   bool AllowImage(bool enabled_per_settings, const KURL&);
 

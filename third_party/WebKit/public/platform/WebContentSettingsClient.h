@@ -44,11 +44,6 @@ class WebContentSettingsClient {
     return true;
   }
 
-  // Controls whether plugins are allowed for this frame.
-  virtual bool AllowPlugins(bool enabled_per_settings) {
-    return enabled_per_settings;
-  }
-
   // Controls whether scripts are allowed to execute for this frame.
   virtual bool AllowScript(bool enabled_per_settings) {
     return enabled_per_settings;
