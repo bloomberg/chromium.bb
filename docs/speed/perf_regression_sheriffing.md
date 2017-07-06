@@ -10,7 +10,6 @@ regression sheriff role is now entirely focused on performance.
 ## Key Responsibilities
 
  * [Triage Regressions on the Perf Dashboard](#Triage-Regressions-on-the-Perf-Dashboard)
- * [Triaging Data Stoppage Alerts](#Triaging-Data-Stoppage-Alerts)
  * [Follow up on Performance Regressions](#Follow-up-on-Performance-Regressions)
  * [Give Feedback on our Infrastructure](#Give-Feedback-on-our-Infrastructure)
 
@@ -22,14 +21,9 @@ In the upper right corner, **sign in with your Chromium account**. Signing in is
 important in order to be able to kick off bisect jobs, and see data from
 internal waterfalls.
 
-Pick up **Chromium Perf Sheriff** from "Select an item ▼" drop down menu. There
-are two tables of alerts that may be shown:
-
- * "Performance Alerts"
- * "Data Stoppage Alerts"
-
-For either type of alert, if there are no currently pending alerts, then the
-table won't be shown.
+Pick up **Chromium Perf Sheriff** from "Select an item ▼" drop down menu.
+table of "Performance Alerts" should be shown. If there are no currently pending
+alerts, then the table won't be shown.
 
 The list can be sorted by clicking on the column header. When you click on the
 checkbox next to an alert, all the other alerts that occurred in the same
@@ -80,15 +74,6 @@ below it the dashboard shows graphs of all the alerts checked in that table.
    and kick off a bisect for it. There should be capacity to kick off as many
    bisects as you feel are necessary to investigate; [give feedback](#feedback)
    below if you feel that is not the case.
-
-## Triaging Data Stoppage Alerts
-
-Data stoppage alerts are listed on the
-[perf dashboard alerts page](https://chromeperf.appspot.com/alerts). Whenever
-the dashboard is monitoring a metric, and that metric stops sending data, an
-alert is fired. See
-[triaging data stoppage alerts](triaging_data_stoppage_alerts.md) for more
-details.
 
 ## Follow up on Performance Regressions
 
