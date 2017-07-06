@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace content {
 
@@ -20,17 +21,33 @@ struct SecurityStyleExplanation {
   CONTENT_EXPORT SecurityStyleExplanation(){};
   CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
                                           const std::string& description)
-      : summary(summary), description(description), has_certificate(false) {}
-  CONTENT_EXPORT SecurityStyleExplanation(const std::string& summary,
-                                          const std::string& description,
-                                          bool has_certificate)
-      : summary(summary), description(description),
-        has_certificate(has_certificate) {}
+      : summary(summary),
+        description(description),
+        has_certificate(false),
+        mixed_content_type(
+            blink::WebMixedContentContextType::kNotMixedContent) {}
+  CONTENT_EXPORT SecurityStyleExplanation(
+      const std::string& summary,
+      const std::string& description,
+      bool has_certificate,
+      blink::WebMixedContentContextType mixed_content_type)
+      : summary(summary),
+        description(description),
+        has_certificate(has_certificate),
+        mixed_content_type(mixed_content_type) {}
   CONTENT_EXPORT ~SecurityStyleExplanation() {}
 
   std::string summary;
   std::string description;
+  // |has_certificate| indicates that this explanation has an associated
+  // certificate. UI surfaces can use this to add a button/link for viewing the
+  // certificate of the current page.
   bool has_certificate;
+  // |mixed_content_type| indicates that the explanation describes a particular
+  // type of mixed content. A value of kNotMixedContent means that the
+  // explanation does not relate to mixed content. UI surfaces can use this to
+  // customize the display of mixed content explanations.
+  blink::WebMixedContentContextType mixed_content_type;
 };
 
 }  // namespace content
