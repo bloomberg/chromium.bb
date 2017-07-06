@@ -144,13 +144,14 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
   ASSERT_EQ(2u, mock_delegate.result().size());
   EXPECT_THAT(mock_delegate.result()[0],
               testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet1URI),
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet2URI),
-                  FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)));
-  EXPECT_THAT(mock_delegate.result()[1],
-              testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kNotExampleWebFacetURI),
-                  FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI)));
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)}));
+  EXPECT_THAT(
+      mock_delegate.result()[1],
+      testing::UnorderedElementsAre(
+          Facet{FacetURI::FromCanonicalSpec(kNotExampleWebFacetURI)},
+          Facet{FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI)}));
 }
 
 // The API contract of this class is to return an equivalence class for all
@@ -177,7 +178,7 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
   ASSERT_EQ(1u, mock_delegate.result().size());
   EXPECT_THAT(mock_delegate.result()[0],
               testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)));
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)}));
 }
 
 TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
@@ -206,9 +207,9 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
   ASSERT_EQ(1u, mock_delegate.result().size());
   EXPECT_THAT(mock_delegate.result()[0],
               testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet1URI),
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet2URI),
-                  FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)));
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)}));
 }
 
 TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
@@ -233,7 +234,7 @@ TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
   ASSERT_EQ(1u, mock_delegate.result().size());
   EXPECT_THAT(mock_delegate.result()[0],
               testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)));
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)}));
 }
 
 TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
@@ -264,9 +265,9 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
   ASSERT_EQ(1u, mock_delegate.result().size());
   EXPECT_THAT(mock_delegate.result()[0],
               testing::UnorderedElementsAre(
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet1URI),
-                  FacetURI::FromCanonicalSpec(kExampleWebFacet2URI),
-                  FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)));
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)}));
 }
 
 TEST_F(AffiliationFetcherTest, FailureBecauseResponseIsNotAProtobuf) {

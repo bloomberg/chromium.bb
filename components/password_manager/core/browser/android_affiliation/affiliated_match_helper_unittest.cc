@@ -39,7 +39,7 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
                AffiliatedFacets(const FacetURI&, StrategyOnCacheMiss));
   MOCK_METHOD2(Prefetch, void(const FacetURI&, const base::Time&));
   MOCK_METHOD2(CancelPrefetch, void(const FacetURI&, const base::Time&));
-  MOCK_METHOD1(TrimCacheForFacet, void(const FacetURI&));
+  MOCK_METHOD1(TrimCacheForFacetURI, void(const FacetURI&));
 
   void GetAffiliations(const FacetURI& facet_uri,
                        StrategyOnCacheMiss cache_miss_strategy,
@@ -63,24 +63,27 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
       StrategyOnCacheMiss expected_cache_miss_strategy) {
     EXPECT_CALL(*this, OnGetAffiliationsCalled(expected_facet_uri,
                                                expected_cache_miss_strategy))
-        .WillOnce(testing::Return(std::vector<FacetURI>()));
+        .WillOnce(testing::Return(AffiliatedFacets()));
   }
 
   void ExpectCallToPrefetch(const char* expected_facet_uri_spec) {
     EXPECT_CALL(*this,
                 Prefetch(FacetURI::FromCanonicalSpec(expected_facet_uri_spec),
-                         base::Time::Max())).RetiresOnSaturation();
+                         base::Time::Max()))
+        .RetiresOnSaturation();
   }
 
   void ExpectCallToCancelPrefetch(const char* expected_facet_uri_spec) {
     EXPECT_CALL(*this, CancelPrefetch(
                            FacetURI::FromCanonicalSpec(expected_facet_uri_spec),
-                           base::Time::Max())).RetiresOnSaturation();
+                           base::Time::Max()))
+        .RetiresOnSaturation();
   }
 
-  void ExpectCallToTrimCacheForFacet(const char* expected_facet_uri_spec) {
-    EXPECT_CALL(*this, TrimCacheForFacet(FacetURI::FromCanonicalSpec(
-                           expected_facet_uri_spec))).RetiresOnSaturation();
+  void ExpectCallToTrimCacheForFacetURI(const char* expected_facet_uri_spec) {
+    EXPECT_CALL(*this, TrimCacheForFacetURI(FacetURI::FromCanonicalSpec(
+                           expected_facet_uri_spec)))
+        .RetiresOnSaturation();
   }
 
  private:
@@ -116,25 +119,19 @@ const char kTestUsername[] = "JohnDoe";
 const char kTestPassword[] = "secret";
 
 AffiliatedFacets GetTestEquivalenceClassAlpha() {
-  AffiliatedFacets affiliated_facets;
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1));
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha2));
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3));
-  return affiliated_facets;
+  return {
+      {FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1)},
+      {FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha2)},
+      {FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3)},
+  };
 }
 
 AffiliatedFacets GetTestEquivalenceClassBeta() {
-  AffiliatedFacets affiliated_facets;
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestWebFacetURIBeta1));
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta2));
-  affiliated_facets.push_back(
-      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta3));
-  return affiliated_facets;
+  return {
+      {FacetURI::FromCanonicalSpec(kTestWebFacetURIBeta1)},
+      {FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta2)},
+      {FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta3)},
+  };
 }
 
 autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
@@ -240,13 +237,13 @@ class AffiliatedMatchHelperTest : public testing::Test {
   }
 
   void ExpectTrimCacheForAndroidTestLogins() {
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIAlpha3);
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIBeta2);
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIBeta3);
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIGamma);
   }
 
@@ -546,9 +543,9 @@ TEST_F(AffiliatedMatchHelperTest,
 
 // Verify that whenever the primary key is updated for a credential (in which
 // case both REMOVE and ADD change notifications are sent out), then Prefetch()
-// is called in response to the addition before the call to TrimCacheForFacet()
-// in response to the removal, so that cached data is not deleted and then
-// immediately re-fetched.
+// is called in response to the addition before the call to
+// TrimCacheForFacetURI() in response to the removal, so that cached data is not
+// deleted and then immediately re-fetched.
 TEST_F(AffiliatedMatchHelperTest, PrefetchBeforeTrimForPrimaryKeyUpdates) {
   AddAndroidAndNonAndroidTestLogins();
   match_helper()->Initialize();
@@ -562,7 +559,7 @@ TEST_F(AffiliatedMatchHelperTest, PrefetchBeforeTrimForPrimaryKeyUpdates) {
     testing::InSequence in_sequence;
     mock_affiliation_service()->ExpectCallToPrefetch(
         kTestAndroidFacetURIAlpha3);
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIAlpha3);
   }
 
@@ -579,7 +576,8 @@ TEST_F(AffiliatedMatchHelperTest,
        DuplicateCredentialsArePrefetchWithMultiplicity) {
   EXPECT_CALL(*mock_affiliation_service(),
               Prefetch(FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3),
-                       base::Time::Max())).Times(4);
+                       base::Time::Max()))
+      .Times(4);
 
   autofill::PasswordForm android_form(
       GetTestAndroidCredentials(kTestAndroidRealmAlpha3));
@@ -608,7 +606,7 @@ TEST_F(AffiliatedMatchHelperTest,
   for (size_t i = 0; i < 4; ++i) {
     mock_affiliation_service()->ExpectCallToCancelPrefetch(
         kTestAndroidFacetURIAlpha3);
-    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacetURI(
         kTestAndroidFacetURIAlpha3);
   }
 

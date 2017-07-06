@@ -187,6 +187,17 @@ bool ParseAndCanonicalizeFacetURI(const std::string& input_uri,
   return false;
 }
 
+// Extracts and sorts the facet URIs of the given affiliated facets. This is
+// used to determine whether two equivalence classes are equal.
+std::vector<FacetURI> ExtractAndSortFacetURIs(const AffiliatedFacets& facets) {
+  std::vector<FacetURI> uris;
+  uris.reserve(facets.size());
+  std::transform(facets.begin(), facets.end(), std::back_inserter(uris),
+                 [](const Facet& facet) { return facet.uri; });
+  std::sort(uris.begin(), uris.end());
+  return uris;
+};
+
 }  // namespace
 
 
@@ -278,16 +289,27 @@ std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri) {
   return os << facet_uri.potentially_invalid_spec();
 }
 
+bool operator==(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs) {
+  return std::tie(lhs.name, lhs.icon_url) == std::tie(rhs.name, rhs.icon_url);
+}
+
+bool operator!=(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(const Facet& lhs, const Facet& rhs) {
+  return std::tie(lhs.uri, lhs.branding_info) ==
+         std::tie(rhs.uri, rhs.branding_info);
+}
+
+bool operator!=(const Facet& lhs, const Facet& rhs) {
+  return !(lhs == rhs);
+}
+
 bool AreEquivalenceClassesEqual(const AffiliatedFacets& a,
                                 const AffiliatedFacets& b) {
-  if (a.size() != b.size())
-    return false;
-
-  std::vector<FacetURI> a_sorted(a.begin(), a.end());
-  std::vector<FacetURI> b_sorted(b.begin(), b.end());
-  std::sort(a_sorted.begin(), a_sorted.end());
-  std::sort(b_sorted.begin(), b_sorted.end());
-  return std::equal(a_sorted.begin(), a_sorted.end(), b_sorted.begin());
+  return a.size() == b.size() &&
+         ExtractAndSortFacetURIs(a) == ExtractAndSortFacetURIs(b);
 }
 
 bool IsValidAndroidFacetURI(const std::string& url) {

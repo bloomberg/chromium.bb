@@ -142,7 +142,7 @@ class AffiliationService : public KeyedService {
   // triggered by this call. It will only potentially remove data
   // corresponding to the given |facet_uri|, but still only as long as the
   // data is no longer needed.
-  virtual void TrimCacheForFacet(const FacetURI& facet_uri);
+  virtual void TrimCacheForFacetURI(const FacetURI& facet_uri);
 
  private:
   // The backend, owned by this AffiliationService instance, but living on the

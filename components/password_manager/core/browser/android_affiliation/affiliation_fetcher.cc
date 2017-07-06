@@ -185,42 +185,42 @@ bool AffiliationFetcher::ParseResponse(
     const affiliation_pb::Affiliation& equivalence_class(
         response.affiliation(i));
 
-    AffiliatedFacets affiliated_uris;
+    AffiliatedFacets affiliated_facets;
     for (int j = 0; j < equivalence_class.facet_size(); ++j) {
       const std::string& uri_spec(equivalence_class.facet(j).id());
       FacetURI uri = FacetURI::FromPotentiallyInvalidSpec(uri_spec);
       // Ignore potential future kinds of facet URIs (e.g. for new platforms).
       if (!uri.is_valid())
         continue;
-      affiliated_uris.push_back(uri);
+      affiliated_facets.push_back({uri});
     }
 
     // Be lenient and ignore empty (after filtering) equivalence classes.
-    if (affiliated_uris.empty())
+    if (affiliated_facets.empty())
       continue;
 
     // Ignore equivalence classes that are duplicates of earlier ones. However,
     // fail in the case of a partial overlap, which violates the invariant that
     // affiliations must form an equivalence relation.
-    for (const FacetURI& uri : affiliated_uris) {
-      if (!facet_uri_to_class_index.count(uri))
-        facet_uri_to_class_index[uri] = result->size();
-      if (facet_uri_to_class_index[uri] !=
-          facet_uri_to_class_index[affiliated_uris[0]]) {
+    for (const Facet& facet : affiliated_facets) {
+      if (!facet_uri_to_class_index.count(facet.uri))
+        facet_uri_to_class_index[facet.uri] = result->size();
+      if (facet_uri_to_class_index[facet.uri] !=
+          facet_uri_to_class_index[affiliated_facets[0].uri]) {
         return false;
       }
     }
 
     // Filter out duplicate equivalence classes in the response.
-    if (facet_uri_to_class_index[affiliated_uris[0]] == result->size())
-      result->push_back(affiliated_uris);
+    if (facet_uri_to_class_index[affiliated_facets[0].uri] == result->size())
+      result->push_back(affiliated_facets);
   }
 
   // Synthesize an equivalence class (of size one) for each facet that did not
   // appear in the server response due to not being affiliated with any others.
   for (const FacetURI& uri : requested_facet_uris_) {
     if (!facet_uri_to_class_index.count(uri))
-      result->push_back(AffiliatedFacets(1, uri));
+      result->push_back({{uri}});
   }
 
   return true;

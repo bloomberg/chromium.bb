@@ -81,11 +81,11 @@ void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
                  base::Unretained(backend_), facet_uri, keep_fresh_until));
 }
 
-void AffiliationService::TrimCacheForFacet(const FacetURI& facet_uri) {
+void AffiliationService::TrimCacheForFacetURI(const FacetURI& facet_uri) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AffiliationBackend::TrimCacheForFacet,
+      FROM_HERE, base::Bind(&AffiliationBackend::TrimCacheForFacetURI,
                             base::Unretained(backend_), facet_uri));
 }
 
