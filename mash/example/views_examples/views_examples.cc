@@ -31,10 +31,12 @@ class ViewsExamples : public service_manager::Service,
  private:
   // service_manager::Service:
   void OnStart() override {
-    aura_init_ = base::MakeUnique<views::AuraInit>(
-        context()->connector(), context()->identity(),
-        "views_mus_resources.pak", std::string(), nullptr,
-        views::AuraInit::Mode::AURA_MUS);
+    aura_init_ =
+        views::AuraInit::Create(context()->connector(), context()->identity(),
+                                "views_mus_resources.pak", std::string(),
+                                nullptr, views::AuraInit::Mode::AURA_MUS);
+    if (!aura_init_)
+      context()->QuitNow();
   }
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,

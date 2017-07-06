@@ -364,9 +364,13 @@ void SimpleWM::OnStart() {
   started_ = true;
   screen_ = base::MakeUnique<display::ScreenBase>();
   display::Screen::SetScreenInstance(screen_.get());
-  aura_init_ = base::MakeUnique<views::AuraInit>(
+  aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
+  if (!aura_init_) {
+    context()->QuitNow();
+    return;
+  }
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       context()->connector(), this, this);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
