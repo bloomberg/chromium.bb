@@ -48,7 +48,7 @@ class GerritAPI(object):
     def query_exportable_open_cls(self, limit=200):
         path = ('/changes/?q=project:\"chromium/src\"+status:open'
                 '&o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS'
-                '&o=DETAILED_ACCOUNTS&o=DETAILED_LABELS&n={}').format(limit)
+                '&o=DETAILED_LABELS&n={}').format(limit)
         open_cls_data = self.get(path)
         open_cls = [GerritCL(data, self) for data in open_cls_data]
 
@@ -80,16 +80,16 @@ class GerritCL(object):
         return self._data['owner']['email']
 
     @property
-    def reviewers(self):
-        return self._data['reviewers']
-
-    @property
     def current_revision_sha(self):
         return self._data['current_revision']
 
     @property
     def current_revision(self):
         return self._data['revisions'][self.current_revision_sha]
+
+    @property
+    def has_review_started(self):
+        return self._data.get('has_review_started')
 
     def latest_commit_message_with_footers(self):
         return self.current_revision['commit_with_footers']
