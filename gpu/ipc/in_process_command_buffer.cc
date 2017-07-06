@@ -428,6 +428,9 @@ void InProcessCommandBuffer::Destroy() {
 
 bool InProcessCommandBuffer::DestroyOnGpuThread() {
   CheckSequencedThread();
+  // TODO(sunnyps): Should this use ScopedCrashKey instead?
+  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
+                                use_virtualized_gl_context_ ? "1" : "0");
   gpu_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   // Clean up GL resources if possible.
   bool have_context = context_.get() && context_->MakeCurrent(surface_.get());
