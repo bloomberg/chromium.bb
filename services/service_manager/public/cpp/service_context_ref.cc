@@ -27,7 +27,7 @@ class ServiceContextRefImpl : public ServiceContextRef {
   ~ServiceContextRefImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (service_task_runner_->RunsTasksOnCurrentThread() && factory_) {
+    if (service_task_runner_->RunsTasksInCurrentSequence() && factory_) {
       factory_->Release();
     } else {
       service_task_runner_->PostTask(
@@ -40,7 +40,7 @@ class ServiceContextRefImpl : public ServiceContextRef {
   std::unique_ptr<ServiceContextRef> Clone() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    if (service_task_runner_->RunsTasksOnCurrentThread() && factory_) {
+    if (service_task_runner_->RunsTasksInCurrentSequence() && factory_) {
       factory_->AddRef();
     } else {
       service_task_runner_->PostTask(
