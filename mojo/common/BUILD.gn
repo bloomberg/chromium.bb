@@ -27,7 +27,7 @@ mojom("common_custom_types") {
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  use_new_js_bindings = false
+  js_bindings_mode = "both"
 }
 
 component("common_base") {
