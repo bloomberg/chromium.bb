@@ -137,6 +137,9 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
 }
 
 bool RootScrollerController::IsValidRootScroller(const Element& element) const {
+  if (!element.IsInTreeScope())
+    return false;
+
   if (!element.GetLayoutObject())
     return false;
 
@@ -156,6 +159,11 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
 void RootScrollerController::ApplyRootScrollerProperties(Node& node) const {
   DCHECK(document_->GetFrame());
   DCHECK(document_->GetFrame()->View());
+
+  // If the node has been removed from the Document, we shouldn't be touching
+  // anything related to the Frame- or Layout- hierarchies.
+  if (!node.IsInTreeScope())
+    return;
 
   if (node.IsFrameOwnerElement()) {
     HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(&node);
@@ -205,6 +213,14 @@ bool RootScrollerController::ScrollsViewport(const Element& element) const {
     return element == document_->documentElement();
 
   return element == effective_root_scroller_.Get();
+}
+
+void RootScrollerController::ElementRemoved(const Element& element) {
+  if ((Node&)element != effective_root_scroller_)
+    return;
+
+  RecomputeEffectiveRootScroller();
+  DCHECK((Node&)element != effective_root_scroller_);
 }
 
 }  // namespace blink
