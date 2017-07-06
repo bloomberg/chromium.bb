@@ -1,4 +1,3 @@
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
 CONSOLE ERROR: line 27: An invalid form control with name='i1' is not focusable.
 Test if an invalid control prevents interactive form submission, and the first invalid focusable control gets focus.
 

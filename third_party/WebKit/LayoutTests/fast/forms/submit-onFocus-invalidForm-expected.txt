@@ -1,5 +1,3 @@
-ValidationMessageClient: main-message=Please match the requested format. sub-message=
-ValidationMessageClient: main-message=Please match the requested format. sub-message=
 Test that form.submit() when called on "focus" event for invalid form should submit the form
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

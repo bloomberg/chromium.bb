@@ -1,7 +1,3 @@
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
 HTMLFormElement::reportValidity() with cases that event handlers called by reportValidity() updates DOM structure.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

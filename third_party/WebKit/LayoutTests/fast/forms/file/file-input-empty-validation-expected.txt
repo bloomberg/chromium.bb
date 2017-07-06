@@ -1,4 +1,3 @@
-ValidationMessageClient: main-message=Please select a file. sub-message=
  
 This tests that a file input cleared of its (required) value doesn't validate.
 

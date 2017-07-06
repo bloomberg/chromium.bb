@@ -32,6 +32,7 @@
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ValidationMessageOverlayDelegate.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
@@ -141,7 +142,9 @@ void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
 
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
-  if (MonotonicallyIncreasingTime() >= finish_time_ || !CurrentView()) {
+  if ((!LayoutTestSupport::IsRunningLayoutTest() &&
+       MonotonicallyIncreasingTime() >= finish_time_) ||
+      !CurrentView()) {
     HideValidationMessage(*current_anchor_);
     return;
   }

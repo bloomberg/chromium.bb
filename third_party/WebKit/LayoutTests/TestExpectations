@@ -870,6 +870,10 @@ crbug.com/734762 inspector-protocol/accessibility/accessibility-nameSources-inpu
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
+# Mark as Failure until the development is done.
+crbug.com/739091 fast/forms/validation-bubble-appearance-edge.html [ Failure ]
+crbug.com/739091 fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
+
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]

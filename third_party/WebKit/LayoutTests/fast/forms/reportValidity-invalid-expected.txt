@@ -1,8 +1,3 @@
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please match the requested format. sub-message=Should type 'Lorem ipsum'
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please select an item in the list. sub-message=
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
 This test checks if reportValidity() returns correctly a false (meaning error) result on invalid elements, and returns a true result on a blank but valid elements. Blank but non-placeholder label options are valid.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

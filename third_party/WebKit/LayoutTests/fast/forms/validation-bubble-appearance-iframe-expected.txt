@@ -1,0 +1,27 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x216
+  LayoutBlockFlow {HTML} at (0,0) size 800x216
+    LayoutBlockFlow {BODY} at (8,16) size 784x192
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 406x18
+          text run at (0,0) width 406: "Check if a validation bubble is shown over IFRAME boundary."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x158
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,50) size 304x154
+  LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 300x150
+      LayoutView at (0,0) size 300x150
+    layer at (0,0) size 300x68
+      LayoutBlockFlow {HTML} at (0,0) size 300x68
+        LayoutBlockFlow {BODY} at (8,16) size 284x36
+          LayoutBlockFlow {P} at (0,0) size 284x36
+            LayoutText {#text} at (0,0) size 269x36
+              text run at (0,0) width 269: "Check if a validation bubble is shown at a"
+              text run at (0,18) width 104: "correct position."
+    layer at (161,123) size 131x19 clip at (163,125) size 127x15
+      LayoutTextControl (positioned) {INPUT} at (161,123) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+    layer at (164,126) size 125x13
+      LayoutBlockFlow {DIV} at (3,3) size 125x13
+        LayoutText {#text} at (0,0) size 19x13
+          text run at (0,0) width 19: "abc"

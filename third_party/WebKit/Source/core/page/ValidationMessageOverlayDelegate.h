@@ -48,13 +48,24 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
   LocalFrameView& FrameView() const;
   void UpdateFrameViewState(const PageOverlay&, const IntSize& view_size);
   void EnsurePage(const PageOverlay&, const IntSize& view_size);
+  void WriteDocument(SharedBuffer*);
+  Element& BubbleContainer() const;
+  void AdjustBubblePosition(const IntSize& view_size);
 
   // An internal Page and a ChromeClient for it.
   Persistent<Page> page_;
   Persistent<ChromeClient> chrome_client_;
 
+  IntSize bubble_size_;
+
   // A page which triggered this validation message.
   Persistent<Page> main_page_;
+
+  Persistent<const Element> anchor_;
+  String message_;
+  String sub_message_;
+  TextDirection message_dir_;
+  TextDirection sub_message_dir_;
 };
 
 }  // namespace blink

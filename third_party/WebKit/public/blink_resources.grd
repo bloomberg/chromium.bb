@@ -33,6 +33,8 @@
       <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA" compress="gzip"/>
+      <include name="IDR_VALIDATION_BUBBLE_ICON" file="../Source/core/html/forms/resources/input_alert.svg" type="BINDATA" compress="gzip"/>
+      <include name="IDR_VALIDATION_BUBBLE_CSS" file="../Source/core/html/forms/resources/validation_bubble.css" type="BINDATA" compress="gzip"/>
       <if expr="not is_android">
         <include name="IDR_PICKER_COMMON_JS" file="../Source/core/html/forms/resources/pickerCommon.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_PICKER_COMMON_CSS" file="../Source/core/html/forms/resources/pickerCommon.css" type="BINDATA" compress="gzip"/>

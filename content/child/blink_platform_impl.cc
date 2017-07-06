@@ -577,6 +577,10 @@ const DataResource kDataResources[] = {
     {"colorSuggestionPicker.css", IDR_COLOR_SUGGESTION_PICKER_CSS,
      ui::SCALE_FACTOR_NONE, true},
 #endif
+    {"input_alert.svg", IDR_VALIDATION_BUBBLE_ICON, ui::SCALE_FACTOR_NONE,
+     true},
+    {"validation_bubble.css", IDR_VALIDATION_BUBBLE_CSS, ui::SCALE_FACTOR_NONE,
+     true},
     {"placeholderIcon", IDR_PLACEHOLDER_ICON, ui::SCALE_FACTOR_100P, false},
 };
 

@@ -1,5 +1,3 @@
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please fill out this field. sub-message=
 Tests for reportValidity() with invalid event canceling
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
