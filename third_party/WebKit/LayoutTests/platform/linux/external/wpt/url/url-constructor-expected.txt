@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 497 tests; 386 PASS, 111 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 393 PASS, 113 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter 
 PASS URL.searchParams updating, clearing 
 PASS URL.searchParams setter, invalid values 
@@ -548,6 +548,15 @@ PASS Parsing: <http://example.org/test?%23%23> against <about:blank>
 PASS Parsing: <http://example.org/test?%GH> against <about:blank> 
 PASS Parsing: <http://example.org/test?a#%EF> against <about:blank> 
 PASS Parsing: <http://example.org/test?a#%GH> against <about:blank> 
+PASS Parsing: <test-a.html> against <a> 
+PASS Parsing: <test-a-slash.html> against <a/> 
+PASS Parsing: <test-a-slash-slash.html> against <a//> 
+PASS Parsing: <test-a-colon.html> against <a:> 
+PASS Parsing: <test-a-colon-slash.html> against <a:/> 
+FAIL Parsing: <test-a-colon-slash-slash.html> against <a://> Failed to construct 'URL': Invalid URL
+PASS Parsing: <test-a-colon-b.html> against <a:b> 
+PASS Parsing: <test-a-colon-slash-b.html> against <a:/b> 
+FAIL Parsing: <test-a-colon-slash-slash-b.html> against <a://b> Failed to construct 'URL': Invalid URL
 PASS Parsing: <http://example.org/test?a#b\0c> against <about:blank> 
 Harness: the test ran to completion.
 
