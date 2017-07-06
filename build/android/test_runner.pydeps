@@ -210,6 +210,7 @@ pylib/utils/logdog_helper.py
 pylib/utils/logging_utils.py
 pylib/utils/proguard.py
 pylib/utils/repo_utils.py
+pylib/utils/shared_preference_utils.py
 pylib/valgrind_tools.py
 test_runner.py
 tombstones.py
