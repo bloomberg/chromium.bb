@@ -188,6 +188,8 @@ class BookmarkHTMLReaderTestWithData : public testing::Test {
       const importer::SearchEngineInfo& info);
   void ExpectSecondFirefoxBookmarkWithKeyword(
       const importer::SearchEngineInfo& info);
+  void ExpectFirstEmptyFolderBookmark(const ImportedBookmarkEntry& entry);
+  void ExpectSecondEmptyFolderBookmark(const ImportedBookmarkEntry& entry);
 
   base::FilePath test_data_path_;
 };
@@ -286,6 +288,27 @@ void BookmarkHTMLReaderTestWithData::ExpectSecondFirefoxBookmarkWithKeyword(
   EXPECT_EQ(ASCIIToUTF16("BookmarkName"), info.display_name);
 }
 
+void BookmarkHTMLReaderTestWithData::ExpectFirstEmptyFolderBookmark(
+    const ImportedBookmarkEntry& entry) {
+  EXPECT_EQ(base::string16(), entry.title);
+  EXPECT_TRUE(entry.is_folder);
+  EXPECT_EQ(base::Time::FromTimeT(1295938143), entry.creation_time);
+  EXPECT_EQ(1U, entry.path.size());
+  if (entry.path.size() == 1)
+    EXPECT_EQ(ASCIIToUTF16("Empty's Parent"), entry.path.front());
+}
+
+void BookmarkHTMLReaderTestWithData::ExpectSecondEmptyFolderBookmark(
+    const ImportedBookmarkEntry& entry) {
+  EXPECT_EQ(ASCIIToUTF16("[Tamura Yukari.com]"), entry.title);
+  EXPECT_FALSE(entry.is_folder);
+  EXPECT_EQ(base::Time::FromTimeT(1234567890), entry.creation_time);
+  EXPECT_EQ(1U, entry.path.size());
+  if (entry.path.size() == 1)
+    EXPECT_EQ(base::string16(), entry.path.front());
+  EXPECT_EQ("http://www.tamurayukari.com/", entry.url.spec());
+}
+
 }  // namespace
 
 TEST_F(BookmarkHTMLReaderTestWithData, Firefox2BookmarkFileImport) {
@@ -341,6 +364,20 @@ TEST_F(BookmarkHTMLReaderTestWithData, FirefoxBookmarkFileWithKeywordImport) {
   ASSERT_EQ(2U, search_engines.size());
   ExpectFirstFirefoxBookmarkWithKeyword(search_engines[0]);
   ExpectSecondFirefoxBookmarkWithKeyword(search_engines[1]);
+}
+
+TEST_F(BookmarkHTMLReaderTestWithData, EmptyFolderImport) {
+  base::FilePath path = test_data_path_.AppendASCII("empty_folder.html");
+
+  std::vector<ImportedBookmarkEntry> bookmarks;
+  ImportBookmarksFile(base::Callback<bool(void)>(),
+                      base::Callback<bool(const GURL&)>(), path, &bookmarks,
+                      NULL, NULL);
+
+  ASSERT_EQ(3U, bookmarks.size());
+  ExpectFirstEmptyFolderBookmark(bookmarks[0]);
+  ExpectSecondEmptyFolderBookmark(bookmarks[1]);
+  ExpectThirdFirefox2Bookmark(bookmarks[2]);
 }
 
 TEST_F(BookmarkHTMLReaderTestWithData,
