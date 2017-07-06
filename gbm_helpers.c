@@ -26,6 +26,10 @@ uint64_t gbm_convert_flags(uint32_t flags)
 		usage |= BO_USE_TEXTURE;
 	if (flags & GBM_BO_USE_LINEAR)
 		usage |= BO_USE_LINEAR;
+	if (flags & GBM_BO_USE_CAMERA_WRITE)
+		usage |= BO_USE_CAMERA_WRITE;
+	if (flags & GBM_BO_USE_CAMERA_READ)
+		usage |= BO_USE_CAMERA_READ;
 
 	return usage;
 }

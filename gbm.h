@@ -243,6 +243,14 @@ enum gbm_bo_flags {
     * The buffer will be used as a texture that will be sampled from.
     */
    GBM_BO_USE_TEXTURING    = (1 << 5),
+   /**
+    * The buffer will be written to by a camera subsystem.
+    */
+   GBM_BO_USE_CAMERA_WRITE = (1 << 6),
+   /**
+    * The buffer will be read from by a camera subsystem.
+    */
+   GBM_BO_USE_CAMERA_READ = (1 << 7),
 };
 
 int
