@@ -201,19 +201,4 @@ TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 
-TEST(BlinkEventUtilTest, WebMouseMoveEventMovementNotChanged) {
-  blink::WebMouseEvent event(blink::WebInputEvent::kMouseMove,
-                             blink::WebInputEvent::kNoModifiers,
-                             blink::WebInputEvent::kTimeStampForTesting);
-  event.movement_x = 1;
-  event.movement_y = 1;
-  std::unique_ptr<blink::WebInputEvent> webEvent =
-      ScaleWebInputEvent(event, 2.f);
-  EXPECT_TRUE(webEvent);
-  blink::WebMouseEvent* mouseEvent =
-      static_cast<blink::WebMouseEvent*>(webEvent.get());
-  EXPECT_EQ(1, mouseEvent->movement_x);
-  EXPECT_EQ(1, mouseEvent->movement_y);
-}
-
 }  // namespace ui
