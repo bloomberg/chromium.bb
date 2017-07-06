@@ -102,6 +102,7 @@ source_set("application_delegate_internal") {
     "//ios/chrome/app",
     "//ios/chrome/app/safe_mode",
     "//ios/chrome/app/spotlight",
+    "//ios/chrome/app/startup",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/crash_report",
