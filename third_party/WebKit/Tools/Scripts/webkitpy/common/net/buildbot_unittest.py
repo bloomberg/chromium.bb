@@ -48,6 +48,10 @@ class BuilderTest(LoggingTestCase):
             BuildBot().results_url('Test Builder', 10),
             'https://storage.googleapis.com/chromium-layout-test-archives/Test_Builder/10/layout-test-results')
 
+    def test_results_url_with_non_numeric_build_number(self):
+        with self.assertRaisesRegexp(AssertionError, 'expected numeric build number'):
+            BuildBot().results_url('Test Builder', 'ba5eba11')
+
     def test_builder_results_url_base(self):
         self.assertEqual(
             BuildBot().builder_results_url_base('WebKit Mac10.8 (dbg)'),
