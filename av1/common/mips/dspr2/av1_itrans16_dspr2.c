@@ -23,12 +23,13 @@
 
 #if HAVE_DSPR2
 void av1_iht16x16_256_add_dspr2(const int16_t *input, uint8_t *dest, int pitch,
-                                int tx_type) {
+                                FWD_TXFM_PARAM *param) {
   int i, j;
   DECLARE_ALIGNED(32, int16_t, out[16 * 16]);
   int16_t *outptr = out;
   int16_t temp_out[16];
   uint32_t pos = 45;
+  int tx_type = param->tx_type;
 
   /* bit positon for extract from acc */
   __asm__ __volatile__("wrdsp    %[pos],    1    \n\t" : : [pos] "r"(pos));

@@ -16,18 +16,20 @@
 #include "./av1_rtcd.h"
 #include "av1/common/common.h"
 #include "av1/common/blockd.h"
+#include "av1/common/idct.h"
 #include "aom_dsp/mips/inv_txfm_dspr2.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_ports/mem.h"
 
 #if HAVE_DSPR2
 void av1_iht8x8_64_add_dspr2(const int16_t *input, uint8_t *dest,
-                             int dest_stride, int tx_type) {
+                             int dest_stride, FWD_TXFM_PARAM *param) {
   int i, j;
   DECLARE_ALIGNED(32, int16_t, out[8 * 8]);
   int16_t *outptr = out;
   int16_t temp_in[8 * 8], temp_out[8];
   uint32_t pos = 45;
+  int tx_type = param->tx_type;
 
   /* bit positon for extract from acc */
   __asm__ __volatile__("wrdsp    %[pos],    1    \n\t" : : [pos] "r"(pos));

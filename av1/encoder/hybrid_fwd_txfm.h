@@ -14,15 +14,6 @@
 
 #include "./aom_config.h"
 
-typedef enum FWD_TXFM_OPT { FWD_TXFM_OPT_NORMAL } FWD_TXFM_OPT;
-
-typedef struct FWD_TXFM_PARAM {
-  TX_TYPE tx_type;
-  TX_SIZE tx_size;
-  int lossless;
-  int bd;
-} FWD_TXFM_PARAM;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

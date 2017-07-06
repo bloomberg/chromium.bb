@@ -33,7 +33,7 @@ namespace {
 typedef void (*FdctFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*IdctFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
-                        int tx_type);
+                        const INV_TXFM_PARAM *inv_txfm_param);
 using libaom_test::FhtFunc;
 
 typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t, int>
@@ -41,34 +41,41 @@ typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t, int>
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t, int> Ht4x4Param;
 
 void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 int /*tx_type*/) {
+                 FWD_TXFM_PARAM *fwd_txfm_param) {
   aom_fdct4x4_c(in, out, stride);
 }
 
-void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
-  av1_fht4x4_c(in, out, stride, tx_type);
+void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
+                FWD_TXFM_PARAM *fwd_txfm_param) {
+  av1_fht4x4_c(in, out, stride, fwd_txfm_param);
 }
 
 void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 int /*tx_type*/) {
+                 FWD_TXFM_PARAM *fwd_txfm_param) {
   av1_fwht4x4_c(in, out, stride);
 }
 
 #if CONFIG_HIGHBITDEPTH
-void fht4x4_10(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
-  av1_fwd_txfm2d_4x4_c(in, out, stride, tx_type, 10);
+void fht4x4_10(const int16_t *in, tran_low_t *out, int stride,
+               FWD_TXFM_PARAM *fwd_txfm_param) {
+  av1_fwd_txfm2d_4x4_c(in, out, stride, fwd_txfm_param->tx_type, 10);
 }
 
-void fht4x4_12(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
-  av1_fwd_txfm2d_4x4_c(in, out, stride, tx_type, 12);
+void fht4x4_12(const int16_t *in, tran_low_t *out, int stride,
+               FWD_TXFM_PARAM *fwd_txfm_param) {
+  av1_fwd_txfm2d_4x4_c(in, out, stride, fwd_txfm_param->tx_type, 12);
 }
 
-void iht4x4_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_inv_txfm2d_add_4x4_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 10);
+void iht4x4_10(const tran_low_t *in, uint8_t *out, int stride,
+               const INV_TXFM_PARAM *inv_txfm_param) {
+  av1_inv_txfm2d_add_4x4_c(in, CONVERT_TO_SHORTPTR(out), stride,
+                           inv_txfm_param->tx_type, 10);
 }
 
-void iht4x4_12(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
-  av1_inv_txfm2d_add_4x4_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 12);
+void iht4x4_12(const tran_low_t *in, uint8_t *out, int stride,
+               const INV_TXFM_PARAM *inv_txfm_param) {
+  av1_inv_txfm2d_add_4x4_c(in, CONVERT_TO_SHORTPTR(out), stride,
+                           inv_txfm_param->tx_type, 12);
 }
 
 void iwht4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
@@ -88,13 +95,14 @@ class Trans4x4DCT : public libaom_test::TransformTestBase,
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_ = GET_PARAM(2);
     pitch_ = 4;
     height_ = 4;
     fwd_txfm_ref = fdct4x4_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
     num_coeffs_ = GET_PARAM(4);
+    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
@@ -126,13 +134,14 @@ class Trans4x4HT : public libaom_test::TransformTestBase,
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_ = GET_PARAM(2);
     pitch_ = 4;
     height_ = 4;
     fwd_txfm_ref = fht4x4_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
     num_coeffs_ = GET_PARAM(4);
+    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
 #if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10: fwd_txfm_ref = fht4x4_10; break;
@@ -145,11 +154,11 @@ class Trans4x4HT : public libaom_test::TransformTestBase,
 
  protected:
   void RunFwdTxfm(const int16_t *in, tran_low_t *out, int stride) {
-    fwd_txfm_(in, out, stride, tx_type_);
+    fwd_txfm_(in, out, stride, &fwd_txfm_param_);
   }
 
   void RunInvTxfm(const tran_low_t *out, uint8_t *dst, int stride) {
-    inv_txfm_(out, dst, stride, tx_type_);
+    inv_txfm_(out, dst, stride, &inv_txfm_param_);
   }
 
   FhtFunc fwd_txfm_;
@@ -172,7 +181,6 @@ class Trans4x4WHT : public libaom_test::TransformTestBase,
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
     inv_txfm_ = GET_PARAM(1);
-    tx_type_ = GET_PARAM(2);
     pitch_ = 4;
     height_ = 4;
     fwd_txfm_ref = fwht4x4_ref;

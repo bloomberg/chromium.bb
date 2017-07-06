@@ -14,6 +14,7 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
+#include "av1/common/idct.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/fwd_txfm_sse2.h"
 #include "aom_dsp/x86/synonyms.h"
@@ -203,8 +204,9 @@ static void fidtx4_sse2(__m128i *in) {
 #endif  // CONFIG_EXT_TX
 
 void av1_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
-                     int tx_type) {
+                     FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[4];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT: aom_fdct4x4_sse2(input, output, stride); break;
@@ -1301,8 +1303,9 @@ static void fidtx8_sse2(__m128i *in) {
 #endif  // CONFIG_EXT_TX
 
 void av1_fht8x8_sse2(const int16_t *input, tran_low_t *output, int stride,
-                     int tx_type) {
+                     FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[8];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT: aom_fdct8x8_sse2(input, output, stride); break;
@@ -2334,8 +2337,9 @@ static void fidtx16_sse2(__m128i *in0, __m128i *in1) {
 #endif  // CONFIG_EXT_TX
 
 void av1_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
-                       int tx_type) {
+                       FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in0[16], in1[16];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:
@@ -2550,8 +2554,9 @@ static INLINE void write_buffer_4x8(tran_low_t *output, __m128i *res) {
 }
 
 void av1_fht4x8_sse2(const int16_t *input, tran_low_t *output, int stride,
-                     int tx_type) {
+                     FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[8];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:
@@ -2724,8 +2729,9 @@ static INLINE void write_buffer_8x4(tran_low_t *output, __m128i *res) {
 }
 
 void av1_fht8x4_sse2(const int16_t *input, tran_low_t *output, int stride,
-                     int tx_type) {
+                     FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[8];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:
@@ -2864,8 +2870,9 @@ static void row_8x16_rounding(__m128i *in, int bits) {
 }
 
 void av1_fht8x16_sse2(const int16_t *input, tran_low_t *output, int stride,
-                      int tx_type) {
+                      FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[16];
+  int tx_type = fwd_txfm_param->tx_type;
 
   __m128i *const t = in;      // Alias to top 8x8 sub block
   __m128i *const b = in + 8;  // Alias to bottom 8x8 sub block
@@ -3045,8 +3052,9 @@ static INLINE void load_buffer_16x8(const int16_t *input, __m128i *in,
 #define col_16x8_rounding row_8x16_rounding
 
 void av1_fht16x8_sse2(const int16_t *input, tran_low_t *output, int stride,
-                      int tx_type) {
+                      FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in[16];
+  int tx_type = fwd_txfm_param->tx_type;
 
   __m128i *const l = in;      // Alias to left 8x8 sub block
   __m128i *const r = in + 8;  // Alias to right 8x8 sub block, which we store
@@ -3355,8 +3363,9 @@ static INLINE void fhalfright32_16col(__m128i *tl, __m128i *tr, __m128i *bl,
 // For 16x32, this means the input is a 2x2 grid of such blocks.
 // For 32x16, it means the input is a 4x1 grid.
 void av1_fht16x32_sse2(const int16_t *input, tran_low_t *output, int stride,
-                       int tx_type) {
+                       FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i intl[16], intr[16], inbl[16], inbr[16];
+  int tx_type = fwd_txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:
@@ -3544,8 +3553,9 @@ static INLINE void write_buffer_32x16(tran_low_t *output, __m128i *res0,
 }
 
 void av1_fht32x16_sse2(const int16_t *input, tran_low_t *output, int stride,
-                       int tx_type) {
+                       FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in0[16], in1[16], in2[16], in3[16];
+  int tx_type = fwd_txfm_param->tx_type;
 
   load_buffer_32x16(input, in0, in1, in2, in3, stride, 0, 0);
   switch (tx_type) {
@@ -3784,8 +3794,9 @@ static INLINE void write_buffer_32x32(__m128i *in0, __m128i *in1, __m128i *in2,
 }
 
 void av1_fht32x32_sse2(const int16_t *input, tran_low_t *output, int stride,
-                       int tx_type) {
+                       FWD_TXFM_PARAM *fwd_txfm_param) {
   __m128i in0[32], in1[32], in2[32], in3[32];
+  int tx_type = fwd_txfm_param->tx_type;
 
   load_buffer_32x32(input, in0, in1, in2, in3, stride, 0, 0);
   switch (tx_type) {

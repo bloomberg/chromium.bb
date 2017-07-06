@@ -1175,7 +1175,8 @@ static void maybe_flip_input(const int16_t **src, int *src_stride, int l, int w,
 #endif  // CONFIG_EXT_TX
 
 void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
-                  int tx_type) {
+                  FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   if (tx_type == DCT_DCT) {
     aom_fdct4x4_c(input, output, stride);
   } else {
@@ -1227,7 +1228,8 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
-                  int tx_type) {
+                  FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct8, fdct4 },    // DCT_DCT
     { fadst8, fdct4 },   // ADST_DCT
@@ -1279,7 +1281,8 @@ void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
-                  int tx_type) {
+                  FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct4, fdct8 },    // DCT_DCT
     { fadst4, fdct8 },   // ADST_DCT
@@ -1331,7 +1334,8 @@ void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht4x16_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct16, fdct4 },    // DCT_DCT
     { fadst16, fdct4 },   // ADST_DCT
@@ -1381,7 +1385,8 @@ void av1_fht4x16_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht16x4_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct4, fdct16 },    // DCT_DCT
     { fadst4, fdct16 },   // ADST_DCT
@@ -1431,7 +1436,8 @@ void av1_fht16x4_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct16, fdct8 },    // DCT_DCT
     { fadst16, fdct8 },   // ADST_DCT
@@ -1483,7 +1489,8 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct8, fdct16 },    // DCT_DCT
     { fadst8, fdct16 },   // ADST_DCT
@@ -1535,7 +1542,8 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct32, fdct8 },         // DCT_DCT
     { fhalfright32, fdct8 },   // ADST_DCT
@@ -1585,7 +1593,8 @@ void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                   FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct8, fdct32 },         // DCT_DCT
     { fadst8, fdct32 },        // ADST_DCT
@@ -1635,7 +1644,8 @@ void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
-                    int tx_type) {
+                    FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct32, fdct16 },         // DCT_DCT
     { fhalfright32, fdct16 },   // ADST_DCT
@@ -1687,7 +1697,8 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
-                    int tx_type) {
+                    FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct16, fdct32 },         // DCT_DCT
     { fadst16, fdct32 },        // ADST_DCT
@@ -1864,7 +1875,8 @@ void av1_fdct8x8_quant_c(const int16_t *input, int stride,
 }
 
 void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
-                  int tx_type) {
+                  FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   if (tx_type == DCT_DCT) {
     aom_fdct8x8_c(input, output, stride);
   } else {
@@ -1972,7 +1984,8 @@ void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
 }
 
 void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
-                    int tx_type) {
+                    FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct16, fdct16 },    // DCT_DCT
     { fadst16, fdct16 },   // ADST_DCT
@@ -2026,7 +2039,8 @@ void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
 }
 
 void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
-                    int tx_type) {
+                    FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct32, fdct32 },  // DCT_DCT
 #if CONFIG_EXT_TX
@@ -2114,7 +2128,8 @@ static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
 }
 
 void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
-                    int tx_type) {
+                    FWD_TXFM_PARAM *fwd_txfm_param) {
+  int tx_type = fwd_txfm_param->tx_type;
   static const transform_2d FHT[] = {
     { fdct64_col, fdct64_row },  // DCT_DCT
 #if CONFIG_EXT_TX

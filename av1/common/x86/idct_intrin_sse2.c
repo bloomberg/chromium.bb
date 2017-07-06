@@ -15,6 +15,7 @@
 #include "aom_dsp/x86/txfm_common_sse2.h"
 #include "aom_ports/mem.h"
 #include "av1/common/enums.h"
+#include "av1/common/idct.h"
 
 #if CONFIG_EXT_TX
 static INLINE void fliplr_4x4(__m128i *in /*in[2]*/) {
@@ -59,10 +60,11 @@ static INLINE void fliplr_16x8(__m128i *in /*in[16]*/) {
 #endif
 
 void av1_iht4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                            int tx_type) {
+                            const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[2];
   const __m128i zero = _mm_setzero_si128();
   const __m128i eight = _mm_set1_epi16(8);
+  int tx_type = inv_txfm_param->tx_type;
 
   in[0] = load_input_data(input);
   in[1] = load_input_data(input + 8);
@@ -150,10 +152,11 @@ void av1_iht4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 void av1_iht8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                            int tx_type) {
+                            const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[8];
   const __m128i zero = _mm_setzero_si128();
   const __m128i final_rounding = _mm_set1_epi16(1 << 4);
+  int tx_type = inv_txfm_param->tx_type;
 
   // load input data
   in[0] = load_input_data(input);
@@ -251,10 +254,12 @@ static void iidtx16_sse2(__m128i *in0, __m128i *in1) {
 #endif  // CONFIG_EXT_TX
 
 void av1_iht16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest,
-                               int stride, int tx_type) {
+                               int stride,
+                               const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[32];
   __m128i *in0 = &in[0];
   __m128i *in1 = &in[16];
+  int tx_type = inv_txfm_param->tx_type;
 
   load_buffer_8x16(input, in0);
   input += 8;
@@ -388,8 +393,10 @@ static INLINE void flip_buffer_lr_8x8(__m128i *in) {
 #endif  // CONFIG_EXT_TX
 
 void av1_iht8x16_128_add_sse2(const tran_low_t *input, uint8_t *dest,
-                              int stride, int tx_type) {
+                              int stride,
+                              const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[16];
+  int tx_type = inv_txfm_param->tx_type;
 
   in[0] = load_input_data(input + 0 * 8);
   in[1] = load_input_data(input + 1 * 8);
@@ -553,8 +560,10 @@ static INLINE void write_buffer_8x8_round6(uint8_t *dest, __m128i *in,
 }
 
 void av1_iht16x8_128_add_sse2(const tran_low_t *input, uint8_t *dest,
-                              int stride, int tx_type) {
+                              int stride,
+                              const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[16];
+  int tx_type = inv_txfm_param->tx_type;
 
   // Transpose 16x8 input into in[]
   in[0] = load_input_data(input + 0 * 16);
@@ -713,8 +722,9 @@ static INLINE void write_buffer_8x4_round5(uint8_t *dest, __m128i *in,
 }
 
 void av1_iht8x4_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                            int tx_type) {
+                            const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[8];
+  int tx_type = inv_txfm_param->tx_type;
 
   in[0] = load_input_data(input + 0 * 8);
   in[1] = load_input_data(input + 1 * 8);
@@ -897,8 +907,9 @@ static INLINE void write_buffer_4x8_round5(uint8_t *dest, __m128i *in,
 }
 
 void av1_iht4x8_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                            int tx_type) {
+                            const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in[8];
+  int tx_type = inv_txfm_param->tx_type;
 
   // Load rows, packed two per element of 'in'.
   // We pack into the bottom half of 'in' so that the
@@ -1119,8 +1130,10 @@ static INLINE void write_buffer_16x32_round6(uint8_t *dest, __m128i *intl,
 }
 
 void av1_iht16x32_512_add_sse2(const tran_low_t *input, uint8_t *dest,
-                               int stride, int tx_type) {
+                               int stride,
+                               const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i intl[16], intr[16], inbl[16], inbr[16];
+  int tx_type = inv_txfm_param->tx_type;
 
   int i;
   for (i = 0; i < 16; ++i) {
@@ -1272,8 +1285,10 @@ static INLINE void write_buffer_32x16_round6(uint8_t *dest, __m128i *in0,
 }
 
 void av1_iht32x16_512_add_sse2(const tran_low_t *input, uint8_t *dest,
-                               int stride, int tx_type) {
+                               int stride,
+                               const INV_TXFM_PARAM *inv_txfm_param) {
   __m128i in0[16], in1[16], in2[16], in3[16];
+  int tx_type = inv_txfm_param->tx_type;
   int i;
 
   for (i = 0; i < 16; ++i) {

@@ -11,12 +11,15 @@ print <<EOF
 #include "av1/common/filter.h"
 #include "av1/common/convolve.h"
 #include "av1/common/av1_txfm.h"
+#include "av1/common/idct.h"
 #include "av1/common/odintrin.h"
 
 struct macroblockd;
 
 /* Encoder forward decls */
 struct macroblock;
+struct fwd_txfm_param;
+struct inv_txfm_param;
 struct aom_variance_vtable;
 struct search_site_config;
 struct mv;
@@ -63,81 +66,81 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 #
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   {
-    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht4x4_16_add sse2/;
 
-    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht4x8_32_add sse2/;
 
-    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x4_32_add sse2/;
 
-    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x16_128_add sse2/;
 
-    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x8_128_add sse2/;
 
-    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x32_512_add sse2/;
 
-    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht32x16_512_add sse2/;
 
-    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x8_64_add sse2/;
 
-    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x16_256_add sse2 avx2/;
 
-    add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+    add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
   }
 } else {
   {
-    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
     specialize qw/av1_iht4x4_16_add sse2 neon dspr2/;
 
-    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht4x8_32_add sse2/;
 
-    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x4_32_add sse2/;
 
-    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x16_128_add sse2/;
 
-    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x8_128_add sse2/;
 
-    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x32_512_add sse2/;
 
-    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht32x16_512_add sse2/;
 
-    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
+    add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
       specialize qw/av1_iht8x8_64_add sse2 neon dspr2/;
 
-    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+    add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
       specialize qw/av1_iht16x16_256_add sse2 avx2 dspr2/;
 
-    add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+    add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
 
     if (aom_config("CONFIG_EXT_TX") ne "yes") {
       specialize qw/av1_iht4x4_16_add msa/;
@@ -147,10 +150,10 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   }
 }
 
-add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
 
 if (aom_config("CONFIG_TX64X64") eq "yes") {
-  add_proto qw/void av1_iht64x64_4096_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type";
+  add_proto qw/void av1_iht64x64_4096_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
 }
 
 if (aom_config("CONFIG_NEW_QUANT") eq "yes") {
@@ -226,31 +229,31 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   #
   # dct
   #
-  add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht4x8_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht8x4_32_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht8x16_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht16x8_128_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht16x32_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht32x16_512_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht4x16_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht16x4_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct inv_txfm_param *param";
 
-  add_proto qw/void av1_highbd_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, int tx_type, int bd";
+  add_proto qw/void av1_highbd_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct inv_txfm_param *param";
 }
 
 #inv txfm
@@ -353,49 +356,49 @@ if (aom_config("CONFIG_AOM_QM") eq "yes") {
 
 # fdct functions
 
-add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht4x4 sse2/;
 
 add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
 
-add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht8x8 sse2/;
 
-add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht16x16 sse2 avx2/;
 
-add_proto qw/void av1_fht32x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht32x32/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht32x32 sse2 avx2/;
 
 if (aom_config("CONFIG_TX64X64") eq "yes") {
-  add_proto qw/void av1_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 }
 
-add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht4x8 sse2/;
 
-add_proto qw/void av1_fht8x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht8x4/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht8x4 sse2/;
 
-add_proto qw/void av1_fht8x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht8x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht8x16 sse2/;
 
-add_proto qw/void av1_fht16x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht16x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht16x8 sse2/;
 
-add_proto qw/void av1_fht16x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht16x32/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht16x32 sse2/;
 
-add_proto qw/void av1_fht32x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht32x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 specialize qw/av1_fht32x16 sse2/;
 
-add_proto qw/void av1_fht4x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht4x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 
-add_proto qw/void av1_fht16x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht16x4/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 
-add_proto qw/void av1_fht8x32/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht8x32/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 
-add_proto qw/void av1_fht32x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+add_proto qw/void av1_fht32x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
 
 if (aom_config("CONFIG_HIGHBITDEPTH") ne "yes") {
   if (aom_config("CONFIG_EXT_TX") ne "yes") {
@@ -525,25 +528,25 @@ if (aom_config("CONFIG_PVQ") eq "yes") {
 # fdct functions
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-  add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht4x4 sse2/;
 
-  add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht8x8 sse2/;
 
-  add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht16x16 sse2/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
   specialize qw/av1_fwht4x4 sse2/;
 } else {
-  add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht4x4 sse2 msa/;
 
-  add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht8x8 sse2 msa/;
 
-  add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
+  add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, struct fwd_txfm_param *param";
   specialize qw/av1_fht16x16 sse2 msa/;
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";

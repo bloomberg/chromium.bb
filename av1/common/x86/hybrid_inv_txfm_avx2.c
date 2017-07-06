@@ -14,6 +14,7 @@
 #include "./aom_config.h"
 #include "./av1_rtcd.h"
 
+#include "av1/common/idct.h"
 #include "aom_dsp/x86/inv_txfm_common_avx2.h"
 
 void av1_idct16_avx2(__m256i *in) {
@@ -364,8 +365,10 @@ static void iidtx16(__m256i *in) {
 #endif
 
 void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
-                               int stride, int tx_type) {
+                               int stride,
+                               const INV_TXFM_PARAM *inv_txfm_param) {
   __m256i in[16];
+  int tx_type = inv_txfm_param->tx_type;
 
   load_buffer_16x16(input, in);
   switch (tx_type) {
