@@ -51,25 +51,21 @@ var FilesQuickView = Polymer({
     this.browsable = false;
   },
 
+  /** @return {boolean} */
+  isOpened: function() {
+    return this.$.dialog.open;
+  },
+
   // Opens the dialog.
   open: function() {
     if (!this.isOpened())
-      this.$.dialog.open();
+      this.$.dialog.showModal();
   },
 
   // Closes the dialog.
   close: function() {
     if (this.isOpened())
       this.$.dialog.close();
-  },
-
-  /**
-   * @return {boolean}
-   */
-  isOpened: function() {
-    // TODO(oka): This is a workaround to satisfy closure compiler.
-    // Update ['opened'] to .opened.
-    return (/** @type{Object} */ (this.$.dialog))['opened'];
   },
 
   /**
