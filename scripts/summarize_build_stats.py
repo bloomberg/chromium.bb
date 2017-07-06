@@ -623,7 +623,7 @@ The CL handling time was <b>{cl_handling_time_50:.2f} hours</b> 50%ile <b>{cl_ha
 Time spent in the CQ was <b>{cq_time_50:.2f} hours</b> 50%ile <b>{cq_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_tuzlLWNWGy">history</a>.<br>
 Time spent waiting was <b>{wait_time_50:.2f} hours</b> 50%ile <b>{wait_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_SzdPv7k7Ka">history</a>.<br>
 CQ run time was <b>{cq_run_time_50:.2f} hours</b> 50%ile <b>{cq_run_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_aKsMeOcmJW">history</a>.<br>
-Pre-cq times available on <a href="http://shortn/_fXnSmBtNpe">monarch history</a>.<br>
+Pre-cq times available on <a href="http://shortn/_XK6xDPTof1">monarch history</a>.<br>
 </p>
 
 <h2>Slowest Passing Slaves</h2>
