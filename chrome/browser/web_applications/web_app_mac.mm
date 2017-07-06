@@ -32,6 +32,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -215,9 +216,9 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
       user_data_dir.value(), base::CompareCase::SENSITIVE);
 }
 
-void LaunchShimOnFileThread(const web_app::ShortcutInfo& shortcut_info,
-                            bool launched_after_rebuild) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+void LaunchShimOnFileThread(bool launched_after_rebuild,
+                            const web_app::ShortcutInfo& shortcut_info) {
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
   if (shim_path.empty() ||
@@ -254,7 +255,7 @@ void UpdatePlatformShortcutsInternal(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
     return;
@@ -267,21 +268,18 @@ void UpdatePlatformShortcutsInternal(
 
 void UpdateAndLaunchShimOnFileThread(
     const web_app::ShortcutInfo& shortcut_info) {
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
                                   shortcut_info);
-  LaunchShimOnFileThread(shortcut_info, true);
+  LaunchShimOnFileThread(true, shortcut_info);
 }
 
 void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&UpdateAndLaunchShimOnFileThread,
-                 base::ConstRef(shortcut_info_ref)),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+  web_app::ShortcutInfo::PostIOTask(
+      base::BindOnce(&UpdateAndLaunchShimOnFileThread),
+      std::move(shortcut_info));
 }
 
 void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
@@ -382,10 +380,11 @@ NSImageRep* ImageRepForGFXImage(const gfx::Image& image) {
 
 using ResourceIDToImage = std::map<int, gfx::Image>;
 
-// Returns a map of gfx::Image used by SetWorkspaceIconOnFILEThread.
-// Since ui::ResourceBundle can be call only on UI thread, this function also
-// needs to run on UI thread.
-std::unique_ptr<ResourceIDToImage> GetImageResourcesOnUIThread() {
+// Generates a map of gfx::Image used by SetWorkspaceIconOnFILEThread and
+// passes it to |io_task|. Since ui::ResourceBundle can be call only on UI
+// thread, this function also needs to run on UI thread.
+void GetImageResourcesOnUIThread(
+    base::OnceCallback<void(std::unique_ptr<ResourceIDToImage>)> io_task) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
@@ -397,12 +396,17 @@ std::unique_ptr<ResourceIDToImage> GetImageResourcesOnUIThread() {
   for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32,
                  IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512})
     (*result)[id] = resource_bundle.GetNativeImageNamed(id);
-  return result;
+
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(std::move(io_task), std::move(result)));
 }
 
 void SetWorkspaceIconOnFILEThread(const base::FilePath& apps_directory,
                                   std::unique_ptr<ResourceIDToImage> images) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
   // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
@@ -467,10 +471,11 @@ void UpdateAppShortcutsSubdirLocalizedName(
   [strings_dict writeToFile:strings_path
                  atomically:YES];
 
-  content::BrowserThread::PostTaskAndReplyWithResult(
+  content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetImageResourcesOnUIThread),
-      base::BindOnce(&SetWorkspaceIconOnFILEThread, apps_directory));
+      base::BindOnce(
+          &GetImageResourcesOnUIThread,
+          base::BindOnce(&SetWorkspaceIconOnFILEThread, apps_directory)));
 }
 
 void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
@@ -562,8 +567,8 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
 }
 
 void RevealAppShimInFinderForAppOnFileThread(
-    const web_app::ShortcutInfo& shortcut_info,
-    const base::FilePath& app_path) {
+    const base::FilePath& app_path,
+    const web_app::ShortcutInfo& shortcut_info) {
   web_app::WebAppShortcutCreator shortcut_creator(app_path, &shortcut_info);
   shortcut_creator.RevealAppShimInFinder();
 }
@@ -1012,13 +1017,8 @@ void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info) {
     return;
   }
 
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LaunchShimOnFileThread, base::ConstRef(shortcut_info_ref),
-                 false),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+  web_app::ShortcutInfo::PostIOTask(
+      base::BindOnce(&LaunchShimOnFileThread, false), std::move(shortcut_info));
 }
 
 bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
@@ -1027,9 +1027,9 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&RecordAppShimErrorAndBuildShortcutInfo,
-                 command_line.GetSwitchValuePath(app_mode::kAppShimError)),
-      base::Bind(&RebuildAppAndLaunch));
+      base::BindOnce(&RecordAppShimErrorAndBuildShortcutInfo,
+                     command_line.GetSwitchValuePath(app_mode::kAppShimError)),
+      base::BindOnce(&RebuildAppAndLaunch));
   return true;
 }
 
@@ -1058,24 +1058,18 @@ void UpdateShortcutsForAllApps(Profile* profile,
 
 void RevealAppShimInFinderForApp(Profile* profile,
                                  const extensions::Extension* app) {
-  std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
-      ShortcutInfoForExtensionAndProfile(app, profile);
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RevealAppShimInFinderForAppOnFileThread,
-                 base::ConstRef(shortcut_info_ref), app->path()),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+  web_app::ShortcutInfo::PostIOTask(
+      base::BindOnce(&RevealAppShimInFinderForAppOnFileThread, app->path()),
+      ShortcutInfoForExtensionAndProfile(app, profile));
 }
 
 namespace internals {
 
 bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
-                             const ShortcutInfo& shortcut_info,
                              const ShortcutLocations& creation_locations,
-                             ShortcutCreationReason creation_reason) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+                             ShortcutCreationReason creation_reason,
+                             const ShortcutInfo& shortcut_info) {
+  base::ThreadRestrictions::AssertIOAllowed();
   if (AppShimsDisabledForTest())
     return true;
 
@@ -1085,7 +1079,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   shortcut_creator.DeleteShortcuts();
 }
@@ -1097,6 +1091,7 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   const std::string profile_base_name = profile_path.BaseName().value();
   std::vector<base::FilePath> bundles = GetAllAppBundlesInPath(
       profile_path.Append(chrome::kWebAppDirname), profile_base_name);

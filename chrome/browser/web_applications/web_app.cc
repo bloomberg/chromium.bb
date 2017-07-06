@@ -15,7 +15,9 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -90,14 +92,10 @@ void UpdateAllShortcutsForShortcutInfo(
     const base::Closure& callback,
     std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&web_app::internals::UpdatePlatformShortcuts,
-                 shortcut_data_dir, old_app_title,
-                 base::ConstRef(shortcut_info_ref)),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), callback));
+  web_app::ShortcutInfo::PostIOTaskAndReply(
+      base::BindOnce(&web_app::internals::UpdatePlatformShortcuts,
+                     shortcut_data_dir, old_app_title),
+      std::move(shortcut_info), callback);
 }
 
 void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
@@ -129,16 +127,19 @@ void ScheduleCreatePlatformShortcut(
     const web_app::ShortcutLocations& locations,
     std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
-
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
+  web_app::ShortcutInfo::PostIOTask(
+      base::BindOnce(
           base::IgnoreResult(&web_app::internals::CreatePlatformShortcuts),
-          shortcut_data_dir, base::ConstRef(shortcut_info_ref), locations,
-          reason),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+          shortcut_data_dir, locations, reason),
+      std::move(shortcut_info));
+}
+
+void DeleteShortcutInfoOnUIThread(
+    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
+    base::OnceClosure callback) {
+  shortcut_info.reset();
+  if (callback)
+    std::move(callback).Run();
 }
 
 }  // namespace
@@ -165,20 +166,51 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
   return base::FilePath(file_name);
 }
 
-void DeleteShortcutInfoOnUIThread(
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    const base::Closure& callback) {
-  shortcut_info.reset();
-  if (callback)
-    callback.Run();
-}
-
 }  // namespace internals
 
 ShortcutInfo::ShortcutInfo() {}
 
 ShortcutInfo::~ShortcutInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+// static
+void ShortcutInfo::PostIOTask(
+    base::OnceCallback<void(const ShortcutInfo&)> task,
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
+  PostIOTaskAndReply(std::move(task), std::move(shortcut_info),
+                     base::Closure());
+}
+
+// static
+void ShortcutInfo::PostIOTaskAndReply(
+    base::OnceCallback<void(const ShortcutInfo&)> task,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    const base::Closure& reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Ownership of |shortcut_info| moves to the Reply, which is guaranteed to
+  // outlive the const reference.
+  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
+  GetTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(std::move(task), base::ConstRef(shortcut_info_ref)),
+      base::BindOnce(&DeleteShortcutInfoOnUIThread, std::move(shortcut_info),
+                     reply));
+}
+
+// static
+scoped_refptr<base::TaskRunner> ShortcutInfo::GetTaskRunner() {
+  constexpr base::TaskTraits traits = {
+      base::MayBlock(), base::TaskPriority::BACKGROUND,
+      base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+
+#if defined(OS_WIN)
+  return base::TaskScheduler::GetInstance()->CreateCOMSTATaskRunnerWithTraits(
+      traits, base::SingleThreadTaskRunnerThreadMode::SHARED);
+#else
+  return base::TaskScheduler::GetInstance()->CreateTaskRunnerWithTraits(traits);
+#endif
 }
 
 ShortcutLocations::ShortcutLocations()
@@ -445,14 +477,9 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
   std::unique_ptr<ShortcutInfo> shortcut_info(
       ShortcutInfoForExtensionAndProfile(app, profile));
   base::FilePath shortcut_data_dir = GetShortcutDataDir(*shortcut_info);
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&web_app::internals::DeletePlatformShortcuts,
-                 shortcut_data_dir, base::ConstRef(shortcut_info_ref)),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+  ShortcutInfo::PostIOTask(
+      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
+      std::move(shortcut_info));
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,

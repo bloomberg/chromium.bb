@@ -20,7 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_win.h"
@@ -286,7 +286,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
     const base::string16& title,
     bool* was_pinned_to_taskbar,
     std::vector<base::FilePath>* shortcut_paths) {
-  DCHECK(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Get all possible locations for shortcuts.
   web_app::ShortcutLocations all_shortcut_locations;
@@ -332,10 +332,11 @@ void GetShortcutLocationsAndDeleteShortcuts(
   }
 }
 
-void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
-                                     const base::FilePath& icon_file,
-                                     const web_app::ShortcutInfo& shortcut_info,
-                                     HWND hwnd) {
+void CreateIconAndSetRelaunchDetails(
+    const base::FilePath& web_app_path,
+    const base::FilePath& icon_file,
+    HWND hwnd,
+    const web_app::ShortcutInfo& shortcut_info) {
   base::CommandLine command_line =
       shell_integration::CommandLineArgsForLauncher(shortcut_info.url,
                                                     shortcut_info.extension_id,
@@ -369,13 +370,11 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
       shortcut_info->url);
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
-                 base::ConstRef(shortcut_info_ref), hwnd),
-      base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
-                 base::Passed(&shortcut_info), base::Closure()));
+
+  web_app::ShortcutInfo::PostIOTask(
+      base::BindOnce(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
+                     hwnd),
+      std::move(shortcut_info));
 }
 
 }  // namespace
@@ -440,10 +439,10 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
 }
 
 bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
-                             const ShortcutInfo& shortcut_info,
                              const ShortcutLocations& creation_locations,
-                             ShortcutCreationReason creation_reason) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+                             ShortcutCreationReason creation_reason,
+                             const ShortcutInfo& shortcut_info) {
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Nothing to do on Windows for hidden apps.
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_HIDDEN)
@@ -486,7 +485,7 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                              const base::string16& old_app_title,
                              const ShortcutInfo& shortcut_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =
@@ -540,6 +539,7 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   GetShortcutLocationsAndDeleteShortcuts(base::FilePath(), profile_path, L"",
                                          NULL, NULL);
 
