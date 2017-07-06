@@ -85,6 +85,20 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
                  new_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   }
+
+  if (!task_bar_list_) {
+    HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, NULL,
+                                    CLSCTX_INPROC_SERVER,
+                                    IID_PPV_ARGS(&task_bar_list_));
+    CHECK(SUCCEEDED(hr));
+  }
+
+  // As per MSDN marking the window as fullscreen should ensure that the
+  // taskbar is moved to the bottom of the Z-order when the fullscreen window
+  // is activated. If the window is not fullscreen, the Shell falls back to
+  // heuristics to determine how the window should be treated, which means
+  // that it could still consider the window as fullscreen. :(
+  task_bar_list_->MarkFullscreenWindow(hwnd_, !!fullscreen);
 }
 
 }  // namespace views
