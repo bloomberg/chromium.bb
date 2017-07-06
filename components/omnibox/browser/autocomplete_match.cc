@@ -502,6 +502,12 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
           omnibox::kUIExperimentElideSuggestionUrlAfterHost)) {
     format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
   }
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)) {
+    format_types |= url_formatter::kFormatUrlExperimentalOmitTrivialSubdomains;
+  }
+
   return format_types;
 }
 

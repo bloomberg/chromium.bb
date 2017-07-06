@@ -12,11 +12,13 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "components/url_formatter/idn_spoof_checker.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "url/gurl.h"
@@ -50,14 +52,60 @@ class AppendComponentTransform {
 
 class HostComponentTransform : public AppendComponentTransform {
  public:
-  HostComponentTransform() {}
+  HostComponentTransform(bool trim_trivial_subdomains)
+      : trim_trivial_subdomains_(trim_trivial_subdomains) {}
 
  private:
   base::string16 Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
-    return IDNToUnicodeWithAdjustments(component_text, adjustments);
+    if (!trim_trivial_subdomains_)
+      return IDNToUnicodeWithAdjustments(component_text, adjustments);
+
+    // Exclude the registry and domain from trivial subdomain stripping.
+    // To get the adjustment offset calculations correct, we need to transform
+    // the registry and domain portion of the host as well.
+    std::string domain_and_registry =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            component_text,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+    base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
+    base::StringTokenizer tokenizer(
+        component_text.begin(),
+        component_text.end() - domain_and_registry.length(), ".");
+    tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
+
+    std::string transformed_subdomain;
+    while (tokenizer.GetNext()) {
+      // Append delimiters and non-trivial subdomains to the new subdomain part.
+      if (tokenizer.token_is_delim() ||
+          (tokenizer.token() != "m" && tokenizer.token() != "www")) {
+        transformed_subdomain += tokenizer.token();
+        continue;
+      }
+
+      // We found a trivial subdomain, so we add an adjustment accounting for
+      // the subdomain and the following consumed delimiter.
+      size_t trivial_subdomain_begin =
+          tokenizer.token_begin() - component_text.begin();
+      trivial_subdomains_adjustments.push_back(base::OffsetAdjuster::Adjustment(
+          trivial_subdomain_begin, tokenizer.token().length() + 1, 0));
+
+      // Consume the next token, which must be a delimiter.
+      bool next_delimiter_found = tokenizer.GetNext();
+      DCHECK(next_delimiter_found);
+      DCHECK(tokenizer.token_is_delim());
+    }
+
+    base::string16 unicode_result = IDNToUnicodeWithAdjustments(
+        transformed_subdomain + domain_and_registry, adjustments);
+    base::OffsetAdjuster::MergeSequentialAdjustments(
+        trivial_subdomains_adjustments, adjustments);
+    return unicode_result;
   }
+
+  bool trim_trivial_subdomains_;
 };
 
 class NonHostComponentTransform : public AppendComponentTransform {
@@ -362,6 +410,7 @@ const FormatUrlType kFormatUrlOmitAll =
     kFormatUrlOmitTrailingSlashOnBareHostname;
 const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 3;
 const FormatUrlType kFormatUrlExperimentalOmitHTTPS = 1 << 4;
+const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains = 1 << 5;
 
 base::string16 FormatUrl(const GURL& url,
                          FormatUrlTypes format_types,
@@ -481,7 +530,10 @@ base::string16 FormatUrlWithAdjustments(
     *prefix_end = static_cast<size_t>(url_string.length());
 
   // Host.
-  AppendFormattedComponent(spec, parsed.host, HostComponentTransform(),
+  bool trim_trivial_subdomains =
+      (format_types & kFormatUrlExperimentalOmitTrivialSubdomains) != 0;
+  AppendFormattedComponent(spec, parsed.host,
+                           HostComponentTransform(trim_trivial_subdomains),
                            &url_string, &new_parsed->host, adjustments);
 
   // Port.
@@ -594,7 +646,7 @@ bool CanStripTrailingSlash(const GURL& url) {
 void AppendFormattedHost(const GURL& url, base::string16* output) {
   AppendFormattedComponent(
       url.possibly_invalid_spec(), url.parsed_for_possibly_invalid_spec().host,
-      HostComponentTransform(), output, NULL, NULL);
+      HostComponentTransform(false), output, nullptr, nullptr);
 }
 
 base::string16 IDNToUnicode(base::StringPiece host) {
