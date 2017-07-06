@@ -752,15 +752,14 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
 
   blob_uuids->push_back(current_blob->GetUUID());
 
-  content::RenderProcessHost* render_process_host =
-      render_frame_host()->GetProcess();
-  if (!render_process_host) {
+  if (!render_frame_host() || !render_frame_host()->GetProcess()) {
     SendResponse(false);
     return;
   }
 
   extensions::BlobHolder* holder =
-      extensions::BlobHolder::FromRenderProcessHost(render_process_host);
+      extensions::BlobHolder::FromRenderProcessHost(
+          render_frame_host()->GetProcess());
   holder->HoldBlobReference(std::move(current_blob));
 
   // Construct the next Blob if necessary.
