@@ -545,10 +545,8 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   std::unique_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
       plugin_path, request(), response_.get(), &payload));
   if (handler) {
-    if (!CheckResponseIsNotProvisional()) {
-      Cancel();
+    if (!CheckResponseIsNotProvisional())
       return false;
-    }
     *handled_by_plugin = true;
     intercepting_handler_->UseNewHandler(std::move(handler), payload);
   }
@@ -577,7 +575,7 @@ bool MimeSniffingResourceHandler::CheckResponseIsNotProvisional() {
   // download.
   // TODO(abarth): We should abstract the response_code test, but this kind
   // of check is scattered throughout our codebase.
-  request()->CancelWithError(net::ERR_INVALID_RESPONSE);
+  CancelWithError(net::ERR_INVALID_RESPONSE);
   return false;
 }
 
