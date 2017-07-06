@@ -16,6 +16,9 @@
 // Moves the tiles up by pinning the omnibox to the top. Completion called only
 // if scrolled to top.
 - (void)shiftTilesUpWithCompletionBlock:(ProceduralBlock)completionBlock;
+// Notifies the collection that its layout has changed and should be
+// invalidated.
+- (void)invalidateLayout;
 
 @end
 
