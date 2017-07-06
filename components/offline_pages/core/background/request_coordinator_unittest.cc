@@ -52,6 +52,7 @@ const int kMaxCompletedTries = 3;
 const bool kPowerRequired = true;
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
+const std::string kRequestOrigin("abc.xyz");
 }  // namespace
 
 class ObserverStub : public RequestCoordinator::Observer {
@@ -266,6 +267,7 @@ class RequestCoordinatorTest : public testing::Test {
     params.url = kUrl1;
     params.client_id = kClientId1;
     params.user_requested = kUserRequested;
+    params.request_origin = kRequestOrigin;
     return coordinator()->SavePageLater(params);
   }
 
@@ -276,6 +278,7 @@ class RequestCoordinatorTest : public testing::Test {
     params.client_id = kClientId1;
     params.user_requested = kUserRequested;
     params.availability = availability;
+    params.request_origin = kRequestOrigin;
     return coordinator()->SavePageLater(params);
   }
 
@@ -564,6 +567,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   params.url = kUrl1;
   params.client_id = kClientId1;
   params.original_url = kUrl2;
+  params.request_origin = kRequestOrigin;
   EXPECT_NE(0, coordinator()->SavePageLater(params));
 
   // Expect that a request got placed on the queue.
@@ -583,6 +587,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_EQ(kClientId1, last_requests().at(0)->client_id());
   EXPECT_TRUE(last_requests().at(0)->user_requested());
   EXPECT_EQ(kUrl2, last_requests().at(0)->original_url());
+  EXPECT_EQ(kRequestOrigin, last_requests().at(0)->request_origin());
 
   // Expect that the scheduler got notified.
   SchedulerStub* scheduler_stub =

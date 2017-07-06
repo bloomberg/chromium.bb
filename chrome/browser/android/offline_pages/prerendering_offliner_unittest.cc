@@ -35,6 +35,7 @@ const GURL kHttpUrl("http://tunafish.com");
 const GURL kFileUrl("file://sailfish.png");
 const ClientId kClientId("AsyncLoading", "88");
 const bool kUserRequested = true;
+const char kRequestOrigin[] = "abc.xyz";
 
 // Mock Loader for testing the Offliner calls.
 class MockPrerenderingLoader : public PrerenderingLoader {
@@ -141,6 +142,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
                 const SavePageCallback& callback) override {
     mock_saving_ = true;
     save_page_callback_ = callback;
+    save_page_params_ = save_page_params;
   }
 
   void CompleteSavingAsArchiveCreationFailed() {
@@ -169,8 +171,11 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
   bool mock_saving() const { return mock_saving_; }
 
+  SavePageParams save_page_params() { return save_page_params_; }
+
  private:
   bool mock_saving_;
+  SavePageParams save_page_params_;
   SavePageCallback save_page_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOfflinePageModel);
@@ -339,6 +344,18 @@ TEST_F(PrerenderingOfflinerTest, CancelWhenLoading) {
   PumpLoop();
   EXPECT_TRUE(cancel_callback_called());
   EXPECT_TRUE(loader()->IsIdle());
+}
+
+TEST_F(PrerenderingOfflinerTest, PropagatesRequestOrigin) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_request_origin(kRequestOrigin);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  loader()->CompleteLoadingAsLoaded();
+  PumpLoop();
+  EXPECT_EQ(kRequestOrigin, model()->save_page_params().request_origin);
 }
 
 TEST_F(PrerenderingOfflinerTest, CancelWhenLoaded) {
