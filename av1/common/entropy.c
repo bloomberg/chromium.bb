@@ -5706,13 +5706,13 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   AVERAGE_TILE_CDFS(drl_cdf)
 #endif
 
-  // FIXME: cdfs not defined for motion_mode_prob, obmc_prob
+// FIXME: cdfs not defined for motion_mode_prob, obmc_prob
 
-  // FIXME: cdfs not defined for super_tx
-
+// FIXME: cdfs not defined for super_tx
+#if CONFIG_EXT_INTER
   AVERAGE_TILE_CDFS(inter_compound_mode_cdf)
-  // interintra_mode etc
-
+// interintra_mode etc
+#endif
   AVERAGE_TILE_CDFS(y_mode_cdf)
 
   if (cm->interp_filter == SWITCHABLE) {
