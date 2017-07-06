@@ -52,40 +52,9 @@ class MusViewsDelegate : public ViewsDelegate {
 
 }  // namespace
 
-AuraInit::AuraInit(service_manager::Connector* connector,
-                   const service_manager::Identity& identity,
-                   const std::string& resource_file,
-                   const std::string& resource_file_200,
-                   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                   Mode mode)
-    : resource_file_(resource_file),
-      resource_file_200_(resource_file_200),
-      env_(aura::Env::CreateInstance(
-          (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
-              ? aura::Env::Mode::MUS
-              : aura::Env::Mode::LOCAL)) {
+AuraInit::AuraInit() {
   if (!ViewsDelegate::GetInstance())
     views_delegate_ = base::MakeUnique<MusViewsDelegate>();
-  if (mode == Mode::AURA_MUS) {
-    mus_client_ =
-        base::WrapUnique(new MusClient(connector, identity, io_task_runner));
-  }
-  ui::MaterialDesignController::Initialize();
-  if (!InitializeResources(connector))
-    return;
-
-// Initialize the skia font code to go ask fontconfig underneath.
-#if defined(OS_LINUX)
-  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
-  SkFontConfigInterface::SetGlobal(font_loader_.get());
-#endif
-
-  // There is a bunch of static state in gfx::Font, by running this now,
-  // before any other apps load, we ensure all the state is set up.
-  gfx::Font();
-
-  ui::InitializeInputMethodForTesting();
-  initialized_ = true;
 }
 
 AuraInit::~AuraInit() {
@@ -100,15 +69,65 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-bool AuraInit::InitializeResources(service_manager::Connector* connector) {
+std::unique_ptr<AuraInit> AuraInit::Create(
+    service_manager::Connector* connector,
+    const service_manager::Identity& identity,
+    const std::string& resource_file,
+    const std::string& resource_file_200,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    Mode mode) {
+  std::unique_ptr<AuraInit> aura_init = base::WrapUnique(new AuraInit());
+  if (!aura_init->Init(connector, identity, resource_file, resource_file_200,
+                       io_task_runner, mode)) {
+    aura_init.reset();
+  }
+  return aura_init;
+}
+
+bool AuraInit::Init(service_manager::Connector* connector,
+                    const service_manager::Identity& identity,
+                    const std::string& resource_file,
+                    const std::string& resource_file_200,
+                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                    Mode mode) {
+  env_ = aura::Env::CreateInstance(
+      (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
+          ? aura::Env::Mode::MUS
+          : aura::Env::Mode::LOCAL);
+
+  if (mode == Mode::AURA_MUS) {
+    mus_client_ =
+        base::WrapUnique(new MusClient(connector, identity, io_task_runner));
+  }
+  ui::MaterialDesignController::Initialize();
+  if (!InitializeResources(connector, resource_file, resource_file_200))
+    return false;
+
+// Initialize the skia font code to go ask fontconfig underneath.
+#if defined(OS_LINUX)
+  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
+  SkFontConfigInterface::SetGlobal(font_loader_.get());
+#endif
+
+  // There is a bunch of static state in gfx::Font, by running this now,
+  // before any other apps load, we ensure all the state is set up.
+  gfx::Font();
+
+  ui::InitializeInputMethodForTesting();
+  return true;
+}
+
+bool AuraInit::InitializeResources(service_manager::Connector* connector,
+                                   const std::string& resource_file,
+                                   const std::string& resource_file_200) {
   // Resources may have already been initialized (e.g. when 'chrome --mash' is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
     return false;
 
-  std::set<std::string> resource_paths({resource_file_});
-  if (!resource_file_200_.empty())
-    resource_paths.insert(resource_file_200_);
+  std::set<std::string> resource_paths({resource_file});
+  if (!resource_file_200.empty())
+    resource_paths.insert(resource_file_200);
 
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
@@ -123,15 +142,15 @@ bool AuraInit::InitializeResources(service_manager::Connector* connector) {
   if (!loader.OpenFiles(std::move(directory), resource_paths))
     return false;
   ui::RegisterPathProvider();
-  base::File pak_file = loader.TakeFile(resource_file_);
+  base::File pak_file = loader.TakeFile(resource_file);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
       std::move(pak_file), base::MemoryMappedFile::Region::kWholeFile);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
       std::move(pak_file_2), ui::SCALE_FACTOR_100P);
-  if (!resource_file_200_.empty())
+  if (!resource_file_200.empty())
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        loader.TakeFile(resource_file_200_), ui::SCALE_FACTOR_200P);
+        loader.TakeFile(resource_file_200), ui::SCALE_FACTOR_200P);
   return true;
 }
 

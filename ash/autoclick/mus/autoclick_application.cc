@@ -90,9 +90,13 @@ AutoclickApplication::AutoclickApplication()
 AutoclickApplication::~AutoclickApplication() {}
 
 void AutoclickApplication::OnStart() {
-  aura_init_ = base::MakeUnique<views::AuraInit>(
+  aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
+  if (!aura_init_) {
+    context()->QuitNow();
+    return;
+  }
   autoclick_controller_common_.reset(new AutoclickControllerCommon(
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }
