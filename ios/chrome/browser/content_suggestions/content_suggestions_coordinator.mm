@@ -319,6 +319,13 @@
   [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
+- (void)promoShown {
+  NotificationPromoWhatsNew* notificationPromo =
+      [self.contentSuggestionsMediator notificationPromo];
+  notificationPromo->HandleViewed();
+  [self.headerController setPromoCanShow:notificationPromo->CanShow()];
+}
+
 #pragma mark - OverscrollActionsControllerDelegate
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
