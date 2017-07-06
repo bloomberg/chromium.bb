@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_H_
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_SERVICE_H_
 
-#include "components/history/core/common/thumbnail_score.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/image/image.h"
@@ -18,7 +17,6 @@ class RefCountedMemory;
 
 namespace thumbnails {
 
-class ThumbnailingAlgorithm;
 struct ThumbnailingContext;
 
 // An interface abstracting access to thumbnails. Intended as a temporary
@@ -31,14 +29,6 @@ class ThumbnailService : public RefcountedKeyedService {
   // that our current thumbnail was superior to the given one.
   virtual bool SetPageThumbnail(const ThumbnailingContext& context,
                                 const gfx::Image& thumbnail) = 0;
-
-  // Returns the ThumbnailingAlgorithm used for processing thumbnails.
-  // It is always a new instance, the caller owns it. It will encapsulate the
-  // process of creating a thumbnail from tab contents. The lifetime of these
-  // instances is limited to the act of processing a single tab image. They
-  // are permitted to hold the state of such process.
-  // TODO(treib): Return a scoped_refptr rather than raw pointer.
-  virtual ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const = 0;
 
   // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.

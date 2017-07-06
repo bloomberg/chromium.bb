@@ -7,30 +7,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
+#include "chrome/browser/thumbnails/thumbnail_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace thumbnails {
-
-// The result of clipping. This can be used to determine if the
-// generated thumbnail is good or not.
-enum ClipResult {
-  // Clipping is not done yet.
-  CLIP_RESULT_UNPROCESSED,
-  // The source image is smaller.
-  CLIP_RESULT_SOURCE_IS_SMALLER,
-  // Wider than tall by twice or more, clip horizontally.
-  CLIP_RESULT_MUCH_WIDER_THAN_TALL,
-  // Wider than tall, clip horizontally.
-  CLIP_RESULT_WIDER_THAN_TALL,
-  // Taller than wide, clip vertically.
-  CLIP_RESULT_TALLER_THAN_WIDE,
-  // The source and destination aspect ratios are identical.
-  CLIP_RESULT_NOT_CLIPPED,
-};
-
-bool IsGoodClipping(ClipResult clip_result);
 
 // Holds the information needed for processing a thumbnail.
 struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {

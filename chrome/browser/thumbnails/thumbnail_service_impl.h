@@ -27,7 +27,6 @@ class ThumbnailServiceImpl : public ThumbnailService {
   // Implementation of ThumbnailService.
   bool SetPageThumbnail(const ThumbnailingContext& context,
                         const gfx::Image& thumbnail) override;
-  ThumbnailingAlgorithm* GetThumbnailingAlgorithm() const override;
   bool GetPageThumbnail(const GURL& url,
                         bool prefix_match,
                         scoped_refptr<base::RefCountedMemory>* bytes) override;
