@@ -26,8 +26,8 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(bool use_surface_references,
       display_provider_(display_provider),
       binding_(this) {
   manager_.AddObserver(this);
-  dependency_tracker_ = base::MakeUnique<cc::SurfaceDependencyTracker>(
-      &manager_, manager_.GetPrimaryBeginFrameSource());
+  dependency_tracker_ =
+      base::MakeUnique<cc::SurfaceDependencyTracker>(&manager_);
   manager_.SetDependencyTracker(dependency_tracker_.get());
 }
 

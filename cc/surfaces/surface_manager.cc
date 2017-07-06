@@ -66,9 +66,11 @@ void SurfaceManager::SetDependencyTracker(
   dependency_tracker_ = dependency_tracker;
 }
 
-void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
+void SurfaceManager::RequestSurfaceResolution(
+    Surface* surface,
+    SurfaceDependencyDeadline* deadline) {
   if (dependency_tracker_)
-    dependency_tracker_->RequestSurfaceResolution(pending_surface);
+    dependency_tracker_->RequestSurfaceResolution(surface, deadline);
 }
 
 Surface* SurfaceManager::CreateSurface(

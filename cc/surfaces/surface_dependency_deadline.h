@@ -31,6 +31,15 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
     return number_of_frames_to_deadline_.has_value();
   }
 
+  // Takes on the same BeginFrameSource and deadline as |other|. Returns
+  // false if they're already the same, and true otherwise.
+  bool InheritFrom(const SurfaceDependencyDeadline& other);
+
+  bool operator==(const SurfaceDependencyDeadline& other);
+  bool operator!=(const SurfaceDependencyDeadline& other) {
+    return !(*this == other);
+  }
+
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs& LastUsedBeginFrameArgs() const override;
