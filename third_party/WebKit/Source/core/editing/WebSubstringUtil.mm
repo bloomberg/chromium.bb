@@ -169,11 +169,9 @@ NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     return nil;
 
   // Expand to word under point.
-  const VisibleSelection& selection =
-      CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                 .SetBaseAndExtent(range)
-                                 .SetGranularity(kWordGranularity)
-                                 .Build());
+  const VisibleSelection& selection = CreateVisibleSelectionWithGranularity(
+      SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build(),
+      kWordGranularity);
   const EphemeralRange word_range = selection.ToNormalizedEphemeralRange();
 
   // Convert to NSAttributedString.

@@ -535,12 +535,12 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
   const VisiblePositionInFlatTree& pos =
       VisiblePositionOfHitTestResult(adjusted_hit_test_result);
   const VisibleSelectionInFlatTree& new_selection =
-      pos.IsNotNull()
-          ? CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                       .Collapse(pos.ToPositionWithAffinity())
-                                       .SetGranularity(kWordGranularity)
-                                       .Build())
-          : VisibleSelectionInFlatTree();
+      pos.IsNotNull() ? CreateVisibleSelectionWithGranularity(
+                            SelectionInFlatTree::Builder()
+                                .Collapse(pos.ToPositionWithAffinity())
+                                .Build(),
+                            kWordGranularity)
+                      : VisibleSelectionInFlatTree();
 
   HandleVisibility visibility = HandleVisibility::kNotVisible;
   if (select_input_event_type == SelectInputEventType::kTouch) {
@@ -903,12 +903,12 @@ bool SelectionController::HandleTripleClick(
   const VisiblePositionInFlatTree& pos =
       VisiblePositionOfHitTestResult(event.GetHitTestResult());
   const VisibleSelectionInFlatTree new_selection =
-      pos.IsNotNull()
-          ? CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                       .Collapse(pos.ToPositionWithAffinity())
-                                       .SetGranularity(kParagraphGranularity)
-                                       .Build())
-          : VisibleSelectionInFlatTree();
+      pos.IsNotNull() ? CreateVisibleSelectionWithGranularity(
+                            SelectionInFlatTree::Builder()
+                                .Collapse(pos.ToPositionWithAffinity())
+                                .Build(),
+                            kParagraphGranularity)
+                      : VisibleSelectionInFlatTree();
 
   const bool is_handle_visible =
       event.Event().FromTouch() && new_selection.IsRange();

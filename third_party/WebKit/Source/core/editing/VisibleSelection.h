@@ -61,6 +61,12 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // Note: |create()| should be used only by |createVisibleSelection|.
   static VisibleSelectionTemplate Create(const SelectionTemplate<Strategy>&);
 
+  // Note: |CreateWithGranularity()| should be used only by
+  // |CreateVisibleSelectionWithGranularity()|.
+  static VisibleSelectionTemplate CreateWithGranularity(
+      const SelectionTemplate<Strategy>&,
+      TextGranularity);
+
   SelectionType GetSelectionType() const { return selection_type_; }
 
   TextAffinity Affinity() const { return affinity_; }
@@ -144,7 +150,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
  private:
   friend class SelectionAdjuster;
 
-  VisibleSelectionTemplate(const SelectionTemplate<Strategy>&);
+  VisibleSelectionTemplate(const SelectionTemplate<Strategy>&, TextGranularity);
 
   void Validate(TextGranularity = kCharacterGranularity);
 
@@ -192,6 +198,14 @@ using VisibleSelectionInFlatTree =
 CORE_EXPORT VisibleSelection CreateVisibleSelection(const SelectionInDOMTree&);
 CORE_EXPORT VisibleSelectionInFlatTree
 CreateVisibleSelection(const SelectionInFlatTree&);
+
+CORE_EXPORT VisibleSelection
+CreateVisibleSelectionWithGranularity(const SelectionInDOMTree&,
+                                      TextGranularity);
+
+CORE_EXPORT VisibleSelectionInFlatTree
+CreateVisibleSelectionWithGranularity(const SelectionInFlatTree&,
+                                      TextGranularity);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
