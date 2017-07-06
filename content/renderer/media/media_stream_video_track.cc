@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/media_stream_video_track.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "media/capture/video_capture_types.h"
 
@@ -381,6 +383,19 @@ void MediaStreamVideoTrack::GetSettings(
       settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kNone;
       break;
   }
+#if defined(OS_ANDROID)
+  // On Android, the facing mode is not available in the |video_facing| field,
+  // but is available as part of the label.
+  // TODO(guidou): Remove this code once the |video_facing| field is supported
+  // on Android. See http://crbug.com/672856.
+  if (source_->device_info().device.name.find("front") != std::string::npos) {
+    settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kUser;
+  } else if (source_->device_info().device.name.find("back") !=
+             std::string::npos) {
+    settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kEnvironment;
+  }
+#endif
+
   const base::Optional<CameraCalibration> calibration =
       source_->device_info().device.camera_calibration;
   if (calibration) {
