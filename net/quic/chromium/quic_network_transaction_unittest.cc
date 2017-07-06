@@ -1452,6 +1452,123 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
+  // Both server advertises and client supports two QUIC versions.
+  // Only |version_| is advertised and supported.
+  // The QuicStreamFactoy will pick up |version_|, which is verified as the
+  // PacketMakers are using |version_|.
+
+  // Add support for another QUIC version besides |version_| on the client side.
+  // Also find a different version advertised by the server.
+  QuicVersion advertised_version_2 = QUIC_VERSION_UNSUPPORTED;
+  for (const QuicVersion& version : AllSupportedVersions()) {
+    if (version == version_)
+      continue;
+    if (supported_versions_.size() != 2) {
+      supported_versions_.push_back(version);
+      continue;
+    }
+    advertised_version_2 = version;
+    break;
+  }
+  DCHECK_NE(advertised_version_2, QUIC_VERSION_UNSUPPORTED);
+
+  std::string QuicAltSvcWithVersionHeader =
+      base::StringPrintf("Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n",
+                         advertised_version_2, version_);
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(QuicAltSvcWithVersionHeader.c_str()), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSession(supported_versions_);
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
+  // Client and server mutually support more than one QUIC_VERSION.
+  // The QuicStreamFactoy will pick the preferred QUIC_VERSION: |version_|,
+  // which is verified as the PacketMakers are using |version_|.
+
+  QuicVersion common_version_2 = QUIC_VERSION_UNSUPPORTED;
+  for (const QuicVersion& version : AllSupportedVersions()) {
+    if (version == version_)
+      continue;
+    common_version_2 = version;
+    break;
+  }
+  DCHECK_NE(common_version_2, QUIC_VERSION_UNSUPPORTED);
+
+  supported_versions_.push_back(
+      common_version_2);  // Supported but unpreferred.
+
+  std::string QuicAltSvcWithVersionHeader = base::StringPrintf(
+      "Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n", common_version_2, version_);
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(QuicAltSvcWithVersionHeader.c_str()), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSession(supported_versions_);
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
 TEST_P(QuicNetworkTransactionTest,
        UseAlternativeServiceWithProbabilityForQuic) {
   MockRead http_reads[] = {
