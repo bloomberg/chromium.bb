@@ -11,15 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -50,7 +46,6 @@ constexpr char kFakeEnrollmentToken[] = "fake-enrollment-token";
 constexpr char kFakeUserId[] = "fake-user-id";
 constexpr char kFakeAuthSessionId[] = "fake-auth-session-id";
 constexpr char kFakeAdfsServerUrl[] = "http://example.com/adfs/ls/awesome.aspx";
-constexpr char kFakeGuid[] = "f04557de-5da2-40ce-ae9d-b8874d8da96e";
 constexpr char kNotYetFetched[] = "NOT-YET-FETCHED";
 constexpr char kRedirectHeaderFormat[] =
     "HTTP/1.1 302 MOVED\n"
@@ -264,19 +259,6 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
 
     token_fetcher_ =
         base::MakeUnique<ArcActiveDirectoryEnrollmentTokenFetcher>();
-
-    user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
-
-    const AccountId account_id(AccountId::AdFromObjGuid(kFakeGuid));
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
-    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
-
-    testing_profile_ = base::MakeUnique<TestingProfile>();
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
-        GetFakeUserManager()->GetPrimaryUser(), testing_profile_.get());
   }
 
   // Stores a correct (fake) DM token. ArcActiveDirectoryEnrollmentTokenFetcher
@@ -310,16 +292,9 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   }
 
   void TearDownOnMainThread() override {
-    user_manager_enabler_.reset();
-    dm_interceptor_.reset();
+    token_fetcher_.reset();
     adfs_interceptor_.reset();
-    testing_profile_.reset();
-    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
-  }
-
-  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
-    return static_cast<chromeos::FakeChromeUserManager*>(
-        user_manager::UserManager::Get());
+    dm_interceptor_.reset();
   }
 
   void FetchEnrollmentToken(
@@ -386,10 +361,8 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
 
  private:
   std::unique_ptr<ArcActiveDirectoryEnrollmentTokenFetcher> token_fetcher_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   // DBusThreadManager owns this.
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
-  std::unique_ptr<TestingProfile> testing_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest);
 };

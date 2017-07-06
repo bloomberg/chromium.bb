@@ -240,8 +240,13 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   void StartInstance() {
-    if (arc_session_manager()->profile() != profile())
+    if (!arc_session_manager()->profile()) {
+      // This situation happens when StartInstance() is called after
+      // StopInstance().
+      // TODO(hidehiko): The emulation is not implemented correctly. Fix it.
+      arc_session_manager()->SetProfile(profile());
       arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
+    }
     app_instance_observer()->OnInstanceReady();
   }
 

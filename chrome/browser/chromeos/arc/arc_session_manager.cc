@@ -490,10 +490,8 @@ void ArcSessionManager::ShutdownSession() {
       break;
     case State::ACTIVE:
       // Request to stop the ARC. |state_| will be set to STOPPED eventually.
-      // TODO(yusukes): Once Shutdown() in
-      // ArcServiceLauncher::OnPrimaryUserProfilePrepared() is removed, always
-      // call RequestStop() with |true|. We can actually remove the boolean
-      // parameter then.
+      // TODO(yusukes): Always call RequestStop() with |true|.
+      // We can actually remove the boolean parameter then.
       arc_session_runner_->RequestStop(false);
       state_ = State::STOPPING;
       break;

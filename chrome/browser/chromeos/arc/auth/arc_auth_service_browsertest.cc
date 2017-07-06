@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -37,7 +38,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,13 +93,23 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
     // Init ArcSessionManager for testing.
+    ArcServiceLauncher::Get()->Shutdown();
+    ArcServiceLauncher::Get()->Initialize();
     ArcSessionManager::DisableUIForTesting();
     ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
         base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
+    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
+    GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+    GetFakeUserManager()->CreateLocalState();
 
     // Create test profile.
     TestingProfile::Builder profile_builder;
@@ -127,28 +137,12 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
-    GetFakeUserManager()->CreateLocalState();
-
-    // Set up ARC for test profile.
-    // Currently, ArcSessionManager is singleton and set up with the original
-    // Profile instance. This re-initializes the ArcServiceLauncher by
-    // overwriting Profile with profile().
-    // TODO(hidehiko): This way several ArcService instances created with
-    // the original Profile instance on Browser creatuion are kept in the
-    // ArcServiceManager. For proper overwriting, those should be removed.
     ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
 
     // It is non-trivial to navigate through the merge session in a testing
     // context; currently we just skip it.
     // TODO(blundell): Figure out how to enable this flow.
     ArcSessionManager::Get()->auth_context()->SkipMergeSessionForTesting();
-
-    user_manager::known_user::SetDeviceId(
-        multi_user_util::GetAccountIdFromProfile(profile()), "dummy");
   }
 
   void TearDownOnMainThread() override {
@@ -168,6 +162,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     ArcServiceLauncher::Get()->Shutdown();
     profile_.reset();
     user_manager_enabler_.reset();
+    chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {

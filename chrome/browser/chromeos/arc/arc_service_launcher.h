@@ -23,7 +23,7 @@ class ArcServiceLauncher {
   ArcServiceLauncher();
   ~ArcServiceLauncher();
 
-  // This is to access OnPrimaryUserProfilePrepared() only.
+  // Returns a global instance.
   static ArcServiceLauncher* Get();
 
   // Called before the main MessageLooop starts.
@@ -32,6 +32,11 @@ class ArcServiceLauncher {
   // Called after the main MessageLoop stops, but before the Profile is
   // destroyed.
   void Shutdown();
+
+  // Called just before most of BrowserContextKeyedService instance creation.
+  // Set the given |profile| to ArcSessionManager, if the profile is allowed
+  // to use ARC.
+  void MaybeSetProfile(Profile* profile);
 
   // Called when the main profile is initialized after user logs in.
   void OnPrimaryUserProfilePrepared(Profile* profile);
