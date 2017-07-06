@@ -307,7 +307,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   FilterOperations& MutableBackdropFilter() {
     DCHECK(BackdropFilterInternal().Get());
-    return MutableBackdropFilterInternal().Access()->operations_;
+    return MutableBackdropFilterInternal()->operations_;
   }
   bool HasBackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
@@ -316,14 +316,17 @@ class ComputedStyle : public ComputedStyleBase,
   void SetBackdropFilter(const FilterOperations& ops) {
     DCHECK(BackdropFilterInternal().Get());
     if (BackdropFilterInternal()->operations_ != ops)
-      MutableBackdropFilterInternal().Access()->operations_ = ops;
+      MutableBackdropFilterInternal()->operations_ = ops;
+  }
+  bool BackdropFilterDataEquivalent(const ComputedStyle& o) const {
+    return DataEquivalent(BackdropFilterInternal(), o.BackdropFilterInternal());
   }
 
   // filter (aka -webkit-filter)
   static const FilterOperations& InitialFilter();
   FilterOperations& MutableFilter() {
     DCHECK(FilterInternal().Get());
-    return MutableFilterInternal().Access()->operations_;
+    return MutableFilterInternal()->operations_;
   }
   const FilterOperations& Filter() const {
     DCHECK(FilterInternal().Get());
@@ -336,7 +339,10 @@ class ComputedStyle : public ComputedStyleBase,
   void SetFilter(const FilterOperations& v) {
     DCHECK(FilterInternal().Get());
     if (FilterInternal()->operations_ != v)
-      MutableFilterInternal().Access()->operations_ = v;
+      MutableFilterInternal()->operations_ = v;
+  }
+  bool FilterDataEquivalent(const ComputedStyle& o) const {
+    return DataEquivalent(FilterInternal(), o.FilterInternal());
   }
 
   // Background properties.

@@ -117,7 +117,7 @@
     // Can only be set if the field template is storage_only.
     wrapper_pointer_name: {
       valid_type: "str",
-      valid_values: ["RefPtr", "Persistent", "std::unique_ptr", "DataPersistent"],
+      valid_values: ["RefPtr", "Persistent", "std::unique_ptr"],
     },
 
     // - keywords: ["keyword1", "keyword2"]
@@ -649,9 +649,9 @@
       runtime_flag: "CSSBackdropFilter",
       field_template: "storage_only",
       type_name: "StyleFilterData",
-      field_group: "rare-non-inherited",
-      default_value: "DataPersistent<StyleFilterData>()",
-      wrapper_pointer_name: "DataPersistent",
+      field_group: "rare-non-inherited->backdrop-filter-ops",
+      default_value: "StyleFilterData::Create()",
+      wrapper_pointer_name: "Persistent",
       include_paths: ["core/style/StyleFilterData.h"],
     },
     {
@@ -1226,10 +1226,10 @@
       converter: "ConvertFilterOperations",
       interpolable: true,
       field_template: "storage_only",
-      type_name: "StyleFilterData",
-      field_group: "rare-non-inherited",
-      default_value: "DataPersistent<StyleFilterData>()",
-      wrapper_pointer_name: "DataPersistent",
+      type_name : "StyleFilterData",
+      field_group: "rare-non-inherited->filter-ops",
+      default_value: "StyleFilterData::Create()",
+      wrapper_pointer_name: "Persistent",
       include_paths: ["core/style/StyleFilterData.h"],
     },
     {
