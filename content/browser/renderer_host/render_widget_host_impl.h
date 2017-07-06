@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
+#include "content/browser/renderer_host/input/legacy_ipc_widget_input_handler.h"
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
@@ -39,6 +40,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/view_message_enums.h"
@@ -67,7 +69,6 @@ struct ViewHostMsg_UpdateRect_Params;
 namespace blink {
 class WebInputEvent;
 class WebMouseEvent;
-struct WebCompositionUnderline;
 }
 
 namespace cc {
@@ -209,6 +210,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
   void SetCursor(const CursorInfo& cursor_info) override;
+  mojom::WidgetInputHandler* GetWidgetInputHandler();
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -411,7 +413,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // * when markedText of NSTextInput is called (on Mac).
   void ImeSetComposition(
       const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const std::vector<ui::CompositionUnderline>& underlines,
       const gfx::Range& replacement_range,
       int selection_start,
       int selection_end);
@@ -423,11 +425,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeCommitText(
-      const base::string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      const gfx::Range& replacement_range,
-      int relative_cursor_pos);
+  void ImeCommitText(const base::string16& text,
+                     const std::vector<ui::CompositionUnderline>& underlines,
+                     const gfx::Range& replacement_range,
+                     int relative_cursor_pos);
 
   // Finishes an ongoing composition.
   // A browser should call this function or ImeCommitText:
@@ -451,18 +452,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Set the RenderView background transparency.
   void SetBackgroundOpaque(bool opaque);
-
-  // Executes the edit command.
-  void ExecuteEditCommand(const std::string& command,
-                          const std::string& value);
-
-  // Tells the renderer to scroll the currently focused node into rect only if
-  // the currently focused node is a Text node (textfield, text area or content
-  // editable divs).
-  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
-
-  // Requests the renderer to move the caret selection towards the point.
-  void MoveCaret(const gfx::Point& point);
 
   // Called when the reponse to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
@@ -991,6 +980,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // List of all swap messages that their corresponding frames have not arrived.
   // Sorted by frame token.
   std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
+
+  std::unique_ptr<LegacyIPCWidgetInputHandler> legacy_widget_input_handler_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

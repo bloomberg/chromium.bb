@@ -10,7 +10,6 @@
 #include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/file_chooser_params.h"
 #include "ipc/ipc_listener.h"
@@ -43,6 +42,7 @@ struct AXActionData;
 }
 
 namespace content {
+
 class AssociatedInterfaceProvider;
 class RenderProcessHost;
 class RenderViewHost;
@@ -283,8 +283,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost and is allowed to be used by it. Use this in the browser
   // process to determine whether access to a feature is allowed.
   virtual bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) = 0;
-
-  virtual mojom::FrameInputHandler* GetFrameInputHandler() = 0;
 
  private:
   // This interface should only be implemented inside content.

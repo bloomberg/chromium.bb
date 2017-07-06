@@ -32,12 +32,12 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
+#include "ui/base/ime/composition_underline.h"
 #include "ui/display/display_observer.h"
 
 namespace content {
@@ -124,7 +124,7 @@ struct TextInputState;
   NSRange markedTextSelectedRange_;
 
   // Underline information of the |markedText_|.
-  std::vector<blink::WebCompositionUnderline> underlines_;
+  std::vector<ui::CompositionUnderline> underlines_;
 
   // Replacement range information received from |setMarkedText:|.
   gfx::Range setMarkedTextReplacementRange_;

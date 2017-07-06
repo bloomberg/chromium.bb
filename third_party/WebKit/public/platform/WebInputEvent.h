@@ -275,6 +275,8 @@ class WebInputEvent {
     // was forced to be non-blocking due to the main thread being
     // unresponsive.
     kListenersForcedNonBlockingDueToMainThreadResponsiveness,
+    kLastDispatchType =
+        kListenersForcedNonBlockingDueToMainThreadResponsiveness,
   };
 
   // The rail mode for a wheel event specifies the axis on which scrolling is

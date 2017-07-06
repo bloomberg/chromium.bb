@@ -1609,6 +1609,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnMoveRangeSelectionExtent)
     IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
+    IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
+    IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
+                        OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(InputMsg_ExtendSelectionAndDelete,
@@ -1898,6 +1901,18 @@ void RenderFrameImpl::OnCustomContextMenuAction(
     // Internal request, forward to WebKit.
     render_view_->webview()->PerformCustomContextMenuAction(action);
   }
+}
+
+void RenderFrameImpl::OnMoveCaret(const gfx::Point& point) {
+  Send(new InputHostMsg_MoveCaret_ACK(render_view_->GetRoutingID()));
+  frame_->MoveCaretSelection(render_view_->ConvertWindowPointToViewport(point));
+}
+
+void RenderFrameImpl::OnScrollFocusedEditableNodeIntoRect(
+    const gfx::Rect& rect) {
+  // TODO(dtapuska): Move the implementation of scroll focused
+  // editable node into rect into this class.
+  render_view_->ScrollFocusedEditableNodeIntoRect(rect);
 }
 
 void RenderFrameImpl::OnUndo() {

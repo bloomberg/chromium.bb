@@ -279,15 +279,8 @@ void SendImeCommitTextToWidget(
     const std::vector<ui::CompositionUnderline>& underlines,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  std::vector<blink::WebCompositionUnderline> web_composition_underlines;
-  for (auto underline : underlines) {
-    web_composition_underlines.emplace_back(
-        static_cast<int>(underline.start_offset),
-        static_cast<int>(underline.end_offset), underline.color,
-        underline.thick, underline.background_color);
-  }
   RenderWidgetHostImpl::From(rwh)->ImeCommitText(
-      text, web_composition_underlines, replacement_range, relative_cursor_pos);
+      text, underlines, replacement_range, relative_cursor_pos);
 }
 
 void SendImeSetCompositionTextToWidget(
@@ -297,16 +290,8 @@ void SendImeSetCompositionTextToWidget(
     const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
-  std::vector<blink::WebCompositionUnderline> web_composition_underlines;
-  for (auto underline : underlines) {
-    web_composition_underlines.emplace_back(
-        static_cast<int>(underline.start_offset),
-        static_cast<int>(underline.end_offset), underline.color,
-        underline.thick, underline.background_color);
-  }
   RenderWidgetHostImpl::From(rwh)->ImeSetComposition(
-      text, web_composition_underlines, replacement_range, selection_start,
-      selection_end);
+      text, underlines, replacement_range, selection_start, selection_end);
 }
 
 bool DestroyRenderWidgetHost(int32_t process_id,

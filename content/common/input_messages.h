@@ -70,6 +70,17 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
                               blink::WebPointerProperties::Button::kLastEntry)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
                           blink::WebPointerProperties::PointerType::kLastEntry)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureDevice,
+                          (blink::WebGestureDevice::kWebGestureDeviceCount - 1))
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebInputEvent::DispatchType,
+                          blink::WebInputEvent::DispatchType::kLastDispatchType)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureEvent::ScrollUnits,
+                          blink::WebGestureEvent::ScrollUnits::kLastScrollUnit)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    blink::WebGestureEvent::InertialPhaseState,
+    blink::WebGestureEvent::InertialPhaseState::kLastPhase)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTouchPoint::State,
+                          blink::WebTouchPoint::State::kStateMax)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)

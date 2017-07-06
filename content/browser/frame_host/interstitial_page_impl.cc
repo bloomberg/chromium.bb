@@ -442,6 +442,18 @@ void InterstitialPageImpl::Cut() {
   RecordAction(base::UserMetricsAction("Cut"));
 }
 
+void InterstitialPageImpl::ExecuteEditCommand(
+    const std::string& command,
+    const base::Optional<base::string16>& value) {
+  FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
+  if (!focused_node)
+    return;
+
+  focused_node->current_frame_host()
+      ->GetFrameInputHandler()
+      ->ExecuteEditCommand(command, value);
+}
+
 void InterstitialPageImpl::Copy() {
   FrameTreeNode* focused_node = frame_tree_->GetFocusedFrame();
   if (!focused_node)

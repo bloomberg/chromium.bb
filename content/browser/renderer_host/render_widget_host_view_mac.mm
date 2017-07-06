@@ -279,9 +279,8 @@ blink::WebColor WebColorFromNSColor(NSColor *color) {
 
 // Extract underline information from an attributed string. Mostly copied from
 // third_party/WebKit/Source/WebKit/mac/WebView/WebHTMLView.mm
-void ExtractUnderlines(
-    NSAttributedString* string,
-    std::vector<blink::WebCompositionUnderline>* underlines) {
+void ExtractUnderlines(NSAttributedString* string,
+                       std::vector<ui::CompositionUnderline>* underlines) {
   int length = [[string string] length];
   int i = 0;
   while (i < length) {
@@ -297,11 +296,8 @@ void ExtractUnderlines(
             [colorAttr colorUsingColorSpaceName:NSDeviceRGBColorSpace]);
       }
       underlines->push_back(
-          blink::WebCompositionUnderline(range.location,
-                                         NSMaxRange(range),
-                                         color,
-                                         [style intValue] > 1,
-                                         SK_ColorTRANSPARENT));
+          ui::CompositionUnderline(range.location, NSMaxRange(range), color,
+                                   [style intValue] > 1, SK_ColorTRANSPARENT));
     }
     i = range.location + range.length;
   }
@@ -2244,7 +2240,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
     widgetHost->ImeCommitText(textToBeInserted_,
-                              std::vector<blink::WebCompositionUnderline>(),
+                              std::vector<ui::CompositionUnderline>(),
                               gfx::Range::InvalidRange(), 0);
     textInserted = YES;
   }
@@ -3263,8 +3259,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     ExtractUnderlines(string, &underlines_);
   } else {
     // Use a thin black underline by default.
-    underlines_.push_back(blink::WebCompositionUnderline(
-        0, length, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
+    underlines_.push_back(ui::CompositionUnderline(0, length, SK_ColorBLACK,
+                                                   false, SK_ColorTRANSPARENT));
   }
 
   // If we are handling a key down event, then SetComposition() will be
@@ -3307,9 +3303,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
                           base::CompareCase::INSENSITIVE_ASCII))
       editCommands_.push_back(EditCommand(command, ""));
   } else {
-    RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new InputMsg_ExecuteEditCommand(rwh->GetRoutingID(),
-                                              command, ""));
+    if (renderWidgetHostView_->render_widget_host_->delegate()) {
+      renderWidgetHostView_->render_widget_host_->delegate()
+          ->ExecuteEditCommand(command, base::nullopt);
+    }
   }
 }
 
@@ -3338,7 +3335,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     if (renderWidgetHostView_->GetActiveWidget()) {
       renderWidgetHostView_->GetActiveWidget()->ImeCommitText(
           base::SysNSStringToUTF16(im_text),
-          std::vector<blink::WebCompositionUnderline>(), replacement_range, 0);
+          std::vector<ui::CompositionUnderline>(), replacement_range, 0);
     }
   }
 

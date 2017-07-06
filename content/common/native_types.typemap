@@ -4,17 +4,31 @@
 
 mojom = "//content/common/native_types.mojom"
 public_headers = [
+  "//content/common/edit_command.h",
   "//content/common/frame_owner_properties.h",
   "//content/common/frame_replication_state.h",
   "//content/common/resize_params.h",
+  "//content/common/input/input_event.h",
+  "//content/common/input/input_event_ack_source.h",
+  "//content/common/input/input_event_ack_state.h",
   "//content/public/common/renderer_preferences.h",
   "//content/public/common/web_preferences.h",
   "//net/base/network_change_notifier.h",
   "//net/nqe/effective_connection_type.h",
+  "//third_party/WebKit/public/platform/WebGestureDevice.h",
+  "//third_party/WebKit/public/platform/WebGestureEvent.h",
+  "//third_party/WebKit/public/platform/WebInputEvent.h",
+  "//third_party/WebKit/public/platform/WebMouseWheelEvent.h",
+  "//third_party/WebKit/public/platform/WebPointerProperties.h",
+  "//third_party/WebKit/public/platform/WebTouchPoint.h",
   "//third_party/WebKit/public/web/WebPopupType.h",
+  "//ui/events/blink/did_overscroll_params.h",
+  "//ui/events/blink/web_input_event_traits.h",
+  "//ui/latency/ipc/latency_info_param_traits.h",
 ]
 traits_headers = [
   "//content/common/frame_messages.h",
+  "//content/common/input_messages.h",
   "//content/common/view_messages.h",
   "//content/public/common/common_param_traits.h",
 ]
@@ -40,12 +54,24 @@ public_deps = [
   "//url/ipc:url_ipc",
 ]
 type_mappings = [
+  "content.mojom.Button=blink::WebPointerProperties::Button",
+  "content.mojom.Cancelability=blink::WebInputEvent::DispatchType",
   "content.mojom.EffectiveConnectionType=net::EffectiveConnectionType",
+  "content.mojom.EditCommand=content::EditCommand",
+  "content.mojom.EventType=blink::WebInputEvent::Type",
   "content.mojom.FrameOwnerProperties=content::FrameOwnerProperties",
   "content.mojom.FrameReplicationState=content::FrameReplicationState",
+  "content.mojom.GestureDevice=blink::WebGestureDevice",
+  "content.mojom.InertialPhaseState=blink::WebGestureEvent::InertialPhaseState",
+  "content.mojom.InputEventAckSource=content::InputEventAckSource",
+  "content.mojom.InputEventAckState=content::InputEventAckState",
   "content.mojom.NetworkConnectionType=net::NetworkChangeNotifier::ConnectionType",
+  "content.mojom.DidOverscrollParams=ui::DidOverscrollParams",
+  "content.mojom.PointerType=blink::WebPointerProperties::PointerType",
   "content.mojom.RendererPreferences=content::RendererPreferences",
   "content.mojom.ResizeParams=content::ResizeParams",
+  "content.mojom.ScrollUnits=blink::WebGestureEvent::ScrollUnits",
+  "content.mojom.TouchState=blink::WebTouchPoint::State",
   "content.mojom.WebPopupType=blink::WebPopupType",
   "content.mojom.WebPreferences=content::WebPreferences",
 ]
