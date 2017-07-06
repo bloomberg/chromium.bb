@@ -3,15 +3,29 @@
 
 {% macro decl_public_methods(field) -%}
 {{base.decl_initial_method(field)}}
-// Getters and setters not generated
+// Only specified functions are generated
+{% if 'getter' in field.default_generated_functions %}
+{{base.decl_getter_method(field)}}
+{% endif %}
+{% if 'setter' in field.default_generated_functions %}
+{{base.decl_setter_method(field)}}
+{% endif %}
+{% if 'reset' in field.default_generated_functions %}
+{{base.decl_resetter_method(field)}}
+{% endif %}
+{% if 'mutable' in field.default_generated_functions %}
+{{base.decl_mutable_method(field)}}
+{% endif %}
 {%- endmacro %}
 
 {% macro decl_protected_methods(field) -%}
+{% if 'getter' not in field.default_generated_functions %}
 {{base.decl_internal_getter_method(field)}}
-{% if not field.wrapper_pointer_name %}
+{% endif %}
+{% if not field.wrapper_pointer_name and 'setter' not in field.default_generated_functions %}
 {{base.decl_internal_setter_method(field)}}
 {% endif %}
-{% if not field.is_bit_field -%}
+{% if not field.is_bit_field and 'setter' not in field.default_generated_functions -%}
 void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
 {% if field.group.parent %}
   if (!({{getter_expression(field)}} == v))
@@ -20,7 +34,9 @@ void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
   {{field.name}} = std::move(v);
 {% endif %}
 }
+{% if 'mutable' not in field.default_generated_functions %}
 {{base.decl_mutable_method(field)}}
+{% endif %}
 {%- endif %}
 {%- endmacro %}
 
