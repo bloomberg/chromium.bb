@@ -65,9 +65,12 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
           hardware_params.sample_rate(), 0);
       break;
     case media::AudioLatency::LATENCY_EXACT_MS:
-      return media::AudioLatency::GetExactBufferSize(
-          base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
-          hardware_params.sample_rate(), hardware_params.frames_per_buffer());
+      // TODO(andrew.macpherson@soundtrap.com): http://crbug.com/708917
+      return std::min(4096,
+                      media::AudioLatency::GetExactBufferSize(
+                          base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
+                          hardware_params.sample_rate(),
+                          hardware_params.frames_per_buffer()));
       break;
     default:
       NOTREACHED();

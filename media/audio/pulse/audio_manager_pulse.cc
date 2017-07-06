@@ -18,7 +18,6 @@
 #include "media/audio/pulse/pulse_util.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "media/base/limits.h"
 
 namespace media {
 
@@ -27,6 +26,10 @@ using pulse::WaitForOperationCompletion;
 
 // Maximum number of output streams that can be open simultaneously.
 static const int kMaxOutputStreams = 50;
+
+// Define bounds for the output buffer size.
+static const int kMinimumOutputBufferSize = 512;
+static const int kMaximumOutputBufferSize = 8192;
 
 // Default input buffer size.
 static const int kDefaultInputBufferSize = 1024;
@@ -161,7 +164,7 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   // TODO(tommi): Support |output_device_id|.
   VLOG_IF(0, !output_device_id.empty()) << "Not implemented!";
 
-  int buffer_size = limits::kMinAudioBufferSize;
+  int buffer_size = kMinimumOutputBufferSize;
   int bits_per_sample = 16;
 
   // Query native parameters where applicable; Pulse does not require these to
@@ -174,7 +177,7 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
     bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     buffer_size =
-        std::min(static_cast<int>(limits::kMaxAudioBufferSize),
+        std::min(kMaximumOutputBufferSize,
                  std::max(buffer_size, input_params.frames_per_buffer()));
   }
 

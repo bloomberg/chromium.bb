@@ -50,12 +50,6 @@ namespace blink {
 // that we would ever need. The current UMA stats indicates that this is, in
 // fact, probably too small. There are Android devices out there with a size of
 // 8000 or so.  We might need to make this larger. See: crbug.com/670747
-// TODO(andrew.macpherson): This either needs to be bigger since some OSes allow
-// buffer sizes of 8192 via latencyHint now or else we need to do some
-// validation of the latencyHint 'exact' size before passing it to
-// CreateAudioDevice. Clamping may be tricky though as the buffer size is
-// dependent on the sample rate for some platforms and we're passing in a time
-// value and not a buffer size in the latencyHint. See: crbug.com/737047
 const size_t kFIFOSize = 8192;
 
 std::unique_ptr<AudioDestination> AudioDestination::Create(
