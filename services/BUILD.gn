@@ -139,6 +139,11 @@ if (is_android) {
     testonly = true
     java_files = [ "shape_detection/android/javatests/src/org/chromium/shape_detection/FaceDetectionImplTest.java" ]
     deps = [
+      "$google_play_services_package:google_play_services_base_java",
+      "$google_play_services_package:google_play_services_basement_java",
+      "$google_play_services_package:google_play_services_vision_common_java",
+      "$google_play_services_package:google_play_services_vision_java",
+      "//base:base_java",
       "//base:base_java_test_support",
       "//mojo/public/java:bindings_java",
       "//services/shape_detection:shape_detection_java",
