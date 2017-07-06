@@ -87718,6 +87718,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in OnFaviconDataAvailable().</summary>
 </histogram>
 
+<histogram name="WinJumplist.RatioAddCategoryTime" units="scaled ratio">
+  <owner>chengx@chromium.org</owner>
+  <summary>
+    The ratio of the duration spent adding the most-visited category compared to
+    the duration spent adding the recently-closed category, multiplied by 10.
+  </summary>
+</histogram>
+
 <histogram name="WinJumplist.StartLoadingFaviconDuration" units="ms">
   <obsolete>
     Obsolete 06/22/2017 as it's no longer needed.
