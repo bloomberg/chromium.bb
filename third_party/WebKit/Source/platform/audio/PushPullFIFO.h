@@ -82,6 +82,8 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   // The size of the FIFO.
   const size_t fifo_length_ = 0;
 
+  // For UMA reporting purpose.
+  unsigned pull_count_ = 0;
   unsigned overflow_count_ = 0;
   unsigned underflow_count_ = 0;
 

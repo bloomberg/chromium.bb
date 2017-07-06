@@ -5,6 +5,7 @@
 #include "platform/audio/PushPullFIFO.h"
 
 #include <memory>
+#include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -24,7 +25,33 @@ PushPullFIFO::PushPullFIFO(unsigned number_of_channels, size_t fifo_length)
   fifo_bus_ = AudioBus::Create(number_of_channels, fifo_length_);
 }
 
-PushPullFIFO::~PushPullFIFO() {}
+PushPullFIFO::~PushPullFIFO() {
+  // Capture metrics only after the FIFO is actually pulled.
+  if (pull_count_ == 0)
+    return;
+
+  // TODO(hongchan): The fast-shutdown process prevents the data below from
+  // being collected correctly. Consider using "outside metric collector" that
+  // survives the fast-shutdown.
+
+  // Capture the percentage of underflow happened based on the total pull count.
+  // (100 buckets of size 1) This is equivalent of
+  // "Media.AudioRendererMissedDeadline" metric for WebAudio.
+  DEFINE_STATIC_LOCAL(
+      LinearHistogram,
+      fifo_underflow_percentage_histogram,
+      ("WebAudio.PushPullFIFO.UnderflowPercentage", 1, 100, 101));
+  fifo_underflow_percentage_histogram.Count(
+      static_cast<int32_t>(100.0 * underflow_count_ / pull_count_));
+
+  // We only collect the underflow count because no overflow can happen in the
+  // current implementation. This is similar to
+  // "Media.AudioRendererAudioGlitches" metric for WebAudio, which is a simple
+  // flag indicates any instance of glitches during FIFO's lifetime.
+  DEFINE_STATIC_LOCAL(BooleanHistogram, fifo_underflow_glitches_histogram,
+                      ("WebAudio.PushPullFIFO.UnderflowGlitches"));
+  fifo_underflow_glitches_histogram.Count(underflow_count_ > 0);
+}
 
 // Push the data from |input_bus| to FIFO. The size of push is determined by
 // the length of |input_bus|.
@@ -162,6 +189,8 @@ size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
   // Update the number of frames in FIFO.
   frames_available_ -= frames_to_fill;
   DCHECK_EQ((index_read_ + frames_available_) % fifo_length_, index_write_);
+
+  pull_count_++;
 
   // |frames_requested > frames_available_| means the frames in FIFO is not
   // enough to fulfill the requested frames from the audio device.
