@@ -24,7 +24,6 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -94,7 +93,7 @@ void NewMainTabWithURL(const GURL& url, const std::string& word) {
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:url];
   [ChromeEarlGrey waitForWebViewContainingText:word];
-  chrome_test_util::AssertMainTabCount(number_of_tabs + 1);
+  [ChromeEarlGrey waitForMainTabCount:(number_of_tabs + 1)];
 }
 
 // Opens 2 new tabs with different URLs.
@@ -117,8 +116,7 @@ void OpenNewMainTabUsingUIUnsynced() {
   id<GREYMatcher> new_main_tab_button_matcher =
       grey_accessibilityID(kToolsMenuNewTabId);
   WaitAndTap(new_main_tab_button_matcher, @"New tab button");
-
-  chrome_test_util::AssertMainTabCount(nb_main_tab + 1);
+  [ChromeEarlGrey waitForMainTabCount:(nb_main_tab + 1)];
 }
 
 // Closes a tab in the current tab model. Synchronize on tab number afterwards.
@@ -188,7 +186,7 @@ void SelectTabUsingUI(NSString* title) {
 
   // Open two tabs with urls.
   OpenTwoTabs();
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   // Switch between the two tabs.  Both are currently in memory.
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
@@ -231,7 +229,7 @@ void SelectTabUsingUI(NSString* title) {
     chrome_test_util::OpenNewTab();
     [ChromeEarlGrey loadURL:url1];
     [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
-    chrome_test_util::AssertMainTabCount(i + 1);
+    [ChromeEarlGrey waitForMainTabCount:(i + 1)];
   }
 
   // Switch between the tabs. They are currently in memory.
@@ -265,7 +263,7 @@ void SelectTabUsingUI(NSString* title) {
   // does not trigger a reload immediatly.
   chrome_test_util::OpenNewTab();
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  chrome_test_util::AssertIncognitoTabCount(1);
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
 
   // Switch back to the normal tabs. Should be on tab one.
   SwitchToNormalMode();
@@ -295,7 +293,7 @@ void SelectTabUsingUI(NSString* title) {
 
   // Open two tabs with urls.
   OpenTwoTabs();
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   // Set the normal tabs as 'cold start' tabs.
   GREYAssertTrue(chrome_test_util::SetCurrentTabsToBeColdStartTabs(),
                  @"Fail to state tabs as cold start tabs");
@@ -303,7 +301,7 @@ void SelectTabUsingUI(NSString* title) {
   // Open two incognito tabs with urls, clearing normal tabs from memory.
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  chrome_test_util::AssertIncognitoTabCount(2);
+  [ChromeEarlGrey waitForIncognitoTabCount:2];
 
   // Switch back to the normal tabs.
   SwitchToNormalMode();
@@ -347,7 +345,7 @@ void SelectTabUsingUI(NSString* title) {
 
   // Open two tabs with urls.
   OpenTwoTabs();
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Simulate going into the background.
   GREYAssertTrue(chrome_test_util::SimulateTabsBackgrounding(),
@@ -393,7 +391,7 @@ void SelectTabUsingUI(NSString* title) {
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   histogramTester.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
                                      TabUsageRecorder::LOAD_SUCCESS, 1,
@@ -731,7 +729,7 @@ void SelectTabUsingUI(NSString* title) {
 
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
-  chrome_test_util::AssertMainTabCount(numberOfTabs + 1);
+  [ChromeEarlGrey waitForMainTabCount:(numberOfTabs + 1)];
 
   SelectTabUsingUI(base::SysUTF8ToNSString(destinationURL.GetContent()));
 

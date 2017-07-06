@@ -23,7 +23,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -301,7 +300,7 @@ void MockSignIn() {
       selectElementWithMatcher:grey_kindOfClass([TransparentLinkButton class])]
       performAction:grey_tap()];
   // Assert that new tab with the link is opened, hence tab count of 2.
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that searching history displays only entries matching the search term.
@@ -414,7 +413,7 @@ void MockSignIn() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]
       assertWithMatcher:grey_notNil()];
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests display and selection of 'Open in New Incognito Tab' in a context menu
@@ -434,8 +433,8 @@ void MockSignIn() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           _URL1.GetContent())]
       assertWithMatcher:grey_notNil()];
-  chrome_test_util::AssertMainTabCount(1);
-  chrome_test_util::AssertIncognitoTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
 }
 
 // Tests display and selection of 'Copy URL' in a context menu on a history

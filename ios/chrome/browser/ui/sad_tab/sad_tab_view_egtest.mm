@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/navigation_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -136,7 +135,7 @@ id<GREYMatcher> incognitoHelpContainsText() {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:newIncognitoTabButtonMatcher]
       performAction:grey_tap()];
-  chrome_test_util::AssertIncognitoTabCount(1);
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
   loadAndCheckSimpleURL();
 
   // Test an initial crash, and then a second crash in Incognito mode, as above.

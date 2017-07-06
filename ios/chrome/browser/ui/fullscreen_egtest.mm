@@ -15,7 +15,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
-#include "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -282,7 +281,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Hide the toolbar.
   HideToolbarUsingUI();
@@ -293,7 +292,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Check that a new Tab was created.
   [ChromeEarlGrey waitForWebViewContainingText:"link2"];
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   AssertURLIs(destinationURL);
 
@@ -306,7 +305,7 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
 
   // Make sure the toolbar is on the screen.
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 

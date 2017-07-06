@@ -17,7 +17,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -82,7 +81,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
 // Verifies opening a new tab from the tools menu.
 - (void)testNewTabFromMenu {
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Open tab via the UI.
   [ChromeEarlGreyUI openToolsMenu];
@@ -91,13 +90,13 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
       performAction:grey_tap()];
 
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Verifies opening a new incognito tab from the tools menu.
 // TODO(crbug.com/631078): Enable this test.
 - (void)FLAKY_testNewIncognitoTabFromMenu {
-  chrome_test_util::AssertIncognitoTabCount(0);
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   // Open incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
@@ -106,7 +105,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:newIncognitoTabButtonMatcher]
       performAction:grey_tap()];
 
-  chrome_test_util::AssertIncognitoTabCount(1);
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
 }
 
 // Tests whether input mode in an omnibox can be canceled via "Cancel" button

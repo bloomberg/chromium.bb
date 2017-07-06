@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/format_macros.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/static_html_view_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -203,5 +205,30 @@ id ExecuteJavaScript(NSString* javascript,
                   }];
   GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
              @"Failed waiting for web view not containing %s", text.c_str());
+}
+
++ (void)waitForMainTabCount:(NSUInteger)count {
+  // Allow the UI to become idle, in case any tabs are being opened or closed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for main tab count"
+                  block:^BOOL {
+                    return chrome_test_util::GetMainTabCount() == count;
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for main tab count to become %" PRIuNS, count);
+}
+
++ (void)waitForIncognitoTabCount:(NSUInteger)count {
+  // Allow the UI to become idle, in case any tabs are being opened or closed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for incognito tab count"
+                  block:^BOOL {
+                    return chrome_test_util::GetIncognitoTabCount() == count;
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for incognito tab count to become %" PRIuNS,
+             count);
 }
 @end

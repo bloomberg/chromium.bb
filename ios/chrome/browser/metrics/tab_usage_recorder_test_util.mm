@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/wait_util.h"
@@ -44,7 +44,7 @@ void OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:new_incognito_tab_button_matcher]
       performAction:grey_tap()];
-  chrome_test_util::AssertIncognitoTabCount(nb_incognito_tab + 1);
+  [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)];
   ConditionBlock condition = ^bool {
     return chrome_test_util::IsIncognitoMode();
   };

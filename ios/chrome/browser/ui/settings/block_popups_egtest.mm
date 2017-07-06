@@ -20,7 +20,6 @@
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -172,13 +171,13 @@ class ScopedBlockPopupsException {
 
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
   [ChromeEarlGrey loadURL:blockPopupsURL];
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Request popup and make sure the popup opened in a new tab.
   __unsafe_unretained NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
-  chrome_test_util::AssertMainTabCount(2U);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // No infobar should be displayed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
@@ -202,7 +201,7 @@ class ScopedBlockPopupsException {
 
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK);
   [ChromeEarlGrey loadURL:blockPopupsURL];
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Request popup, then make sure it was blocked and an infobar was displayed.
   // The window.open() call is run via async JS, so the infobar may not open
@@ -223,7 +222,7 @@ class ScopedBlockPopupsException {
                                     error:&error];
                     return error == nil;
                   }] waitWithTimeout:4.0];
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that the "exceptions" section on the settings page is hidden and
