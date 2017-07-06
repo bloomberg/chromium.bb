@@ -323,10 +323,17 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   void ShowLoginPopup() override {
     EXPECT_FALSE(login_ui_shown_);
     login_ui_shown_ = true;
-    if (login_ui_result_)
-      SigninSuccess();
-    else
+    if (login_ui_result_) {
+      ::identity::AccountState account_state;
+      account_state.has_refresh_token = true;
+      account_state.is_primary_account = true;
+      OnPrimaryAccountAvailable(
+          SigninManagerFactory::GetForProfile(GetProfile())
+              ->GetAuthenticatedAccountInfo(),
+          account_state);
+    } else {
       SigninFailed();
+    }
   }
 
   void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice) override {
@@ -924,7 +931,11 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+// ChromeOS does not support the interactive login flow, so the login UI will
+// never be shown on that platform.
+#if !defined(OS_CHROMEOS)
   EXPECT_TRUE(func->login_ui_shown());
+#endif
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
@@ -939,22 +950,18 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+// ChromeOS does not support the interactive login flow, so the login UI will
+// never be shown on that platform.
+#if !defined(OS_CHROMEOS)
   EXPECT_TRUE(func->login_ui_shown());
+#endif
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveLoginSuccessNoToken) {
-  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
-  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
-  func->set_login_ui_result(false);
-  std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
-  EXPECT_TRUE(func->login_ui_shown());
-  EXPECT_FALSE(func->scope_ui_shown());
-}
-
+// The interactive login flow is always short-circuited out with failure on
+// ChromeOS, so the tests of the interactive login flow being successful are not
+// relevant on that platform.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveLoginSuccessMintFailure) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -1030,6 +1037,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveApprovalAborted) {
@@ -1357,6 +1365,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
+// The interactive login UI is never shown on ChromeOS, so tests of the
+// interactive login flow being successful are not relevant on that platform.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        LoginInvalidatesTokenCache) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -1383,6 +1394,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken(std::string()).status());
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());

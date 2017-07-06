@@ -5,17 +5,18 @@
 #include "chrome/browser/extensions/api/identity/identity_get_auth_token_function.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -48,12 +49,6 @@ const char* const kPublicSessionAllowedOrigins[] = {
     // Chrome Remote Desktop - Official branding.
     "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/"};
 #endif
-
-std::string GetPrimaryAccountId(content::BrowserContext* context) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(Profile::FromBrowserContext(context));
-  return signin_manager->GetAuthenticatedAccountId();
-}
 
 }  // namespace
 
@@ -254,9 +249,24 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->Get(GetProfile());
   id_api->EraseAllCachedTokens();
-  // Display a login prompt. If the subsequent mint fails, don't display the
-  // login prompt again.
+
+  // If the signin flow fails, don't display the login prompt again.
   should_prompt_for_signin_ = false;
+
+#if defined(OS_CHROMEOS)
+  // In normal mode (i.e. non-kiosk mode), the user has to log out to
+  // re-establish credentials. Let the global error popup handle everything.
+  // In kiosk mode, interactive sign-in is not supported.
+  SigninFailed();
+  return;
+#endif
+
+  // Start listening for the primary account being available and display a
+  // login prompt.
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(
+      base::Bind(&IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable,
+                 base::Unretained(this)));
+
   ShowLoginPopup();
 }
 
@@ -440,16 +450,16 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 }
 
-void IdentityGetAuthTokenFunction::SigninSuccess() {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity",
-                               "IdentityGetAuthTokenFunction",
-                               this,
-                               "SigninSuccess");
+void IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable(
+    const AccountInfo& account_info,
+    const ::identity::AccountState& account_state) {
+  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
+                               "OnPrimaryAccountAvailable");
 
   // If there was no account associated this profile before the
   // sign-in, we may not have an account_id in the token_key yet.
   if (token_key_->account_id.empty()) {
-    token_key_->account_id = GetPrimaryAccountId(GetProfile());
+    token_key_->account_id = account_info.account_id;
   }
 
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
@@ -574,7 +584,6 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 
 void IdentityGetAuthTokenFunction::Shutdown() {
   gaia_web_auth_flow_.reset();
-  signin_flow_.reset();
   login_token_request_.reset();
   identity_manager_.reset();
 
@@ -654,8 +663,9 @@ void IdentityGetAuthTokenFunction::StartGaiaRequest(
 }
 
 void IdentityGetAuthTokenFunction::ShowLoginPopup() {
-  signin_flow_.reset(new IdentitySigninFlow(this, GetProfile()));
-  signin_flow_->Start();
+  LoginUIService* login_ui_service =
+      LoginUIServiceFactory::GetForProfile(GetProfile());
+  login_ui_service->ShowLoginPopup();
 }
 
 void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(

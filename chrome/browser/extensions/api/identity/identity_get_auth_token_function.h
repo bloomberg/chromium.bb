@@ -7,7 +7,6 @@
 
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
-#include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
@@ -37,11 +36,10 @@ namespace extensions {
 class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public GaiaWebAuthFlow::Delegate,
                                      public IdentityMintRequestQueue::Request,
-                                     public OAuth2MintTokenFlow::Delegate,
 #if defined(OS_CHROMEOS)
                                      public OAuth2TokenService::Consumer,
 #endif
-                                     public IdentitySigninFlow::Delegate {
+                                     public OAuth2MintTokenFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
                              EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
@@ -57,9 +55,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
  protected:
   ~IdentityGetAuthTokenFunction() override;
 
-  // IdentitySigninFlow::Delegate implementation:
-  void SigninSuccess() override;
-  void SigninFailed() override;
+  void SigninFailed();
 
   // GaiaWebAuthFlow::Delegate implementation:
   void OnGaiaFlowFailure(GaiaWebAuthFlow::Failure failure,
@@ -88,6 +84,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void OnGetAccessTokenComplete(const base::Optional<std::string>& access_token,
                                 base::Time expiration_time,
                                 const GoogleServiceAuthError& error);
+
+  // Invoked by the IdentityManager when the primary account is available.
+  void OnPrimaryAccountAvailable(const AccountInfo& account_info,
+                                 const identity::AccountState& account_state);
 
   // Starts a mint token request to GAIA.
   // Exposed for testing.
@@ -192,7 +192,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;
   std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
-  std::unique_ptr<IdentitySigninFlow> signin_flow_;
 
   identity::mojom::IdentityManagerPtr identity_manager_;
 };
