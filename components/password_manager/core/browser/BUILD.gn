@@ -235,6 +235,7 @@ static_library("test_support") {
     "password_manager_test_utils.h",
     "stub_credentials_filter.cc",
     "stub_credentials_filter.h",
+    "stub_form_saver.cc",
     "stub_form_saver.h",
     "stub_log_manager.cc",
     "stub_log_manager.h",

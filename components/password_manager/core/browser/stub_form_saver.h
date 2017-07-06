@@ -35,6 +35,7 @@ class StubFormSaver : public FormSaver {
       const autofill::PasswordForm& pending,
       std::map<base::string16, const autofill::PasswordForm*>* best_matches,
       const autofill::PasswordForm** preferred_match) override {}
+  std::unique_ptr<FormSaver> Clone() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubFormSaver);
