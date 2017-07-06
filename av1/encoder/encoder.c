@@ -500,8 +500,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_pc_tree(&cpi->td);
 
 #if CONFIG_PALETTE
-  if (cpi->common.allow_screen_content_tools)
-    aom_free(cpi->td.mb.palette_buffer);
+  aom_free(cpi->td.mb.palette_buffer);
 #endif  // CONFIG_PALETTE
 
 #if CONFIG_ANS
@@ -2142,6 +2141,7 @@ void set_compound_tools(AV1_COMMON *cm) {
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
+  MACROBLOCK *const x = &cpi->td.mb;
 
   if (cm->profile != oxcf->profile) cm->profile = oxcf->profile;
   cm->bit_depth = oxcf->bit_depth;
@@ -2158,9 +2158,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     assert(cm->bit_depth > AOM_BITS_8);
 
   cpi->oxcf = *oxcf;
-  cpi->td.mb.e_mbd.bd = (int)cm->bit_depth;
+  x->e_mbd.bd = (int)cm->bit_depth;
 #if CONFIG_GLOBAL_MOTION
-  cpi->td.mb.e_mbd.global_motion = cm->global_motion;
+  x->e_mbd.global_motion = cm->global_motion;
 #endif  // CONFIG_GLOBAL_MOTION
 
   if ((oxcf->pass == 0) && (oxcf->rc_mode == AOM_Q)) {
@@ -2181,20 +2181,17 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
           : REFRESH_FRAME_CONTEXT_BACKWARD;
   cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
 
-#if CONFIG_PALETTE
-  cm->allow_screen_content_tools = (cpi->oxcf.content == AOM_CONTENT_SCREEN);
-  if (cm->allow_screen_content_tools) {
-    MACROBLOCK *x = &cpi->td.mb;
-    if (x->palette_buffer == 0) {
-      CHECK_MEM_ERROR(cm, x->palette_buffer,
-                      aom_memalign(16, sizeof(*x->palette_buffer)));
-    }
-    // Reallocate the pc_tree, as it's contents depends on
-    // the state of cm->allow_screen_content_tools
-    av1_free_pc_tree(&cpi->td);
-    av1_setup_pc_tree(&cpi->common, &cpi->td);
+#if CONFIG_PALETTE || CONFIG_INTRABC
+  if (frame_is_intra_only(cm)) {
+    cm->allow_screen_content_tools = (cpi->oxcf.content == AOM_CONTENT_SCREEN);
+    // Automatically decide if screen content tools should be enabled.
+    cpi->auto_tune_content = (cpi->oxcf.content == AOM_CONTENT_DEFAULT);
   }
-#endif  // CONFIG_PALETTE
+  if (x->palette_buffer == 0) {
+    CHECK_MEM_ERROR(cm, x->palette_buffer,
+                    aom_memalign(16, sizeof(*x->palette_buffer)));
+  }
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 #if CONFIG_EXT_INTER
   set_compound_tools(cm);
 #endif  // CONFIG_EXT_INTER
@@ -2811,8 +2808,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     // Deallocate allocated thread data.
     if (t < cpi->num_workers - 1) {
 #if CONFIG_PALETTE
-      if (cpi->common.allow_screen_content_tools)
-        aom_free(thread_data->td->palette_buffer);
+      aom_free(thread_data->td->palette_buffer);
 #endif  // CONFIG_PALETTE
 #if CONFIG_MOTION_VAR
       aom_free(thread_data->td->above_pred_buf);

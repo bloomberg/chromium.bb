@@ -57,6 +57,16 @@ typedef enum OUTPUT_STATUS {
   OUTPUT_HAS_DECODED_PIXELS
 } OUTPUT_STATUS;
 
+#if CONFIG_PALETTE || CONFIG_INTRABC
+// Returns the number of colors in 'src'.
+int av1_count_colors(const uint8_t *src, int stride, int rows, int cols);
+#if CONFIG_HIGHBITDEPTH
+// Same as av1_count_colors(), but for high-bitdepth mode.
+int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
+                            int bit_depth);
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
+
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
                     TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,

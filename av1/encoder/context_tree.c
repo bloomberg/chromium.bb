@@ -65,12 +65,10 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
   }
 
 #if CONFIG_PALETTE
-  if (cm->allow_screen_content_tools) {
-    for (i = 0; i < 2; ++i) {
-      CHECK_MEM_ERROR(
-          cm, ctx->color_index_map[i],
-          aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
-    }
+  for (i = 0; i < 2; ++i) {
+    CHECK_MEM_ERROR(
+        cm, ctx->color_index_map[i],
+        aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
   }
 #endif  // CONFIG_PALETTE
 }

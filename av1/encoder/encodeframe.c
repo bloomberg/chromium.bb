@@ -5011,6 +5011,28 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
+#if CONFIG_PALETTE
+// Estimate if the source frame is screen content, based on the portion of
+// blocks that have no more than 4 (experimentally selected) luma colors.
+static int is_screen_content(const uint8_t *src, int stride, int width,
+                             int height) {
+  assert(src != NULL);
+  int counts = 0;
+  const int blk_w = 16;
+  const int blk_h = 16;
+  const int limit = 4;
+  for (int r = 0; r + blk_h <= height; r += blk_h) {
+    for (int c = 0; c + blk_w <= width; c += blk_w) {
+      const int n_colors =
+          av1_count_colors(src + r * stride + c, stride, blk_w, blk_h);
+      if (n_colors > 1 && n_colors <= limit) counts++;
+    }
+  }
+  // The threshold is 10%.
+  return counts * blk_h * blk_w * 10 > width * height;
+}
+#endif  // CONFIG_PALETTE
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -5036,6 +5058,14 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(*td->counts);
   av1_zero(rdc->coef_counts);
   av1_zero(rdc->comp_pred_diff);
+
+#if CONFIG_PALETTE
+  if (cpi->auto_tune_content && frame_is_intra_only(cm)) {
+    cm->allow_screen_content_tools =
+        is_screen_content(cpi->source->y_buffer, cpi->source->y_stride,
+                          cpi->source->y_width, cpi->source->y_height);
+  }
+#endif  // CONFIG_PALETTE
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(rdc->global_motion_used);

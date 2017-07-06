@@ -1591,6 +1591,43 @@ static int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                                   visible_rows);
 }
 
+#if CONFIG_PALETTE || CONFIG_INTRABC
+int av1_count_colors(const uint8_t *src, int stride, int rows, int cols) {
+  int val_count[256];
+  memset(val_count, 0, sizeof(val_count));
+  for (int r = 0; r < rows; ++r) {
+    for (int c = 0; c < cols; ++c) {
+      ++val_count[src[r * stride + c]];
+    }
+  }
+  int n = 0;
+  for (int i = 0; i < 256; ++i) {
+    if (val_count[i]) ++n;
+  }
+  return n;
+}
+
+#if CONFIG_HIGHBITDEPTH
+int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
+                            int bit_depth) {
+  assert(bit_depth <= 12);
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  int val_count[1 << 12];
+  memset(val_count, 0, (1 << 12) * sizeof(val_count[0]));
+  for (int r = 0; r < rows; ++r) {
+    for (int c = 0; c < cols; ++c) {
+      ++val_count[src[r * stride + c]];
+    }
+  }
+  int n = 0;
+  for (int i = 0; i < (1 << bit_depth); ++i) {
+    if (val_count[i]) ++n;
+  }
+  return n;
+}
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
+
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
                     TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
