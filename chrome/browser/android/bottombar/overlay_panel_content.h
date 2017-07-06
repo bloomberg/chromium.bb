@@ -55,12 +55,6 @@ class OverlayPanelContent {
       const base::android::JavaParamRef<jobject>& jweb_contents,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate);
 
-  // Associate an Android View with the WebContents.
-  void SetViewAndroid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jcontent_view_core);
-
   // Destroys the WebContents.
   void DestroyWebContents(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj);

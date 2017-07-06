@@ -5,7 +5,6 @@
 #include "content/shell/browser/shell_web_contents_view_delegate.h"
 
 #include "base/command_line.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"

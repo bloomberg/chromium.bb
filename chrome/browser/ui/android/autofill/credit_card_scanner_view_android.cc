@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "jni/CreditCardScannerBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
