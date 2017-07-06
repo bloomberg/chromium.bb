@@ -2211,11 +2211,31 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
           source_web_contents_->GetBrowserContext(),
           render_frame_host->GetSiteInstance());
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("render_view_context_menu", R"(
+        semantics {
+          sender: "Save Link As"
+          description: "Saving url to local file."
+          trigger:
+            "The user selects the 'Save link as...' command in the context "
+            "menu."
+          data: "None."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled by settings. The request is made "
+            "only if user chooses 'Save link as...' in the context menu."
+          policy_exception_justification: "Not implemented."
+        })");
+
   auto dl_params = base::MakeUnique<DownloadUrlParameters>(
       url, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET);
+      storage_partition->GetURLRequestContext(), traffic_annotation);
   dl_params->set_referrer(CreateReferrer(url, params_));
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
