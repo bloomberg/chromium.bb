@@ -9,6 +9,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/uma/video_capture_service_event.h"
 
 namespace content {
 
@@ -21,12 +22,12 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider() {
 
 ServiceVideoCaptureProvider::~ServiceVideoCaptureProvider() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  UninitializeInternal(ReasonForUninitialize::kShutdown);
 }
 
 void ServiceVideoCaptureProvider::Uninitialize() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_factory_.reset();
-  device_factory_provider_.reset();
+  UninitializeInternal(ReasonForUninitialize::kClientRequest);
 }
 
 void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
@@ -48,6 +49,15 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   if (device_factory_provider_.is_bound())
     return;
 
+  video_capture::uma::LogVideoCaptureServiceEvent(
+      video_capture::uma::BROWSER_CONNECTING_TO_SERVICE);
+  if (time_of_last_uninitialize_ != base::TimeTicks()) {
+    video_capture::uma::LogDurationUntilReconnect(base::TimeTicks::Now() -
+                                                  time_of_last_uninitialize_);
+  }
+
+  time_of_last_connect_ = base::TimeTicks::Now();
+
   connector_->BindInterface(video_capture::mojom::kServiceName,
                             &device_factory_provider_);
   device_factory_provider_->ConnectToDeviceFactory(
@@ -63,7 +73,34 @@ void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
   // This may indicate that the video capture service has crashed. Uninitialize
   // here, so that a new connection will be established when clients try to
   // reconnect.
-  Uninitialize();
+  UninitializeInternal(ReasonForUninitialize::kConnectionLost);
+}
+
+void ServiceVideoCaptureProvider::UninitializeInternal(
+    ReasonForUninitialize reason) {
+  if (!device_factory_.is_bound()) {
+    return;
+  }
+  base::TimeDelta duration_since_last_connect(base::TimeTicks::Now() -
+                                              time_of_last_connect_);
+  switch (reason) {
+    case ReasonForUninitialize::kShutdown:
+    case ReasonForUninitialize::kClientRequest:
+      video_capture::uma::LogVideoCaptureServiceEvent(
+          video_capture::uma::BROWSER_CLOSING_CONNECTION_TO_SERVICE);
+      video_capture::uma::LogDurationFromLastConnectToClosingConnection(
+          duration_since_last_connect);
+      break;
+    case ReasonForUninitialize::kConnectionLost:
+      video_capture::uma::LogVideoCaptureServiceEvent(
+          video_capture::uma::BROWSER_LOST_CONNECTION_TO_SERVICE);
+      video_capture::uma::LogDurationFromLastConnectToConnectionLost(
+          duration_since_last_connect);
+      break;
+  }
+  device_factory_.reset();
+  device_factory_provider_.reset();
+  time_of_last_uninitialize_ = base::TimeTicks::Now();
 }
 
 }  // namespace content

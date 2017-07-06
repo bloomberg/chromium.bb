@@ -447,6 +447,8 @@ void VideoCaptureController::OnFrameReadyInBuffer(
       }
     }
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
+    UMA_HISTOGRAM_TIMES("Media.VideoCapture.DelayUntilFirstFrame",
+                        base::TimeTicks::Now() - time_of_start_request_);
     OnLog("First frame received at VideoCaptureController");
     has_received_frames_ = true;
   }
@@ -530,6 +532,7 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
     VideoCaptureDeviceLaunchObserver* observer,
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  time_of_start_request_ = base::TimeTicks::Now();
   device_launch_observer_ = observer;
   device_launcher_->LaunchDeviceAsync(
       device_id_, stream_type_, params, GetWeakPtrForIOThread(),

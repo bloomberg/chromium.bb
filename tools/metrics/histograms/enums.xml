@@ -37629,6 +37629,17 @@ from previous Chrome versions.
   <int value="4" label="Desktop/Tab capture stopped. No frames produced."/>
 </enum>
 
+<enum name="VideoCaptureServiceEvent">
+  <int value="0" label="Browser is using legacy video capture stack"/>
+  <int value="1" label="Browser connecting to video capture service"/>
+  <int value="2" label="Video capture service started"/>
+  <int value="3"
+      label="Video capture service closing because last client disconnected"/>
+  <int value="4" label="Video capture service lost connection to Browser"/>
+  <int value="5" label="Browser lost connection to video capture service"/>
+  <int value="6" label="Browser closing connection to video capture service"/>
+</enum>
+
 <enum name="VideoCodec">
   <int value="0" label="kUnknownVideoCodec"/>
   <int value="1" label="kCodecH264"/>

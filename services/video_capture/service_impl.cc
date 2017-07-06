@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/video_capture/device_factory_provider_impl.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "services/video_capture/testing_controls_impl.h"
 
 namespace video_capture {
@@ -22,6 +23,10 @@ ServiceImpl::~ServiceImpl() {
 
 void ServiceImpl::OnStart() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  video_capture::uma::LogVideoCaptureServiceEvent(
+      video_capture::uma::SERVICE_STARTED);
+
   ref_factory_ =
       base::MakeUnique<service_manager::ServiceContextRefFactory>(base::Bind(
           &ServiceImpl::MaybeRequestQuitDelayed, base::Unretained(this)));
@@ -91,6 +96,8 @@ void ServiceImpl::MaybeRequestQuit() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(ref_factory_);
   if (ref_factory_->HasNoRefs()) {
+    video_capture::uma::LogVideoCaptureServiceEvent(
+        video_capture::uma::SERVICE_CLOSING_BECAUSE_NO_CLIENT);
     context()->RequestQuit();
   }
 }
