@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_PLATFORM_AX_FAKE_CARET_WIN_H_
-#define UI_ACCESSIBILITY_PLATFORM_AX_FAKE_CARET_WIN_H_
+#ifndef UI_ACCESSIBILITY_PLATFORM_AX_SYSTEM_CARET_WIN_H_
+#define UI_ACCESSIBILITY_PLATFORM_AX_SYSTEM_CARET_WIN_H_
 
 #include <oleacc.h>
 
@@ -24,10 +24,10 @@ class AXPlatformNodeWin;
 // Windows. This is required because Chrome doesn't use the standard system
 // caret and because some assistive software still relies on specific
 // accessibility APIs to retrieve the caret position.
-class AX_EXPORT AXFakeCaretWin : private AXPlatformNodeDelegate {
+class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegate {
  public:
-  AXFakeCaretWin(gfx::AcceleratedWidget event_target);
-  virtual ~AXFakeCaretWin();
+  explicit AXSystemCaretWin(gfx::AcceleratedWidget event_target);
+  virtual ~AXSystemCaretWin();
 
   base::win::ScopedComPtr<IAccessible> GetCaret() const;
   void MoveCaretTo(const gfx::Rect& bounds);
@@ -52,9 +52,9 @@ class AX_EXPORT AXFakeCaretWin : private AXPlatformNodeDelegate {
   AXNodeData data_;
 
   friend class AXPlatformNodeWin;
-  DISALLOW_COPY_AND_ASSIGN(AXFakeCaretWin);
+  DISALLOW_COPY_AND_ASSIGN(AXSystemCaretWin);
 };
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AX_FAKE_CARET_WIN_H_
+#endif  // UI_ACCESSIBILITY_PLATFORM_AX_SYSTEM_CARET_WIN_H_
