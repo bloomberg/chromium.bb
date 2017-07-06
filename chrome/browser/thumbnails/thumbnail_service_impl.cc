@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,13 +17,6 @@
 using content::BrowserThread;
 
 namespace {
-
-// The desired thumbnail size in DIP. Note that ThumbnailAlgorithm
-// implementations aren't actually required to respect this size - in
-// particular, SimpleThumbnailCrop takes thumbnails of twice that size on 1x
-// devices.
-const int kThumbnailWidth = 154;
-const int kThumbnailHeight = 96;
 
 void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
                             const GURL& url) {
@@ -71,11 +63,6 @@ void ThumbnailServiceImpl::AddForcedURL(const GURL& url) {
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(AddForcedURLOnUIThread, local_ptr, url));
-}
-
-ThumbnailingAlgorithm* ThumbnailServiceImpl::GetThumbnailingAlgorithm()
-    const {
-  return new SimpleThumbnailCrop(gfx::Size(kThumbnailWidth, kThumbnailHeight));
 }
 
 bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(

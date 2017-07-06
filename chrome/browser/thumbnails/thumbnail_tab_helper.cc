@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
-#include "chrome/browser/thumbnails/thumbnailing_algorithm.h"
+#include "chrome/browser/thumbnails/thumbnail_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -26,9 +26,13 @@
 #include "ui/gfx/scrollbar_size.h"
 
 using thumbnails::ThumbnailingContext;
-using thumbnails::ThumbnailingAlgorithm;
 
 namespace {
+
+// The desired thumbnail size in DIP. Note that on 1x devices, we actually take
+// thumbnails of twice that size.
+const int kThumbnailWidth = 154;
+const int kThumbnailHeight = 96;
 
 void ComputeThumbnailScore(const SkBitmap& thumbnail,
                            scoped_refptr<ThumbnailingContext> context) {
@@ -210,9 +214,6 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
     return;
   }
 
-  scoped_refptr<ThumbnailingAlgorithm> algorithm(
-      thumbnail_service->GetThumbnailingAlgorithm());
-
   thumbnailing_context_ = new ThumbnailingContext(web_contents(),
                                                   thumbnail_service.get(),
                                                   load_interrupted_);
@@ -220,10 +221,9 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
   ui::ScaleFactor scale_factor =
       ui::GetSupportedScaleFactor(
           ui::GetScaleFactorForNativeView(view->GetNativeView()));
-  thumbnailing_context_->clip_result = algorithm->GetCanvasCopyInfo(
-      copy_rect.size(),
-      scale_factor,
-      &copy_rect,
+  thumbnailing_context_->clip_result = thumbnails::GetCanvasCopyInfo(
+      copy_rect.size(), scale_factor,
+      gfx::Size(kThumbnailWidth, kThumbnailHeight), &copy_rect,
       &thumbnailing_context_->requested_copy_size);
   copy_from_surface_start_time_ = base::TimeTicks::Now();
   view->CopyFromSurface(copy_rect, thumbnailing_context_->requested_copy_size,
