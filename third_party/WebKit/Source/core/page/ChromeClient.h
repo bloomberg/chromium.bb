@@ -220,12 +220,12 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                                          const Color&) = 0;
 
   // This function is used for:
-  //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+  //  - Mandatory date/time choosers if InputMultipleFieldsUI flag is not set
   //  - Date/time choosers for types for which
-  //    LayoutTheme::supportsCalendarPicker returns true, if
-  //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+  //    LayoutTheme::SupportsCalendarPicker returns true, if
+  //    InputMultipleFieldsUI flag is set
   //  - <datalist> UI for date/time input types regardless of
-  //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+  //    InputMultipleFieldsUI flag
   virtual DateTimeChooser* OpenDateTimeChooser(
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) = 0;
