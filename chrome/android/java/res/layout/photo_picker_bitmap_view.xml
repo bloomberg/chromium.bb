@@ -78,9 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/photo_picker_label_gap"
             android:gravity="center"
-            android:textSize="14sp"
-            android:textAllCaps="true"
             android:textColor="@color/photo_picker_special_tile_color"
+            android:textSize="14sp"
             style="@style/RobotoMediumStyle" />
     </LinearLayout>
 </view>
