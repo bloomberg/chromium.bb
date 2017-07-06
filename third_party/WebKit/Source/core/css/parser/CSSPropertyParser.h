@@ -88,6 +88,10 @@ class CSSPropertyParser {
   bool Consume2Values(const StylePropertyShorthand&, bool important);
   bool Consume4Values(const StylePropertyShorthand&, bool important);
 
+  // Legacy parsing allows <string>s for animation-name
+  bool ConsumeAnimationShorthand(const StylePropertyShorthand&,
+                                 bool use_legacy_parsing,
+                                 bool important);
   bool ConsumeBackgroundShorthand(const StylePropertyShorthand&,
                                   bool important);
 
