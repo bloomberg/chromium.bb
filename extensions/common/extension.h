@@ -498,27 +498,6 @@ struct ExtensionInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
 };
 
-struct InstalledExtensionInfo {
-  // The extension being installed - this should always be non-NULL.
-  const Extension* extension;
-
-  // True if the extension is being updated; false if it is being installed.
-  bool is_update;
-
-  // True if the extension was previously installed ephemerally and is now
-  // a regular installed extension.
-  bool from_ephemeral;
-
-  // The name of the extension prior to this update. Will be empty if
-  // |is_update| is false.
-  std::string old_name;
-
-  InstalledExtensionInfo(const Extension* extension,
-                         bool is_update,
-                         bool from_ephemeral,
-                         const std::string& old_name);
-};
-
 // TODO(DHNishi): Move this enum to ExtensionRegistryObserver.
 enum class UnloadedExtensionReason {
   UNDEFINED,              // Undefined state used to initialize variables.
