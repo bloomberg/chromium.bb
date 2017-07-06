@@ -65,8 +65,7 @@ class CORE_EXPORT PerformanceEntry
     kResource = 1 << 5,
     kLongTask = 1 << 6,
     kTaskAttribution = 1 << 7,
-    kPaint = 1 << 8,
-    kServer = 1 << 9
+    kPaint = 1 << 8
   };
 
   String name() const;
@@ -102,7 +101,7 @@ class CORE_EXPORT PerformanceEntry
                    const String& entry_type,
                    double start_time,
                    double finish_time);
-  virtual void BuildJSONValue(V8ObjectBuilder&) const;
+  virtual void BuildJSONValue(ScriptState*, V8ObjectBuilder&) const;
 
  private:
   const String name_;

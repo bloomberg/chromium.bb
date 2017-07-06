@@ -468,18 +468,6 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // It is essential that inspector gets resource response BEFORE console.
   GetFrame()->Console().ReportResourceResponseReceived(document_loader,
                                                        identifier, response);
-
-  // MainResource responses were already added, skip them here.
-  if (RuntimeEnabledFeatures::ServerTimingEnabled() &&
-      resource->GetType() != Resource::kMainResource &&
-      GetFrame()->GetDocument() && GetFrame()->GetDocument()->domWindow()) {
-    LocalDOMWindow* localDOMWindow = GetFrame()->GetDocument()->domWindow();
-    DOMWindowPerformance::performance(*localDOMWindow)
-        ->AddServerTiming(response,
-                          localDOMWindow->HasLoadEventFired()
-                              ? PerformanceBase::ShouldAddToBuffer::Never
-                              : PerformanceBase::ShouldAddToBuffer::Always);
-  }
 }
 
 void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,

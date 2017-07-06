@@ -85,11 +85,11 @@ struct CacheControlHeader {
 
 struct ServerTimingHeader {
   String metric;
-  double duration;
+  double value;
   String description;
 
-  ServerTimingHeader(String metric, double duration, String description)
-      : metric(metric), duration(duration), description(description) {}
+  ServerTimingHeader(String metric, double value, String description)
+      : metric(metric), value(value), description(description) {}
 };
 
 using ServerTimingHeaderVector = Vector<std::unique_ptr<ServerTimingHeader>>;

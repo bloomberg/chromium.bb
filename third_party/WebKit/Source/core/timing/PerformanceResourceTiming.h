@@ -34,6 +34,7 @@
 
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/timing/PerformanceEntry.h"
+#include "core/timing/PerformanceServerTiming.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -48,23 +49,28 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
 
  public:
   ~PerformanceResourceTiming() override;
-  static PerformanceResourceTiming* Create(const ResourceTimingInfo& info,
-                                           double time_origin,
-                                           double start_time,
-                                           double last_redirect_end_time,
-                                           bool allow_timing_details,
-                                           bool allow_redirect_details) {
+  static PerformanceResourceTiming* Create(
+      const ResourceTimingInfo& info,
+      double time_origin,
+      double start_time,
+      double last_redirect_end_time,
+      bool allow_timing_details,
+      bool allow_redirect_details,
+      PerformanceServerTimingVector& serverTiming) {
     return new PerformanceResourceTiming(
         info, time_origin, start_time, last_redirect_end_time,
-        allow_timing_details, allow_redirect_details);
+        allow_timing_details, allow_redirect_details, serverTiming);
   }
 
-  static PerformanceResourceTiming* Create(const ResourceTimingInfo& info,
-                                           double time_origin,
-                                           double start_time,
-                                           bool allow_timing_details) {
+  static PerformanceResourceTiming* Create(
+      const ResourceTimingInfo& info,
+      double time_origin,
+      double start_time,
+      bool allow_timing_details,
+      PerformanceServerTimingVector& serverTiming) {
     return new PerformanceResourceTiming(info, time_origin, start_time, 0.0,
-                                         allow_timing_details, false);
+                                         allow_timing_details, false,
+                                         serverTiming);
   }
   // Related doc: https://goo.gl/uNecAj.
   virtual AtomicString initiatorType() const;
@@ -84,16 +90,20 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   unsigned long long transferSize() const;
   unsigned long long encodedBodySize() const;
   unsigned long long decodedBodySize() const;
+  PerformanceServerTimingVector serverTiming() const;
+
+  DECLARE_VIRTUAL_TRACE();
 
  protected:
-  void BuildJSONValue(V8ObjectBuilder&) const override;
+  void BuildJSONValue(ScriptState*, V8ObjectBuilder&) const override;
 
   // This constructor is for PerformanceNavigationTiming.
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const String& name,
                             const String& entry_type,
                             double start_time,
-                            double duration);
+                            double duration,
+                            PerformanceServerTimingVector&);
   virtual AtomicString AlpnNegotiatedProtocol() const;
   virtual AtomicString ConnectionInfo() const;
 
@@ -103,7 +113,8 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
                             double start_time,
                             double last_redirect_end_time,
                             bool allow_timing_details,
-                            bool allow_redirect_details);
+                            bool allow_redirect_details,
+                            PerformanceServerTimingVector&);
 
   static AtomicString GetNextHopProtocol(
       const AtomicString& alpn_negotiated_protocol,
@@ -132,6 +143,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   bool allow_timing_details_;
   bool allow_redirect_details_;
   bool allow_negative_value_;
+  PerformanceServerTimingVector serverTiming_;
 };
 
 }  // namespace blink

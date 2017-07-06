@@ -112,12 +112,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   void AddResourceTiming(const ResourceTimingInfo&);
 
-  enum class ShouldAddToBuffer {
-    Always,
-    Never,
-  };
-  void AddServerTiming(const ResourceResponse&, ShouldAddToBuffer);
-
   void NotifyNavigationTimingToObservers();
 
   void AddFirstPaintTiming(double start_time);
@@ -179,7 +173,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   unsigned frame_timing_buffer_size_;
   PerformanceEntryVector resource_timing_buffer_;
   unsigned resource_timing_buffer_size_;
-  PerformanceEntryVector server_timing_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

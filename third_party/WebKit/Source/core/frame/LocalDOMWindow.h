@@ -316,9 +316,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   FloatSize GetViewportSize(IncludeScrollbarsInRect) const;
 
-  void SetHasLoadEventFired() { has_load_event_fired_ = true; }
-  bool HasLoadEventFired() { return has_load_event_fired_; }
-
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,

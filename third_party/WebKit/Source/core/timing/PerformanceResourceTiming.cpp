@@ -45,7 +45,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     double start_time,
     double last_redirect_end_time,
     bool allow_timing_details,
-    bool allow_redirect_details)
+    bool allow_redirect_details,
+    PerformanceServerTimingVector& serverTiming)
     : PerformanceEntry(info.InitialURL().GetString(),
                        "resource",
                        PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
@@ -69,14 +70,18 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       did_reuse_connection_(info.FinalResponse().ConnectionReused()),
       allow_timing_details_(allow_timing_details),
       allow_redirect_details_(allow_redirect_details),
-      allow_negative_value_(info.NegativeAllowed()) {}
+      allow_negative_value_(info.NegativeAllowed()),
+      serverTiming_(serverTiming) {}
 
 // This constructor is for PerformanceNavigationTiming.
-PerformanceResourceTiming::PerformanceResourceTiming(const String& name,
-                                                     const String& entry_type,
-                                                     double start_time,
-                                                     double duration)
-    : PerformanceEntry(name, entry_type, start_time, duration) {}
+PerformanceResourceTiming::PerformanceResourceTiming(
+    const String& name,
+    const String& entry_type,
+    double start_time,
+    double duration,
+    PerformanceServerTimingVector& serverTiming)
+    : PerformanceEntry(name, entry_type, start_time, duration),
+      serverTiming_(serverTiming) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() {}
 
@@ -307,8 +312,13 @@ unsigned long long PerformanceResourceTiming::decodedBodySize() const {
   return GetDecodedBodySize();
 }
 
-void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
-  PerformanceEntry::BuildJSONValue(builder);
+PerformanceServerTimingVector PerformanceResourceTiming::serverTiming() const {
+  return serverTiming_;
+}
+
+void PerformanceResourceTiming::BuildJSONValue(ScriptState* script_state,
+                                               V8ObjectBuilder& builder) const {
+  PerformanceEntry::BuildJSONValue(script_state, builder);
   builder.AddString("initiatorType", initiatorType());
   builder.AddString("nextHopProtocol", nextHopProtocol());
   builder.AddNumber("workerStart", workerStart());
@@ -326,6 +336,17 @@ void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("transferSize", transferSize());
   builder.AddNumber("encodedBodySize", encodedBodySize());
   builder.AddNumber("decodedBodySize", decodedBodySize());
+
+  Vector<ScriptValue> serverTiming;
+  for (unsigned i = 0; i < serverTiming_.size(); i++) {
+    serverTiming.push_back(serverTiming_[i]->toJSONForBinding(script_state));
+  }
+  builder.Add("serverTiming", serverTiming);
+}
+
+DEFINE_TRACE(PerformanceResourceTiming) {
+  visitor->Trace(serverTiming_);
+  PerformanceEntry::Trace(visitor);
 }
 
 }  // namespace blink
