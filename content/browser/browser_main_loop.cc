@@ -1205,17 +1205,17 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   BrowserCompositorMac::DisableRecyclingForShutdown();
 #endif
 
-#if !defined(OS_ANDROID)
-  frame_sink_manager_.reset();
-  host_frame_sink_manager_.reset();
-#endif
-
 #if defined(USE_AURA) || defined(OS_MACOSX)
   {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:ImageTransportFactory");
     ImageTransportFactory::Terminate();
   }
+#endif
+
+#if !defined(OS_ANDROID)
+  host_frame_sink_manager_.reset();
+  frame_sink_manager_.reset();
 #endif
 
   // The device monitors are using |system_monitor_| as dependency, so delete
@@ -1450,6 +1450,20 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
     factory = BrowserGpuChannelHostFactory::instance();
   }
+#if !defined(OS_ANDROID)
+  if (!service_manager::ServiceManagerIsRemote()) {
+    frame_sink_manager_ =
+        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
+
+    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
+
+    // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
+    // Gpu process, instead get the mojo pointer from the Gpu process.
+    surface_utils::ConnectWithInProcessFrameSinkManager(
+        host_frame_sink_manager_.get(), frame_sink_manager_.get());
+  }
+#endif
+
   DCHECK(factory);
   ImageTransportFactory::Initialize();
   ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(factory);
@@ -1460,19 +1474,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)
-
-#if !defined(OS_ANDROID)
-  if (!service_manager::ServiceManagerIsRemote()) {
-    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
-
-    // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
-    // Gpu process, instead get the mojo pointer from the Gpu process.
-    frame_sink_manager_ =
-        base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
-    surface_utils::ConnectWithInProcessFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_.get());
-  }
-#endif
 
   // Enable the GpuMemoryBuffer dump provider with IO thread affinity. Note that
   // unregistration happens on the IO thread (See
