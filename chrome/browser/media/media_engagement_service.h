@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/media/media_engagement_score.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -25,7 +27,12 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class MediaEngagementService : public KeyedService {
+namespace history {
+class HistoryService;
+}
+
+class MediaEngagementService : public KeyedService,
+                               public history::HistoryServiceObserver {
  public:
   // Returns the instance attached to the given |profile|.
   static MediaEngagementService* Get(Profile* profile);
@@ -52,6 +59,16 @@ class MediaEngagementService : public KeyedService {
   // Record a media playback on a |url|.
   void RecordPlayback(const GURL& url);
 
+  // Overridden from history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
+  // KeyedService support:
+  void Shutdown() override;
+
  private:
   friend class MediaEngagementServiceTest;
   friend class MediaEngagementContentsObserverTest;
@@ -69,6 +86,9 @@ class MediaEngagementService : public KeyedService {
   std::set<MediaEngagementContentsObserver*> contents_observers_;
 
   Profile* profile_;
+
+  // Clear any data for a specific origin.
+  void Clear(const GURL& url);
 
   // An internal clock for testing.
   std::unique_ptr<base::Clock> clock_;

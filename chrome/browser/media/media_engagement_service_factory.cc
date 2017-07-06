@@ -5,6 +5,7 @@
 #include "chrome/browser/media/media_engagement_service_factory.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@ MediaEngagementServiceFactory::MediaEngagementServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "MediaEngagementServiceFactory",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
