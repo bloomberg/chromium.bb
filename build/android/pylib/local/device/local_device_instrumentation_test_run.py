@@ -7,12 +7,14 @@ import logging
 import os
 import posixpath
 import re
+import sys
 import tempfile
 import time
 
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
+from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from pylib import valgrind_tools
 from pylib.android import logdog_logcat_monitor
@@ -112,6 +114,7 @@ class LocalDeviceInstrumentationTestRun(
     super(LocalDeviceInstrumentationTestRun, self).__init__(env, test_instance)
     self._flag_changers = {}
     self._ui_capture_dir = dict()
+    self._replace_package_contextmanager = None
 
   #override
   def TestPackage(self):
@@ -124,6 +127,19 @@ class LocalDeviceInstrumentationTestRun(
     @trace_event.traced
     def individual_device_set_up(dev, host_device_tuples):
       steps = []
+
+      if self._test_instance.replace_system_package:
+        # We need the context manager to be applied before modifying any shared
+        # preference files in case the replacement APK needs to be set up, and
+        # it needs to be applied while the test is running. Thus, it needs to
+        # be applied early during setup, but must still be applied during
+        # _RunTest, which isn't possible using 'with' without applying the
+        # context manager up in test_runner. Instead, we manually invoke
+        # its __enter__ and __exit__ methods in setup and teardown
+        self._replace_package_contextmanager = system_app.ReplaceSystemApp(
+            dev, self._test_instance.replace_system_package.package,
+            self._test_instance.replace_system_package.replacement_apk)
+        steps.append(self._replace_package_contextmanager.__enter__)
 
       def install_helper(apk, permissions):
         @trace_event.traced("apk_path")
@@ -259,6 +275,9 @@ class LocalDeviceInstrumentationTestRun(
 
       if self._test_instance.ui_screenshot_dir:
         pull_ui_screen_captures(dev)
+
+      if self._replace_package_contextmanager:
+        self._replace_package_contextmanager.__exit__(*sys.exc_info())
 
     @trace_event.traced
     def pull_ui_screen_captures(dev):

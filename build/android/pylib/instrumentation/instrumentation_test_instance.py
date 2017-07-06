@@ -507,6 +507,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._edit_shared_prefs = []
     self._initializeEditPrefsAttributes(args)
 
+    self._replace_system_package = None
+    self._initializeReplaceSystemPackageAttributes(args)
+
     self._external_shard_index = args.test_launcher_shard_index
     self._total_external_shards = args.test_launcher_total_shards
 
@@ -690,6 +693,12 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._edit_shared_prefs = shared_preference_utils.ExtractSettingsFromJson(
         args.shared_prefs_file)
 
+  def _initializeReplaceSystemPackageAttributes(self, args):
+    if (not hasattr(args, 'replace_system_package')
+        or not args.replace_system_package):
+      return
+    self._replace_system_package = args.replace_system_package
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -745,6 +754,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def render_results_dir(self):
     return self._render_results_dir
+
+  @property
+  def replace_system_package(self):
+    return self._replace_system_package
 
   @property
   def screenshot_dir(self):
