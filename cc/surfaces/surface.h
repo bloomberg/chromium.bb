@@ -45,6 +45,7 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
+          BeginFrameSource* begin_frame_source,
           bool needs_sync_tokens);
   ~Surface();
 

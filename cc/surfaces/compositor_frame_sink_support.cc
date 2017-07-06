@@ -346,8 +346,9 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 Surface* CompositorFrameSinkSupport::CreateSurface(
     const SurfaceInfo& surface_info) {
   seen_first_frame_activation_ = false;
-  return surface_manager_->CreateSurface(weak_factory_.GetWeakPtr(),
-                                         surface_info, needs_sync_tokens_);
+  return surface_manager_->CreateSurface(
+      weak_factory_.GetWeakPtr(), surface_info,
+      surface_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
 }
 
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
