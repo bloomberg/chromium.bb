@@ -2209,7 +2209,8 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   return 0;
 }
 
-#if CONFIG_EXT_INTER && (CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT)
+#if CONFIG_EXT_INTER && \
+    (CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT || CONFIG_INTERINTRA)
 static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                                    MACROBLOCK *x, int *r, int64_t *d, int *s,
                                    int64_t *sse, int64_t ref_best_rd) {
@@ -8239,7 +8240,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int rate_mv = 0;
 #if CONFIG_EXT_INTER
   int pred_exists = 1;
-#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT || CONFIG_INTERINTRA
   const int bw = block_size_wide[bsize];
 #endif  // ONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
   int_mv single_newmv[TOTAL_REFS_PER_FRAME];
