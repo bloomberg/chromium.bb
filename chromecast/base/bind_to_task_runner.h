@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
