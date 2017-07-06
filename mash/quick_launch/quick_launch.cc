@@ -171,13 +171,14 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
 }
 
 void QuickLaunch::OnStart() {
+  aura_init_ = base::MakeUnique<views::AuraInit>(
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
+
   // If AuraInit was unable to initialize there is no longer a peer connection.
   // The ServiceManager is in the process of shutting down, however we haven't
   // been notified yet. Close our ServiceContext and shutdown.
-  aura_init_ = views::AuraInit::Create(
-      context()->connector(), context()->identity(), "views_mus_resources.pak",
-      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
-  if (!aura_init_) {
+  if (!aura_init_->initialized()) {
     context()->QuitNow();
     return;
   }
