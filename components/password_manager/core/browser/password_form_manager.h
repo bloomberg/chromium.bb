@@ -48,6 +48,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // |form_fetcher| to get saved data about the form. |form_fetcher| must not be
   // destroyed before |this|.
   //
+  // Make sure to also call Init before using |*this|.
+  //
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
   // |this| creates an instance of it itself (meant for production code). Once
   // the fetcher is shared between PasswordFormManager instances, it will be
@@ -59,6 +61,10 @@ class PasswordFormManager : public FormFetcher::Consumer {
                       std::unique_ptr<FormSaver> form_saver,
                       FormFetcher* form_fetcher);
   ~PasswordFormManager() override;
+
+  // Call this after construction to complete initialization. If
+  // |metrics_recorder| is null, a fresh one is created.
+  void Init(scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
   // Flags describing the result of comparing two forms as performed by
   // DoesMatch. Individual flags are only relevant for HTML forms, but
@@ -550,7 +556,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
   bool is_main_frame_secure_ = false;
 
   // Takes care of recording metrics and events for this PasswordFormManager.
-  const scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
+  // Make sure to call Init before using |*this|, to ensure it is not null.
+  scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

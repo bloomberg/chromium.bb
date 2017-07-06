@@ -107,6 +107,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
                            base::Unretained(this)),
                 base::Bind(&SyncUsernameTestBase::signin_manager,
                            base::Unretained(this))) {
+    form_manager_.Init(nullptr);
     fetcher_.Fetch();
   }
 
