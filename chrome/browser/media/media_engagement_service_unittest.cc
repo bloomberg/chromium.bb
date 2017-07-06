@@ -168,6 +168,14 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     delete score;
   }
 
+  void SetLastMediaPlaybackTime(const GURL& url,
+                                base::Time last_media_playback_time) {
+    MediaEngagementScore* score = service_->CreateEngagementScore(url);
+    score->last_media_playback_time_ = last_media_playback_time;
+    score->Commit();
+    delete score;
+  }
+
   double GetTotalScore(GURL url) {
     MediaEngagementScore* score = service_->CreateEngagementScore(url);
     double total_score = score->GetTotalScore();
@@ -177,6 +185,10 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   std::map<GURL, double> GetScoreMapForTesting() const {
     return service_->GetScoreMapForTesting();
+  }
+
+  void ClearDataBetweenTime(base::Time begin, base::Time end) {
+    service_->ClearDataBetweenTime(begin, end);
   }
 
   base::Time Now() const { return test_clock_->Now(); }
@@ -389,4 +401,52 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
                  TimeNotSet());
   }
+}
+
+TEST_F(MediaEngagementServiceTest,
+       CleanupDataOnSiteDataCleanup_OutsideBoundary) {
+  GURL origin("https://www.google.com");
+
+  base::Time today = GetReferenceTime();
+  SetNow(today);
+
+  SetScores(origin, 1, 1);
+  SetLastMediaPlaybackTime(origin, today);
+
+  ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
+                       today - base::TimeDelta::FromDays(1));
+  ExpectScores(origin, 0.0, 1, 1, today);
+}
+
+TEST_F(MediaEngagementServiceTest,
+       CleanupDataOnSiteDataCleanup_WithinBoundary) {
+  GURL origin1("https://www.google.com");
+  GURL origin2("https://www.google.co.uk");
+
+  base::Time today = GetReferenceTime();
+  base::Time yesterday = today - base::TimeDelta::FromDays(1);
+  base::Time two_days_ago = today - base::TimeDelta::FromDays(2);
+  SetNow(today);
+
+  SetScores(origin1, 1, 1);
+  SetScores(origin2, 1, 1);
+  SetLastMediaPlaybackTime(origin1, yesterday);
+  SetLastMediaPlaybackTime(origin2, two_days_ago);
+
+  ClearDataBetweenTime(two_days_ago, yesterday);
+  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
+  ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
+}
+
+TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
+  GURL origin("https://www.google.com");
+
+  base::Time today = GetReferenceTime();
+
+  SetNow(GetReferenceTime());
+  SetScores(origin, 1, 0);
+
+  ClearDataBetweenTime(today - base::TimeDelta::FromDays(2),
+                       today - base::TimeDelta::FromDays(1));
+  ExpectScores(origin, 0.0, 1, 0, TimeNotSet());
 }

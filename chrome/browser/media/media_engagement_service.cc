@@ -45,6 +45,20 @@ bool MediaEngagementFilterAdapter(
   return predicate == url;
 }
 
+bool MediaEngagementTimeFilterAdapter(
+    MediaEngagementService* service,
+    base::Time delete_begin,
+    base::Time delete_end,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  GURL url(primary_pattern.ToString());
+  DCHECK(url.is_valid());
+  MediaEngagementScore* score = service->CreateEngagementScore(url);
+  base::Time playback_time = score->last_media_playback_time();
+  delete score;
+  return playback_time >= delete_begin && playback_time <= delete_end;
+}
+
 }  // namespace
 
 // static
@@ -87,6 +101,16 @@ MediaEngagementService::MediaEngagementService(
 }
 
 MediaEngagementService::~MediaEngagementService() = default;
+
+void MediaEngagementService::ClearDataBetweenTime(
+    const base::Time& delete_begin,
+    const base::Time& delete_end) {
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->ClearSettingsForOneTypeWithPredicate(
+          CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
+          base::Bind(&MediaEngagementTimeFilterAdapter, this, delete_begin,
+                     delete_end));
+}
 
 void MediaEngagementService::Shutdown() {
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
