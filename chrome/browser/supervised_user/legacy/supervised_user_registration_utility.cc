@@ -153,13 +153,13 @@ ScopedTestingSupervisedUserRegistrationUtility::
 // static
 std::unique_ptr<SupervisedUserRegistrationUtility>
 SupervisedUserRegistrationUtility::Create(Profile* profile) {
+  DCHECK(base::FeatureList::IsEnabled(features::kSupervisedUserCreation));
+
   if (g_instance_for_tests) {
     SupervisedUserRegistrationUtility* result = g_instance_for_tests;
     g_instance_for_tests = NULL;
     return base::WrapUnique(result);
   }
-
-  DCHECK(base::FeatureList::IsEnabled(features::kSupervisedUserCreation));
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);

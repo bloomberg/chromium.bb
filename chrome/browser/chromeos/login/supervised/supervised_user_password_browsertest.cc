@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
@@ -43,7 +45,15 @@ class SupervisedUserPasswordTest : public SupervisedUserTestBase {
  public:
   SupervisedUserPasswordTest() : SupervisedUserTestBase() {}
 
+  void SetUpInProcessBrowserTestFixture() override {
+    SupervisedUserTestBase::SetUpInProcessBrowserTestFixture();
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kSupervisedUserCreation);
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserPasswordTest);
 };
 
