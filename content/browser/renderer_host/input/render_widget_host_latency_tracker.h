@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/latency/latency_info.h"
 #include "ui/latency/latency_tracker.h"
 

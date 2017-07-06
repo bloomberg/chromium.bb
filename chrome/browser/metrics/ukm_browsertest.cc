@@ -12,9 +12,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "components/ukm/ukm_service.h"
 #include "content/public/common/content_switches.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace metrics {
 

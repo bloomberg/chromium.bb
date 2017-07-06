@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ukm/public/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
 
 #include <memory>
 
 #include "base/metrics/metrics_hashes.h"
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
 

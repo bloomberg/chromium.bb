@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UKM_UKM_ENTRY_BUILDER_H
-#define COMPONENTS_UKM_UKM_ENTRY_BUILDER_H
+#ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H
+#define SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H
 
 #include <string>
 
 #include "base/macros.h"
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
-#include "components/ukm/public/ukm_export.h"
+#include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
 
@@ -29,7 +29,7 @@ typedef int64_t SourceId;
 //
 // When there exists an added metric, the builder will automatically add the
 // UkmEntry to UkmService upon destruction when going out of scope.
-class UKM_EXPORT UkmEntryBuilder {
+class METRICS_EXPORT UkmEntryBuilder {
  public:
   using AddEntryCallback = base::Callback<void(mojom::UkmEntryPtr)>;
   UkmEntryBuilder(const AddEntryCallback& callback,
@@ -49,4 +49,4 @@ class UKM_EXPORT UkmEntryBuilder {
 
 }  // namespace ukm
 
-#endif  // COMPONENTS_UKM_UKM_ENTRY_BUILDER_H
+#endif  // SERVICES_METRICS_PUBLIC_CPP_UKM_ENTRY_BUILDER_H

@@ -21,7 +21,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/ukm/public/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
 
 namespace internal {
 const char kUKMCardUploadDecisionEntryName[] = "Autofill.CardUploadDecision";

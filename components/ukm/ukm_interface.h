@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_UKM_UKM_INTERFACE_H_
 #define COMPONENTS_UKM_UKM_INTERFACE_H_
 
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;

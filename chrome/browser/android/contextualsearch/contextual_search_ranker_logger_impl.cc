@@ -9,9 +9,9 @@
 #include "base/metrics/metrics_hashes.h"
 #include "chrome/browser/browser_process.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/ukm/public/ukm_entry_builder.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "jni/ContextualSearchRankerLoggerImpl_jni.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 ContextualSearchRankerLoggerImpl::ContextualSearchRankerLoggerImpl(JNIEnv* env,
                                                                    jobject obj)

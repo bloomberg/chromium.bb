@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "components/ukm/public/interfaces/ukm_interface.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 

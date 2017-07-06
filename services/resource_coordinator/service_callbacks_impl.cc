@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "components/ukm/public/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 

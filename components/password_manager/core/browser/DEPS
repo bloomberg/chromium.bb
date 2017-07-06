@@ -5,11 +5,23 @@ include_rules = [
   "+components/security_state",
   "+components/sync/base",
   "+components/sync/driver",
-  "+components/ukm",
   "+components/url_formatter",
   "+components/variations",
   "+components/webdata/common",
   "+crypto",
   "+google_apis",
   "+grit",
+  "+services/metrics/public/cpp",
 ]
+
+specific_include_rules = {
+  "password_form_manager_unittest\.cc": [
+    "+components/ukm",
+  ],
+  "password_form_metrics_recorder_unittest\.cc": [
+    "+components/ukm",
+  ],
+  "password_manager_metrics_recorder_unittest\.cc": [
+    "+components/ukm",
+  ],
+}

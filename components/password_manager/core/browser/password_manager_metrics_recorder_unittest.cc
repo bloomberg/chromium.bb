@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/metrics/metrics_hashes.h"
-#include "components/ukm/public/ukm_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "components/ukm/public/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
 
 namespace ukm {
 

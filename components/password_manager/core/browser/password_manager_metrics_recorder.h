@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/ukm/public/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 class GURL;
 
