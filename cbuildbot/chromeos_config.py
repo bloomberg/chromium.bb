@@ -366,6 +366,7 @@ class HWTestList(object):
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
+  # pylint: disable=unused-argument
   def CtsGtsTests(self, **kwargs):
     """Return a list of HWTestConfigs for CTS, GTS tests."""
 
@@ -383,8 +384,7 @@ class HWTestList(object):
     return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
                                     **cts_config),
             config_lib.HWTestConfig(constants.HWTEST_GTS_QUAL_SUITE,
-                                    **gts_config)
-    ]
+                                    **gts_config)]
 
 
 
@@ -3118,15 +3118,16 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       config_lib.CONFIG_TEMPLATE_RELEASE]
 
   if is_release_branch:
-      _cts_gts_boards = (boards_dict['all_release_boards'] |
-                     _all_release_builder_boards) - _critical_for_chrome_boards
+    _cts_gts_boards = (
+        (boards_dict['all_release_boards'] | _all_release_builder_boards)
+        - _critical_for_chrome_boards)
   else:
-      _cts_gts_boards = frozenset([
-          'terra',
-          'kevin',
-          'veyron_mighty',
-          'kefka'
-      ])
+    _cts_gts_boards = frozenset([
+        'terra',
+        'kevin',
+        'veyron_mighty',
+        'kefka'
+    ])
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
