@@ -134,6 +134,10 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
 #pragma mark - Public Methods
 
+- (NSSet*)supportedLanguages {
+  return [NSSet setWithArray:self.supportedLanguagesByCode.allValues];
+}
+
 - (void)translatePageFromLanguage:(CWVTranslationLanguage*)sourceLanguage
                        toLanguage:(CWVTranslationLanguage*)targetLanguage
                     userInitiated:(BOOL)userInitiated {
@@ -225,15 +229,6 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
 #pragma mark - Private Methods
 
-- (NSArray*)supportedLanguages {
-  return [self.supportedLanguagesByCode.allValues
-      sortedArrayUsingComparator:^NSComparisonResult(
-          CWVTranslationLanguage* languageA,
-          CWVTranslationLanguage* languageB) {
-        return [languageA.languageName compare:languageB.languageName];
-      }];
-}
-
 - (NSDictionary<NSString*, CWVTranslationLanguage*>*)supportedLanguagesByCode {
   if (!_supportedLanguagesByCode) {
     NSMutableDictionary<NSString*, CWVTranslationLanguage*>*
@@ -243,11 +238,14 @@ const NSInteger CWVTranslationErrorScriptLoadError =
     std::string locale = translate::TranslateDownloadManager::GetInstance()
                              ->application_locale();
     for (const std::string& languageCode : languageCodes) {
-      base::string16 languageName =
+      base::string16 localizedName =
           l10n_util::GetDisplayNameForLocale(languageCode, locale, true);
+      base::string16 nativeName =
+          l10n_util::GetDisplayNameForLocale(languageCode, languageCode, true);
       CWVTranslationLanguage* language =
           [[CWVTranslationLanguage alloc] initWithLanguageCode:languageCode
-                                                  languageName:languageName];
+                                                 localizedName:localizedName
+                                                    nativeName:nativeName];
 
       supportedLanguagesByCode[language.languageCode] = language;
     }

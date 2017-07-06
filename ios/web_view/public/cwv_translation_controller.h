@@ -48,9 +48,9 @@ CWV_EXPORT
 @property(nullable, nonatomic, weak) id<CWVTranslationControllerDelegate>
     delegate;
 
-// A sorted list of supported languages for translation.
+// The set of supported languages for translation.
 @property(nonatomic, readonly)
-    NSArray<CWVTranslationLanguage*>* supportedLanguages;
+    NSSet<CWVTranslationLanguage*>* supportedLanguages;
 
 // Begins translation on the current page from |sourceLanguage| to
 // |targetLanguage|. These language parameters must be chosen from
