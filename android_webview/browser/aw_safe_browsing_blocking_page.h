@@ -21,7 +21,8 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
   static void ShowBlockingPage(AwSafeBrowsingUIManager* ui_manager,
-                               const UnsafeResource& unsafe_resource);
+                               const UnsafeResource& unsafe_resource,
+                               bool extended_reporting_allowed);
 
  protected:
   // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and

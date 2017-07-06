@@ -65,7 +65,8 @@ void AwSafeBrowsingUIManager::DisplayBlockingPage(
 
 void AwSafeBrowsingUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
-  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
+  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource,
+                                               extended_reporting_allowed_);
 }
 
 int AwSafeBrowsingUIManager::GetErrorUiType(

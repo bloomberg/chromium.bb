@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.webkit.ValueCallback;
 
 import org.chromium.base.VisibleForTesting;
 
@@ -75,6 +76,19 @@ public class AwContentsClientCallbackHelper {
         }
     }
 
+    private static class OnSafeBrowsingHitInfo {
+        final AwContentsClient.AwWebResourceRequest mRequest;
+        final int mThreatType;
+        final ValueCallback<AwSafeBrowsingResponse> mCallback;
+
+        OnSafeBrowsingHitInfo(AwContentsClient.AwWebResourceRequest request, int threatType,
+                ValueCallback<AwSafeBrowsingResponse> callback) {
+            mRequest = request;
+            mThreatType = threatType;
+            mCallback = callback;
+        }
+    }
+
     private static class OnReceivedHttpErrorInfo {
         final AwContentsClient.AwWebResourceRequest mRequest;
         final AwWebResourceResponse mResponse;
@@ -120,6 +134,7 @@ public class AwContentsClientCallbackHelper {
     private static final int MSG_SYNTHESIZE_PAGE_LOADING = 12;
     private static final int MSG_DO_UPDATE_VISITED_HISTORY = 13;
     private static final int MSG_ON_FORM_RESUBMISSION = 14;
+    private static final int MSG_ON_SAFE_BROWSING_HIT = 15;
 
     // Minimum period allowed between consecutive onNewPicture calls, to rate-limit the callbacks.
     private static final long ON_NEW_PICTURE_MIN_PERIOD_MILLIS = 500;
@@ -171,6 +186,12 @@ public class AwContentsClientCallbackHelper {
                 case MSG_ON_RECEIVED_ERROR: {
                     OnReceivedErrorInfo info = (OnReceivedErrorInfo) msg.obj;
                     mContentsClient.onReceivedError(info.mRequest, info.mError);
+                    break;
+                }
+                case MSG_ON_SAFE_BROWSING_HIT: {
+                    OnSafeBrowsingHitInfo info = (OnSafeBrowsingHitInfo) msg.obj;
+                    mContentsClient.onSafeBrowsingHit(
+                            info.mRequest, info.mThreatType, info.mCallback);
                     break;
                 }
                 case MSG_ON_NEW_PICTURE: {
@@ -269,6 +290,12 @@ public class AwContentsClientCallbackHelper {
             AwContentsClient.AwWebResourceError error) {
         OnReceivedErrorInfo info = new OnReceivedErrorInfo(request, error);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_ERROR, info));
+    }
+
+    public void postOnSafeBrowsingHit(AwContentsClient.AwWebResourceRequest request, int threatType,
+            ValueCallback<AwSafeBrowsingResponse> callback) {
+        OnSafeBrowsingHitInfo info = new OnSafeBrowsingHitInfo(request, threatType, callback);
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_SAFE_BROWSING_HIT, info));
     }
 
     public void postOnNewPicture(Callable<Picture> pictureProvider) {

@@ -275,6 +275,15 @@ source_set("v4_protocol_manager_util") {
   ]
 }
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+  java_cpp_enum("sb_threat_values") {
+    sources = [
+      "v4_protocol_manager_util.h",
+    ]
+  }
+}
+
 source_set("v4_rice") {
   sources = [
     "v4_rice.cc",

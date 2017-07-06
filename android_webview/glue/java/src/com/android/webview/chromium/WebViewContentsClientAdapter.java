@@ -44,9 +44,11 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
+import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
+import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.Log;
@@ -628,6 +630,14 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedError");
         }
+    }
+
+    @Override
+    public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
+            ValueCallback<AwSafeBrowsingResponse> callback) {
+        // TODO(ntfschr): invoke the WebViewClient method once the next SDK rolls
+        callback.onReceiveValue(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
+                /* reporting */ true));
     }
 
     @Override
