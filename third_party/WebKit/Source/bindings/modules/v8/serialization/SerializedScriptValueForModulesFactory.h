@@ -26,7 +26,12 @@ class SerializedScriptValueForModulesFactory final
       ExceptionState&) override;
 
   v8::Local<v8::Value> Deserialize(
-      SerializedScriptValue*,
+      RefPtr<SerializedScriptValue>,
+      v8::Isolate*,
+      const SerializedScriptValue::DeserializeOptions&) override;
+
+  v8::Local<v8::Value> Deserialize(
+      UnpackedSerializedScriptValue*,
       v8::Isolate*,
       const SerializedScriptValue::DeserializeOptions&) override;
 };

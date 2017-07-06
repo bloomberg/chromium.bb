@@ -23,7 +23,17 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::Create(
 }
 
 v8::Local<v8::Value> SerializedScriptValueFactory::Deserialize(
-    SerializedScriptValue* value,
+    RefPtr<SerializedScriptValue> value,
+    v8::Isolate* isolate,
+    const SerializedScriptValue::DeserializeOptions& options) {
+  TRACE_EVENT0("blink", "SerializedScriptValueFactory::deserialize");
+  V8ScriptValueDeserializer deserializer(ScriptState::Current(isolate),
+                                         std::move(value), options);
+  return deserializer.Deserialize();
+}
+
+v8::Local<v8::Value> SerializedScriptValueFactory::Deserialize(
+    UnpackedSerializedScriptValue* value,
     v8::Isolate* isolate,
     const SerializedScriptValue::DeserializeOptions& options) {
   TRACE_EVENT0("blink", "SerializedScriptValueFactory::deserialize");

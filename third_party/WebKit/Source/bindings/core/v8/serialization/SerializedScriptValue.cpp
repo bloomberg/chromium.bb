@@ -43,6 +43,7 @@
 #include "bindings/core/v8/serialization/SerializationTag.h"
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/serialization/Transferables.h"
+#include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
@@ -353,6 +354,23 @@ v8::Local<v8::Value> SerializedScriptValue::Deserialize(
                                                               options);
 }
 
+// static
+UnpackedSerializedScriptValue* SerializedScriptValue::Unpack(
+    RefPtr<SerializedScriptValue> value) {
+  if (!value)
+    return nullptr;
+#if DCHECK_IS_ON()
+  DCHECK(!value->was_unpacked_);
+  value->was_unpacked_ = true;
+#endif
+  return new UnpackedSerializedScriptValue(std::move(value));
+}
+
+bool SerializedScriptValue::HasPackedContents() const {
+  return !array_buffer_contents_array_.IsEmpty() ||
+         !image_bitmap_contents_array_.IsEmpty();
+}
+
 bool SerializedScriptValue::ExtractTransferables(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
@@ -549,32 +567,6 @@ void SerializedScriptValue::RegisterMemoryAllocatedWithCurrentScriptContext() {
     for (auto& buffer : array_buffer_contents_array_)
       buffer.RegisterExternalAllocationWithCurrentContext();
   }
-}
-
-void SerializedScriptValue::ReceiveTransfer() {
-  if (received_)
-    return;
-  received_.emplace();
-
-  received_->array_buffers.Grow(array_buffer_contents_array_.size());
-  std::transform(array_buffer_contents_array_.begin(),
-                 array_buffer_contents_array_.end(),
-                 received_->array_buffers.begin(),
-                 [](WTF::ArrayBufferContents& contents) -> DOMArrayBufferBase* {
-                   if (contents.IsShared())
-                     return DOMSharedArrayBuffer::Create(contents);
-                   return DOMArrayBuffer::Create(contents);
-                 });
-  array_buffer_contents_array_.clear();
-
-  received_->image_bitmaps.Grow(image_bitmap_contents_array_.size());
-  std::transform(image_bitmap_contents_array_.begin(),
-                 image_bitmap_contents_array_.end(),
-                 received_->image_bitmaps.begin(),
-                 [](RefPtr<StaticBitmapImage>& contents) {
-                   return ImageBitmap::Create(std::move(contents));
-                 });
-  image_bitmap_contents_array_.clear();
 }
 
 }  // namespace blink

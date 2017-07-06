@@ -31,6 +31,7 @@
 
 #include <memory>
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
@@ -140,7 +141,13 @@ class CORE_EXPORT MessageEvent final : public Event {
     DCHECK_EQ(data_type_, kDataTypeScriptValue);
     return data_as_script_value_;
   }
+  // Use with caution. Since the data has already been unpacked, the underlying
+  // SerializedScriptValue will no longer contain transferred contents.
   SerializedScriptValue* DataAsSerializedScriptValue() const {
+    DCHECK_EQ(data_type_, kDataTypeSerializedScriptValue);
+    return data_as_serialized_script_value_->Value();
+  }
+  UnpackedSerializedScriptValue* DataAsUnpackedSerializedScriptValue() const {
     DCHECK_EQ(data_type_, kDataTypeSerializedScriptValue);
     return data_as_serialized_script_value_.Get();
   }
@@ -155,11 +162,6 @@ class CORE_EXPORT MessageEvent final : public Event {
   DOMArrayBuffer* DataAsArrayBuffer() const {
     DCHECK_EQ(data_type_, kDataTypeArrayBuffer);
     return data_as_array_buffer_.Get();
-  }
-
-  void SetSerializedData(PassRefPtr<SerializedScriptValue> data) {
-    DCHECK(!data_as_serialized_script_value_);
-    data_as_serialized_script_value_ = std::move(data);
   }
 
   void EntangleMessagePorts(ExecutionContext*);
@@ -202,7 +204,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   DataType data_type_;
   ScriptValue data_as_script_value_;
-  RefPtr<SerializedScriptValue> data_as_serialized_script_value_;
+  Member<UnpackedSerializedScriptValue> data_as_serialized_script_value_;
   String data_as_string_;
   Member<Blob> data_as_blob_;
   Member<DOMArrayBuffer> data_as_array_buffer_;
