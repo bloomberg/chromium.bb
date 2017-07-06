@@ -442,9 +442,9 @@ RundownTaskCounter::RundownTaskCounter()
 void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
   // As the count starts off at one, it should never get to zero unless
   // TimedWait has been called.
-  DCHECK(!base::AtomicRefCountIsZero(&count_));
+  DCHECK(!count_.IsZero());
 
-  base::AtomicRefCountInc(&count_);
+  count_.Increment();
 
   // The task must be non-nestable to guarantee that it runs after all tasks
   // currently scheduled on |task_runner| have completed.
@@ -453,7 +453,7 @@ void RundownTaskCounter::Post(base::SequencedTaskRunner* task_runner) {
 }
 
 void RundownTaskCounter::Decrement() {
-  if (!base::AtomicRefCountDec(&count_))
+  if (!count_.Decrement())
     waitable_event_.Signal();
 }
 
