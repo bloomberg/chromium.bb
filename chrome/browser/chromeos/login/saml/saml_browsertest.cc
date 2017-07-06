@@ -1230,8 +1230,8 @@ void SAMLPolicyTest::GetCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     const base::Closure& callback) {
   request_context->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
-      base::Bind(&SAMLPolicyTest::StoreCookieList, base::Unretained(this),
-                 callback));
+      base::BindOnce(&SAMLPolicyTest::StoreCookieList, base::Unretained(this),
+                     callback));
 }
 
 void SAMLPolicyTest::StoreCookieList(

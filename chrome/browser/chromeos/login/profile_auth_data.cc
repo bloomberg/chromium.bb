@@ -191,7 +191,7 @@ void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
     // Retrieve the contents of |to_context_|'s cookie jar.
     net::CookieStore* to_store =
         to_context_->GetURLRequestContext()->cookie_store();
-    to_store->GetAllCookiesAsync(base::Bind(
+    to_store->GetAllCookiesAsync(base::BindOnce(
         &ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved,
         base::Unretained(this)));
   } else {
@@ -240,8 +240,8 @@ void ProfileAuthDataTransferer::RetrieveCookiesToTransfer() {
   net::CookieStore* from_store =
       from_context_->GetURLRequestContext()->cookie_store();
   from_store->GetAllCookiesAsync(
-      base::Bind(&ProfileAuthDataTransferer::OnCookiesToTransferRetrieved,
-                 base::Unretained(this)));
+      base::BindOnce(&ProfileAuthDataTransferer::OnCookiesToTransferRetrieved,
+                     base::Unretained(this)));
 }
 
 void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(

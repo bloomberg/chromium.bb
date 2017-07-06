@@ -144,9 +144,10 @@ void ProfileAuthDataTest::Transfer(
 
 net::CookieList ProfileAuthDataTest::GetUserCookies() {
   run_loop_.reset(new base::RunLoop);
-  GetCookies(&user_browser_context_)->GetAllCookiesAsync(base::Bind(
-      &ProfileAuthDataTest::StoreCookieListAndQuitLoop,
-      base::Unretained(this)));
+  GetCookies(&user_browser_context_)
+      ->GetAllCookiesAsync(
+          base::BindOnce(&ProfileAuthDataTest::StoreCookieListAndQuitLoop,
+                         base::Unretained(this)));
   run_loop_->Run();
   return user_cookie_list_;
 }
@@ -220,8 +221,8 @@ void ProfileAuthDataTest::PopulateBrowserContext(
   net::CookieStore* cookies = GetCookies(browser_context);
   // Ensure |cookies| is fully initialized.
   run_loop_.reset(new base::RunLoop);
-  cookies->GetAllCookiesAsync(base::Bind(&ProfileAuthDataTest::QuitLoop,
-                                         base::Unretained(this)));
+  cookies->GetAllCookiesAsync(
+      base::BindOnce(&ProfileAuthDataTest::QuitLoop, base::Unretained(this)));
   run_loop_->Run();
 
   cookies->SetCookieWithDetailsAsync(

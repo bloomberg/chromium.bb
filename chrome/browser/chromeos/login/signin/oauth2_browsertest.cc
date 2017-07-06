@@ -433,7 +433,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 
   void ReadCookiesOnIOThread() {
     context_->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
-        base::Bind(&CookieReader::OnGetAllCookiesOnUIThread, this));
+        base::BindOnce(&CookieReader::OnGetAllCookiesOnUIThread, this));
   }
 
   void OnGetAllCookiesOnUIThread(const net::CookieList& cookies) {
