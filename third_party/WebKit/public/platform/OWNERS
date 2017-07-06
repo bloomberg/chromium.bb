@@ -1,5 +1,10 @@
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
+
+# Extending enum WebFeature by adding new features is allowed without OWNERS
+# review, but you should add a security team OWNER if you are changing others.
+per-file web_feature.mojom=file://third_party/WebKit/Source/core/OWNERS
+
 per-file *EnumTraits*.*=set noparent
 per-file *EnumTraits*.*=file://ipc/SECURITY_OWNERS
 per-file *StructTraits*.*=set noparent
