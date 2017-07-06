@@ -99,8 +99,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   // The notification method on the UI thread when multiple bytes are
   // transferred from URLRequests. This will be called by the
   // |io_thread_helper_|
-  static void OnMultipleBytesTransferredUI(
-      std::vector<BytesTransferredParam>* params);
+  static void OnMultipleBytesTransferredUI(BytesTransferredMap params);
 
  private:
   friend struct base::LazyInstanceTraitsBase<TaskManagerImpl>;
@@ -123,7 +122,8 @@ class TaskManagerImpl : public TaskManagerInterface,
   // false otherwise, at which point the caller must explicitly match these
   // bytes to the browser process by calling this method again with
   // |param.origin_pid = 0| and |param.child_id = param.route_id = -1|.
-  bool UpdateTasksWithBytesTransferred(const BytesTransferredParam& param);
+  bool UpdateTasksWithBytesTransferred(const BytesTransferredKey& key,
+                                       const BytesTransferredParam& param);
 
   TaskGroup* GetTaskGroupByTaskId(TaskId task_id) const;
   Task* GetTaskByTaskId(TaskId task_id) const;
