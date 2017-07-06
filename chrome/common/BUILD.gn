@@ -560,8 +560,8 @@ static_library("constants") {
     "//components/bookmarks/common",
     "//components/nacl/common:switches",
     "//components/offline_pages/features",
-    "//media:cdm_paths",  # Needed by chrome_paths.cc.
     "//media:media_features",
+    "//media/cdm:cdm_paths",  # Needed by chrome_paths.cc.
     "//ppapi/features",
     "//third_party/widevine/cdm:headers",
   ]

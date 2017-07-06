@@ -82,9 +82,9 @@ source_set("lib") {
   ]
 
   deps = [
-    "//media:cdm_api",
-    "//media:cdm_manager",
     "//media:shared_memory_support",
+    "//media/cdm:cdm_api",
+    "//media/cdm:cdm_manager",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//mojo/common",

@@ -238,7 +238,7 @@ component("gpu") {
     # Remove this dependency after VDAs are also running as part of the mojo
     # media service. See http://crbug.com/522298
     if (mojo_media_host == "gpu") {
-      deps += [ "//media:cdm_manager" ]
+      deps += [ "//media/cdm:cdm_manager" ]
     }
   }
 

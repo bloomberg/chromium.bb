@@ -2892,7 +2892,7 @@ if (!is_android) {
     ]
 
     if (enable_pepper_cdms) {
-      deps += [ "//media:cdm_paths" ]
+      deps += [ "//media/cdm:cdm_paths" ]
       data_deps = [
         "//media/cdm/ppapi:clearkeycdmadapter",
         "//third_party/widevine/cdm:widevinecdmadapter",
