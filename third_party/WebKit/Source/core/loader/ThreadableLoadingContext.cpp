@@ -23,11 +23,6 @@ class DocumentThreadableLoadingContext final : public ThreadableLoadingContext {
     return document_->Fetcher();
   }
 
-  BaseFetchContext* GetFetchContext() override {
-    DCHECK(IsContextThread());
-    return static_cast<BaseFetchContext*>(&document_->Fetcher()->Context());
-  }
-
   ExecutionContext* GetExecutionContext() override {
     DCHECK(IsContextThread());
     return document_.Get();
@@ -48,40 +43,32 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
  public:
   explicit WorkerThreadableLoadingContext(
       WorkerGlobalScope& worker_global_scope)
-      : worker_global_scope_(&worker_global_scope),
-        fetch_context_(worker_global_scope.GetFetchContext()) {}
+      : worker_global_scope_(&worker_global_scope) {}
 
   ~WorkerThreadableLoadingContext() override = default;
 
   ResourceFetcher* GetResourceFetcher() override {
     DCHECK(IsContextThread());
-    return fetch_context_->GetResourceFetcher();
-  }
-
-  BaseFetchContext* GetFetchContext() override {
-    DCHECK(IsContextThread());
-    return fetch_context_.Get();
+    return worker_global_scope_->GetResourceFetcher();
   }
 
   ExecutionContext* GetExecutionContext() override {
+    DCHECK(IsContextThread());
     return worker_global_scope_.Get();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->Trace(fetch_context_);
     visitor->Trace(worker_global_scope_);
     ThreadableLoadingContext::Trace(visitor);
   }
 
  private:
   bool IsContextThread() const {
-    DCHECK(fetch_context_);
     DCHECK(worker_global_scope_);
     return worker_global_scope_->IsContextThread();
   }
 
   Member<WorkerGlobalScope> worker_global_scope_;
-  Member<WorkerFetchContext> fetch_context_;
 };
 
 ThreadableLoadingContext* ThreadableLoadingContext::Create(Document& document) {
@@ -91,6 +78,10 @@ ThreadableLoadingContext* ThreadableLoadingContext::Create(Document& document) {
 ThreadableLoadingContext* ThreadableLoadingContext::Create(
     WorkerGlobalScope& worker_global_scope) {
   return new WorkerThreadableLoadingContext(worker_global_scope);
+}
+
+BaseFetchContext* ThreadableLoadingContext::GetFetchContext() {
+  return static_cast<BaseFetchContext*>(&GetResourceFetcher()->Context());
 }
 
 }  // namespace blink

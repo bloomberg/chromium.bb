@@ -33,8 +33,8 @@ class CORE_EXPORT ThreadableLoadingContext
   virtual ~ThreadableLoadingContext() = default;
 
   virtual ResourceFetcher* GetResourceFetcher() = 0;
-  virtual BaseFetchContext* GetFetchContext() = 0;
   virtual ExecutionContext* GetExecutionContext() = 0;
+  BaseFetchContext* GetFetchContext();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

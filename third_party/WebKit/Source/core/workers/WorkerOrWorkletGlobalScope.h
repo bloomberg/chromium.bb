@@ -7,11 +7,11 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
-#include "core/loader/WorkerFetchContext.h"
 #include "core/workers/WorkerClients.h"
 
 namespace blink {
 
+class ResourceFetcher;
 class ScriptWrappable;
 class WorkerOrWorkletScriptController;
 class WorkerThread;
@@ -51,7 +51,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   virtual WorkerThread* GetThread() const = 0;
 
   // Available only when off-main-thread-fetch is enabled.
-  WorkerFetchContext* GetFetchContext();
+  ResourceFetcher* GetResourceFetcher();
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
@@ -67,7 +67,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;
-  Member<WorkerFetchContext> fetch_context_;
+  Member<ResourceFetcher> resource_fetcher_;
   Member<WorkerOrWorkletScriptController> script_controller_;
 
   // This is the set of features that this worker has used.

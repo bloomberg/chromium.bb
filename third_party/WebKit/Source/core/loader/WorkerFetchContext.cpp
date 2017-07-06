@@ -89,13 +89,6 @@ WorkerFetchContext::WorkerFetchContext(
       loading_task_runner_->ToSingleThreadTaskRunner());
 }
 
-ResourceFetcher* WorkerFetchContext::GetResourceFetcher() {
-  if (resource_fetcher_)
-    return resource_fetcher_;
-  resource_fetcher_ = ResourceFetcher::Create(this, loading_task_runner_);
-  return resource_fetcher_;
-}
-
 KURL WorkerFetchContext::GetFirstPartyForCookies() const {
   return web_context_->FirstPartyForCookies();
 }

@@ -8,6 +8,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/WorkerFetchContext.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -56,13 +57,15 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
   ReportDeprecation(feature);
 }
 
-WorkerFetchContext* WorkerOrWorkletGlobalScope::GetFetchContext() {
+ResourceFetcher* WorkerOrWorkletGlobalScope::GetResourceFetcher() {
   DCHECK(RuntimeEnabledFeatures::OffMainThreadFetchEnabled());
   DCHECK(!IsMainThreadWorkletGlobalScope());
-  if (fetch_context_)
-    return fetch_context_;
-  fetch_context_ = WorkerFetchContext::Create(*this);
-  return fetch_context_;
+  if (resource_fetcher_)
+    return resource_fetcher_;
+  WorkerFetchContext* fetch_context = WorkerFetchContext::Create(*this);
+  resource_fetcher_ =
+      ResourceFetcher::Create(fetch_context, fetch_context->GetTaskRunner());
+  return resource_fetcher_;
 }
 
 bool WorkerOrWorkletGlobalScope::IsJSExecutionForbidden() const {
@@ -83,15 +86,14 @@ void WorkerOrWorkletGlobalScope::Dispose() {
   script_controller_->Dispose();
   script_controller_.Clear();
 
-  if (fetch_context_) {
-    ResourceFetcher* fetcher = fetch_context_->GetResourceFetcher();
-    fetcher->StopFetching();
-    fetcher->ClearContext();
+  if (resource_fetcher_) {
+    resource_fetcher_->StopFetching();
+    resource_fetcher_->ClearContext();
   }
 }
 
 DEFINE_TRACE(WorkerOrWorkletGlobalScope) {
-  visitor->Trace(fetch_context_);
+  visitor->Trace(resource_fetcher_);
   visitor->Trace(script_controller_);
   ExecutionContext::Trace(visitor);
 }
