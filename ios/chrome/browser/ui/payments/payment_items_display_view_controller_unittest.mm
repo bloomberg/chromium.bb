@@ -46,7 +46,7 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* InstantiateController() override {
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
     mediator_ = [[TestPaymentItemsDisplayMediator alloc] init];
@@ -64,7 +64,7 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   TestPaymentItemsDisplayMediator* mediator_ = nil;
 };
 

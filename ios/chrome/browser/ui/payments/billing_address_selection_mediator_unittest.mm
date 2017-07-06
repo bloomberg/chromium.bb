@@ -51,7 +51,7 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
     personal_data_manager_.AddTestingProfile(&autofill_profile_2_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_3_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_4_);
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
     profile_comparator_ = base::MakeUnique<FakePaymentsProfileComparator>(
@@ -77,7 +77,7 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
   autofill::AutofillProfile autofill_profile_3_;
   autofill::AutofillProfile autofill_profile_4_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   std::unique_ptr<FakePaymentsProfileComparator> profile_comparator_;
 };
 

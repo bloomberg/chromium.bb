@@ -28,6 +28,8 @@ class PaymentShippingOption;
 
 class PrefService;
 
+namespace payments {
+
 // PaymentRequest for use in tests.
 class TestPaymentRequest : public PaymentRequest {
  public:
@@ -69,8 +71,7 @@ class TestPaymentRequest : public PaymentRequest {
     pref_service_ = pref_service;
   }
 
-  void SetProfileComparator(
-      payments::PaymentsProfileComparator* profile_comparator) {
+  void SetProfileComparator(PaymentsProfileComparator* profile_comparator) {
     profile_comparator_ = profile_comparator;
   }
 
@@ -95,7 +96,7 @@ class TestPaymentRequest : public PaymentRequest {
   // PaymentRequest
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   PrefService* GetPrefService() override;
-  payments::PaymentsProfileComparator* profile_comparator() override;
+  PaymentsProfileComparator* profile_comparator() override;
 
  private:
   // Not owned and must outlive this object.
@@ -105,9 +106,11 @@ class TestPaymentRequest : public PaymentRequest {
   PrefService* pref_service_;
 
   // Not owned and must outlive this object.
-  payments::PaymentsProfileComparator* profile_comparator_;
+  PaymentsProfileComparator* profile_comparator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentRequest);
 };
+
+}  // namespace payments
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_TEST_PAYMENT_REQUEST_H_

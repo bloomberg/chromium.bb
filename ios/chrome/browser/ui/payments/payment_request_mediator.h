@@ -7,7 +7,9 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 
+namespace payments {
 class PaymentRequest;
+}  // namespace payments
 
 // A mediator object that provides data for a PaymentRequestViewController.
 @interface PaymentRequestMediator
@@ -19,7 +21,7 @@ class PaymentRequest;
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request
 // API. This object will not take ownership of |paymentRequest|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

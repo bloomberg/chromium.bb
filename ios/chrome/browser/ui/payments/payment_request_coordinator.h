@@ -23,8 +23,6 @@
 #import "ios/chrome/browser/ui/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/shipping_option_selection_coordinator.h"
 
-class PaymentRequest;
-
 namespace autofill {
 class AutofillManager;
 }  // namespace autofill
@@ -32,6 +30,10 @@ class AutofillManager;
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
+
+namespace payments {
+class PaymentRequest;
+}  // namespace payments
 
 namespace web {
 class PaymentDetails;
@@ -89,7 +91,7 @@ class PaymentShippingOption;
 // The PaymentRequest object having a copy of web::PaymentRequest as provided by
 // the page invoking the Payment Request API. This pointer is not owned by this
 // class and should outlive it.
-@property(nonatomic, assign) PaymentRequest* paymentRequest;
+@property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 
 // An instance of autofill::AutofillManager used for credit card unmasking. This
 // reference is not owned by this class.

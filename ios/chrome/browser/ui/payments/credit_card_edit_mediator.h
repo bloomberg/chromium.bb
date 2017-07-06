@@ -7,13 +7,16 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
 
-class PaymentRequest;
 @protocol PaymentRequestEditConsumer;
 
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
 }  // namespace autofill
+
+namespace payments {
+class PaymentRequest;
+}  // namespace payments
 
 // Serves as data source for CreditCardEditViewController.
 @interface CreditCardEditViewControllerMediator
@@ -30,7 +33,7 @@ class CreditCard;
 // of web::PaymentRequest as provided by the page invoking the Payment Request
 // API as well as |creditCard| which is the credit card to be edited, if any.
 // This object will not take ownership of |paymentRequest| or |creditCard|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                             creditCard:(autofill::CreditCard*)creditCard
     NS_DESIGNATED_INITIALIZER;
 

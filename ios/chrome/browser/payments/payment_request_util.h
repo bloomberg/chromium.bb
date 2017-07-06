@@ -18,9 +18,8 @@ class AutofillProfile;
 
 namespace payments {
 class PaymentInstrument;
-}  // namespace payments
-
 class PaymentRequest;
+}  // namespace payments
 
 namespace payment_request_util {
 
@@ -52,7 +51,7 @@ NSString* GetEmailLabelFromAutofillProfile(
 // Helper function to create a notification label for an address cell from an
 // autofill profile. Returns nil if the resulting label is empty.
 NSString* GetAddressNotificationLabelFromAutofillProfile(
-    PaymentRequest& payment_request,
+    payments::PaymentRequest& payment_request,
     const autofill::AutofillProfile& profile);
 
 // Helper function to create a notification label for what's missing from a
@@ -68,12 +67,12 @@ NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type);
 // Returns the error message to be displayed in the shipping address selection
 // view given the shipping type specified in |payment_request|.
 NSString* GetShippingAddressSelectorErrorMessage(
-    const PaymentRequest& payment_request);
+    const payments::PaymentRequest& payment_request);
 
 // Returns the error message to be displayed in the shipping option selection
 // view given the shipping type specified in |payment_request|.
 NSString* GetShippingOptionSelectorErrorMessage(
-    const PaymentRequest& payment_request);
+    const payments::PaymentRequest& payment_request);
 
 }  // namespace payment_request_util
 

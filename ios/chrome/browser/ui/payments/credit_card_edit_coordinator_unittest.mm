@@ -37,11 +37,12 @@ class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
   MOCK_METHOD1(UpdateCreditCard, void(const autofill::CreditCard&));
 };
 
-class MockPaymentRequest : public TestPaymentRequest {
+class MockPaymentRequest : public payments::TestPaymentRequest {
  public:
   MockPaymentRequest(web::PaymentRequest web_payment_request,
                      autofill::PersonalDataManager* personal_data_manager)
-      : TestPaymentRequest(web_payment_request, personal_data_manager) {}
+      : payments::TestPaymentRequest(web_payment_request,
+                                     personal_data_manager) {}
   MOCK_METHOD1(
       AddAutofillPaymentInstrument,
       payments::AutofillPaymentInstrument*(const autofill::CreditCard&));

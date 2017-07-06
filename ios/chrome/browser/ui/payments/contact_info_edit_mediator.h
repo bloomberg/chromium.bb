@@ -9,12 +9,15 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_data_source.h"
 
-class PaymentRequest;
 @protocol PaymentRequestEditConsumer;
 
 namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
+
+namespace payments {
+class PaymentRequest;
+}  // namespace payments
 
 // Serves as data source for AddressEditViewController.
 @interface ContactInfoEditMediator
@@ -28,7 +31,7 @@ class AutofillProfile;
 // of web::PaymentRequest as provided by the page invoking the Payment Request
 // API as well as |profile| which is the profile to be edited, if any.
 // This object will not take ownership of |paymentRequest| or |profile|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                                profile:(autofill::AutofillProfile*)profile
     NS_DESIGNATED_INITIALIZER;
 

@@ -146,7 +146,7 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
     personal_data_manager_.AddTestingProfile(&autofill_profile_);
     personal_data_manager_.AddTestingCreditCard(&credit_card_);
 
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
 
@@ -170,7 +170,7 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   TestPaymentRequestMediator* mediator_;
 };
 

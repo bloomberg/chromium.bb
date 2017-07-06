@@ -102,7 +102,7 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
                                        &ios::BuildFakeSigninManager);
     browser_state_ = test_cbs_builder.Build();
 
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         browser_state_.get(), &personal_data_manager_);
     payment_request_->SetPrefService(pref_service_.get());
@@ -114,7 +114,7 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
   autofill::CreditCard credit_card_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 };
 
