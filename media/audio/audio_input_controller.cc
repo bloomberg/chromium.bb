@@ -397,7 +397,7 @@ void AudioInputController::DoClose() {
   if (!stream_)
     return;
 
-  check_muted_state_timer_.Stop();
+  check_muted_state_timer_.AbandonAndStop();
 
   std::string log_string;
   static const char kLogStringPrefix[] = "AIC::DoClose:";
