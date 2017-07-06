@@ -71,6 +71,7 @@ void SurfaceManager::RequestSurfaceResolution(
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const SurfaceInfo& surface_info,
+    BeginFrameSource* begin_frame_source,
     bool needs_sync_tokens) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_info.is_valid());
@@ -80,8 +81,9 @@ Surface* SurfaceManager::CreateSurface(
   // return.
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
-    surface_map_[surface_info.id()] = base::MakeUnique<Surface>(
-        surface_info, this, surface_client, needs_sync_tokens);
+    surface_map_[surface_info.id()] =
+        base::MakeUnique<Surface>(surface_info, this, surface_client,
+                                  begin_frame_source, needs_sync_tokens);
     return surface_map_[surface_info.id()].get();
   }
 

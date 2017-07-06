@@ -27,12 +27,13 @@ constexpr int kFrameIndexStart = 2;
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
+                 BeginFrameSource* begin_frame_source,
                  bool needs_sync_tokens)
     : surface_info_(surface_info),
       previous_frame_surface_id_(surface_info.id()),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      deadline_(surface_manager_->GetPrimaryBeginFrameSource()),
+      deadline_(begin_frame_source),
       frame_index_(kFrameIndexStart),
       needs_sync_tokens_(needs_sync_tokens) {
   deadline_.AddObserver(this);
