@@ -51,7 +51,7 @@ class HTMLLinkElement;
 class HTMLImportChild final : public HTMLImport {
  public:
   HTMLImportChild(const KURL&, HTMLImportLoader*, SyncMode);
-  ~HTMLImportChild() override;
+  ~HTMLImportChild() final;
   void Dispose();
 
   HTMLLinkElement* Link() const;
@@ -62,15 +62,15 @@ class HTMLImportChild final : public HTMLImport {
   void DidStartLoading();
 
   // HTMLImport
-  Document* GetDocument() const override;
-  bool HasFinishedLoading() const override;
-  HTMLImportLoader* Loader() const override;
-  void StateWillChange() override;
-  void StateDidChange() override;
+  Document* GetDocument() const final;
+  bool HasFinishedLoading() const final;
+  HTMLImportLoader* Loader() const final;
+  void StateWillChange() final;
+  void StateDidChange() final;
   DECLARE_VIRTUAL_TRACE();
 
 #if !defined(NDEBUG)
-  void ShowThis() override;
+  void ShowThis() final;
 #endif
 
   void SetClient(HTMLImportChildClient*);
