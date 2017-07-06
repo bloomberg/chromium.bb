@@ -3168,4 +3168,36 @@ TEST_F(TextfieldTest, CursorVisibility) {
   EXPECT_TRUE(test_api_->IsCursorVisible());
 }
 
+// Check if the text cursor is always at the end of the textfield after the
+// text overflows from the textfield. If the textfield size changes, check if
+// the text cursor's location is updated accordingly.
+TEST_F(TextfieldTest, TextfieldBoundsChangeTest) {
+  InitTextfield();
+  gfx::Size new_size = gfx::Size(30, 100);
+  textfield_->SetSize(new_size);
+
+  // Insert chars in |textfield_| to make it overflow.
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+  SendKeyEvent('a');
+
+  // Check if the cursor continues pointing to the end of the textfield.
+  int prev_x = GetCursorBounds().x();
+  SendKeyEvent('a');
+  EXPECT_EQ(prev_x, GetCursorBounds().x());
+
+  // Increase the textfield size and check if the cursor moves to the new end.
+  textfield_->SetSize(gfx::Size(40, 100));
+  EXPECT_LT(prev_x, GetCursorBounds().x());
+
+  prev_x = GetCursorBounds().x();
+  // Decrease the textfield size and check if the cursor moves to the new end.
+  textfield_->SetSize(gfx::Size(30, 100));
+  EXPECT_GT(prev_x, GetCursorBounds().x());
+}
+
 }  // namespace views

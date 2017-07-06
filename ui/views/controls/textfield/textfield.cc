@@ -970,6 +970,7 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   bounds.Inset(gfx::Insets(0, kTextPadding, 0, kTextPadding));
   GetRenderText()->SetDisplayRect(bounds);
   OnCaretBoundsChanged();
+  UpdateCursorViewPosition();
 }
 
 bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {
@@ -2115,8 +2116,8 @@ void Textfield::StopBlinkingCursor() {
 
 void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
-  cursor_view_.SetVisible(!cursor_view_.visible());
   UpdateCursorViewPosition();
+  cursor_view_.SetVisible(!cursor_view_.visible());
 }
 
 }  // namespace views
