@@ -98,6 +98,10 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
       void (const std::string& access_token));
   MOCK_METHOD1(ProcessMintAccessTokenFailure,
       void (const GoogleServiceAuthError& error));
+
+  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
+    return PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS;
+  }
 };
 
 }  // namespace

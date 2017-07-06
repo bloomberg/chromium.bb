@@ -109,6 +109,8 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
 
   void ProcessApiCallSuccess(const net::URLFetcher* source) override;
   void ProcessApiCallFailure(const net::URLFetcher* source) override;
+  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag()
+      override;
 
  private:
   friend class OAuth2MintTokenFlowTest;

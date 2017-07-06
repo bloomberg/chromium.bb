@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -54,6 +55,9 @@ class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
   virtual void ProcessApiCallSuccess(const net::URLFetcher* source) = 0;
   // Called when the API call failed.
   virtual void ProcessApiCallFailure(const net::URLFetcher* source) = 0;
+
+  virtual net::PartialNetworkTrafficAnnotationTag
+  GetNetworkTrafficAnnotationTag() = 0;
 
  private:
   enum State {

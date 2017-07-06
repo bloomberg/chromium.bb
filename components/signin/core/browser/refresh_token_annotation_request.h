@@ -58,6 +58,8 @@ class RefreshTokenAnnotationRequest : public OAuth2TokenService::Consumer,
   std::string CreateApiCallBody() override;
   void ProcessApiCallSuccess(const net::URLFetcher* source) override;
   void ProcessApiCallFailure(const net::URLFetcher* source) override;
+  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag()
+      override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RefreshTokenAnnotationRequestTest, ShouldSendNow);

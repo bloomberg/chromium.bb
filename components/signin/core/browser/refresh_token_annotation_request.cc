@@ -17,6 +17,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -170,4 +171,35 @@ void RefreshTokenAnnotationRequest::ProcessApiCallFailure(
   RecordRequestStatusHistogram(false);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
+}
+
+net::PartialNetworkTrafficAnnotationTag
+RefreshTokenAnnotationRequest::GetNetworkTrafficAnnotationTag() {
+  return net::DefinePartialNetworkTrafficAnnotation(
+      "refresh_token_annotation_request", "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "Account Fetcher Service"
+        description:
+          "Sends request to /IssueToken endpoint with device_id to backfill "
+          "device info for refresh tokens issued pre-M38."
+        trigger:
+          "When refreshing account information in AccountFetcherService. On "
+          "chrome startup and at most once per day."
+        data:
+          "OAuth 2.0 access token, Chrome's client id and version number, and "
+          "a single signin scoped, randomly generated device id for Chrome "
+          "profile."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings, however the request is "
+          "made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            policy_options {mode: MANDATORY}
+            SigninAllowed: false
+          }
+        }
+      })");
 }

@@ -40,6 +40,14 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
                      const ResultCallback& result_callback,
                      const ErrorCallback& error_callback);
 
+  void SetPartialNetworkTrafficAnnotation(
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation) {
+    partial_network_annotation_.reset(
+        new net::PartialNetworkTrafficAnnotationTag(
+            partial_traffic_annotation));
+  }
+
  protected:
   // Reduce the visibility of OAuth2ApiCallFlow::Start() to avoid exposing
   // overloaded methods.
@@ -53,6 +61,8 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
       const std::string& body) override;
   void ProcessApiCallSuccess(const net::URLFetcher* source) override;
   void ProcessApiCallFailure(const net::URLFetcher* source) override;
+  net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag()
+      override;
 
  private:
   // The URL of the CryptAuth endpoint serving the request.
@@ -67,6 +77,9 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
 
   // Callback invoked with an error message when the flow fails.
   ErrorCallback error_callback_;
+
+  std::unique_ptr<net::PartialNetworkTrafficAnnotationTag>
+      partial_network_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthApiCallFlow);
 };

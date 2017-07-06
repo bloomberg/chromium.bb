@@ -21,6 +21,7 @@
 #include "components/cryptauth/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -469,7 +470,7 @@ class CryptAuthDeviceManagerTest
 
   // MockCryptAuthClientFactory::Observer:
   void OnCryptAuthClientCreated(MockCryptAuthClient* client) override {
-    EXPECT_CALL(*client, GetMyDevices(_, _, _))
+    EXPECT_CALL(*client, GetMyDevices(_, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&get_my_devices_request_),
                         SaveArg<1>(&success_callback_),
                         SaveArg<2>(&error_callback_)));
