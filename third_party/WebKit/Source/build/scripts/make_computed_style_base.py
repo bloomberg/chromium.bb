@@ -27,7 +27,7 @@ ALIGNMENT_ORDER = [
     # Aligns like a pointer (can be 32 or 64 bits)
     'NamedGridLinesMap', 'OrderedNamedGridLines', 'NamedGridAreaMap', 'TransformOperations',
     'Vector<CSSPropertyID>', 'Vector<GridTrackSize>', 'GridPosition', 'AtomicString',
-    'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'RefPtr', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
     'StyleOffsetRotation', 'TransformOrigin', 'ScrollPadding', 'ScrollSnapMargin', 'LengthBox',
