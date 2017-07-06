@@ -5692,10 +5692,16 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
 
     SendMouseWheel(pos);
 
-    // This time only the wheel handler fires, since it prevent defaults on
-    // even numbered scrolls.
+    // If async_wheel_events is disabled, this time only the wheel handler
+    // fires, since even numbered scrolls are prevent-defaulted. If it is
+    // enabled, then this wheel event will be sent non-blockingly and won't be
+    // cancellable.
     EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
     EXPECT_EQ("\"wheel: 2\"", reply);
+    if (base::FeatureList::IsEnabled(features::kAsyncWheelEvents)) {
+      EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+      EXPECT_EQ("\"scroll: 2\"", reply);
+    }
 
     SendMouseWheel(pos);
 
