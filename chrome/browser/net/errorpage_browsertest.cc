@@ -58,6 +58,8 @@
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
@@ -321,6 +323,18 @@ void InstallMockInterceptors(
       search_url.scheme(), search_url.host(),
       net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
           root_http.AppendASCII("title3.html")));
+}
+
+// When it sees a request for |path|, returns a 500 response with a body that
+// will be sniffed as binary/octet-stream.
+std::unique_ptr<net::test_server::HttpResponse> Return500WithBinaryBody(
+    const std::string& path,
+    const net::test_server::HttpRequest& request) {
+  if (path != request.relative_url)
+    return nullptr;
+  return std::unique_ptr<net::test_server::HttpResponse>(
+      new net::test_server::RawHttpResponse("HTTP/1.1 500 Server Sad :(",
+                                            "\x01"));
 }
 
 class ErrorPageTest : public InProcessBrowserTest {
@@ -1555,6 +1569,22 @@ IN_PROC_BROWSER_TEST_F(ErrorPageWithHttp09OnNonDefaultPortsTest,
       browser(), embedded_test_server()->GetURL(std::string("/echo-raw?") +
                                                 kHttp09Response));
   EXPECT_TRUE(IsDisplayingText(browser(), kHttp09Response));
+}
+
+// Checks that when an HTTP error page is sniffed as a download, an error page
+// is displayed. This tests the particular case in which the response body
+// is small enough that the entire response must be read before its MIME type
+// can be determined.
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, SniffSmallHttpErrorResponseAsDownload) {
+  const char kErrorPath[] = "/foo";
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&Return500WithBinaryBody, kErrorPath));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(kErrorPath));
+
+  ExpectDisplayingLocalErrorPage(browser(), net::ERR_INVALID_RESPONSE);
 }
 
 }  // namespace
