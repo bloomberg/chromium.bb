@@ -297,7 +297,10 @@ static_library("content_shell_lib") {
     ]
   }
   if (mojo_media_host == "browser") {
-    deps += [ "//media/mojo/services" ]
+    deps += [
+      "//media/mojo/interfaces:constants",
+      "//media/mojo/services",
+    ]
   }
 
   if (is_win) {

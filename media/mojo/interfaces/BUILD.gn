@@ -46,6 +46,12 @@ mojom("interfaces") {
   use_once_callback = false
 }
 
+mojom("constants") {
+  sources = [
+    "constants.mojom",
+  ]
+}
+
 mojom("remoting") {
   sources = [
     "remoting.mojom",

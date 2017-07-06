@@ -146,6 +146,7 @@ if (!(is_win && is_component_build)) {
       "//media/mojo/clients",
       "//media/mojo/common",
       "//media/mojo/interfaces",
+      "//media/mojo/interfaces:constants",
       "//services/service_manager/public/cpp:service_test_support",
       "//testing/gmock",
       "//testing/gtest",

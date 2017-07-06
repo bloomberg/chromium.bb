@@ -97,6 +97,7 @@ source_set("browser") {
     "//media/midi:mojo",
     "//media/mojo:features",
     "//media/mojo/interfaces",
+    "//media/mojo/interfaces:constants",
     "//media/mojo/services",
     "//mojo/common",
     "//mojo/edk/system",

@@ -27,6 +27,7 @@
 #include "base/memory/ptr_util.h"
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
 #include "media/mojo/features.h"                     // nogncheck
+#include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/media_service.h"       // nogncheck
 #include "media/mojo/services/mojo_cdm_allocator.h"  // nogncheck
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck
@@ -94,7 +95,7 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 #if BUILDFLAG(ENABLE_PEPPER_CDMS)
   service_manager::EmbeddedServiceInfo info;
   info.factory = base::Bind(&CreateMediaService);
-  services->insert(std::make_pair("media", info));
+  services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
 #endif
 
   service_manager::EmbeddedServiceInfo shape_detection_info;
