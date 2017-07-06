@@ -8,7 +8,7 @@
         height: 200px;
         width: 200px;
         background-color: red;
-        -webkit-animation: anim 1s linear infinite;
+        animation: anim 1s linear infinite;
     }
     #boxStatic {
         position: absolute;
@@ -19,7 +19,7 @@
         background-color: red;
         -webkit-mask-box-image: -webkit-cross-fade(url(resources/stripes-100.png), url(resources/green-100.png), 25%) 50 stretch;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { -webkit-mask-box-image: url(resources/stripes-100.png) 50 stretch; }
         to   { -webkit-mask-box-image: url(resources/green-100.png) 50 stretch; }
     }

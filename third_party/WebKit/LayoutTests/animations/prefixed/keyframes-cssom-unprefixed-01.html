@@ -18,32 +18,24 @@
         animation-name: anim;
         animation-fill-mode: forwards;
     }
-
-    @keyframes anim {
-        from { left: 200px; }
-        to   { left: 300px; }
-    }
-
-    @-webkit-keyframes anim {
-        from { left: 200px; }
-        to   { left: 700px; }
-    }
-
     </style>
-    <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [1, "box", "left", 300, 1],
     ];
-
+    var lastSheet = document.styleSheets[document.styleSheets.length - 1];
+    lastSheet.insertRule("@keyframes anim { from { left: 200px; } to { left: 300px;} }", lastSheet.cssRules.length);
     runAnimationTest(expectedValues);
+    result += lastSheet.cssRules[lastSheet.cssRules.length - 1].cssText;
+    result += '<br>';
 
   </script>
 </head>
 <body>
-This test verifies that the unprefixed @keyframes rule is correctly parsed take precedence over the prefixed keyframe defined after.
+This test creates dynamically a prefixed @keyframes and verify the output.
 <div id="box">
 </div>
 <div id="result">

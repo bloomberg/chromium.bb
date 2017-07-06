@@ -283,9 +283,8 @@ function log(message, klass) {
  document.body.appendChild(child);
 }
 
-var prefix = 'animation' in document.body.style ? '' : '-webkit-';
 function assertIterationTime(animation, expectations) {
- testElement.style.setProperty(prefix + 'animation', 'invalid ' + animation);
+ testElement.style.setProperty('animation', 'invalid ' + animation);
  update();
 
  expectations.forEach(function(expectation) {
@@ -293,18 +292,12 @@ function assertIterationTime(animation, expectations) {
      console.log('ERROR: Test requires too much precision. ' + JSON.stringify(expectation));
      return;
    }
-   testElement.style.setProperty(prefix + 'animation-name', 'invalid');
+   testElement.style.setProperty('animation-name', 'invalid');
    update();
 
    var delay = expectation.at * -1;
-   testElement.style.setProperty(prefix + 'animation-delay', delay + 's');
-   testElement.style.setProperty(prefix + 'animation-name', 'test');
-   update();
-   // FIXME: Set play-state: paused before starting the animation.
-   // For now, updating the style another two times makes this work in WebKit/Blink
-   testElement.style.setProperty(prefix + 'animation-name', 'test');
-   update();
-   testElement.style.setProperty(prefix + 'animation-name', 'test');
+   testElement.style.setProperty('animation-delay', delay + 's');
+   testElement.style.setProperty('animation-name', 'test');
    update();
 
    var result = getComputedStyle(testElement).left;
@@ -329,14 +322,6 @@ body {
 .fail {
    font-weight: bold;
    color: red;
-}
-@-webkit-keyframes test {
-   0% {
-       left: 0px;
-   }
-   100% {
-       left: 1px;
-   }
 }
 @keyframes test {
    0% {

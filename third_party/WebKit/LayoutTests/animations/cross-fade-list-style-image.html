@@ -23,11 +23,11 @@
         width: 100px;
         list-style: square -webkit-cross-fade(url(resources/blue-100.png), url(resources/green-100.png), 50%);
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { list-style-image: url(resources/blue-100.png); }
         to   { list-style-image: url(resources/green-100.png); }
     }
-    @-webkit-keyframes animShorthand {
+    @keyframes animShorthand {
         from { list-style: square url(resources/blue-100.png); }
         to   { list-style: square url(resources/green-100.png); }
     }
@@ -35,8 +35,8 @@
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
     function runTest() {
-      document.querySelector('#box').style.webkitAnimation = "anim 1s linear infinite";
-      document.querySelector('#boxShorthand').style.webkitAnimation = "animShorthand 1s linear infinite";
+      document.querySelector('#box').style.animation = "anim 1s linear infinite";
+      document.querySelector('#boxShorthand').style.animation = "animShorthand 1s linear infinite";
 
       const expectedValues = [
         // [time, element-id, property, expected-value, tolerance]

@@ -8,7 +8,7 @@
         height: 100px;
         width: 100px;
         background-color: green;
-        -webkit-animation: anim 1s linear infinite;
+        animation: anim 1s linear infinite;
         border-image: url() 5 5 5 5 /20px stretch stretch;
         border-style: solid;
     }
@@ -19,7 +19,7 @@
         height: 100px;
         width: 100px;
         background-color: green;
-        -webkit-animation: animShorthand 1s linear infinite;
+        animation: animShorthand 1s linear infinite;
         border-style: solid;
     }
     #boxStatic {
@@ -32,11 +32,11 @@
         border-image: -webkit-cross-fade(url(resources/stripes-100.png), url(resources/green-100.png), 50%) 5 5 5 5 /20px stretch stretch;
         border-style: solid;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         from { border-image-source: url(resources/stripes-100.png); }
         to   { border-image-source: url(resources/green-100.png); }
     }
-    @-webkit-keyframes animShorthand {
+    @keyframes animShorthand {
         from { border-image: url(resources/stripes-100.png) 5 5 5 5 /20px stretch stretch; }
         to   { border-image: url(resources/green-100.png) 5 5 5 5 /20px stretch stretch; }
     }

@@ -11,12 +11,12 @@
     }
     #box {
         background-color: green;
-        -webkit-animation-name: move;
-        -webkit-animation-duration: 1s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-iteration-count: 1;
+        animation-name: move;
+        animation-duration: 1s;
+        animation-timing-function: linear;
+        animation-iteration-count: 1;
     }
-    @-webkit-keyframes move {
+    @keyframes move {
         from {
             transform: translateX(0) scale(1);
             opacity: 0.0;
@@ -36,7 +36,7 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box", "webkitTransform.4", 200, 5],
+      [0.5, "box", "transform.4", 200, 5],
     ];
 
     var disablePauseAnimationAPI = false;
