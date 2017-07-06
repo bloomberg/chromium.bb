@@ -118,10 +118,15 @@ public class AwContents implements SmartClipProvider {
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
-    private static final boolean FORCE_AUXILIARY_BITMAP_RENDERING =
-            "goldfish".equals(Build.HARDWARE) || "ranchu".equals(Build.HARDWARE);
-
     private static final double MIN_SCREEN_HEIGHT_PERCENTAGE_FOR_INTERSTITIAL = 0.7;
+
+    private static class ForceAuxiliaryBitmapRendering {
+        private static final boolean sResult = lazyCheck();
+        private static boolean lazyCheck() {
+            return "goldfish".equals(Build.HARDWARE) || "ranchu".equals(Build.HARDWARE)
+                    || !nativeHasRequiredHardwareExtensions();
+        }
+    }
 
     /**
      * WebKit hit test related data structure. These are used to implement
@@ -1319,8 +1324,6 @@ public class AwContents implements SmartClipProvider {
 
     public static void setAwDrawSWFunctionTable(long functionTablePointer) {
         nativeSetAwDrawSWFunctionTable(functionTablePointer);
-        // Force auxiliary bitmap rendering in emulators.
-        nativeSetForceAuxiliaryBitmapRendering(FORCE_AUXILIARY_BITMAP_RENDERING);
     }
 
     public static void setAwDrawGLFunctionTable(long functionTablePointer) {
@@ -3172,8 +3175,10 @@ public class AwContents implements SmartClipProvider {
             }
             boolean did_draw = nativeOnDraw(mNativeAwContents, canvas,
                     canvas.isHardwareAccelerated(), scrollX, scrollY, globalVisibleRect.left,
-                    globalVisibleRect.top, globalVisibleRect.right, globalVisibleRect.bottom);
-            if (did_draw && canvas.isHardwareAccelerated() && !FORCE_AUXILIARY_BITMAP_RENDERING) {
+                    globalVisibleRect.top, globalVisibleRect.right, globalVisibleRect.bottom,
+                    ForceAuxiliaryBitmapRendering.sResult);
+            if (did_draw && canvas.isHardwareAccelerated()
+                    && !ForceAuxiliaryBitmapRendering.sResult) {
                 did_draw = mCurrentFunctor.requestDrawGL(canvas);
             }
             if (did_draw) {
@@ -3488,8 +3493,7 @@ public class AwContents implements SmartClipProvider {
 
     private static native long nativeInit(AwBrowserContext browserContext);
     private static native void nativeDestroy(long nativeAwContents);
-    private static native void nativeSetForceAuxiliaryBitmapRendering(
-            boolean forceAuxiliaryBitmapRendering);
+    private static native boolean nativeHasRequiredHardwareExtensions();
     private static native void nativeSetAwDrawSWFunctionTable(long functionTablePointer);
     private static native void nativeSetAwDrawGLFunctionTable(long functionTablePointer);
     private static native int nativeGetNativeInstanceCount();
@@ -3515,8 +3519,9 @@ public class AwContents implements SmartClipProvider {
     private native void nativeOnComputeScroll(
             long nativeAwContents, long currentAnimationTimeMillis);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
-            boolean isHardwareAccelerated, int scrollX, int scrollY,
-            int visibleLeft, int visibleTop, int visibleRight, int visibleBottom);
+            boolean isHardwareAccelerated, int scrollX, int scrollY, int visibleLeft,
+            int visibleTop, int visibleRight, int visibleBottom,
+            boolean forceAuxiliaryBitmapRendering);
     private native void nativeFindAllAsync(long nativeAwContents, String searchString);
     private native void nativeFindNext(long nativeAwContents, boolean forward);
     private native void nativeClearMatches(long nativeAwContents);

@@ -226,6 +226,11 @@ struct GPU_EXPORT GPUInfo {
   // True if the current set of outputs supports HDR.
   bool hdr = false;
 
+  // True only on android when extensions for threaded mailbox sharing are
+  // present. Threaded mailbox sharing is used on Android only, so this check
+  // is only implemented on Android.
+  bool can_support_threaded_texture_mailbox = false;
+
   // The state of whether the basic/context/DxDiagnostics info is collected and
   // if the collection fails or not.
   CollectInfoResult basic_info_state;
