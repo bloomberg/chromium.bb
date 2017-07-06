@@ -295,9 +295,6 @@ id<GREYMatcher> DeleteButton() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:PasswordsButton()]
       performAction:grey_tap()];
-
-  // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 // Tap back arrow, to get one level higher in settings.
@@ -308,26 +305,17 @@ id<GREYMatcher> DeleteButton() {
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
-
-  // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 // Tap Edit in any settings view.
 - (void)tapEdit {
   [[EarlGrey selectElementWithMatcher:EditButton()] performAction:grey_tap()];
-
-  // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 // Tap Done in any settings view.
 - (void)tapDone {
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
-
-  // Wait for UI components to finish loading.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 // Verifies the UI elements are accessible on the Passwords page.
@@ -395,14 +383,12 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE);
   // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
-  // Wait until the fade-out animation completes.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check the snackbar in case of failed reauthentication.
   mock_reauthentication_module.shouldSucceed = NO;
@@ -412,14 +398,12 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE);
   // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
-  // Wait until the fade-out animation completes.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];
@@ -446,14 +430,12 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE);
   // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
-  // Wait until the fade-out animation completes.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];
@@ -480,14 +462,12 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   NSString* snackbarLabel =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE);
   // The tap checks the existence of the snackbar and also closes it.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
-  // Wait until the fade-out animation completes.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
   [self tapBackArrow];
@@ -516,7 +496,6 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Tap the alert's Delete... button to confirm.
   [[EarlGrey
@@ -527,7 +506,6 @@ id<GREYMatcher> DeleteButton() {
                                    grey_interactable(),
                                    grey_sufficientlyVisible(), nullptr)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
@@ -538,7 +516,6 @@ id<GREYMatcher> DeleteButton() {
                             nullptr)] assertWithMatcher:grey_notNil()];
 
   // Also verify that the removed password is no longer in the list.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
@@ -567,7 +544,6 @@ id<GREYMatcher> DeleteButton() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Tap the alert's Cancel button to cancel.
   [[EarlGrey
@@ -578,7 +554,6 @@ id<GREYMatcher> DeleteButton() {
                                    grey_interactable(),
                                    grey_sufficientlyVisible(), nullptr)]
       performAction:grey_tap()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the current view is still the detail view, by locating the Copy
   // button.
