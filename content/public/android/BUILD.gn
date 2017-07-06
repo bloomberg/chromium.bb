@@ -36,7 +36,6 @@ android_library("content_java") {
     "//base:base_java",
     "//device/bluetooth:java",
     "//device/gamepad:java",
-    "//device/generic_sensor:java",
     "//device/power_save_blocker:java",
     "//device/sensors:java",
     "//device/usb:java",

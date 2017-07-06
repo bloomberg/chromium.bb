@@ -1766,7 +1766,6 @@ if (is_android) {
     if (is_android && is_component_build) {
       deps += [
         "//device/gamepad",
-        "//device/generic_sensor",
         "//device/sensors",
       ]
     }

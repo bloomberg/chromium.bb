@@ -6,10 +6,10 @@
 #define SensorProviderProxy_h
 
 #include "core/frame/LocalFrame.h"
-#include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
-#include "device/generic_sensor/public/interfaces/sensor_provider.mojom-blink.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "services/device/public/interfaces/sensor.mojom-blink.h"
+#include "services/device/public/interfaces/sensor_provider.mojom-blink.h"
 
 namespace blink {
 
