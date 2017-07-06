@@ -234,6 +234,7 @@ modules_idl_files =
                     "sensor/Accelerometer.idl",
                     "sensor/AmbientLightSensor.idl",
                     "sensor/Gyroscope.idl",
+                    "sensor/LinearAccelerationSensor.idl",
                     "sensor/Magnetometer.idl",
                     "sensor/OrientationSensor.idl",
                     "sensor/RelativeOrientationSensor.idl",

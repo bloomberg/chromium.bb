@@ -34,6 +34,12 @@ function verify_sensor_reading(sensor, should_be_null) {
          sensor.timestamp != null;
 }
 
-runGenericSensorTests(Accelerometer, update_sensor_reading, verify_sensor_reading);
+runGenericSensorTests(Accelerometer,
+                      update_sensor_reading,
+                      verify_sensor_reading);
+
+runGenericSensorTests(LinearAccelerationSensor,
+                      update_sensor_reading,
+                      verify_sensor_reading);
 
 </script>
