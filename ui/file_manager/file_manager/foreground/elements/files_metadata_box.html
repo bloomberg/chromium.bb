@@ -7,39 +7,39 @@
 <link rel="import" href="files_metadata_entry.html">
 
 <dom-module id="files-metadata-box">
-  <style>
-    div {
-      margin: 0;
-      padding: 0;
-    }
-
-    div[hidden] {
-      display: none;
-    }
-
-    #box {
-      display: block;
-      margin: 0;
-      overflow: auto;
-      padding: 0;
-      width: 320px;
-    }
-
-    .category {
-      color: #E6E6E6;
-      font-size: 108%;
-      font-weight: 500;
-      margin: 12px 32px;
-      vertical-align: bottom;
-    }
-
-    hr {
-      border-color: white;
-      margin-top: 31px;
-      opacity: 0.24;
-    }
-  </style>
   <template>
+    <style>
+      div {
+        margin: 0;
+        padding: 0;
+      }
+
+      div[hidden] {
+        display: none;
+      }
+
+      #box {
+        display: block;
+        margin: 0;
+        overflow: auto;
+        padding: 0;
+        width: 320px;
+      }
+
+      .category {
+        color: #E6E6E6;
+        font-size: 108%;
+        font-weight: 500;
+        margin: 12px 32px;
+        vertical-align: bottom;
+      }
+
+      hr {
+        border-color: white;
+        margin-top: 31px;
+        opacity: 0.24;
+      }
+    </style>
     <div id="box">
       <div class="category" i18n-content="METADATA_BOX_GENERAL_INFO"></div>
       <files-metadata-entry i18n-values="key:METADATA_BOX_FILE_SIZE" value="[[size]]" loading="[[isSizeLoading]]"></files-metadata-entry>

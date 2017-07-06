@@ -8,16 +8,16 @@
 <link rel="import" href="cr_policy_vars_css.html">
 
 <dom-module id="cr-policy-network-indicator">
-  <style include="cr-hidden-style">
-    :host {
-      @apply(--cr-policy-indicator);
-    }
-
-    paper-tooltip {
-      --paper-tooltip: var(--cr-policy-tooltip);
-    }
-  </style>
   <template>
+    <style include="cr-hidden-style">
+      :host {
+        @apply(--cr-policy-indicator);
+      }
+
+      paper-tooltip {
+        --paper-tooltip: var(--cr-policy-tooltip);
+      }
+    </style>
     <iron-icon id="indicator" tabindex="0" aria-describedby="tooltip"
         hidden$="[[!indicatorVisible]]" icon="[[indicatorIcon]]">
     </iron-icon>

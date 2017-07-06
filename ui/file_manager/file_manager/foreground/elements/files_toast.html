@@ -6,41 +6,41 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <dom-module id="files-toast">
-  <style>
-    .container {
-      background: rgb(50, 50, 50);
-      bottom: 16px;
-      display: flex;
-      min-width: 360px;
-      padding: 20px 24px;
-      position: absolute;
-    }
-
-    .container[hidden] {
-      display: none;
-    }
-
-    :host-context(html[dir='ltr']) .container {
-      right: 16px;
-    }
-
-    :host-context(html[dir='rtl']) .container {
-      left: 16px;
-    }
-
-    .text {
-      color: white;
-      flex-grow: 1;
-    }
-
-    .action {
-      -webkit-margin-start: 8px;
-      color: rgb(97, 203, 255);
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
   <template>
+    <style>
+      .container {
+        background: rgb(50, 50, 50);
+        bottom: 16px;
+        display: flex;
+        min-width: 360px;
+        padding: 20px 24px;
+        position: absolute;
+      }
+
+      .container[hidden] {
+        display: none;
+      }
+
+      :host-context(html[dir='ltr']) .container {
+        right: 16px;
+      }
+
+      :host-context(html[dir='rtl']) .container {
+        left: 16px;
+      }
+
+      .text {
+        color: white;
+        flex-grow: 1;
+      }
+
+      .action {
+        -webkit-margin-start: 8px;
+        color: rgb(97, 203, 255);
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
     <div class="container" id="container" hidden>
       <div class="text" id="text"></div>
       <div class="action" id="action" on-tap="onActionTapped_"></div>

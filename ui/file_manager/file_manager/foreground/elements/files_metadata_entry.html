@@ -6,69 +6,69 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <dom-module id="files-metadata-entry">
-  <style>
-    div {
-      margin: 0;
-    }
-
-    #box {
-      display: flex;
-      margin: 12px 0;
-      min-height: 14px;
-      width: 320px;
-    }
-
-    #box[hidden] {
-      display: none;
-    }
-
-    #padding {
-      width: 32px;
-    }
-
-    #key {
-      -webkit-margin-end: 32px;
-      color: white;
-      font-weight: 500;
-      overflow-wrap: break-word;
-      vertical-align: bottom;
-      width: 96px;
-    }
-
-    #value {
-      color: white;
-      opacity: 0.8;
-      overflow-wrap: break-word;
-      vertical-align: bottom;
-      width: 128px;
-    }
-
-    #value[loading] {
-      font-size: 30px;
-    }
-
-    #value[loading]:after {
-      animation: ellipsis steps(4,end) 900ms infinite;
-      content: "\2026"; /* ascii code for the ellipsis character */
-      display: inline-block;
-      overflow: hidden;
-      vertical-align: bottom;
-      width: 0px;
-    }
-
-    @keyframes ellipsis {
-      to {
-        width: 1.25em;
-      }
-    }
-
-    @keyframes ellipsis {
-      to {
-        width: 1.25em;
-      }
-    }
-  </style>
   <template>
+    <style>
+      div {
+        margin: 0;
+      }
+
+      #box {
+        display: flex;
+        margin: 12px 0;
+        min-height: 14px;
+        width: 320px;
+      }
+
+      #box[hidden] {
+        display: none;
+      }
+
+      #padding {
+        width: 32px;
+      }
+
+      #key {
+        -webkit-margin-end: 32px;
+        color: white;
+        font-weight: 500;
+        overflow-wrap: break-word;
+        vertical-align: bottom;
+        width: 96px;
+      }
+
+      #value {
+        color: white;
+        opacity: 0.8;
+        overflow-wrap: break-word;
+        vertical-align: bottom;
+        width: 128px;
+      }
+
+      #value[loading] {
+        font-size: 30px;
+      }
+
+      #value[loading]:after {
+        animation: ellipsis steps(4,end) 900ms infinite;
+        content: "\2026"; /* ascii code for the ellipsis character */
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+        width: 0px;
+      }
+
+      @keyframes ellipsis {
+        to {
+          width: 1.25em;
+        }
+      }
+
+      @keyframes ellipsis {
+        to {
+          width: 1.25em;
+        }
+      }
+    </style>
     <div id="box" hidden="[[!value]]">
       <div id="padding"></div>
       <div id="key">[[key]]</div>
