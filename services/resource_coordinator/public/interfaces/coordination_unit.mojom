@@ -40,7 +40,7 @@ enum PropertyType {
 // Key-value pair that corresponds to an entry in the CoordinationUnitImpl's
 // internal key-value store
 struct Property {
-  PropertyType property;
+  PropertyType property_type;
   mojo.common.mojom.Value value;
 };
 

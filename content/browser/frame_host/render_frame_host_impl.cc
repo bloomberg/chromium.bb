@@ -3460,6 +3460,10 @@ RenderFrameHostImpl::GetFrameResourceCoordinator() {
         base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
             ServiceManagerConnection::GetForProcess()->GetConnector(),
             resource_coordinator::CoordinationUnitType::kFrame);
+    if (parent_) {
+      parent_->GetFrameResourceCoordinator()->AddChild(
+          *frame_resource_coordinator_);
+    }
   }
   return frame_resource_coordinator_.get();
 }
