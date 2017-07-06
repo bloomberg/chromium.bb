@@ -45,7 +45,6 @@ const char kObsoleteMouseLockExceptionsPref[] =
     "profile.content_settings.exceptions.mouselock";
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
-const char kObsoleteLastUsed[] = "last_used";
 
 }  // namespace
 
@@ -253,34 +252,6 @@ void PrefProvider::DiscardObsoletePreferences() {
     prefs_->Set(permission_autoblocker_data_pref, *old_dict);
   prefs_->ClearPref(prompt_no_decision_count_pref);
 #endif  // !defined(OS_IOS)
-
-  // TODO(timloh): See crbug.com/691893. This removal code was added in M58,
-  // so is probably fine to remove in M60 or later.
-  for (const WebsiteSettingsInfo* info :
-       *WebsiteSettingsRegistry::GetInstance()) {
-    if (!prefs_->GetDictionary(info->pref_name()))
-      continue;
-
-    prefs::ScopedDictionaryPrefUpdate update(prefs_, info->pref_name());
-    auto all_settings = update.Get();
-    std::vector<std::string> values_to_clean;
-    for (base::DictionaryValue::Iterator i(*all_settings->AsConstDictionary());
-         !i.IsAtEnd(); i.Advance()) {
-      const base::DictionaryValue* pattern_settings = nullptr;
-      bool is_dictionary = i.value().GetAsDictionary(&pattern_settings);
-      DCHECK(is_dictionary);
-      if (pattern_settings->GetWithoutPathExpansion(kObsoleteLastUsed, nullptr))
-        values_to_clean.push_back(i.key());
-    }
-
-    for (const std::string& key : values_to_clean) {
-      std::unique_ptr<prefs::DictionaryValueUpdate> pattern_settings;
-      all_settings->GetDictionaryWithoutPathExpansion(key, &pattern_settings);
-      pattern_settings->RemoveWithoutPathExpansion(kObsoleteLastUsed, nullptr);
-      if (pattern_settings->empty())
-        all_settings->RemoveWithoutPathExpansion(key, nullptr);
-    }
-  }
 }
 
 void PrefProvider::SetClockForTesting(std::unique_ptr<base::Clock> clock) {

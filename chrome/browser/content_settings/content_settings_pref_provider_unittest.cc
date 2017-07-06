@@ -181,69 +181,6 @@ TEST_F(PrefProviderTest, DiscardObsoleteFullscreenAndMouselockPreferences) {
                                          std::string(), false));
 }
 
-// Tests that last usage content settings are cleared.
-TEST_F(PrefProviderTest, DiscardObsoleteLastUsagePreferences) {
-  std::string kGeolocationPrefPath =
-      ContentSettingsRegistry::GetInstance()
-          ->Get(CONTENT_SETTINGS_TYPE_GEOLOCATION)
-          ->website_settings_info()
-          ->pref_name();
-  std::string kMicPrefPath = ContentSettingsRegistry::GetInstance()
-                                 ->Get(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-                                 ->website_settings_info()
-                                 ->pref_name();
-  const char kObsoleteLastUsed[] = "last_used";
-
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-
-  // Content settings prefs are structured as follows:
-  // "media_stream_mic": {
-  //   "https://example.com:443,*": {
-  //     "last_used": 1486968992.758971,
-  //     "setting": 1
-  //   }
-  // }
-  const char kPattern[] = "https://example.com:443,*";
-  GURL host("https://example.com/");
-
-  auto geolocation_pattern_data = base::MakeUnique<base::DictionaryValue>();
-  geolocation_pattern_data->SetDouble(kObsoleteLastUsed, 1485000000.0);
-  base::DictionaryValue geolocation_pref_data;
-  geolocation_pref_data.SetWithoutPathExpansion(
-      kPattern, std::move(geolocation_pattern_data));
-  prefs->Set(kGeolocationPrefPath, geolocation_pref_data);
-
-  auto mic_pattern_data = base::MakeUnique<base::DictionaryValue>();
-  mic_pattern_data->SetInteger("setting", CONTENT_SETTING_ALLOW);
-  mic_pattern_data->SetDouble(kObsoleteLastUsed, 1480000000.0);
-  base::DictionaryValue mic_pref_data;
-  mic_pref_data.SetWithoutPathExpansion(kPattern, std::move(mic_pattern_data));
-  prefs->Set(kMicPrefPath, mic_pref_data);
-
-  // Instantiate a new PrefProvider here, because we want to test the
-  // constructor's behavior after setting the above.
-  PrefProvider provider(prefs, false /* incognito */,
-                        true /* store_last_modified */);
-
-  // Check that last_used data has been deleted.
-  EXPECT_TRUE(prefs->GetDictionary(kGeolocationPrefPath)->empty());
-  auto* mic_prefs = prefs->GetDictionary(kMicPrefPath);
-  const base::DictionaryValue* mic_result_pattern_data;
-  ASSERT_TRUE(mic_prefs->GetDictionaryWithoutPathExpansion(
-      kPattern, &mic_result_pattern_data));
-  EXPECT_EQ(static_cast<size_t>(1), mic_result_pattern_data->size());
-  int mic_result_setting;
-  EXPECT_TRUE(
-      mic_result_pattern_data->GetInteger("setting", &mic_result_setting));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, mic_result_setting);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            TestUtils::GetContentSetting(&provider, host, host,
-                                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                         std::string(), false));
-  provider.ShutdownOnUIThread();
-}
-
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
 TEST_F(PrefProviderTest, Incognito) {
