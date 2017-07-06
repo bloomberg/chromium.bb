@@ -397,7 +397,10 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       error_console_->IsReportingEnabledForExtension(extension.id());
 
   // File access.
-  info->file_access.is_enabled = extension.wants_file_access();
+  ManagementPolicy* management_policy = extension_system_->management_policy();
+  info->file_access.is_enabled =
+      extension.wants_file_access() &&
+      management_policy->UserMayModifySettings(&extension, nullptr);
   info->file_access.is_active =
       util::AllowFileAccess(extension.id(), browser_context_);
 
@@ -481,7 +484,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
     }
   }
 
-  ManagementPolicy* management_policy = extension_system_->management_policy();
   info->must_remain_installed =
       management_policy->MustRemainInstalled(&extension, nullptr);
 
