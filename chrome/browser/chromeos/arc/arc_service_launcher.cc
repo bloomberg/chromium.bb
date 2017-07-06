@@ -80,7 +80,6 @@ ArcServiceLauncher::~ArcServiceLauncher() {
 
 // static
 ArcServiceLauncher* ArcServiceLauncher::Get() {
-  DCHECK(g_arc_service_launcher);
   return g_arc_service_launcher;
 }
 
@@ -165,16 +164,9 @@ void ArcServiceLauncher::Initialize() {
       base::MakeUnique<GpuArcVideoServiceHost>(arc_bridge_service));
 }
 
-void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
+void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
   DCHECK(arc_service_manager_);
   DCHECK(arc_session_manager_);
-  // TODO(hidehiko): DCHECK(!arc_session_manager_->IsAllowed()) here.
-  // Do not expect it in real use case, but it is used for testing.
-  // Because the ArcService instances tied to the old profile is kept,
-  // and ones tied to the new profile are added, which is unexpected situation.
-  // For compatibility, call Shutdown() here in case |profile| is not
-  // allowed for ARC.
-  arc_session_manager_->Shutdown();
 
   if (!IsArcAllowedForProfile(profile))
     return;
@@ -183,6 +175,29 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   if (policy_util::IsArcDisabledForEnterprise() &&
       policy_util::IsAccountManaged(profile)) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
+    return;
+  }
+
+  // Do not expect it in real use case, but it is used for testing.
+  // Because the ArcService instances tied to the old profile is kept,
+  // and ones tied to the new profile are added, which is unexpected situation.
+  // For compatibility, call Shutdown() here in case |profile| is not
+  // allowed for ARC.
+  // TODO(hidehiko): DCHECK(!arc_session_manager_->IsAllowed()) here, and
+  // get rid of Shutdown().
+  if (arc_session_manager_->profile())
+    arc_session_manager_->Shutdown();
+
+  arc_session_manager_->SetProfile(profile);
+}
+
+void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
+  DCHECK(arc_service_manager_);
+  DCHECK(arc_session_manager_);
+
+  if (arc_session_manager_->profile() != profile) {
+    // Profile is not matched, so the given |profile| is not allowed to use
+    // ARC.
     return;
   }
 
@@ -206,7 +221,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
         chromeos::ArcKioskAppService::Get(profile)));
   }
 
-  arc_session_manager_->SetProfile(profile);
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =
       base::MakeUnique<ArcPlayStoreEnabledPreferenceHandler>(

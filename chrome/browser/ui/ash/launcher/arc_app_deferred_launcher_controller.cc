@@ -191,10 +191,10 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   const arc::ArcSessionManager* arc_session_manager =
       arc::ArcSessionManager::Get();
   DCHECK(arc_session_manager);
-  DCHECK(arc_session_manager->state() !=
-         arc::ArcSessionManager::State::STOPPED);
-  DCHECK(arc_session_manager->state() !=
-         arc::ArcSessionManager::State::NOT_INITIALIZED);
+  DCHECK_NE(arc_session_manager->state(),
+            arc::ArcSessionManager::State::STOPPED);
+  DCHECK_NE(arc_session_manager->state(),
+            arc::ArcSessionManager::State::NOT_INITIALIZED);
 
   const ash::ShelfID shelf_id(app_id);
 
