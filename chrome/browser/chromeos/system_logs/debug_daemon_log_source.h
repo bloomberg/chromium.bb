@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/system_logs_source.h"
 
 namespace system_logs {
 
