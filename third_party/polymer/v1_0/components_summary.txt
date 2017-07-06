@@ -202,18 +202,6 @@ Tree: v1.4.0
 Revision: 1d1c9439fe3a056356233e04171fd9c62f0857fb
 Tree link: https://github.com/PolymerElements/paper-checkbox/tree/v1.4.0
 
-Name: paper-dialog
-Repository: https://github.com/PolymerElements/paper-dialog.git
-Tree: v1.1.0
-Revision: 7f31fa918fbd562b516eb262f1ed527dcaf7b7c0
-Tree link: https://github.com/PolymerElements/paper-dialog/tree/v1.1.0
-
-Name: paper-dialog-behavior
-Repository: https://github.com/PolymerElements/paper-dialog-behavior.git
-Tree: v1.2.7
-Revision: decc77ca55c0381cf01d7409ddf1eb966543e84e
-Tree link: https://github.com/PolymerElements/paper-dialog-behavior/tree/v1.2.7
-
 Name: paper-drawer-panel
 Repository: https://github.com/PolymerElements/paper-drawer-panel.git
 Tree: v1.0.10
