@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -34,6 +35,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final long mRegistrationId;
     private final Drawable mIcon;
     private final Set<String> mMethodNames;
+    private final boolean mCanPreselect;
 
     /**
      * Build a service worker payment app instance per origin.
@@ -53,6 +55,10 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mWebContents = webContents;
         mRegistrationId = registrationId;
         mIcon = icon;
+
+        // Sublabel and/or icon are set to null if fetching or processing the corresponding web app
+        // manifest failed. Then do not preselect this payment app.
+        mCanPreselect = !TextUtils.isEmpty(sublabel) && icon != null;
 
         mMethodNames = new HashSet<>();
         for (int i = 0; i < methodNames.length; i++) {
@@ -113,4 +119,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
     @Override
     public void dismissInstrument() {}
+
+    @Override
+    public boolean canPreselect() {
+        return mCanPreselect;
+    }
 }
