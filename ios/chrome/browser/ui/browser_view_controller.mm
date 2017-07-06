@@ -16,6 +16,7 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
@@ -37,6 +38,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/payments/core/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engines_pref_names.h"
@@ -1842,7 +1844,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [_contextualSearchController setTab:[_model currentTab]];
   }
 
-  if (experimental_flags::IsPaymentRequestEnabled()) {
+  if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]
         initWithBaseViewController:self
                       browserState:_browserState];

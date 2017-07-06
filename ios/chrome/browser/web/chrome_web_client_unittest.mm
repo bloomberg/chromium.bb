@@ -12,8 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/payments/core/features.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -101,8 +101,8 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof window.PaymentRequest"));
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnablePaymentRequest, std::string());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(payments::features::kWebPayments);
   script = web_client.Get()->GetEarlyPageScript(&browser_state);
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"function", web::ExecuteJavaScript(

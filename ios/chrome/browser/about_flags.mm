@@ -26,6 +26,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/payments/core/features.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -89,6 +90,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"mark-non-secure-as", flag_descriptions::kMarkHttpAsName,
      flag_descriptions::kMarkHttpAsDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kMarkHttpAsChoices)},
+    {"web-payments", flag_descriptions::kWebPaymentsName,
+     flag_descriptions::kWebPaymentsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(payments::features::kWebPayments)},
 };
 
 // Add all switches from experimental flags to |command_line|.
@@ -193,15 +197,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
     command_line->AppendSwitchASCII(switches::kUserAgent,
                                     web::BuildUserAgentFromProduct(product));
-  }
-
-  // Populate command line flag for the Payment Request API.
-  NSString* enable_payment_request =
-      [defaults stringForKey:@"EnablePaymentRequest"];
-  if ([enable_payment_request isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnablePaymentRequest);
-  } else if ([enable_payment_request isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisablePaymentRequest);
   }
 
   // Populate command line flag for Suggestions UI display.
