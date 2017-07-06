@@ -2669,6 +2669,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
       "    overflow: hidden;"
       "    width: 5px;"
       "    height: 3px;"
+      "    border: 1px solid black;"
       "  }"
       "  .forceScroll {"
       "    height: 79px;"
@@ -2693,7 +2694,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
   EXPECT_TRUE(overflow_hidden_scroll_node->Parent()->IsRoot());
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_translation->Matrix());
-  // This should match the overflow's dimensions.
+  // This should match the overflow's dimensions and should not include the
+  // box's border.
   EXPECT_EQ(IntSize(5, 3), overflow_hidden_scroll_node->ContainerBounds());
   // The scrolling content's bounds should include both the overflow's
   // dimensions (5x3) and the 0x79 "forceScroll" object.
