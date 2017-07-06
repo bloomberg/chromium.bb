@@ -50,13 +50,15 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 @end
 
+namespace payments {
+
 // Has a copy of web::PaymentRequest as provided by the page invoking the
 // PaymentRequest API. Also caches credit cards and addresses provided by the
 // |personal_data_manager| and manages shared resources and user selections for
 // the current PaymentRequest flow. It must be initialized with a non-null
 // instance of |personal_data_manager| that outlives this class.
-class PaymentRequest : public payments::PaymentOptionsProvider,
-                       public payments::PaymentRequestBaseDelegate {
+class PaymentRequest : public PaymentOptionsProvider,
+                       public PaymentRequestBaseDelegate {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
@@ -75,7 +77,7 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
-  payments::AddressNormalizer* GetAddressNormalizer() override;
+  AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
@@ -101,12 +103,12 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   bool request_payer_name() const override;
   bool request_payer_phone() const override;
   bool request_payer_email() const override;
-  payments::PaymentShippingType shipping_type() const override;
+  PaymentShippingType shipping_type() const override;
 
   // Returns the payments::CurrencyFormatter instance for this PaymentRequest.
   // Note: Having multiple currencies per PaymentRequest flow is not supported;
   // hence the CurrencyFormatter is cached here.
-  payments::CurrencyFormatter* GetOrCreateCurrencyFormatter();
+  CurrencyFormatter* GetOrCreateCurrencyFormatter();
 
   // Adds |profile| to the list of cached profiles, updates the list of
   // available shipping and contact profiles, and returns a reference to the
@@ -170,24 +172,23 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
 
   // Creates and adds an AutofillPaymentInstrument, which makes a copy of
   // |credit_card|.
-  virtual payments::AutofillPaymentInstrument* AddAutofillPaymentInstrument(
+  virtual AutofillPaymentInstrument* AddAutofillPaymentInstrument(
       const autofill::CreditCard& credit_card);
 
   // Returns the available payment methods for this user that match a supported
   // type specified in |web_payment_request_|.
-  const std::vector<payments::PaymentInstrument*>& payment_methods() const {
+  const std::vector<PaymentInstrument*>& payment_methods() const {
     return payment_methods_;
   }
 
   // Returns the currently selected payment method for this PaymentRequest flow
   // if there is one. Returns nullptr if there is no selected payment method.
-  payments::PaymentInstrument* selected_payment_method() const {
+  PaymentInstrument* selected_payment_method() const {
     return selected_payment_method_;
   }
 
   // Sets the currently selected payment method for this PaymentRequest flow.
-  void set_selected_payment_method(
-      payments::PaymentInstrument* payment_method) {
+  void set_selected_payment_method(PaymentInstrument* payment_method) {
     selected_payment_method_ = payment_method;
   }
 
@@ -202,7 +203,7 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
     return selected_shipping_option_;
   }
 
-  virtual payments::PaymentsProfileComparator* profile_comparator();
+  virtual PaymentsProfileComparator* profile_comparator();
 
   // Returns whether the current PaymentRequest can be used to make a payment.
   bool CanMakePayment() const;
@@ -250,10 +251,10 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   __weak id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 
   // The address normalizer to use for the duration of the Payment Request.
-  payments::AddressNormalizerImpl* address_normalizer_;
+  AddressNormalizerImpl* address_normalizer_;
 
   // The currency formatter instance for this PaymentRequest flow.
-  std::unique_ptr<payments::CurrencyFormatter> currency_formatter_;
+  std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
   // Profiles returned by the Data Manager may change due to (e.g.) sync events,
   // meaning PaymentRequest may outlive them. Therefore, profiles are fetched
@@ -272,11 +273,10 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   // them. Therefore, payment methods are fetched once and their copies are
   // cached here. Whenever payment methods are requested a vector of pointers to
   // these copies are returned.
-  std::vector<std::unique_ptr<payments::PaymentInstrument>>
-      payment_method_cache_;
+  std::vector<std::unique_ptr<PaymentInstrument>> payment_method_cache_;
 
-  std::vector<payments::PaymentInstrument*> payment_methods_;
-  payments::PaymentInstrument* selected_payment_method_;
+  std::vector<PaymentInstrument*> payment_methods_;
+  PaymentInstrument* selected_payment_method_;
 
   // A vector of supported basic card networks. This encompasses everything that
   // the merchant supports and should be used for support checks.
@@ -297,9 +297,11 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   std::vector<web::PaymentShippingOption*> shipping_options_;
   web::PaymentShippingOption* selected_shipping_option_;
 
-  payments::PaymentsProfileComparator profile_comparator_;
+  PaymentsProfileComparator profile_comparator_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
+
+}  // namespace payments
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_

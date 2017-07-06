@@ -7,11 +7,13 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller_data_source.h"
 
-class PaymentRequest;
-
 namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
+
+namespace payments {
+class PaymentRequest;
+}  // namespace payments
 
 // Serves as data source for PaymentRequestSelectorViewController.
 @interface BillingAddressSelectionMediator
@@ -30,7 +32,7 @@ class AutofillProfile;
 // of web::PaymentRequest as provided by the page invoking the Payment Request
 // API as well as the selected billing profile. This object will not take
 // ownership of |paymentRequest| or |selectedBillingProfile|.
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                 selectedBillingProfile:
                     (autofill::AutofillProfile*)selectedBillingProfile
     NS_DESIGNATED_INITIALIZER;

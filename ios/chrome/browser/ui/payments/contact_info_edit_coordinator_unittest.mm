@@ -49,11 +49,12 @@ class MockPaymentsProfileComparator
   MOCK_METHOD1(Invalidate, void(const autofill::AutofillProfile&));
 };
 
-class MockTestPaymentRequest : public TestPaymentRequest {
+class MockTestPaymentRequest : public payments::TestPaymentRequest {
  public:
   MockTestPaymentRequest(web::PaymentRequest web_payment_request,
                          autofill::PersonalDataManager* personal_data_manager)
-      : TestPaymentRequest(web_payment_request, personal_data_manager) {}
+      : payments::TestPaymentRequest(web_payment_request,
+                                     personal_data_manager) {}
   MOCK_METHOD1(AddAutofillProfile,
                autofill::AutofillProfile*(const autofill::AutofillProfile&));
 };

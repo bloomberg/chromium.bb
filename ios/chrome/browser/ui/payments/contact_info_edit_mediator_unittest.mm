@@ -29,14 +29,14 @@
 class PaymentRequestContactInfoEditMediatorTest : public PlatformTest {
  protected:
   PaymentRequestContactInfoEditMediatorTest()
-      : payment_request_(base::MakeUnique<TestPaymentRequest>(
+      : payment_request_(base::MakeUnique<payments::TestPaymentRequest>(
             payment_request_test_util::CreateTestWebPaymentRequest(),
             &personal_data_manager_)) {}
 
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that the expected editor fields are created when creating a profile.

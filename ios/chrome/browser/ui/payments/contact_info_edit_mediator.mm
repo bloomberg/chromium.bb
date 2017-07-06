@@ -28,7 +28,7 @@
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This is a weak
 // pointer and should outlive this class.
-@property(nonatomic, assign) PaymentRequest* paymentRequest;
+@property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 
 // The profile to be edited, if any. This pointer is not owned by this class and
 // should outlive it.
@@ -47,7 +47,7 @@
 @synthesize profile = _profile;
 @synthesize fields = _fields;
 
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                                profile:(autofill::AutofillProfile*)profile {
   self = [super init];
   if (self) {

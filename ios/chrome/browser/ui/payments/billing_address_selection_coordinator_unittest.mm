@@ -44,7 +44,7 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
         autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
         base::string16(), "en-US");
     personal_data_manager_.AddTestingProfile(&autofill_profile2_);
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
 
@@ -82,7 +82,7 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
   autofill::TestRegionDataLoader test_region_data_loader_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses

@@ -14,6 +14,8 @@
 #error "This file requires ARC support."
 #endif
 
+namespace payments {
+
 void TestPaymentRequest::ClearShippingProfiles() {
   shipping_profiles_.clear();
 }
@@ -38,8 +40,10 @@ PrefService* TestPaymentRequest::GetPrefService() {
   return PaymentRequest::GetPrefService();
 }
 
-payments::PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
+PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
   if (profile_comparator_)
     return profile_comparator_;
   return PaymentRequest::profile_comparator();
 }
+
+}  // namespace payments

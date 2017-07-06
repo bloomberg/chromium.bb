@@ -99,7 +99,7 @@ struct PendingPaymentResponse {
   // invoking the PaymentRequest API. Also caches credit cards and addresses
   // provided by the _personalDataManager and manages selected ones for the
   // current PaymentRequest flow.
-  std::unique_ptr<PaymentRequest> _paymentRequest;
+  std::unique_ptr<payments::PaymentRequest> _paymentRequest;
 
   // WebState for the tab this object is attached to.
   web::WebState* _webState;
@@ -409,7 +409,7 @@ struct PendingPaymentResponse {
     return YES;
   }
 
-  _paymentRequest = base::MakeUnique<PaymentRequest>(
+  _paymentRequest = base::MakeUnique<payments::PaymentRequest>(
       webPaymentRequest, _browserState, _personalDataManager, self);
 
   return YES;

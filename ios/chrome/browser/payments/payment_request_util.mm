@@ -66,7 +66,7 @@ NSString* GetEmailLabelFromAutofillProfile(
 }
 
 NSString* GetAddressNotificationLabelFromAutofillProfile(
-    PaymentRequest& payment_request,
+    payments::PaymentRequest& payment_request,
     const autofill::AutofillProfile& profile) {
   base::string16 label =
       payment_request.profile_comparator()->GetStringForMissingShippingFields(
@@ -96,7 +96,7 @@ NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type) {
 }
 
 NSString* GetShippingAddressSelectorErrorMessage(
-    const PaymentRequest& payment_request) {
+    const payments::PaymentRequest& payment_request) {
   if (!payment_request.payment_details().error.empty())
     return base::SysUTF16ToNSString(payment_request.payment_details().error);
 
@@ -114,7 +114,7 @@ NSString* GetShippingAddressSelectorErrorMessage(
 }
 
 NSString* GetShippingOptionSelectorErrorMessage(
-    const PaymentRequest& payment_request) {
+    const payments::PaymentRequest& payment_request) {
   if (!payment_request.payment_details().error.empty())
     return base::SysUTF16ToNSString(payment_request.payment_details().error);
 

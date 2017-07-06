@@ -42,7 +42,7 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
     personal_data_manager_.AddTestingCreditCard(&credit_card1_);
     credit_card2_.set_use_count(5U);
     personal_data_manager_.AddTestingCreditCard(&credit_card2_);
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
   }
@@ -53,7 +53,7 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
   autofill::CreditCard credit_card1_;
   autofill::CreditCard credit_card2_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses

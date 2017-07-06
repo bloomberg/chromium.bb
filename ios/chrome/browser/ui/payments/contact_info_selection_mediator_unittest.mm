@@ -36,7 +36,7 @@ class PaymentRequestContactInfoSelectionMediatorTest : public PlatformTest {
     // Add testing profiles to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_1_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_2_);
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
     // Override the selected contact profile.
@@ -58,7 +58,7 @@ class PaymentRequestContactInfoSelectionMediatorTest : public PlatformTest {
   autofill::AutofillProfile autofill_profile_1_;
   autofill::AutofillProfile autofill_profile_2_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that the expected selectable items are created and that the index of

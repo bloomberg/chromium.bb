@@ -34,7 +34,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This is a weak
 // pointer and should outlive this class.
-@property(nonatomic, assign) PaymentRequest* paymentRequest;
+@property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 
 // The selected billing address, if any.
 @property(nonatomic, assign) autofill::AutofillProfile* selectedBillingProfile;
@@ -52,7 +52,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 @synthesize selectedBillingProfile = _selectedBillingProfile;
 @synthesize items = _items;
 
-- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
+- (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                 selectedBillingProfile:
                     (autofill::AutofillProfile*)selectedBillingProfile {
   self = [super init];

@@ -28,7 +28,7 @@
 class PaymentRequestPaymentItemsDisplayCoordinatorTest : public PlatformTest {
  protected:
   PaymentRequestPaymentItemsDisplayCoordinatorTest() {
-    payment_request_ = base::MakeUnique<TestPaymentRequest>(
+    payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
   }
@@ -36,7 +36,7 @@ class PaymentRequestPaymentItemsDisplayCoordinatorTest : public PlatformTest {
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestPaymentRequest> payment_request_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
