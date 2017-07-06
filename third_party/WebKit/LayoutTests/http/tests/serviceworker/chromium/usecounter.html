@@ -318,7 +318,7 @@ promise_test(t => {
      'take over a previous counter');
 
 promise_test(t => {
-    const kFetchEventIsReload = 2032;  // from WebFeature.h
+    const kFetchEventIsReload = 2032;  // from web_feature.mojom
     const kUrl = 'resources/use-isReload-worker.js';
     const kScope = 'resources/usecounter-window.html?isReload';
     let win;
@@ -343,7 +343,7 @@ promise_test(t => {
   }, 'FetchEvent.isReload is counted');
 
 promise_test(t => {
-    const kServiceWorkerFrameType = 2033;  // from WebFeature.h
+    const kServiceWorkerFrameType = 2033;  // from web_feature.mojom
     const kUrl = 'resources/feature-worker.js';
     const kScope = 'resources/usecounter-window.html?frameType';
     let worker;
