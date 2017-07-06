@@ -100,12 +100,6 @@ void MediaStreamDevicePermissionContext::ResetPermission(
   NOTREACHED() << "ResetPermission is not implemented";
 }
 
-void MediaStreamDevicePermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id) {
-  NOTREACHED() << "CancelPermissionRequest is not implemented";
-}
-
 bool MediaStreamDevicePermissionContext::IsRestrictedToSecureOrigins() const {
   return base::FeatureList::IsEnabled(
       features::kRequireSecureOriginsForPepperMediaRequests);

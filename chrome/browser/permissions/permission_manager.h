@@ -104,10 +104,13 @@ class PermissionManager : public KeyedService,
   bool IsPermissionKillSwitchOn(ContentSettingsType);
 
  private:
+  friend class PermissionManagerTest;
   friend class GeolocationPermissionContextTests;
 
   class PendingRequest;
   using PendingRequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
+
+  class PermissionResponseCallback;
 
   struct Subscription;
   using SubscriptionsMap = IDMap<std::unique_ptr<Subscription>>;
