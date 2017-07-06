@@ -530,6 +530,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
                            ui::EF_NONE);
     [self handleKeyEvent:&charEvent];
     hasUnhandledKeyDownEvent_ = NO;
+    if (charEvent.handled())
+      return;
   }
 
   // Forward the |text| to |textInputClient_| if no menu is active.
