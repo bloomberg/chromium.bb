@@ -17,6 +17,10 @@ struct StructTraits<identity::mojom::AccountState::DataView,
     return r.has_refresh_token;
   }
 
+  static bool is_primary_account(const identity::AccountState& r) {
+    return r.is_primary_account;
+  }
+
   static bool Read(identity::mojom::AccountState::DataView data,
                    identity::AccountState* out);
 };

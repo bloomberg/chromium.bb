@@ -105,6 +105,16 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
     quit_closure.Run();
   }
 
+  void OnPrimaryAccountAvailable(base::Closure quit_closure,
+                                 AccountInfo* caller_account_info,
+                                 AccountState* caller_account_state,
+                                 const AccountInfo& account_info,
+                                 const AccountState& account_state) {
+    *caller_account_info = account_info;
+    *caller_account_state = account_state;
+    quit_closure.Run();
+  }
+
   void OnReceivedAccountInfoFromGaiaId(
       base::Closure quit_closure,
       const base::Optional<AccountInfo>& account_info,
@@ -196,6 +206,7 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_FALSE(primary_account_state_.has_refresh_token);
+  EXPECT_TRUE(primary_account_state_.is_primary_account);
 }
 
 // Check that the primary account info has expected values if signed in with a
@@ -215,6 +226,166 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInRefreshToken) {
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_TRUE(primary_account_state_.has_refresh_token);
+  EXPECT_TRUE(primary_account_state_.is_primary_account);
+}
+
+// Check that GetPrimaryAccountWhenAvailable() returns immediately in the
+// case where the primary account is available when the call is received.
+TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableSignedIn) {
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+
+  AccountInfo account_info;
+  AccountState account_state;
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info),
+      base::Unretained(&account_state)));
+  run_loop.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_TRUE(account_state.has_refresh_token);
+  EXPECT_TRUE(account_state.is_primary_account);
+}
+
+// Check that GetPrimaryAccountWhenAvailable() returns the expected account
+// info in the case where the primary account is made available *after* the
+// call is received.
+TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableSignInLater) {
+  AccountInfo account_info;
+  AccountState account_state;
+
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info),
+      base::Unretained(&account_state)));
+
+  // Verify that the primary account info is not currently available (this also
+  // serves to ensure that the preceding call has been received by the Identity
+  // Manager before proceeding).
+  base::RunLoop run_loop2;
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
+                 base::Unretained(this), run_loop2.QuitClosure()));
+  run_loop2.Run();
+  EXPECT_FALSE(primary_account_info_);
+
+  // Make the primary account available and check that the callback is invoked
+  // as expected.
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  run_loop.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_TRUE(account_state.has_refresh_token);
+  EXPECT_TRUE(account_state.is_primary_account);
+}
+
+// Check that GetPrimaryAccountWhenAvailable() returns the expected account
+// info in the case where signin is done before the call is received but the
+// refresh token is made available only *after* the call is received.
+TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableTokenAvailableLater) {
+  AccountInfo account_info;
+  AccountState account_state;
+
+  // Sign in, but don't set the refresh token yet.
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info),
+      base::Unretained(&account_state)));
+
+  // Verify that the primary account info is present, but that the primary
+  // account is not yet considered available (this also
+  // serves to ensure that the preceding call has been received by the Identity
+  // Manager before proceeding).
+  base::RunLoop run_loop2;
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
+                 base::Unretained(this), run_loop2.QuitClosure()));
+  run_loop2.Run();
+
+  EXPECT_TRUE(primary_account_info_);
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            primary_account_info_->account_id);
+  EXPECT_TRUE(account_info.account_id.empty());
+
+  // Set the refresh token and check that the callback is invoked as expected
+  // (i.e., the primary account is now considered available).
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  run_loop.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_TRUE(account_state.has_refresh_token);
+  EXPECT_TRUE(account_state.is_primary_account);
+}
+
+// Check that GetPrimaryAccountWhenAvailable() returns the expected account
+// info to all callers in the case where the primary account is made available
+// after multiple overlapping calls have been received.
+TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
+  AccountInfo account_info1;
+  AccountState account_state1;
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info1),
+      base::Unretained(&account_state1)));
+
+  AccountInfo account_info2;
+  AccountState account_state2;
+  base::RunLoop run_loop2;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop2.QuitClosure(), base::Unretained(&account_info2),
+      base::Unretained(&account_state2)));
+
+  // Verify that the primary account info is not currently available (this also
+  // serves to ensure that the preceding call has been received by the Identity
+  // Manager before proceeding).
+  base::RunLoop run_loop3;
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
+                 base::Unretained(this), run_loop3.QuitClosure()));
+  run_loop3.Run();
+  EXPECT_FALSE(primary_account_info_);
+
+  // Make the primary account available and check that the callbacks are invoked
+  // as expected.
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  run_loop.Run();
+  run_loop2.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info1.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info1.gaia);
+  EXPECT_EQ(kTestEmail, account_info1.email);
+  EXPECT_TRUE(account_state1.has_refresh_token);
+  EXPECT_TRUE(account_state1.is_primary_account);
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info2.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info2.gaia);
+  EXPECT_EQ(kTestEmail, account_info2.email);
+  EXPECT_TRUE(account_state2.has_refresh_token);
+  EXPECT_TRUE(account_state2.is_primary_account);
 }
 
 // Check that the account info for a given GAIA ID is null if that GAIA ID is
@@ -245,6 +416,7 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
   EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
   EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
   EXPECT_FALSE(account_state_from_gaia_id_.has_refresh_token);
+  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
 }
 
 // Check that the account info for a given GAIA ID has expected values if that
@@ -264,6 +436,7 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
   EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
   EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
   EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
+  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
 }
 
 // Check that the expected error is received if requesting an access token when

@@ -12,6 +12,7 @@ bool StructTraits<
     identity::AccountState>::Read(identity::mojom::AccountState::DataView data,
                                   identity::AccountState* out) {
   out->has_refresh_token = data.has_refresh_token();
+  out->is_primary_account = data.is_primary_account();
 
   return true;
 }
