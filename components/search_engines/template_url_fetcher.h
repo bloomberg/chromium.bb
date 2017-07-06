@@ -6,11 +6,11 @@
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 
