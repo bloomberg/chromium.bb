@@ -20,7 +20,7 @@ int MaxTouchPoints() {
   return Java_TouchDevice_maxTouchPoints(AttachCurrentThread());
 }
 
-std::pair<int, int> AvailablePointerAndHoverTypes() {
+std::pair<int, int> GetAvailablePointerAndHoverTypes() {
   JNIEnv* env = AttachCurrentThread();
   std::vector<int> pointer_and_hover_types;
   base::android::JavaIntArrayToIntVector(
@@ -28,14 +28,6 @@ std::pair<int, int> AvailablePointerAndHoverTypes() {
       &pointer_and_hover_types);
   DCHECK_EQ(pointer_and_hover_types.size(), 2u);
   return std::make_pair(pointer_and_hover_types[0], pointer_and_hover_types[1]);
-}
-
-int GetAvailableHoverTypes() {
-  return AvailablePointerAndHoverTypes().second;
-}
-
-int GetAvailablePointerTypes() {
-  return AvailablePointerAndHoverTypes().first;
 }
 
 PointerType GetPrimaryPointerType(int available_pointer_types) {

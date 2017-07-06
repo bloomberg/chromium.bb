@@ -1767,7 +1767,6 @@ if (is_android) {
       deps += [
         "//device/gamepad",
         "//device/sensors",
-        "//ui/events/devices",
       ]
     }
   }

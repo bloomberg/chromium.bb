@@ -367,6 +367,7 @@ component("base") {
     sources += [ "touch/touch_device_win.cc" ]
   } else if (is_android) {
     sources += [ "touch/touch_device_android.cc" ]
+    sources -= [ "touch/touch_device_util.cc" ]
   } else if (is_ios) {
     sources += [ "touch/touch_device_ios.cc" ]
   } else if (is_linux) {
