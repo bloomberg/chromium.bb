@@ -7,6 +7,10 @@ import("//third_party/flatbuffers/flatbuffer.gni")
 
 config("flatbuffers_config") {
   include_dirs = [ "src/include" ]
+
+  if (is_clang) {
+    cflags = [ "-Wno-exit-time-destructors" ]
+  }
 }
 
 # The part of FlatBuffers that Chrome is interested in.
