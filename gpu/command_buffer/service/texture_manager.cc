@@ -2883,7 +2883,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "pixel unpack buffer should not be mapped to client memory");
-      return error::kNoError;
+      return false;
     }
     base::CheckedNumeric<uint32_t> size = args.pixels_size;
     GLuint offset = ToGLuint(args.pixels);
@@ -2892,14 +2892,14 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_VALUE, function_name,
           "size + offset overflow");
-      return error::kNoError;
+      return false;
     }
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size < size.ValueOrDefault(0)) {
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "pixel unpack buffer is not large enough");
-      return error::kNoError;
+      return false;
     }
     size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
     DCHECK_LT(0u, type_size);
@@ -2907,7 +2907,15 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
       ERRORSTATE_SET_GL_ERROR(
           error_state, GL_INVALID_OPERATION, function_name,
           "offset is not evenly divisible by elements");
-      return error::kNoError;
+      return false;
+    }
+  } else {
+    if (!args.pixels && args.pixels_size) {
+      // This isn't in the spec, but the spec would define dereferencing NULL
+      // here. Fail instead.
+      ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
+                              "non-empty rect without valid data");
+      return false;
     }
   }
   *texture_ref = local_texture_ref;
