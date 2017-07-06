@@ -65,6 +65,7 @@ class AutofillProfile : public AutofillDataModel {
   bool SetInfo(const AutofillType& type,
                const base::string16& value,
                const std::string& app_locale) override;
+  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
   // How this card is stored.
   RecordType record_type() const { return record_type_; }
@@ -190,9 +191,6 @@ class AutofillProfile : public AutofillDataModel {
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
-
-  // FormGroup:
-  void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
   // Creates inferred labels for |profiles| at indices corresponding to
   // |indices|, and stores the results to the corresponding elements of

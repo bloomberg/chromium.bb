@@ -309,6 +309,14 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
   return form_group->SetInfo(type, trimmed_value, app_locale);
 }
 
+void AutofillProfile::GetSupportedTypes(
+    ServerFieldTypeSet* supported_types) const {
+  FormGroupList info = FormGroups();
+  for (const auto* form_group : info) {
+    form_group->GetSupportedTypes(supported_types);
+  }
+}
+
 bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
   ServerFieldTypeSet types;
   GetNonEmptyTypes(app_locale, &types);
@@ -707,14 +715,6 @@ void AutofillProfile::RecordAndLogUse() {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
                             (AutofillClock::Now() - use_date()).InDays());
   RecordUse();
-}
-
-void AutofillProfile::GetSupportedTypes(
-    ServerFieldTypeSet* supported_types) const {
-  FormGroupList info = FormGroups();
-  for (const auto* form_group : info) {
-    form_group->GetSupportedTypes(supported_types);
-  }
 }
 
 // static

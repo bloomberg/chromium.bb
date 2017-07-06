@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
@@ -38,7 +39,10 @@ const char kHomePhone[] = "+1 575-555-5555";  // +1 555-555-5555 is invalid :-(.
 const char kAnyState[] = "any state";
 const char kAnyStateCode[] = "AS";
 const char kCountryWithoutStates[] = "Albania";
-const char kCountryWithoutStatesPhoneNumber[] = "42223446";
+const char kCountryWithoutStatesCode[] = "AL";
+const char kCountryWithoutStatesPhoneNumber[] = "+35542223446";
+
+const base::Time kJanuary2017 = base::Time::FromDoubleT(1484505871);
 
 }  // namespace
 
@@ -164,6 +168,24 @@ class PaymentRequestShippingAddressEditorTest
         static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
 
     return country_model->countries()[selected_country_row]->country_code();
+  }
+
+  void SelectCountryInCombobox(const base::string16& country_name) {
+    ResetEventObserver(DialogEvent::EDITOR_VIEW_UPDATED);
+    views::Combobox* country_combobox = static_cast<views::Combobox*>(
+        dialog_view()->GetViewByID(EditorViewController::GetInputFieldViewId(
+            autofill::ADDRESS_HOME_COUNTRY)));
+    ASSERT_NE(nullptr, country_combobox);
+    autofill::CountryComboboxModel* country_model =
+        static_cast<autofill::CountryComboboxModel*>(country_combobox->model());
+    int i = 0;
+    for (; i < country_model->GetItemCount(); i++) {
+      if (country_model->GetItemAt(i) == country_name)
+        break;
+    }
+    country_combobox->SetSelectedRow(i);
+    country_combobox->OnBlur();
+    WaitForObservedEvent();
   }
 
   PersonalDataLoadedObserverMock personal_data_observer_;
@@ -652,6 +674,66 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
+// Tests that updating the country to one with no states clears the state value.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       UpdateToCountryWithoutState) {
+  // Create a profile in the US.
+  autofill::AutofillProfile california = autofill::test::GetFullProfile();
+  california.set_use_count(50U);
+  california.set_use_date(kJanuary2017);
+  AddAutofillProfile(california);  // California, USA.
+
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+  test_region_data_loader_.set_synchronous_callback(true);
+  std::vector<std::pair<std::string, std::string>> regions;
+  regions.push_back(std::make_pair("AK", "Alaska"));
+  regions.push_back(std::make_pair("CA", "California"));
+  test_region_data_loader_.SetRegionData(regions);
+  OpenShippingAddressSectionScreen();
+
+  // Opening the address editor by clicking the edit button.
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(1, list_view->child_count());
+  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnDialogViewAndWait(edit_button);
+
+  SelectCountryInCombobox(base::ASCIIToUTF16(kCountryWithoutStates));
+
+  // The phone number must be replaced by one that is valid for
+  // |kCountryWithoutStates|.
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kCountryWithoutStatesPhoneNumber),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+
+  ResetEventObserver(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  // Wait until the web database has been updated and the notification sent.
+  base::RunLoop data_loop;
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMessageLoop(&data_loop));
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
+  data_loop.Run();
+
+  ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
+  autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
+  DCHECK(profile);
+  EXPECT_EQ(base::ASCIIToUTF16(kCountryWithoutStatesCode),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  // State/Region is no longer set.
+  EXPECT_EQ(base::ASCIIToUTF16(""),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+  EXPECT_EQ(50U, profile->use_count());
+  EXPECT_EQ(kJanuary2017, profile->use_date());
+}
+
 // Tests that there is no error label for an international phone from another
 // country.
 IN_PROC_BROWSER_TEST_F(
@@ -754,9 +836,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
                   base::ASCIIToUTF16("INVALIDSTATE"), kLocale);
   AddAutofillProfile(profile);
-
-  LOG(ERROR) << profile.GetInfo(
-      autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY), kLocale);
 
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
