@@ -16,7 +16,6 @@ mojom("interfaces_internal") {
     "service_callbacks.mojom",
     "service_constants.mojom",
     "tracing/tracing.mojom",
-    "tracing/tracing_constants.mojom",
   ]
 
   public_deps = [
