@@ -6,10 +6,10 @@ static_library("net_log") {
   sources = [
     "chrome_net_log.cc",
     "chrome_net_log.h",
+    "net_export_file_writer.cc",
+    "net_export_file_writer.h",
     "net_export_ui_constants.cc",
     "net_export_ui_constants.h",
-    "net_log_file_writer.cc",
-    "net_log_file_writer.h",
   ]
 
   deps = [
@@ -23,7 +23,7 @@ static_library("net_log") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "net_log_file_writer_unittest.cc",
+    "net_export_file_writer_unittest.cc",
   ]
   deps = [
     ":net_log",

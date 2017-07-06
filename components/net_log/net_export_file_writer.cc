@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/net_log/net_log_file_writer.h"
+#include "components/net_log/net_export_file_writer.h"
 
 #include <set>
 #include <utility>
@@ -43,10 +43,10 @@ const base::FilePath::CharType kLogRelativePath[] =
 const base::FilePath::CharType kOldLogRelativePath[] =
     FILE_PATH_LITERAL("chrome-net-export-log.json");
 
-// Contains file-related initialization tasks for NetLogFileWriter.
-NetLogFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
-    const NetLogFileWriter::DirectoryGetter& default_log_base_dir_getter) {
-  NetLogFileWriter::DefaultLogPathResults results;
+// Contains file-related initialization tasks for NetExportFileWriter.
+NetExportFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
+    const NetExportFileWriter::DirectoryGetter& default_log_base_dir_getter) {
+  NetExportFileWriter::DefaultLogPathResults results;
   results.default_log_path_success = false;
   results.log_exists = false;
 
@@ -70,7 +70,7 @@ NetLogFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
 // Generates net log entries for ongoing events from |context_getters| and
 // adds them to |observer|.
 void CreateNetLogEntriesForActiveObjects(
-    const NetLogFileWriter::URLRequestContextGetterList& context_getters,
+    const NetExportFileWriter::URLRequestContextGetterList& context_getters,
     net::NetLog::ThreadSafeObserver* observer) {
   std::set<net::URLRequestContext*> contexts;
   for (const auto& getter : context_getters) {
@@ -109,7 +109,7 @@ base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
 
 }  // namespace
 
-NetLogFileWriter::NetLogFileWriter(ChromeNetLog* chrome_net_log)
+NetExportFileWriter::NetExportFileWriter(ChromeNetLog* chrome_net_log)
     : state_(STATE_UNINITIALIZED),
       log_exists_(false),
       log_capture_mode_known_(false),
@@ -118,22 +118,22 @@ NetLogFileWriter::NetLogFileWriter(ChromeNetLog* chrome_net_log)
       default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
       weak_ptr_factory_(this) {}
 
-NetLogFileWriter::~NetLogFileWriter() {
+NetExportFileWriter::~NetExportFileWriter() {
   if (file_net_log_observer_)
     file_net_log_observer_->StopObserving(nullptr, base::Bind([] {}));
 }
 
-void NetLogFileWriter::AddObserver(StateObserver* observer) {
+void NetExportFileWriter::AddObserver(StateObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   state_observer_list_.AddObserver(observer);
 }
 
-void NetLogFileWriter::RemoveObserver(StateObserver* observer) {
+void NetExportFileWriter::RemoveObserver(StateObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   state_observer_list_.RemoveObserver(observer);
 }
 
-void NetLogFileWriter::Initialize(
+void NetExportFileWriter::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> net_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -157,11 +157,11 @@ void NetLogFileWriter::Initialize(
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
       base::Bind(&SetUpDefaultLogPath, default_log_base_dir_getter_),
-      base::Bind(&NetLogFileWriter::SetStateAfterSetUpDefaultLogPath,
+      base::Bind(&NetExportFileWriter::SetStateAfterSetUpDefaultLogPath,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetLogFileWriter::StartNetLog(
+void NetExportFileWriter::StartNetLog(
     const base::FilePath& log_path,
     net::NetLogCaptureMode capture_mode,
     const base::CommandLine::StringType& command_line_string,
@@ -193,11 +193,11 @@ void NetLogFileWriter::StartNetLog(
       base::Bind(&CreateNetLogEntriesForActiveObjects, context_getters,
                  base::Unretained(file_net_log_observer_.get())),
       base::Bind(
-          &NetLogFileWriter::StartNetLogAfterCreateEntriesForActiveObjects,
+          &NetExportFileWriter::StartNetLogAfterCreateEntriesForActiveObjects,
           weak_ptr_factory_.GetWeakPtr(), capture_mode));
 }
 
-void NetLogFileWriter::StartNetLogAfterCreateEntriesForActiveObjects(
+void NetExportFileWriter::StartNetLogAfterCreateEntriesForActiveObjects(
     net::NetLogCaptureMode capture_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(STATE_STARTING_LOG, state_);
@@ -212,7 +212,7 @@ void NetLogFileWriter::StartNetLogAfterCreateEntriesForActiveObjects(
   file_net_log_observer_->StartObserving(chrome_net_log_, capture_mode);
 }
 
-void NetLogFileWriter::StopNetLog(
+void NetExportFileWriter::StopNetLog(
     std::unique_ptr<base::DictionaryValue> polled_data,
     scoped_refptr<net::URLRequestContextGetter> context_getter) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -229,14 +229,14 @@ void NetLogFileWriter::StopNetLog(
     base::PostTaskAndReplyWithResult(
         net_task_runner_.get(), FROM_HERE,
         base::Bind(&AddNetInfo, context_getter, base::Passed(&polled_data)),
-        base::Bind(&NetLogFileWriter::StopNetLogAfterAddNetInfo,
+        base::Bind(&NetExportFileWriter::StopNetLogAfterAddNetInfo,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
     StopNetLogAfterAddNetInfo(std::move(polled_data));
   }
 }
 
-std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
+std::unique_ptr<base::DictionaryValue> NetExportFileWriter::GetState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto dict = base::MakeUnique<base::DictionaryValue>();
@@ -273,7 +273,7 @@ std::unique_ptr<base::DictionaryValue> NetLogFileWriter::GetState() const {
   return dict;
 }
 
-void NetLogFileWriter::GetFilePathToCompletedLog(
+void NetExportFileWriter::GetFilePathToCompletedLog(
     const FilePathCallback& path_callback) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!(log_exists_ && state_ == STATE_NOT_LOGGING)) {
@@ -290,7 +290,7 @@ void NetLogFileWriter::GetFilePathToCompletedLog(
       base::Bind(&GetPathWithAllPermissions, log_path_), path_callback);
 }
 
-std::string NetLogFileWriter::CaptureModeToString(
+std::string NetExportFileWriter::CaptureModeToString(
     net::NetLogCaptureMode capture_mode) {
   if (capture_mode == net::NetLogCaptureMode::Default()) {
     return "STRIP_PRIVATE_DATA";
@@ -305,7 +305,7 @@ std::string NetLogFileWriter::CaptureModeToString(
   }
 }
 
-net::NetLogCaptureMode NetLogFileWriter::CaptureModeFromString(
+net::NetLogCaptureMode NetExportFileWriter::CaptureModeFromString(
     const std::string& capture_mode_string) {
   if (capture_mode_string == "STRIP_PRIVATE_DATA") {
     return net::NetLogCaptureMode::Default();
@@ -319,12 +319,12 @@ net::NetLogCaptureMode NetLogFileWriter::CaptureModeFromString(
   }
 }
 
-void NetLogFileWriter::SetDefaultLogBaseDirectoryGetterForTest(
+void NetExportFileWriter::SetDefaultLogBaseDirectoryGetterForTest(
     const DirectoryGetter& getter) {
   default_log_base_dir_getter_ = getter;
 }
 
-void NetLogFileWriter::NotifyStateObservers() {
+void NetExportFileWriter::NotifyStateObservers() {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<base::DictionaryValue> state = GetState();
   for (StateObserver& observer : state_observer_list_) {
@@ -332,14 +332,14 @@ void NetLogFileWriter::NotifyStateObservers() {
   }
 }
 
-void NetLogFileWriter::NotifyStateObserversAsync() {
+void NetExportFileWriter::NotifyStateObserversAsync() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&NetLogFileWriter::NotifyStateObservers,
+      FROM_HERE, base::Bind(&NetExportFileWriter::NotifyStateObservers,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
+void NetExportFileWriter::SetStateAfterSetUpDefaultLogPath(
     const DefaultLogPathResults& set_up_default_log_path_results) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(STATE_INITIALIZING, state_);
@@ -355,18 +355,18 @@ void NetLogFileWriter::SetStateAfterSetUpDefaultLogPath(
   NotifyStateObservers();
 }
 
-void NetLogFileWriter::StopNetLogAfterAddNetInfo(
+void NetExportFileWriter::StopNetLogAfterAddNetInfo(
     std::unique_ptr<base::DictionaryValue> polled_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(STATE_STOPPING_LOG, state_);
 
   file_net_log_observer_->StopObserving(
       std::move(polled_data),
-      base::Bind(&NetLogFileWriter::ResetObserverThenSetStateNotLogging,
+      base::Bind(&NetExportFileWriter::ResetObserverThenSetStateNotLogging,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetLogFileWriter::ResetObserverThenSetStateNotLogging() {
+void NetExportFileWriter::ResetObserverThenSetStateNotLogging() {
   DCHECK(thread_checker_.CalledOnValidThread());
   file_net_log_observer_.reset();
   state_ = STATE_NOT_LOGGING;

@@ -24,7 +24,7 @@ class TraceNetLogObserver;
 
 namespace net_log {
 
-class NetLogFileWriter;
+class NetExportFileWriter;
 
 // ChromeNetLog is an implementation of NetLog that manages common observers
 // (for --log-net-log, chrome://net-export/, tracing), as well as acting as the
@@ -44,9 +44,7 @@ class ChromeNetLog : public net::NetLog {
       const base::CommandLine::StringType& command_line_string,
       const std::string& channel_string);
 
-  // TODO(eroman): Rename this to something clearer. Perhaps
-  //               |net_export_file_writer()|.
-  NetLogFileWriter* net_log_file_writer();
+  NetExportFileWriter* net_export_file_writer();
 
   // Returns a Value containing constants needed to load a log file.
   // Safe to call on any thread.
@@ -56,7 +54,7 @@ class ChromeNetLog : public net::NetLog {
 
  private:
   std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  std::unique_ptr<NetLogFileWriter> net_log_file_writer_;
+  std::unique_ptr<NetExportFileWriter> net_export_file_writer_;
   std::unique_ptr<net::TraceNetLogObserver> trace_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);

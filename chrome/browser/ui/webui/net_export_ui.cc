@@ -28,8 +28,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/net_log/net_export_file_writer.h"
 #include "components/net_log/net_export_ui_constants.h"
-#include "components/net_log/net_log_file_writer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
@@ -81,7 +81,7 @@ class NetExportMessageHandler
     : public WebUIMessageHandler,
       public base::SupportsWeakPtr<NetExportMessageHandler>,
       public ui::SelectFileDialog::Listener,
-      public net_log::NetLogFileWriter::StateObserver {
+      public net_log::NetExportFileWriter::StateObserver {
  public:
   NetExportMessageHandler();
   ~NetExportMessageHandler() override;
@@ -102,7 +102,7 @@ class NetExportMessageHandler
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
 
-  // net_log::NetLogFileWriter::StateObserver implementation.
+  // net_log::NetExportFileWriter::StateObserver implementation.
   void OnNewState(const base::DictionaryValue& state) override;
 
  private:
@@ -130,7 +130,7 @@ class NetExportMessageHandler
   static bool UsingMobileUI();
 
   // Calls NetExportView.onExportNetLogInfoChanged JavaScript function in the
-  // renderer, passing in |file_writer_state|.
+  // renderer.
   void NotifyUIWithState(std::unique_ptr<base::DictionaryValue> state);
 
   // Opens the SelectFileDialog UI with the default path to save a
@@ -141,12 +141,12 @@ class NetExportMessageHandler
   // logging starts so that net log entries can be added for those events.
   URLRequestContextGetterList GetURLRequestContexts() const;
 
-  // Cache of g_browser_process->net_log()->net_log_file_writer(). This
+  // Cache of g_browser_process->net_log()->net_export_file_writer(). This
   // is owned by ChromeNetLog which is owned by BrowserProcessImpl.
-  net_log::NetLogFileWriter* file_writer_;
+  net_log::NetExportFileWriter* file_writer_;
 
-  ScopedObserver<net_log::NetLogFileWriter,
-                 net_log::NetLogFileWriter::StateObserver>
+  ScopedObserver<net_log::NetExportFileWriter,
+                 net_log::NetExportFileWriter::StateObserver>
       state_observer_manager_;
 
   // The capture mode the user chose in the UI when logging started is cached
@@ -162,7 +162,7 @@ class NetExportMessageHandler
 };
 
 NetExportMessageHandler::NetExportMessageHandler()
-    : file_writer_(g_browser_process->net_log()->net_log_file_writer()),
+    : file_writer_(g_browser_process->net_log()->net_export_file_writer()),
       state_observer_manager_(this),
       weak_ptr_factory_(this) {
   file_writer_->Initialize(
@@ -222,7 +222,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   DCHECK(result);
 
   capture_mode_ =
-      net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
+      net_log::NetExportFileWriter::CaptureModeFromString(capture_mode_string);
 
   if (UsingMobileUI()) {
     StartNetLog(base::FilePath());

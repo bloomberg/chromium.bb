@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NET_LOG_NET_LOG_FILE_WRITER_H_
-#define COMPONENTS_NET_LOG_NET_LOG_FILE_WRITER_H_
+#ifndef COMPONENTS_NET_LOG_NET_EXPORT_FILE_WRITER_H_
+#define COMPONENTS_NET_LOG_NET_EXPORT_FILE_WRITER_H_
 
 #include <memory>
 #include <string>
@@ -22,18 +22,18 @@
 namespace base {
 class DictionaryValue;
 class SingleThreadTaskRunner;
-}
+}  // namespace base
 
 namespace net {
 class FileNetLogObserver;
 class URLRequestContextGetter;
-}
+}  // namespace net
 
 namespace net_log {
 
 class ChromeNetLog;
 
-// NetLogFileWriter is used exclusively as a support class for net-export.
+// NetExportFileWriter is used exclusively as a support class for net-export.
 // It's a singleton that acts as the interface to all NetExportMessageHandlers
 // which can tell it to start or stop logging in response to user actions from
 // net-export UIs. Because it's a singleton, the logging state can be shared
@@ -42,21 +42,21 @@ class ChromeNetLog;
 // to the ChromeNetLog. This class is used by the iOS and non-iOS
 // implementations of net-export.
 //
-// NetLogFileWriter maintains the current logging state using the members
+// NetExportFileWriter maintains the current logging state using the members
 // |state_|, |log_exists_|, |log_capture_mode_known_|, |log_capture_mode_|.
 // Its three main commands are Initialize(), StartNetLog(), and StopNetLog().
-// These are the only functions that may cause NetLogFileWriter to change state.
-// Initialize() must be called before NetLogFileWriter can process any other
-// commands. A portion of the initialization needs to run on the
+// These are the only functions that may cause NetExportFileWriter to change
+// state. Initialize() must be called before NetExportFileWriter can process any
+// other commands. A portion of the initialization needs to run on the
 // |file_task_runner_|.
 //
 // This class is created and destroyed on the UI thread, and all public entry
 // points are to be called on the UI thread. Internally, the class may run some
 // code on the |file_task_runner_| and |net_task_runner_|.
-class NetLogFileWriter {
+class NetExportFileWriter {
  public:
   // The observer interface to be implemented by code that wishes to be notified
-  // of NetLogFileWriter's state changes.
+  // of NetExportFileWriter's state changes.
   class StateObserver {
    public:
     virtual void OnNewState(const base::DictionaryValue& state) = 0;
@@ -75,10 +75,10 @@ class NetLogFileWriter {
   using URLRequestContextGetterList =
       std::vector<scoped_refptr<net::URLRequestContextGetter>>;
 
-  ~NetLogFileWriter();
+  ~NetExportFileWriter();
 
   // Attaches a StateObserver. |observer| will be notified of state changes to
-  // NetLogFileWriter. State changes may occur in response to Initiailze(),
+  // NetExportFileWriter. State changes may occur in response to Initiailze(),
   // StartNetLog(), or StopNetLog(). StateObserver::OnNewState() will be called
   // asynchronously relative to the command that caused the state change.
   // |observer| must remain alive until RemoveObserver() is called.
@@ -87,16 +87,16 @@ class NetLogFileWriter {
   // Detaches a StateObserver.
   void RemoveObserver(StateObserver* observer);
 
-  // Initializes NetLogFileWriter if not initialized.
+  // Initializes NetExportFileWriter if not initialized.
   //
-  // Also sets the task runners used by NetLogFileWriter for doing file I/O and
-  // network I/O respectively. The task runners must not be changed once set.
-  // However, calling this function again with the same parameters is OK.
+  // Also sets the task runners used by NetExportFileWriter for doing file I/O
+  // and network I/O respectively. The task runners must not be changed once
+  // set. However, calling this function again with the same parameters is OK.
   void Initialize(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
                   scoped_refptr<base::SingleThreadTaskRunner> net_task_runner);
 
   // Starts collecting NetLog data into the file at |log_path|. If |log_path| is
-  // empty, the default log path is used. If NetLogFileWriter is already
+  // empty, the default log path is used. If NetExportFileWriter is already
   // logging, this is a no-op and |capture_mode| is ignored.
   //
   // |context_getters| is an optional list of URLRequestContextGetters used only
@@ -110,7 +110,7 @@ class NetLogFileWriter {
                    const URLRequestContextGetterList& context_getters);
 
   // Stops collecting NetLog data into the file. It is a no-op if
-  // NetLogFileWriter is currently not logging.
+  // NetExportFileWriter is currently not logging.
   //
   // |polled_data| is a JSON dictionary that will be appended to the end of the
   // log; it's for adding additional info to the log that aren't events.
@@ -123,15 +123,15 @@ class NetLogFileWriter {
   void StopNetLog(std::unique_ptr<base::DictionaryValue> polled_data,
                   scoped_refptr<net::URLRequestContextGetter> context_getter);
 
-  // Creates a DictionaryValue summary of the state of the NetLogFileWriter
+  // Creates a DictionaryValue summary of the state of the NetExportFileWriter
   std::unique_ptr<base::DictionaryValue> GetState() const;
 
   // Gets the log filepath. |path_callback| will be used to notify the caller
   // when the filepath is retrieved. |path_callback| will be executed with an
   // empty filepath if any of the following occurs:
-  // (1) The NetLogFileWriter is not initialized.
+  // (1) The NetExportFileWriter is not initialized.
   // (2) The log file does not exist.
-  // (3) The NetLogFileWriter is currently logging.
+  // (3) The NetExportFileWriter is currently logging.
   // (4) The log file's permissions could not be set to all.
   //
   // |path_callback| will be executed at the end of GetFilePathToCompletedLog()
@@ -149,15 +149,15 @@ class NetLogFileWriter {
   void SetDefaultLogBaseDirectoryGetterForTest(const DirectoryGetter& getter);
 
  protected:
-  // Constructs a NetLogFileWriter. Only one instance is created in browser
+  // Constructs a NetExportFileWriter. Only one instance is created in browser
   // process.
-  explicit NetLogFileWriter(ChromeNetLog* chrome_net_log);
+  explicit NetExportFileWriter(ChromeNetLog* chrome_net_log);
 
  private:
   friend class ChromeNetLog;
-  friend class NetLogFileWriterTest;
+  friend class NetExportFileWriterTest;
 
-  // The possible logging states of NetLogFileWriter.
+  // The possible logging states of NetExportFileWriter.
   enum State {
     STATE_UNINITIALIZED,
     // Currently in the process of initializing.
@@ -177,9 +177,9 @@ class NetLogFileWriter {
   // Posts NotifyStateObservers() to the current thread.
   void NotifyStateObserversAsync();
 
-  // Called internally by Initialize(). Will initialize NetLogFileWriter's state
-  // variables after the default log directory is set up and the default log
-  // path is determined on the |file_task_runner_|.
+  // Called internally by Initialize(). Will initialize NetExportFileWriter's
+  // state variables after the default log directory is set up and the default
+  // log path is determined on the |file_task_runner_|.
   void SetStateAfterSetUpDefaultLogPath(
       const DefaultLogPathResults& set_up_default_log_path_results);
 
@@ -209,7 +209,7 @@ class NetLogFileWriter {
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> net_task_runner_;
 
-  State state_;  // Current logging state of NetLogFileWriter.
+  State state_;  // Current logging state of NetExportFileWriter.
 
   bool log_exists_;  // Whether or not a log file exists on disk.
   bool log_capture_mode_known_;
@@ -232,9 +232,9 @@ class NetLogFileWriter {
   // during initialization. This getter is initialized to base::GetTempDir().
   DirectoryGetter default_log_base_dir_getter_;
 
-  base::WeakPtrFactory<NetLogFileWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<NetExportFileWriter> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetLogFileWriter);
+  DISALLOW_COPY_AND_ASSIGN(NetExportFileWriter);
 };
 
 }  // namespace net_log
