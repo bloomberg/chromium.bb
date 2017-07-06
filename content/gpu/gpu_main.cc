@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -291,6 +292,8 @@ int GpuMain(const MainFunctionParams& parameters) {
       tracing::GraphicsMemoryDumpProvider::GetInstance(), "AndroidGraphics",
       nullptr);
 #endif
+
+  base::HighResolutionTimerManager hi_res_timer_manager;
 
   {
     TRACE_EVENT0("gpu", "Run Message Loop");

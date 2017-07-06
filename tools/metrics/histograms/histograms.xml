@@ -87527,6 +87527,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Windows.HighResolutionTimerUsage" units="%">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Percentage of elapsed time the high resolution timer is activated. The usage
+    is reported by each of Chrome processes individually (without aggregation)
+    and logged every 10 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Windows.InCompatibilityMode" enum="BooleanCompatibilityMode">
   <owner>scottmg@chromium.org</owner>
   <summary>
