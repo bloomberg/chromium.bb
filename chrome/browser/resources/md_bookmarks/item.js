@@ -148,6 +148,9 @@ Polymer({
    * @private
    */
   onDblClick_: function(e) {
+    if (!this.isSelectedItem_)
+      this.selectThisItem_();
+
     var commandManager = bookmarks.CommandManager.getInstance();
     var itemSet = this.getState().selection.items;
     if (commandManager.canExecute(Command.OPEN, itemSet))
