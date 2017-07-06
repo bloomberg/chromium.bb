@@ -191,9 +191,49 @@ help gen` for the current documentation.
 * Reduce file system overhead by excluding build directories from
   antivirus and indexing software.
 * Store the build tree on a fast disk (preferably SSD).
+* The more cores the better (20+ is not excessive) and lots of RAM is needed
+(64 GB is not excessive).
 
-Still, expect build times of 30 minutes to 2 hours when everything has to
-be recompiled.
+There are some gn flags that can improve build speeds. You can specify these
+in the editor that appears when you create your output directory
+(`gn args out/Default`) or on the gn gen command line
+(`gn gen out/Default --args="is_component_build = true is_debug = true"`).
+Some helpful settings to consider using include:
+* `is_component_build = true` - this uses more, smaller DLLs, and incremental
+linking.
+* `use_nacl = false` - this disables Native Client which is usually not needed for
+local builds.
+* `target_cpu = "x86"` - x86 builds are slightly faster than x64 builds and
+support incremental linking for more targets. Note that if you set this but
+don't' set use_nacl = false then build times may get worse.
+* `remove_webcore_debug_symbols = true` - turn off source-level debugging for
+blink to reduce build times, appropriate if you don't plan to debug blink.
+* `use_jumbo_build = true` - compile multiple translation units as one, for
+faster builds (applies only to some components).
+* `win_linker_timing = true` - this should not generally be set but can be
+helpful when trying to understand build times or incremental linking failures.
+
+In addition, Google employees should consider using goma, a distributed
+compilation system. Detailed information is available internally but the
+relevant gn args are:
+* `use_goma = true`
+* `symbol_level = 2` - by default goma builds change symbol_level from 2 to 1
+which disables source-level debugging. This turns it back on. This actually
+makes builds slower, but it makes goma more usable.
+* `is_win_fastlink = true` - this is required if you have goma enabled and
+symbol_level set to 2.
+
+Note that debugging of is_win_fastlink built binaries is unreliable prior to
+VS 2017 Update 3 and may crash Visual Studio.
+
+To get any benefit from goma it is important to pass a large -j value to ninja.
+A good default is 10\*numCores to 20\*numCores. If you run autoninja.bat then it
+will pass an appropriate -j value to ninja for goma or not, automatically.
+
+When invoking ninja specify 'chrome' as the target to avoid building all test
+binaries as well.
+
+Still, builds will take many hours on many machines.
 
 ## Build Chromium
 
