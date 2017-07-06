@@ -480,11 +480,6 @@ id<GREYMatcher> DeleteButton() {
 // Checks that deleting a password from password details view goes back to the
 // list-of-passwords view.
 - (void)testDeletion {
-// TODO(crbug.com/739395): Fix on device.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device, failed on iPad.");
-#endif
-
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Save form to be deleted later.
@@ -532,10 +527,6 @@ id<GREYMatcher> DeleteButton() {
 
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletion {
-// TODO(crbug.com/739395): Fix on device.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device, failed on iPad.");
-#endif
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Save form to be deleted later.
