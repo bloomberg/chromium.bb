@@ -2467,11 +2467,11 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   OnResize(params);
 }
 
-void RenderViewImpl::SetDeviceColorProfileForTesting(
-    const gfx::ICCProfile& icc_profile) {
+void RenderViewImpl::SetDeviceColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
   ResizeParams params;
   params.screen_info = screen_info_;
-  params.screen_info.color_space = icc_profile.GetColorSpace();
+  params.screen_info.color_space = color_space;
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
   params.physical_backing_size = physical_backing_size_;

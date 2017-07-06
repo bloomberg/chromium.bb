@@ -33,7 +33,7 @@ class OrientationData;
 }
 
 namespace gfx {
-class ICCProfile;
+class ColorSpace;
 }
 
 namespace test_runner {
@@ -144,13 +144,13 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
     test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
     const blink::WebInputEvent& event);
 
-// Get the ICC profile for a given name string. This is not in the ICCProfile
+// Get the color space for a given name string. This is not in the ColorSpace
 // class to avoid bloating the shipping build.
-gfx::ICCProfile GetTestingICCProfile(const std::string& name);
+gfx::ColorSpace GetTestingColorSpace(const std::string& name);
 
-// Set the device color profile associated with the profile |name|.
-void SetDeviceColorProfile(
-    RenderView* render_view, const gfx::ICCProfile& icc_profile);
+// Set the device color space.
+void SetDeviceColorSpace(RenderView* render_view,
+                         const gfx::ColorSpace& color_space);
 
 // Sets the scan duration to 0.
 void SetTestBluetoothScanDuration();
