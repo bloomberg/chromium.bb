@@ -272,7 +272,8 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentAppInfo(
 
   StoredPaymentAppProto payment_app_proto;
   payment_app_proto.set_registration_id(registration->id());
-  payment_app_proto.set_origin(registration->pattern().GetOrigin().spec());
+  payment_app_proto.set_origin(
+      url::Origin(registration->pattern().GetOrigin()).Serialize());
   payment_app_proto.set_name(name.empty() ? payment_app_proto.origin() : name);
   payment_app_proto.set_icon(icon);
 

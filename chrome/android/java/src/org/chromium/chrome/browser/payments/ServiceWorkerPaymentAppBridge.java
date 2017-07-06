@@ -95,13 +95,14 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void onPaymentAppCreated(long registrationId, String label,
-            @Nullable Bitmap icon, String[] methodNameArray, WebContents webContents,
-            Object callback) {
+            @Nullable String sublabel, @Nullable Bitmap icon, String[] methodNameArray,
+            WebContents webContents, Object callback) {
         assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
         ((PaymentAppFactory.PaymentAppCreatedCallback) callback)
                 .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId, label,
+                        sublabel,
                         icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                         methodNameArray));
     }

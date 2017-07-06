@@ -43,12 +43,13 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * @param webContents       The web contents where PaymentRequest was invoked.
      * @param registrationId    The registration id of the corresponding service worker payment app.
      * @param label             The label of the payment app.
+     * @param sublabel          The sublabel of the payment app.
      * @param icon              The drawable icon of the payment app.
      * @param methodNames       A set of payment method names supported by the payment app.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, String label,
-            @Nullable Drawable icon, String[] methodNames) {
-        super(Long.toString(registrationId), label, null /* sublabel */, icon);
+            @Nullable String sublabel, @Nullable Drawable icon, String[] methodNames) {
+        super(label + sublabel, label, sublabel, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
         mIcon = icon;
@@ -87,7 +88,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
     @Override
     public String getAppIdentifier() {
-        return "Chrome_Service_Worker_Payment_App";
+        return getIdentifier();
     }
 
     @Override
