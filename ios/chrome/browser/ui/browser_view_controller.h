@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_presenter.h"
 
+@protocol BrowserCommands;
 @class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
 @class ContextualSearchController;
@@ -70,6 +71,8 @@ extern NSString* const kLocationBarResignsFirstResponderNotification;
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+@property(nonatomic, readonly) id<BrowserCommands> dispatcher;
 
 // The top-level browser container view.
 @property(nonatomic, strong) BrowserContainerView* contentArea;
