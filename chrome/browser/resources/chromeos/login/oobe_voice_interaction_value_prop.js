@@ -10,12 +10,73 @@
 Polymer({
   is: 'voice-interaction-value-prop-md',
 
-  /**
-   * Returns element by its id.
-   */
-  getElement: function(id) {
-    return this.$[id];
+  properties: {
+    /**
+     * Buttons are disabled when the value prop content is loading.
+     */
+    valuePropButtonsDisabled: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * System locale.
+     */
+    locale: {
+      type: String,
+    },
+
+    /**
+     * Default url for local en.
+     */
+    defaultUrl: {
+      type: String,
+      value:
+          'https://www.gstatic.com/opa-chromeos/oobe/en/value_proposition.html',
+    },
   },
+
+  /**
+   * Whether try to reload with the default url when a 404 error occurred.
+   * @type {boolean}
+   * @private
+   */
+  reloadWithDefaultUrl_: false,
+
+  /**
+   * Whether an error occurs while the webview is loading.
+   * @type: {boolean}
+   * @private
+   */
+  valuePropError_: false,
+
+  /**
+   * Timeout ID for loading animation.
+   * @type {number}
+   * @private
+   */
+  animationTimeout_: null,
+
+  /**
+   * Timeout ID for loading (will fire an error).
+   * @type {number}
+   * @private
+   */
+  loadingTimeout_: null,
+
+  /**
+   * The value prop view object.
+   * @type {Object}
+   * @private
+   */
+  valueView_: null,
+
+  /**
+   * Whether the screen has been initialized.
+   * @type {boolean}
+   * @private
+   */
+  initialized_: false,
 
   /**
    * On-tap event handler for no thanks button.
@@ -29,6 +90,15 @@ Polymer({
   },
 
   /**
+   * On-tap event handler for retry button.
+   *
+   * @private
+   */
+  onRetryTap_: function() {
+    this.reloadValueProp();
+  },
+
+  /**
    * On-tap event handler for continue button.
    *
    * @private
@@ -37,5 +107,132 @@ Polymer({
     chrome.send(
         'login.VoiceInteractionValuePropScreen.userActed',
         ['continue-pressed']);
+  },
+
+  /**
+   * Add class to the list of classes of root elements.
+   * @param {string} className class to add
+   *
+   * @private
+   */
+  addClass_: function(className) {
+    this.$['voice-dialog'].classList.add(className);
+  },
+
+  /**
+   * Remove class to the list of classes of root elements.
+   * @param {string} className class to remove
+   *
+   * @private
+   */
+  removeClass_: function(className) {
+    this.$['voice-dialog'].classList.remove(className);
+  },
+
+  /**
+   * Reloads value prop.
+   */
+  reloadValueProp: function() {
+    this.valuePropError_ = false;
+    this.valueView_.src = 'https://www.gstatic.com/opa-chromeos/oobe/' +
+        this.locale + '/value_proposition.html';
+
+    window.clearTimeout(this.animationTimeout_);
+    window.clearTimeout(this.loadingTimeout_);
+    this.removeClass_('value-prop-loaded');
+    this.removeClass_('value-prop-error');
+    this.addClass_('value-prop-loading');
+    this.valuePropButtonsDisabled = true;
+
+    this.animationTimeout_ = window.setTimeout(function() {
+      this.addClass_('value-prop-loading-animation');
+    }.bind(this), 500);
+    this.loadingTimeout_ = window.setTimeout(function() {
+      this.onValueViewErrorOccurred();
+    }.bind(this), 5000);
+  },
+
+  /**
+   * Handles event when value prop view cannot be loaded.
+   */
+  onValueViewErrorOccurred: function(details) {
+    this.valuePropError_ = true;
+    window.clearTimeout(this.animationTimeout_);
+    window.clearTimeout(this.loadingTimeout_);
+    this.removeClass_('value-prop-loading-animation');
+    this.removeClass_('value-prop-loading');
+    this.removeClass_('value-prop-loaded');
+    this.addClass_('value-prop-error');
+
+    this.valuePropButtonsDisabled = false;
+    this.$['retry-button'].focus();
+  },
+
+  /**
+   * Handles event when value prop view is loaded.
+   */
+  onValueViewContentLoad: function(details) {
+    if (this.valuePropError_) {
+      return;
+    }
+    if (this.reloadWithDefaultUrl_) {
+      this.valueView_.src = this.defaultUrl;
+      this.reloadWithDefaultUrl_ = false;
+      return;
+    }
+
+    window.clearTimeout(this.animationTimeout_);
+    window.clearTimeout(this.loadingTimeout_);
+    this.removeClass_('value-prop-loading-animation');
+    this.removeClass_('value-prop-loading');
+    this.removeClass_('value-prop-error');
+    this.addClass_('value-prop-loaded');
+
+    this.valuePropButtonsDisabled = false;
+    this.$['continue-button'].focus();
+  },
+
+  /**
+   * Handles event when webview request headers received.
+   */
+  onValueViewHeadersReceived: function(details) {
+    if (details.statusCode == '404') {
+      if (details.url != this.defaultUrl) {
+        this.reloadWithDefaultUrl_ = true;
+      } else {
+        this.onValueViewErrorOccurred();
+      }
+    }
+  },
+
+  /**
+   * Signal from host to show the screen.
+   */
+  onShow: function() {
+    var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
+    this.valueView_ = this.$['value-prop-view'];
+
+    if (!this.initialized_) {
+      this.valueView_.request.onErrorOccurred.addListener(
+          this.onValueViewErrorOccurred.bind(this), requestFilter);
+      this.valueView_.request.onHeadersReceived.addListener(
+          this.onValueViewHeadersReceived.bind(this), requestFilter);
+      this.valueView_.request.onCompleted.addListener(
+          this.onValueViewContentLoad.bind(this), requestFilter);
+
+      this.valueView_.addContentScripts([{
+        name: 'stripLinks',
+        matches: ['<all_urls>'],
+        js: {
+          code: 'document.querySelectorAll(\'a\').forEach(' +
+              'function(anchor){anchor.href=\'javascript:void(0)\';})'
+        },
+        run_at: 'document_end'
+      }]);
+
+      this.initialized_ = true;
+    }
+
+    this.reloadValueProp();
   },
 });

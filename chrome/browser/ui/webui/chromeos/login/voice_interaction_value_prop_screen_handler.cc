@@ -33,6 +33,16 @@ VoiceInteractionValuePropScreenHandler::
 void VoiceInteractionValuePropScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("locale", g_browser_process->GetApplicationLocale());
+  builder->Add("voiceInteractionValuePropLoading",
+               IDS_VOICE_INTERACTION_VALUE_PROP_LOADING);
+  builder->Add("voiceInteractionValuePropLoadErrorTitle",
+               IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE);
+  builder->Add("voiceInteractionValuePropLoadErrorMessage",
+               IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE);
+  builder->Add("voiceInteractionValuePropSkipButton",
+               IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON);
+  builder->Add("voiceInteractionValuePropRetryButton",
+               IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
   builder->Add("voiceInteractionValuePropNoThanksButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_NO_THANKS_BUTTON);
   builder->Add("voiceInteractionValuePropContinueButton",

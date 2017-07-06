@@ -6093,10 +6093,25 @@ All users must sign out to continue.
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE" desc="Message of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
     Update successful. You can now use Android apps.
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NO_THANKS_BUTTON" desc="Button label for skipping voice interaction value proposition">
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
+    Loading Google Assistant...
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE" desc="Load error title of the voice interaction value prop dialog.">
+    Google Assistant
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
+    Google Assistant was unable to load, please retry.
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
+    Skip
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON" desc="Button label for retry loading voice interaction value prop.">
+    Retry
+  </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NO_THANKS_BUTTON" desc="Button label for skipping voice interaction value proposition.">
     No thanks
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_CONTINUE_BUTTION" desc="Button label for accepting voice interaction value proposition">
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_CONTINUE_BUTTION" desc="Button label for accepting voice interaction value proposition.">
     Continue
   </message>
   <message name="IDS_WAIT_FOR_CONTAINER_READY_TITLE" desc="Title of the wait for container ready OOBE screen.">
