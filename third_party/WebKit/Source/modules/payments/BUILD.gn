@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("payments") {
   sources = [
+    "CanMakePaymentEvent.cpp",
+    "CanMakePaymentEvent.h",
     "HTMLIFrameElementPayments.cpp",
     "HTMLIFrameElementPayments.h",
     "PaymentAddress.cpp",

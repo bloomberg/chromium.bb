@@ -74,6 +74,14 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CanMakePaymentEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter methodData
+    getter modifiers
+    getter paymentRequestOrigin
+    getter topLevelOrigin
+    method constructor
+    method respondWith
 interface CanvasGradient
     method addColorStop
     method constructor
@@ -2291,6 +2299,7 @@ global object
     getter onbackgroundfetchclick
     getter onbackgroundfetched
     getter onbackgroundfetchfail
+    getter oncanmakepayment
     getter onfetch
     getter onforeignfetch
     getter oninstall
@@ -2309,6 +2318,7 @@ global object
     setter onbackgroundfetchclick
     setter onbackgroundfetched
     setter onbackgroundfetchfail
+    setter oncanmakepayment
     setter onfetch
     setter onforeignfetch
     setter oninstall
