@@ -10866,6 +10866,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperDetectionHTTP">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -10878,6 +10881,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperDetectionHTTPS">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -10890,6 +10896,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTP">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -10902,6 +10911,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperDetectionPassHTTPS">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -10914,6 +10926,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperedHTTP">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
@@ -10926,6 +10941,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DataReductionProxy.HeaderTamperedHTTPS">
+  <obsolete>
+    Removed in June 2017
+  </obsolete>
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

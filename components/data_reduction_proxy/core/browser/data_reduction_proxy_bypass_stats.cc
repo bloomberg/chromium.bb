@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -280,18 +279,6 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyBypassStats::NOT_BYPASSED,
                         content_length);
-
-    if (data_reduction_proxy_type_info.proxy_servers.empty())
-      return;
-
-    // Obtain the proxy that this request used.
-    const net::ProxyServer& proxy =
-        data_reduction_proxy_type_info.proxy_servers.front();
-    if (proxy.is_valid() && !proxy.host_port_pair().IsEmpty()) {
-      DataReductionProxyTamperDetection::DetectAndReport(
-          request.response_info().headers.get(),
-          proxy.is_https() || proxy.is_quic(), content_length);
-    }
     return;
   }
 
