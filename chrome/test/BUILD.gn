@@ -1719,11 +1719,18 @@ test("browser_tests") {
       "$root_out_dir/remoting/unittests/",
       "$root_out_dir/test_case.html",
       "$root_out_dir/test_case.html.mock-http-headers",
-      "$root_out_dir/test_data/",
       "$root_out_dir/test_page.css",
       "$root_out_dir/test_page.css.mock-http-headers",
       "$root_out_dir/test_url_loader_data/",
     ]
+
+    if (include_js_tests || enable_nacl) {
+      # If the sanitizers are turned on, or NaCl is turned off, then
+      # this directory won't be generated. Only conditionally add it
+      # as a runtime dependency so that browser_tests' isolate will be
+      # built successfully.
+      data += [ "$root_out_dir/test_data/" ]
+    }
 
     if (!is_mac) {
       data += [
