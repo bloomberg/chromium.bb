@@ -38,13 +38,47 @@ class MockGLInterface {
 
   // TODO(zmo): crbug.com/456340
   // Functions that cannot be mocked because they have more than 10 args.
-  void CompressedTexSubImage3D(
-      GLenum /*target*/, GLint /*level*/, GLint /*xoffset*/, GLint /*yoffset*/,
-      GLint /*zoffset*/, GLsizei /*width*/, GLsizei /*height*/,
-      GLsizei /*depth*/, GLenum /*format*/, GLsizei /*imageSize*/,
-      const void* /*data*/) {
-    NOTREACHED();
+  void CompressedTexSubImage3D(GLenum target,
+                               GLint level,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLint zoffset,
+                               GLsizei width,
+                               GLsizei height,
+                               GLsizei depth,
+                               GLenum format,
+                               GLsizei image_size,
+                               const void* data) {
+    if (data == nullptr) {
+      CompressedTexSubImage3DNoData(target, level, xoffset, yoffset, zoffset,
+                                    width, height, depth, format, image_size);
+    } else {
+      CompressedTexSubImage3DWithData(target, level, xoffset, yoffset, zoffset,
+                                      width, height, depth, format, image_size);
+    }
   }
+  MOCK_METHOD10(CompressedTexSubImage3DNoData,
+                void(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLint zoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLenum format,
+                     GLsizei image_size));
+  MOCK_METHOD10(CompressedTexSubImage3DWithData,
+                void(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLint zoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLenum format,
+                     GLsizei image_size));
 
   void CompressedTexSubImage3DRobustANGLE(GLenum /*target*/,
                                           GLint /*level*/,
@@ -100,7 +134,8 @@ class MockGLInterface {
       TexSubImage3DNoData(target, level, xoffset, yoffset, zoffset,
                           width, height, depth, format, type);
     } else {
-      NOTREACHED();
+      TexSubImage3DWithData(target, level, xoffset, yoffset, zoffset, width,
+                            height, depth, format, type);
     }
   }
 
@@ -120,6 +155,17 @@ class MockGLInterface {
   }
 
   MOCK_METHOD10(TexSubImage3DNoData,
+                void(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLint zoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLsizei depth,
+                     GLenum format,
+                     GLenum type));
+  MOCK_METHOD10(TexSubImage3DWithData,
                 void(GLenum target,
                      GLint level,
                      GLint xoffset,

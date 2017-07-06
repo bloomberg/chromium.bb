@@ -14105,7 +14105,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
     }
     data = reinterpret_cast<const void*>(data_shm_offset);
   } else {
-    if (!data_shm_id && data_shm_offset) {
+    if (!data_shm_id) {
       return error::kInvalidArguments;
     }
     data = GetSharedMemoryAs<const void*>(
@@ -14180,6 +14180,8 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
           width, height, depth, format, texture)) {
     return error::kNoError;
   }
+  if (image_size > 0 && !state_.bound_pixel_unpack_buffer && !data)
+    return error::kInvalidArguments;
 
   if (!texture->IsLevelCleared(target, level)) {
     // This can only happen if the compressed texture was allocated
@@ -14836,6 +14838,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     }
     params = state_.GetUnpackParams(ContextState::k2D);
   } else {
+    if (!pixels_shm_id && pixels_shm_offset)
+      return error::kInvalidArguments;
     // When reading from client buffer, the command buffer client side took
     // the responsibility to take the pixels from the client buffer and
     // unpack them according to the full ES3 pack parameters as source, all
@@ -14865,6 +14869,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     if (!pixels)
       return error::kOutOfBounds;
   } else {
+    DCHECK(buffer || !pixels_shm_offset);
     pixels = reinterpret_cast<const void*>(pixels_shm_offset);
   }
 
@@ -14927,6 +14932,8 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(
     }
     params = state_.GetUnpackParams(ContextState::k3D);
   } else {
+    if (!pixels_shm_id && pixels_shm_offset)
+      return error::kInvalidArguments;
     // When reading from client buffer, the command buffer client side took
     // the responsibility to take the pixels from the client buffer and
     // unpack them according to the full ES3 pack parameters as source, all
@@ -14956,6 +14963,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(
     if (!pixels)
       return error::kOutOfBounds;
   } else {
+    DCHECK(buffer || !pixels_shm_offset);
     pixels = reinterpret_cast<const void*>(pixels_shm_offset);
   }
 
