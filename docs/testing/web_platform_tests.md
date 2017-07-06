@@ -149,8 +149,15 @@ APIs cannot yet be written as part of web-platform-tests.
 
 An alternative is to write manual tests that are automated with scripts from
 [wpt_automation](../../third_party/WebKit/LayoutTests/external/wpt_automation).
+Injection of JS in manual tests is determined by `loadAutomationScript` in
+[testharnessreport.js](../../third_party/WebKit/LayoutTests/resources/testharnessreport.js).
+
 Such tests still require case-by-case automation to run for other browser
 engines, but are more valuable than purely manual tests.
+
+Manual tests that have no automation are still imported, but skipped in
+[NeverFixTests](../../third_party/WebKit/LayoutTests/NeverFixTests); see
+[issue 738489](https://crbug.com/738489).
 
 *** note
 TODO(foolip): Figure out and document a more scalable test automation solution.
