@@ -42,6 +42,7 @@
 #include "cc/test/ordered_simple_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/HTTPNames.h"
+#include "platform/Language.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/network/mime/MockMimeRegistry.h"
@@ -355,6 +356,8 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
                                                    nullptr);
   HTTPNames::init();
   FetchInitiatorTypeNames::init();
+
+  InitializePlatformLanguage();
 }
 
 ScopedUnittestsEnvironmentSetup::~ScopedUnittestsEnvironmentSetup() {}

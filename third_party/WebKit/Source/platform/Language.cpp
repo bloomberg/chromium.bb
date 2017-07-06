@@ -30,6 +30,8 @@
 
 namespace blink {
 
+namespace {
+
 static String CanonicalizeLanguageIdentifier(const String& language_code) {
   String copied_code = language_code;
   // Platform::defaultLocale() might provide a language code with '_'.
@@ -37,22 +39,51 @@ static String CanonicalizeLanguageIdentifier(const String& language_code) {
   return copied_code;
 }
 
-static const AtomicString& PlatformLanguage() {
-  DEFINE_STATIC_LOCAL(AtomicString, computed_default_language, ());
-  if (computed_default_language.IsEmpty()) {
-    computed_default_language = AtomicString(
-        CanonicalizeLanguageIdentifier(Platform::Current()->DefaultLocale()));
-    DCHECK(!computed_default_language.IsEmpty());
-  }
-  return computed_default_language;
+// Main thread static AtomicString. This can be safely shared across threads.
+const AtomicString* g_platform_language = nullptr;
+
+const AtomicString& PlatformLanguage() {
+  DCHECK(g_platform_language->Impl()->IsStatic())
+      << "global language string is used from multiple threads, and must be "
+         "static";
+  return *g_platform_language;
 }
 
-static Vector<AtomicString>& PreferredLanguagesOverride() {
-  DEFINE_STATIC_LOCAL(Vector<AtomicString>, override, ());
-  return override;
+Vector<AtomicString>& PreferredLanguagesOverride() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Vector<AtomicString>>,
+                                  thread_specific_languages, ());
+  return *thread_specific_languages;
 }
 
-void OverrideUserPreferredLanguages(const Vector<AtomicString>& override) {
+}  // namespace
+
+void InitializePlatformLanguage() {
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(
+      // We add the platform language as a static string for two reasons:
+      // 1. it can be shared across threads.
+      // 2. since this is done very early on, we don't want to accidentally
+      //    collide with a hard coded static string (like "fr" on SVG).
+      const AtomicString, platform_language, (([]() {
+        String canonicalized = CanonicalizeLanguageIdentifier(
+            Platform::Current()->DefaultLocale());
+        if (!canonicalized.IsEmpty()) {
+          StringImpl* impl = StringImpl::CreateStatic(
+              reinterpret_cast<const char*>(canonicalized.Characters8()),
+              canonicalized.length(),
+              StringHasher::ComputeHashAndMaskTop8Bits(
+                  canonicalized.Characters8(), canonicalized.length()));
+
+          return AtomicString(impl);
+        }
+        return AtomicString();
+      })()));
+
+  g_platform_language = &platform_language;
+}
+
+void OverrideUserPreferredLanguagesForTesting(
+    const Vector<AtomicString>& override) {
   Vector<AtomicString>& canonicalized = PreferredLanguagesOverride();
   canonicalized.resize(0);
   canonicalized.ReserveCapacity(override.size());

@@ -35,6 +35,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
+#include "platform/Language.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
@@ -122,6 +123,7 @@ void Platform::Initialize(Platform* platform) {
         base::ThreadTaskRunnerHandle::Get());
 
   ThreadState::AttachMainThread();
+  InitializePlatformLanguage();
 
   // TODO(ssid): remove this check after fixing crbug.com/486782.
   if (g_platform->main_thread_) {

@@ -227,6 +227,18 @@ void RenderViewTest::SetUp() {
       test_io_thread_->task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
 
+  // Subclasses can set render_thread_ with their own implementation before
+  // calling RenderViewTest::SetUp().
+  // The render thread needs to exist before blink::Initialize. It also mirrors
+  // the order on Chromium initialization.
+  if (!render_thread_)
+    render_thread_.reset(new MockRenderThread());
+  render_thread_->set_routing_id(kRouteId);
+  render_thread_->set_new_window_routing_id(kNewWindowRouteId);
+  render_thread_->set_new_window_main_frame_widget_routing_id(
+      kNewFrameWidgetRouteId);
+  render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
+
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink::Initialize(blink_platform_impl_.Get());
@@ -246,16 +258,6 @@ void RenderViewTest::SetUp() {
   // font IPCs, causing all font loading to fail.
   SetDWriteFontProxySenderForTesting(CreateFakeCollectionSender());
 #endif
-
-  // Subclasses can set render_thread_ with their own implementation before
-  // calling RenderViewTest::SetUp().
-  if (!render_thread_)
-    render_thread_.reset(new MockRenderThread());
-  render_thread_->set_routing_id(kRouteId);
-  render_thread_->set_new_window_routing_id(kNewWindowRouteId);
-  render_thread_->set_new_window_main_frame_widget_routing_id(
-      kNewFrameWidgetRouteId);
-  render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
 #if defined(OS_MACOSX)
   autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
