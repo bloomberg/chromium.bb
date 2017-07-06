@@ -23,15 +23,17 @@ Polymer({
     queryParams_: Object,
 
     /** @private */
-    searchTerm_: String,
+    searchTerm_: {
+      type: String,
+      value: '',
+    },
 
     /** @private {?string} */
     selectedId_: String,
   },
 
   observers: [
-    'onQueryChanged_(queryParams_.q)',
-    'onFolderChanged_(queryParams_.id)',
+    'onQueryParamsChanged_(queryParams_)',
     'onStateChanged_(searchTerm_, selectedId_)',
   ],
 
@@ -46,17 +48,17 @@ Polymer({
   },
 
   /** @private */
-  onQueryChanged_: function() {
+  onQueryParamsChanged_: function() {
     var searchTerm = this.queryParams_.q || '';
-    if (searchTerm && searchTerm != this.searchTerm_) {
+    var selectedId = this.queryParams_.id;
+    if (!selectedId && !searchTerm)
+      selectedId = BOOKMARKS_BAR_ID;
+
+    if (searchTerm != this.searchTerm_) {
       this.searchTerm_ = searchTerm;
       this.dispatch(bookmarks.actions.setSearchTerm(searchTerm));
     }
-  },
 
-  /** @private */
-  onFolderChanged_: function() {
-    var selectedId = this.queryParams_.id;
     if (selectedId && selectedId != this.selectedId_) {
       this.selectedId_ = selectedId;
       // Need to dispatch a deferred action so that during page load
@@ -77,7 +79,9 @@ Polymer({
   updateQueryParams_: function() {
     if (this.searchTerm_)
       this.queryParams_ = {q: this.searchTerm_};
-    else
+    else if (this.selectedId_ != BOOKMARKS_BAR_ID)
       this.queryParams_ = {id: this.selectedId_};
+    else
+      this.queryParams_ = {};
   },
 });

@@ -45,7 +45,7 @@ class BookmarksTest : public InProcessBrowserTest {
     if (MdBookmarksUI::IsEnabled()) {
       ASSERT_TRUE(content::ExecuteScriptAndExtractString(
           tab, "domAutomationController.send(location.href)", &out));
-      ASSERT_EQ("chrome://bookmarks/?id=1", out);
+      ASSERT_EQ("chrome://bookmarks/", out);
       return;
     }
 

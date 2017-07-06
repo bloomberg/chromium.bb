@@ -68,7 +68,7 @@ cr.define('bookmarks.util', function() {
   function createEmptyState() {
     return {
       nodes: {},
-      selectedFolder: '0',
+      selectedFolder: BOOKMARKS_BAR_ID,
       closedFolders: new Set(),
       prefs: {
         canEdit: true,
