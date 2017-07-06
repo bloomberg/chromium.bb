@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentRequestEventDataConversion.h"
+#include "modules/payments/PaymentEventDataConversion.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -31,6 +31,16 @@ static WebPaymentMethodData CreateWebPaymentMethodDataForTest() {
   return web_method_data;
 }
 
+static WebCanMakePaymentEventData CreateWebCanMakePaymentEventDataForTest() {
+  WebCanMakePaymentEventData web_data;
+  web_data.top_level_origin = WebString::FromUTF8("https://example.com");
+  web_data.payment_request_origin = WebString::FromUTF8("https://example.com");
+  Vector<WebPaymentMethodData> method_data;
+  method_data.push_back(CreateWebPaymentMethodDataForTest());
+  web_data.method_data = WebVector<WebPaymentMethodData>(method_data);
+  return web_data;
+}
+
 static WebPaymentRequestEventData CreateWebPaymentRequestEventDataForTest() {
   WebPaymentRequestEventData web_data;
   web_data.top_level_origin = WebString::FromUTF8("https://example.com");
@@ -44,12 +54,42 @@ static WebPaymentRequestEventData CreateWebPaymentRequestEventDataForTest() {
   return web_data;
 }
 
-TEST(PaymentRequestEventDataConversionTest, ToPaymentRequestEventData) {
+TEST(PaymentEventDataConversionTest, ToCanMakePaymentEventData) {
+  V8TestingScope scope;
+  WebCanMakePaymentEventData web_data =
+      CreateWebCanMakePaymentEventDataForTest();
+  CanMakePaymentEventInit data =
+      PaymentEventDataConversion::ToCanMakePaymentEventInit(
+          scope.GetScriptState(), web_data);
+
+  ASSERT_TRUE(data.hasTopLevelOrigin());
+  EXPECT_EQ("https://example.com", data.topLevelOrigin());
+
+  ASSERT_TRUE(data.hasPaymentRequestOrigin());
+  EXPECT_EQ("https://example.com", data.paymentRequestOrigin());
+
+  ASSERT_TRUE(data.hasMethodData());
+  ASSERT_EQ(1UL, data.methodData().size());
+  ASSERT_TRUE(data.methodData().front().hasSupportedMethods());
+  ASSERT_EQ(1UL, data.methodData().front().supportedMethods().size());
+  ASSERT_EQ("foo", data.methodData().front().supportedMethods().front());
+  ASSERT_TRUE(data.methodData().front().hasData());
+  ASSERT_TRUE(data.methodData().front().data().IsObject());
+  String stringified_data = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(
+          scope.GetContext(),
+          data.methodData().front().data().V8Value().As<v8::Object>())
+          .ToLocalChecked(),
+      kDoNotExternalize);
+  EXPECT_EQ("{\"merchantId\":\"12345\"}", stringified_data);
+}
+
+TEST(PaymentEventDataConversionTest, ToPaymentRequestEventData) {
   V8TestingScope scope;
   WebPaymentRequestEventData web_data =
       CreateWebPaymentRequestEventDataForTest();
   PaymentRequestEventInit data =
-      PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
+      PaymentEventDataConversion::ToPaymentRequestEventInit(
           scope.GetScriptState(), web_data);
 
   ASSERT_TRUE(data.hasTopLevelOrigin());
