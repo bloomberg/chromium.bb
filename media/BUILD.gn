@@ -594,13 +594,6 @@ component("shared_memory_support") {
     "base/vector_math.h",
     "base/vector_math_testing.h",
   ]
-  if (is_mac) {
-    # These need to be included here because audio_latency.cc depends on them.
-    sources += [
-      "base/mac/audio_latency_mac.cc",
-      "base/mac/audio_latency_mac.h",
-    ]
-  }
   configs += [
     ":media_config",
     ":media_implementation",

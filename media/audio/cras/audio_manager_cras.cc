@@ -24,7 +24,6 @@
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
-#include "media/base/limits.h"
 #include "media/base/localized_strings.h"
 
 // cras_util.h headers pull in min/max macros...
@@ -40,6 +39,10 @@ const int kMaxOutputStreams = 50;
 
 // Default sample rate for input and output streams.
 const int kDefaultSampleRate = 48000;
+
+// Define bounds for the output buffer size.
+const int kMinimumOutputBufferSize = 512;
+const int kMaximumOutputBufferSize = 8192;
 
 // Default input buffer size.
 const int kDefaultInputBufferSize = 1024;
@@ -305,7 +308,7 @@ int AudioManagerCras::GetMinimumOutputBufferSizePerBoard() {
     return 768;
   else if (board == "samus")
     return 256;
-  return 512;
+  return kMinimumOutputBufferSize;
 }
 
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
@@ -320,9 +323,8 @@ AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
     buffer_size =
-        std::min(static_cast<int>(limits::kMaxAudioBufferSize),
-                 std::max(static_cast<int>(limits::kMinAudioBufferSize),
-                          input_params.frames_per_buffer()));
+        std::min(kMaximumOutputBufferSize,
+                 std::max(buffer_size, input_params.frames_per_buffer()));
   }
 
   int user_buffer_size = GetUserBufferSize();
