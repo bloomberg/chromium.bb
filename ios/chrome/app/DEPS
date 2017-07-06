@@ -12,6 +12,7 @@ include_rules = [
   "+components/handoff",
   "+components/history/core/browser",
   "+components/metrics",
+  "+components/ntp_snippets",
   "+components/prefs",
   "+components/reading_list/core",
   "+components/signin/core/browser",
