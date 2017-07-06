@@ -62,11 +62,8 @@ enum {
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
 
-- (instancetype)initWithDispatcher:
-    (id<BrowserCommands, OmniboxFocuser, UrlLoader, WebToolbarDelegate>)
-        dispatcher {
-  self = [super initWithStyle:ToolbarControllerStyleLightMode
-                   dispatcher:dispatcher];
+- (instancetype)init {
+  self = [super initWithStyle:ToolbarControllerStyleLightMode];
   if (self) {
     [self.backgroundView setHidden:YES];
 
@@ -128,18 +125,13 @@ enum {
             initWithTarget:self
                     action:@selector(handleLongPress:)];
     [_backButton addGestureRecognizer:backLongPress];
-    [_backButton addTarget:self.dispatcher
-                    action:@selector(goBack)
-          forControlEvents:UIControlEventTouchUpInside];
-
     UILongPressGestureRecognizer* forwardLongPress =
         [[UILongPressGestureRecognizer alloc]
             initWithTarget:self
                     action:@selector(handleLongPress:)];
     [_forwardButton addGestureRecognizer:forwardLongPress];
-    [_forwardButton addTarget:self.dispatcher
-                       action:@selector(goForward)
-             forControlEvents:UIControlEventTouchUpInside];
+    [_backButton setTag:IDC_BACK];
+    [_forwardButton setTag:IDC_FORWARD];
 
     [_omniboxFocuser addTarget:self
                         action:@selector(focusOmnibox:)
