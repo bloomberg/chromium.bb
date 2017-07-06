@@ -467,9 +467,6 @@ class WEB_EXPORT WebViewImpl final
   void ForceNextWebGLContextCreationToFail() override;
   void ForceNextDrawingBufferCreationToFail() override;
 
-  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
-  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
-
   IntSize MainFrameSize() override;
   WebDisplayMode DisplayMode() const override { return display_mode_; }
 
@@ -588,6 +585,7 @@ class WEB_EXPORT WebViewImpl final
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
   CompositorMutatorImpl& Mutator();
+  CompositorMutatorImpl* CompositorMutator() override;
 
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
 

@@ -62,8 +62,6 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/ValidationMessageClient.h"
-#include "modules/compositorworker/AnimationWorkletProxyClientImpl.h"
-#include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -484,6 +482,10 @@ void WebFrameWidgetImpl::ScheduleAnimation() {
 }
 
 CompositorMutatorImpl& WebFrameWidgetImpl::Mutator() {
+  return *CompositorMutator();
+}
+
+CompositorMutatorImpl* WebFrameWidgetImpl::CompositorMutator() {
   if (!mutator_) {
     std::unique_ptr<CompositorMutatorClient> mutator_client =
         CompositorMutatorImpl::CreateClient();
@@ -491,17 +493,7 @@ CompositorMutatorImpl& WebFrameWidgetImpl::Mutator() {
     layer_tree_view_->SetMutatorClient(std::move(mutator_client));
   }
 
-  return *mutator_;
-}
-
-CompositorWorkerProxyClient*
-WebFrameWidgetImpl::CreateCompositorWorkerProxyClient() {
-  return new CompositorWorkerProxyClientImpl(&Mutator());
-}
-
-AnimationWorkletProxyClient*
-WebFrameWidgetImpl::CreateAnimationWorkletProxyClient() {
-  return new AnimationWorkletProxyClientImpl(&Mutator());
+  return mutator_;
 }
 
 void WebFrameWidgetImpl::ApplyViewportDeltas(

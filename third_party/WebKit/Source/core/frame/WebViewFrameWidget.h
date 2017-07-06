@@ -98,8 +98,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
   void ScheduleAnimation() override;
-  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
-  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
+  CompositorMutatorImpl* CompositorMutator() override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(WebLayer*) override;

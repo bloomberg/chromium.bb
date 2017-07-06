@@ -2525,4 +2525,8 @@ void WebLocalFrameImpl::SetSpellCheckPanelHostClient(
   spell_check_panel_host_client_ = spell_check_panel_host_client;
 }
 
+WebFrameWidgetBase* WebLocalFrameImpl::LocalRootFrameWidget() {
+  return LocalRoot()->FrameWidget();
+}
+
 }  // namespace blink

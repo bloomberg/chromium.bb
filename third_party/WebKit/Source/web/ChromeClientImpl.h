@@ -210,11 +210,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
 
-  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
-      LocalFrame*) override;
-  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient(
-      LocalFrame*) override;
-
   FloatSize ElasticOverscroll() const override;
 
   void DidObserveNonGetFetchFromScript() const override;

@@ -55,7 +55,6 @@ namespace blink {
 
 class ColorChooser;
 class ColorChooserClient;
-class CompositorWorkerProxyClient;
 class CompositorAnimationTimeline;
 class DateTimeChooser;
 class DateTimeChooserClient;
@@ -331,11 +330,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
   virtual void NotifyPopupOpeningObservers() const = 0;
-
-  virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
-      LocalFrame*) = 0;
-  virtual AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient(
-      LocalFrame*) = 0;
 
   virtual FloatSize ElasticOverscroll() const { return FloatSize(); }
 

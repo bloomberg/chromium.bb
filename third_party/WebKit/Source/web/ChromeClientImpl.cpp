@@ -1069,22 +1069,6 @@ void ChromeClientImpl::DidUpdateBrowserControls() const {
   web_view_->DidUpdateBrowserControls();
 }
 
-CompositorWorkerProxyClient*
-ChromeClientImpl::CreateCompositorWorkerProxyClient(LocalFrame* frame) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  return web_frame->LocalRoot()
-      ->FrameWidget()
-      ->CreateCompositorWorkerProxyClient();
-}
-
-AnimationWorkletProxyClient*
-ChromeClientImpl::CreateAnimationWorkletProxyClient(LocalFrame* frame) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  return web_frame->LocalRoot()
-      ->FrameWidget()
-      ->CreateAnimationWorkletProxyClient();
-}
-
 void ChromeClientImpl::RegisterPopupOpeningObserver(
     PopupOpeningObserver* observer) {
   DCHECK(observer);
