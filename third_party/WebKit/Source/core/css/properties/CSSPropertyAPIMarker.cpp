@@ -4,4 +4,21 @@
 
 #include "core/css/properties/CSSPropertyAPIMarker.h"
 
-namespace blink {}  // namespace blink
+#include "core/css/CSSURIValue.h"
+#include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSPropertyParserHelpers.h"
+
+namespace blink {
+
+class CSSParserLocalContext;
+
+const CSSValue* CSSPropertyAPIMarker::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) {
+  if (range.Peek().Id() == CSSValueNone)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeUrl(range, &context);
+}
+
+}  // namespace blink
