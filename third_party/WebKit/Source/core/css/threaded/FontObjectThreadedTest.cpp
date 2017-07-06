@@ -8,6 +8,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/resolver/FontStyleResolver.h"
 #include "core/css/threaded/MultiThreadedTestUtil.h"
+#include "platform/Language.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontDescription.h"
@@ -19,6 +20,10 @@
 using blink::testing::CreateTestFont;
 
 namespace blink {
+
+TSAN_TEST(FontObjectThreadedTest, Language) {
+  RunOnThreads([]() { EXPECT_EQ(DefaultLanguage(), "en-US"); });
+}
 
 TSAN_TEST(FontObjectThreadedTest, GetFontDefinition) {
   RunOnThreads([]() {

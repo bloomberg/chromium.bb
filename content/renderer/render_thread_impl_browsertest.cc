@@ -49,6 +49,7 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/buffer_format_util.h"
 
 // IPC messages for testing ----------------------------------------------------
@@ -208,6 +209,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
     // RenderThreadImpl expects the browser to pass these flags.
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringVector old_argv = cmd->argv();
+
+    cmd->AppendSwitchASCII(switches::kLang, "en-US");
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
     cmd->AppendSwitchASCII(

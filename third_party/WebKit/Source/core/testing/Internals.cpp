@@ -250,7 +250,7 @@ void Internals::ResetToConsistentState(Page* page) {
       ->View()
       ->LayoutViewportScrollableArea()
       ->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
-  OverrideUserPreferredLanguages(Vector<AtomicString>());
+  OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
   if (!page->DeprecatedLocalMainFrame()
            ->GetSpellChecker()
            .IsSpellCheckingEnabled())
@@ -1620,7 +1620,7 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages) {
   Vector<AtomicString> atomic_languages;
   for (size_t i = 0; i < languages.size(); ++i)
     atomic_languages.push_back(AtomicString(languages[i]));
-  OverrideUserPreferredLanguages(atomic_languages);
+  OverrideUserPreferredLanguagesForTesting(atomic_languages);
 }
 
 unsigned Internals::mediaKeysCount() {
