@@ -13,7 +13,6 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/web/public/navigation_item_list.h"
 
-@protocol BrowserCommands;
 @protocol PreloadProvider;
 @class Tab;
 @protocol ToolbarFrameDelegate;
@@ -89,8 +88,7 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 @property(nonatomic, weak, readonly) id<UrlLoader> urlLoader;
 
 // Mark inherited initializer as unavailable.
-- (instancetype)initWithStyle:(ToolbarControllerStyle)style
-                   dispatcher:(id<BrowserCommands>)dispatcher NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(ToolbarControllerStyle)style NS_UNAVAILABLE;
 
 // Create a new web toolbar controller whose omnibox is backed by
 // |browserState|.
@@ -98,7 +96,6 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
                        urlLoader:(id<UrlLoader>)urlLoader
                     browserState:(ios::ChromeBrowserState*)browserState
                  preloadProvider:(id<PreloadProvider>)preloader
-                      dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 // Called when the browser state this object was initialized with is being

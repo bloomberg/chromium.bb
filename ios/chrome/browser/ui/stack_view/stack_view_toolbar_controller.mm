@@ -30,7 +30,7 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
 }
 
 - (instancetype)initWithStackViewToolbar {
-  self = [super initWithStyle:ToolbarControllerStyleDarkMode dispatcher:nil];
+  self = [super initWithStyle:ToolbarControllerStyleDarkMode];
   if (self) {
     _stackViewToolbar =
         [[UIView alloc] initWithFrame:[self specificControlsArea]];

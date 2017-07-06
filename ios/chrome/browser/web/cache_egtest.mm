@@ -170,7 +170,9 @@ class ScopedBlockPopupsPref {
 // Navigates back to the previous webpage.
 // TODO(crbug.com/638674): Evaluate if this can move to shared code.
 - (void)goBack {
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
+  GenericChromeCommand* backCommand =
+      [[GenericChromeCommand alloc] initWithTag:IDC_BACK];
+  chrome_test_util::RunCommandWithActiveViewController(backCommand);
 
   [ChromeEarlGrey waitForPageToFinishLoading];
 }

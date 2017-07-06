@@ -35,9 +35,8 @@ class ToolbarControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    toolbarController_ =
-        [[ToolbarController alloc] initWithStyle:ToolbarControllerStyleLightMode
-                                      dispatcher:nil];
+    toolbarController_ = [[ToolbarController alloc]
+        initWithStyle:ToolbarControllerStyleLightMode];
   }
 
   ToolbarController* toolbarController_;

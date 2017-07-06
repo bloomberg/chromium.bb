@@ -39,36 +39,22 @@
   const BOOL hasTabs = [consumer tabsCount] > 0;
 
   const BOOL useRTLLayout = UseRTLLayout();
-
-  // Blocks for navigating forward/back.
-  void (^browseLeft)();
-  void (^browseRight)();
-  if (useRTLLayout) {
-    browseLeft = ^{
-      if ([weakConsumer canGoForward])
-        [weakDispatcher goForward];
-    };
-    browseRight = ^{
-      if ([weakConsumer canGoBack])
-        [weakDispatcher goBack];
-    };
-  } else {
-    browseLeft = ^{
-      if ([weakConsumer canGoBack])
-        [weakDispatcher goBack];
-    };
-    browseRight = ^{
-      if ([weakConsumer canGoForward])
-        [weakDispatcher goForward];
-    };
-  }
-
+  const NSInteger browseLeft = useRTLLayout ? IDC_FORWARD : IDC_BACK;
+  const NSInteger browseRight = useRTLLayout ? IDC_BACK : IDC_FORWARD;
   const int browseLeftDescriptionID = useRTLLayout
                                           ? IDS_IOS_KEYBOARD_HISTORY_FORWARD
                                           : IDS_IOS_KEYBOARD_HISTORY_BACK;
   const int browseRightDescriptionID = useRTLLayout
                                            ? IDS_IOS_KEYBOARD_HISTORY_BACK
                                            : IDS_IOS_KEYBOARD_HISTORY_FORWARD;
+  BOOL (^canBrowseLeft)() = ^() {
+    return useRTLLayout ? [weakConsumer canGoForward]
+                        : [weakConsumer canGoBack];
+  };
+  BOOL (^canBrowseRight)() = ^() {
+    return useRTLLayout ? [weakConsumer canGoBack]
+                        : [weakConsumer canGoForward];
+  };
 
   // Initialize the array of commands with an estimated capacity.
   NSMutableArray* keyCommands = [NSMutableArray arrayWithCapacity:32];
@@ -169,14 +155,18 @@
                                        title:l10n_util::GetNSStringWithFixup(
                                                  browseLeftDescriptionID)
                                       action:^{
-                                        browseLeft();
+                                        if (canBrowseLeft()) {
+                                          execute(browseLeft);
+                                        }
                                       }],
         [UIKeyCommand cr_keyCommandWithInput:UIKeyInputRightArrow
                                modifierFlags:UIKeyModifierCommand
                                        title:l10n_util::GetNSStringWithFixup(
                                                  browseRightDescriptionID)
                                       action:^{
-                                        browseRight();
+                                        if (canBrowseRight()) {
+                                          execute(browseRight);
+                                        }
                                       }],
       ]];
     }
@@ -235,13 +225,17 @@
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      browseLeft();
+                                      if (canBrowseLeft()) {
+                                        execute(browseLeft);
+                                      }
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"]"
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      browseRight();
+                                      if (canBrowseRight()) {
+                                        execute(browseRight);
+                                      }
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"."
                              modifierFlags:UIKeyModifierCommand

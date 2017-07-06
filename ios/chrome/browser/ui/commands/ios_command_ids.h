@@ -13,6 +13,8 @@
 // also need to be updated.
 
 // clang-format off
+#define IDC_BACK                                       33000
+#define IDC_FORWARD                                    33001
 #define IDC_RELOAD                                     33002
 #define IDC_STOP                                       33006
 #define IDC_NEW_TAB                                    34014
