@@ -3923,7 +3923,10 @@ split_static_library("browser") {
     ]
     deps += [ "//media/mojo/interfaces" ]
     if (mojo_media_host == "browser") {
-      deps += [ "//media/mojo/services" ]
+      deps += [
+        "//media/mojo/interfaces:constants",
+        "//media/mojo/services",
+      ]
     }
   }
 

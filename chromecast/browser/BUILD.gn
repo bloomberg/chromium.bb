@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -165,6 +166,13 @@ source_set("browser") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (enable_mojo_media) {
+    deps += [
+      "//media/mojo/interfaces:constants",
+      "//media/mojo/services",
+    ]
   }
 }
 

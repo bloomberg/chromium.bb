@@ -13,6 +13,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/mojo/features.h"
+#include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -123,7 +124,7 @@ void MediaInterfaceProxy::ConnectToService() {
   media::mojom::MediaServicePtr media_service;
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface("media", &media_service);
+  connector->BindInterface(media::mojom::kMediaServiceName, &media_service);
   media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr_),
                                         std::move(interfaces));
   interface_factory_ptr_.set_connection_error_handler(base::Bind(

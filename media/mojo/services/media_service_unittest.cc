@@ -18,6 +18,7 @@
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/features.h"
+#include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
@@ -79,7 +80,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     ServiceTest::SetUp();
 
     media::mojom::MediaServicePtr media_service;
-    connector()->BindInterface("media", &media_service);
+    connector()->BindInterface(media::mojom::kMediaServiceName, &media_service);
 
     service_manager::mojom::InterfaceProviderPtr interfaces;
     auto provider = base::MakeUnique<MediaInterfaceProvider>(
@@ -200,7 +201,7 @@ TEST_F(MediaServiceTest, Lifetime) {
   // live InterfaceFactory impls, not MediaService impls, so this pipe should
   // be closed when the last InterfaceFactory is destroyed.
   media::mojom::MediaServicePtr media_service;
-  connector()->BindInterface("media", &media_service);
+  connector()->BindInterface(media::mojom::kMediaServiceName, &media_service);
   media_service.set_connection_error_handler(
       base::Bind(&MediaServiceTest::ConnectionClosed, base::Unretained(this)));
 
