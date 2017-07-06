@@ -42,7 +42,8 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
                        const int supertx_enabled,
 #endif
 #if CONFIG_TXK_SEL
-                       int block, int plane, TX_SIZE tx_size,
+                       int blk_row, int blk_col, int block, int plane,
+                       TX_SIZE tx_size,
 #endif
                        aom_writer *w);
 

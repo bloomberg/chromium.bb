@@ -78,7 +78,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
@@ -96,7 +97,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   if (eob == 0) return;
 #if CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, block, plane, get_min_tx_size(tx_size), w);
+  av1_write_tx_type(cm, xd, blk_row, blk_col, block, plane,
+                    get_min_tx_size(tx_size), w);
 #endif
 
   nz_map = cm->fc->nz_map[txs_ctx][plane_type];
@@ -292,9 +294,8 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   MACROBLOCKD *const xd = &x->e_mbd;
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  (void)blk_row;
-  (void)blk_col;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   const int eob = p->eobs[block];
@@ -1466,9 +1467,8 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
-  (void)blk_row;
-  (void)blk_col;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
@@ -1543,7 +1543,8 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   const uint16_t eob = p->eobs[block];
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const PLANE_TYPE plane_type = pd->plane_type;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   (void)plane_bsize;
 
@@ -1568,7 +1569,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   const int segment_id = mbmi->segment_id;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
@@ -1876,9 +1878,9 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   av1_invalid_rd_stats(&best_rd_stats);
 
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
-    if (plane == 0) mbmi->txk_type[block] = tx_type;
-    const TX_TYPE ref_tx_type =
-        av1_get_tx_type(get_plane_type(plane), xd, block, tx_size);
+    if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = tx_type;
+    TX_TYPE ref_tx_type = av1_get_tx_type(get_plane_type(plane), xd, blk_row,
+                                          blk_col, block, tx_size);
     if (tx_type != ref_tx_type) {
       // use av1_get_tx_type() to check if the tx_type is valid for the current
       // mode if it's not, we skip it here.
@@ -1908,6 +1910,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
                         scan_order, a, l, use_fast_coef_costing);
     int rd = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
+
     if (rd < best_rd) {
       best_rd = rd;
       best_rd_stats = this_rd_stats;
@@ -1918,7 +1921,13 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   av1_merge_rd_stats(rd_stats, &best_rd_stats);
 
-  if (plane == 0) mbmi->txk_type[block] = best_tx_type;
+  //  if (x->plane[plane].eobs[block] == 0)
+  //    if (best_tx_type != DCT_DCT)
+  //      exit(0);
+
+  if (best_eob == 0 && is_inter_block(mbmi)) best_tx_type = DCT_DCT;
+
+  if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = best_tx_type;
   x->plane[plane].txb_entropy_ctx[block] = best_eob;
 
   if (!is_inter_block(mbmi)) {

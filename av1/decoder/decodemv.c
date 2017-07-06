@@ -985,7 +985,8 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                       int supertx_enabled,
 #endif
 #if CONFIG_TXK_SEL
-                      int block, int plane, TX_SIZE tx_size,
+                      int blk_row, int blk_col, int block, int plane,
+                      TX_SIZE tx_size,
 #endif
                       aom_reader *r) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1004,7 +1005,8 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #else
   // only y plane's tx_type is transmitted
   if (plane > 0) return;
-  TX_TYPE *tx_type = &mbmi->txk_type[block];
+  (void)block;
+  TX_TYPE *tx_type = &mbmi->txk_type[(blk_row << 4) + blk_col];
 #endif
 
   if (!FIXED_TX_TYPE) {

@@ -73,15 +73,20 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   *eob = 0;
   if (all_zero) {
     *max_scan_line = 0;
+#if CONFIG_TXK_SEL
+    if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = DCT_DCT;
+#endif
     return 0;
   }
 
   (void)blk_row;
   (void)blk_col;
 #if CONFIG_TXK_SEL
-  av1_read_tx_type(cm, xd, block, plane, get_min_tx_size(tx_size), r);
+  av1_read_tx_type(cm, xd, blk_row, blk_col, block, plane,
+                   get_min_tx_size(tx_size), r);
 #endif
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
