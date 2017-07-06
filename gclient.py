@@ -1717,6 +1717,105 @@ def CMDfetch(parser, args):
       '--jobs=%d' % options.jobs, '--scm=git', 'git', 'fetch'] + args)
 
 
+class Flattener(object):
+  """Flattens a gclient solution."""
+
+  def __init__(self, client):
+    """Constructor.
+
+    Arguments:
+      client (GClient): client to flatten
+    """
+    self._client = client
+
+    self._deps_string = None
+
+    self._allowed_hosts = set()
+    self._deps = {}
+    self._deps_os = {}
+    self._hooks = []
+    self._hooks_os = {}
+    self._pre_deps_hooks = []
+
+    self._flatten()
+
+  @property
+  def deps_string(self):
+    assert self._deps_string is not None
+    return self._deps_string
+
+  def _flatten(self):
+    """Runs the flattener. Saves resulting DEPS string."""
+    for solution in self._client.dependencies:
+      self._flatten_solution(solution)
+
+    self._deps_string = '\n'.join(
+        _GNSettingsToLines(
+            self._client.dependencies[0]._gn_args_file,
+            self._client.dependencies[0]._gn_args) +
+        _AllowedHostsToLines(self._allowed_hosts) +
+        _DepsToLines(self._deps) +
+        _DepsOsToLines(self._deps_os) +
+        _HooksToLines('hooks', self._hooks) +
+        _HooksToLines('pre_deps_hooks', self._pre_deps_hooks) +
+        _HooksOsToLines(self._hooks_os) +
+        [''])  # Ensure newline at end of file.
+
+  def _flatten_solution(self, solution):
+    """Visits a solution in order to flatten it (see CMDflatten).
+
+    Arguments:
+      solution (Dependency): one of top-level solutions in .gclient
+    """
+    self._flatten_dep(solution)
+    self._flatten_recurse(solution)
+
+  def _flatten_dep(self, dep):
+    """Visits a dependency in order to flatten it (see CMDflatten).
+
+    Arguments:
+      dep (Dependency): dependency to process
+    """
+    self._allowed_hosts.update(dep.allowed_hosts)
+
+    assert dep.name not in self._deps
+    self._deps[dep.name] = dep
+
+    self._hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
+    self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
+
+    for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
+      self._hooks_os.setdefault(hook_os, []).extend(
+          [(dep, hook) for hook in os_hooks])
+
+    self._add_deps_os(dep)
+
+    deps_by_name = dict((d.name, d) for d in dep.dependencies)
+    for recurse_dep_name in (dep.recursedeps or []):
+      self._flatten_recurse(deps_by_name[recurse_dep_name])
+
+  def _flatten_recurse(self, dep):
+    """Helper for flatten that recurses into |dep|'s dependencies.
+
+    Arguments:
+      dep (Dependency): dependency to process
+    """
+    self._add_deps_os(dep)
+
+    for sub_dep in dep.orig_dependencies:
+      self._flatten_dep(sub_dep)
+
+  def _add_deps_os(self, dep):
+    """Helper for flatten that collects deps_os from |dep|.
+
+    Arguments:
+      dep (Dependency): dependency to process
+    """
+    for dep_os, os_deps in dep.os_dependencies.iteritems():
+      for os_dep in os_deps:
+        self._deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+
+
 def CMDflatten(parser, args):
   """Flattens the solutions into a single DEPS file."""
   parser.add_option('--output-deps', help='Path to the output DEPS file')
@@ -1731,157 +1830,15 @@ def CMDflatten(parser, args):
   if code != 0:
     return code
 
-  allowed_hosts = set()
-  deps = {}
-  deps_os = {}
-  hooks = []
-  hooks_os = {}
-  pre_deps_hooks = []
-
-  for solution in client.dependencies:
-    _FlattenSolution(
-        solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks)
-
-  flattened_deps = '\n'.join(
-    _GNSettingsToLines(
-        client.dependencies[0]._gn_args_file,
-        client.dependencies[0]._gn_args) +
-    _AllowedHostsToLines(allowed_hosts) +
-    _DepsToLines(deps) +
-    _DepsOsToLines(deps_os) +
-    _HooksToLines('hooks', hooks) +
-    _HooksToLines('pre_deps_hooks', pre_deps_hooks) +
-    _HooksOsToLines(hooks_os) +
-    ['']  # Ensure newline at end of file.
-  )
+  flattener = Flattener(client)
 
   if options.output_deps:
     with open(options.output_deps, 'w') as f:
-      f.write(flattened_deps)
+      f.write(flattener.deps_string)
   else:
-    print(flattened_deps)
+    print(flattener.deps_string)
 
   return 0
-
-
-def _FlattenSolution(
-    solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks):
-  """Visits a solution in order to flatten it (see CMDflatten).
-
-  Arguments:
-    solution (Dependency): one of top-level solutions in .gclient
-
-  Out-parameters:
-    allowed_hosts (set of host names): host names from which
-        dependencies are allowed (whitelist)
-    deps (dict of name -> Dependency): will be filled with all Dependency
-        objects indexed by their name
-    deps_os (dict of os name -> dep name -> Dependency): same as above,
-        for OS-specific deps
-    hooks (list of (Dependency, hook)): will be filled with flattened hooks
-    hooks_os (dict of os name -> list of (Dependency, hook)): same as above,
-        for OS-specific hooks
-    pre_deps_hooks (list of (Dependency, hook)): will be filled with flattened
-        pre_deps_hooks
-  """
-  logging.debug('_FlattenSolution(%r)', solution)
-
-  _FlattenDep(solution, allowed_hosts, deps, deps_os, hooks, hooks_os,
-              pre_deps_hooks)
-  _FlattenRecurse(solution, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                  pre_deps_hooks)
-
-
-def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                pre_deps_hooks):
-  """Visits a dependency in order to flatten it (see CMDflatten).
-
-  Arguments:
-    dep (Dependency): dependency to process
-
-  Out-parameters:
-    allowed_hosts (set): will be filled with flattened allowed_hosts
-    deps (dict): will be filled with flattened deps
-    deps_os (dict): will be filled with flattened deps_os
-    hooks (list): will be filled with flattened hooks
-    hooks_os (dict): will be filled with flattened hooks_os
-    pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
-  """
-  logging.debug('_FlattenDep(%r)', dep)
-
-  _AddDep(dep, allowed_hosts, deps)
-
-  _FlattenDepsOs(dep, deps_os)
-
-  deps_by_name = dict((d.name, d) for d in dep.dependencies)
-  for recurse_dep_name in (dep.recursedeps or []):
-    _FlattenRecurse(
-        deps_by_name[recurse_dep_name], allowed_hosts, deps, deps_os, hooks,
-        hooks_os, pre_deps_hooks)
-
-  hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
-  pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
-
-  for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
-    hooks_os.setdefault(hook_os, []).extend([(dep, hook) for hook in os_hooks])
-
-
-def _FlattenRecurse(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                    pre_deps_hooks):
-  """Helper for flatten that recurses into |dep|'s dependencies.
-
-  Arguments:
-    dep (Dependency): dependency to process
-
-  Out-parameters:
-    allowed_hosts (set): will be filled with flattened allowed_hosts
-    deps (dict): will be filled with flattened deps
-    deps_os (dict): will be filled with flattened deps_os
-    hooks (list): will be filled with flattened hooks
-    hooks_os (dict): will be filled with flattened hooks_os
-    pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
-  """
-  logging.debug('_FlattenRecurse(%r)', dep)
-
-  _FlattenDepsOs(dep, deps_os)
-
-  for sub_dep in dep.orig_dependencies:
-    _FlattenDep(sub_dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                pre_deps_hooks)
-
-
-def _FlattenDepsOs(dep, deps_os):
-  """Helper to add a dependency to flattened lists.
-
-  Arguments:
-    dep (Dependency): dependency to process
-
-  Out-parameters:
-    deps_os (dict): will be filled with flattened deps_os
-  """
-  logging.debug('_FlattenDepsOs(%r)', dep)
-
-  for dep_os, os_deps in dep.os_dependencies.iteritems():
-    for os_dep in os_deps:
-      deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
-
-
-def _AddDep(dep, allowed_hosts, deps):
-  """Helper to add a dependency to flattened lists.
-
-  Arguments:
-    dep (Dependency): dependency to process
-
-  Out-parameters:
-    allowed_hosts (set): will be filled with flattened allowed_hosts
-    deps (dict): will be filled with flattened deps
-  """
-  logging.debug('_AddDep(%r)', dep)
-
-  allowed_hosts.update(dep.allowed_hosts)
-
-  assert dep.name not in deps
-  deps[dep.name] = dep
 
 
 def _GNSettingsToLines(gn_args_file, gn_args):
