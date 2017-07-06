@@ -926,6 +926,10 @@ const char kHelpShort[]                     = "h";
 // or KWallets.
 const char kPasswordStore[]                 = "password-store";
 
+// Enables the feature of allowing the user to disable the backend via a
+// setting.
+const char kEnableEncryptionSelection[] = "enable-encryption-selection";
+
 // The same as the --class argument in X applications.  Overrides the WM_CLASS
 // window property with the given value.
 const char kWmClass[]                       = "class";

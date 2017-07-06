@@ -250,6 +250,22 @@ void OSCrypt::SetMainThreadRunner(
 }
 
 // static
+void OSCrypt::ShouldUsePreference(bool should_use_preference) {
+  // Setting initialisation parameters makes no sense after initializing.
+  DCHECK(!g_cache.Get().is_key_storage_cached);
+
+  KeyStorageLinux::ShouldUsePreference(should_use_preference);
+}
+
+// static
+void OSCrypt::SetUserDataPath(const base::FilePath& path) {
+  // Setting initialisation parameters makes no sense after initializing.
+  DCHECK(!g_cache.Get().is_key_storage_cached);
+
+  KeyStorageLinux::SetUserDataPath(path);
+}
+
+// static
 bool OSCrypt::IsEncryptionAvailable() {
   return g_get_password[Version::V11]();
 }
