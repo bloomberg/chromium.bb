@@ -1720,9 +1720,6 @@ def CMDfetch(parser, args):
 def CMDflatten(parser, args):
   """Flattens the solutions into a single DEPS file."""
   parser.add_option('--output-deps', help='Path to the output DEPS file')
-  parser.add_option(
-      '--require-pinned-revisions', action='store_true',
-      help='Fail if any of the dependencies uses unpinned revision.')
   options, args = parser.parse_args(args)
 
   options.nohooks = True
@@ -1740,17 +1737,10 @@ def CMDflatten(parser, args):
   hooks = []
   hooks_os = {}
   pre_deps_hooks = []
-  unpinned_deps = {}
 
   for solution in client.dependencies:
     _FlattenSolution(
-        solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
-        unpinned_deps)
-
-  if options.require_pinned_revisions and unpinned_deps:
-    sys.stderr.write('The following dependencies are not pinned:\n')
-    sys.stderr.write('\n'.join(sorted(unpinned_deps)))
-    return 1
+        solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks)
 
   flattened_deps = '\n'.join(
     _GNSettingsToLines(
@@ -1775,8 +1765,7 @@ def CMDflatten(parser, args):
 
 
 def _FlattenSolution(
-    solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
-    unpinned_deps):
+    solution, allowed_hosts, deps, deps_os, hooks, hooks_os, pre_deps_hooks):
   """Visits a solution in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1794,19 +1783,17 @@ def _FlattenSolution(
         for OS-specific hooks
     pre_deps_hooks (list of (Dependency, hook)): will be filled with flattened
         pre_deps_hooks
-    unpinned_deps (dict of name -> Dependency): will be filled with unpinned
-        deps
   """
   logging.debug('_FlattenSolution(%r)', solution)
 
   _FlattenDep(solution, allowed_hosts, deps, deps_os, hooks, hooks_os,
-              pre_deps_hooks, unpinned_deps)
+              pre_deps_hooks)
   _FlattenRecurse(solution, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                  pre_deps_hooks, unpinned_deps)
+                  pre_deps_hooks)
 
 
 def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                pre_deps_hooks, unpinned_deps):
+                pre_deps_hooks):
   """Visits a dependency in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1819,11 +1806,10 @@ def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
     hooks (list): will be filled with flattened hooks
     hooks_os (dict): will be filled with flattened hooks_os
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
-    unpinned_deps (dict): will be filled with unpinned deps
   """
   logging.debug('_FlattenDep(%r)', dep)
 
-  _AddDep(dep, allowed_hosts, deps, unpinned_deps)
+  _AddDep(dep, allowed_hosts, deps)
 
   _FlattenDepsOs(dep, deps_os)
 
@@ -1831,7 +1817,7 @@ def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
   for recurse_dep_name in (dep.recursedeps or []):
     _FlattenRecurse(
         deps_by_name[recurse_dep_name], allowed_hosts, deps, deps_os, hooks,
-        hooks_os, pre_deps_hooks, unpinned_deps)
+        hooks_os, pre_deps_hooks)
 
   hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
   pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
@@ -1841,7 +1827,7 @@ def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
 
 
 def _FlattenRecurse(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                    pre_deps_hooks, unpinned_deps):
+                    pre_deps_hooks):
   """Helper for flatten that recurses into |dep|'s dependencies.
 
   Arguments:
@@ -1854,7 +1840,6 @@ def _FlattenRecurse(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
     hooks (list): will be filled with flattened hooks
     hooks_os (dict): will be filled with flattened hooks_os
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
-    unpinned_deps (dict): will be filled with unpinned deps
   """
   logging.debug('_FlattenRecurse(%r)', dep)
 
@@ -1862,7 +1847,7 @@ def _FlattenRecurse(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
 
   for sub_dep in dep.orig_dependencies:
     _FlattenDep(sub_dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
-                pre_deps_hooks, unpinned_deps)
+                pre_deps_hooks)
 
 
 def _FlattenDepsOs(dep, deps_os):
@@ -1881,7 +1866,7 @@ def _FlattenDepsOs(dep, deps_os):
       deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
 
 
-def _AddDep(dep, allowed_hosts, deps, unpinned_deps):
+def _AddDep(dep, allowed_hosts, deps):
   """Helper to add a dependency to flattened lists.
 
   Arguments:
@@ -1890,7 +1875,6 @@ def _AddDep(dep, allowed_hosts, deps, unpinned_deps):
   Out-parameters:
     allowed_hosts (set): will be filled with flattened allowed_hosts
     deps (dict): will be filled with flattened deps
-    unpinned_deps (dict): will be filled with unpinned deps
   """
   logging.debug('_AddDep(%r)', dep)
 
@@ -1898,11 +1882,6 @@ def _AddDep(dep, allowed_hosts, deps, unpinned_deps):
 
   assert dep.name not in deps
   deps[dep.name] = dep
-
-  # Detect unpinned deps.
-  _, revision = gclient_utils.SplitUrlRevision(dep.url)
-  if not revision or not gclient_utils.IsGitSha(revision):
-    unpinned_deps[dep.name] = dep
 
 
 def _GNSettingsToLines(gn_args_file, gn_args):
