@@ -200,6 +200,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "media/mojo/features.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -2992,6 +2993,22 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   }
 }
 
+bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+  // TODO(https://crbug.com/736357): Factor AssociatedInterfaceRegistryImpl out
+  // into content/public/ so it can be used here instead of this abomination.
+  if (interface_name == password_manager::mojom::CredentialManager::Name_) {
+    ChromePasswordManagerClient::BindCredentialManager(
+        password_manager::mojom::CredentialManagerAssociatedRequest(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  return false;
+}
+
 void ChromeContentBrowserClient::BindInterfaceRequest(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
@@ -3323,8 +3340,6 @@ void ChromeContentBrowserClient::InitFrameInterfaces() {
   frame_interfaces_->AddInterface<bluetooth::mojom::AdapterFactory>(
       base::Bind(&bluetooth::AdapterFactory::Create));
 
-  frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&ChromePasswordManagerClient::BindCredentialManager));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ChromeTranslateClient::BindContentTranslateDriver));
 

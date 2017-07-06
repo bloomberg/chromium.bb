@@ -4,16 +4,21 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -31,8 +36,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   }
 
   bool IsShowingAccountChooser() {
-    return PasswordsModelDelegateFromWebContents(WebContents())->
-        GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE;
+    return PasswordsModelDelegateFromWebContents(WebContents())->GetState() ==
+           password_manager::ui::CREDENTIAL_REQUEST_STATE;
   }
 
   // Similarly to PasswordManagerBrowserTestBase::NavigateToFile this is a
@@ -48,6 +53,178 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     observer.Wait();
   }
 
+  // Triggers a call to `navigator.credentials.get` to retrieve passwords, waits
+  // for success, and ASSERTs that |expect_has_results| is satisfied.
+  void TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(
+      content::WebContents* web_contents,
+      bool expect_has_results) {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents,
+        "navigator.credentials.get({password: true}).then(c => {"
+        "  window.domAutomationController.send(!!c);"
+        "});",
+        &result));
+    ASSERT_EQ(expect_has_results, result);
+  }
+
+  // Schedules a call to be made to navigator.credentials.store() in the
+  // `unload` handler to save a credential with |username| and |password|.
+  void ScheduleNavigatorStoreCredentialAtUnload(
+      content::WebContents* web_contents,
+      const char* username,
+      const char* password) {
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents,
+        base::StringPrintf(
+            "window.addEventListener(\"unload\", () => {"
+            "  var c = new PasswordCredential({ id: '%s', password: '%s' });"
+            "  navigator.credentials.store(c);"
+            "});",
+            username, password)));
+  }
+
+  // Tests that when navigator.credentials.store() is called in an `unload`
+  // handler before a same-RenderFrame navigation, the request is guaranteed to
+  // be serviced in the context of the initial document.
+  //
+  // If |preestablish_mojo_pipe| is set, then the CredentialManagerClient will
+  // establish the Mojo connection to the CredentialManagerImpl ahead of time,
+  // instead of letting the Mojo connection be established on-demand when the
+  // call to store() triggered from the unload handler.
+  void TestStoreInUnloadHandlerForSameSiteNavigation(
+      bool preestablish_mojo_pipe) {
+    // Use URLs that differ on subdomains so we can tell which one was used for
+    // saving, but they still belong to the same SiteInstance, so they will be
+    // renderered in the same RenderFrame (in the same process).
+    const GURL a_url1 = https_test_server().GetURL("foo.a.com", "/title1.html");
+    const GURL a_url2 = https_test_server().GetURL("bar.a.com", "/title2.html");
+
+    // Navigate to a mostly empty page.
+    ui_test_utils::NavigateToURL(browser(), a_url1);
+
+    ChromePasswordManagerClient* client =
+        ChromePasswordManagerClient::FromWebContents(WebContents());
+
+    if (preestablish_mojo_pipe) {
+      EXPECT_FALSE(client->has_binding_for_credential_manager());
+      ASSERT_NO_FATAL_FAILURE(
+          TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(
+              WebContents(), false));
+      EXPECT_TRUE(client->has_binding_for_credential_manager());
+    }
+
+    // Schedule storing a credential on the `unload` event.
+    ASSERT_NO_FATAL_FAILURE(ScheduleNavigatorStoreCredentialAtUnload(
+        WebContents(), "user", "hunter2"));
+
+    // Trigger a same-site navigation carried out in the same RenderFrame.
+    content::RenderFrameHost* old_rfh = WebContents()->GetMainFrame();
+    ui_test_utils::NavigateToURL(browser(), a_url2);
+    ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
+
+    // Ensure that the old document no longer has a Mojo connection to the
+    // CredentialManagerImpl, nor can it get one later.
+    //
+    // The sequence of events for same-RFH navigations is as follows:
+    //  1.) FrameHostMsg_DidStartProvisionalLoad
+    //  2.) FrameLoader::PrepareForCommit
+    //  2.1) Document::Shutdown (old Document)
+    //  3.) FrameHostMsg_DidCommitProvisionalLoad (new load)
+    //  ... loading ...
+    //  4.) FrameHostMsg_DidStopLoading
+    //  5.) content::WaitForLoadStop inside NavigateToURL returns
+    //  6.) NavigateToURL returns
+    //
+    // After Step 2.1, the old Document cannot issue a new Mojo InterfaceRequest
+    // anymore. Plus, because the AssociatedInterfaceRegistry, through which the
+    // associated interface to the CredentialManagerImpl is retrieved, is itself
+    // Channel-associated, any InterfaceRequest messages that may have been
+    // issued before or during Step 2.1, will be guaranteed to arrive to the
+    // browser side before FrameHostMsg_DidCommitProvisionalLoad in Step 3.
+    //
+    // Hence it is sufficient to check that the Mojo connection is closed now.
+    EXPECT_FALSE(client->has_binding_for_credential_manager());
+
+    // Ensure that the navigator.credentials.store() call was serviced in the
+    // context of the old URL, |a_url|.
+    //
+    // The CredentialManager Mojo interface is Channel-associated, so message
+    // ordering with legacy IPC messages is preserved. Therefore, servicing the
+    // store() called from the `unload` handler, triggered from
+    // FrameLoader::PrepareForCommit, will be serviced before
+    // FrameHostMsg_DidCommitProvisionalLoad, thus before DidFinishNavigation,
+    ASSERT_TRUE(client->was_store_ever_called());
+
+    BubbleObserver prompt_observer(WebContents());
+    prompt_observer.WaitForSavePrompt();
+    ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+    prompt_observer.AcceptSavePrompt();
+
+    WaitForPasswordStore();
+
+    password_manager::TestPasswordStore* test_password_store =
+        static_cast<password_manager::TestPasswordStore*>(
+            PasswordStoreFactory::GetForProfile(
+                browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+                .get());
+
+    ASSERT_EQ(1u, test_password_store->stored_passwords().size());
+    autofill::PasswordForm signin_form =
+        test_password_store->stored_passwords().begin()->second[0];
+    EXPECT_EQ(base::ASCIIToUTF16("user"), signin_form.username_value);
+    EXPECT_EQ(base::ASCIIToUTF16("hunter2"), signin_form.password_value);
+    EXPECT_EQ(a_url1.GetOrigin(), signin_form.origin);
+  }
+
+  // Tests the when navigator.credentials.store() is called in an `unload`
+  // handler before a cross-site transfer navigation, the request is ignored.
+  //
+  // If |preestablish_mojo_pipe| is set, then the CredentialManagerClient will
+  // establish the Mojo connection to the CredentialManagerImpl ahead of time,
+  // instead of letting the Mojo connection be established on-demand when the
+  // call to store() triggered from the unload handler.
+  void TestStoreInUnloadHandlerForCrossSiteNavigation(
+      bool preestablish_mojo_pipe) {
+    const GURL a_url = https_test_server().GetURL("a.com", "/title1.html");
+    const GURL b_url = https_test_server().GetURL("b.com", "/title2.html");
+
+    // Navigate to a mostly empty page.
+    ui_test_utils::NavigateToURL(browser(), a_url);
+
+    ChromePasswordManagerClient* client =
+        ChromePasswordManagerClient::FromWebContents(WebContents());
+
+    if (preestablish_mojo_pipe) {
+      EXPECT_FALSE(client->has_binding_for_credential_manager());
+      ASSERT_NO_FATAL_FAILURE(
+          TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(
+              WebContents(), false));
+      EXPECT_TRUE(client->has_binding_for_credential_manager());
+    }
+
+    // Schedule storing a credential on the `unload` event.
+    ASSERT_NO_FATAL_FAILURE(ScheduleNavigatorStoreCredentialAtUnload(
+        WebContents(), "user", "hunter2"));
+
+    // Trigger a cross-site navigation that is carried out in a new renderer,
+    // and which will swap out the old RenderFrameHost.
+    content::RenderFrameDeletedObserver rfh_destruction_observer(
+        WebContents()->GetMainFrame());
+    ui_test_utils::NavigateToURL(browser(), b_url);
+
+    // Ensure that the navigator.credentials.store() call is never serviced.
+    // The sufficient conditions for this are:
+    //  -- The swapped out RFH is destroyed, so the RenderFrame cannot
+    //     establish a new Mojo connection to CredentialManagerImpl anymore.
+    //  -- There is no already existing Mojo connection to CredentialManagerImpl
+    //     either, which could be used to call store() in the future.
+    //  -- There have not been any calls to store() in the past.
+    rfh_destruction_observer.WaitUntilDeleted();
+    EXPECT_FALSE(client->has_binding_for_credential_manager());
+    EXPECT_FALSE(client->was_store_ever_called());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerBrowserTest);
 };
@@ -60,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
   autofill::PasswordForm signin_form;
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
@@ -71,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   NavigateToFile("/password/password_form.html");
   std::string fill_password =
-  "document.getElementById('username_field').value = 'user';"
-  "document.getElementById('password_field').value = 'password';";
+      "document.getElementById('username_field').value = 'user';"
+      "document.getElementById('password_field').value = 'password';";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
 
   // Call the API to trigger the notification to the client.
@@ -82,9 +260,10 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       ".then(cred => window.location = '/password/done.html')"));
   // Mojo calls from the renderer are asynchronous.
   BubbleObserver(WebContents()).WaitForAccountChooser();
-  PasswordsModelDelegateFromWebContents(WebContents())->ChooseCredential(
-      signin_form,
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  PasswordsModelDelegateFromWebContents(WebContents())
+      ->ChooseCredential(
+          signin_form,
+          password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 
   NavigationObserver observer(WebContents());
   observer.SetPathToWaitFor("/password/done.html");
@@ -243,6 +422,106 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   // The autofill password manager shouldn't react to the successful login
   // because it was suppressed when the site got the credential back.
   EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
+}
+
+// Regression test for https://crbug.com/736357.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       StoreInUnloadHandler_SameSite_OnDemandMojoPipe) {
+  TestStoreInUnloadHandlerForSameSiteNavigation(
+      false /* preestablish_mojo_pipe */);
+}
+
+// Regression test for https://crbug.com/736357.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       StoreInUnloadHandler_SameSite_PreestablishedPipe) {
+  TestStoreInUnloadHandlerForSameSiteNavigation(
+      true /* preestablish_mojo_pipe */);
+}
+// Regression test for https://crbug.com/736357.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       StoreInUnloadHandler_CrossSite_OnDemandMojoPipe) {
+  TestStoreInUnloadHandlerForCrossSiteNavigation(
+      false /* preestablish_mojo_pipe */);
+}
+
+// Regression test for https://crbug.com/736357.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       StoreInUnloadHandler_CrossSite_PreestablishedPipe) {
+  TestStoreInUnloadHandlerForCrossSiteNavigation(
+      true /* preestablish_mojo_pipe */);
+}
+
+// Regression test for https://crbug.com/736357.
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       MojoConnectionRecreatedAfterNavigation) {
+  const GURL a_url1 = https_test_server().GetURL("a.com", "/title1.html");
+  const GURL a_url2 = https_test_server().GetURL("a.com", "/title2.html");
+  const GURL a_url2_ref = https_test_server().GetURL("a.com", "/title2.html#r");
+  const GURL b_url = https_test_server().GetURL("b.com", "/title2.html#ref");
+
+  // Enable 'auto signin' for the profile.
+  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
+      browser()->profile()->GetPrefs());
+
+  // Navigate to a mostly empty page.
+  ui_test_utils::NavigateToURL(browser(), a_url1);
+
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(WebContents());
+
+  // Store a credential, and expect it to establish the Mojo connection.
+  EXPECT_FALSE(client->has_binding_for_credential_manager());
+  EXPECT_FALSE(client->was_store_ever_called());
+
+  ASSERT_TRUE(content::ExecuteScript(
+      WebContents(),
+      "var c = new PasswordCredential({ id: 'user', password: 'hunter2' });"
+      "navigator.credentials.store(c);"));
+
+  BubbleObserver prompt_observer(WebContents());
+  prompt_observer.WaitForSavePrompt();
+  ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+  prompt_observer.AcceptSavePrompt();
+  WaitForPasswordStore();
+
+  EXPECT_TRUE(client->has_binding_for_credential_manager());
+  EXPECT_TRUE(client->was_store_ever_called());
+
+  // Trigger a same-site navigation.
+  content::RenderFrameHost* old_rfh = WebContents()->GetMainFrame();
+  ui_test_utils::NavigateToURL(browser(), a_url2);
+  ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
+
+  // Expect the Mojo connection closed.
+  EXPECT_FALSE(client->has_binding_for_credential_manager());
+
+  // Calling navigator.credentials.get() again should re-establish the Mojo
+  // connection and succeed.
+  ASSERT_NO_FATAL_FAILURE(
+      TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(WebContents(),
+                                                               true));
+  EXPECT_TRUE(client->has_binding_for_credential_manager());
+
+  // Same-document navigation. Call to get() succeeds.
+  ui_test_utils::NavigateToURL(browser(), a_url2_ref);
+  ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
+  EXPECT_TRUE(client->has_binding_for_credential_manager());
+  ASSERT_NO_FATAL_FAILURE(
+      TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(WebContents(),
+                                                               true));
+
+  // Cross-site navigation. Call to get() succeeds without results.
+  ui_test_utils::NavigateToURL(browser(), b_url);
+  ASSERT_NO_FATAL_FAILURE(
+      TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(WebContents(),
+                                                               false));
+
+  // Trigger a cross-site navigation back. Call to get() should still succeed,
+  // and once again with results.
+  ui_test_utils::NavigateToURL(browser(), a_url1);
+  ASSERT_NO_FATAL_FAILURE(
+      TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(WebContents(),
+                                                               true));
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {

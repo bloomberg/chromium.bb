@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
@@ -273,7 +273,18 @@ void CredentialManagerClient::ConnectToMojoCMIfNeeded() {
     return;
 
   content::RenderFrame* main_frame = render_view()->GetMainRenderFrame();
-  main_frame->GetRemoteInterfaces()->GetInterface(&mojo_cm_service_);
+  main_frame->GetRemoteAssociatedInterfaces()->GetInterface(&mojo_cm_service_);
+
+  // The remote end of the pipe will be forcibly closed by the browser side
+  // after each main frame navigation. Set up an error handler to reset the
+  // local end so that there will be an attempt at reestablishing the connection
+  // at the next call to the API.
+  mojo_cm_service_.set_connection_error_handler(base::Bind(
+      &CredentialManagerClient::OnMojoConnectionError, base::Unretained(this)));
+}
+
+void CredentialManagerClient::OnMojoConnectionError() {
+  mojo_cm_service_.reset();
 }
 
 void CredentialManagerClient::OnDestruct() {
