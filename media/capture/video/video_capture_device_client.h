@@ -83,12 +83,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   double GetBufferPoolUtilization() const override;
 
  private:
-  void InitializeI420PlanePointers(const gfx::Size& dimensions,
-                                   uint8_t* const data,
-                                   uint8_t** y_plane_data,
-                                   uint8_t** u_plane_data,
-                                   uint8_t** v_plane_data);
-
   // A branch of OnIncomingCapturedData for Y16 frame_format.pixel_format.
   void OnIncomingCapturedY16Data(const uint8_t* data,
                                  int length,
