@@ -50,6 +50,11 @@ lib*.a
 /src/tools/mac/dump_syms/dump_syms
 /src/tools/mac/dump_syms/dump_syms_mac
 
+# Ignore unit test artifacts.
+*_unittest
+*.log
+*.trs
+
 # Ignore autotools generated artifacts.
 .deps
 .dirstamp

@@ -468,7 +468,7 @@ TEST(ExceptionHandlerTest, StackedHandlersUnhandledToBottom) {
 namespace {
 const int kSimpleFirstChanceReturnStatus = 42;
 bool SimpleFirstChanceHandler(int, void*, void*) {
-  exit(kSimpleFirstChanceReturnStatus);
+  _exit(kSimpleFirstChanceReturnStatus);
 }
 }
 
