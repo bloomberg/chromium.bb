@@ -133,8 +133,7 @@ IDBRequest* IDBObjectStore::get(ScriptState* script_state,
                                 ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::get", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::get");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -174,8 +173,7 @@ IDBRequest* IDBObjectStore::getKey(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getKeyRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getKey", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getKey");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -223,8 +221,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getAll", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getAll");
   if (!max_count)
     max_count = std::numeric_limits<uint32_t>::max();
 
@@ -270,8 +267,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllKeysRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getAllKeys", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::getAllKeys");
   if (!max_count)
     max_count = std::numeric_limits<uint32_t>::max();
 
@@ -391,7 +387,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
       tracing_name = "IDBCursor::update";
       break;
   }
-  IDBRequest::AsyncTraceState metrics(tracing_name, this, ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics(tracing_name);
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -551,8 +547,7 @@ IDBRequest* IDBObjectStore::deleteFunction(ScriptState* script_state,
                                            ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::deleteRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::delete", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::delete");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -595,8 +590,7 @@ IDBRequest* IDBObjectStore::deleteFunction(ScriptState* script_state,
 IDBRequest* IDBObjectStore::clear(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   IDB_TRACE("IDBObjectStore::clearRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::clear", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::clear");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -732,8 +726,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::createIndexRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::createIndex", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::createIndex");
   if (!transaction_->IsVersionChange()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
@@ -886,8 +879,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
                                        ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::openCursorRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::openCursor", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::openCursor");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -938,8 +930,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::openKeyCursorRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::openKeyCursor", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::openKeyCursor");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
@@ -981,8 +972,7 @@ IDBRequest* IDBObjectStore::count(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::countRequestSetup", "store_name",
              metadata_->name.Utf8());
-  IDBRequest::AsyncTraceState metrics("IDBObjectStore::count", this,
-                                      ++next_tracing_id_);
+  IDBRequest::AsyncTraceState metrics("IDBObjectStore::count");
   if (IsDeleted()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);

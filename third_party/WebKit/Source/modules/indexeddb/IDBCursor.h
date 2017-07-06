@@ -120,7 +120,6 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   Member<IDBKey> key_;
   Member<IDBKey> primary_key_;
   RefPtr<IDBValue> value_;
-  int64_t next_tracing_id_ = 0;
 };
 
 }  // namespace blink
