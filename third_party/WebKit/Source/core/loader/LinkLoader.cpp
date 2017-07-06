@@ -477,21 +477,16 @@ bool LinkLoader::LoadLink(
                      cross_origin, network_hints_interface,
                      kLinkCalledFromMarkup);
 
-  Resource* preloaded_resource = PreloadIfNeeded(
+  Resource* resource = PreloadIfNeeded(
       rel_attribute, href, document, as, type, media, cross_origin,
       kLinkCalledFromMarkup, nullptr, referrer_policy);
-  Resource* prefetched_resource = PrefetchIfNeeded(
-      document, href, rel_attribute, cross_origin, referrer_policy);
-
-  DCHECK(!preloaded_resource || !prefetched_resource);
-
-  if (preloaded_resource) {
-    finish_observer_ = new FinishObserver(this, preloaded_resource,
-                                          Resource::kDontMarkAsReferenced);
+  if (!resource) {
+    resource = PrefetchIfNeeded(document, href, rel_attribute, cross_origin,
+                                referrer_policy);
   }
-  if (prefetched_resource) {
-    finish_observer_ = new FinishObserver(this, prefetched_resource,
-                                          Resource::kMarkAsReferenced);
+  if (resource) {
+    finish_observer_ =
+        new FinishObserver(this, resource, Resource::kDontMarkAsReferenced);
   }
 
   if (const unsigned prerender_rel_types =
