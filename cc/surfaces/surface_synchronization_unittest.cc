@@ -112,10 +112,6 @@ class SurfaceSynchronizationTest : public testing::Test {
     return surface_manager().HasTemporaryReference(surface_id);
   }
 
-  SurfaceDependencyTracker& dependency_tracker() {
-    return *surface_manager_.dependency_tracker();
-  }
-
   FakeExternalBeginFrameSource* begin_frame_source() {
     return begin_frame_source_.get();
   }
@@ -138,10 +134,7 @@ class SurfaceSynchronizationTest : public testing::Test {
     begin_frame_source_ =
         base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
     begin_frame_source_->SetClient(&begin_frame_source_client_);
-    dependency_tracker_ =
-        base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_);
     now_src_ = base::MakeUnique<base::SimpleTestTickClock>();
-    surface_manager_.SetDependencyTracker(dependency_tracker_.get());
     surface_manager_.AddObserver(&surface_observer_);
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &surface_manager_, kDisplayFrameSink, kIsRoot,
@@ -166,13 +159,8 @@ class SurfaceSynchronizationTest : public testing::Test {
 
   void TearDown() override {
     surface_manager_.RemoveObserver(&surface_observer_);
-    surface_manager_.SetDependencyTracker(nullptr);
     surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
 
-    dependency_tracker_.reset();
-
-    // SurfaceDependencyTracker depends on this BeginFrameSource and so it must
-    // be destroyed AFTER the dependency tracker is destroyed.
     begin_frame_source_->SetClient(nullptr);
     begin_frame_source_.reset();
 
@@ -194,7 +182,6 @@ class SurfaceSynchronizationTest : public testing::Test {
   FakeExternalBeginFrameSourceClient begin_frame_source_client_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
-  std::unique_ptr<SurfaceDependencyTracker> dependency_tracker_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSynchronizationTest);

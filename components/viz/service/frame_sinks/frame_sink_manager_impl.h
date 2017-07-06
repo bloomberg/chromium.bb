@@ -98,8 +98,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // access to a valid pointer for the entirety of their lifetimes.
   cc::SurfaceManager manager_;
 
-  std::unique_ptr<cc::SurfaceDependencyTracker> dependency_tracker_;
-
   // Provides a cc::Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
