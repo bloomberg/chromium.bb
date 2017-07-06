@@ -121,6 +121,7 @@ void ImportBookmarksFile(
   bool last_folder_on_toolbar = false;
   bool last_folder_is_empty = true;
   bool has_subfolder = false;
+  bool has_last_folder = false;
   base::Time last_folder_add_date;
   std::vector<base::string16> path;
   size_t toolbar_folder_index = 0;
@@ -153,6 +154,7 @@ void ImportBookmarksFile(
                                           &last_folder,
                                           &last_folder_on_toolbar,
                                           &last_folder_add_date)) {
+      has_last_folder = true;
       continue;
     }
 
@@ -207,8 +209,9 @@ void ImportBookmarksFile(
         entry.path.assign(path.begin() + toolbar_folder_index - 1, path.end());
       } else {
         // Add this bookmark to the list of |bookmarks|.
-        if (!has_subfolder && !last_folder.empty()) {
+        if (!has_subfolder && has_last_folder) {
           path.push_back(last_folder);
+          has_last_folder = false;
           last_folder.clear();
         }
         entry.path.assign(path.begin(), path.end());
@@ -226,8 +229,9 @@ void ImportBookmarksFile(
     // Bookmarks in sub-folder are encapsulated with <DL> tag.
     if (base::StartsWith(line, "<DL>", base::CompareCase::INSENSITIVE_ASCII)) {
       has_subfolder = true;
-      if (!last_folder.empty()) {
+      if (has_last_folder) {
         path.push_back(last_folder);
+        has_last_folder = false;
         last_folder.clear();
       }
       if (last_folder_on_toolbar && !toolbar_folder_index)
