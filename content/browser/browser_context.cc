@@ -482,13 +482,7 @@ void BrowserContext::Initialize(
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMojoLocalStorage)) {
       service_manager::EmbeddedServiceInfo info;
-      // TODO(mek): Use sequenced task runner rather than single thread task
-      // runner when mojo supports that (http://crbug.com/678155).
-      info.factory = base::Bind(
-          &file::CreateFileService,
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
+      info.factory = base::Bind(&file::CreateFileService);
       connection->AddEmbeddedService(file::mojom::kServiceName, info);
     }
 

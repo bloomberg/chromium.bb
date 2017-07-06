@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -17,15 +17,11 @@
 
 namespace file {
 
-std::unique_ptr<service_manager::Service> CreateFileService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
+std::unique_ptr<service_manager::Service> CreateFileService();
 
 class FileService : public service_manager::Service {
  public:
-  FileService(
-      scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
+  FileService();
   ~FileService() override;
 
  private:
@@ -44,8 +40,8 @@ class FileService : public service_manager::Service {
 
   void OnLevelDBServiceError();
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_service_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_service_runner_;
+  scoped_refptr<base::SequencedTaskRunner> leveldb_service_runner_;
 
   // We create these two objects so we can delete them on the correct task
   // runners.
