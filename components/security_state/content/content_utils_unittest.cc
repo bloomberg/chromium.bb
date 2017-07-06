@@ -18,6 +18,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace {
 
@@ -317,6 +318,16 @@ TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
   GetSecurityStyle(security_info, &explanations);
   // Verify that no explanation is shown if the subjectAltName is present.
   EXPECT_EQ(0u, explanations.insecure_explanations.size());
+}
+
+// Tests that an explanation using the shorter constructor sets the correct
+// default values for other fields.
+TEST(SecurityStateContentUtilsTest, DefaultSecurityStyleExplanation) {
+  content::SecurityStyleExplanation explanation("summary", "description");
+
+  EXPECT_EQ(false, explanation.has_certificate);
+  EXPECT_EQ(blink::WebMixedContentContextType::kNotMixedContent,
+            explanation.mixed_content_type);
 }
 
 }  // namespace

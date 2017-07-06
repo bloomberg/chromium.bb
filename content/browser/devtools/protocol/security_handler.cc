@@ -14,6 +14,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace content {
 namespace protocol {
@@ -41,17 +42,39 @@ std::string SecurityStyleToProtocolSecurityState(
   }
 }
 
+std::string MixedContentTypeToProtocolMixedContentType(
+    blink::WebMixedContentContextType mixed_content_type) {
+  switch (mixed_content_type) {
+    case blink::WebMixedContentContextType::kNotMixedContent:
+      return Security::MixedContentTypeEnum::None;
+    case blink::WebMixedContentContextType::kBlockable:
+      return Security::MixedContentTypeEnum::Blockable;
+    case blink::WebMixedContentContextType::kOptionallyBlockable:
+      return Security::MixedContentTypeEnum::OptionallyBlockable;
+    case blink::WebMixedContentContextType::kShouldBeBlockable:
+      // kShouldBeBlockable is not used for explanations.
+      NOTREACHED();
+      return Security::MixedContentTypeEnum::OptionallyBlockable;
+    default:
+      NOTREACHED();
+      return Security::MixedContentTypeEnum::None;
+  }
+}
+
 void AddExplanations(
     const std::string& security_style,
     const std::vector<SecurityStyleExplanation>& explanations_to_add,
     Explanations* explanations) {
   for (const auto& it : explanations_to_add) {
-    explanations->addItem(Security::SecurityStateExplanation::Create()
-        .SetSecurityState(security_style)
-        .SetSummary(it.summary)
-        .SetDescription(it.description)
-        .SetHasCertificate(it.has_certificate)
-        .Build());
+    explanations->addItem(
+        Security::SecurityStateExplanation::Create()
+            .SetSecurityState(security_style)
+            .SetSummary(it.summary)
+            .SetDescription(it.description)
+            .SetHasCertificate(it.has_certificate)
+            .SetMixedContentType(MixedContentTypeToProtocolMixedContentType(
+                it.mixed_content_type))
+            .Build());
   }
 }
 

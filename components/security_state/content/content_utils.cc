@@ -23,6 +23,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -229,7 +230,8 @@ blink::WebSecurityStyle GetSecurityStyle(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_SHA1),
             l10n_util::GetStringUTF8(IDS_SHA1_DESCRIPTION),
-            !!security_info.certificate));
+            !!security_info.certificate,
+            blink::WebMixedContentContextType::kNotMixedContent));
   }
 
   if (security_info.cert_missing_subject_alt_name) {
@@ -237,7 +239,8 @@ blink::WebSecurityStyle GetSecurityStyle(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING),
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING_DESCRIPTION),
-            !!security_info.certificate));
+            !!security_info.certificate,
+            blink::WebMixedContentContextType::kNotMixedContent));
   }
 
   // Record the presence of mixed content (HTTP subresources on an HTTPS
@@ -287,7 +290,8 @@ blink::WebSecurityStyle GetSecurityStyle(
         l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
         l10n_util::GetStringFUTF8(
             IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
-        !!security_info.certificate);
+        !!security_info.certificate,
+        blink::WebMixedContentContextType::kNotMixedContent);
 
     if (is_cert_status_minor_error) {
       security_style_explanations->neutral_explanations.push_back(explanation);
@@ -317,7 +321,8 @@ blink::WebSecurityStyle GetSecurityStyle(
               l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
               l10n_util::GetStringFUTF8(
                   IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION, issuer_name),
-              !!security_info.certificate));
+              !!security_info.certificate,
+              blink::WebMixedContentContextType::kNotMixedContent));
     }
   }
 
