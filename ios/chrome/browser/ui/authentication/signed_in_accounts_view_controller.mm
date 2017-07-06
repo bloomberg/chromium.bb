@@ -166,7 +166,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 #pragma mark ChromeIdentityServiceObserver
 
-- (void)onProfileUpdate:(ChromeIdentity*)identity {
+- (void)profileUpdate:(ChromeIdentity*)identity {
   CollectionViewAccountItem* item =
       base::mac::ObjCCastStrict<CollectionViewAccountItem>(
           [_identityMap objectForKey:identity.gaiaID]);
@@ -175,7 +175,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
-- (void)onChromeIdentityServiceWillBeDestroyed {
+- (void)chromeIdentityServiceWillBeDestroyed {
   _identityServiceObserver.reset();
 }
 

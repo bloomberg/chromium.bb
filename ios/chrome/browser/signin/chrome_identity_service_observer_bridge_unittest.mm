@@ -53,23 +53,23 @@
 
 #pragma mark - ios::ChromeIdentityService::Observer
 
-- (void)onIdentityListChanged {
+- (void)identityListChanged {
   _onIdentityListChangedCalled = YES;
 }
 
-- (void)onAccessTokenRefreshFailed:(ChromeIdentity*)identity
-                          userInfo:(NSDictionary*)userInfo {
+- (void)accessTokenRefreshFailed:(ChromeIdentity*)identity
+                        userInfo:(NSDictionary*)userInfo {
   _onAccessTokenRefreshFailedCalled = YES;
   _userInfo = userInfo;
   _identity = identity;
 }
 
-- (void)onProfileUpdate:(ChromeIdentity*)identity {
+- (void)profileUpdate:(ChromeIdentity*)identity {
   _onProfileUpdateCalled = YES;
   _identity = identity;
 }
 
-- (void)onChromeIdentityServiceWillBeDestroyed {
+- (void)chromeIdentityServiceWillBeDestroyed {
   _onChromeIdentityServiceWillBeDestroyedCalled = YES;
 }
 

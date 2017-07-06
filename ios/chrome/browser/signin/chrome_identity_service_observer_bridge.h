@@ -14,11 +14,11 @@
 // Objective-C protocol mirroring ChromeIdentityService::Observer.
 @protocol ChromeIdentityServiceObserver<NSObject>
 @optional
-- (void)onIdentityListChanged;
-- (void)onAccessTokenRefreshFailed:(ChromeIdentity*)identity
-                          userInfo:(NSDictionary*)userInfo;
-- (void)onProfileUpdate:(ChromeIdentity*)identity;
-- (void)onChromeIdentityServiceWillBeDestroyed;
+- (void)identityListChanged;
+- (void)accessTokenRefreshFailed:(ChromeIdentity*)identity
+                        userInfo:(NSDictionary*)userInfo;
+- (void)profileUpdate:(ChromeIdentity*)identity;
+- (void)chromeIdentityServiceWillBeDestroyed;
 @end
 
 // Simple observer bridge that forwards all events to its delegate observer.
