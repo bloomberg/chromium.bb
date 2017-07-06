@@ -18,24 +18,17 @@
         animation-name: anim;
         animation-fill-mode: forwards;
     }
-    @keyframes anim {
-        from { left: 50px; }
-        to   { left: 100px; }
-    }
-    @keyframes irrelevant {
-        from { left: 150px; }
-        to   { left: 2500px; }
-    }
-    @keyframes anim {
+    @-webkit-keyframes anim {
         from { left: 200px; }
-        to   { left: 100px; }
+        to   { left: 700px; }
     }
+
     @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }
     </style>
-    <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
@@ -48,7 +41,7 @@
   </script>
 </head>
 <body>
-This test verifies that the last @keyframes rule with a given name is the one used.
+This test verifies that the unprefixed @keyframes rule is correctly parsed and override the prefixed keyframe defined before.
 <div id="box">
 </div>
 <div id="result">

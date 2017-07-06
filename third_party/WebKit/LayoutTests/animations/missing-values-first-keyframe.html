@@ -30,15 +30,15 @@
     
     #box1 {
       left: 200px;
-      -webkit-animation: move-left 2s linear;
+      animation: move-left 2s linear;
     }
     
     #box2 {
       transform: translateX(200px);
-      -webkit-animation: move-transform 2s linear;
+      animation: move-transform 2s linear;
     }
     
-    @-webkit-keyframes move-left {
+    @keyframes move-left {
       0% {
         opacity: 1;
       }
@@ -55,7 +55,7 @@
       }
     }
 
-    @-webkit-keyframes move-transform {
+    @keyframes move-transform {
       0% {
         opacity: 1;
       }
@@ -78,7 +78,7 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [0.5, "box1", "left", 100, 15],
-      [0.5, "box2", "webkitTransform.4", 100, 15],
+      [0.5, "box2", "transform.4", 100, 15],
     ];
     
     var doPixelTest = true;

@@ -13,10 +13,10 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        -webkit-animation-duration: 1s;
-        -webkit-animation-timing-function: linear;
-        -webkit-animation-name: anim;
-        -webkit-animation-fill-mode: forwards;
+        animation-duration: 1s;
+        animation-timing-function: linear;
+        animation-name: anim;
+        animation-fill-mode: forwards;
     }
     @keyframes anim {
         from { left: 50px; }
@@ -28,14 +28,14 @@
     }
     @keyframes anim {
         from { left: 200px; }
+        to   { left: 100px; }
+    }
+    @keyframes anim {
+        from { left: 200px; }
         to   { left: 300px; }
     }
-    @-webkit-keyframes anim {
-        from { left: 200px; }
-        to   { left: 700px; }
-    }
     </style>
-    <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [

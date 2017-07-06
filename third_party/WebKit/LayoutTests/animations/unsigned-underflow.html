@@ -4,22 +4,22 @@
     height: 100px;
     width: 100px;
     border: solid blue 0px;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-timing-function: cubic-bezier(0,-1,1,-1);
-    -webkit-animation-name: anim;
+    animation-duration: 1s;
+    animation-timing-function: cubic-bezier(0,-1,1,-1);
+    animation-name: anim;
 }
-@-webkit-keyframes anim {
+@keyframes anim {
     from {
         border-top-width: 0px;
         outline-width: 0px;
-        -webkit-column-count: 1;
-        -webkit-column-rule-width: 0px;
+        column-count: 1;
+        column-rule-width: 0px;
     }
     to {
         border-top-width: 10px;
         outline-width: 10px;
-        -webkit-column-count: 10;
-        -webkit-column-rule-width: 10px;
+        column-count: 10;
+        column-rule-width: 10px;
     }
 }
 </style>
@@ -32,8 +32,8 @@ const expectedValues = [
   // [time, element-id, property, expected-value, tolerance]
   [0.5, 'target', 'border-top-width', 0, 0],
   [0.5, 'target', 'outline-width', 0, 0],
-  [0.5, 'target', '-webkit-column-count', 1, 0],
-  [0.5, 'target', '-webkit-column-rule-width', 0, 0],
+  [0.5, 'target', 'column-count', 1, 0],
+  [0.5, 'target', 'column-rule-width', 0, 0],
 ];
 
 runAnimationTest(expectedValues);

@@ -178,7 +178,7 @@ crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-image.html [
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [ Slow ]
 crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.html [ Slow ]
-crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow ]
+crbug.com/311482 virtual/threaded/animations/prefixed/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
 crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
 crbug.com/664857 virtual/threaded/animations/transform-responsive-neutral-keyframe.html [ Slow ]

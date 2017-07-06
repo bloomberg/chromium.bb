@@ -9,17 +9,17 @@
             margin: 20px;
             background-color: red;
             transform: translateZ(0);
-            -webkit-animation:
+            animation:
                 horizontal 2s linear 1 alternate,
                 fade 2s steps(1, end) 1 alternate;
         }
 
-        @-webkit-keyframes horizontal {
+        @keyframes horizontal {
             from { transform: translateX(0px); }
             to   { transform: translateX(200px); }
         }
 
-        @-webkit-keyframes fade {
+        @keyframes fade {
             from { opacity: 1.0; }
             to { opacity: 0.0; }
         }
@@ -28,9 +28,9 @@
     <script type="text/javascript" charset="utf-8">
         const expectedValues = [
           // [time, element-id, property, expected-value, tolerance]
-          [0.5, "box", "webkitTransform", [1,0,0,1, 50,0], 20],
-          [1.0, "box", "webkitTransform", [1,0,0,1,100,0], 20],
-          [1.5, "box", "webkitTransform", [1,0,0,1,150,0], 20],
+          [0.5, "box", "transform", [1,0,0,1, 50,0], 20],
+          [1.0, "box", "transform", [1,0,0,1,100,0], 20],
+          [1.5, "box", "transform", [1,0,0,1,150,0], 20],
           [0.5, "box", "opacity", 1.0, 0.15],
           [0.9, "box", "opacity", 1.0, 0.15],
           [1.5, "box", "opacity", 1.0, 0.15],

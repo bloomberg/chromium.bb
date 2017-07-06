@@ -51,7 +51,7 @@
     keyframes.deleteRule("100%");
     keyframes.appendRule("0% { top: 50px; }");
     keyframes.appendRule("100% { top: 150px; }");
-    box.style.webkitAnimationName = "anim";
+    box.style.animationName = "anim";
 
     // The left property should reset and top should be animating.
     assert_equals(getComputedStyle(box).left, '0px', 'left');

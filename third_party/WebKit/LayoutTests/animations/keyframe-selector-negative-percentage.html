@@ -4,7 +4,7 @@
 <title>Check that negative (out of range) key frame percentage doesn't cause subsequent first or second ruleset to be skipped.</title>
 <style>
 #test { background-color: red; color: black }
-@-webkit-keyframes fade { -10% { color: red; } }
+@keyframes fade { -10% { color: red; } }
 #test { background-color: green; }                 /* if skipped, then background will be red */ 
 #test { color: white; }                            /* if skipped, then text will be black */
 </style>

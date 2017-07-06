@@ -14,12 +14,12 @@
       margin: 0;
       background-color: green;
       transform: translate(-2000px, 0px);
-      -webkit-animation-duration: 1s;
-      -webkit-animation-direction: normal;
-      -webkit-animation-timing-function: linear;
-      -webkit-animation-name: anim;
+      animation-duration: 1s;
+      animation-direction: normal;
+      animation-timing-function: linear;
+      animation-name: anim;
     }
-    @-webkit-keyframes anim {
+    @keyframes anim {
         0% { transform: translate(100px, 0px); }
       100% { transform: translate(100px, 0px); }
     }
@@ -32,7 +32,7 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box", "webkitTransform", [1, 0, 0, 1, 100, 0], 0.002],
+      [0.5, "box", "transform", [1, 0, 0, 1, 100, 0], 0.002],
     ];
 
     const doPixelTest = true;

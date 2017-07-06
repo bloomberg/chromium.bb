@@ -11,27 +11,27 @@
     margin: 5px;
 }
 
-@-webkit-keyframes test {
+@keyframes test {
     from { left: 0px; }
     to { left: 100px; }
 }
 
-@-webkit-keyframes backwards {
+@keyframes backwards {
     from { left: 0px; }
     to { left: 100px; }
 }
 
-@-webkit-keyframes alternate {
+@keyframes alternate {
     from { left: 0px; }
     to { left: 100px; }
 }
 
-@-webkit-keyframes linear {
+@keyframes linear {
     from { left: 0px; }
     to { left: 100px; }
 }
 
-@-webkit-keyframes ease {
+@keyframes ease {
     from { left: 0px; }
     to { left: 100px; }
 }
@@ -39,13 +39,13 @@
 <script>
 
 const PROPERTIES_TO_TEST = [
-    "webkitAnimationName",
-    "webkitAnimationDuration",
-    "webkitAnimationTimingFunction",
-    "webkitAnimationDelay",
-    "webkitAnimationIterationCount",
-    "webkitAnimationDirection",
-    "webkitAnimationFillMode"
+    "animationName",
+    "animationDuration",
+    "animationTimingFunction",
+    "animationDelay",
+    "animationIterationCount",
+    "animationDirection",
+    "animationFillMode"
 ];
 
 const DEFAULT_VALUES = [
@@ -103,7 +103,7 @@ function runIndividualTest(testIndex) {
 
     // Unfortunately need to force a style recalculation before testing.
     requestAnimationFrame(function () {
-        element.style.webkitAnimation = TEST_INPUTS[testIndex];
+        element.style.animation = TEST_INPUTS[testIndex];
 
         // And another forced style recalculation.
         requestAnimationFrame(function() {

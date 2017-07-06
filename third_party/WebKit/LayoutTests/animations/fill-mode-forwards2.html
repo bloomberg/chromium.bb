@@ -33,11 +33,11 @@
         top: 100px;
         background-color: blue;
         opacity: 0;
-        -webkit-animation-name: pop;
-        -webkit-animation-duration: 1s;
-	-webkit-animation-fill-mode: forwards;
+        animation-name: pop;
+        animation-duration: 1s;
+        animation-fill-mode: forwards;
     }
-    @-webkit-keyframes pop {
+    @keyframes pop {
         0% { transform: scale(0.05); opacity: 0; }
         33% { transform: scale(1.00); opacity: 1; }
         66% { transform: scale(1.66); opacity: 1; }
