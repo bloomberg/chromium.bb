@@ -36771,6 +36771,7 @@ from previous Chrome versions.
   <int value="13" label="Aborted by translate ranker"/>
   <int value="14" label="Aborted by too often denied rule"/>
   <int value="15" label="Aborted by matches previous language"/>
+  <int value="16" label="Decision made to create infobar on Android"/>
 </enum>
 
 <enum name="TranslateLanguage">
