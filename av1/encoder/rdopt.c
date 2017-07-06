@@ -1441,10 +1441,12 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 #endif  // !CONFIG_LV_MAP
 
 int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
-                    int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
-                    const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
-                    int use_fast_coef_costing) {
+                    int blk_row, int blk_col, int block, TX_SIZE tx_size,
+                    const SCAN_ORDER *scan_order, const ENTROPY_CONTEXT *a,
+                    const ENTROPY_CONTEXT *l, int use_fast_coef_costing) {
 #if !CONFIG_LV_MAP
+  (void)blk_row;
+  (void)blk_col;
   const AV1_COMMON *const cm = &cpi->common;
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
@@ -1467,7 +1469,8 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_cost_coeffs_txb(cpi, x, plane, block, tx_size, &txb_ctx);
+  return av1_cost_coeffs_txb(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                             &txb_ctx);
 #endif  // !CONFIG_LV_MAP
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
@@ -1862,7 +1865,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
-  av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
+  av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
+                 l);
 #endif  // DISABLE_TRELLISQ_SEARCH
 
   if (!is_inter_block(mbmi)) {
@@ -1901,8 +1905,8 @@ CALCULATE_RD : {}
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   this_rd_stats.rate =
-      av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order, a, l,
-                      args->use_fast_coef_costing);
+      av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                      scan_order, a, l, args->use_fast_coef_costing);
 #else   // !CONFIG_PVQ
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
@@ -3124,8 +3128,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if !CONFIG_PVQ
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-            ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
-                                     tempa + idx, templ + idy,
+            ratey += av1_cost_coeffs(cpi, x, 0, 0, 0, block, tx_size,
+                                     scan_order, tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
             can_skip &= skip;
@@ -3176,11 +3180,11 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #else
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-            av1_optimize_b(cm, x, 0, block, BLOCK_8X8, tx_size, tempa + idx,
-                           templ + idy);
+            av1_optimize_b(cm, x, 0, 0, 0, block, BLOCK_8X8, tx_size,
+                           tempa + idx, templ + idy);
 #endif  // DISABLE_TRELLISQ_SEARCH
-            ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
-                                     tempa + idx, templ + idy,
+            ratey += av1_cost_coeffs(cpi, x, 0, 0, 0, block, tx_size,
+                                     scan_order, tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
             can_skip &= skip;
@@ -3350,12 +3354,12 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif  // CONFIG_CB4X4
                         BLOCK_8X8, tx_size, coeff_ctx, xform_quant);
 
-        av1_optimize_b(cm, x, 0, block, BLOCK_8X8, tx_size, tempa + idx,
+        av1_optimize_b(cm, x, 0, 0, 0, block, BLOCK_8X8, tx_size, tempa + idx,
                        templ + idy);
 #endif  // DISABLE_TRELLISQ_SEARCH
-        ratey +=
-            av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order, tempa + idx,
-                            templ + idy, cpi->sf.use_fast_coef_costing);
+        ratey += av1_cost_coeffs(cpi, x, 0, 0, 0, block, tx_size, scan_order,
+                                 tempa + idx, templ + idy,
+                                 cpi->sf.use_fast_coef_costing);
         skip = (p->eobs[block] == 0);
         can_skip &= skip;
         tempa[idx] = !skip;
@@ -4291,7 +4295,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
 
-  av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
+  av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
+                 l);
 #endif  // DISABLE_TRELLISQ_SEARCH
 
 // TODO(any): Use av1_dist_block to compute distortion
@@ -4360,8 +4365,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                      blk_row, blk_col, plane_bsize, txm_bsize);
   }
   rd_stats->dist += tmp * 16;
-  txb_coeff_cost =
-      av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order, a, l, 0);
+  txb_coeff_cost = av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block,
+                                   tx_size, scan_order, a, l, 0);
   rd_stats->rate += txb_coeff_cost;
   rd_stats->skip &= (eob == 0);
 

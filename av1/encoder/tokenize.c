@@ -279,9 +279,9 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
   const PLANE_TYPE type = pd->plane_type;
   const TX_TYPE tx_type = get_tx_type(type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
-  const int rate = av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order,
-                                   pd->above_context + blk_col,
-                                   pd->left_context + blk_row, 0);
+  const int rate = av1_cost_coeffs(
+      cpi, x, plane, blk_row, blk_col, block, tx_size, scan_order,
+      pd->above_context + blk_col, pd->left_context + blk_row, 0);
   args->this_rate += rate;
   (void)plane_bsize;
   av1_set_contexts(xd, pd, plane, tx_size, p->eobs[block] > 0, blk_col,

@@ -42,8 +42,8 @@ static int read_golomb(MACROBLOCKD *xd, aom_reader *r) {
 }
 
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                            aom_reader *r, int block, int plane,
-                            tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
+                            aom_reader *r, int blk_row, int blk_col, int block,
+                            int plane, tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
                             TX_SIZE tx_size, int16_t *max_scan_line, int *eob) {
   FRAME_COUNTS *counts = xd->counts;
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
@@ -77,6 +77,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     return 0;
   }
 
+  (void)blk_row;
+  (void)blk_col;
 #if CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd, block, plane, get_min_tx_size(tx_size), r);
 #endif
@@ -231,8 +233,9 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
               pd->left_context + row, &txb_ctx);
-  uint8_t cul_level = av1_read_coeffs_txb(
-      cm, xd, r, block, plane, tcoeffs, &txb_ctx, tx_size, max_scan_line, eob);
+  uint8_t cul_level =
+      av1_read_coeffs_txb(cm, xd, r, row, col, block, plane, tcoeffs, &txb_ctx,
+                          tx_size, max_scan_line, eob);
 #if CONFIG_ADAPT_SCAN
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);

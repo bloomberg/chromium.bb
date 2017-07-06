@@ -5871,7 +5871,7 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
-                              int block, int plane,
+                              int blk_row, int blk_col, int block, int plane,
 #endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,
                               FRAME_COUNTS *counts) {
@@ -5881,6 +5881,8 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
 #else
+  (void)blk_row;
+  (void)blk_col;
   // Only y plane's tx_type is updated
   if (plane > 0) return;
   TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
