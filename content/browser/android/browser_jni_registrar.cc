@@ -14,7 +14,6 @@
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/content_feature_list.h"
 #include "content/browser/android/content_video_view.h"
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"

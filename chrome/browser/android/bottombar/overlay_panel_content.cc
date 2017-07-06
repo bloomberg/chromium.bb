@@ -20,13 +20,12 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OverlayPanelContent_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
+#include "ui/android/view_android.h"
 
 using base::android::JavaParamRef;
-using content::ContentViewCore;
 
 namespace {
 

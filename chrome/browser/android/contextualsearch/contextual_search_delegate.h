@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace content {

@@ -26,7 +26,6 @@
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
