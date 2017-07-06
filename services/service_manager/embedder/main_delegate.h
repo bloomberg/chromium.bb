@@ -47,6 +47,10 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
   // failure.
   virtual int Initialize(const InitializeParams& params) = 0;
 
+  // Indicates whether this (embedder) process should be treated as a subprocess
+  // for the sake of some platform-specific environment initialization details.
+  virtual bool IsEmbedderSubprocess();
+
   // Runs the embedder's own main process logic. Called exactly once after a
   // successful call to Initialize(), and only if the Service Manager core does
   // not know what to do otherwise -- i.e., if it is not starting a new Service

@@ -23,6 +23,7 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
 
   // service_manager::MainDelegate:
   int Initialize(const InitializeParams& params) override;
+  bool IsEmbedderSubprocess() override;
   int RunEmbedderProcess() override;
   void ShutDownEmbedderProcess() override;
   service_manager::ProcessType OverrideProcessType() override;
