@@ -2,47 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("resources") {
-  sources = [
-    "resources/collapse.png",
-    "resources/collapse@2x.png",
-    "resources/collapse@3x.png",
-    "resources/collapse_incognito.png",
-    "resources/collapse_incognito@2x.png",
-    "resources/collapse_incognito@3x.png",
-    "resources/collapse_pressed.png",
-    "resources/collapse_pressed@2x.png",
-    "resources/collapse_pressed@3x.png",
-    "resources/collapse_pressed_incognito.png",
-    "resources/collapse_pressed_incognito@2x.png",
-    "resources/collapse_pressed_incognito@3x.png",
-    "resources/incognito_marker_typing.png",
-    "resources/incognito_marker_typing@2x.png",
-    "resources/incognito_marker_typing@3x.png",
-    "resources/keyboard_accessory_qr_scanner.png",
-    "resources/keyboard_accessory_qr_scanner@2x.png",
-    "resources/keyboard_accessory_qr_scanner@3x.png",
-    "resources/keyboard_accessory_voice_search.png",
-    "resources/keyboard_accessory_voice_search@2x.png",
-    "resources/keyboard_accessory_voice_search@3x.png",
-    "resources/toolbar_dark_newtab.png",
-    "resources/toolbar_dark_newtab@2x.png",
-    "resources/toolbar_dark_newtab@3x.png",
-    "resources/toolbar_dark_newtab_active.png",
-    "resources/toolbar_dark_newtab_active@2x.png",
-    "resources/toolbar_dark_newtab_active@3x.png",
-    "resources/toolbar_dark_newtab_incognito.png",
-    "resources/toolbar_dark_newtab_incognito@2x.png",
-    "resources/toolbar_dark_newtab_incognito@3x.png",
-    "resources/toolbar_dark_newtab_incognito_active.png",
-    "resources/toolbar_dark_newtab_incognito_active@2x.png",
-    "resources/toolbar_dark_newtab_incognito_active@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -74,7 +33,17 @@ source_set("toolbar") {
   ]
   deps = [
     ":resource_macros",
-    ":resources",
+    "resources:collapse",
+    "resources:collapse_incognito",
+    "resources:collapse_pressed",
+    "resources:collapse_pressed_incognito",
+    "resources:incognito_marker_typing",
+    "resources:keyboard_accessory_qr_scanner",
+    "resources:keyboard_accessory_voice_search",
+    "resources:toolbar_dark_newtab",
+    "resources:toolbar_dark_newtab_active",
+    "resources:toolbar_dark_newtab_incognito",
+    "resources:toolbar_dark_newtab_incognito_active",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
