@@ -19,8 +19,6 @@ class FrameOwner;
 class RemoteFrame;
 class RemoteFrameClientImpl;
 enum class WebFrameLoadType;
-class WebAssociatedURLLoader;
-struct WebAssociatedURLLoaderOptions;
 class WebView;
 
 class CORE_EXPORT WebRemoteFrameImpl final
@@ -43,8 +41,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void StopLoading() override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
-  WebAssociatedURLLoader* CreateAssociatedURLLoader(
-      const WebAssociatedURLLoaderOptions&) override;
 
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
