@@ -210,8 +210,9 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
     return;
   if (layout_box_.BackgroundIsKnownToBeObscured())
     return;
+  BackgroundImageGeometry geometry(layout_box_);
   PaintFillLayers(paint_info, background_color,
-                  layout_box_.Style()->BackgroundLayers(), paint_rect,
+                  layout_box_.Style()->BackgroundLayers(), paint_rect, geometry,
                   bleed_avoidance);
 }
 
@@ -219,9 +220,9 @@ void BoxPainter::PaintFillLayers(const PaintInfo& paint_info,
                                  const Color& c,
                                  const FillLayer& fill_layer,
                                  const LayoutRect& rect,
+                                 BackgroundImageGeometry& geometry,
                                  BackgroundBleedAvoidance bleed_avoidance,
-                                 SkBlendMode op,
-                                 const LayoutObject* background_object) {
+                                 SkBlendMode op) {
   FillLayerOcclusionOutputList reversed_paint_list;
   bool should_draw_background_in_separate_buffer =
       CalculateFillLayerOcclusionCulling(reversed_paint_list, fill_layer,
@@ -231,16 +232,15 @@ void BoxPainter::PaintFillLayers(const PaintInfo& paint_info,
   // TODO(trchen): We can optimize out isolation group if we have a
   // non-transparent background color and the bottom layer encloses all other
   // layers.
-
   GraphicsContext& context = paint_info.context;
-
   if (should_draw_background_in_separate_buffer)
     context.BeginLayer();
 
   for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
-       ++it)
-    PaintFillLayer(layout_box_, paint_info, c, **it, rect, bleed_avoidance, 0,
-                   LayoutSize(), op, background_object);
+       ++it) {
+    PaintFillLayer(layout_box_, paint_info, c, **it, rect, bleed_avoidance,
+                   geometry, 0, LayoutSize(), op);
+  }
 
   if (should_draw_background_in_separate_buffer)
     context.EndLayer();
@@ -248,10 +248,7 @@ void BoxPainter::PaintFillLayers(const PaintInfo& paint_info,
 
 namespace {
 
-// RAII image paint helper.
 class ImagePaintContext {
-  STACK_ALLOCATED();
-
  public:
   ImagePaintContext(const ImageResourceObserver& image_client,
                     const Document& document,
@@ -305,19 +302,15 @@ class ImagePaintContext {
 inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
                                  const PaintInfo& paint_info,
                                  const BoxPainterBase::FillLayerInfo& info,
-                                 const FillLayer& layer,
                                  const LayoutRect& rect,
                                  BackgroundBleedAvoidance bleed_avoidance,
-                                 bool has_line_box_sibling,
                                  const LayoutSize& box_size,
                                  SkBlendMode op,
-                                 const LayoutObject* background_object,
-                                 double frame_time,
-                                 const Settings* settings,
-                                 Optional<BackgroundImageGeometry>& geometry) {
+                                 BackgroundImageGeometry& geometry,
+                                 Optional<ImagePaintContext>& image_context,
+                                 bool has_line_box_sibling) {
   // Painting a background image from an ancestor onto a cell is a complex case.
-  if (obj.IsTableCell() && background_object &&
-      !background_object->IsTableCell())
+  if (geometry.CellUsingContainerBackground())
     return false;
   // Complex cases not handled on the fast path.
   if (!info.is_bottom_layer || !info.is_border_fill ||
@@ -336,21 +329,16 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
     if (info.is_rounded_fill && paint_info.IsPrinting())
       return false;
 
-    DCHECK(!geometry);
-    geometry.emplace();
-    geometry->Calculate(obj, background_object, paint_info.PaintContainer(),
-                        paint_info.GetGlobalPaintFlags(), layer, rect);
-
-    if (!geometry->DestRect().IsEmpty()) {
+    if (!geometry.DestRect().IsEmpty()) {
       // The tile is too small.
-      if (geometry->TileSize().Width() < rect.Width() ||
-          geometry->TileSize().Height() < rect.Height())
+      if (geometry.TileSize().Width() < rect.Width() ||
+          geometry.TileSize().Height() < rect.Height())
         return false;
 
       image_tile = Image::ComputeTileContaining(
-          FloatPoint(geometry->DestRect().Location()),
-          FloatSize(geometry->TileSize()), FloatPoint(geometry->Phase()),
-          FloatSize(geometry->SpaceSize()));
+          FloatPoint(geometry.DestRect().Location()),
+          FloatSize(geometry.TileSize()), FloatPoint(geometry.Phase()),
+          FloatSize(geometry.SpaceSize()));
 
       // The tile is misaligned.
       if (!image_tile.Contains(FloatRect(rect)))
@@ -386,26 +374,20 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   if (!info.should_paint_image || image_tile.IsEmpty())
     return true;
 
-  const LayoutObject& image_client =
-      background_object ? *background_object : obj;
-  const ImagePaintContext image_context(
-      image_client, image_client.GetDocument(), image_client.StyleRef(),
-      context, layer, *info.image, op, geometry->TileSize(), frame_time,
-      settings);
-  if (!image_context.GetImage())
+  if (!image_context || !image_context->GetImage())
     return true;
 
   const FloatSize intrinsic_tile_size =
-      image_context.GetImage()->HasRelativeSize()
+      image_context->GetImage()->HasRelativeSize()
           ? image_tile.Size()
-          : FloatSize(image_context.GetImage()->Size());
+          : FloatSize(image_context->GetImage()->Size());
   const FloatRect src_rect = Image::ComputeSubsetForTile(
       image_tile, border.Rect(), intrinsic_tile_size);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data", InspectorPaintImageEvent::Data(obj, *info.image));
-  context.DrawImageRRect(image_context.GetImage(), border, src_rect,
-                         image_context.CompositeOp());
+  context.DrawImageRRect(image_context->GetImage(), border, src_rect,
+                         image_context->CompositeOp());
 
   return true;
 }
@@ -418,10 +400,10 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
                                 const FillLayer& bg_layer,
                                 const LayoutRect& rect,
                                 BackgroundBleedAvoidance bleed_avoidance,
+                                BackgroundImageGeometry& geometry,
                                 const InlineFlowBox* box,
                                 const LayoutSize& box_size,
-                                SkBlendMode op,
-                                const LayoutObject* background_object) {
+                                SkBlendMode op) {
   GraphicsContext& context = paint_info.context;
   if (rect.IsEmpty())
     return;
@@ -431,26 +413,10 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
       bleed_avoidance, (box ? box->IncludeLogicalLeftEdge() : true),
       (box ? box->IncludeLogicalRightEdge() : true));
 
-  Optional<BackgroundImageGeometry> geometry;
   bool has_line_box_sibling = box && (box->NextLineBox() || box->PrevLineBox());
   const Page* page = obj.GetDocument().GetPage();
   double frame_time = page->GetChromeClient().LastFrameTimeMonotonic();
   const Settings* settings = obj.GetDocument().GetSettings();
-
-  // Fast path for drawing simple color backgrounds.
-  if (PaintFastBottomLayer(obj, paint_info, info, bg_layer, rect,
-                           bleed_avoidance, has_line_box_sibling, box_size, op,
-                           background_object, frame_time, settings, geometry)) {
-    return;
-  }
-
-  Optional<RoundedInnerRectClipper> clip_to_border;
-  if (info.is_rounded_fill) {
-    FloatRoundedRect border = RoundedBorderRectForClip(
-        obj.StyleRef(), info, bg_layer, rect, bleed_avoidance,
-        has_line_box_sibling, box_size, obj.BorderPaddingInsets());
-    clip_to_border.emplace(obj, paint_info, rect, border, kApplyToContext);
-  }
 
   LayoutRectOutsets border(
       obj.BorderTop(),
@@ -478,6 +444,31 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
     scrolled_paint_rect.SetHeight(this_box.BorderTop() +
                                   this_box.ScrollHeight() +
                                   this_box.BorderBottom());
+  }
+
+  Optional<ImagePaintContext> image_context;
+  if (info.should_paint_image) {
+    geometry.Calculate(paint_info.PaintContainer(),
+                       paint_info.GetGlobalPaintFlags(), bg_layer,
+                       scrolled_paint_rect);
+    image_context.emplace(geometry.ImageClient(), geometry.ImageDocument(),
+                          geometry.ImageStyle(), context, bg_layer, *info.image,
+                          op, geometry.TileSize(), frame_time, settings);
+  }
+
+  // Fast path for drawing simple color backgrounds.
+  if (PaintFastBottomLayer(obj, paint_info, info, rect, bleed_avoidance,
+                           box_size, op, geometry, image_context,
+                           has_line_box_sibling)) {
+    return;
+  }
+
+  Optional<RoundedInnerRectClipper> clip_to_border;
+  if (info.is_rounded_fill) {
+    FloatRoundedRect border = RoundedBorderRectForClip(
+        obj.StyleRef(), info, bg_layer, rect, bleed_avoidance,
+        has_line_box_sibling, box_size, obj.BorderPaddingInsets());
+    clip_to_border.emplace(obj, paint_info, rect, border, kApplyToContext);
   }
 
   GraphicsContextStateSaver background_clip_state_saver(context, false);
@@ -538,32 +529,13 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
   }
 
   // no progressive loading of the background image
-  if (info.should_paint_image) {
-    if (!geometry) {
-      geometry.emplace();
-      geometry->Calculate(obj, background_object, paint_info.PaintContainer(),
-                          paint_info.GetGlobalPaintFlags(), bg_layer,
-                          scrolled_paint_rect);
-    } else {
-      // The geometry was calculated in paintFastBottomLayer().
-      DCHECK(info.is_bottom_layer && info.is_border_fill &&
-             !info.is_clipped_with_local_scrolling);
-    }
-
-    if (!geometry->DestRect().IsEmpty()) {
-      const LayoutObject& image_client =
-          background_object ? *background_object : obj;
-      const ImagePaintContext image_context(
-          image_client, image_client.GetDocument(), image_client.StyleRef(),
-          context, bg_layer, *info.image, op, geometry->TileSize(), frame_time,
-          settings);
-      TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-                   "data", InspectorPaintImageEvent::Data(obj, *info.image));
-      context.DrawTiledImage(
-          image_context.GetImage(), FloatRect(geometry->DestRect()),
-          FloatPoint(geometry->Phase()), FloatSize(geometry->TileSize()),
-          image_context.CompositeOp(), FloatSize(geometry->SpaceSize()));
-    }
+  if (info.should_paint_image && !geometry.DestRect().IsEmpty()) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+                 "data", InspectorPaintImageEvent::Data(obj, *info.image));
+    context.DrawTiledImage(
+        image_context->GetImage(), FloatRect(geometry.DestRect()),
+        FloatPoint(geometry.Phase()), FloatSize(geometry.TileSize()),
+        image_context->CompositeOp(), FloatSize(geometry.SpaceSize()));
   }
 
   if (bg_layer.Clip() == kTextFillBox) {
@@ -641,8 +613,9 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
   }
 
   if (all_mask_images_loaded) {
+    BackgroundImageGeometry geometry(layout_box_);
     PaintFillLayers(paint_info, Color::kTransparent,
-                    layout_box_.Style()->MaskLayers(), paint_rect);
+                    layout_box_.Style()->MaskLayers(), paint_rect, geometry);
     NinePieceImagePainter::Paint(paint_info.context, layout_box_,
                                  layout_box_.GetDocument(), GetNode(),
                                  paint_rect, layout_box_.StyleRef(),

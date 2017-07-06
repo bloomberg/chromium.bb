@@ -20,8 +20,8 @@ class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 class LayoutBox;
-class LayoutObject;
 class LayoutBoxModelObject;
+class BackgroundImageGeometry;
 
 class BoxPainter : public BoxPainterBase {
   STACK_ALLOCATED();
@@ -39,9 +39,9 @@ class BoxPainter : public BoxPainterBase {
                        const Color&,
                        const FillLayer&,
                        const LayoutRect&,
+                       BackgroundImageGeometry&,
                        BackgroundBleedAvoidance = kBackgroundBleedNone,
-                       SkBlendMode = SkBlendMode::kSrcOver,
-                       const LayoutObject* background_object = nullptr);
+                       SkBlendMode = SkBlendMode::kSrcOver);
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const LayoutPoint&,
@@ -52,10 +52,10 @@ class BoxPainter : public BoxPainterBase {
                              const FillLayer&,
                              const LayoutRect&,
                              BackgroundBleedAvoidance,
+                             BackgroundImageGeometry&,
                              const InlineFlowBox* = nullptr,
                              const LayoutSize& = LayoutSize(),
-                             SkBlendMode = SkBlendMode::kSrcOver,
-                             const LayoutObject* background_object = nullptr);
+                             SkBlendMode = SkBlendMode::kSrcOver);
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjusted_paint_offset);
 

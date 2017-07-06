@@ -6,6 +6,7 @@
 
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/PaintInfo.h"
@@ -77,6 +78,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
                                           SkBlendMode op) {
   LayoutBoxModelObject* box_model = ToLayoutBoxModelObject(
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
+  BackgroundImageGeometry geometry(*box_model);
   StyleImage* img = fill_layer.GetImage();
   bool has_fill_image = img && img->CanRender();
   if ((!has_fill_image &&
@@ -84,16 +86,16 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
       (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
       !inline_flow_box_.Parent()) {
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer, rect,
-                               kBackgroundBleedNone, &inline_flow_box_,
-                               rect.Size(), op);
+                               kBackgroundBleedNone, geometry,
+                               &inline_flow_box_, rect.Size(), op);
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer, rect,
-                               kBackgroundBleedNone, &inline_flow_box_,
-                               rect.Size(), op);
+                               kBackgroundBleedNone, geometry,
+                               &inline_flow_box_, rect.Size(), op);
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -106,7 +108,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer,
                                image_strip_paint_rect, kBackgroundBleedNone,
-                               &inline_flow_box_, rect.Size(), op);
+                               geometry, &inline_flow_box_, rect.Size(), op);
   }
 }
 

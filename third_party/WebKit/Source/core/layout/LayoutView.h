@@ -115,6 +115,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   float ZoomFactor() const;
 
   LocalFrameView* GetFrameView() const { return frame_view_; }
+  const LayoutBox& RootBox() const;
 
   void UpdateAfterLayout() override;
 

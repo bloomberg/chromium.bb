@@ -19,16 +19,27 @@ class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutRect;
 class LayoutTableCell;
+class LayoutView;
+class Document;
+class ComputedStyle;
+class ImageResourceObserver;
 
 class BackgroundImageGeometry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  BackgroundImageGeometry() : has_non_local_geometry_(false) {}
+  // Constructor for LayoutView where the coordinate space is different.
+  BackgroundImageGeometry(const LayoutView&);
 
-  void Calculate(const LayoutBoxModelObject&,
-                 const LayoutObject* background_object,
-                 const LayoutBoxModelObject* paint_container,
+  // Constructor for table cells where background_object may be the row or
+  // column the background image is attached to.
+  BackgroundImageGeometry(const LayoutTableCell&,
+                          const LayoutObject* background_object);
+
+  // Generic constructor for all other elements.
+  BackgroundImageGeometry(const LayoutBoxModelObject&);
+
+  void Calculate(const LayoutBoxModelObject* container,
                  const GlobalPaintFlags,
                  const FillLayer&,
                  const LayoutRect& paint_rect);
@@ -53,6 +64,15 @@ class BackgroundImageGeometry {
   // Has background-attachment: fixed. Implies that we can't always cheaply
   // compute destRect.
   bool HasNonLocalGeometry() const { return has_non_local_geometry_; }
+  // Whether the background needs to be positioned relative to a container
+  // element. Only used for tables.
+  bool CellUsingContainerBackground() const {
+    return cell_using_container_background_;
+  }
+
+  const ImageResourceObserver& ImageClient() const;
+  const Document& ImageDocument() const;
+  const ComputedStyle& ImageStyle() const;
 
  private:
   void SetDestRect(const LayoutRect& dest_rect) { dest_rect_ = dest_rect; }
@@ -87,12 +107,19 @@ class BackgroundImageGeometry {
   LayoutSize GetBackgroundObjectDimensions(const LayoutTableCell&,
                                            const LayoutBox&);
 
+  const LayoutBoxModelObject& box_;
+  const LayoutBoxModelObject& positioning_box_;
+  LayoutSize positioning_size_override_;
+  LayoutPoint offset_in_background_;
+
   // TODO(schenney): Convert these to IntPoints for values that we snap
   LayoutRect dest_rect_;
   LayoutPoint phase_;
   LayoutSize tile_size_;
   LayoutSize repeat_spacing_;
   bool has_non_local_geometry_;
+  bool coordinate_offset_by_paint_rect_;
+  bool cell_using_container_background_;
 };
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
@@ -209,6 +210,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     context.FillRect(background_rect, Color(), SkBlendMode::kClear);
   }
 
+  BackgroundImageGeometry geometry(layout_view_);
   for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
        ++it) {
     DCHECK((*it)->Clip() == kBorderFillBox);
@@ -218,14 +220,15 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     if (should_paint_in_viewport_space) {
       BoxPainter::PaintFillLayer(layout_view_, paint_info, Color(), **it,
                                  LayoutRect(LayoutRect::InfiniteIntRect()),
-                                 kBackgroundBleedNone);
+                                 kBackgroundBleedNone, geometry);
     } else {
       context.Save();
       // TODO(trchen): We should be able to handle 3D-transformed root
       // background with slimming paint by using transform display items.
       context.ConcatCTM(transform.ToAffineTransform());
       BoxPainter::PaintFillLayer(layout_view_, paint_info, Color(), **it,
-                                 LayoutRect(paint_rect), kBackgroundBleedNone);
+                                 LayoutRect(paint_rect), kBackgroundBleedNone,
+                                 geometry);
       context.Restore();
     }
   }
