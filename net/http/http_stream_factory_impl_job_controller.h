@@ -340,7 +340,7 @@ class HttpStreamFactoryImpl::JobController
   std::unique_ptr<Job> alternative_job_;
   // The alternative service used by |alternative_job_|
   // (or by |main_job_| if |is_preconnect_|.)
-  AlternativeService alternative_service_;
+  AlternativeServiceInfo alternative_service_info_;
 
   // Net error code of the failed alternative job. Set to OK by default.
   int alternative_job_net_error_;
