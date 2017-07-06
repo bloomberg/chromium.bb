@@ -24,6 +24,8 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/stylus_state.h"
 
 using ash::mojom::TrayActionState;
 
@@ -51,6 +53,7 @@ StateController::StateController()
     : binding_(this),
       app_window_observer_(this),
       session_observer_(this),
+      input_devices_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(!g_instance);
   DCHECK(IsEnabled());
@@ -134,6 +137,7 @@ void StateController::OnProfilesReady(Profile* primary_profile,
   app_manager_->Initialize(primary_profile,
                            lock_screen_profile->GetOriginalProfile());
 
+  input_devices_observer_.Add(ui::InputDeviceManager::GetInstance());
   session_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
 
@@ -189,6 +193,14 @@ void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
   if (note_app_window_ != app_window)
     return;
   ResetNoteTakingWindowAndMoveToNextState(false /* close_window */);
+}
+
+void StateController::OnStylusStateChanged(ui::StylusState state) {
+  if (lock_screen_note_state_ != TrayActionState::kAvailable)
+    return;
+
+  if (state == ui::StylusState::REMOVED)
+    RequestNewLockScreenNote();
 }
 
 extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
