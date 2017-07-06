@@ -24,7 +24,7 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
  public:
   explicit BrowsingHistoryBridge(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
-                                 jobject j_profile);
+                                 bool is_incognito);
   void Destroy(JNIEnv*, const JavaParamRef<jobject>&);
 
   void QueryHistory(JNIEnv* env,

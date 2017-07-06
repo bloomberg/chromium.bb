@@ -161,6 +161,11 @@ public class IntentHandler {
     public static final String EXTRA_DATA_HASH_CODE = "org.chromium.chrome.browser.data_hash";
 
     /**
+     * A boolean to indicate whether incognito mode is currently selected.
+     */
+    public static final String EXTRA_INCOGNITO_MODE = "org.chromium.chrome.browser.incognito_mode";
+
+    /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
      */
     private static ComponentName sFakeComponentName;
