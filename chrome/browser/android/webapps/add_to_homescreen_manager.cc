@@ -96,7 +96,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
     ShowDialog();
   }
 
-  data_fetcher_ = new AddToHomescreenDataFetcher(
+  data_fetcher_ = base::MakeUnique<AddToHomescreenDataFetcher>(
       web_contents, ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
       ShortcutHelper::GetIdealSplashImageSizeInPx(),
@@ -105,12 +105,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
       check_webapk_compatible, this);
 }
 
-AddToHomescreenManager::~AddToHomescreenManager() {
-  if (data_fetcher_) {
-    data_fetcher_->set_weak_observer(nullptr);
-    data_fetcher_ = nullptr;
-  }
-}
+AddToHomescreenManager::~AddToHomescreenManager() {}
 
 void AddToHomescreenManager::ShowDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -187,14 +182,4 @@ void AddToHomescreenManager::CreateInfoBarForWebApk(
       base::MakeUnique<ShortcutInfo>(info), primary_icon, badge_icon,
       -1 /* event_request_id */, true /* is_webapk */,
       webapk::INSTALL_SOURCE_MENU);
-}
-
-SkBitmap AddToHomescreenManager::FinalizeLauncherIconInBackground(
-    const SkBitmap& bitmap,
-    const GURL& url,
-    bool* is_generated) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  return ShortcutHelper::FinalizeLauncherIconInBackground(bitmap, url,
-                                                          is_generated);
 }
