@@ -686,7 +686,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
   bool other_has_clip =
       other.HasOutOfFlowPosition() && !other.HasAutoClipInternal();
   if (has_clip != other_has_clip ||
-      (has_clip && ClipInternal() != other.ClipInternal()))
+      (has_clip && Clip() != other.Clip()))
     diff.SetCSSClipChanged();
 }
 

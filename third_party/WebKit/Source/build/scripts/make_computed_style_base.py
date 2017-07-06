@@ -162,7 +162,7 @@ class Field(object):
 
     def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
                  field_template, size, default_value, custom_copy, custom_compare, mutable,
-                 getter_method_name, setter_method_name, initial_method_name, **kwargs):
+                 getter_method_name, setter_method_name, initial_method_name, default_generated_functions, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
         self.property_name = property_name
@@ -199,7 +199,7 @@ class Field(object):
         self.internal_setter_method_name = method_name(join_name(setter_method_name, 'Internal'))
         self.initial_method_name = initial_method_name
         self.resetter_method_name = method_name(join_name('Reset', name_for_methods))
-
+        self.default_generated_functions = default_generated_functions
         # If the size of the field is not None, it means it is a bit field
         self.is_bit_field = self.size is not None
 
@@ -400,6 +400,7 @@ def _create_property_field(property_):
         getter_method_name=property_['getter'],
         setter_method_name=property_['setter'],
         initial_method_name=property_['initial'],
+        default_generated_functions=property_['default_generated_functions'],
     )
 
 
@@ -424,6 +425,7 @@ def _create_inherited_flag_field(property_):
         getter_method_name=method_name(name_for_methods),
         setter_method_name=method_name(join_name('set', name_for_methods)),
         initial_method_name=method_name(join_name('initial', name_for_methods)),
+        default_generated_functions=property_["default_generated_functions"]
     )
 
 
