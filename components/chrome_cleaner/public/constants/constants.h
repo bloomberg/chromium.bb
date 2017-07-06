@@ -33,10 +33,8 @@ extern const char kChromeSystemInstallSwitch[];
 // The Chrome version string.
 extern const char kChromeVersionSwitch[];
 
-// Indicates whether logs upload is enabled in the cleaner process. Should be
-// set by Chrome only be set if user has opted into Safe Browsing Extended
-// Reporting v2. Takes effect only if execution mode is not
-// ExecutionMode::kNone.
+// Indicates whether logs upload is enabled in the cleaner process.
+// Takes effect only if execution mode is ExecutionMode::kCleanup.
 extern const char kEnableCleanerLoggingSwitch[];
 
 // Indicates that crash reporting is enabled for the current user.
@@ -54,6 +52,7 @@ extern const char kEngineSwitch[];
 extern const char kExecutionModeSwitch[];
 
 // Indicates that the current user opted into Safe Browsing Extended Reporting.
+// This should not be used by non-legacy-mode Chrome Cleanup Tool.
 extern const char kExtendedSafeBrowsingEnabledSwitch[];
 
 // Specifies the suffix to the registry path where metrics data will be saved.
@@ -115,12 +114,11 @@ enum class ExecutionMode {
   // will show its own UI and handle logs uploading permissions.
   kNone = 0,
   // The cleaner will run in scanning mode. No UI will be shown to the user
-  // (UI handled by Chrome) and logs will only be uploaded if the user opted
-  // into Extended Safe Browsing Reporting.
+  // (UI handled by Chrome) and logs will not be uploaded.
   kScanning = 1,
   // The cleaner will run in cleanup mode only. No UI will be shown to the
-  // user (UI handled by Chrome) and logs will only be uploaded if the user
-  // opted into Extended Safe Browsing Reporting v2.
+  // user (UI handled by Chrome) and logs should only be uploaded if
+  // |kEnableCleanerLoggingSwitch| is set.
   kCleanup = 2,
 
   // Auxiliary enumerator for range checking.
