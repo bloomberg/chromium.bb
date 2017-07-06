@@ -6,12 +6,12 @@
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
 #include <deque>
-#include <functional>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/linked_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -256,7 +256,7 @@ class DBTracker {
                                const std::string& name,
                                TrackedDB** dbptr);
 
-  using DatabaseVisitor = std::function<void(TrackedDB*)>;
+  using DatabaseVisitor = base::RepeatingCallback<void(TrackedDB*)>;
 
   // Calls |visitor| for each live database. The database is live from the
   // point it was returned from OpenDatabase() and up until its instance is
