@@ -86,7 +86,7 @@ The default location is: `/home/chronos`
 ### Android
 
 The default location comes from
-[Context.getDir](https://developer.android.com/reference/android/content/Context.html#getDir%28java.lang.String, int%29)
+[Context.getDir](https://developer.android.com/reference/android/content/Context.html#getDir%28java.lang.String,%20int%29)
 and is specific to the app.
 
 Example: `/data/user/0/com.android.chrome/app_chrome`
