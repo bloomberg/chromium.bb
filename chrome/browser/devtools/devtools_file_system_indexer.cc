@@ -43,9 +43,9 @@ namespace {
 base::SequencedTaskRunner* impl_task_runner() {
   constexpr base::TaskTraits kBlockingTraits = {base::MayBlock(),
                                                 base::TaskPriority::BACKGROUND};
-  base::LazySequencedTaskRunner g_sequenced_task_task_runner =
+  static base::LazySequencedTaskRunner s_sequenced_task_task_runner =
       LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(kBlockingTraits);
-  return g_sequenced_task_task_runner.Get().get();
+  return s_sequenced_task_task_runner.Get().get();
 }
 
 typedef int32_t Trigram;
@@ -382,7 +382,8 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::FinishFileIndexing(
   }
   ReportWorked();
   ++indexing_it_;
-  IndexFiles();
+  impl_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&FileSystemIndexingJob::IndexFiles, this));
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::CloseFile() {

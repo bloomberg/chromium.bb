@@ -32,12 +32,13 @@ class DevToolsFileSystemIndexer
   typedef base::Callback<void()> DoneCallback;
   typedef base::Callback<void(const std::vector<std::string>&)> SearchCallback;
 
-  class FileSystemIndexingJob : public base::RefCounted<FileSystemIndexingJob> {
+  class FileSystemIndexingJob
+      : public base::RefCountedThreadSafe<FileSystemIndexingJob> {
    public:
     void Stop();
 
    private:
-    friend class base::RefCounted<FileSystemIndexingJob>;
+    friend class base::RefCountedThreadSafe<FileSystemIndexingJob>;
     friend class DevToolsFileSystemIndexer;
     FileSystemIndexingJob(const base::FilePath& file_system_path,
                           const TotalWorkCallback& total_work_callback,
