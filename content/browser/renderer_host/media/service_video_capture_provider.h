@@ -32,8 +32,15 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   std::unique_ptr<VideoCaptureDeviceLauncher> CreateDeviceLauncher() override;
 
  private:
+  enum class ReasonForUninitialize {
+    kShutdown,
+    kClientRequest,
+    kConnectionLost
+  };
+
   void LazyConnectToService();
   void OnLostConnectionToDeviceFactory();
+  void UninitializeInternal(ReasonForUninitialize reason);
 
   std::unique_ptr<service_manager::Connector> connector_;
   // We must hold on to |device_factory_provider_| because it holds the
@@ -41,6 +48,9 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   video_capture::mojom::DeviceFactoryPtr device_factory_;
   base::SequenceChecker sequence_checker_;
+
+  base::TimeTicks time_of_last_connect_;
+  base::TimeTicks time_of_last_uninitialize_;
 };
 
 }  // namespace content

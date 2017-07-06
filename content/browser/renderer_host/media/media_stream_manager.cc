@@ -55,6 +55,7 @@
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "services/video_capture/public/cpp/constants.h"
+#include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -428,6 +429,8 @@ MediaStreamManager::MediaStreamManager(
           InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
               std::move(device_task_runner)));
     } else {
+      video_capture::uma::LogVideoCaptureServiceEvent(
+          video_capture::uma::BROWSER_USING_LEGACY_CAPTURE);
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           base::MakeUnique<media::VideoCaptureSystemImpl>(
               media::VideoCaptureDeviceFactory::CreateFactory(

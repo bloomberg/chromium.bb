@@ -131,6 +131,7 @@ source_set("browser") {
     "//services/ui/public/cpp/gpu",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/interfaces:constants",
+    "//services/video_capture/public/uma",
     "//skia",
     "//sql",
     "//storage/browser",

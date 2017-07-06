@@ -14,6 +14,7 @@
 #include "media/capture/video/video_capture_device_info.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
+#include "services/video_capture/public/uma/video_capture_service_event.h"
 
 namespace {
 
@@ -158,6 +159,9 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
 
 void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
     const std::string& device_id) {
+  video_capture::uma::LogVideoCaptureServiceEvent(
+      video_capture::uma::SERVICE_LOST_CONNECTION_TO_BROWSER);
+
   active_devices_by_id_[device_id].device->Stop();
   active_devices_by_id_.erase(device_id);
 }

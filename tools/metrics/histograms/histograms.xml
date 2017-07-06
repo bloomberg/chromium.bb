@@ -30828,6 +30828,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.DelayUntilFirstFrame" units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Time it takes from the moment that a VideoCaptureController is requested to
+    start to the moment the first video frame arrives at
+    VideoCaptureController::OnFrameReadyInBuffer().
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.FrameRate" units="fps">
   <owner>mcasas@chromium.org</owner>
   <summary>
@@ -30925,6 +30934,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Counts video capture event, such as start and stop capture. Note that the
     ideal case is 50% start events and 50% normal stop events.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.VideoCaptureService.DurationFromLastConnectToClosingConnection"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser connected to the video
+    capture service to the time it closed the connection.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.VideoCaptureService.DurationFromLastConnectToConnectionLost"
+    units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser connected to the video
+    capture service to the time the connection was lost.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCaptureService.DurationUntilReconnect" units="ms">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Measures the duration from the time the Browser last closed or lost
+    connection to the video capture service to the time it reconnects.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCaptureService.Event"
+    enum="VideoCaptureServiceEvent">
+  <owner>chfremer@chromium.org</owner>
+  <summary>
+    Counts video capture service events, such as startup, shutdown, and
+    connection lost.
   </summary>
 </histogram>
 
