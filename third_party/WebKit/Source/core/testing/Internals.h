@@ -107,6 +107,8 @@ class Internals final : public GarbageCollected<Internals>,
 
   CSSStyleDeclaration* computedStyleIncludingVisitedInfo(Node*) const;
 
+  void setBrowserControlsState(float height, bool shrinks_layout);
+
   ShadowRoot* createUserAgentShadowRoot(Element* host);
 
   ShadowRoot* shadowRoot(Element* host);
