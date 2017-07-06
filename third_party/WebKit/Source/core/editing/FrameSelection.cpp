@@ -1128,15 +1128,14 @@ void FrameSelection::MoveRangeSelection(const VisiblePosition& base_position,
           .SetBaseAndExtentDeprecated(base_position.DeepEquivalent(),
                                       extent_position.DeepEquivalent())
           .SetAffinity(base_position.Affinity())
-          .SetGranularity(granularity)
           .SetIsHandleVisible(IsHandleVisible())
           .Build();
 
   if (new_selection.IsNone())
     return;
 
-  const VisibleSelection visible_selection =
-      CreateVisibleSelection(new_selection);
+  const VisibleSelection& visible_selection =
+      CreateVisibleSelectionWithGranularity(new_selection, granularity);
   if (visible_selection.IsNone())
     return;
 

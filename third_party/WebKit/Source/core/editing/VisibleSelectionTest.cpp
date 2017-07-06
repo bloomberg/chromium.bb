@@ -64,11 +64,11 @@ template <typename Strategy>
 VisibleSelectionTemplate<Strategy> ExpandUsingGranularity(
     const VisibleSelectionTemplate<Strategy>& selection,
     TextGranularity granularity) {
-  return CreateVisibleSelection(
+  return CreateVisibleSelectionWithGranularity(
       typename SelectionTemplate<Strategy>::Builder()
           .SetBaseAndExtent(selection.Base(), selection.Extent())
-          .SetGranularity(granularity)
-          .Build());
+          .Build(),
+      granularity);
 }
 
 // For http://crbug.com/700368
@@ -82,12 +82,12 @@ TEST_F(VisibleSelectionTest, appendTrailingWhitespaceWithAfterAnchor) {
   // TODO(editing-dev): We should remove above comment once we fix [1].
   // [1] http://crbug.com/701657 double-click on user-select:none should not
   // compute selection.
-  const VisibleSelection selection =
-      CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                 .Collapse(Position::BeforeNode(*input))
-                                 .Extend(Position::AfterNode(*input))
-                                 .SetGranularity(kWordGranularity)
-                                 .Build());
+  const VisibleSelection selection = CreateVisibleSelectionWithGranularity(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::BeforeNode(*input))
+          .Extend(Position::AfterNode(*input))
+          .Build(),
+      kWordGranularity);
   const VisibleSelection result = selection.AppendTrailingWhitespace();
 
   EXPECT_EQ(Position::BeforeNode(*input), result.Start());
