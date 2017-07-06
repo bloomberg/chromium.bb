@@ -37,10 +37,20 @@ var NodeMap;
 var SelectionState;
 
 /**
+ * Note:
+ * - If |results| is null, it means no search results have been returned. This
+ *   is different to |results| being [], which means the last search returned 0
+ *   results.
+ * - |term| is the last search that was performed by the user, and |results| are
+ *   the last results that were returned from the backend. We don't clear
+ *   |results| on incremental searches, meaning that |results| can be 'stale'
+ *   data from a previous search term (while |inProgress| is true). If you need
+ *   to know the exact search term used to generate |results|, you'll need to
+ *   add a new field to the state to track it (eg, SearchState.resultsTerm).
  * @typedef {{
  *   term: string,
  *   inProgress: boolean,
- *   results: !Array<string>,
+ *   results: ?Array<string>,
  * }}
  */
 var SearchState;
