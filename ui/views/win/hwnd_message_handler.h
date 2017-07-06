@@ -21,7 +21,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/accessibility/ax_enums.h"
-#include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/events/event.h"
@@ -39,9 +38,6 @@ class DirectManipulationHelper;
 }  // namespace gfx
 
 namespace ui  {
-class AXSystemCaretWin;
-class InputMethod;
-class TextInputClient;
 class ViewProp;
 }
 
@@ -121,9 +117,9 @@ const int WM_WINDOWSIZINGFINISHED = WM_USER;
 // used by both a views::NativeWidget and an aura::WindowTreeHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
-class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
-                                        public ui::InputMethodObserver,
-                                        public ui::WindowEventTarget {
+class VIEWS_EXPORT HWNDMessageHandler :
+    public gfx::WindowImpl,
+    public ui::WindowEventTarget {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler() override;
@@ -230,15 +226,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   HICON GetDefaultWindowIcon() const override;
   HICON GetSmallWindowIcon() const override;
   LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) override;
-
-  // Overridden from InputMethodObserver
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
-  void OnFocus() override;
-  void OnBlur() override;
-  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
-  void OnTextInputStateChanged(const ui::TextInputClient* client) override;
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
-  void OnShowImeIfNeeded() override;
 
   // Overridden from WindowEventTarget
   LRESULT HandleMouseMessage(unsigned int message,
@@ -587,11 +574,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // px on activation loss to a window on the same monitor.
   void OnBackgroundFullscreen();
 
-  // Deletes the system caret used for accessibility. This will result in any
-  // clients that are still holding onto its |IAccessible| to get a failure code
-  // if they request its location.
-  void DestroyAXSystemCaret();
-
   HWNDMessageHandlerDelegate* delegate_;
 
   std::unique_ptr<FullscreenHandler> fullscreen_handler_;
@@ -715,9 +697,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Manages observation of Windows Session Change messages.
   std::unique_ptr<WindowsSessionChangeObserver>
       windows_session_change_observer_;
-
-  // Some assistive software need to track the location of the caret.
-  std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
 
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
