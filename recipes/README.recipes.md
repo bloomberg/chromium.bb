@@ -312,6 +312,21 @@ Create a new branch from given project and commit
 Returns:
   the ref of the branch created
 
+&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#66)(self, host, query_params, start=None, limit=None, \*\*kwargs):**
+
+Query changes for the given host.
+
+Args:
+  host: Gerrit host to query.
+  query_params: Query parameters as list of (key, value) tuples to form a
+      query as documented here:
+      https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
+  start: How many changes to skip (starting with the most recent).
+  limit: Maximum number of results to return.
+Returns:
+  A list of change dicts as documented here:
+      https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+
 &mdash; **def [get\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#47)(self, host, project, branch, \*\*kwargs):**
 
 Get a branch from given project and commit
@@ -800,13 +815,13 @@ Move things around in a loop!
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/tryserver/examples/full.py#17)(api):**
 
-[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--context
-[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--json
-[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--path
-[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--platform
-[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--properties
-[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--python
-[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--raw_io
-[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--step
-[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/README.recipes.md#recipe_modules--url
-[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/11d7598fa760017f168aec1c53a9ced74b2fc8a6/recipe_engine/recipe_api.py#L884
+[recipe_engine/recipe_modules/context]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--context
+[recipe_engine/recipe_modules/json]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--json
+[recipe_engine/recipe_modules/path]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--path
+[recipe_engine/recipe_modules/platform]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--platform
+[recipe_engine/recipe_modules/properties]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--properties
+[recipe_engine/recipe_modules/python]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--python
+[recipe_engine/recipe_modules/raw_io]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--raw_io
+[recipe_engine/recipe_modules/step]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--step
+[recipe_engine/recipe_modules/url]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/README.recipes.md#recipe_modules--url
+[recipe_engine/wkt/RecipeApi]: https://github.com/luci/recipes-py/blob/241ddc299faa009b8842f95d40fdd7760b81791e/recipe_engine/recipe_api.py#L884
