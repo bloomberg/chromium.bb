@@ -36,13 +36,12 @@ settings.ContentSettingsTypes = {
 };
 
 /**
- * Contains the possible string values for a given contentSettingsType.
+ * Contains the possible string values for a given ContentSettingsTypes.
+ * This should be kept in sync with the |ContentSetting| enum in
+ * components/content_settings/core/common/content_settings.h
  * @enum {string}
- *
- * TODO(dschuyler): This should be rename as ContentSetting to maintain
- * nomenclature with C++.
  */
-settings.PermissionValues = {
+settings.ContentSetting = {
   DEFAULT: 'default',
   ALLOW: 'allow',
   BLOCK: 'block',

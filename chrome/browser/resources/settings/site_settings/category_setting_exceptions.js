@@ -24,6 +24,6 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.PermissionValues = settings.PermissionValues;
+    this.ContentSetting = settings.ContentSetting;
   },
 });

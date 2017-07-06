@@ -66,11 +66,11 @@ suite('SiteDetailsPermission', function() {
     return false;
   };
 
-  function validatePermissionFlipWorks(origin, expectedPermissionValue) {
+  function validatePermissionFlipWorks(origin, expectedContentSetting) {
     browserProxy.resetResolver('setCategoryPermissionForOrigin');
 
     // Simulate permission change initiated by the user.
-    testElement.$.permission.value = expectedPermissionValue;
+    testElement.$.permission.value = expectedContentSetting;
     testElement.$.permission.dispatchEvent(new CustomEvent('change'));
 
     return browserProxy.whenCalled('setCategoryPermissionForOrigin')
@@ -78,7 +78,7 @@ suite('SiteDetailsPermission', function() {
           assertEquals(origin, args[0]);
           assertEquals('', args[1]);
           assertEquals(testElement.category, args[2]);
-          assertEquals(expectedPermissionValue, args[3]);
+          assertEquals(expectedContentSetting, args[3]);
         });
   };
 
@@ -100,14 +100,14 @@ suite('SiteDetailsPermission', function() {
         'Widget should be labelled correctly');
 
     // Flip the permission and validate that prefs stay in sync.
-    return validatePermissionFlipWorks(origin, settings.PermissionValues.ALLOW)
+    return validatePermissionFlipWorks(origin, settings.ContentSetting.ALLOW)
         .then(function() {
           return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.BLOCK);
+              origin, settings.ContentSetting.BLOCK);
         })
         .then(function() {
           return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.ALLOW);
+              origin, settings.ContentSetting.ALLOW);
         });
   });
 
@@ -130,14 +130,14 @@ suite('SiteDetailsPermission', function() {
 
     // Flip the permission and validate that prefs stay in sync.
     return validatePermissionFlipWorks(
-               origin, settings.PermissionValues.SESSION_ONLY)
+               origin, settings.ContentSetting.SESSION_ONLY)
         .then(function() {
           return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.ALLOW);
+              origin, settings.ContentSetting.ALLOW);
         })
         .then(function() {
           return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.BLOCK);
+              origin, settings.ContentSetting.BLOCK);
         });
   });
 });

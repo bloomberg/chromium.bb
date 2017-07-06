@@ -124,16 +124,16 @@ Polymer({
   },
 
   /**
-   * @param {string} setting Value from settings.PermissionValues.
+   * @param {string} setting Value from settings.ContentSetting.
    * @param {string} enabled Non-block label ('feature X not allowed').
    * @param {string} disabled Block label (likely just, 'Blocked').
    * @param {?string} other Tristate value (maybe, 'session only').
    * @private
    */
   defaultSettingLabel_: function(setting, enabled, disabled, other) {
-    if (setting == settings.PermissionValues.BLOCK)
+    if (setting == settings.ContentSetting.BLOCK)
       return disabled;
-    if (setting == settings.PermissionValues.ALLOW)
+    if (setting == settings.ContentSetting.ALLOW)
       return enabled;
     if (other)
       return other;
@@ -162,8 +162,8 @@ Polymer({
     var category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
     this.set(
         'default_.' + Polymer.CaseMap.dashToCamelCase(category),
-        enabled ? settings.PermissionValues.ALLOW :
-                  settings.PermissionValues.BLOCK);
+        enabled ? settings.ContentSetting.ALLOW :
+                  settings.ContentSetting.BLOCK);
   },
 
   /**

@@ -23,13 +23,13 @@
           <select id="permission" class="md-select"
               aria-labelledby="permissionHeader"
               on-change="onPermissionSelectionChange_">
-            <option id="allow" value$="[[PermissionValues.ALLOW]]">
+            <option id="allow" value$="[[ContentSetting.ALLOW]]">
               $i18n{siteSettingsActionAllow}
             </option>
-            <option id="block" value$="[[PermissionValues.BLOCK]]">
+            <option id="block" value$="[[ContentSetting.BLOCK]]">
               $i18n{siteSettingsActionBlock}
             </option>
-            <option id="sessionOnly" value$="[[PermissionValues.SESSION_ONLY]]"
+            <option id="sessionOnly" value$="[[ContentSetting.SESSION_ONLY]]"
                 hidden$="[[!isCookiesCategory_(category)]]">
               $i18n{siteSettingsActionSessionOnly}
             </option>
