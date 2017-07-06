@@ -62,36 +62,14 @@ UserPolicySigninService::UserPolicySigninService(
 
 UserPolicySigninService::~UserPolicySigninService() {}
 
-void UserPolicySigninService::RegisterForPolicy(
-    const std::string& username,
-    const std::string& account_id,
-    const PolicyRegistrationCallback& callback) {
-  RegisterForPolicyInternal(username, account_id, "", callback);
-}
-
-#if !defined(OS_ANDROID)
-void UserPolicySigninService::RegisterForPolicyWithAccessToken(
-    const std::string& username,
-    const std::string& access_token,
-    const PolicyRegistrationCallback& callback) {
-  RegisterForPolicyInternal(username, "", access_token, callback);
-}
-
-// static
-std::vector<std::string> UserPolicySigninService::GetScopes() {
-  return CloudPolicyClientRegistrationHelper::GetScopes();
-}
-#endif
-
 void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
   CancelPendingRegistration();
   UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
-void UserPolicySigninService::RegisterForPolicyInternal(
+void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
     const std::string& account_id,
-    const std::string& access_token,
     const PolicyRegistrationCallback& callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
   std::unique_ptr<CloudPolicyClient> policy_client =
@@ -114,17 +92,8 @@ void UserPolicySigninService::RegisterForPolicyInternal(
   auto registration_callback = base::Bind(
       &UserPolicySigninService::CallPolicyRegistrationCallback,
       base::Unretained(this), base::Passed(&policy_client), callback);
-  if (access_token.empty()) {
-    registration_helper_->StartRegistration(
-        oauth2_token_service_, account_id, registration_callback);
-  } else {
-#if defined(OS_ANDROID)
-    NOTREACHED();
-#else
-    registration_helper_->StartRegistrationWithAccessToken(
-        access_token, registration_callback);
-#endif
-  }
+  registration_helper_->StartRegistration(oauth2_token_service_, account_id,
+                                          registration_callback);
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(

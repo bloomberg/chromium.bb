@@ -202,15 +202,6 @@ void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
                  base::Unretained(this)));
 }
 
-void CloudPolicyClientRegistrationHelper::StartRegistrationWithAccessToken(
-    const std::string& access_token,
-    const base::Closure& callback) {
-  DCHECK(!client_->is_registered());
-  callback_ = callback;
-  client_->AddObserver(this);
-  OnTokenFetched(access_token);
-}
-
 // static
 std::vector<std::string>
 CloudPolicyClientRegistrationHelper::GetScopes() {

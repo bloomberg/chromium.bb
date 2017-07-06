@@ -27,8 +27,7 @@ namespace policy {
 
 class CloudPolicyClientRegistrationHelper;
 
-// A specialization of the UserPolicySigninServiceBase for the mobile platforms
-// (currently Android and iOS).
+// A specialization of UserPolicySigninServiceBase for the Android.
 class UserPolicySigninService : public UserPolicySigninServiceBase {
  public:
   // Creates a UserPolicySigninService associated with the passed |profile|.
@@ -49,24 +48,10 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // token services.
   // |callback| is invoked once we have registered this device to fetch policy,
   // or once it is determined that |username| is not a managed account.
-  void RegisterForPolicy(const std::string& username,
-                         const std::string& account_id,
-                         const PolicyRegistrationCallback& callback);
-
-#if !defined(OS_ANDROID)
-  // Registers a CloudPolicyClient for fetching policy for |username|.
-  // This requires a valid OAuth access token for the scopes returned by the
-  // |GetScopes| static function. |callback| is invoked once we have
-  // registered this device to fetch policy, or once it is determined that
-  // |username| is not a managed account.
-  void RegisterForPolicyWithAccessToken(
+  void RegisterForPolicyWithAccountId(
       const std::string& username,
-      const std::string& access_token,
+      const std::string& account_id,
       const PolicyRegistrationCallback& callback);
-
-  // Returns the list of OAuth access scopes required for policy fetching.
-  static std::vector<std::string> GetScopes();
-#endif
 
   // Overridden from UserPolicySigninServiceBase to cancel the pending delayed
   // registration.

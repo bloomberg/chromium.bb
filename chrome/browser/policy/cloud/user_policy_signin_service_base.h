@@ -72,7 +72,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   ~UserPolicySigninServiceBase() override;
 
   // Initiates a policy fetch as part of user signin, using a |dm_token| and
-  // |client_id| fetched via RegisterForPolicy(). |callback| is invoked
+  // |client_id| fetched via RegisterForPolicyXXX(). |callback| is invoked
   // once the policy fetch is complete, passing true if the policy fetch
   // succeeded.
   void FetchPolicyForSignedInUser(
