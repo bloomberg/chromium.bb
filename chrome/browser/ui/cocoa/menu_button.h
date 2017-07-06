@@ -22,11 +22,14 @@
 // This is used for the toolbar back/forward buttons, which have a primary
 // action and the menu as a secondary click-hold action. The default value is NO
 // so that custom actions can be hooked up in Interface Builder.
+// The click-hold behavior can be disabled entirely through the
+// |openMenuOnClickHold| property.
 @interface MenuButton : ToolbarButton {
  @private
   base::scoped_nsobject<NSMenu> attachedMenu_;
   BOOL openMenuOnClick_;
   BOOL openMenuOnRightClick_;
+  BOOL openMenuOnClickHold_;
   base::scoped_nsobject<NSPopUpButtonCell> popUpCell_;
 }
 
@@ -39,11 +42,17 @@
 @property(retain, nonatomic) IBOutlet NSMenu* attachedMenu;
 
 // Whether or not to open the menu when the button is clicked. Otherwise, the
-// menu will only be opened when clicked and held.
+// menu will only be opened when clicked and held, if that behavior has not
+// been disabled.
 @property(assign, nonatomic) BOOL openMenuOnClick;
 
 // Whether or not to open the menu when the right button is clicked.
 @property(assign, nonatomic) BOOL openMenuOnRightClick;
+
+// Whether the menu should open if a user clicks and holds on the button. The
+// default is YES. This does require that the user drag the mouse a small
+// distance "pull open" the menu.
+@property(assign, nonatomic) BOOL openMenuOnClickHold;
 
 // Returns the rectangle that menus are anchored at. Can be overridden by
 // subclasses, returns -bounds by default.

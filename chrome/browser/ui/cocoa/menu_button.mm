@@ -21,6 +21,7 @@
 
 @synthesize openMenuOnClick = openMenuOnClick_;
 @synthesize openMenuOnRightClick = openMenuOnRightClick_;
+@synthesize openMenuOnClickHold = openMenuOnClickHold_;
 
 // Overrides:
 
@@ -29,20 +30,26 @@
 }
 
 - (id)init {
-  if ((self = [super init]))
+  if ((self = [super init])) {
+    openMenuOnClickHold_ = YES;
     [self configureCell];
+  }
   return self;
 }
 
 - (id)initWithCoder:(NSCoder*)decoder {
-  if ((self = [super initWithCoder:decoder]))
+  if ((self = [super initWithCoder:decoder])) {
+    openMenuOnClickHold_ = YES;
     [self configureCell];
+  }
   return self;
 }
 
 - (id)initWithFrame:(NSRect)frameRect {
-  if ((self = [super initWithFrame:frameRect]))
+  if ((self = [super initWithFrame:frameRect])) {
+    openMenuOnClickHold_ = YES;
     [self configureCell];
+  }
   return self;
 }
 
@@ -90,6 +97,11 @@
   [self configureCell];
 }
 
+- (void)setOpenMenuOnClickHold:(BOOL)enabled {
+  openMenuOnClickHold_ = enabled;
+  [self configureCell];
+}
+
 - (NSRect)menuRect {
   return [self bounds];
 }
@@ -120,9 +132,10 @@
   } else {
     [cell setClickHoldTimeout:0.25];  // Default value.
   }
-  // Even when openMenuOnClick_ is true, click hold action and target still
-  // need to be set in order to allow classic Mac menu behavior.
-  [cell setEnableClickHold:YES];
+
+  // Regardless of the left-or-right click behaviors, the button needs to allow
+  // the classic click-hold-drag behavior to "pull open" the menu.
+  [cell setEnableClickHold:openMenuOnClickHold_];
   [cell setClickHoldAction:@selector(dragShowMenu:)];
   [cell setClickHoldTarget:self];
 
