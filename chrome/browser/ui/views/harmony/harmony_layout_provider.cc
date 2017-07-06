@@ -10,6 +10,12 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
     case views::INSETS_BUBBLE_CONTENTS:
     case views::INSETS_DIALOG_CONTENTS:
       return gfx::Insets(kHarmonyLayoutUnit, kHarmonyLayoutUnit);
+    case views::INSETS_CHECKBOX_RADIO_BUTTON: {
+      gfx::Insets insets = ChromeLayoutProvider::GetInsetsMetric(metric);
+      // Material Design requires that checkboxes and radio buttons are aligned
+      // flush to the left edge.
+      return gfx::Insets(insets.top(), 0, insets.bottom(), insets.right());
+    }
     case views::INSETS_VECTOR_IMAGE_BUTTON:
       return gfx::Insets(kHarmonyLayoutUnit / 4);
     default:

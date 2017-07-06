@@ -17,6 +17,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
@@ -191,6 +192,14 @@ gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
       images_[checked_index][focused_index][for_state].isNull())
     return images_[checked_index][focused_index][STATE_NORMAL];
   return images_[checked_index][focused_index][for_state];
+}
+
+std::unique_ptr<LabelButtonBorder> Checkbox::CreateDefaultBorder() const {
+  std::unique_ptr<LabelButtonBorder> border =
+      LabelButton::CreateDefaultBorder();
+  border->set_insets(
+      LayoutProvider::Get()->GetInsetsMetric(INSETS_CHECKBOX_RADIO_BUTTON));
+  return border;
 }
 
 void Checkbox::SetCustomImage(bool checked,
