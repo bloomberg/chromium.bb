@@ -435,6 +435,65 @@ TEST_F(DisplayTest, DisplayDamaged) {
   TearDownDisplay();
 }
 
+// Check LatencyInfo storage is cleaned up if it exceeds the limit.
+TEST_F(DisplayTest, MaxLatencyInfoCap) {
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  settings.finish_rendering_on_resize = true;
+  SetUpDisplay(settings, nullptr);
+  gfx::ColorSpace color_space_1 = gfx::ColorSpace::CreateXYZD50();
+  gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
+
+  StubDisplayClient client;
+  display_->Initialize(&client, &manager_);
+  display_->SetColorSpace(color_space_1, color_space_1);
+
+  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+
+  scheduler_->ResetDamageForTest();
+  display_->Resize(gfx::Size(100, 100));
+
+  RenderPassList pass_list;
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  pass->output_rect = gfx::Rect(0, 0, 100, 100);
+  pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+  pass->id = 1u;
+  pass_list.push_back(std::move(pass));
+
+  scheduler_->ResetDamageForTest();
+  SubmitCompositorFrame(&pass_list, local_surface_id);
+
+  display_->DrawAndSwap();
+
+  // This is the same as LatencyInfo::kMaxLatencyInfoNumber.
+  const size_t max_latency_info_count = 100;
+  for (size_t i = 0; i <= max_latency_info_count; ++i) {
+    pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 0, 0);
+    pass->id = 1u;
+
+    pass_list.push_back(std::move(pass));
+    scheduler_->ResetDamageForTest();
+
+    CompositorFrame frame = test::MakeCompositorFrame();
+    pass_list.swap(frame.render_pass_list);
+    frame.metadata.latency_info.push_back(ui::LatencyInfo());
+
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+
+    display_->DrawAndSwap();
+
+    if (i < max_latency_info_count)
+      EXPECT_EQ(i + 1, display_->stored_latency_info_size_for_testing());
+    else
+      EXPECT_EQ(0u, display_->stored_latency_info_size_for_testing());
+  }
+
+  TearDownDisplay();
+}
+
 class MockedContext : public TestWebGraphicsContext3D {
  public:
   MOCK_METHOD0(shallowFinishCHROMIUM, void());
