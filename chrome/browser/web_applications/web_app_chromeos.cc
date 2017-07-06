@@ -14,9 +14,9 @@ void UpdateShortcutsForAllApps(Profile* profile,
 namespace internals {
 
 bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
-                             const ShortcutInfo& shortcut_info,
                              const ShortcutLocations& creation_locations,
-                             ShortcutCreationReason creation_reason) {
+                             ShortcutCreationReason creation_reason,
+                             const ShortcutInfo& shortcut_info) {
   return true;
 }
 

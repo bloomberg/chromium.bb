@@ -8,9 +8,9 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration_linux.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 
@@ -22,11 +22,11 @@ void UpdateShortcutsForAllApps(Profile* profile,
 namespace internals {
 
 bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
-                             const ShortcutInfo& shortcut_info,
                              const ShortcutLocations& creation_locations,
-                             ShortcutCreationReason /*creation_reason*/) {
+                             ShortcutCreationReason /*creation_reason*/,
+                             const ShortcutInfo& shortcut_info) {
 #if !defined(OS_CHROMEOS)
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   return shell_integration_linux::CreateDesktopShortcut(shortcut_info,
                                                         creation_locations);
 #else
@@ -45,7 +45,7 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                              const base::string16& /*old_app_title*/,
                              const ShortcutInfo& shortcut_info) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
@@ -60,8 +60,8 @@ void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_NONE)
     creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
-  CreatePlatformShortcuts(web_app_path, shortcut_info, creation_locations,
-                          SHORTCUT_CREATION_AUTOMATED);
+  CreatePlatformShortcuts(web_app_path, creation_locations,
+                          SHORTCUT_CREATION_AUTOMATED, shortcut_info);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
