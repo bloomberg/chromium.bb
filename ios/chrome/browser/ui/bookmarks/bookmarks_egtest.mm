@@ -214,9 +214,7 @@ id<GREYMatcher> ActionSheet(Action action) {
   }
 
   // Close the opened tab.
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() closeCurrentTab];
 }
 
 // Tests that tapping a bookmark on the NTP navigates to the proper URL.

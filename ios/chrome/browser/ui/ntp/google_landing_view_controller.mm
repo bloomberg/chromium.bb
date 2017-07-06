@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -1224,11 +1225,9 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
           [[GenericChromeCommand alloc] initWithTag:IDC_NEW_TAB];
       [[self view] chromeExecuteCommand:command];
     } break;
-    case OverscrollAction::CLOSE_TAB: {
-      GenericChromeCommand* command =
-          [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB];
-      [[self view] chromeExecuteCommand:command];
-    } break;
+    case OverscrollAction::CLOSE_TAB:
+      [self.dispatcher closeCurrentTab];
+      break;
     case OverscrollAction::REFRESH:
       [self reload];
       break;

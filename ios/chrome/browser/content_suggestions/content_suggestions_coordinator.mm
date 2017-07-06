@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
@@ -341,9 +342,7 @@
       [self.suggestionsViewController chromeExecuteCommand:command];
     } break;
     case OverscrollAction::CLOSE_TAB: {
-      base::scoped_nsobject<GenericChromeCommand> command(
-          [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB]);
-      [self.suggestionsViewController chromeExecuteCommand:command];
+      [_dispatcher closeCurrentTab];
     } break;
     case OverscrollAction::REFRESH:
       [self reload];

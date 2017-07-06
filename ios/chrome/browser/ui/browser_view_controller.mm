@@ -93,6 +93,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
@@ -957,6 +958,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                               forProtocol:@protocol(WebToolbarDelegate)];
     [_dispatcher startDispatchingToTarget:self
                               forSelector:@selector(chromeExecuteCommand:)];
+    [_dispatcher startDispatchingToTarget:self
+                              forProtocol:@protocol(BrowserCommands)];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
@@ -997,6 +1000,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 #pragma mark - Properties
+
+- (id<BrowserCommands>)dispatcher {
+  return static_cast<id<BrowserCommands>>(_dispatcher);
+}
 
 - (void)setActive:(BOOL)active {
   if (_active == active) {
@@ -2969,7 +2976,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self newTab:nil];
       break;
     case OverscrollAction::CLOSE_TAB:
-      [self closeCurrentTab];
+      [self.dispatcher closeCurrentTab];
       break;
     case OverscrollAction::REFRESH: {
       if ([[[_model currentTab] webController] loadPhase] ==
@@ -3714,6 +3721,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
   return [self.keyCommandsProvider
       keyCommandsForConsumer:self
+                  dispatcher:self.dispatcher
                  editingText:![self isFirstResponder]];
 }
 
@@ -4030,9 +4038,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
             currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()
                          inView:[_toolbarController bookmarkButtonView]
                      originRect:[_toolbarController bookmarkButtonAnchorRect]];
-      break;
-    case IDC_CLOSE_TAB:
-      [self closeCurrentTab];
       break;
     case IDC_FIND:
       [self initFindBarForTab];
