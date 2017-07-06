@@ -115,6 +115,8 @@ class CONTENT_EXPORT InterstitialPageImpl
                    base::i18n::TextDirection title_direction) override;
   InterstitialPage* GetAsInterstitialPage() override;
   AccessibilityMode GetAccessibilityMode() const override;
+  void ExecuteEditCommand(const std::string& command,
+                          const base::Optional<base::string16>& value) override;
   void Cut() override;
   void Copy() override;
   void Paste() override;

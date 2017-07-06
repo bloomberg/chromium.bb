@@ -43,3 +43,39 @@ enum EffectiveConnectionType;
 
 [Native]
 enum WebPopupType;
+
+[Native]
+enum Button;
+
+[Native]
+enum PointerType;
+
+[Native]
+struct EditCommand;
+
+[Native]
+enum InputEventAckState;
+
+[Native]
+enum InputEventAckSource;
+
+[Native]
+enum EventType;
+
+[Native]
+enum Cancelability;
+
+[Native]
+enum GestureDevice;
+
+[Native]
+enum ScrollUnits;
+
+[Native]
+enum InertialPhaseState;
+
+[Native]
+enum TouchState;
+
+[Native]
+struct DidOverscrollParams;

@@ -41,6 +41,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
  private:
   // RenderWidgetHostDelegate:
+  void ExecuteEditCommand(
+      const std::string& command,
+      const base::Optional<base::string16>& value) override {}
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}

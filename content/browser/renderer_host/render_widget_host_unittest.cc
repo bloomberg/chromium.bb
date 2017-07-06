@@ -94,22 +94,16 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
 class MockInputRouter : public InputRouter {
  public:
   explicit MockInputRouter(InputRouterClient* client)
-      : send_event_called_(false),
-        sent_mouse_event_(false),
+      : sent_mouse_event_(false),
         sent_wheel_event_(false),
         sent_keyboard_event_(false),
         sent_gesture_event_(false),
         send_touch_event_not_cancelled_(false),
         message_received_(false),
-        client_(client) {
-  }
+        client_(client) {}
   ~MockInputRouter() override {}
 
   // InputRouter
-  bool SendInput(std::unique_ptr<IPC::Message> message) override {
-    send_event_called_ = true;
-    return true;
-  }
   void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override {
     sent_mouse_event_ = true;
   }
@@ -146,7 +140,6 @@ class MockInputRouter : public InputRouter {
     return false;
   }
 
-  bool send_event_called_;
   bool sent_mouse_event_;
   bool sent_wheel_event_;
   bool sent_keyboard_event_;
@@ -205,6 +198,9 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   void DisableGestureDebounce() {
     input_router_.reset(new LegacyInputRouterImpl(
         process_, this, this, routing_id_, InputRouter::Config()));
+    legacy_widget_input_handler_ =
+        base::MakeUnique<LegacyIPCWidgetInputHandler>(
+            static_cast<LegacyInputRouterImpl*>(input_router_.get()));
   }
 
   WebInputEvent::Type acked_touch_event_type() const {
@@ -213,6 +209,9 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   void SetupForInputRouterTest() {
     input_router_.reset(new MockInputRouter(this));
+    legacy_widget_input_handler_ =
+        base::MakeUnique<LegacyIPCWidgetInputHandler>(
+            static_cast<LegacyInputRouterImpl*>(input_router_.get()));
   }
 
   MockInputRouter* mock_input_router() {
@@ -486,6 +485,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) override {
     unresponsive_timer_fired_ = true;
   }
+
+  void ExecuteEditCommand(
+      const std::string& command,
+      const base::Optional<base::string16>& value) override {}
 
   void Cut() override {}
   void Copy() override {}
@@ -1680,54 +1683,6 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
 
   EXPECT_EQ("GestureScrollEnd", GetInputMessageTypes(process_));
   EXPECT_EQ(0U, process_->sink().message_count());
-}
-
-#define TEST_InputRouterRoutes_NOARGS(INPUTMSG) \
-  TEST_F(RenderWidgetHostTest, InputRouterRoutes##INPUTMSG) { \
-    host_->SetupForInputRouterTest(); \
-    host_->INPUTMSG(); \
-    EXPECT_TRUE(host_->mock_input_router()->send_event_called_); \
-  }
-
-TEST_InputRouterRoutes_NOARGS(Focus);
-TEST_InputRouterRoutes_NOARGS(Blur);
-TEST_InputRouterRoutes_NOARGS(LostCapture);
-
-#undef TEST_InputRouterRoutes_NOARGS
-
-#define TEST_InputRouterRoutes_NOARGS_FromRFH(INPUTMSG) \
-  TEST_F(RenderWidgetHostTest, InputRouterRoutes##INPUTMSG) { \
-    host_->SetupForInputRouterTest(); \
-    host_->Send(new INPUTMSG(host_->GetRoutingID())); \
-    EXPECT_TRUE(host_->mock_input_router()->send_event_called_); \
-  }
-
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Undo);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Redo);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Cut);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Copy);
-#if defined(OS_MACOSX)
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_CopyToFindPboard);
-#endif
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Paste);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_PasteAndMatchStyle);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Delete);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_SelectAll);
-TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_CollapseSelection);
-
-#undef TEST_InputRouterRoutes_NOARGS_FromRFH
-
-TEST_F(RenderWidgetHostTest, InputRouterRoutesReplace) {
-  host_->SetupForInputRouterTest();
-  host_->Send(new InputMsg_Replace(host_->GetRoutingID(), base::string16()));
-  EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
-}
-
-TEST_F(RenderWidgetHostTest, InputRouterRoutesReplaceMisspelling) {
-  host_->SetupForInputRouterTest();
-  host_->Send(new InputMsg_ReplaceMisspelling(host_->GetRoutingID(),
-                                              base::string16()));
-  EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {

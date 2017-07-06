@@ -381,6 +381,7 @@ class CONTENT_EXPORT RenderViewImpl
   void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,
                         HandledEventCallback callback) override;
+  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
 
  protected:
   // RenderWidget overrides:
@@ -505,8 +506,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
-  void OnMoveCaret(const gfx::Point& point);
-  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
   void OnClosePage();

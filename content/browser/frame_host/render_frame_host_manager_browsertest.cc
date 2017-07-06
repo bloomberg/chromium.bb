@@ -2655,7 +2655,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // message.
   RenderProcessHostWatcher watcher(
       rvh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  rvh->Send(new InputMsg_SetFocus(rvh->GetRoutingID(), true));
+  rvh->GetWidget()->GetWidgetInputHandler()->SetFocus(true);
 
   // The test must wait for a process to exit, but if the IPC message is
   // properly ignored, there will be no crash. Therefore, navigate the

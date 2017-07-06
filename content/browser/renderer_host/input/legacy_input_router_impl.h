@@ -58,8 +58,9 @@ class CONTENT_EXPORT LegacyInputRouterImpl
                         const Config& config);
   ~LegacyInputRouterImpl() override;
 
+  bool SendInput(std::unique_ptr<IPC::Message> message);
+
   // InputRouter
-  bool SendInput(std::unique_ptr<IPC::Message> message) override;
   void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
   void SendWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
@@ -79,6 +80,8 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void SetFrameTreeNodeId(int frameTreeNodeId) override;
 
   cc::TouchAction AllowedTouchAction() override;
+
+  int routing_id() const { return routing_id_; }
 
  private:
   friend class LegacyInputRouterImplTest;
@@ -193,8 +196,6 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   // touch action. Note that this will only affect platforms that have a
   // non-zero touch timeout configuration.
   void UpdateTouchAckTimeoutEnabled();
-
-  int routing_id() const { return routing_id_; }
 
   IPC::Sender* sender_;
   InputRouterClient* client_;

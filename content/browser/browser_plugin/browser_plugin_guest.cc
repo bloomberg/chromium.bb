@@ -60,6 +60,20 @@
 
 namespace content {
 
+namespace {
+
+std::vector<ui::CompositionUnderline> ConvertToUiUnderline(
+    const std::vector<blink::WebCompositionUnderline>& underlines) {
+  std::vector<ui::CompositionUnderline> ui_underlines;
+  for (const auto& underline : underlines) {
+    ui_underlines.emplace_back(ui::CompositionUnderline(
+        underline.start_offset, underline.end_offset, underline.color,
+        underline.thick, underline.background_color));
+  }
+  return ui_underlines;
+}
+};  // namespace
+
 class BrowserPluginGuest::EmbedderVisibilityObserver
     : public WebContentsObserver {
  public:
@@ -226,7 +240,7 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
     static_cast<RenderViewHostImpl*>(RenderViewHost::From(rwh))
         ->SetInitialFocus(focus_type == blink::kWebFocusTypeBackward);
   }
-  rwh->Send(new InputMsg_SetFocus(rwh->GetRoutingID(), focused));
+  RenderWidgetHostImpl::From(rwh)->GetWidgetInputHandler()->SetFocus(focused);
   if (!focused && mouse_locked_)
     OnUnlockMouse();
 
@@ -680,7 +694,9 @@ void BrowserPluginGuest::RenderViewReady() {
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   // TODO(fsamuel): Investigate whether it's possible to update state earlier
   // here (see http://crbug.com/158151).
-  Send(new InputMsg_SetFocus(routing_id(), focused_));
+  RenderWidgetHostImpl::From(rvh->GetWidget())
+      ->GetWidgetInputHandler()
+      ->SetFocus(focused_);
   UpdateVisibility();
 
   // In case we've created a new guest render process after a crash, let the
@@ -907,7 +923,8 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
 
 void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
                                               const std::string& name) {
-  RenderFrameHost* focused_frame = web_contents()->GetFocusedFrame();
+  RenderFrameHostImpl* focused_frame =
+      static_cast<RenderFrameHostImpl*>(web_contents()->GetFocusedFrame());
   if (!focused_frame)
     return;
 
@@ -918,9 +935,14 @@ void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
 void BrowserPluginGuest::OnImeSetComposition(
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_SetComposition_Params& params) {
-  Send(new InputMsg_ImeSetComposition(
-      routing_id(), params.text, params.underlines, params.replacement_range,
-      params.selection_start, params.selection_end));
+  std::vector<ui::CompositionUnderline> ui_underlines =
+      ConvertToUiUnderline(params.underlines);
+  GetWebContents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->GetWidgetInputHandler()
+      ->ImeSetComposition(params.text, ui_underlines, params.replacement_range,
+                          params.selection_start, params.selection_end);
 }
 
 void BrowserPluginGuest::OnImeCommitText(
@@ -929,15 +951,25 @@ void BrowserPluginGuest::OnImeCommitText(
     const std::vector<blink::WebCompositionUnderline>& underlines,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  Send(new InputMsg_ImeCommitText(routing_id(), text, underlines,
-                                  replacement_range, relative_cursor_pos));
+  std::vector<ui::CompositionUnderline> ui_underlines =
+      ConvertToUiUnderline(underlines);
+  GetWebContents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->GetWidgetInputHandler()
+      ->ImeCommitText(text, ui_underlines, replacement_range,
+                      relative_cursor_pos);
 }
 
 void BrowserPluginGuest::OnImeFinishComposingText(
     int browser_plugin_instance_id,
     bool keep_selection) {
   DCHECK_EQ(browser_plugin_instance_id_, browser_plugin_instance_id);
-  Send(new InputMsg_ImeFinishComposingText(routing_id(), keep_selection));
+  GetWebContents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->GetWidgetInputHandler()
+      ->ImeFinishComposingText(keep_selection);
 }
 
 void BrowserPluginGuest::OnExtendSelectionAndDelete(
@@ -990,8 +1022,11 @@ void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
 void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
     int browser_plugin_instance_id,
     const std::vector<EditCommand>& edit_commands) {
-  Send(new InputMsg_SetEditCommandsForNextKeyEvent(routing_id(),
-                                                   edit_commands));
+  GetWebContents()
+      ->GetRenderViewHost()
+      ->GetWidget()
+      ->GetWidgetInputHandler()
+      ->SetEditCommandsForNextKeyEvent(edit_commands);
 }
 
 void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,

@@ -691,8 +691,11 @@ class CONTENT_EXPORT WebContentsImpl
   // void Copy() override;
   // void Paste() override;
   // void SelectAll() override;
+  void ExecuteEditCommand(const std::string& command,
+                          const base::Optional<base::string16>& value) override;
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
+  void MoveCaret(const gfx::Point& extent) override;
   void AdjustSelectionByCharacterOffset(int start_adjust, int end_adjust)
       override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;

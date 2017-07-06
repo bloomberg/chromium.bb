@@ -17,9 +17,10 @@ namespace content {
 class CONTENT_EXPORT LegacyIPCFrameInputHandler
     : public mojom::FrameInputHandler {
  public:
-  LegacyIPCFrameInputHandler(RenderFrameHostImpl* frame_host, int routing_id);
+  explicit LegacyIPCFrameInputHandler(RenderFrameHostImpl* frame_host);
   ~LegacyIPCFrameInputHandler() override;
 
+  // mojom::FrameInputHandler overrides.
   void SetCompositionFromExistingText(
       int32_t start,
       int32_t end,
@@ -46,6 +47,8 @@ class CONTENT_EXPORT LegacyIPCFrameInputHandler
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
   void AdjustSelectionByCharacterOffset(int32_t start, int32_t end) override;
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
+  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
+  void MoveCaret(const gfx::Point& point) override;
 
  private:
   void SendInput(std::unique_ptr<IPC::Message> message);

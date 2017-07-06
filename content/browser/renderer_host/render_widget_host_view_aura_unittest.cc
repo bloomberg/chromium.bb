@@ -243,6 +243,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     last_event_.reset(new NativeWebKeyboardEvent(event));
     return pre_handle_keyboard_event_result_;
   }
+  void ExecuteEditCommand(
+      const std::string& command,
+      const base::Optional<base::string16>& value) override {}
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}

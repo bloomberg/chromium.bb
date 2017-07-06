@@ -126,6 +126,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
       GetOrCreateRootBrowserAccessibilityManager();
 
   // Send OS Cut/Copy/Paste actions to the focused frame.
+  virtual void ExecuteEditCommand(
+      const std::string& command,
+      const base::Optional<base::string16>& value) = 0;
   virtual void Cut() = 0;
   virtual void Copy() = 0;
   virtual void Paste() = 0;
@@ -137,6 +140,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Requests the renderer to select the region between two points in the
   // currently focused frame.
   virtual void SelectRange(const gfx::Point& base, const gfx::Point& extent) {}
+
+  // Request the renderer to Move the caret to the new position.
+  virtual void MoveCaret(const gfx::Point& extent) {}
 
   virtual RenderWidgetHostInputEventRouter* GetInputEventRouter();
 

@@ -858,6 +858,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
                                  unsigned action);
+  void OnMoveCaret(const gfx::Point& point);
+  void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnUndo();
   void OnRedo();
   void OnCut();

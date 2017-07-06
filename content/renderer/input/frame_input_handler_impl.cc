@@ -337,6 +337,37 @@ void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
       render_frame_->render_view()->ConvertWindowPointToViewport(extent));
 }
 
+void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
+    const gfx::Rect& rect) {
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    RunOnMainThread(
+        base::Bind(&FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect,
+                   weak_this_, rect));
+    return;
+  }
+
+  if (!render_frame_)
+    return;
+
+  RenderViewImpl* render_view = render_frame_->render_view();
+  render_view->ScrollFocusedEditableNodeIntoRect(rect);
+}
+
+void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    RunOnMainThread(
+        base::Bind(&FrameInputHandlerImpl::MoveCaret, weak_this_, point));
+    return;
+  }
+
+  if (!render_frame_)
+    return;
+
+  RenderViewImpl* render_view = render_frame_->render_view();
+  render_frame_->GetWebFrame()->MoveCaretSelection(
+      render_view->ConvertWindowPointToViewport(point));
+}
+
 void FrameInputHandlerImpl::ExecuteCommandOnMainThread(
     const std::string& command,
     UpdateState update_state) {
