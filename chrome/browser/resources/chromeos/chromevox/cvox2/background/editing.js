@@ -43,12 +43,6 @@ editing.TextEditHandler = function(node) {
   this.node_ = node;
 };
 
-/**
- * Flag set to indicate whether ChromeVox uses experimental rich text support.
- * @type {boolean}
- */
-editing.useRichText = true;
-
 editing.TextEditHandler.prototype = {
   /** @return {!AutomationNode} */
   get node() {
@@ -76,7 +70,7 @@ function TextFieldTextEditHandler(node) {
   editing.TextEditHandler.call(this, node);
 
   chrome.automation.getDesktop(function(desktop) {
-    var useRichText = editing.useRichText && node.state.richlyEditable;
+    var useRichText = node.state[StateType.RICHLY_EDITABLE];
 
     /** @private {!AutomationEditableText} */
     this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
