@@ -62027,6 +62027,49 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Reporting.HeaderEndpointOutcome"
+    enum="ReportingHeaderEndpointOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    The outcome of Reporting trying to process a single endpoint in a Report-To
+    header once the header itself has been parsed.
+  </summary>
+</histogram>
+
+<histogram name="Reporting.HeaderOutcome" enum="ReportingHeaderOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    The outcome of Reporting trying to process a Report-To header. Once it is
+    parsed, Reporting.HeaderEndpointOutcome records the outcome of the endpoints
+    within it.
+  </summary>
+</histogram>
+
+<histogram name="Reporting.ReportDeliveredAttempts" units="attempts">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When Reporting successfully delivers a report, the number of unsuccessful
+    delivery attempts that preceded the successful one.
+  </summary>
+</histogram>
+
+<histogram name="Reporting.ReportDeliveredLatency" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    The delivery latency of reports successfully delivered by Reporting. Starts
+    when the report is queued and finishes when the delivery attempt returns
+    successfully.
+  </summary>
+</histogram>
+
+<histogram name="Reporting.ReportOutcome" enum="ReportingReportOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    The outcome of Reporting trying to deliver a report, recorded when the
+    report is finally erased from memory.
+  </summary>
+</histogram>
+
 <histogram name="RequestAutocomplete.DismissalState"
     enum="AutofillDialogDismissalState">
   <obsolete>

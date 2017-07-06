@@ -14,6 +14,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -40,13 +41,17 @@ class ReportingServiceProxyImpl : public mojom::ReportingServiceProxy {
 
     net::URLRequestContext* request_context =
         request_context_getter_->GetURLRequestContext();
-    if (!request_context)
+    if (!request_context) {
+      net::ReportingReport::RecordReportDiscardedForNoURLRequestContext();
       return;
+    }
 
     net::ReportingService* reporting_service =
         request_context->reporting_service();
-    if (!reporting_service)
+    if (!reporting_service) {
+      net::ReportingReport::RecordReportDiscardedForNoReportingService();
       return;
+    }
 
     reporting_service->QueueReport(url, group, type, std::move(const_body));
   }
