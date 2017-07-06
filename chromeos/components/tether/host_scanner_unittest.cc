@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
@@ -259,6 +260,20 @@ class HostScannerTest : public testing::Test {
                     MULTIPLE_HOTSPOTS_NEARBY_SHOWN,
                 fake_notification_presenter_->potential_hotspot_state());
     }
+
+    if (is_final_scan_result) {
+      HostScanner::HostScanResultEventType expected_event_type =
+          HostScanner::HostScanResultEventType::NOTIFICATION_NOT_SHOWN;
+      if (scanned_device_infos_so_far_.size() == 1) {
+        expected_event_type = HostScanner::HostScanResultEventType::
+            NOTIFICATION_SHOWN_SINGLE_HOST;
+      } else if (scanned_device_infos_so_far_.size() > 1) {
+        expected_event_type = HostScanner::HostScanResultEventType::
+            NOTIFICATION_SHOWN_MULTIPLE_HOSTS;
+      }
+      histogram_tester_.ExpectUniqueSample("InstantTethering.HostScanResult",
+                                           expected_event_type, 1);
+    }
   }
 
   void VerifyScanResultsMatchCache() {
@@ -330,6 +345,8 @@ class HostScannerTest : public testing::Test {
 
   std::unique_ptr<HostScanner> host_scanner_;
 
+  base::HistogramTester histogram_tester_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HostScannerTest);
 };
@@ -378,6 +395,10 @@ TEST_F(HostScannerTest, TestScan_ResultsFromNoDevices) {
           true /* is_final_scan_result */);
   EXPECT_EQ(0u, fake_host_scan_cache_->size());
   EXPECT_FALSE(host_scanner_->IsScanActive());
+
+  histogram_tester_.ExpectUniqueSample(
+      "InstantTethering.HostScanResult",
+      HostScanner::HostScanResultEventType::NOTIFICATION_NOT_SHOWN, 1);
 }
 
 TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {

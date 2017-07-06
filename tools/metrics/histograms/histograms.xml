@@ -26750,6 +26750,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.HostScanResult"
+    enum="InstantTethering_HostScanResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of the results of each host scan. The result can be 1)
+    no notification shown (no hosts found), 2) a notification was shown for a
+    single available host, or 3) a notification was shown for multiple available
+    hosts. This metric is recorded after each host scan.
+
+    Comparing 1) against the sum of 2) and 3) can help determine the success
+    rate of host scans.
+
+    The sum of 2) and 3) can be used as a baseline of comparison against
+    InstantTethering.ConnectionToHostResult.ProvisioningFailureRate to roughly
+    measure engagement with the notification.
+  </summary>
+</histogram>
+
 <histogram name="InterProcessTimeTicks.BrowserAhead" units="ms">
   <owner>ppi@chromium.org</owner>
   <summary>

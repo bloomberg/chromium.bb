@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"
 #include "chromeos/components/tether/host_scan_cache.h"
@@ -98,6 +99,16 @@ void HostScanner::OnTetherAvailabilityResponse(
   }
 
   if (is_final_scan_result) {
+    if (scanned_device_list_so_far.empty()) {
+      RecordHostScanResult(HostScanResultEventType::NOTIFICATION_NOT_SHOWN);
+    } else if (scanned_device_list_so_far.size() == 1) {
+      RecordHostScanResult(
+          HostScanResultEventType::NOTIFICATION_SHOWN_SINGLE_HOST);
+    } else {
+      RecordHostScanResult(
+          HostScanResultEventType::NOTIFICATION_SHOWN_MULTIPLE_HOSTS);
+    }
+
     // If the final scan result has been received, the operation is finished.
     // Delete it.
     host_scanner_operation_->RemoveObserver(this);
@@ -138,6 +149,12 @@ void HostScanner::SetCacheEntry(
           remote_device.GetDeviceId()),
       remote_device.name, carrier, battery_percentage, signal_strength,
       scanned_device_info.setup_required);
+}
+
+void HostScanner::RecordHostScanResult(HostScanResultEventType event_type) {
+  DCHECK(event_type != HostScanResultEventType::HOST_SCAN_RESULT_MAX);
+  UMA_HISTOGRAM_ENUMERATION("InstantTethering.HostScanResult", event_type,
+                            HostScanResultEventType::HOST_SCAN_RESULT_MAX);
 }
 
 }  // namespace tether

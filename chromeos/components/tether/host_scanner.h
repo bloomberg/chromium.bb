@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
@@ -72,12 +73,22 @@ class HostScanner : public HostScannerOperation::Observer {
  private:
   friend class HostScannerTest;
   friend class HostScanSchedulerTest;
+  FRIEND_TEST_ALL_PREFIXES(HostScannerTest, TestScan_ResultsFromNoDevices);
+
+  enum HostScanResultEventType {
+    NOTIFICATION_NOT_SHOWN = 0,
+    NOTIFICATION_SHOWN_SINGLE_HOST = 1,
+    NOTIFICATION_SHOWN_MULTIPLE_HOSTS = 2,
+    HOST_SCAN_RESULT_MAX
+  };
 
   void NotifyScanFinished();
 
   void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
   void SetCacheEntry(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info);
+
+  void RecordHostScanResult(HostScanResultEventType event_type);
 
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
