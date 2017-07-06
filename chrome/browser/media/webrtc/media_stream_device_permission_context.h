@@ -34,9 +34,6 @@ class MediaStreamDevicePermissionContext : public PermissionContextBase {
   void ResetPermission(const GURL& requesting_origin,
                        const GURL& embedding_origin) override;
 
-  void CancelPermissionRequest(content::WebContents* web_contents,
-                               const PermissionRequestID& id) override;
-
  private:
   // PermissionContextBase:
   bool IsRestrictedToSecureOrigins() const override;

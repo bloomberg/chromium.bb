@@ -8,7 +8,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -103,6 +105,10 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
   void Reset() {
     callback_called_ = false;
     callback_result_ = PermissionStatus::ASK;
+  }
+
+  bool PendingRequestsEmpty() {
+    return GetPermissionManager()->pending_requests_.IsEmpty();
   }
 
  private:
@@ -435,3 +441,26 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 }
 #endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
+
+TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {
+  content::WebContents* contents = web_contents();
+  PermissionRequestManager::CreateForWebContents(contents);
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(contents);
+  auto prompt_factory = base::MakeUnique<MockPermissionPromptFactory>(manager);
+  manager->DisplayPendingRequests();
+
+  NavigateAndCommit(url());
+
+  GetPermissionManager()->RequestPermission(
+      PermissionType::VIDEO_CAPTURE, main_rfh(), url(), /*user_gesture=*/true,
+      base::Bind(&PermissionManagerTest::OnPermissionChange,
+                 base::Unretained(this)));
+
+  EXPECT_FALSE(PendingRequestsEmpty());
+
+  NavigateAndCommit(GURL("https://foobar.com"));
+
+  EXPECT_FALSE(callback_called());
+  EXPECT_TRUE(PendingRequestsEmpty());
+}
