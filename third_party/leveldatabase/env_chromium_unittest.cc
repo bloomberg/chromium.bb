@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -209,11 +210,12 @@ class ChromiumEnvDBTrackerTest : public ::testing::Test {
 
   static VisitedDBSet VisitDatabases() {
     VisitedDBSet visited;
-    auto db_visitor = [&](DBTracker::TrackedDB* db) {
-      ASSERT_TRUE(visited.insert(db).second)
+    auto db_visitor = [](VisitedDBSet* visited, DBTracker::TrackedDB* db) {
+      ASSERT_TRUE(visited->insert(db).second)
           << "Database " << std::hex << db << " visited for the second time";
     };
-    DBTracker::GetInstance()->VisitDatabases(db_visitor);
+    DBTracker::GetInstance()->VisitDatabases(
+        base::BindRepeating(db_visitor, base::Unretained(&visited)));
     return visited;
   }
 
