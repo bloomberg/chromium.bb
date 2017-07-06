@@ -53,13 +53,13 @@ suite('<bookmarks-item>', function() {
         store.lastAction);
   });
 
-  test('context menu selects item if unselected', function() {
+  function testEventSelection(eventname) {
     item.isSelectedItem_ = true;
-    item.dispatchEvent(new MouseEvent('contextmenu'));
+    item.dispatchEvent(new MouseEvent(eventname));
     assertEquals(null, store.lastAction);
 
     item.isSelectedItem_ = false;
-    item.dispatchEvent(new MouseEvent('contextmenu'));
+    item.dispatchEvent(new MouseEvent(eventname));
     assertDeepEquals(
         bookmarks.actions.selectItem('2', store.data, {
           clear: true,
@@ -67,5 +67,15 @@ suite('<bookmarks-item>', function() {
           toggle: false,
         }),
         store.lastAction);
+  }
+
+  test('context menu selects item if unselected', function() {
+    testEventSelection('contextmenu');
+  });
+
+  test('doubleclicking selects item if unselected', function() {
+    document.body.appendChild(
+        document.createElement('bookmarks-command-manager'));
+    testEventSelection('dblclick');
   });
 });
