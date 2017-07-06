@@ -211,10 +211,14 @@ gfx::Point ScalePointRelative(const gfx::Point& from_origin,
 
 }  // namespace
 
-ScreenWin::ScreenWin() {
+ScreenWin::ScreenWin() : ScreenWin(true) {}
+
+ScreenWin::ScreenWin(bool initialize)
+    : color_profile_reader_(new ColorProfileReader(this)) {
   DCHECK(!g_screen_win_instance);
   g_screen_win_instance = this;
-  Initialize();
+  if (initialize)
+    Initialize();
 }
 
 ScreenWin::~ScreenWin() {
@@ -457,6 +461,7 @@ void ScreenWin::UpdateFromDisplayInfos(
 }
 
 void ScreenWin::Initialize() {
+  color_profile_reader_->UpdateIfNeeded();
   singleton_hwnd_observer_.reset(
       new gfx::SingletonHwndObserver(
           base::Bind(&ScreenWin::OnWndProc, base::Unretained(this))));
@@ -499,9 +504,14 @@ void ScreenWin::OnWndProc(HWND hwnd,
     !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA))
     return;
 
+  color_profile_reader_->UpdateIfNeeded();
   std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
+}
+
+void ScreenWin::OnColorProfilesChanged() {
+  // TODO(ccameron): Re-build the display list here.
 }
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd)
