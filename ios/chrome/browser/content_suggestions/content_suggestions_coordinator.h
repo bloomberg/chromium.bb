@@ -12,7 +12,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-@class ContentSuggestionsHeaderController;
+@class ContentSuggestionsHeaderViewController;
 @protocol UrlLoader;
 class WebStateList;
 
@@ -31,9 +31,9 @@ class WebStateList;
 @property(nonatomic, readonly) BOOL visible;
 
 @property(nonatomic, strong, readonly)
-    ContentSuggestionsHeaderController* headerController;
+    ContentSuggestionsHeaderViewController* headerController;
 
-- (UIViewController*)viewController;
+@property(nonatomic, strong, readonly) UIViewController* viewController;
 
 @end
 

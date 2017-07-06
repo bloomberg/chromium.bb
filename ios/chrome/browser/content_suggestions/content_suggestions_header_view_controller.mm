@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller_delegate.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -30,7 +30,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 const CGFloat kHintLabelSidePadding = 12;
 }  // namespace
 
-@interface ContentSuggestionsHeaderController ()
+@interface ContentSuggestionsHeaderViewController ()
 
 // |YES| when notifications indicate the omnibox is focused.
 @property(nonatomic, assign, getter=isOmniboxFocused, readwrite)
@@ -76,7 +76,7 @@ const CGFloat kHintLabelSidePadding = 12;
 
 @end
 
-@implementation ContentSuggestionsHeaderController
+@implementation ContentSuggestionsHeaderViewController
 
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
