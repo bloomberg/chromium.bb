@@ -249,8 +249,6 @@ String ColorTypeName(SkColorType color_type) {
       return "None";
     case kAlpha_8_SkColorType:
       return "A8";
-    case kIndex_8_SkColorType:
-      return "Index8";
     case kRGB_565_SkColorType:
       return "RGB565";
     case kARGB_4444_SkColorType:

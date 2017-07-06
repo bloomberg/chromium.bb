@@ -22,10 +22,11 @@ SkColorType MojoColorTypeToSk(skia::mojom::ColorType type) {
       return kRGBA_8888_SkColorType;
     case skia::mojom::ColorType::BGRA_8888:
       return kBGRA_8888_SkColorType;
-    case skia::mojom::ColorType::INDEX_8:
-      return kIndex_8_SkColorType;
     case skia::mojom::ColorType::GRAY_8:
       return kGray_8_SkColorType;
+    case skia::mojom::ColorType::INDEX_8:
+      // no longer supported
+      break;
   }
   NOTREACHED();
   return kUnknown_SkColorType;
@@ -71,13 +72,12 @@ skia::mojom::ColorType SkColorTypeToMojo(SkColorType type) {
       return skia::mojom::ColorType::RGBA_8888;
     case kBGRA_8888_SkColorType:
       return skia::mojom::ColorType::BGRA_8888;
-    case kIndex_8_SkColorType:
-      return skia::mojom::ColorType::INDEX_8;
     case kGray_8_SkColorType:
       return skia::mojom::ColorType::GRAY_8;
     case kRGBA_F16_SkColorType:
-      NOTREACHED();
-      return skia::mojom::ColorType::UNKNOWN;
+    case kIndex_8_SkColorType:
+      // these are unsupported
+      break;
   }
   NOTREACHED();
   return skia::mojom::ColorType::UNKNOWN;
