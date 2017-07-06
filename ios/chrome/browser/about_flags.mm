@@ -181,14 +181,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     }
   }
 
-  // Populate command line flags from EnablePopularSites.
-  NSString* EnablePopularSites = [defaults stringForKey:@"EnablePopularSites"];
-  if ([EnablePopularSites isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(ntp_tiles::switches::kEnableNTPPopularSites);
-  } else if ([EnablePopularSites isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(ntp_tiles::switches::kDisableNTPPopularSites);
-  }
-
   // Set the UA flag if UseMobileSafariUA is enabled.
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
