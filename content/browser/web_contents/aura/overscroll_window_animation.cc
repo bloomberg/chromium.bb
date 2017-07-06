@@ -137,6 +137,10 @@ void OverscrollWindowAnimation::OnOverscrollModeChange(
   shadow_.reset(new ShadowLayerDelegate(GetFrontLayer()));
 }
 
+base::Optional<float> OverscrollWindowAnimation::GetMaxOverscrollDelta() const {
+  return base::nullopt;
+}
+
 void OverscrollWindowAnimation::OnOverscrollComplete(
     OverscrollMode overscroll_mode) {
   if (!is_active())

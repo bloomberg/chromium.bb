@@ -91,6 +91,7 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode,
                               OverscrollSource source) override;
+  base::Optional<float> GetMaxOverscrollDelta() const override;
 
  private:
   // Cancels the slide, animating the front and back window to their original

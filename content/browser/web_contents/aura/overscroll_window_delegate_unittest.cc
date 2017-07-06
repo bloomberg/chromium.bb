@@ -108,6 +108,10 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
       overscroll_started_ = true;
   }
 
+  base::Optional<float> GetMaxOverscrollDelta() const override {
+    return base::nullopt;
+  }
+
   // Window in which the overscroll window delegate is installed.
   std::unique_ptr<aura::Window> window_;
 
