@@ -188,6 +188,16 @@
              "--disable-composited-antialiasing"]
   },
   {
+    "prefix": "android",
+    "base": "fast/rootscroller",
+    "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
+             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
+             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--force-overlay-fullscreen-video", "--enable-overscroll-notifications",
+             "--enable-fixed-layout", "--enable-viewport", "--disable-canvas-aa",
+             "--disable-composited-antialiasing"]
+  },
+  {
     "prefix": "media-gpu-accelerated",
     "base": "http/tests/media/media-source",
     "args": ["--use-gpu-in-tests"]
@@ -235,6 +245,11 @@
   {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
+    "args": ["--root-layer-scrolls"]
+  },
+  {
+    "prefix": "rootlayerscrolls",
+    "base": "fast/rootscroller",
     "args": ["--root-layer-scrolls"]
   },
   {
