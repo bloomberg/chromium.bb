@@ -448,6 +448,17 @@ Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
   return Response::OK();
 }
 
+Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
+    const String& source,
+    String* identifier) {
+  return addScriptToEvaluateOnLoad(source, identifier);
+}
+
+Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
+    const String& identifier) {
+  return removeScriptToEvaluateOnLoad(identifier);
+}
+
 Response InspectorPageAgent::setAutoAttachToCreatedPages(bool auto_attach) {
   state_->setBoolean(PageAgentState::kAutoAttachToCreatedPages, auto_attach);
   return Response::OK();
