@@ -17,6 +17,7 @@
 #include "chrome/browser/translate/android/translate_utils.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/infobars/translate_compact_infobar.h"
+#include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "jni/TranslateInfoBar_jni.h"
 
@@ -28,12 +29,19 @@ using base::android::ScopedJavaLocalRef;
 
 std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  // Log metric to track how many times a brand new infobar was created to
+  // prompt the user to translate.
+  if (delegate.get()->translate_step() ==
+      translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
+    translate::TranslateBrowserMetrics::ReportInitiationStatus(
+        translate::TranslateBrowserMetrics::INITIATION_STATUS_CREATE_INFOBAR);
+  }
+
   if (base::FeatureList::IsEnabled(translate::kTranslateCompactUI))
     return base::MakeUnique<TranslateCompactInfoBar>(std::move(delegate));
-  else
-    return base::MakeUnique<TranslateInfoBar>(std::move(delegate));
-}
 
+  return base::MakeUnique<TranslateInfoBar>(std::move(delegate));
+}
 
 // TranslateInfoBar -----------------------------------------------------------
 
