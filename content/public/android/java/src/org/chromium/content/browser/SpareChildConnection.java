@@ -111,7 +111,10 @@ public class SpareChildConnection {
 
     /** Returns true if no connection is available (so getConnection will always return null), */
     public boolean isEmpty() {
-        return mConnection == null;
+        // Note that if the connection was retrieved but was not yet ready mConnection is non null
+        // but that connection is already used and will be cleared when it becomes ready. In that
+        // case mConnectionServiceCallback is non null.
+        return mConnection == null || mConnectionServiceCallback != null;
     }
 
     private void clearConnection() {
