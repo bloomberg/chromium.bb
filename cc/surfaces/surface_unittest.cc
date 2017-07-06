@@ -7,7 +7,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"

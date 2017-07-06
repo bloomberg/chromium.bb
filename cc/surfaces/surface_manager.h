@@ -62,9 +62,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   std::string SurfaceReferencesToString();
 #endif
 
-  void SetDependencyTracker(SurfaceDependencyTracker* dependency_tracker);
-  SurfaceDependencyTracker* dependency_tracker() { return dependency_tracker_; }
-
   void RequestSurfaceResolution(Surface* surface,
                                 SurfaceDependencyDeadline* deadline);
 
@@ -283,6 +280,10 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   FrameSinkManager framesink_manager_;
 
+  // SurfaceDependencyTracker needs to be destroyed after Surfaces are destroyed
+  // because they will call back into the dependency tracker.
+  SurfaceDependencyTracker dependency_tracker_;
+
   base::flat_map<SurfaceId, std::unique_ptr<Surface>> surface_map_;
   base::ObserverList<SurfaceObserver> observer_list_;
   base::ThreadChecker thread_checker_;
@@ -328,8 +329,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // the embedding client can use them.
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
-
-  SurfaceDependencyTracker* dependency_tracker_ = nullptr;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 

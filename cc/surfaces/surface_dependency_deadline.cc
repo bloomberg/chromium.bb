@@ -4,8 +4,6 @@
 
 #include "cc/surfaces/surface_dependency_deadline.h"
 
-#include "cc/surfaces/surface_dependency_tracker.h"
-
 namespace cc {
 
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(

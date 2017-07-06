@@ -31,6 +31,7 @@ SurfaceManager::SurfaceReferenceInfo::~SurfaceReferenceInfo() {}
 
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
     : lifetime_type_(lifetime_type),
+      dependency_tracker_(this),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
       weak_factory_(this) {
@@ -61,16 +62,10 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
-void SurfaceManager::SetDependencyTracker(
-    SurfaceDependencyTracker* dependency_tracker) {
-  dependency_tracker_ = dependency_tracker;
-}
-
 void SurfaceManager::RequestSurfaceResolution(
     Surface* surface,
     SurfaceDependencyDeadline* deadline) {
-  if (dependency_tracker_)
-    dependency_tracker_->RequestSurfaceResolution(surface, deadline);
+  dependency_tracker_.RequestSurfaceResolution(surface, deadline);
 }
 
 Surface* SurfaceManager::CreateSurface(
@@ -479,25 +474,21 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
 }
 
 void SurfaceManager::SurfaceActivated(Surface* surface) {
-  if (dependency_tracker_)
-    dependency_tracker_->OnSurfaceActivated(surface);
+  dependency_tracker_.OnSurfaceActivated(surface);
 }
 
 void SurfaceManager::SurfaceDependenciesChanged(
     Surface* surface,
     const base::flat_set<SurfaceId>& added_dependencies,
     const base::flat_set<SurfaceId>& removed_dependencies) {
-  if (dependency_tracker_) {
-    dependency_tracker_->OnSurfaceDependenciesChanged(
-        surface, added_dependencies, removed_dependencies);
-  }
+  dependency_tracker_.OnSurfaceDependenciesChanged(surface, added_dependencies,
+                                                   removed_dependencies);
 }
 
 void SurfaceManager::SurfaceDiscarded(Surface* surface) {
   for (auto& observer : observer_list_)
     observer.OnSurfaceDiscarded(surface->surface_id());
-  if (dependency_tracker_)
-    dependency_tracker_->OnSurfaceDiscarded(surface);
+  dependency_tracker_.OnSurfaceDiscarded(surface);
 }
 
 void SurfaceManager::SurfaceDamageExpected(const SurfaceId& surface_id,
