@@ -238,18 +238,26 @@ PasswordFormManager::PasswordFormManager(
                              true /* should_migrate_http_passwords */,
                              true /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
-      is_main_frame_secure_(client->IsMainFrameSecure()),
-      metrics_recorder_(base::MakeRefCounted<PasswordFormMetricsRecorder>(
-          client->IsMainFrameSecure(),
-          PasswordFormMetricsRecorder::CreateUkmEntryBuilder(
-              client->GetUkmRecorder(),
-              client->GetUkmSourceId()))) {
-  if (owned_form_fetcher_)
-    owned_form_fetcher_->Fetch();
+      is_main_frame_secure_(client->IsMainFrameSecure()) {
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
             driver != nullptr);
   if (driver)
     drivers_.push_back(driver);
+}
+
+void PasswordFormManager::Init(
+    scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder) {
+  DCHECK(!metrics_recorder_) << "Do not call Init twice.";
+  metrics_recorder_ = std::move(metrics_recorder);
+  if (!metrics_recorder_) {
+    metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        client_->IsMainFrameSecure(),
+        PasswordFormMetricsRecorder::CreateUkmEntryBuilder(
+            client_->GetUkmRecorder(), client_->GetUkmSourceId()));
+  }
+
+  if (owned_form_fetcher_)
+    owned_form_fetcher_->Fetch();
   form_fetcher_->AddConsumer(this);
 }
 
