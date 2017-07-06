@@ -13,6 +13,7 @@
 
 #include "apps/saved_files_service.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -26,6 +27,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/file_system/file_entry_picker.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/directory_access_confirmation_dialog.h"
@@ -59,7 +61,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-#include "ui/shell_dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
@@ -208,14 +210,14 @@ void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
 // Gets a WebContents instance handle for a platform app hosted in
 // |render_frame_host|. If not found, then returns NULL.
 content::WebContents* GetWebContentsForRenderFrameHost(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   // Check if there is an app window associated with the web contents; if not,
   // return null.
-  return AppWindowRegistry::Get(profile)->GetAppWindowForWebContents(
-             web_contents)
+  return AppWindowRegistry::Get(browser_context)
+                 ->GetAppWindowForWebContents(web_contents)
              ? web_contents
              : nullptr;
 }
@@ -238,6 +240,40 @@ void FillVolumeList(Profile* profile,
   }
 }
 #endif
+
+// Creates and shows a SelectFileDialog, or returns false if the dialog could
+// not be created.
+bool ShowSelectFileDialog(
+    scoped_refptr<UIThreadExtensionFunction> extension_function,
+    ui::SelectFileDialog::Type type,
+    const base::FilePath& default_path,
+    const ui::SelectFileDialog::FileTypeInfo* file_types,
+    FileEntryPicker::FilesSelectedCallback files_selected_callback,
+    base::OnceClosure file_selection_canceled_callback) {
+  // TODO(asargent/benwells) - As a short term remediation for
+  // crbug.com/179010 we're adding the ability for a whitelisted extension to
+  // use this API since chrome.fileBrowserHandler.selectFile is ChromeOS-only.
+  // Eventually we'd like a better solution and likely this code will go back
+  // to being platform-app only.
+  content::WebContents* const web_contents =
+      extension_function->extension()->is_platform_app()
+          ? GetWebContentsForRenderFrameHost(
+                extension_function->browser_context(),
+                extension_function->render_frame_host())
+          : extension_function->GetAssociatedWebContents();
+  if (!web_contents)
+    return false;
+
+  // The file picker will hold a reference to the UIThreadExtensionFunction
+  // instance, preventing its destruction (and subsequent sending of the
+  // function response) until the user has selected a file or cancelled the
+  // picker. At that point, the picker will delete itself, which will also free
+  // the function instance.
+  new FileEntryPicker(web_contents, default_path, *file_types, type,
+                      std::move(files_selected_callback),
+                      std::move(file_selection_canceled_callback));
+  return true;
+}
 
 }  // namespace
 
@@ -445,138 +481,40 @@ ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
   return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_writable)));
 }
 
-// Handles showing a dialog to the user to ask for the filename for a file to
-// save or open.
-class FileSystemChooseEntryFunction::FilePicker
-    : public ui::SelectFileDialog::Listener {
- public:
-  FilePicker(FileSystemChooseEntryFunction* function,
-             content::WebContents* web_contents,
-             const base::FilePath& suggested_name,
-             const ui::SelectFileDialog::FileTypeInfo& file_type_info,
-             ui::SelectFileDialog::Type picker_type)
-      : function_(function) {
-    select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(web_contents));
-    gfx::NativeWindow owning_window =
-        web_contents ? platform_util::GetTopLevel(web_contents->GetNativeView())
-                     : NULL;
-
-    if (g_skip_picker_for_test) {
-      if (g_use_suggested_path_for_test) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(
-                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
-                base::Unretained(this), suggested_name, 1,
-                static_cast<void*>(NULL)));
-      } else if (g_path_to_be_picked_for_test) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(
-                &FileSystemChooseEntryFunction::FilePicker::FileSelected,
-                base::Unretained(this), *g_path_to_be_picked_for_test, 1,
-                static_cast<void*>(NULL)));
-      } else if (g_paths_to_be_picked_for_test) {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(
-                &FileSystemChooseEntryFunction::FilePicker::MultiFilesSelected,
-                base::Unretained(this), *g_paths_to_be_picked_for_test,
-                static_cast<void*>(NULL)));
-      } else {
-        content::BrowserThread::PostTask(
-            content::BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&FileSystemChooseEntryFunction::FilePicker::
-                               FileSelectionCanceled,
-                           base::Unretained(this), static_cast<void*>(NULL)));
-      }
-      return;
-    }
-
-    select_file_dialog_->SelectFile(
-        picker_type, base::string16(), suggested_name, &file_type_info, 0,
-        base::FilePath::StringType(), owning_window, NULL);
-  }
-
-  ~FilePicker() override {}
-
- private:
-  // ui::SelectFileDialog::Listener implementation.
-  void FileSelected(const base::FilePath& path,
-                    int index,
-                    void* params) override {
-    std::vector<base::FilePath> paths;
-    paths.push_back(path);
-    MultiFilesSelected(paths, params);
-  }
-
-  void FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file,
-                                 int index,
-                                 void* params) override {
-    // Normally, file.local_path is used because it is a native path to the
-    // local read-only cached file in the case of remote file system like
-    // Chrome OS's Google Drive integration. Here, however, |file.file_path| is
-    // necessary because we need to create a FileEntry denoting the remote file,
-    // not its cache. On other platforms than Chrome OS, they are the same.
-    //
-    // TODO(kinaba): remove this, once after the file picker implements proper
-    // switch of the path treatment depending on the |allowed_paths|.
-    FileSelected(file.file_path, index, params);
-  }
-
-  void MultiFilesSelected(const std::vector<base::FilePath>& files,
-                          void* params) override {
-    function_->FilesSelected(files);
-    delete this;
-  }
-
-  void MultiFilesSelectedWithExtraInfo(
-      const std::vector<ui::SelectedFileInfo>& files,
-      void* params) override {
-    std::vector<base::FilePath> paths;
-    for (std::vector<ui::SelectedFileInfo>::const_iterator it = files.begin();
-         it != files.end(); ++it) {
-      paths.push_back(it->file_path);
-    }
-    MultiFilesSelected(paths, params);
-  }
-
-  void FileSelectionCanceled(void* params) override {
-    function_->FileSelectionCanceled();
-    delete this;
-  }
-
-  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  scoped_refptr<FileSystemChooseEntryFunction> function_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilePicker);
-};
-
 void FileSystemChooseEntryFunction::ShowPicker(
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type) {
-  // TODO(asargent/benwells) - As a short term remediation for crbug.com/179010
-  // we're adding the ability for a whitelisted extension to use this API since
-  // chrome.fileBrowserHandler.selectFile is ChromeOS-only. Eventually we'd
-  // like a better solution and likely this code will go back to being
-  // platform-app only.
-  content::WebContents* const web_contents =
-      extension_->is_platform_app()
-          ? GetWebContentsForRenderFrameHost(GetProfile(), render_frame_host())
-          : GetAssociatedWebContents();
-  if (!web_contents) {
-    error_ = kInvalidCallingPage;
-    SendResponse(false);
+  if (g_skip_picker_for_test) {
+    std::vector<base::FilePath> test_paths;
+    if (g_use_suggested_path_for_test)
+      test_paths.push_back(initial_path_);
+    else if (g_path_to_be_picked_for_test)
+      test_paths.push_back(*g_path_to_be_picked_for_test);
+    else if (g_paths_to_be_picked_for_test)
+      test_paths = *g_paths_to_be_picked_for_test;
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        test_paths.size() > 0
+            ? base::BindOnce(&FileSystemChooseEntryFunction::FilesSelected,
+                             this, test_paths)
+            : base::BindOnce(
+                  &FileSystemChooseEntryFunction::FileSelectionCanceled, this));
     return;
   }
 
-  // The file picker will hold a reference to this function instance, preventing
-  // its destruction (and subsequent sending of the function response) until the
-  // user has selected a file or cancelled the picker. At that point, the picker
-  // will delete itself, which will also free the function instance.
-  new FilePicker(this, web_contents, initial_path_, file_type_info,
-                 picker_type);
+  // The callbacks passed to the dialog will retain references to this
+  // UIThreadExtenisonFunction, preventing its destruction (and subsequent
+  // sending of the function response) until the user has selected a file or
+  // cancelled the picker.
+  if (!ShowSelectFileDialog(
+          this, picker_type, initial_path_, &file_type_info,
+          base::BindOnce(&FileSystemChooseEntryFunction::FilesSelected, this),
+          base::BindOnce(&FileSystemChooseEntryFunction::FileSelectionCanceled,
+                         this))) {
+    error_ = kInvalidCallingPage;
+    SendResponse(false);
+  }
 }
 
 // static
