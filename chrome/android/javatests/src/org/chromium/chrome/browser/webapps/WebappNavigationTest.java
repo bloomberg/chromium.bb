@@ -39,7 +39,7 @@ import org.chromium.ui.base.PageTransition;
 public class WebappNavigationTest {
     private static final String OFF_ORIGIN_URL = "https://www.google.com/";
     private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
-    private static final String OTHER_PAGE_PATH =
+    private static final String IN_SCOPE_PAGE_PATH =
             "/chrome/test/data/banners/manifest_no_service_worker.html";
 
     @Rule
@@ -97,7 +97,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testNewTabLinkOpensInCct() throws Exception {
+    public void testOffScopeNewTabLinkOpensInCct() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
         addAnchor("testId", OFF_ORIGIN_URL, "_blank");
@@ -109,6 +109,22 @@ public class WebappNavigationTest {
                 ApiCompatibilityUtils.getColor(
                         customTab.getResources(), R.color.default_primary_color),
                 customTab.getToolbarManager().getPrimaryColor());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testInScopeNewTabLinkOpensInCct() throws Exception {
+        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
+        addAnchor("testId", mTestServer.getURL(IN_SCOPE_PAGE_PATH), "_blank");
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
+        CustomTabActivity customTab = activityListener.waitFor(CustomTabActivity.class);
+        mActivityTestRule.waitUntilIdle(customTab);
+        Assert.assertTrue(
+                mActivityTestRule.runJavaScriptCodeInCurrentTab("document.body.textContent")
+                        .contains("Do-nothing page with a service worker"));
     }
 
     @Test
@@ -141,10 +157,10 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testInOriginNavigationStaysInWebapp() throws Exception {
+    public void testInScopeNavigationStaysInWebapp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        String otherPageUrl = mTestServer.getURL(OTHER_PAGE_PATH);
+        String otherPageUrl = mTestServer.getURL(IN_SCOPE_PAGE_PATH);
         mActivityTestRule.loadUrlInTab(otherPageUrl, PageTransition.LINK,
                 mActivityTestRule.getActivity().getActivityTab());
 
