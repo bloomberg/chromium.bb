@@ -65,7 +65,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void SetDependencyTracker(SurfaceDependencyTracker* dependency_tracker);
   SurfaceDependencyTracker* dependency_tracker() { return dependency_tracker_; }
 
-  void RequestSurfaceResolution(Surface* pending_surface);
+  void RequestSurfaceResolution(Surface* surface,
+                                SurfaceDependencyDeadline* deadline);
 
   // Creates a Surface for the given SurfaceClient. The surface will be
   // destroyed when DestroySurface is called, all of its destruction
