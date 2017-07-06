@@ -20,6 +20,7 @@ extern const base::Feature kOfflinePagesAsyncDownloadFeature;
 extern const base::Feature kPrefetchingOfflinePagesFeature;
 extern const base::Feature kNewBackgroundLoaderFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
+extern const base::Feature kOfflinePagesCTV2Feature;
 
 // Returns true if saving bookmarked pages for offline viewing is enabled.
 bool IsOfflineBookmarksEnabled();
@@ -56,6 +57,9 @@ bool ShouldUseNewBackgroundLoader();
 // Returns true if a command line for test has been set that shortens the
 // snapshot delay.
 bool ShouldUseTestingSnapshotDelay();
+
+// Returns true if we should record request origin as part of custom tabs V2.
+bool IsOfflinePagesCTV2Enabled();
 
 }  // namespace offline_pages
 

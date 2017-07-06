@@ -2504,6 +2504,12 @@ const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
 
 const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
 
+const char kOfflinePagesCtV2Name[] = "Enable Offline Pages CT V2 features.";
+
+const char kOfflinePagesCtV2Description[] =
+    "V2 features include attributing pages to the app that initiated the "
+    "custom tabs, and being able to query for pages by page attribution.";
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
