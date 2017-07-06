@@ -129,15 +129,25 @@ public class FullscreenWebContentsActivityTest {
     @Test
     @MediumTest
     public void testFullscreen() throws Throwable {
+        Activity original = mActivity;
+
         FullscreenWebContentsActivity fullscreenActivity = enterFullscreen();
         DOMUtils.exitFullscreen(fullscreenActivity.getCurrentContentViewCore().getWebContents());
 
-        waitForActivity(ChromeTabbedActivity.class);
+        ChromeTabbedActivity activity = waitForActivity(ChromeTabbedActivity.class);
+
+        // Ensure we haven't started a new ChromeTabbedActivity, https://crbug.com/729805,
+        // https://crbug.com/729932.
+        Assert.assertSame(original, activity);
     }
 
+    /**
+     * Enters fullscreen then presses the back button to exit.
+     */
     @Test
     @MediumTest
     public void testExitOnBack() throws Throwable {
+        Activity original = mActivity;
         final FullscreenWebContentsActivity fullscreenActivity = enterFullscreen();
         mUiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
@@ -146,7 +156,11 @@ public class FullscreenWebContentsActivityTest {
             }
         });
 
-        waitForActivity(ChromeTabbedActivity.class);
+        ChromeTabbedActivity activity = waitForActivity(ChromeTabbedActivity.class);
+
+        // Ensure we haven't started a new ChromeTabbedActivity, https://crbug.com/729805,
+        // https://crbug.com/729932.
+        Assert.assertSame(original, activity);
     }
 
     /**

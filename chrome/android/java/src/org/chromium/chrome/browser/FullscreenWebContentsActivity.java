@@ -124,7 +124,6 @@ public class FullscreenWebContentsActivity extends SingleTabActivity {
             intent.setClass(tab.getActivity(), FullscreenWebContentsActivity.class);
 
             intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             // In multiwindow mode we want both activities to be able to launch independent
             // FullscreenWebContentsActivity's.
             intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
