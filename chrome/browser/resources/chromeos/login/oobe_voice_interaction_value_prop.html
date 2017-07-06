@@ -8,19 +8,43 @@
   <template>
     <link rel="stylesheet" href="oobe_voice_interaction_value_prop.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog id="voice-dialog" role="dialog" hide-shadow
-        has-buttons no-footer-padding android>
+    <oobe-dialog id="voice-dialog" class="value-prop-loading" role="dialog"
+        hide-shadow has-buttons no-footer-padding android>
       <div class = "header">
-        <webview id="value-prop-view"></webview>
+        <div id="view-container">
+          <webview id="value-prop-view"></webview>
+        </div>
+        <div id="error-container">
+          <div class="title"
+            i18n-content="voiceInteractionValuePropLoadErrorTitle"></div>
+          <div id="subtitle">
+            <div i18n-content="voiceInteractionValuePropLoadErrorMessage"></div>
+          </div>
+        </div>
+        <div id="loading-container">
+          <div id="loading-message">
+            <div i18n-content="voiceInteractionValuePropLoading"></div>
+          </div>
+          <paper-progress class="slow" indeterminate></paper-progress>
+        </div>
       </div>
       <div class="bottom-buttons flex layout horizontal">
-        <oobe-text-button id="noThanksButton" android on-tap="onNoThanksTap_">
-          <div i18n-content="voiceInteractionValuePropNoThanksButton"></div>
+        <oobe-text-button id="skip-button" android on-tap="onNoThanksTap_"
+            disabled="[[valuePropButtonsDisabled]]">
+         <div i18n-content="voiceInteractionValuePropSkipButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="no-thanks-button" android on-tap="onNoThanksTap_"
+            disabled="[[valuePropButtonsDisabled]]">
+        <div i18n-content="voiceInteractionValuePropNoThanksButton"></div>
         </oobe-text-button>
         <div class="flex"></div>
-        <oobe-text-button id="continueButton" inverse android
-            on-tap="onContinueTap_">
-          <div i18n-content="voiceInteractionValuePropContinueButton"></div>
+        <oobe-text-button id="retry-button" inverse android on-tap="onRetryTap_"
+            disabled="[[valuePropButtonsDisabled]]">
+         <div i18n-content="voiceInteractionValuePropRetryButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="continue-button" inverse android
+            on-tap="onContinueTap_" disabled="[[valuePropButtonsDisabled]]">
+         <div i18n-content="voiceInteractionValuePropContinueButton"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

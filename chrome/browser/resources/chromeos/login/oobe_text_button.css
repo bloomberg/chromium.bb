@@ -20,10 +20,6 @@ paper-button[android] {
   height: 31px;
 }
 
-paper-button[android]:not([border]):not([inverse]) {
-  height: 13px;
-}
-
 #container {
   border-radius: 2px;
   padding: 0 16px;
@@ -48,6 +44,16 @@ paper-button[android]:not([border]):not([inverse]) {
 #textButton[android][border] #container {
   height: 27px;
   padding: 0 18px;
+}
+
+#textButton[android][disabled]:not([inverse]) {
+  background-color: white;
+  color: rgba(66, 133, 244, .38);
+}
+
+#textButton[android][disabled][inverse] {
+  background-color: rgba(66, 133, 244, .38);
+  color: white;
 }
 
 ::content * {
