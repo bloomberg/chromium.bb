@@ -480,7 +480,7 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
 
   ports::PortStatus port_status;
   int rv = node_controller_->node()->GetStatus(control_port_, &port_status);
-  peer_remote_ = port_status.peer_remote;
+  peer_remote_ = rv == ports::OK && port_status.peer_remote;
   if (rv != ports::OK || !port_status.receiving_messages) {
     DVLOG(1) << "Data pipe producer " << pipe_id_ << " is aware of peer closure"
              << " [control_port=" << control_port_.name() << "]";
