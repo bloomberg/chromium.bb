@@ -89,7 +89,7 @@ public class PhoneNumberUtil {
     }
 
     /**
-     * Checks whether the given phone number matches a valid pattern according to
+     * Checks whether the given phone number is a possible number according to
      * region code.
      * The region code is from the given phone number if it starts with '+',
      * otherwise the region code is deduced from the given country code or from
@@ -98,13 +98,13 @@ public class PhoneNumberUtil {
      * @param phoneNumber The given phone number.
      * @param countryCode The given country code.
      *
-     * @return True if the given number is valid, otherwise return false.
+     * @return True if the given number is a possible number, otherwise return false.
      */
-    public static boolean isValidNumber(String phoneNumber, @Nullable String countryCode) {
-        return nativeIsValidNumber(phoneNumber, countryCode);
+    public static boolean isPossibleNumber(String phoneNumber, @Nullable String countryCode) {
+        return nativeIsPossibleNumber(phoneNumber, countryCode);
     }
 
     private static native String nativeFormatForDisplay(String phoneNumber, String countryCode);
     private static native String nativeFormatForResponse(String phoneNumber);
-    private static native boolean nativeIsValidNumber(String phoneNumber, String countryCode);
+    private static native boolean nativeIsPossibleNumber(String phoneNumber, String countryCode);
 }

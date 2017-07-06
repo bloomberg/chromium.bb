@@ -51,10 +51,10 @@ std::string FormatPhoneNumber(const std::string& phone_number,
       format);
 }
 
-// Checks whether the given number |jphone_number| is valid by using
-// i18n::phonenumbers::PhoneNumberUtil::IsValidNumber.
-bool IsValidNumberImpl(const std::string& phone_number,
-                       const std::string& country_code) {
+// Checks whether the given number |jphone_number| is a possible number by using
+// i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumber.
+bool IsPossibleNumberImpl(const std::string& phone_number,
+                          const std::string& country_code) {
   PhoneNumber parsed_number;
   PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
   if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
@@ -62,7 +62,7 @@ bool IsValidNumberImpl(const std::string& phone_number,
     return false;
   }
 
-  return phone_number_util->IsValidNumber(parsed_number);
+  return phone_number_util->IsPossibleNumber(parsed_number);
 }
 
 }  // namespace
@@ -101,19 +101,20 @@ ScopedJavaLocalRef<jstring> FormatForResponse(
                              PhoneNumberUtil::PhoneNumberFormat::E164));
 }
 
-// Checks whether the given number |jphone_number| is valid for a given country
-// |jcountry_code| by using i18n::phonenumbers::PhoneNumberUtil::IsValidNumber.
-jboolean IsValidNumber(JNIEnv* env,
-                       const base::android::JavaParamRef<jclass>& jcaller,
-                       const JavaParamRef<jstring>& jphone_number,
-                       const JavaParamRef<jstring>& jcountry_code) {
+// Checks whether the given number |jphone_number| is a possible number for a
+// given country |jcountry_code| by using
+// i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumber.
+jboolean IsPossibleNumber(JNIEnv* env,
+                          const base::android::JavaParamRef<jclass>& jcaller,
+                          const JavaParamRef<jstring>& jphone_number,
+                          const JavaParamRef<jstring>& jcountry_code) {
   const std::string phone_number = ConvertJavaStringToUTF8(env, jphone_number);
   const std::string country_code =
       jcountry_code.is_null() ? autofill::AutofillCountry::CountryCodeForLocale(
                                     g_browser_process->GetApplicationLocale())
                               : ConvertJavaStringToUTF8(env, jcountry_code);
 
-  return IsValidNumberImpl(phone_number, country_code);
+  return IsPossibleNumberImpl(phone_number, country_code);
 }
 
 }  // namespace autofill
