@@ -10989,21 +10989,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           <message name="IDS_USER_MANAGER_ADD_PROFILE_PROFILES_LOCKED_ERROR" desc="Error message displayed when trying to add a profile while all profiles are locked.">
             Please unlock your profile before adding a person.
           </message>
-          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with all statistics loaded correctly. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
-            {NUM_ITEMS, plural,
-            =1 {This will permanently delete $1 item from this device.}
-            other {This will permanently delete $1 items from this device.}}
-          </message>
-          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_WITH_ERRORS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with some statistics failed to load. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
-            {NUM_ITEMS, plural,
-            =1 {This will permanently delete at least $1 item from this device.}
-            other {This will permanently delete at least $1 items from this device.}}
-          </message>
-          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_NOSTATS" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles with statistics unavailable. (Possible case: Chromium decided not to load the statistics of closed profiles.)">
+          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user.">
             This will permanently delete your browsing data from this device.
-          </message>
-          <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_CALCULATING" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles when the statistics is still loading. $1 is always replaced by localized version of the ellipsis (...).">
-            This will permanently delete <ph name="TOTAL_COUNT">$1<ex>...</ex></ph> items from this device.
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_HISTORY" desc="The title of a statistic (browsing history) shown inside a table below the warning text when attempting to remove an user. A number is displayed next to it.">
             Browsing history

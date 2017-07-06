@@ -89,7 +89,6 @@ const char kKeyIsDesktop[] = "isDesktopUser";
 const char kKeyAvatarUrl[] = "userImage";
 const char kKeyNeedsSignin[] = "needsSignin";
 const char kKeyHasLocalCreds[] = "hasLocalCreds";
-const char kKeyStatistics[] = "statistics";
 const char kKeyIsProfileLoaded[] = "isProfileLoaded";
 
 // JS API callback names.
@@ -103,8 +102,6 @@ const char kJsApiUserManagerLogRemoveUserWarningShown[] =
     "logRemoveUserWarningShown";
 const char kJsApiUserManagerRemoveUserWarningLoadStats[] =
     "removeUserWarningLoadStats";
-const char kJsApiUserManagerGetRemoveWarningDialogMessage[] =
-    "getRemoveWarningDialogMessage";
 const char kJsApiUserManagerAreAllProfilesLocked[] =
     "areAllProfilesLocked";
 const size_t kAvatarIconSize = 180;
@@ -634,7 +631,6 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
   for (const auto& item : result) {
     auto stat = base::MakeUnique<base::DictionaryValue>();
     stat->SetIntegerWithoutPathExpansion("count", item.count);
-    stat->SetBooleanWithoutPathExpansion("success", true);
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
   if (result.size() == profiles::kProfileStatisticsCategories.size()) {
@@ -645,39 +641,6 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
   web_ui()->CallJavascriptFunctionUnsafe("updateRemoveWarningDialog",
                                          base::Value(profile_path.value()),
                                          return_value);
-}
-
-void UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage(
-    const base::ListValue* args) {
-  const base::DictionaryValue* arg;
-  if (!args->GetDictionary(0, &arg))
-    return;
-
-  std::string profile_path("");
-  bool is_synced_user = false;
-  bool has_errors = false;
-
-  if (!arg->GetString("profilePath", &profile_path) ||
-      !arg->GetBoolean("isSyncedUser", &is_synced_user) ||
-      !arg->GetBoolean("hasErrors", &has_errors))
-    return;
-
-  int total_count = 0;
-  if (!arg->GetInteger("totalCount", &total_count))
-    return;
-
-  int message_id = is_synced_user ?
-      (has_errors ? IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_WITH_ERRORS :
-                    IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC) :
-      (has_errors ? IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_WITH_ERRORS :
-                    IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC);
-
-  base::Value message =
-      base::Value(l10n_util::GetPluralStringFUTF16(message_id, total_count));
-
-  web_ui()->CallJavascriptFunctionUnsafe("updateRemoveWarningDialogSetMessage",
-                                         base::Value(profile_path), message,
-                                         base::Value(total_count));
 }
 
 void UserManagerScreenHandler::OnGetTokenInfoResponse(
@@ -724,10 +687,6 @@ void UserManagerScreenHandler::RegisterMessages() {
       base::Bind(&HandleLogRemoveUserWarningShown));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUserWarningLoadStats,
       base::Bind(&UserManagerScreenHandler::HandleRemoveUserWarningLoadStats,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      kJsApiUserManagerGetRemoveWarningDialogMessage,
-      base::Bind(&UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kJsApiUserManagerAreAllProfilesLocked,
@@ -790,12 +749,9 @@ void UserManagerScreenHandler::GetLocalizedValues(
   // For AccountPickerScreen, the remove user warning overlay.
   localized_strings->SetString("removeUserWarningButtonTitle",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON));
-  localized_strings->SetString("removeUserWarningTextNonSyncNoStats",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_NOSTATS));
-  localized_strings->SetString("removeUserWarningTextNonSyncCalculating",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC_CALCULATING));
+  localized_strings->SetString(
+      "removeUserWarningTextNonSync",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC));
   localized_strings->SetString("removeUserWarningTextHistory",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_HISTORY));
   localized_strings->SetString("removeUserWarningTextPasswords",
@@ -807,12 +763,9 @@ void UserManagerScreenHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_AUTOFILL));
   localized_strings->SetString("removeUserWarningTextCalculating",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_CALCULATING));
-  localized_strings->SetString("removeUserWarningTextSyncNoStats",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_NOSTATS));
-  localized_strings->SetString("removeUserWarningTextSyncCalculating",
-      l10n_util::GetStringUTF16(
-          IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC_CALCULATING));
+  localized_strings->SetString(
+      "removeUserWarningTextSync",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC));
   localized_strings->SetString("removeLegacySupervisedUserWarningText",
       l10n_util::GetStringFUTF16(
           IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
@@ -938,17 +891,6 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetBoolean(kKeyIsDesktop, true);
     profile_value->SetString(kKeyAvatarUrl, GetAvatarImage(entry));
 
-    // Add statistics dictionary (the actual statistics will be populated
-    // once they are retrieved from the profile).
-    auto stats_dict = base::MakeUnique<base::DictionaryValue>();
-    for (const char* category : profiles::kProfileStatisticsCategories) {
-      auto stat = base::MakeUnique<base::DictionaryValue>();
-      stat->SetIntegerWithoutPathExpansion("count", 0);
-      stat->SetBooleanWithoutPathExpansion("success", false);
-      stats_dict->SetWithoutPathExpansion(category, std::move(stat));
-    }
-    profile_value->SetWithoutPathExpansion(kKeyStatistics,
-                                           std::move(stats_dict));
     // GetProfileByPath returns a pointer if the profile is fully loaded, NULL
     // otherwise.
     Profile* profile =
