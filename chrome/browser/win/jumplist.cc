@@ -767,6 +767,9 @@ void JumpList::CreateNewJumpListAndNotifyOS(
     return;
   }
 
+  base::TimeDelta most_visited_category_time =
+      add_custom_category_timer.Elapsed();
+
   // Update the "Recently Closed" category of the JumpList.
   if (!jumplist_updater.AddCustomCategory(
           l10n_util::GetStringUTF16(IDS_RECENTLY_CLOSED), recently_closed_pages,
@@ -774,9 +777,25 @@ void JumpList::CreateNewJumpListAndNotifyOS(
     return;
   }
 
+  base::TimeDelta add_category_total_time = add_custom_category_timer.Elapsed();
+
+  if (recently_closed_pages.size() == kRecentlyClosedItems &&
+      most_visited_pages.size() == kMostVisitedItems) {
+    // TODO(chengx): Remove the UMA histogram after fixing crbug/736530.
+    double most_visited_over_recently_closed =
+        most_visited_category_time.InMillisecondsF() /
+        (add_category_total_time - most_visited_category_time)
+            .InMillisecondsF();
+
+    // The ratio above is typically between 1 and 10. Multiply it by 10 to
+    // retain decimal precision.
+    UMA_HISTOGRAM_COUNTS_100("WinJumplist.RatioAddCategoryTime",
+                             most_visited_over_recently_closed * 10);
+  }
+
   // If AddCustomCategory takes longer than the maximum allowed time, abort the
   // current update and skip the next |kUpdatesToSkipUnderHeavyLoad| updates.
-  if (add_custom_category_timer.Elapsed() >= kTimeOutForAddCustomCategory) {
+  if (add_category_total_time >= kTimeOutForAddCustomCategory) {
     update_transaction->update_timeout = true;
     return;
   }
