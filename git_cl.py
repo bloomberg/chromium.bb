@@ -2438,8 +2438,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return
     else:
       missing = (
-          [] if gerrit_auth else [self._gerrit_host] +
-          [] if git_auth else [git_host])
+          ([] if gerrit_auth else [self._gerrit_host]) +
+          ([] if git_auth else [git_host]))
       DieWithError('Credentials for the following hosts are required:\n'
                    '  %s\n'
                    'These are read from %s (or legacy %s)\n'
