@@ -36,8 +36,18 @@ struct NGInlineBoxState {
   unsigned fragment_start;
   const NGInlineItem* item;
   const ComputedStyle* style;
+
+  // The united metrics for the current box. This includes all objects in this
+  // box, including descendants, and adjusted by placement properties such as
+  // 'vertical-align'.
   NGLineHeightMetrics metrics;
+
+  // The metrics of the font for this box. This includes leadings as specified
+  // by the 'line-height' property.
   NGLineHeightMetrics text_metrics;
+
+  // The distance between the text-top and the baseline for this box. The
+  // text-top does not include leadings.
   LayoutUnit text_top;
 
   // These values are to create a box fragment. Set only when needs_box_fragment
