@@ -155,13 +155,12 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
       return SHADER(
           /* clang-format off */
           precision mediump float;
-          attribute vec3 a_Position;
-          attribute vec2 a_TexCoordinate;
-          varying highp vec2 v_TexCoordinate;
+          attribute vec4 a_Position;
+          varying vec2 v_TexCoordinate;
 
           void main() {
-            v_TexCoordinate = a_TexCoordinate;
-            gl_Position = vec4(a_Position * 2.0, 1.0);
+            v_TexCoordinate = vec2(0.5 + a_Position[0], 0.5 - a_Position[1]);
+            gl_Position = vec4(a_Position.xyz * 2.0, 1.0);
           }
           /* clang-format on */);
     case vr_shell::ShaderID::WEBVR_FRAGMENT_SHADER:
