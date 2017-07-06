@@ -212,11 +212,33 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
       BrowserContext::GetStoragePartitionForSite(
           download_item_->GetBrowserContext(), download_item_->GetSiteUrl());
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("parallel_download_job", R"(
+        semantics {
+          sender: "Parallel Download"
+          description:
+            "Chrome makes parallel request to speed up download of a file."
+          trigger:
+            "When user starts a download request, if it would be technically "
+            "possible, Chrome starts parallel downloading."
+          data: "None."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting: "This feature cannot be disabled in settings."
+          chrome_policy {
+            DownloadRestrictions {
+              DownloadRestrictions: 3
+            }
+          }
+        })");
   // The parallel requests only use GET method.
   std::unique_ptr<DownloadUrlParameters> download_params(
       new DownloadUrlParameters(download_item_->GetURL(),
                                 storage_partition->GetURLRequestContext(),
-                                NO_TRAFFIC_ANNOTATION_YET));
+                                traffic_annotation));
   download_params->set_file_path(download_item_->GetFullPath());
   download_params->set_last_modified(download_item_->GetLastModifiedTime());
   download_params->set_etag(download_item_->GetETag());
