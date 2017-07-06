@@ -5,24 +5,14 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
 
-#include <stdint.h>
-
-#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
-
-namespace service_manager {
-class ServiceContextRef;
-}
 
 namespace resource_coordinator {
-
-struct CoordinationUnitID;
 
 class ProcessCoordinationUnitImpl : public CoordinationUnitImpl {
  public:
@@ -35,9 +25,12 @@ class ProcessCoordinationUnitImpl : public CoordinationUnitImpl {
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
       CoordinationUnitType type) override;
 
+ private:
+  // CoordinationUnitImpl implementation.
+  void PropagateProperty(const mojom::PropertyPtr& property) override;
+
   void MeasureProcessCPUUsage();
 
- private:
   std::unique_ptr<base::ProcessMetrics> process_metrics_;
   base::OneShotTimer repeating_timer_;
 

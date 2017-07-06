@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -216,19 +213,21 @@ TEST_F(CoordinationUnitImplTest, GetSetProperty) {
             coordination_unit->GetProperty(mojom::PropertyType::kTest));
 
   // An empty value should be able to set a property
-  coordination_unit->SetProperty(mojom::PropertyType::kTest, base::Value());
-  EXPECT_EQ(0u, coordination_unit->property_store_for_testing().size());
+  coordination_unit->SetProperty(mojom::Property::New(
+      mojom::PropertyType::kTest, base::MakeUnique<base::Value>()));
+  EXPECT_EQ(0u, coordination_unit->properties_for_testing().size());
 
   base::Value int_val(41);
 
   // Perform a valid storage property set
-  coordination_unit->SetProperty(mojom::PropertyType::kTest, int_val);
-  EXPECT_EQ(1u, coordination_unit->property_store_for_testing().size());
+  coordination_unit->SetProperty(mojom::Property::New(
+      mojom::PropertyType::kTest, base::MakeUnique<base::Value>(int_val)));
+  EXPECT_EQ(1u, coordination_unit->properties_for_testing().size());
   EXPECT_EQ(int_val,
             coordination_unit->GetProperty(mojom::PropertyType::kTest));
 
   coordination_unit->ClearProperty(mojom::PropertyType::kTest);
-  EXPECT_EQ(0u, coordination_unit->property_store_for_testing().size());
+  EXPECT_EQ(0u, coordination_unit->properties_for_testing().size());
 }
 
 TEST_F(CoordinationUnitImplTest,

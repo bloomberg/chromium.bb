@@ -4,15 +4,7 @@
 
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
-#include <utility>
-
-namespace service_manager {
-class ServiceContextRef;
-}
-
 namespace resource_coordinator {
-
-struct CoordinationUnitID;
 
 FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
     const CoordinationUnitID& id,

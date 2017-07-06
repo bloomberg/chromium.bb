@@ -50,9 +50,9 @@ void CoordinationUnitManager::OnCoordinationUnitCreated(
   }
 }
 
-void CoordinationUnitManager::OnCoordinationUnitWillBeDestroyed(
+void CoordinationUnitManager::OnBeforeCoordinationUnitDestroyed(
     CoordinationUnitImpl* coordination_unit) {
-  coordination_unit->WillBeDestroyed();
+  coordination_unit->BeforeDestroyed();
 }
 
 std::unique_ptr<ukm::UkmEntryBuilder>

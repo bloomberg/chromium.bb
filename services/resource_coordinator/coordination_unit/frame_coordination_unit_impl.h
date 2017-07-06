@@ -5,16 +5,10 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_FRAME_COORDINATION_UNIT_IMPL_H_
 
-#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
-
-namespace service_manager {
-class ServiceContextRef;
-}
 
 namespace resource_coordinator {
 

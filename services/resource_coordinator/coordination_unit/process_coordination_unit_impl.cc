@@ -4,11 +4,8 @@
 
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 
-#include <utility>
-
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
 #include "base/time/time.h"
 #include "base/values.h"
 
@@ -20,13 +17,7 @@
 #include <windows.h>
 #endif
 
-namespace service_manager {
-class ServiceContextRef;
-}
-
 namespace resource_coordinator {
-
-struct CoordinationUnitID;
 
 namespace {
 
@@ -92,17 +83,24 @@ ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
+void ProcessCoordinationUnitImpl::PropagateProperty(
+    const mojom::PropertyPtr& property) {
+  mojom::PropertyType property_type = property->property_type;
+  // Trigger tab coordination units to recalculate their CPU usage.
+  if (property_type == mojom::PropertyType::kCPUUsage) {
+    for (auto* tab_coordination_unit : GetAssociatedCoordinationUnitsOfType(
+             CoordinationUnitType::kWebContents)) {
+      tab_coordination_unit->RecalculateProperty(
+          mojom::PropertyType::kCPUUsage);
+    }
+  }
+}
+
 void ProcessCoordinationUnitImpl::MeasureProcessCPUUsage() {
   double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
-  SetProperty(mojom::PropertyType::kCPUUsage, base::Value(cpu_usage));
-
-  // Trigger tab coordination units to recalculate their CPU usage.
-  // TODO(matthalp): Move propagation functionality into a separate,
-  // more generalized method to support other property changes.
-  for (auto* tab : GetAssociatedCoordinationUnitsOfType(
-           CoordinationUnitType::kWebContents)) {
-    tab->RecalculateProperty(mojom::PropertyType::kCPUUsage);
-  }
+  mojom::PropertyPtr property = mojom::Property::New(
+      mojom::PropertyType::kCPUUsage, base::MakeUnique<base::Value>(cpu_usage));
+  SetProperty(std::move(property));
 
   repeating_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCPUProfilingIntervalInSeconds),
