@@ -85,4 +85,5 @@ instrumentation_test_apk("system_webview_shell_layout_test_apk") {
     "//third_party/WebKit/LayoutTests/webexposed/global-interface-listing.html",
     "//third_party/WebKit/LayoutTests/webexposed/global-interface-listing-expected.txt",
   ]
+  additional_apks = [ system_webview_apk_target ]
 }
