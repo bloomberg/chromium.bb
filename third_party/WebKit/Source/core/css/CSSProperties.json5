@@ -1655,6 +1655,7 @@
     {
       name: "marker-end",
       api_class: "CSSPropertyAPIMarker",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerEndResource",
@@ -1663,6 +1664,7 @@
     {
       name: "marker-mid",
       api_class: "CSSPropertyAPIMarker",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerMidResource",
@@ -1671,6 +1673,7 @@
     {
       name: "marker-start",
       api_class: "CSSPropertyAPIMarker",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFragmentIdentifier",
       inherited: true,
       name_for_methods: "MarkerStartResource",
@@ -1679,6 +1682,7 @@
     {
       name: "mask",
       api_class: "CSSPropertyAPIMarker",
+      api_methods: ["parseSingleValue"],
       converter: "ConvertFragmentIdentifier",
       name_for_methods: "MaskerResource",
       svg: true,
