@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -117,7 +116,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
   const GURL testURL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
   [ChromeEarlGrey loadURL:testURL];
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Add a test infobar to the current tab. Verify that the infobar is present
   // in the model and that the infobar view is visible on screen.
@@ -142,12 +141,12 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
 
   // Create the first tab and navigate to the test page.
   [ChromeEarlGrey loadURL:destinationURL];
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   // Create the second tab, navigate to the test page, and add the test infobar.
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:ponyURL];
-  chrome_test_util::AssertMainTabCount(2U);
+  [ChromeEarlGrey waitForMainTabCount:2];
   VerifyTestInfoBarVisibleForCurrentTab(false);
   GREYAssert(AddTestInfoBarToCurrentTab(),
              @"Failed to add infobar to second tab.");
@@ -164,7 +163,7 @@ void VerifyTestInfoBarVisibleForCurrentTab(bool visible) {
   // Close the first tab.  Verify that there is only one tab remaining and its
   // infobar is visible.
   chrome_test_util::CloseCurrentTab();
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
   VerifyTestInfoBarVisibleForCurrentTab(true);
 }
 

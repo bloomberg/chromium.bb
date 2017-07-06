@@ -87,6 +87,14 @@ id ExecuteJavaScript(NSString* javascript,
 // Waits for there to be no web view containing |text|. If the condition is not
 // met within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewNotContainingText:(std::string)text;
+
+// Waits for there to be |count| number of non-incognito tabs. If the condition
+// is not met within a timeout, a GREYAssert is induced.
++ (void)waitForMainTabCount:(NSUInteger)count;
+
+// Waits for there to be |count| number of incognito tabs. If the condition is
+// not met within a timeout, a GREYAssert is induced.
++ (void)waitForIncognitoTabCount:(NSUInteger)count;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

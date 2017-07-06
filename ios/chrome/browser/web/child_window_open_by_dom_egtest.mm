@@ -9,7 +9,6 @@
 #include "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -20,7 +19,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::AssertMainTabCount;
 using chrome_test_util::TapWebViewElementWithId;
 using web::test::HttpServer;
 
@@ -62,7 +60,7 @@ const char kWindow2Closed[] = "window2.closed: true";
       "http://ios/testing/data/http_server_files/window_proxy.html";
   [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kChildWindowTestURL)];
   [ChromeEarlGrey waitForWebViewContainingText:kNamedWindowLink];
-  AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that multiple calls to window.open() with the same window name returns
@@ -70,11 +68,11 @@ const char kWindow2Closed[] = "window2.closed: true";
 - (void)test2ChildWindowsWithName {
   // Open two windows with the same name.
   TapWebViewElementWithId(kNamedWindowLink);
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   TapWebViewElementWithId(kNamedWindowLink);
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they're the same window.
@@ -88,11 +86,11 @@ const char kWindow2Closed[] = "window2.closed: true";
 - (void)test2ChildWindowsWithoutName {
   // Open two unnamed windows.
   TapWebViewElementWithId(kUnnamedWindowLink);
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   TapWebViewElementWithId(kUnnamedWindowLink);
-  AssertMainTabCount(3);
+  [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they aren't the same window object.
@@ -106,12 +104,12 @@ const char kWindow2Closed[] = "window2.closed: true";
 - (void)testChildWindowsWithAndWithoutName {
   // Open a named window.
   TapWebViewElementWithId(kNamedWindowLink);
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Open an unnamed window.
   TapWebViewElementWithId(kUnnamedWindowLink);
-  AssertMainTabCount(3);
+  [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they aren't the same window object.
@@ -127,7 +125,7 @@ const char kWindow2Closed[] = "window2.closed: true";
 // object for that tab.
 - (void)testWindowClosedWithName {
   TapWebViewElementWithId("openWindowWithName");
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that named window 1 is opened and named window 2 isn't.
@@ -142,14 +140,14 @@ const char kWindow2Closed[] = "window2.closed: true";
   // Open another window with the same name. Check that named window 2 is now
   // opened.
   TapWebViewElementWithId("openWindowWithName");
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   TapWebViewElementWithId(kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Open];
 
   // Close the opened window. Check that named window 1 and 2 are both closed.
   chrome_test_util::CloseTabAtIndex(1);
-  AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
   TapWebViewElementWithId(kCheckWindow1Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow1Closed];
   TapWebViewElementWithId(kCheckWindow2Link);
@@ -160,7 +158,7 @@ const char kWindow2Closed[] = "window2.closed: true";
 // corresponding window object and not for any other window objects.
 - (void)testWindowClosedWithoutName {
   TapWebViewElementWithId("openWindowNoName");
-  AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that unnamed window 1 is opened and unnamed window 2 isn't.
@@ -174,7 +172,7 @@ const char kWindow2Closed[] = "window2.closed: true";
 
   // Open another unnamed window. Check that unnamed window 2 is now opened.
   TapWebViewElementWithId("openWindowNoName");
-  AssertMainTabCount(3);
+  [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   TapWebViewElementWithId(kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Open];

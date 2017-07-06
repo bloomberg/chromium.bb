@@ -20,7 +20,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -228,11 +227,11 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
 
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   chrome_test_util::TapWebViewElementWithId("link");
 
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
@@ -258,11 +257,11 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
 
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   chrome_test_util::TapWebViewElementWithId("link");
 
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
@@ -298,11 +297,11 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
 
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   chrome_test_util::TapWebViewElementWithId("link");
 
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
   [[EarlGrey selectElementWithMatcher:OmniboxText(anchorURL.GetContent())]
@@ -337,11 +336,11 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
 
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::AssertMainTabCount(1);
+  [ChromeEarlGrey waitForMainTabCount:1];
 
   chrome_test_util::TapWebViewElementWithId("link");
 
-  chrome_test_util::AssertMainTabCount(2);
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
@@ -392,8 +391,8 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Assert that test is starting with one tab.
-  chrome_test_util::AssertMainTabCount(1U);
-  chrome_test_util::AssertIncognitoTabCount(0U);
+  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   [ChromeEarlGrey loadURL:URL];
 
@@ -407,7 +406,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGrey waitForWebViewContainingText:"Hello world!"];
 
   // Verify that no new tabs were open which could load chrome://version.
-  chrome_test_util::AssertMainTabCount(1U);
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that evaluating user JavaScript that causes navigation correctly
