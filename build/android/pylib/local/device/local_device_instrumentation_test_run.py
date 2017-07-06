@@ -13,7 +13,6 @@ import time
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
-from devil.android.sdk import shared_prefs
 from devil.utils import reraiser_thread
 from pylib import valgrind_tools
 from pylib.android import logdog_logcat_monitor
@@ -24,6 +23,7 @@ from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 from pylib.utils import google_storage_helper
 from pylib.utils import logdog_helper
+from pylib.utils import shared_preference_utils
 from py_trace_event import trace_event
 from py_utils import contextlib_ext
 from py_utils import tempfile_ext
@@ -179,30 +179,11 @@ class LocalDeviceInstrumentationTestRun(
             dev.RunShellCommand(['am', 'set-debug-app', '--persistent',
                                  self._test_instance.package_info.package],
                                 check_return=True)
+
       @trace_event.traced
       def edit_shared_prefs():
-        for pref in self._test_instance.edit_shared_prefs:
-          prefs = shared_prefs.SharedPrefs(dev, pref['package'],
-                                           pref['filename'])
-          prefs.Load()
-          for key in pref.get('remove', []):
-            try:
-              prefs.Remove(key)
-            except KeyError:
-              logging.warning("Attempted to remove non-existent key %s", key)
-          for key, value in pref.get('set', {}).iteritems():
-            if isinstance(value, bool):
-              prefs.SetBoolean(key, value)
-            elif isinstance(value, basestring):
-              prefs.SetString(key, value)
-            elif isinstance(value, long) or isinstance(value, int):
-              prefs.SetLong(key, value)
-            elif isinstance(value, list):
-              prefs.SetStringSet(key, value)
-            else:
-              raise ValueError("Given invalid value type %s for key %s" % (
-                  str(type(value)), key))
-          prefs.Commit()
+        shared_preference_utils.ApplySharedPreferenceSettings(
+            dev, self._test_instance.edit_shared_prefs)
 
       @trace_event.traced
       def push_test_data():

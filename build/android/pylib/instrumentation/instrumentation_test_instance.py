@@ -4,7 +4,6 @@
 
 import collections
 import copy
-import json
 import logging
 import os
 import pickle
@@ -21,6 +20,7 @@ from pylib.instrumentation import test_result
 from pylib.instrumentation import instrumentation_parser
 from pylib.utils import dexdump
 from pylib.utils import proguard
+from pylib.utils import shared_preference_utils
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import unittest_util # pylint: disable=import-error
@@ -687,21 +687,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if not isinstance(args.shared_prefs_file, str):
       logging.warning("Given non-string for a filepath")
       return
-
-    # json.load() loads strings as unicode, which causes issues when trying
-    # to edit string values in preference files, so convert to Python strings
-    def unicode_to_str(data):
-      if isinstance(data, dict):
-        return {unicode_to_str(key): unicode_to_str(value)
-                for key, value in data.iteritems()}
-      elif isinstance(data, list):
-        return [unicode_to_str(element) for element in data]
-      elif isinstance(data, unicode):
-        return data.encode('utf-8')
-      return data
-
-    with open(args.shared_prefs_file) as prefs_file:
-      self._edit_shared_prefs = unicode_to_str(json.load(prefs_file))
+    self._edit_shared_prefs = shared_preference_utils.ExtractSettingsFromJson(
+        args.shared_prefs_file)
 
   @property
   def additional_apks(self):
