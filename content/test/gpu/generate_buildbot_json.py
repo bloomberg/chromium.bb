@@ -25,6 +25,11 @@ class Types(object):
   GPU_FYI = 'gpu_fyi'
   OPTIONAL = 'optional'
   V8_FYI = 'v8_fyi'
+  # The Win ANGLE AMD tryserver is split off because there isn't
+  # enough capacity to run all the tests from chromium.gpu.fyi's Win
+  # AMD bot on a tryserver. It represents some of the tests on
+  # win_angle_rel_ng and is not a real machine on the waterfall.
+  WIN_ANGLE_AMD_TRYSERVER = 'win_angle_amd_tryserver'
 
 # The predicate functions receive a list of types as input and
 # determine whether the test should run on the given bot.
@@ -32,20 +37,27 @@ class Predicates(object):
   @staticmethod
   def DEFAULT(x):
     # By default, tests run on the chromium.gpu and chromium.gpu.fyi
-    # waterfalls, but not on the optional tryservers or on the
-    # client.v8.fyi waterfall.
-    return Types.OPTIONAL not in x and Types.V8_FYI not in x
+    # waterfalls, but not on the optional tryservers, nor on the
+    # client.v8.fyi waterfall, nor on the Win ANGLE AMD tryserver.
+    return Types.OPTIONAL not in x and Types.V8_FYI not in x and \
+      Types.WIN_ANGLE_AMD_TRYSERVER not in x
 
   @staticmethod
   def FYI_ONLY(x):
     # This predicate is more complex than desired because the optional
-    # tryservers are considered to be on the chromium.gpu.fyi
-    # waterfall.
-    return Types.GPU_FYI in x and Types.OPTIONAL not in x
+    # tryservers and the Win ANGLE AMD tryserver are considered to be
+    # on the chromium.gpu.fyi waterfall.
+    return Types.GPU_FYI in x and Types.OPTIONAL not in x and \
+      Types.WIN_ANGLE_AMD_TRYSERVER not in x
 
   @staticmethod
   def FYI_AND_OPTIONAL(x):
     return Predicates.FYI_ONLY(x) or Types.OPTIONAL in x
+
+  @staticmethod
+  def FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD(x):
+    return Predicates.FYI_ONLY(x) or Types.OPTIONAL in x or \
+      Types.WIN_ANGLE_AMD_TRYSERVER in x
 
   @staticmethod
   def FYI_OPTIONAL_AND_V8(x):
@@ -797,6 +809,22 @@ FYI_WATERFALL = {
       'os_type': 'linux',
       'type': Types.OPTIONAL,
     },
+    # This tryserver doesn't actually exist; it's a separate
+    # configuration from the Win AMD bot on this waterfall because we
+    # don't have enough tryserver capacity to run all the tests from
+    # that bot on win_angle_rel_ng.
+    'Win7 ANGLE Tryserver (AMD)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '1002:6613',
+          'os': 'Windows-2008ServerR2-SP1'
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.WIN_ANGLE_AMD_TRYSERVER,
+    },
   }
 }
 
@@ -961,8 +989,9 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_d3d11_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run this on the FYI waterfall, optional tryservers, and Win
+        # ANGLE AMD tryserver.
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
         # Run only on the Win7 NVIDIA/AMD R7 240 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is
         # added.
@@ -1257,7 +1286,7 @@ COMMON_GTESTS = {
   'angle_end2end_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
       },
     ],
     'disabled_tester_configs': [
@@ -1281,7 +1310,7 @@ COMMON_GTESTS = {
   'angle_white_box_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
         # There are only Windows white box tests for now.
         # Enable on more configs when there will be relevant tests.
         'os_types': ['win'],
@@ -1878,8 +1907,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
   'webgl_conformance_d3d11_passthrough': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run this on the FYI waterfall, optional tryservers, and Win
+        # ANGLE AMD tryserver.
+        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD,
         'os_types': ['win'],
         'disabled_instrumentation_types': ['tsan'],
       }
