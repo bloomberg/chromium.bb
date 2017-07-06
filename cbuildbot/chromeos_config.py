@@ -2268,7 +2268,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_rialto',
       'veyron_speedy',
       'veyron_tiger',
-      'whirlwind',
       'winky',
       'wolf',
   ])
@@ -2292,6 +2291,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
       'sentry',
       'tidus',
+      'whirlwind',
       'wizpig',
       'zoombini',
   ])
