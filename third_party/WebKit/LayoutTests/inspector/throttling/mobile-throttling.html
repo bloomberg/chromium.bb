@@ -1,0 +1,106 @@
+<html>
+<head>
+<title> Change mobile throttling setting.</title>
+<script src = "../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function initialize_ThrottlingTest() {
+  InspectorTest.preloadPanel("network");
+  InspectorTest.preloadPanel("timeline");
+  UI.viewManager.showView("network.config");
+}
+
+function test() {
+  var deviceModeView = new Emulation.DeviceModeView();
+
+  var deviceModeThrottling = deviceModeView._toolbar._throttlingConditionsItem;
+  var networkPanelThrottling = UI.panels.network._throttlingSelect;
+  var networkPanelOfflineCheckbox = UI.panels.network._offlineCheckbox.inputElement;
+  var networkConditionsDrawerThrottlingSelector =
+      self.runtime.sharedInstance(Network.NetworkConfigView)._networkThrottlingSelect;
+  var performancePanelNetworkThrottling = UI.panels.timeline._networkThrottlingSelect;
+  var performancePanelCPUThrottling = UI.panels.timeline._cpuThrottlingSelect;
+
+  function dumpThrottlingState() {
+    InspectorTest.addResult('=== THROTTLING STATE ===');
+    var {download, upload, latency} = SDK.multitargetNetworkManager.networkConditions();
+    InspectorTest.addResult(`Network throttling - download: ${download} upload: ${upload} latency: ${latency}`);
+    InspectorTest.addResult('CPU throttling rate: ' +
+                            MobileThrottling.throttlingManager().cpuThrottlingRate());
+    InspectorTest.addResult('Device mode throttling: ' + deviceModeThrottling._text);
+    InspectorTest.addResult('Network panel offline checkbox: ' +
+                            networkPanelOfflineCheckbox.checked);
+    InspectorTest.addResult('Network panel throttling: ' +
+                            networkPanelThrottling.selectedOption().text);
+    InspectorTest.addResult('Network conditions drawer throttling: ' +
+                            networkConditionsDrawerThrottlingSelector.value);
+    InspectorTest.addResult('Performance panel network throttling: ' +
+                            performancePanelNetworkThrottling.selectedOption().text);
+    InspectorTest.addResult('Performance panel CPU throttling: ' +
+                            performancePanelCPUThrottling.selectedOption().text);
+    InspectorTest.addResult('========================\n');
+  }
+
+  InspectorTest.addResult('Initial throttling state');
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change to offline in device mode');
+  SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.OfflineConditions.network);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(
+      MobileThrottling.OfflineConditions.cpuThrottlingRate);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Toggle network offline checkbox');
+  networkPanelOfflineCheckbox.click();
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change to low-end mobile in device mode');
+  SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.LowEndMobileConditions.network);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(
+      MobileThrottling.LowEndMobileConditions.cpuThrottlingRate);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change network to Fast 3G');
+  SDK.multitargetNetworkManager.setNetworkConditions(SDK.NetworkManager.Fast3GConditions);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Toggle network offline checkbox (enable offline)');
+  networkPanelOfflineCheckbox.click();
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Toggle network offline checkbox (disable offline)');
+  networkPanelOfflineCheckbox.click();
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change to mid-tier mobile in device mode');
+  SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.MidTierMobileConditions.network);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(
+      MobileThrottling.MidTierMobileConditions.cpuThrottlingRate);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change CPU throttling to low-end mobile');
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.CPUThrottlingRates.LowEndMobile);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change CPU throttling to mid-tier mobile');
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(
+      MobileThrottling.CPUThrottlingRates.MidTierMobile);
+  dumpThrottlingState();
+
+  InspectorTest.addResult('Change to no throttling in device mode');
+  SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.NoThrottlingConditions.network);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(
+      MobileThrottling.NoThrottlingConditions.cpuThrottlingRate);
+  dumpThrottlingState();
+
+  InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    <p>
+      Tests that mobile, network, and CPU throttling interact with each other logically.
+    </p>
+</body>
+</html>
