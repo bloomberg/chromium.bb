@@ -319,8 +319,12 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
     destroyed_flag_ = nullptr;
     // The menu will not propagate mouse events while its shown. To address,
     // the hover state gets cleared once the menu was shown (and this was not
-    // destroyed).
-    ClearState(STATE_HOVERED);
+    // destroyed). In case context menu is shown target view does not receive
+    // OnMouseReleased events and we need to cancel capture manually.
+    if (shelf_view_->drag_view() == this)
+      OnMouseCaptureLost();
+    else
+      ClearState(STATE_HOVERED);
   }
 }
 
