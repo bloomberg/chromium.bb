@@ -9,11 +9,10 @@ import urllib2
 from collections import namedtuple
 
 from webkitpy.common.memoized import memoized
-from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME
+from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
-EXPORT_LABEL = 'chromium-export'
 
 
 class WPTGitHub(object):
@@ -110,7 +109,7 @@ class WPTGitHub(object):
 
         return data
 
-    def add_label(self, number, label=EXPORT_LABEL):
+    def add_label(self, number, label):
         path = '/repos/%s/%s/issues/%d/labels' % (
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
@@ -119,11 +118,22 @@ class WPTGitHub(object):
         body = [label]
         return self.request(path, method='POST', body=body)
 
+    def remove_label(self, number, label):
+        path = '/repos/%s/%s/issues/%d/labels/%s' % (
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            number,
+            label,
+        )
+        _, status_code = self.request(path, method='DELETE')
+        if status_code != 204:
+            raise GitHubError('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
+
     def in_flight_pull_requests(self):
         path = '/search/issues?q=repo:{}/{}%20is:open%20type:pr%20label:{}'.format(
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
-            EXPORT_LABEL
+            EXPORT_PR_LABEL
         )
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
@@ -150,7 +160,7 @@ class WPTGitHub(object):
         ).format(
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
-            EXPORT_LABEL,
+            EXPORT_PR_LABEL,
             self._pr_history_window
         )
 
@@ -207,8 +217,7 @@ class WPTGitHub(object):
         data, status_code = self.request(path, method='DELETE')
 
         if status_code != 204:
-            # TODO(jeffcarp): Raise more specific exception (create MergeError class?)
-            raise Exception('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
+            raise GitHubError('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
 
         return data
 
@@ -250,6 +259,11 @@ class MergeError(Exception):
     This should only be thrown when GitHub returns status code 405,
     indicating that the PR could not be merged.
     """
+    pass
+
+
+class GitHubError(Exception):
+    """Raised when an GitHub returns a non-OK response status for a request."""
     pass
 
 

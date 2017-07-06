@@ -18,6 +18,8 @@ WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
 DEFAULT_COMMIT_HISTORY_WINDOW = 5000
+EXPORT_PR_LABEL = 'chromium-export'
+PROVISIONAL_PR_LABEL = 'do not merge yet'
 
 # TODO(qyearsley): This directory should be able to be constructed with
 # PathFinder and WPT_DEST_NAME, plus the string "external".

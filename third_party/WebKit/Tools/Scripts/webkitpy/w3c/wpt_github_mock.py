@@ -50,9 +50,13 @@ class MockWPTGitHub(object):
     def delete_remote_branch(self, _):
         self.calls.append('delete_remote_branch')
 
-    def add_label(self, _, label='default'):
+    def add_label(self, _, label):
         self.calls.append('add_label "%s"' % label)
         return {}, 200
+
+    def remove_label(self, _, label):
+        self.calls.append('remove_label "%s"' % label)
+        return {}, 204
 
     def get_pr_branch(self, number):
         self.calls.append('get_pr_branch')

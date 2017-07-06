@@ -6,7 +6,7 @@ import base64
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
+from webkitpy.w3c.wpt_github import WPTGitHub, MergeError, GitHubError
 
 
 class WPTGitHubTest(unittest.TestCase):
@@ -33,3 +33,19 @@ class WPTGitHubTest(unittest.TestCase):
 
         with self.assertRaises(MergeError):
             self.wpt_github.merge_pull_request(5678)
+
+    def test_remove_label_throws_github_error_on_non_204(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200},
+        ]
+
+        with self.assertRaises(GitHubError):
+            self.wpt_github.remove_label(1234, 'rutabaga')
+
+    def test_delete_remote_branch_throws_github_error_on_non_204(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200},
+        ]
+
+        with self.assertRaises(GitHubError):
+            self.wpt_github.delete_remote_branch('rutabaga')

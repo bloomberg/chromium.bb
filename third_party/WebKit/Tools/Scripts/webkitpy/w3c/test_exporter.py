@@ -8,7 +8,9 @@ from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.common import (
     exportable_commits_over_last_n_commits,
     WPT_GH_URL,
-    WPT_REVISION_FOOTER
+    WPT_REVISION_FOOTER,
+    EXPORT_PR_LABEL,
+    PROVISIONAL_PR_LABEL
 )
 from webkitpy.w3c.gerrit import GerritAPI, GerritCL
 from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
@@ -86,6 +88,9 @@ class TestExporter(object):
         if self.dry_run:
             _log.info('[dry_run] Would have attempted to merge PR')
             return
+
+        _log.info('Removing provisional label...')
+        self.wpt_github.remove_label(pull_request.number, PROVISIONAL_PR_LABEL)
 
         _log.info('Attempting to merge...')
 
@@ -170,7 +175,7 @@ class TestExporter(object):
         _log.info('Create PR response: %s', response_data)
 
         if response_data:
-            data, status_code = self.wpt_github.add_label(response_data['number'])
+            data, status_code = self.wpt_github.add_label(response_data['number'], EXPORT_PR_LABEL)
             _log.info('Add label response (status %s): %s', status_code, data)
 
         return response_data
@@ -219,8 +224,8 @@ class TestExporter(object):
             response_data = self.wpt_github.create_pr(branch_name, cl.subject, message)
             _log.debug('Create PR response: %s', response_data)
 
-            self.wpt_github.add_label(response_data['number'])
-            self.wpt_github.add_label(response_data['number'], 'do not merge yet')
+            self.wpt_github.add_label(response_data['number'], EXPORT_PR_LABEL)
+            self.wpt_github.add_label(response_data['number'], PROVISIONAL_PR_LABEL)
 
             cl.post_comment((
                 'Exportable changes to web-platform-tests were detected in this CL '
