@@ -397,3 +397,7 @@ crbug.com/676572 [ Debug ] external/wpt/webstorage/storage_local_setitem_quotaex
 crbug.com/451577 [ Linux ] inspector/elements/user-properties.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/layers/layer-canvas-log.html [ Slow ]
 
+# These imported tests exercise tens of thousands of code points and generate large results.
+crbug.com/736056 external/wpt/encoding/legacy-mb-japanese [ Slow ]
+crbug.com/736056 external/wpt/encoding/legacy-mb-korean [ Slow ]
+crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese [ Slow ]
