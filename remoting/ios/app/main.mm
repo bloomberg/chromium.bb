@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #import "remoting/ios/app/app_delegate.h"
+#import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 
@@ -35,6 +36,7 @@ int main(int argc, char* argv[]) {
   @autoreleasepool {
     RemotingService.instance.authentication =
         [[RemotingOAuthAuthentication alloc] init];
+    HelpAndFeedback.instance = [[HelpAndFeedback alloc] init];
     return UIApplicationMain(
         argc, argv, nil, NSStringFromClass([AppDelegate class]));
   }

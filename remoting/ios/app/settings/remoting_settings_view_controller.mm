@@ -17,6 +17,7 @@
 #include "base/logging.h"
 
 static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
+static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
 @interface RemotingSettingsViewController () {
   MDCAppBar* _appBar;
@@ -316,12 +317,19 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
     [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
   };
 
+  // TODO(yuweih): Currently the EAGLView is not captured by the feedback tool.
+  // To get it working we need to override renderInContext in CAEAGLLayer.
   SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
   sendFeedbackOption.title = @"Send feedback";
   sendFeedbackOption.style = FlatButton;
   sendFeedbackOption.action = ^{
-    [AppDelegate.instance navigateToSendFeedback:self.navigationController];
-    [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
+    // Dismiss self so that it can capture the screenshot of HostView.
+    [weakSelf dismissViewControllerAnimated:YES
+                                 completion:^{
+                                   [AppDelegate.instance
+                                       presentFeedbackFlowWithContext:
+                                           kFeedbackContext];
+                                 }];
   };
 
   [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];

@@ -24,9 +24,11 @@
 // controller.
 - (void)navigateToHelpCenter:(UINavigationController*)navigationController;
 
-// This will push the Send Feedback view controller onto the provided nav
+// This will present the Send Feedback view controller onto the topmost view
 // controller.
-- (void)navigateToSendFeedback:(UINavigationController*)navigationController;
+// context: a unique identifier for the user's place within the app which can be
+// used to categorize the feedback report and segment usage metrics.
+- (void)presentFeedbackFlowWithContext:(NSString*)context;
 
 // Pop up an Email compose view filled with the instructions to setup the host.
 - (void)emailSetupInstructions;
