@@ -232,22 +232,22 @@ class SiteSettingsHandlerTest : public testing::Test {
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
   // Test the JS -> C++ -> JS callback path for getting and setting defaults.
-  base::ListValue getArgs;
-  getArgs.AppendString(kCallbackId);
-  getArgs.AppendString("notifications");
-  handler()->HandleGetDefaultValueForContentType(&getArgs);
+  base::ListValue get_args;
+  get_args.AppendString(kCallbackId);
+  get_args.AppendString("notifications");
+  handler()->HandleGetDefaultValueForContentType(&get_args);
   ValidateDefault("ask", "default", 1U);
 
   // Set the default to 'Blocked'.
-  base::ListValue setArgs;
-  setArgs.AppendString("notifications");
-  setArgs.AppendString("block");
-  handler()->HandleSetDefaultValueForContentType(&setArgs);
+  base::ListValue set_args;
+  set_args.AppendString("notifications");
+  set_args.AppendString("block");
+  handler()->HandleSetDefaultValueForContentType(&set_args);
 
   EXPECT_EQ(2U, web_ui()->call_data().size());
 
   // Verify that the default has been set to 'Blocked'.
-  handler()->HandleGetDefaultValueForContentType(&getArgs);
+  handler()->HandleGetDefaultValueForContentType(&get_args);
   ValidateDefault("block", "default", 3U);
 }
 
@@ -272,12 +272,26 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     histograms.ExpectTotalCount(kUmaBase + ".Reset", 0);
   }
 
-  // Verify the change was successful.
-  base::ListValue listArgs;
-  listArgs.AppendString(kCallbackId);
-  listArgs.AppendString("notifications");
-  handler()->HandleGetExceptionList(&listArgs);
+  // If the change was successful, it should show up in the response from
+  // getExceptionList() as well as getOriginPermissions().
+  // Check getOriginPermissions().
+  base::ListValue get_origin_permissions_args;
+  get_origin_permissions_args.AppendString(kCallbackId);
+  get_origin_permissions_args.AppendString(google);
+  {
+    auto category_list = base::MakeUnique<base::ListValue>();
+    category_list->AppendString("notifications");
+    get_origin_permissions_args.Append(std::move(category_list));
+  }
+  handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
   ValidateOrigin(google, google, google, "block", "preference", 2U);
+
+  // Check getExceptionList().
+  base::ListValue get_exception_list_args;
+  get_exception_list_args.AppendString(kCallbackId);
+  get_exception_list_args.AppendString("notifications");
+  handler()->HandleGetExceptionList(&get_exception_list_args);
+  ValidateOrigin(google, google, google, "block", "preference", 3U);
 
   {
     // Reset things back to how they were.
@@ -288,7 +302,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     reset_args.AppendBoolean(false);  // Incognito.
     base::HistogramTester histograms;
     handler()->HandleResetCategoryPermissionForOrigin(&reset_args);
-    EXPECT_EQ(3U, web_ui()->call_data().size());
+    EXPECT_EQ(4U, web_ui()->call_data().size());
     histograms.ExpectTotalCount(kUmaBase, 1);
     histograms.ExpectTotalCount(kUmaBase + ".Allowed", 0);
     histograms.ExpectTotalCount(kUmaBase + ".Blocked", 0);
@@ -296,8 +310,12 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   }
 
   // Verify the reset was successful.
-  handler()->HandleGetExceptionList(&listArgs);
-  ValidateNoOrigin(4U);
+  handler()->HandleGetExceptionList(&get_exception_list_args);
+  ValidateNoOrigin(5U);
+
+  handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
+  // "Ask" is the default value for Notifications.
+  ValidateOrigin(google, google, google, "ask", "preference", 6U);
 }
 
 TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
