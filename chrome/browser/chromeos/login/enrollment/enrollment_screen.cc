@@ -311,14 +311,14 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
     // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
     LOG(WARNING) << "Show device attribute prompt screen";
     StartupUtils::MarkDeviceRegistered(
-        base::Bind(&EnrollmentScreen::ShowAttributePromptScreen,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&EnrollmentScreen::ShowAttributePromptScreen,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
     LOG(WARNING) << "The device attribute update is not permitted";
     StartupUtils::MarkDeviceRegistered(
-        base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
 }
