@@ -591,10 +591,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // crbug.com/704892.
   bool is_in_constructor;
 
-  // TODO(clamy): Remove this when we understand the root cause behind
-  // crbug.com/736658.
-  bool throttles_have_been_added_ = false;
-
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
