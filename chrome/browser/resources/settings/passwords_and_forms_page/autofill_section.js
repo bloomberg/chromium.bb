@@ -11,7 +11,64 @@
  * Interface for all callbacks to the autofill API.
  * @interface
  */
-function AutofillManager() {}
+class AutofillManager {
+  /**
+   * Add an observer to the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   */
+  addAddressListChangedListener(listener) {}
+
+  /**
+   * Remove an observer from the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   */
+  removeAddressListChangedListener(listener) {}
+
+  /**
+   * Request the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} callback
+   */
+  getAddressList(callback) {}
+
+  /**
+   * Saves the given address.
+   * @param {!AutofillManager.AddressEntry} address
+   */
+  saveAddress(address) {}
+
+  /** @param {string} guid The guid of the address to remove.  */
+  removeAddress(guid) {}
+
+  /**
+   * Add an observer to the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
+   */
+  addCreditCardListChangedListener(listener) {}
+
+  /**
+   * Remove an observer from the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
+   */
+  removeCreditCardListChangedListener(listener) {}
+
+  /**
+   * Request the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} callback
+   */
+  getCreditCardList(callback) {}
+
+  /** @param {string} guid The GUID of the credit card to remove.  */
+  removeCreditCard(guid) {}
+
+  /** @param {string} guid The GUID to credit card to remove from the cache. */
+  clearCachedCreditCard(guid) {}
+
+  /**
+   * Saves the given credit card.
+   * @param {!AutofillManager.CreditCardEntry} creditCard
+   */
+  saveCreditCard(creditCard) {}
+}
 
 /** @typedef {chrome.autofillPrivate.AddressEntry} */
 AutofillManager.AddressEntry;
@@ -19,131 +76,68 @@ AutofillManager.AddressEntry;
 /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
 AutofillManager.CreditCardEntry;
 
-AutofillManager.prototype = {
-  /**
-   * Add an observer to the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
-   */
-  addAddressListChangedListener: assertNotReached,
-
-  /**
-   * Remove an observer from the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
-   */
-  removeAddressListChangedListener: assertNotReached,
-
-  /**
-   * Request the list of addresses.
-   * @param {function(!Array<!AutofillManager.AddressEntry>):void} callback
-   */
-  getAddressList: assertNotReached,
-
-  /**
-   * Saves the given address.
-   * @param {!AutofillManager.AddressEntry} address
-   */
-  saveAddress: assertNotReached,
-
-  /** @param {string} guid The guid of the address to remove.  */
-  removeAddress: assertNotReached,
-
-  /**
-   * Add an observer to the list of credit cards.
-   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
-   */
-  addCreditCardListChangedListener: assertNotReached,
-
-  /**
-   * Remove an observer from the list of credit cards.
-   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
-   */
-  removeCreditCardListChangedListener: assertNotReached,
-
-  /**
-   * Request the list of credit cards.
-   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} callback
-   */
-  getCreditCardList: assertNotReached,
-
-  /** @param {string} guid The GUID of the credit card to remove.  */
-  removeCreditCard: assertNotReached,
-
-  /** @param {string} guid The GUID to credit card to remove from the cache. */
-  clearCachedCreditCard: assertNotReached,
-
-  /**
-   * Saves the given credit card.
-   * @param {!AutofillManager.CreditCardEntry} creditCard
-   */
-  saveCreditCard: assertNotReached,
-};
-
 /**
  * Implementation that accesses the private API.
  * @implements {AutofillManager}
- * @constructor
  */
-function AutofillManagerImpl() {}
-cr.addSingletonGetter(AutofillManagerImpl);
-
-AutofillManagerImpl.prototype = {
-  __proto__: AutofillManager,
-
+class AutofillManagerImpl {
   /** @override */
-  addAddressListChangedListener: function(listener) {
+  addAddressListChangedListener(listener) {
     chrome.autofillPrivate.onAddressListChanged.addListener(listener);
-  },
+  }
 
   /** @override */
-  removeAddressListChangedListener: function(listener) {
+  removeAddressListChangedListener(listener) {
     chrome.autofillPrivate.onAddressListChanged.removeListener(listener);
-  },
+  }
 
   /** @override */
-  getAddressList: function(callback) {
+  getAddressList(callback) {
     chrome.autofillPrivate.getAddressList(callback);
-  },
+  }
 
   /** @override */
-  saveAddress: function(address) {
+  saveAddress(address) {
     chrome.autofillPrivate.saveAddress(address);
-  },
+  }
 
   /** @override */
-  removeAddress: function(guid) {
+  removeAddress(guid) {
     chrome.autofillPrivate.removeEntry(assert(guid));
-  },
+  }
 
   /** @override */
-  addCreditCardListChangedListener: function(listener) {
+  addCreditCardListChangedListener(listener) {
     chrome.autofillPrivate.onCreditCardListChanged.addListener(listener);
-  },
+  }
 
   /** @override */
-  removeCreditCardListChangedListener: function(listener) {
+  removeCreditCardListChangedListener(listener) {
     chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
-  },
+  }
 
   /** @override */
-  getCreditCardList: function(callback) {
+  getCreditCardList(callback) {
     chrome.autofillPrivate.getCreditCardList(callback);
-  },
+  }
 
   /** @override */
-  removeCreditCard: function(guid) {
+  removeCreditCard(guid) {
     chrome.autofillPrivate.removeEntry(assert(guid));
-  },
+  }
 
   /** @override */
-  clearCachedCreditCard: function(guid) {
+  clearCachedCreditCard(guid) {
     chrome.autofillPrivate.maskCreditCard(assert(guid));
-  },
+  }
 
   /** @override */
-  saveCreditCard: function(creditCard) {
+  saveCreditCard(creditCard) {
     chrome.autofillPrivate.saveCreditCard(creditCard);
   }
-};
+}
+
+cr.addSingletonGetter(AutofillManagerImpl);
 
 (function() {
 'use strict';

@@ -200,32 +200,33 @@ Polymer({
 cr.define('settings.address', function() {
   /**
    * Creates a wrapper against a single data member for an address.
-   * @param {!chrome.autofillPrivate.AddressEntry} address
-   * @param {!chrome.autofillPrivate.AddressComponent} component
-   * @constructor
    */
-  function AddressComponentUI(address, component) {
-    Object.defineProperty(this, 'value', {
-      get: function() {
-        return this.getValue_();
-      },
-      set: function(newValue) {
-        this.setValue_(newValue);
-      },
-    });
-    this.address_ = address;
-    this.component = component;
-    this.isTextArea =
-        component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
-  }
+  class AddressComponentUI {
+    /**
+     * @param {!chrome.autofillPrivate.AddressEntry} address
+     * @param {!chrome.autofillPrivate.AddressComponent} component
+     */
+    constructor(address, component) {
+      Object.defineProperty(this, 'value', {
+        get: function() {
+          return this.getValue_();
+        },
+        set: function(newValue) {
+          this.setValue_(newValue);
+        },
+      });
+      this.address_ = address;
+      this.component = component;
+      this.isTextArea =
+          component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
+    }
 
-  AddressComponentUI.prototype = {
     /**
      * Gets the value from the address that's associated with this component.
      * @return {string|undefined}
      * @private
      */
-    getValue_: function() {
+    getValue_() {
       var address = this.address_;
       switch (this.component.field) {
         case chrome.autofillPrivate.AddressField.FULL_NAME:
@@ -251,14 +252,14 @@ cr.define('settings.address', function() {
         default:
           assertNotReached();
       }
-    },
+    }
 
     /**
      * Sets the value in the address that's associated with this component.
      * @param {string} value
      * @private
      */
-    setValue_: function(value) {
+    setValue_(value) {
       var address = this.address_;
       switch (this.component.field) {
         case chrome.autofillPrivate.AddressField.FULL_NAME:
@@ -291,52 +292,48 @@ cr.define('settings.address', function() {
         default:
           assertNotReached();
       }
-    },
-  };
+    }
+  }
 
   /** @interface */
-  function CountryDetailManager() {}
-  CountryDetailManager.prototype = {
+  class CountryDetailManager {
     /**
      * Gets the list of available countries.
      * The default country will be first, followed by a separator, followed by
      * an alphabetized list of countries available.
      * @return {!Promise<!Array<!chrome.autofillPrivate.CountryEntry>>}
      */
-    getCountryList: assertNotReached,
+    getCountryList() {}
 
     /**
      * Gets the address format for a given country code.
      * @param {string} countryCode
      * @return {!Promise<!chrome.autofillPrivate.AddressComponents>}
      */
-    getAddressFormat: assertNotReached,
-  };
+    getAddressFormat(countryCode) {}
+  }
 
   /**
    * Default implementation. Override for testing.
    * @implements {settings.address.CountryDetailManager}
-   * @constructor
    */
-  function CountryDetailManagerImpl() {}
-  cr.addSingletonGetter(CountryDetailManagerImpl);
-  CountryDetailManagerImpl.prototype = {
-    __proto__: CountryDetailManager,
-
+  class CountryDetailManagerImpl {
     /** @override */
-    getCountryList: function() {
+    getCountryList() {
       return new Promise(function(callback) {
         chrome.autofillPrivate.getCountryList(callback);
       });
-    },
+    }
 
     /** @override */
-    getAddressFormat: function(countryCode) {
+    getAddressFormat(countryCode) {
       return new Promise(function(callback) {
         chrome.autofillPrivate.getAddressComponents(countryCode, callback);
       });
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(CountryDetailManagerImpl);
 
   return {
     AddressComponentUI: AddressComponentUI,
