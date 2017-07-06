@@ -115,10 +115,16 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   bool TryReadFromBuffer(device::SensorReading& result);
 
   void OnPollingTimer(TimerBase*);
-  // Starts polling timer if needed (continuous reporting, initialized, not
-  // suspended and has configurations added).
+
+  // Returns 'true' if readings should be propagated to Observers
+  // (i.e. proxy is initialized, not suspended and has active configurations);
+  // returns 'false' otherwise.
+  bool ShouldProcessReadings() const;
+
+  // Starts or stops polling timer.
   void UpdatePollingStatus();
 
+  // Suspends or resumes the wrapped sensor.
   void UpdateSuspendedStatus();
 
   device::mojom::blink::SensorType type_;
