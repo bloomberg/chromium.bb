@@ -40,39 +40,63 @@ test(() => {
         selection => selection.modify('move', 'left', 'character'),
         '<div>foo<span style="-webkit-user-select:all">ba|r</span>baz</div>');
 }, 'Modify move is not affected by user-select:all.');
-test(() => {
-    function mouseMoveFromTo(selection, fromX, toX) {
-        eventSender.dragMode = false;
-        var document =  selection.document;
-        var root = document.getElementById('div');
-        eventSender.mouseMoveTo(document.offsetLeft + fromX, document.offsetTop + root.offsetTop + 5);
-        eventSender.mouseDown();
-        eventSender.leapForward(100);
-        eventSender.mouseMoveTo(document.offsetLeft + toX, document.offsetTop + root.offsetTop + 5);
-        eventSender.mouseUp();
-    };
 
-    assert_selection(
-        '<div id="div">foo<span style="-webkit-user-select:all">bar<span id="middle">bar</span>bar</span>baz</div>',
-        selection => {
-            var middle = selection.document.getElementById('middle');
-            mouseMoveFromTo(selection, middle.offsetLeft, middle.offsetLeft + middle.offsetWidth);},
-        '<div id="div">foo<span style="-webkit-user-select:all">^bar<span id="middle">bar</span>bar|</span>baz</div>');
-    assert_selection(
-        '<div id="div">foo<span style="-webkit-user-select:all">bar<span id="middle">bar</span>bar</span>baz</div>',
-        selection => {
-            var document =  selection.document;
-            mouseMoveFromTo(selection, document.getElementById('div').offsetLeft, document.getElementById('middle').offsetLeft);},
-        '<div id="div">^foo<span style="-webkit-user-select:all">bar<span id="middle">bar</span>bar|</span>baz</div>');
-    assert_selection(
-        '<div id="div">foo<span style="-webkit-user-select:all">bar<span id="middle">bar</span>bar</span>baz</div>',
-        selection => {
-            var document =  selection.document;
-            var middle = document.getElementById('middle');
-            var div = document.getElementById('div');
-            mouseMoveFromTo(selection, div.offsetLeft + div.offsetWidth, middle.offsetLeft);},
-        '<div id="div">foo<span style="-webkit-user-select:all">|bar<span id="middle">bar</span>bar</span>baz^</div>');
-}, 'Mouse move selects over user-select:all.');
+function mouseDownAt(x, y) {
+  assert_exists(window, 'eventSender');
+  eventSender.dragMode = false;
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+}
+
+function mouseMoveFromTo(y, fromX, toX) {
+  mouseDownAt(fromX, y);
+  eventSender.leapForward(100);
+  eventSender.mouseMoveTo(toX, y);
+  eventSender.mouseUp();
+}
+
+const kSample = [
+  '<div id="div">',
+    'abc <span style="user-select:all">',
+      'def <span id="middle">ghi </span>jkl ',
+    '</span>mno',
+  '</div>'
+].join('');
+
+test(() => assert_selection(
+  kSample,
+  selection => {
+    const div = selection.document.getElementById('div');
+    const middle = selection.document.getElementById('middle');
+    mouseDownAt(selection.computeLeft(middle), selection.computeTop(div));
+  },
+  '<div id="div">abc <span style="user-select:all">^def <span id="middle">ghi </span>jkl |</span>mno</div>'),
+  'Click inside user-select:all');
+
+test(() => assert_selection(
+  kSample,
+  selection => {
+    const div = selection.document.getElementById('div');
+    const middle = selection.document.getElementById('middle');
+    mouseMoveFromTo(selection.computeTop(div),
+                    selection.computeLeft(div),
+                    selection.computeLeft(middle));
+  },
+  '<div id="div">^abc <span style="user-select:all">def <span id="middle">ghi </span>jkl |</span>mno</div>'),
+  'Drag from left of user-select:all to inside user-select:all');
+
+test(() => assert_selection(
+  kSample,
+  selection => {
+    const div = selection.document.getElementById('div');
+    const middle = selection.document.getElementById('middle');
+    mouseMoveFromTo(selection.computeTop(div),
+                    selection.computeLeft(div) + div.offsetWidth,
+                    selection.computeLeft(middle));
+  },
+  '<div id="div">abc <span style="user-select:all">|def <span id="middle">ghi </span>jkl </span>mno^</div>'),
+  'Drag from right of user-select:all to inside user-select:all');
+
 test(() => {
     assert_selection(
         '<div>foo<span style="-webkit-user-select:all">bar<span id="middle">bar</span>bar</span>|baz</div>',
