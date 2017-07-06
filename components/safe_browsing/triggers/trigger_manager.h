@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "content/public/browser/web_contents.h"
@@ -27,10 +28,6 @@ namespace safe_browsing {
 
 class BaseUIManager;
 class ThreatDetails;
-
-enum class SafeBrowsingTriggerType {
-  SECURITY_INTERSTITIAL,
-};
 
 // A wrapper around different kinds of data collectors that can be active on a
 // given browser tab. Any given field can be null or empty if the associated
@@ -86,7 +83,7 @@ class TriggerManager {
   // should be created by TriggerManager::GetSBErrorDisplayOptions().
   // Returns true if the collection began, or false if it didn't.
   bool StartCollectingThreatDetails(
-      const SafeBrowsingTriggerType trigger_type,
+      const TriggerType trigger_type,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& resource,
       net::URLRequestContextGetter* request_context_getter,
@@ -104,7 +101,7 @@ class TriggerManager {
   // Returns true if the report was completed and sent, or false otherwise (eg:
   // the user was not opted-in to extended reporting after collection began).
   bool FinishCollectingThreatDetails(
-      const SafeBrowsingTriggerType trigger_type,
+      const TriggerType trigger_type,
       content::WebContents* web_contents,
       const base::TimeDelta& delay,
       bool did_proceed,
@@ -120,6 +117,9 @@ class TriggerManager {
 
   // Map of the data collectors running on each tabs.
   DataCollectorsMap data_collectors_map_;
+
+  // Keeps track of how often triggers fire and throttles them when needed.
+  TriggerThrottler trigger_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(TriggerManager);
 };
