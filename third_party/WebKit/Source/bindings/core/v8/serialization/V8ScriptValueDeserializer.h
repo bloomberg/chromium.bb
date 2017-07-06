@@ -17,6 +17,7 @@
 namespace blink {
 
 class File;
+class UnpackedSerializedScriptValue;
 
 // Deserializes V8 values serialized using V8ScriptValueSerializer (or its
 // predecessor, ScriptValueSerializer).
@@ -33,6 +34,9 @@ class CORE_EXPORT V8ScriptValueDeserializer
 
  public:
   using Options = SerializedScriptValue::DeserializeOptions;
+  V8ScriptValueDeserializer(RefPtr<ScriptState>,
+                            UnpackedSerializedScriptValue*,
+                            const Options& = Options());
   V8ScriptValueDeserializer(RefPtr<ScriptState>,
                             RefPtr<SerializedScriptValue>,
                             const Options& = Options());
@@ -62,6 +66,10 @@ class CORE_EXPORT V8ScriptValueDeserializer
   bool ReadUTF8String(String* string_out);
 
  private:
+  V8ScriptValueDeserializer(RefPtr<ScriptState>,
+                            UnpackedSerializedScriptValue*,
+                            RefPtr<SerializedScriptValue>,
+                            const Options&);
   void Transfer();
 
   File* ReadFile();
@@ -77,6 +85,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
                                                              uint32_t) override;
 
   RefPtr<ScriptState> script_state_;
+  Member<UnpackedSerializedScriptValue> unpacked_value_;
   RefPtr<SerializedScriptValue> serialized_script_value_;
   v8::ValueDeserializer deserializer_;
 

@@ -25,6 +25,7 @@
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8StringResource.h"
+#include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
@@ -98,10 +99,12 @@ v8::Local<v8::Value> RoundTrip(
   MessagePortArray* transferred_message_ports = MessagePort::EntanglePorts(
       *scope.GetExecutionContext(), std::move(channels));
 
+  UnpackedSerializedScriptValue* unpacked =
+      SerializedScriptValue::Unpack(std::move(serialized_script_value));
   V8ScriptValueDeserializer::Options deserialize_options;
   deserialize_options.message_ports = transferred_message_ports;
   deserialize_options.blob_info = blob_info;
-  V8ScriptValueDeserializer deserializer(script_state, serialized_script_value,
+  V8ScriptValueDeserializer deserializer(script_state, unpacked,
                                          deserialize_options);
   return deserializer.Deserialize();
 }
