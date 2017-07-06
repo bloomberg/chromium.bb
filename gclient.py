@@ -1720,11 +1720,13 @@ def CMDfetch(parser, args):
 class Flattener(object):
   """Flattens a gclient solution."""
 
-  def __init__(self, client):
+  def __init__(self, client, pin_all_deps=False):
     """Constructor.
 
     Arguments:
       client (GClient): client to flatten
+      pin_all_deps (bool): whether to pin all deps, even if they're not pinned
+          in DEPS
     """
     self._client = client
 
@@ -1738,17 +1740,34 @@ class Flattener(object):
     self._pre_deps_hooks = []
     self._vars = {}
 
-    self._flatten()
+    self._flatten(pin_all_deps=pin_all_deps)
 
   @property
   def deps_string(self):
     assert self._deps_string is not None
     return self._deps_string
 
-  def _flatten(self):
-    """Runs the flattener. Saves resulting DEPS string."""
+  def _flatten(self, pin_all_deps=False):
+    """Runs the flattener. Saves resulting DEPS string.
+
+    Arguments:
+      pin_all_deps (bool): whether to pin all deps, even if they're not pinned
+          in DEPS
+    """
     for solution in self._client.dependencies:
       self._flatten_solution(solution)
+
+    if pin_all_deps:
+      for dep in self._deps.itervalues():
+        if dep.parsed_url is None:
+          continue
+        url, revision = gclient_utils.SplitUrlRevision(dep.parsed_url)
+        if revision and gclient_utils.IsGitSha(revision):
+          continue
+        scm = gclient_scm.CreateSCM(
+            dep.parsed_url, self._client.root_dir, dep.name, dep.outbuf)
+        dep._parsed_url = dep._url = '%s@%s' % (
+            url, scm.revinfo(self._client._options, [], None))
 
     self._deps_string = '\n'.join(
         _GNSettingsToLines(
@@ -1825,6 +1844,10 @@ class Flattener(object):
 def CMDflatten(parser, args):
   """Flattens the solutions into a single DEPS file."""
   parser.add_option('--output-deps', help='Path to the output DEPS file')
+  parser.add_option(
+      '--pin-all-deps', action='store_true',
+      help=('Pin all deps, even if not pinned in DEPS. CAVEAT: only does so '
+            'for checked out deps, NOT deps_os.'))
   options, args = parser.parse_args(args)
 
   options.nohooks = True
@@ -1836,7 +1859,7 @@ def CMDflatten(parser, args):
   if code != 0:
     return code
 
-  flattener = Flattener(client)
+  flattener = Flattener(client, pin_all_deps=options.pin_all_deps)
 
   if options.output_deps:
     with open(options.output_deps, 'w') as f:
