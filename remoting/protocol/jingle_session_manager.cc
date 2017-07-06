@@ -87,7 +87,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
             signal_strategy_->GetLocalAddress().id(), message->from.id());
 
     JingleSession* session = new JingleSession(this);
-    session->InitializeIncomingConnection(*message,
+    session->InitializeIncomingConnection(stanza->Attr(buzz::QN_ID), *message,
                                           std::move(authenticator));
     sessions_[session->session_id_] = session;
 

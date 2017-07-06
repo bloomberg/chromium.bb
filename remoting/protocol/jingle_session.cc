@@ -115,6 +115,9 @@ class JingleSession::OrderedMessageQueue {
       const std::string& id,
       PendingMessage&& pending_message);
 
+  // Sets the initial ID of the session initiate message.
+  void SetInitialId(const std::string& id);
+
  private:
   // Implements an ordered list by using map with the |sequence_id| as the key,
   // so that |queue_| is always sorted by |sequence_id|.
@@ -161,6 +164,12 @@ JingleSession::OrderedMessageQueue::OnIncomingMessage(
   }
   return result;
 };
+
+void JingleSession::OrderedMessageQueue::SetInitialId(const std::string& id) {
+  int current = GetSequentialId(id);
+  if (current != kInvalid)
+    next_incoming_ = current + 1;
+}
 
 JingleSession::PendingMessage::PendingMessage() = default;
 JingleSession::PendingMessage::PendingMessage(PendingMessage&& moved) = default;
@@ -224,6 +233,7 @@ void JingleSession::StartConnection(
 }
 
 void JingleSession::InitializeIncomingConnection(
+    const std::string& message_id,
     const JingleMessage& initiate_message,
     std::unique_ptr<Authenticator> authenticator) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -234,6 +244,7 @@ void JingleSession::InitializeIncomingConnection(
   peer_address_ = initiate_message.from;
   authenticator_ = std::move(authenticator);
   session_id_ = initiate_message.sid;
+  message_queue_->SetInitialId(message_id);
 
   SetState(ACCEPTING);
 
