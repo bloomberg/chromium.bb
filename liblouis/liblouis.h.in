@@ -99,10 +99,9 @@ typedef enum {
   comp8Dots = 8,
   pass1Only = 16,
   compbrlLeftCursor = 32,
-  otherTrans = 64,
-  ucBrl = 128,
-  noUndefinedDots = 256,
-  partialTrans = 512
+  ucBrl = 64,
+  noUndefinedDots = 128,
+  partialTrans = 256
 } translationModes;
 
 LIBLOUIS_API
