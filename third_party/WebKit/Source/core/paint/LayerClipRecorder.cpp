@@ -16,15 +16,16 @@
 namespace blink {
 
 LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
-                                     const LayoutBoxModelObject& layout_object,
+                                     const PaintLayer& paint_layer,
                                      DisplayItem::Type clip_type,
                                      const ClipRect& clip_rect,
                                      const PaintLayer* clip_root,
                                      const LayoutPoint& fragment_offset,
                                      PaintLayerFlags paint_flags,
+                                     const DisplayItemClient& client,
                                      BorderRadiusClippingRule rule)
     : graphics_context_(graphics_context),
-      layout_object_(layout_object),
+      client_(client),
       clip_type_(clip_type) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
@@ -34,16 +35,16 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
        paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase);
   Vector<FloatRoundedRect> rounded_rects;
   if (clip_root && (clip_rect.HasRadius() || painting_masks)) {
-    CollectRoundedRectClips(*layout_object.Layer(), clip_root, fragment_offset,
+    CollectRoundedRectClips(paint_layer, clip_root, fragment_offset,
                             painting_masks, rule, rounded_rects);
   }
 
   graphics_context_.GetPaintController().CreateAndAppend<ClipDisplayItem>(
-      layout_object, clip_type_, snapped_clip_rect, rounded_rects);
+      client_, clip_type_, snapped_clip_rect, rounded_rects);
 }
 
-static bool InContainingBlockChain(PaintLayer* start_layer,
-                                   PaintLayer* end_layer) {
+static bool InContainingBlockChain(const PaintLayer* start_layer,
+                                   const PaintLayer* end_layer) {
   if (start_layer == end_layer)
     return true;
 
@@ -60,7 +61,7 @@ static bool InContainingBlockChain(PaintLayer* start_layer,
 }
 
 void LayerClipRecorder::CollectRoundedRectClips(
-    PaintLayer& paint_layer,
+    const PaintLayer& paint_layer,
     const PaintLayer* clip_root,
     const LayoutPoint& offset_within_layer,
     bool cross_composited_scrollers,
@@ -70,9 +71,9 @@ void LayerClipRecorder::CollectRoundedRectClips(
   // up our layer chain applying the clips from any layers with overflow. The
   // condition for being able to apply these clips is that the overflow object
   // be in our containing block chain so we check that also.
-  for (PaintLayer* layer = rule == kIncludeSelfForBorderRadius
-                               ? &paint_layer
-                               : paint_layer.Parent();
+  for (const PaintLayer* layer = rule == kIncludeSelfForBorderRadius
+                                     ? &paint_layer
+                                     : paint_layer.Parent();
        layer; layer = layer->Parent()) {
     // Composited scrolling layers handle border-radius clip in the compositor
     // via a mask layer. We do not want to apply a border-radius clip to the
@@ -109,7 +110,7 @@ LayerClipRecorder::~LayerClipRecorder() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   graphics_context_.GetPaintController().EndItem<EndClipDisplayItem>(
-      layout_object_, DisplayItem::ClipTypeToEndClipType(clip_type_));
+      client_, DisplayItem::ClipTypeToEndClipType(clip_type_));
 }
 
 }  // namespace blink

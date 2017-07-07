@@ -6,6 +6,7 @@
 
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
@@ -780,10 +781,11 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
         clip_rect_for_fragment.MoveBy(fragment.pagination_offset);
       clip_rect_for_fragment.Intersect(fragment.background_rect);
       if (NeedsToClip(painting_info, clip_rect_for_fragment, paint_flags)) {
-        clip_recorder.emplace(context, parent_layer->GetLayoutObject(),
+        clip_recorder.emplace(context, *parent_layer,
                               DisplayItem::kClipLayerParent,
                               clip_rect_for_fragment, painting_info.root_layer,
-                              fragment.pagination_offset, paint_flags);
+                              fragment.pagination_offset, paint_flags,
+                              parent_layer->GetLayoutObject());
       }
     }
     if (PaintFragmentByApplyingTransform(context, painting_info, paint_flags,
@@ -924,11 +926,11 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
     Optional<LayerClipRecorder> clip_recorder;
     if (NeedsToClip(local_painting_info, fragment.background_rect,
                     paint_flags)) {
-      clip_recorder.emplace(context, paint_layer_.GetLayoutObject(),
-                            DisplayItem::kClipLayerOverflowControls,
-                            fragment.background_rect,
-                            local_painting_info.root_layer,
-                            fragment.pagination_offset, paint_flags);
+      clip_recorder.emplace(
+          context, paint_layer_, DisplayItem::kClipLayerOverflowControls,
+          fragment.background_rect, local_painting_info.root_layer,
+          fragment.pagination_offset, paint_flags,
+          paint_layer_.GetLayoutObject());
     }
 
     Optional<ScrollRecorder> scroll_recorder;
@@ -959,6 +961,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
     ClipState clip_state) {
   DCHECK(paint_layer_.IsSelfPaintingLayer());
 
+  DisplayItemClient* client = &paint_layer_.GetLayoutObject();
   Optional<LayerClipRecorder> clip_recorder;
   if (clip_state != kHasClipped && painting_info.clip_to_dirty_rect &&
       (NeedsToClip(painting_info, clip_rect, paint_flags) ||
@@ -978,6 +981,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
           // The ancestor is the thing that needs to clip, so do not include
           // this layer's clips.
           clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
+          // The ancestor clipping mask may have a larger visual rect than
+          // paint_layer_, since it includes ancestor clips.
+          client = paint_layer_.GetCompositedLayerMapping()
+                       ->AncestorClippingMaskLayer();
           break;
         }
       default:
@@ -985,10 +992,9 @@ void PaintLayerPainter::PaintFragmentWithPhase(
         break;
     }
 
-    clip_recorder.emplace(context, paint_layer_.GetLayoutObject(), clip_type,
-                          clip_rect, painting_info.root_layer,
-                          fragment.pagination_offset, paint_flags,
-                          clipping_rule);
+    clip_recorder.emplace(context, paint_layer_, clip_type, clip_rect,
+                          painting_info.root_layer, fragment.pagination_offset,
+                          paint_flags, *client, clipping_rule);
   }
 
   // If we are painting a mask for any reason and we have already processed the
@@ -996,7 +1002,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   // We know that the mask just needs the area bounded by the clip rects to be
   // filled with black.
   if (clip_recorder && phase == kPaintPhaseClippingMask) {
-    FillMaskingFragment(context, clip_rect);
+    FillMaskingFragment(context, clip_rect, *client);
     return;
   }
 
@@ -1063,11 +1069,11 @@ void PaintLayerPainter::PaintForegroundForFragments(
   if (should_clip &&
       NeedsToClip(local_painting_info, layer_fragments[0].foreground_rect,
                   paint_flags)) {
-    clip_recorder.emplace(context, paint_layer_.GetLayoutObject(),
-                          DisplayItem::kClipLayerForeground,
-                          layer_fragments[0].foreground_rect,
-                          local_painting_info.root_layer,
-                          layer_fragments[0].pagination_offset, paint_flags);
+    clip_recorder.emplace(
+        context, paint_layer_, DisplayItem::kClipLayerForeground,
+        layer_fragments[0].foreground_rect, local_painting_info.root_layer,
+        layer_fragments[0].pagination_offset, paint_flags,
+        paint_layer_.GetLayoutObject());
     clip_state = kHasClipped;
   }
 
@@ -1226,15 +1232,15 @@ void PaintLayerPainter::PaintOverlayScrollbars(
 }
 
 void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
-                                            const ClipRect& clip_rect) {
-  const LayoutObject& layout_object = paint_layer_.GetLayoutObject();
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          context, layout_object, kPaintPhaseClippingMask))
+                                            const ClipRect& clip_rect,
+                                            const DisplayItemClient& client) {
+  DisplayItem::Type type =
+      DisplayItem::PaintPhaseToDrawingType(kPaintPhaseClippingMask);
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
     return;
 
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-  LayoutObjectDrawingRecorder drawing_recorder(
-      context, layout_object, kPaintPhaseClippingMask, snapped_clip_rect);
+  DrawingRecorder drawing_recorder(context, client, type, snapped_clip_rect);
   context.FillRect(snapped_clip_rect, Color::kBlack);
 }
 
