@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
@@ -21,7 +20,6 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-struct EmbeddedWorkerSettings;
 class SiteInstance;
 
 // Interacts with the UI thread to keep RenderProcessHosts alive while the
@@ -40,10 +38,6 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
     // ServiceWorkerProcessManager's list of known processes.
     // TODO(falken): Fix this.
     bool is_new_process;
-    // Contains known settings for this worker. Currently the caller
-    // should only use |data_saver_enabled| since |v8_cache_options|
-    // remains uninitialized.
-    EmbeddedWorkerSettings settings;
   };
 
   // |*this| must be owned by a ServiceWorkerContextWrapper in a
@@ -52,6 +46,9 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
   // Shutdown must be called before the ProcessManager is destroyed.
   ~ServiceWorkerProcessManager();
+
+  // Called on the UI thread.
+  BrowserContext* browser_context();
 
   // Synchronously prevents new processes from being allocated
   // and drops references to RenderProcessHosts. Called on the UI thread.

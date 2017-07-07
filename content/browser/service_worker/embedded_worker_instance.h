@@ -55,19 +55,20 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // This enum is used in UMA histograms. Append-only.
   enum StartingPhase {
-    NOT_STARTING,
-    ALLOCATING_PROCESS,
-    REGISTERING_TO_DEVTOOLS,  // Obsolete
-    SENT_START_WORKER,
-    SCRIPT_DOWNLOADING,
-    SCRIPT_LOADED,
-    SCRIPT_EVALUATED,
-    THREAD_STARTED,  // Happens after SCRIPT_LOADED and before SCRIPT_EVALUATED
+    NOT_STARTING = 0,
+    ALLOCATING_PROCESS = 1,
+    // REGISTERING_TO_DEVTOOLS = 2,  // Obsolete
+    SENT_START_WORKER = 3,
+    SCRIPT_DOWNLOADING = 4,
+    SCRIPT_LOADED = 5,
+    SCRIPT_EVALUATED = 6,
+    // THREAD_STARTED happens after SCRIPT_LOADED and before SCRIPT_EVALUATED
+    THREAD_STARTED = 7,
     // Script read happens after SENT_START_WORKER and before SCRIPT_LOADED
     // (installed scripts only)
-    SCRIPT_READ_STARTED,
-    SCRIPT_READ_FINISHED,
-    SCRIPT_STREAMING,
+    SCRIPT_READ_STARTED = 8,
+    SCRIPT_READ_FINISHED = 9,
+    SCRIPT_STREAMING = 10,
     // Add new values here.
     STARTING_PHASE_MAX_VALUE,
   };

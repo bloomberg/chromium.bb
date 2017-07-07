@@ -13,10 +13,8 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_client.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -68,6 +66,13 @@ ServiceWorkerProcessManager::~ServiceWorkerProcessManager() {
   // Temporary checks to verify that ServiceWorkerProcessManager doesn't prevent
   // render process hosts from shutting down: crbug.com/639193
   CHECK(instance_info_.empty());
+}
+
+BrowserContext* ServiceWorkerProcessManager::browser_context() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // This is safe because reading |browser_context_| on the UI thread doesn't
+  // need locking (while modifying does).
+  return browser_context_;
 }
 
 void ServiceWorkerProcessManager::Shutdown() {
@@ -163,11 +168,6 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
 
   out_info->process_id = ChildProcessHost::kInvalidUniqueID;
   out_info->is_new_process = false;
-  // Only populate |data_saver_enabled|. In general, this function will populate
-  // settings from prefs, while the caller will be responsible for populating
-  // settings from other sources, such as command line switches.
-  out_info->settings.data_saver_enabled =
-      GetContentClient()->browser()->IsDataSaverEnabled(browser_context_);
 
   if (process_id_for_test_ != ChildProcessHost::kInvalidUniqueID) {
     // Let tests specify the returned process ID. Note: We may need to be able
