@@ -24,6 +24,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/alsa/alsa_wrapper.h"
+#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
 #include "chromecast/media/cma/backend/alsa/filter_group.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
@@ -277,7 +278,7 @@ void StreamMixerAlsa::CreatePostProcessors(
           << "media/audio/audio_device_description.cc";
       CHECK(used_streams.insert(stream_type).second)
           << "Multiple instances of stream type '" << stream_type << "' in "
-          << pipeline_parser->GetFilePath() << ".";
+          << kCastAudioJsonFilePath << ".";
     }
     filter_groups_.push_back(base::MakeUnique<FilterGroup>(
         kNumInputChannels, false /* mono_mixer */,
@@ -1086,10 +1087,10 @@ void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
 }
 
 void StreamMixerAlsa::SetPostProcessorConfig(const std::string& name,
-                                             const std::string& message) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetPostProcessorConfig, name, message);
+                                             const std::string& config) {
+  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetPostProcessorConfig, name, config);
   for (auto&& filter_group : filter_groups_) {
-    filter_group->SetPostProcessorConfig(name, message);
+    filter_group->SetPostProcessorConfig(name, config);
   }
 }
 

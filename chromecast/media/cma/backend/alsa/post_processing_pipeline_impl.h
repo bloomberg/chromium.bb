@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
+#include "chromecast/media/cma/backend/alsa/post_processor_factory.h"
 
 namespace base {
 class ListValue;
-class ScopedNativeLibrary;
 }  // namespace base
 
 namespace chromecast {
@@ -44,6 +44,13 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
                               const std::string& config) override;
 
  private:
+  // Note: typedef is used to silence chromium-style mandatory constructor in
+  // structs.
+  typedef struct {
+    std::unique_ptr<AudioPostProcessor> ptr;
+    std::string name;
+  } PostProcessorInfo;
+
   int GetRingingTimeInFrames();
   void UpdateCastVolume(float multiplier);
 
@@ -55,17 +62,8 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   float current_multiplier_;
   float cast_volume_;
 
-  // Contains all libraries in use;
-  // Functions in shared objects cannot be used once library is closed.
-  std::vector<std::unique_ptr<base::ScopedNativeLibrary>> libraries_;
-
-  // Must be after libraries_
-  // Note: typedef is used to silence chromium-style mandatory constructor in
-  // structs.
-  typedef struct {
-    std::unique_ptr<AudioPostProcessor> ptr;
-    std::string name;
-  } PostProcessorInfo;
+  // factory_ keeps shared libraries open, so it must outlive processors_.
+  PostProcessorFactory factory_;
 
   std::vector<PostProcessorInfo> processors_;
 

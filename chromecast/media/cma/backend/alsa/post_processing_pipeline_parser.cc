@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/audio_device_ids.h"
+#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
 #include "media/audio/audio_device_description.h"
 
 namespace chromecast {
@@ -26,8 +27,6 @@ const char kStreamsKey[] = "streams";
 
 }  // namespace
 
-const char kCastAudioConfigFilePath[] = "/etc/cast_audio.json";
-
 StreamPipelineDescriptor::StreamPipelineDescriptor(
     const base::ListValue* pipeline_in,
     const std::unordered_set<std::string>& stream_types_in)
@@ -43,20 +42,20 @@ PostProcessingPipelineParser::PostProcessingPipelineParser(
     const std::string& json)
     : postprocessor_config_(nullptr) {
   if (json.empty() &&
-      !base::PathExists(base::FilePath(kCastAudioConfigFilePath))) {
+      !base::PathExists(base::FilePath(kCastAudioJsonFilePath))) {
     LOG(WARNING) << "Could not open post-processing config in "
-                 << kCastAudioConfigFilePath << ".";
+                 << kCastAudioJsonFilePath << ".";
     return;
   }
 
   if (json.empty()) {
     config_dict_ = base::DictionaryValue::From(
-        DeserializeJsonFromFile(base::FilePath(kCastAudioConfigFilePath)));
+        DeserializeJsonFromFile(base::FilePath(kCastAudioJsonFilePath)));
   } else {
     config_dict_ = base::DictionaryValue::From(DeserializeFromJson(json));
   }
 
-  CHECK(config_dict_) << "Invalid JSON in " << kCastAudioConfigFilePath;
+  CHECK(config_dict_) << "Invalid JSON in " << kCastAudioJsonFilePath;
   if (!config_dict_->GetDictionary(kPostProcessorsKey,
                                    &postprocessor_config_)) {
     LOG(WARNING) << "No post-processor config found.";
@@ -98,10 +97,6 @@ PostProcessingPipelineParser::GetStreamPipelines() {
   return descriptors;
 }
 
-std::string PostProcessingPipelineParser::GetFilePath() {
-  return kCastAudioConfigFilePath;
-}
-
 const base::ListValue* PostProcessingPipelineParser::GetMixPipeline() {
   return GetPipelineByKey(kMixPipelineKey);
 }
@@ -116,7 +111,7 @@ const base::ListValue* PostProcessingPipelineParser::GetPipelineByKey(
   if (!postprocessor_config_ ||
       !postprocessor_config_->GetDictionary(key, &stream_dict)) {
     LOG(WARNING) << "No post-processor description found for \"" << key
-                 << "\" in " << kCastAudioConfigFilePath
+                 << "\" in " << kCastAudioJsonFilePath
                  << ". Using passthrough.";
     return nullptr;
   }
