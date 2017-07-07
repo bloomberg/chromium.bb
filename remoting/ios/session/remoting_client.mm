@@ -192,34 +192,68 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
                     error:(remoting::protocol::ErrorCode)error {
   switch (state) {
     case remoting::protocol::ConnectionToHost::INITIALIZING:
-      NSLog(@"State --> INITIALIZING");
       _sessionDetails.state = SessionInitializing;
       break;
     case remoting::protocol::ConnectionToHost::CONNECTING:
-      NSLog(@"State --> CONNECTING");
       _sessionDetails.state = SessionConnecting;
       break;
     case remoting::protocol::ConnectionToHost::AUTHENTICATED:
-      NSLog(@"State --> AUTHENTICATED");
       _sessionDetails.state = SessionAuthenticated;
       break;
     case remoting::protocol::ConnectionToHost::CONNECTED:
-      NSLog(@"State --> CONNECTED");
       _sessionDetails.state = SessionConnected;
       break;
     case remoting::protocol::ConnectionToHost::FAILED:
-      NSLog(@"State --> FAILED");
       _sessionDetails.state = SessionFailed;
       break;
     case remoting::protocol::ConnectionToHost::CLOSED:
-      NSLog(@"State --> CLOSED");
       _sessionDetails.state = SessionClosed;
       break;
     default:
       LOG(ERROR) << "onConnectionState, unknown state: " << state;
   }
 
-  // TODO(nicholss): Send along the error code when we know what to do about it.
+  switch (error) {
+    case remoting::protocol::ErrorCode::OK:
+      _sessionDetails.error = SessionErrorOk;
+      break;
+    case remoting::protocol::ErrorCode::PEER_IS_OFFLINE:
+      _sessionDetails.error = SessionErrorPeerIsOffline;
+      break;
+    case remoting::protocol::ErrorCode::SESSION_REJECTED:
+      _sessionDetails.error = SessionErrorSessionRejected;
+      break;
+    case remoting::protocol::ErrorCode::INCOMPATIBLE_PROTOCOL:
+      _sessionDetails.error = SessionErrorIncompatibleProtocol;
+      break;
+    case remoting::protocol::ErrorCode::AUTHENTICATION_FAILED:
+      _sessionDetails.error = SessionErrorAuthenticationFailed;
+      break;
+    case remoting::protocol::ErrorCode::INVALID_ACCOUNT:
+      _sessionDetails.error = SessionErrorInvalidAccount;
+      break;
+    case remoting::protocol::ErrorCode::CHANNEL_CONNECTION_ERROR:
+      _sessionDetails.error = SessionErrorChannelConnectionError;
+      break;
+    case remoting::protocol::ErrorCode::SIGNALING_ERROR:
+      _sessionDetails.error = SessionErrorSignalingError;
+      break;
+    case remoting::protocol::ErrorCode::SIGNALING_TIMEOUT:
+      _sessionDetails.error = SessionErrorSignalingTimeout;
+      break;
+    case remoting::protocol::ErrorCode::HOST_OVERLOAD:
+      _sessionDetails.error = SessionErrorHostOverload;
+      break;
+    case remoting::protocol::ErrorCode::MAX_SESSION_LENGTH:
+      _sessionDetails.error = SessionErrorMaxSessionLength;
+      break;
+    case remoting::protocol::ErrorCode::HOST_CONFIGURATION_ERROR:
+      _sessionDetails.error = SessionErrorHostConfigurationError;
+    case remoting::protocol::ErrorCode::UNKNOWN_ERROR:
+      _sessionDetails.error = SessionErrorUnknownError;
+      break;
+  }
+
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kHostSessionStatusChanged
                     object:self

@@ -22,6 +22,23 @@ typedef NS_ENUM(NSInteger, SessionState) {
   SessionClosed,
 };
 
+// Session states that map to |remoting::protocol::ConnectionToHost::Error|.
+typedef NS_ENUM(NSInteger, SessionErrorCode) {
+  SessionErrorOk = 0,
+  SessionErrorPeerIsOffline,
+  SessionErrorSessionRejected,
+  SessionErrorIncompatibleProtocol,
+  SessionErrorAuthenticationFailed,
+  SessionErrorInvalidAccount,
+  SessionErrorChannelConnectionError,
+  SessionErrorSignalingError,
+  SessionErrorSignalingTimeout,
+  SessionErrorHostOverload,
+  SessionErrorMaxSessionLength,
+  SessionErrorHostConfigurationError,
+  SessionErrorUnknownError,
+};
+
 // The current state of a session and data needed for session context.
 @interface ClientSessionDetails : NSObject
 
@@ -29,6 +46,8 @@ typedef NS_ENUM(NSInteger, SessionState) {
 @property(nonatomic) HostInfo* hostInfo;
 // The current state of the session.
 @property(nonatomic, assign) SessionState state;
+// The error assoiciated to the current state.
+@property(nonatomic, assign) SessionErrorCode error;
 
 @end
 

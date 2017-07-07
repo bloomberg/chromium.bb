@@ -20,6 +20,9 @@
 // passcode.
 @interface PinEntryView : UIView
 
+// Clears the pin entry view.
+- (void)clearPinEntry;
+
 // This delegate will handle interactions on the cells in the collection.
 @property(weak, nonatomic) id<PinEntryDelegate> delegate;
 
