@@ -2,7 +2,7 @@ rootWebArea
 ++textField
 ++++staticText name='Single line.'
 ++++++inlineTextBox name='Single line.'
-++textField
+++textField multiline
 ++++staticText name='Multiple'
 ++++++inlineTextBox name='Multiple'
 ++++lineBreak name='<newline>'

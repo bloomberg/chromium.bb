@@ -1,10 +1,10 @@
 rootWebArea
-++genericContainer editable richlyEditable
+++genericContainer editable multiline richlyEditable
 ++++paragraph editable richlyEditable
 ++++++staticText editable richlyEditable name='A contenteditable with a '
 ++++++++inlineTextBox name='A contenteditable with a '
-++++++link editable richlyEditable name='link'
-++++++++staticText editable richlyEditable name='link'
+++++++link editable linked richlyEditable name='link'
+++++++++staticText editable linked richlyEditable name='link'
 ++++++++++inlineTextBox name='link'
 ++++++staticText editable richlyEditable name=' and an '
 ++++++++inlineTextBox name=' and an '
@@ -29,6 +29,6 @@ rootWebArea
 ++paragraph
 ++++staticText name='Non-editable paragraph.'
 ++++++inlineTextBox name='Non-editable paragraph.'
-++paragraph editable richlyEditable
+++paragraph editable multiline richlyEditable
 ++++staticText editable richlyEditable name='Should keep the role but change the state.'
 ++++++inlineTextBox name='Should keep the role but change the state.'

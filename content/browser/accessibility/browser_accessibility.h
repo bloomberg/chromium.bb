@@ -99,6 +99,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const BrowserAccessibility* ancestor) const;
 
+  bool IsDocument() const;
+
+  bool IsEditField() const;
+
   // Returns true if this object is used only for representing text.
   bool IsTextOnlyObject() const;
 
