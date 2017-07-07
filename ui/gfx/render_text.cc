@@ -105,11 +105,11 @@ void AddFadeEffect(const Rect& text_rect,
 
 // Creates a SkShader to fade the text, with |left_part| specifying the left
 // fade effect, if any, and |right_part| specifying the right fade effect.
-std::unique_ptr<cc::PaintShader> CreateFadeShader(const FontList& font_list,
-                                                  const Rect& text_rect,
-                                                  const Rect& left_part,
-                                                  const Rect& right_part,
-                                                  SkColor color) {
+sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
+                                        const Rect& text_rect,
+                                        const Rect& left_part,
+                                        const Rect& right_part,
+                                        SkColor color) {
   // The shader should only specify transparency of the fade itself, not the
   // original transparency, which will be applied by the actual renderer.
   DCHECK_EQ(SkColorGetA(color), static_cast<uint8_t>(0xff));
@@ -224,7 +224,7 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   flags_.setColor(foreground);
 }
 
-void SkiaTextRenderer::SetShader(std::unique_ptr<cc::PaintShader> shader) {
+void SkiaTextRenderer::SetShader(sk_sp<cc::PaintShader> shader) {
   flags_.setShader(std::move(shader));
 }
 

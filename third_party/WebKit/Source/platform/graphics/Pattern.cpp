@@ -59,7 +59,7 @@ void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
   if (!cached_shader_ || IsLocalMatrixChanged(local_matrix))
     cached_shader_ = CreateShader(local_matrix);
 
-  flags.setShader(WTF::MakeUnique<PaintShader>(*cached_shader_));
+  flags.setShader(cached_shader_);
 }
 
 bool Pattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {

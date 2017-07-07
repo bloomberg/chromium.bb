@@ -10,42 +10,40 @@
 
 namespace cc {
 
-std::unique_ptr<PaintShader> PaintShader::MakeColor(SkColor color) {
-  return base::WrapUnique(new PaintShader(nullptr, color));
+sk_sp<PaintShader> PaintShader::MakeColor(SkColor color) {
+  return sk_sp<PaintShader>(new PaintShader(nullptr, color));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakeLinearGradient(
-    const SkPoint points[],
-    const SkColor colors[],
-    const SkScalar pos[],
-    int count,
-    SkShader::TileMode mode,
-    uint32_t flags,
-    const SkMatrix* local_matrix,
-    SkColor fallback_color) {
-  return base::WrapUnique(
+sk_sp<PaintShader> PaintShader::MakeLinearGradient(const SkPoint points[],
+                                                   const SkColor colors[],
+                                                   const SkScalar pos[],
+                                                   int count,
+                                                   SkShader::TileMode mode,
+                                                   uint32_t flags,
+                                                   const SkMatrix* local_matrix,
+                                                   SkColor fallback_color) {
+  return sk_sp<PaintShader>(
       new PaintShader(SkGradientShader::MakeLinear(points, colors, pos, count,
                                                    mode, flags, local_matrix),
                       fallback_color));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakeRadialGradient(
-    const SkPoint& center,
-    SkScalar radius,
-    const SkColor colors[],
-    const SkScalar pos[],
-    int color_count,
-    SkShader::TileMode mode,
-    uint32_t flags,
-    const SkMatrix* local_matrix,
-    SkColor fallback_color) {
-  return base::WrapUnique(new PaintShader(
+sk_sp<PaintShader> PaintShader::MakeRadialGradient(const SkPoint& center,
+                                                   SkScalar radius,
+                                                   const SkColor colors[],
+                                                   const SkScalar pos[],
+                                                   int color_count,
+                                                   SkShader::TileMode mode,
+                                                   uint32_t flags,
+                                                   const SkMatrix* local_matrix,
+                                                   SkColor fallback_color) {
+  return sk_sp<PaintShader>(new PaintShader(
       SkGradientShader::MakeRadial(center, radius, colors, pos, color_count,
                                    mode, flags, local_matrix),
       fallback_color));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakeTwoPointConicalGradient(
+sk_sp<PaintShader> PaintShader::MakeTwoPointConicalGradient(
     const SkPoint& start,
     SkScalar start_radius,
     const SkPoint& end,
@@ -57,44 +55,41 @@ std::unique_ptr<PaintShader> PaintShader::MakeTwoPointConicalGradient(
     uint32_t flags,
     const SkMatrix* local_matrix,
     SkColor fallback_color) {
-  return base::WrapUnique(
+  return sk_sp<PaintShader>(
       new PaintShader(SkGradientShader::MakeTwoPointConical(
                           start, start_radius, end, end_radius, colors, pos,
                           color_count, mode, flags, local_matrix),
                       fallback_color));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakeSweepGradient(
-    SkScalar cx,
-    SkScalar cy,
-    const SkColor colors[],
-    const SkScalar pos[],
-    int color_count,
-    uint32_t flags,
-    const SkMatrix* local_matrix,
-    SkColor fallback_color) {
-  return base::WrapUnique(new PaintShader(
+sk_sp<PaintShader> PaintShader::MakeSweepGradient(SkScalar cx,
+                                                  SkScalar cy,
+                                                  const SkColor colors[],
+                                                  const SkScalar pos[],
+                                                  int color_count,
+                                                  uint32_t flags,
+                                                  const SkMatrix* local_matrix,
+                                                  SkColor fallback_color) {
+  return sk_sp<PaintShader>(new PaintShader(
       SkGradientShader::MakeSweep(cx, cy, colors, pos, color_count, flags,
                                   local_matrix),
       fallback_color));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakeImage(
-    sk_sp<const SkImage> image,
-    SkShader::TileMode tx,
-    SkShader::TileMode ty,
-    const SkMatrix* local_matrix) {
-  return base::WrapUnique(new PaintShader(
+sk_sp<PaintShader> PaintShader::MakeImage(sk_sp<const SkImage> image,
+                                          SkShader::TileMode tx,
+                                          SkShader::TileMode ty,
+                                          const SkMatrix* local_matrix) {
+  return sk_sp<PaintShader>(new PaintShader(
       image->makeShader(tx, ty, local_matrix), SK_ColorTRANSPARENT));
 }
 
-std::unique_ptr<PaintShader> PaintShader::MakePaintRecord(
-    sk_sp<PaintRecord> record,
-    const SkRect& tile,
-    SkShader::TileMode tx,
-    SkShader::TileMode ty,
-    const SkMatrix* local_matrix) {
-  return base::WrapUnique(new PaintShader(
+sk_sp<PaintShader> PaintShader::MakePaintRecord(sk_sp<PaintRecord> record,
+                                                const SkRect& tile,
+                                                SkShader::TileMode tx,
+                                                SkShader::TileMode ty,
+                                                const SkMatrix* local_matrix) {
+  return sk_sp<PaintShader>(new PaintShader(
       SkShader::MakePictureShader(ToSkPicture(std::move(record), tile), tx, ty,
                                   local_matrix, nullptr),
       SK_ColorTRANSPARENT));
@@ -105,11 +100,7 @@ PaintShader::PaintShader(sk_sp<SkShader> shader, SkColor fallback_color)
                         : SkShader::MakeColorShader(fallback_color)) {
   DCHECK(sk_shader_);
 }
-PaintShader::PaintShader(const PaintShader& other) = default;
-PaintShader::PaintShader(PaintShader&& other) = default;
-PaintShader::~PaintShader() = default;
 
-PaintShader& PaintShader::operator=(const PaintShader& other) = default;
-PaintShader& PaintShader::operator=(PaintShader&& other) = default;
+PaintShader::~PaintShader() = default;
 
 }  // namespace cc
