@@ -13,36 +13,16 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_cryptohome_client.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::Invoke;
-using testing::WithArg;
-
 namespace cryptohome {
-
-namespace {
-
-MATCHER_P(EqualsProto, expected_proto, "") {
-  std::string expected_value;
-  expected_proto.SerializeToString(&expected_value);
-  std::string actual_value;
-  arg.SerializeToString(&actual_value);
-  return actual_value == expected_value;
-}
-
-MATCHER_P(EqualsIdentification, expected_identification, "") {
-  return arg == expected_identification;
-}
-
-}  // namespace
 
 const char kUserID[] = "user@example.com";
 const char kKeyLabel[] = "key_label";
@@ -55,93 +35,32 @@ const char kProviderData2Bytes[] = "data_2 bytes";
 
 class HomedirMethodsTest : public testing::Test {
  public:
-  HomedirMethodsTest();
-  ~HomedirMethodsTest() override;
+  HomedirMethodsTest() = default;
+  ~HomedirMethodsTest() override = default;
 
   // testing::Test:
-  void SetUp() override;
-  void TearDown() override;
+  void SetUp() override {
+    chromeos::DBusThreadManager::Initialize();
+    HomedirMethods::Initialize();
+  }
 
-  void RunProtobufMethodCallback(
-      const chromeos::CryptohomeClient::ProtobufMethodCallback& callback);
-
-  void StoreGetKeyDataExResult(
-      bool success,
-      MountError return_code,
-      const std::vector<KeyDefinition>& key_definitions);
+  void TearDown() override {
+    HomedirMethods::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+  }
 
  protected:
-  chromeos::MockCryptohomeClient* cryptohome_client_;
-
-  // The reply that |cryptohome_client_| will make.
-  BaseReply cryptohome_reply_;
-
-  // The results of the most recent |HomedirMethods| method call.
-  bool success_;
-  MountError return_code_;
-  std::vector<KeyDefinition> key_definitions_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HomedirMethodsTest);
 };
 
-HomedirMethodsTest::HomedirMethodsTest() : cryptohome_client_(NULL),
-                                           success_(false),
-                                           return_code_(MOUNT_ERROR_FATAL) {
-}
-
-HomedirMethodsTest::~HomedirMethodsTest() {
-}
-
-void HomedirMethodsTest::SetUp() {
-  std::unique_ptr<chromeos::MockCryptohomeClient> cryptohome_client(
-      new chromeos::MockCryptohomeClient);
-  cryptohome_client_ = cryptohome_client.get();
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-      std::move(cryptohome_client));
-  HomedirMethods::Initialize();
-}
-
-void HomedirMethodsTest::TearDown() {
-  HomedirMethods::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
-}
-
-void HomedirMethodsTest::RunProtobufMethodCallback(
-    const chromeos::CryptohomeClient::ProtobufMethodCallback& callback) {
-  callback.Run(chromeos::DBUS_METHOD_CALL_SUCCESS,
-               true,
-               cryptohome_reply_);
-}
-
-void HomedirMethodsTest::StoreGetKeyDataExResult(
-    bool success,
-    MountError return_code,
-    const std::vector<KeyDefinition>& key_definitions) {
-  success_ = success;
-  return_code_ = return_code;
-  key_definitions_ = key_definitions;
-}
-
 // Verifies that the result of a GetKeyDataEx() call is correctly parsed.
 TEST_F(HomedirMethodsTest, GetKeyDataEx) {
-  const Identification expected_id(AccountId::FromUserEmail(kUserID));
-  const AuthorizationRequest expected_auth;
-  GetKeyDataRequest expected_request;
-  expected_request.mutable_key()->mutable_data()->set_label(kKeyLabel);
-
-  EXPECT_CALL(*cryptohome_client_,
-              GetKeyDataEx(EqualsIdentification(expected_id),
-                           EqualsProto(expected_auth),
-                           EqualsProto(expected_request), _))
-      .Times(1)
-      .WillOnce(WithArg<3>(
-          Invoke(this, &HomedirMethodsTest::RunProtobufMethodCallback)));
-
-  // Set up the reply that |cryptohome_client_| will make.
-  GetKeyDataReply* reply =
-      cryptohome_reply_.MutableExtension(GetKeyDataReply::reply);
-  KeyData* key_data = reply->add_key_data();
+  // Set up the pseudo KeyData.
+  AddKeyRequest request;
+  KeyData* key_data = request.mutable_key()->mutable_data();
   key_data->set_type(KeyData::KEY_TYPE_PASSWORD);
   key_data->set_label(kKeyLabel);
   key_data->mutable_privileges()->set_update(false);
@@ -149,24 +68,37 @@ TEST_F(HomedirMethodsTest, GetKeyDataEx) {
   key_data->add_authorization_data()->set_type(
       KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
   KeyProviderData* data = key_data->mutable_provider_data();
-  KeyProviderData::Entry* entry = data->add_entry();
-  entry->set_name(kProviderData1Name);
-  entry->set_number(kProviderData1Number);
-  entry = data->add_entry();
-  entry->set_name(kProviderData2Name);
-  entry->set_bytes(kProviderData2Bytes);
+  KeyProviderData::Entry* entry1 = data->add_entry();
+  entry1->set_name(kProviderData1Name);
+  entry1->set_number(kProviderData1Number);
+  KeyProviderData::Entry* entry2 = data->add_entry();
+  entry2->set_name(kProviderData2Name);
+  entry2->set_bytes(kProviderData2Bytes);
+  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->AddKeyEx(
+      cryptohome::Identification(AccountId::FromUserEmail(kUserID)),
+      AuthorizationRequest(), request,
+      base::Bind([](chromeos::DBusMethodCallStatus call_status, bool result,
+                    const BaseReply& reply) { ASSERT_TRUE(result); }));
+  ASSERT_NO_FATAL_FAILURE(base::RunLoop().RunUntilIdle());
 
   // Call GetKeyDataEx().
+  std::vector<KeyDefinition> key_definitions;
   HomedirMethods::GetInstance()->GetKeyDataEx(
       Identification(AccountId::FromUserEmail(kUserID)), kKeyLabel,
-      base::Bind(&HomedirMethodsTest::StoreGetKeyDataExResult,
-                 base::Unretained(this)));
+      base::Bind(
+          [](std::vector<KeyDefinition>* out_key_definitions, bool success,
+             MountError return_code,
+             const std::vector<KeyDefinition>& key_definitions) {
+            EXPECT_TRUE(success);
+            EXPECT_EQ(MOUNT_ERROR_NONE, return_code);
+            *out_key_definitions = key_definitions;
+          },
+          &key_definitions));
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the call was successful and the result was correctly parsed.
-  EXPECT_TRUE(success_);
-  EXPECT_EQ(MOUNT_ERROR_NONE, return_code_);
-  ASSERT_EQ(1u, key_definitions_.size());
-  const KeyDefinition& key_definition = key_definitions_.front();
+  ASSERT_EQ(1u, key_definitions.size());
+  const KeyDefinition& key_definition = key_definitions.front();
   EXPECT_EQ(KeyDefinition::TYPE_PASSWORD, key_definition.type);
   EXPECT_EQ(PRIV_MOUNT | PRIV_ADD | PRIV_REMOVE,
             key_definition.privileges);
