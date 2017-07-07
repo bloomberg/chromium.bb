@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "google_apis/drive/drive_api_error_codes.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 
 class GURL;
 

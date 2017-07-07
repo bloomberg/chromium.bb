@@ -29,7 +29,6 @@ include_rules = [
   "+device/screen_orientation/public/interfaces",
   "+device/sensors",
   "+device/vr",  # For WebVR API
-  "+device/wake_lock/public/interfaces",
   # This can only be used on POSIX, in particular it mustn't be used on Windows
   # in the browser DLL.
   "+gin/v8_initializer.h",

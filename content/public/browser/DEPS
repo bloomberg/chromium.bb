@@ -1,7 +1,7 @@
 include_rules = [
   "+content/common/input/input_handler.mojom.h",
   "+device/screen_orientation/public/interfaces",
-  "+device/wake_lock/public/interfaces",
+  "+services/device/public/interfaces",
 ]
 
 specific_include_rules = {

@@ -15,11 +15,11 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_remoting_sender.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace cast {
 

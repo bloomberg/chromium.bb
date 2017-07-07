@@ -19,11 +19,11 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)

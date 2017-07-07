@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/wake_lock/wake_lock_for_testing.h"
+#include "services/device/wake_lock/wake_lock_for_testing.h"
 
 #include <utility>
 

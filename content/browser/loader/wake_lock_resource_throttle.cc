@@ -6,9 +6,9 @@
 
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

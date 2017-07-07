@@ -49,7 +49,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #endif
 
 namespace content {

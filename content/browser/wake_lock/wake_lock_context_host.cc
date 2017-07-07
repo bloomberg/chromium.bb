@@ -7,9 +7,9 @@
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

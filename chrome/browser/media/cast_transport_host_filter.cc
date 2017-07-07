@@ -13,10 +13,10 @@
 #include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "media/cast/net/cast_transport.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {

@@ -15,10 +15,9 @@ source_set("power") {
 
   deps = [
     "//content/public/common",
-    "//device/wake_lock/public/interfaces",
     "//extensions/common/api",
     "//mojo/public/cpp/bindings",
-    "//services/device/public/interfaces:constants",
+    "//services/device/public/interfaces",
   ]
 
   public_deps = [

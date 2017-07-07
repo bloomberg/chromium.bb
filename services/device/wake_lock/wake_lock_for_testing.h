@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/wake_lock.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/wake_lock/wake_lock.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace device {

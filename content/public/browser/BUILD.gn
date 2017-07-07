@@ -316,12 +316,11 @@ source_set("browser_sources") {
     "//cc",
     "//content/browser",  # Must not be public_deps!
     "//device/geolocation",
-    "//device/power_save_blocker",
-    "//device/wake_lock/public/interfaces",
     "//gpu",
     "//media",
     "//net",
     "//ppapi/c",
+    "//services/device/public/interfaces",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",

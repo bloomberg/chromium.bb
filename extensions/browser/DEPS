@@ -15,7 +15,6 @@ include_rules = [
   "+components/zoom",
   "+content/public/browser",
   "+device/bluetooth",
-  "+device/power_save_blocker",
   "+device/serial",
   "+device/usb",
   "+google_apis/gaia",

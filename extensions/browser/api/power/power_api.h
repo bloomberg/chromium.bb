@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/power.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace content {
 class BrowserContext;

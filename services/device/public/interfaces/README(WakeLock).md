@@ -1,4 +1,4 @@
-Provides the ability to block the device / display from sleeping.
+WakeLock provides the ability to block the device / display from sleeping.
 
 On Android, the implementation is inherently coupled to the NativeView
 associated with the context of the requestor due to system APIs. To handle

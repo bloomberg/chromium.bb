@@ -107,8 +107,8 @@
 
 #if defined(OS_MACOSX)
 #include "content/public/common/service_manager_connection.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif

@@ -18,7 +18,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace net {
 class HttpResponseHeaders;
