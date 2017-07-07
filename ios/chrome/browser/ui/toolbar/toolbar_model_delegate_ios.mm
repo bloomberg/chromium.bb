@@ -109,3 +109,7 @@ bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
 const gfx::VectorIcon* ToolbarModelDelegateIOS::GetVectorIconOverride() const {
   return nullptr;
 }
+
+bool ToolbarModelDelegateIOS::IsOfflinePage() const {
+  return false;
+}

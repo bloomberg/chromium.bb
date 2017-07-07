@@ -47,3 +47,7 @@ base::string16 TestToolbarModel::GetEVCertName() const {
 bool TestToolbarModel::ShouldDisplayURL() const {
   return should_display_url_;
 }
+
+bool TestToolbarModel::IsOfflinePage() const {
+  return offline_page_;
+}

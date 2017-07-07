@@ -60,6 +60,10 @@ class ToolbarModel {
   // in the location bar.
   virtual bool ShouldDisplayURL() const = 0;
 
+  // Returns whether the page is an offline page, sourced from a cache of
+  // previously-downloaded content.
+  virtual bool IsOfflinePage() const = 0;
+
   // Whether the text in the omnibox is currently being edited.
   void set_input_in_progress(bool input_in_progress) {
     input_in_progress_ = input_in_progress;

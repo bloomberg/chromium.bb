@@ -37,6 +37,7 @@ class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
+  bool IsOfflinePage() const override;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved. If this returns null, default values

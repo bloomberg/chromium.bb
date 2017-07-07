@@ -22,7 +22,9 @@ struct ToolbarState {
                security_state::SecurityLevel level,
                const gfx::VectorIcon* icon,
                base::string16 verbose_text,
-               bool display_url);
+               bool display_url,
+               bool offline);
+  ToolbarState(const ToolbarState& other);
 
   bool operator==(const ToolbarState& other) const;
   bool operator!=(const ToolbarState& other) const;
@@ -32,6 +34,7 @@ struct ToolbarState {
   const gfx::VectorIcon* vector_icon;
   base::string16 secure_verbose_text;
   bool should_display_url;
+  bool offline_page;
 };
 
 }  // namespace vr_shell
