@@ -302,7 +302,9 @@ cr.define('print_preview_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       printPreview = new print_preview.PrintPreview();
       previewArea = printPreview.getPreviewArea();
-      previewArea.setIsBrowserTest(true);
+      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
+      previewArea.plugin_.setLoadCallback(
+          previewArea.onPluginLoad_.bind(previewArea));
     });
 
     // Test some basic assumptions about the print preview WebUI.

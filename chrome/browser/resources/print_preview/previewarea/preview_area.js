@@ -172,11 +172,6 @@ cr.define('print_preview', function() {
      */
     this.openSystemDialogButton_ = null;
 
-    /**
-     * If this is in a browser test (fake plugin).
-     * @private {boolean}
-     */
-    this.isBrowserTest_ = false;
   }
 
   /**
@@ -605,8 +600,6 @@ cr.define('print_preview', function() {
      */
     onDocumentReady_: function(event) {
       this.isDocumentReady_ = true;
-      if (this.isBrowserTest_)
-        this.isPluginReloaded_ = true;
       this.dispatchPreviewGenerationDoneIfReady_();
     },
 
@@ -675,11 +668,6 @@ cr.define('print_preview', function() {
       // being draggable.
       this.plugin_.style.pointerEvents = isDragging ? 'none' : 'auto';
     },
-
-    /** @param {boolean} isTest Whether this instance is in a browser test. */
-    setIsBrowserTest: function(isTest) {
-      this.isBrowserTest_ = isTest;
-    }
   };
 
   // Export
