@@ -80,7 +80,6 @@ class CC_EXPORT VideoResourceUpdater {
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame);
 
-
  private:
   class PlaneResource {
    public:
