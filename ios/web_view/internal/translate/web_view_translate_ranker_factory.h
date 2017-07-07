@@ -39,6 +39,8 @@ class WebViewTranslateRankerFactory : public BrowserStateKeyedServiceFactory {
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
+  web::BrowserState* GetBrowserStateToUse(
+      web::BrowserState* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTranslateRankerFactory);
 };
