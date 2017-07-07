@@ -22,6 +22,7 @@ android_library("java") {
   java_files = [
     "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
     "java/src/org/chromium/components/signin/AccountManagerHelper.java",
+    "java/src/org/chromium/components/signin/AccountsChangeObserver.java",
     "java/src/org/chromium/components/signin/AuthException.java",
     "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
     "java/src/org/chromium/components/signin/ChromeSigninController.java",

@@ -13,11 +13,13 @@ import org.junit.Assert;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -44,6 +46,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     private final Context mContext;
     private final Set<AccountHolder> mAccounts = new HashSet<>();
+    private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
 
     @VisibleForTesting
     public FakeAccountManagerDelegate(Context context, Account... accounts) {
@@ -53,6 +56,16 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
                 mAccounts.add(AccountHolder.builder(account).alwaysAccept(true).build());
             }
         }
+    }
+
+    @Override
+    public void addObserver(AccountsChangeObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(AccountsChangeObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     @Override
@@ -90,6 +103,9 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     public void addAccountHolderExplicitly(AccountHolder accountHolder) {
         boolean added = mAccounts.add(accountHolder);
         Assert.assertTrue("Account was already added", added);
+        for (AccountsChangeObserver observer : mObservers) {
+            observer.onAccountsChanged();
+        }
     }
 
     /**
@@ -100,6 +116,9 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     public void removeAccountHolderExplicitly(AccountHolder accountHolder) {
         boolean removed = mAccounts.remove(accountHolder);
         Assert.assertTrue("Account was already added", removed);
+        for (AccountsChangeObserver observer : mObservers) {
+            observer.onAccountsChanged();
+        }
     }
 
     @Override
