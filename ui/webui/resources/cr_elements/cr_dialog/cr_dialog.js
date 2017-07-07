@@ -110,7 +110,8 @@ Polymer({
     var topMarker = this.$.bodyTopMarker;
 
     var callback = function(entries) {
-      assert(entries.length <= 2);
+      // In some rare cases, there could be more than one entry per observed
+      // element, in which case the last entry's result stands.
       for (var i = 0; i < entries.length; i++) {
         var target = entries[i].target;
         assert(target == bottomMarker || target == topMarker);
