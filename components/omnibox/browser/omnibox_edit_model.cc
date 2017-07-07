@@ -149,6 +149,7 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
     if (MaybePrependKeyword(display_text).empty()) {
       base::AutoReset<bool> tmp(&in_revert_, true);
       view_->RevertAll();
+      view_->SelectAll(true);
     } else {
       InternalSetUserText(display_text);
     }
@@ -369,8 +370,13 @@ void OmniboxEditModel::Revert() {
   keyword_.clear();
   is_keyword_hint_ = false;
   has_temporary_text_ = false;
+  size_t start, end;
+  view_->GetSelectionBounds(&start, &end);
+  // First home the cursor, so view of text is scrolled to left, then correct
+  // it. |SetCaretPos()| doesn't scroll the text, so doing that first wouldn't
+  // accomplish anything.
   view_->SetWindowTextAndCaretPos(permanent_text_, 0, false, true);
-  view_->SelectAll(true);
+  view_->SetCaretPos(std::min(permanent_text_.length(), start));
   client_->OnRevert();
 }
 
@@ -653,6 +659,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                               SEARCH_ENGINE_MAX);
   }
 
+  // Get the current text before we call RevertAll() which will clear it.
+  base::string16 current_text = view_->GetText();
+
   if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state.
@@ -928,6 +937,7 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // for ease of replacement, and matches other browsers.
   bool user_input_was_in_progress = user_input_in_progress_;
   view_->RevertAll();
+  view_->SelectAll(true);
 
   // If the user was in the midst of editing, don't cancel any underlying page
   // load.  This doesn't match IE or Firefox, but seems more correct.  Note that
