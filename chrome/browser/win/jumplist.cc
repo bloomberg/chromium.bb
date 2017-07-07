@@ -751,9 +751,6 @@ void JumpList::CreateNewJumpListAndNotifyOS(
   }
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  UMA_HISTOGRAM_COUNTS_100("WinJumplist.CreateIconFilesCount", icons_created);
-
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
 
   base::ElapsedTimer add_custom_category_timer;
@@ -864,9 +861,6 @@ int JumpList::CreateIconFiles(const base::FilePath& icon_dir,
                               const URLIconCache& icon_cur,
                               URLIconCache* icon_next) {
   DCHECK(icon_next);
-
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.CreateIconFilesDuration");
 
   int icons_created = 0;
 

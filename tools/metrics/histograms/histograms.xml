@@ -87667,6 +87667,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplist.CreateIconFilesCount">
+  <obsolete>
+    Obsolete 07/06/2017 as we are no long recording this metric.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
     The number of jumplist icons requested to create per jumplist update. It is
@@ -87675,6 +87678,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplist.CreateIconFilesDuration" units="ms">
+  <obsolete>
+    Obsolete 07/06/2017 as we are no long recording this metric.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
     Time spent in CreateIconFiles(). This method is called whenever there is a
@@ -87689,7 +87695,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WinJumplist.DeleteDirectoryDuration" units="ms">
   <obsolete>
-    Obsolete 04/25/2016 as we are no long recording this metric.
+    Obsolete 04/25/2017 as we are no long recording this metric.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in DeleteDirectoryAndLogResults().</summary>
@@ -87698,7 +87704,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DeleteStatusJumpListIcons"
     enum="JumplisticonsDeleteCategory">
   <obsolete>
-    Obsolete 04/25/2016 as we are no long recording this metric.
+    Obsolete 04/25/2017 as we are no long recording this metric.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
@@ -87709,7 +87715,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DeleteStatusJumpListIconsOld"
     enum="JumplisticonsDeleteCategory">
   <obsolete>
-    Obsolete 04/25/2016 as we are no long recording this metric.
+    Obsolete 04/25/2017 as we are no long recording this metric.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
@@ -87756,7 +87762,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DetailedFolderResultsDeleteUpdated"
     enum="JumplistIconsDetailedFolderOperationDeleteUpdatedCategory">
   <obsolete>
-    Obsolete 03/20/2016. New metrics named WinJumplist.DeleteStatusJumpListIcons
+    Obsolete 03/20/2017. New metrics named WinJumplist.DeleteStatusJumpListIcons
     and WinJumplist.DeleteStatusJumpListIconsOld are used instead.
   </obsolete>
   <owner>chengx@chromium.org</owner>
@@ -87777,7 +87783,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DirectoryStatusJumpListIcons"
     enum="JumpListIconsFolderExistOrEmptyCategory">
   <obsolete>
-    Obsolete 04/25/2016 as we are no long recording this metric.
+    Obsolete 04/25/2017 as we are no long recording this metric.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
@@ -87789,7 +87795,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WinJumplist.DirectoryStatusJumpListIconsOld"
     enum="JumpListIconsFolderExistOrEmptyCategory">
   <obsolete>
-    Obsolete 04/25/2016 as we are no long recording this metric.
+    Obsolete 04/25/2017 as we are no long recording this metric.
   </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>
