@@ -376,25 +376,28 @@
       }
 
       .search-bubble {
+        /* RGB value matches var(--paper-yellow-500). */
+        --search-bubble-color: rgba(255, 235, 59, 0.9);
         position: absolute;
         z-index: 1;
       }
 
       .search-bubble-innards {
         align-items: center;
-        background-color: var(--paper-yellow-500);
+        background-color: var(--search-bubble-color);
         border-radius: 2px;
+        max-width: 100px;
+        min-width: 64px;
         padding: 4px 10px;
         text-align: center;
-        width: 100px;
       }
 
       /* Provides the arrow which points at the anchor element. */
       .search-bubble-innards::after {
-        background-color: var(--paper-yellow-500);
+        background-color: var(--search-bubble-color);
         content: '';
         height: 10px;
-        left: 55px;
+        left: calc(50% - 5px);
         position: absolute;
         top: -5px;
         transform: rotate(-45deg);
