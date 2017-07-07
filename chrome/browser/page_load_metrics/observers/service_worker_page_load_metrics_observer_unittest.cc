@@ -58,6 +58,8 @@ class ServiceWorkerPageLoadMetricsObserverTest
 
   void AssertNoInboxHistogramsLogged() {
     histogram_tester().ExpectTotalCount(
+        internal::kHistogramServiceWorkerParseStartInbox, 0);
+    histogram_tester().ExpectTotalCount(
         internal::kHistogramServiceWorkerFirstContentfulPaintInbox, 0);
     histogram_tester().ExpectTotalCount(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
@@ -74,6 +76,8 @@ class ServiceWorkerPageLoadMetricsObserverTest
   }
 
   void AssertNoSearchHistogramsLogged() {
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramServiceWorkerParseStartSearch, 0);
     histogram_tester().ExpectTotalCount(
         internal::kHistogramServiceWorkerFirstContentfulPaintSearch, 0);
     histogram_tester().ExpectTotalCount(
@@ -258,6 +262,17 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStart, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramServiceWorkerParseStart,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStartInbox, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramServiceWorkerParseStartInbox,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerFirstContentfulPaint,
@@ -361,6 +376,17 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, SearchSite) {
   metadata.behavior_flags |=
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
   SimulateTimingAndMetadataUpdate(timing, metadata);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStart, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramServiceWorkerParseStart,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramServiceWorkerParseStartSearch, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramServiceWorkerParseStartSearch,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerFirstContentfulPaint, 1);
