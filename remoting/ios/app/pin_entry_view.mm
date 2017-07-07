@@ -51,7 +51,10 @@ static const int kMinPinLength = 6;
 
     _pinButton =
         [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
-    [_pinButton setImage:RemotingTheme.arrowIcon forState:UIControlStateNormal];
+    [_pinButton
+        setImage:[RemotingTheme
+                         .arrowIcon imageFlippedForRightToLeftLayoutDirection]
+        forState:UIControlStateNormal];
     [_pinButton addTarget:self
                    action:@selector(didTapPinEntry:)
          forControlEvents:UIControlEventTouchUpInside];

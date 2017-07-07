@@ -165,10 +165,12 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 - (void)hostSessionPinProvided:(NSNotification*)notification {
   NSString* pin = [[notification userInfo] objectForKey:kHostSessionPin];
   if (_secretFetchedCallback) {
+    remoting::protocol::SecretFetchedCallback callback = _secretFetchedCallback;
     _runtime->network_task_runner()->PostTask(
         FROM_HERE, base::BindBlockArc(^{
-          _secretFetchedCallback.Run(base::SysNSStringToUTF8(pin));
+          callback.Run(base::SysNSStringToUTF8(pin));
         }));
+    _secretFetchedCallback.Reset();
   }
 }
 
@@ -208,6 +210,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
       break;
     case remoting::protocol::ConnectionToHost::CLOSED:
       _sessionDetails.state = SessionClosed;
+      [self disconnectFromHost];
       break;
     default:
       LOG(ERROR) << "onConnectionState, unknown state: " << state;
@@ -274,7 +277,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 }
 
 - (void)setCapabilities:(NSString*)capabilities {
-  NSLog(@"TODO(nicholss): implement this, setCapabilities.");
+  NSLog(@"TODO(nicholss): implement this, setCapabilities. %@", capabilities);
 }
 
 - (void)handleExtensionMessageOfType:(NSString*)type

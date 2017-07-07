@@ -14,6 +14,7 @@ typedef NS_ENUM(NSInteger, ClientConnectionViewState) {
   ClientViewConnecting,
   ClientViewPinPrompt,
   ClientViewConnected,
+  ClientViewReconnect,
   ClientViewClosed,
   ClientViewError,
 };

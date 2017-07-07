@@ -36,7 +36,8 @@ static CGFloat kHostInset = 5.f;
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
-  bool _isAuthenticated;
+  BOOL _isAuthenticated;
+  BOOL _showSignedInAccount;
   MDCDialogTransitionController* _dialogTransitionController;
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
@@ -54,6 +55,7 @@ static CGFloat kHostInset = 5.f;
 
 - (instancetype)init {
   _isAuthenticated = NO;
+  _showSignedInAccount = YES;
   UICollectionViewFlowLayout* layout =
       [[MDCCollectionViewFlowLayout alloc] init];
   layout.minimumInteritemSpacing = 0;
@@ -147,19 +149,9 @@ static CGFloat kHostInset = 5.f;
            object:nil];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
-
-  [self nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
-  if (_isAuthenticated) {
-    [_remotingService requestHostListFetch];
-  }
-  [self presentStatus];
-}
-
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  if (!_isAuthenticated) {
+  if (!_remotingService.authentication.user.isAuthenticated) {
     [AppDelegate.instance presentSignInFlow];
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
@@ -178,22 +170,24 @@ static CGFloat kHostInset = 5.f;
 }
 
 - (void)userDidUpdateNotification:(NSNotification*)notification {
-  [self nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
+  [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+    [self
+        nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
+  }];
 }
 
 #pragma mark - RemotingAuthenticationDelegate
 
 - (void)nowAuthenticated:(BOOL)authenticated {
+  _isAuthenticated = authenticated;
   if (authenticated) {
-    MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
-    message.text = @"Logged In!";
-    [MDCSnackbarManager showMessage:message];
+    _showSignedInAccount = YES;
+    [self presentStatus];
   } else {
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
-    message.text = @"Not logged in.";
+    message.text = @"Please sign-in.";
     [MDCSnackbarManager showMessage:message];
   }
-  _isAuthenticated = authenticated;
   [self refreshContent];
 }
 
@@ -268,7 +262,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (void)presentStatus {
   MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
-  if (_isAuthenticated) {
+  if (_isAuthenticated && _showSignedInAccount) {
+    _showSignedInAccount = NO;
     message.text = [NSString
         stringWithFormat:@"Currently signed in as %@.",
                          _remotingService.authentication.user.userEmail];
