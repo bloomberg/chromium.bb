@@ -66,9 +66,9 @@ Polymer({
     },
 
     /** @private */
-    detailsDescription: {
-      type: String,
-      value: '',
+    showLogsPermission_: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private */
@@ -93,6 +93,14 @@ Polymer({
     statusIconClassName_: {
       type: String,
       value: '',
+    },
+
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    logsUploadPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
+      },
     },
   },
 
@@ -123,6 +131,9 @@ Polymer({
         'chrome-cleanup-on-reboot-required', this.onRebootRequired_.bind(this));
     this.addWebUIListener(
         'chrome-cleanup-on-dismiss', this.onDismiss_.bind(this));
+    this.addWebUIListener(
+        'chrome-cleanup-upload-permission-change',
+        this.onUploadPermissionChange_.bind(this));
 
     this.browserProxy_.registerChromeCleanerObserver();
   },
@@ -155,15 +166,13 @@ Polymer({
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
       this.setIconDone_();
-    } else if (idleReason == settings.ChromeCleanupIdleReason.CLEANING_FAILED) {
+    } else {
+      // Scanning-related idle reasons are unexpected. Show an error message for
+      // all reasons other than |CLEANING_SUCCEEDED|.
       this.title_ = this.i18n('chromeCleanupTitleErrorCantRemove');
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
       this.setIconWarning_();
-    } else {
-      // TODO(proberge): Handle other cases.
-      this.title_ = '';
-      this.disableActionButton_();
     }
 
     this.isRemoving_ = false;
@@ -214,6 +223,7 @@ Polymer({
     this.resetIcon_();
     this.disableActionButton_();
     this.enableDetails_(files);
+    this.showLogsPermission_ = false;
   },
 
   /**
@@ -239,6 +249,27 @@ Polymer({
    */
   onDismiss_: function() {
     this.fire('chrome-cleanup-dismissed');
+  },
+
+  /**
+   * @param {boolean} enabled Whether logs upload is enabled.
+   * @private
+   */
+  onUploadPermissionChange_: function(enabled) {
+    this.logsUploadPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: enabled,
+    };
+  },
+
+  /**
+   * @param {boolean} enabled Whether to enable logs upload.
+   * @private
+   */
+  changeLogsPermission_: function(enabled) {
+    var enabled = this.$.chromeCleanupLogsUploadControl.checked;
+    this.browserProxy_.setLogsUploadPermission(enabled);
   },
 
   /**
@@ -278,7 +309,7 @@ Polymer({
    */
   disableDetails_: function() {
     this.showDetails_ = false;
-    this.detailsDescription = '';
+    this.showLogsPermission_ = false;
     this.showFilesToRemove_ = false;
     this.filesToRemove_ = [];
   },
@@ -290,7 +321,7 @@ Polymer({
    */
   enableDetails_: function(files) {
     this.showDetails_ = true;
-    this.detailsDescription = this.i18n('chromeCleanupExplanation');
+    this.showLogsPermission_ = true;
     // Note: doesn't change the state of this.showFilesToRemove_.
     this.filesToRemove_ = files;
   },
@@ -300,7 +331,8 @@ Polymer({
    * @private
    */
   startCleanup_: function() {
-    this.browserProxy_.startCleanup();
+    this.browserProxy_.startCleanup(
+        this.$.chromeCleanupLogsUploadControl.checked);
   },
 
   /**

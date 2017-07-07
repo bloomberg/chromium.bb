@@ -12,6 +12,7 @@ var TestChromeCleanupProxy = function() {
     'dismissCleanupPage',
     'registerChromeCleanerObserver',
     'restartComputer',
+    'setLogsUploadPermission',
     'startCleanup',
   ]);
 };
@@ -35,9 +36,14 @@ TestChromeCleanupProxy.prototype = {
   },
 
   /** @override */
-  startCleanup: function() {
-    this.methodCalled('startCleanup');
+  setLogsUploadPermission: function(enabled) {
+    this.methodCalled('setLogsUploadPermission', enabled);
   },
+
+  /** @override */
+  startCleanup: function(logsUploadEnabled) {
+    this.methodCalled('startCleanup', logsUploadEnabled);
+  }
 };
 
 var chromeCleanupPage = null;
@@ -61,6 +67,7 @@ suite('ChromeCleanupHandler', function() {
   });
 
   test('startCleanupFromInfected', function() {
+    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
     cr.webUIListenerCallback(
         'chrome-cleanup-on-infected', ['file 1', 'file 2', 'file 3']);
     Polymer.dom.flush();
@@ -75,13 +82,15 @@ suite('ChromeCleanupHandler', function() {
     var actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
-    ChromeCleanupProxy.whenCalled('startCleanup').then(function() {
-      cr.webUIListenerCallback('chrome-cleanup-on-cleaning', false);
-      Polymer.dom.flush();
+    ChromeCleanupProxy.whenCalled('startCleanup').then(
+      function(logsUploadEnabled) {
+        assertFalse(logsUploadEnabled);
+        cr.webUIListenerCallback('chrome-cleanup-on-cleaning', false);
+        Polymer.dom.flush();
 
-      var spinner = chromeCleanupPage.$$('#cleaning-spinner');
-      assertTrue(spinner.active);
-    })
+        var spinner = chromeCleanupPage.$$('#cleaning-spinner');
+        assertTrue(spinner.active);
+      })
   });
 
   test('rebootFromRebootRequired', function() {
@@ -118,5 +127,25 @@ suite('ChromeCleanupHandler', function() {
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
     return ChromeCleanupProxy.whenCalled('dismissCleanupPage');
+  });
+
+  test('setLogsUploadPermission', function() {
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-infected', ['file 1', 'file 2', 'file 3']);
+    Polymer.dom.flush();
+
+    var control = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
+    assertTrue(!!control);
+
+    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', true);
+    Polymer.dom.flush();
+    assertTrue(control.checked);
+
+    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+    Polymer.dom.flush();
+    assertFalse(control.checked);
+
+    // TODO(proberge): Mock tapping on |control| and verify that
+    // |setLogsUploadPermission| is called with the right argument.
   });
 });

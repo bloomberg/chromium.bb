@@ -19,8 +19,10 @@
       }
 
       #show-files-button {
-        color: var(--google-blue-700);
         --paper-button-ink-color: white;
+        /* Left-align the text of the button with the rest of the card's text */
+        -webkit-margin-start: calc(var(--settings-button-edge-spacing) * -1);
+        color: var(--google-blue-700);
         text-transform: inherit;
       }
 
@@ -30,8 +32,8 @@
       }
 
       .status-icon-container {
+        -webkit-padding-end: 12px;
         min-width: 28px;
-        padding-right: 12px;
       }
 
       .status-icon-remove {
@@ -67,9 +69,22 @@
     </div>
     <div id="details-container"
          class="settings-box two-line" hidden="[[!showDetails_]]">
-      <div>[[detailsDescription]]</div>
+      <div>
+        $i18n{chromeCleanupExplanation}
+        <a href="$i18n{chromeCleanupLearnMoreUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+      </div>
     </div>
-    <div class="settings-box continuation" hidden="[[!showDetails_]]">
+    <div class="settings-box continuation" hidden="[[!showLogsPermission_]]">
+      <settings-toggle-button class="start"
+              id="chromeCleanupLogsUploadControl"
+              label="$i18n{chromeCleanupLogsUploadPermission}"
+              pref="[[logsUploadPref_]]"
+              on-settings-boolean-control-change="changeLogsPermission_">
+      </settings-toggle-button>
+    </div>
+    <div class="settings-box" hidden="[[!showDetails_]]">
       <div class="show-files-container start" hidden="[[showFilesToRemove_]]">
         <paper-button id="show-files-button" on-tap="showFiles_">
           $i18n{chromeCleanupLinkShowFiles}

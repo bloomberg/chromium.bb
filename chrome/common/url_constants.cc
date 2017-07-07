@@ -633,6 +633,10 @@ const char kRemoveNonCWSExtensionURL[] =
 #if defined(OS_WIN)
 const char kNotificationsHelpURL[] =
     "https://support.google.com/chrome/?p=ui_notifications";
+
+// TODO(proberge): Change this URL to a p-link.
+const char kChromeCleanerLearnMoreURL[] =
+    "https://support.google.com/chrome/answer/6086368";
 #endif
 
 const char kNotificationWelcomeLearnMoreURL[] =

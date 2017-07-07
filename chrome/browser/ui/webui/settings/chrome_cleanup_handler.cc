@@ -75,6 +75,10 @@ void ChromeCleanupHandler::RegisterMessages() {
       base::Bind(&ChromeCleanupHandler::HandleRestartComputer,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setLogsUploadPermission",
+      base::Bind(&ChromeCleanupHandler::HandleSetLogsUploadPermission,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "startCleanup", base::Bind(&ChromeCleanupHandler::HandleStartCleanup,
                                  base::Unretained(this)));
 }
@@ -116,6 +120,12 @@ void ChromeCleanupHandler::OnRebootRequired() {
                          base::Value("chrome-cleanup-on-reboot-required"));
 }
 
+void ChromeCleanupHandler::OnLogsEnabledChanged(bool logs_enabled) {
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("chrome-cleanup-upload-permission-change"),
+                         base::Value(logs_enabled));
+}
+
 void ChromeCleanupHandler::HandleDismiss(const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
 
@@ -134,6 +144,9 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
       base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature));
 
   AllowJavascript();
+
+  // Send the current logs upload state.
+  OnLogsEnabledChanged(controller_->logs_enabled());
 }
 
 void ChromeCleanupHandler::HandleRestartComputer(const base::ListValue* args) {
@@ -141,16 +154,32 @@ void ChromeCleanupHandler::HandleRestartComputer(const base::ListValue* args) {
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("chrome-cleanup-on-dismiss"));
-  // TODO(proberge): Show a prompt to reboot the system.
+
+  controller_->Reboot();
+}
+
+void ChromeCleanupHandler::HandleSetLogsUploadPermission(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  bool allow_logs_upload = false;
+  args->GetBoolean(0, &allow_logs_upload);
+
+  controller_->SetLogsEnabled(allow_logs_upload);
 }
 
 void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(1U, args->GetSize());
+  bool allow_logs_upload = false;
+  args->GetBoolean(0, &allow_logs_upload);
+
+  // The state is propagated to all open tabs and should be consistent.
+  DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);
 
   controller_->ReplyWithUserResponse(
-      // TODO(proberge): Send kAcceptedWithLogs or kAcceptedWithoutLogs based on
-      // the state of a logs upload permissions checkbox.
-      profile_, ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
+      profile_,
+      allow_logs_upload
+          ? ChromeCleanerController::UserResponse::kAcceptedWithLogs
+          : ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
 }
 
 }  // namespace settings
