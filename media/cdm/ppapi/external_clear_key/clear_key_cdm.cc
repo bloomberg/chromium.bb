@@ -548,14 +548,14 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer& encrypted_buffer,
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
-    return cdm::kSessionError;
+    return cdm::kInitializationError;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
     audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(host_));
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
-    return cdm::kSessionError;
+    return cdm::kInitializationError;
 
   return cdm::kSuccess;
 #elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
@@ -572,17 +572,17 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
-    return cdm::kSessionError;
+    return cdm::kInitializationError;
 
   if (video_decoder_ && video_decoder_->is_initialized()) {
     DCHECK(!video_decoder_->is_initialized());
-    return cdm::kSessionError;
+    return cdm::kInitializationError;
   }
 
   // Any uninitialized decoder will be replaced.
   video_decoder_ = CreateVideoDecoder(host_, video_decoder_config);
   if (!video_decoder_)
-    return cdm::kSessionError;
+    return cdm::kInitializationError;
 
   return cdm::kSuccess;
 }
