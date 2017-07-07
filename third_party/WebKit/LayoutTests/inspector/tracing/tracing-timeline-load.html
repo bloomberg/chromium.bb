@@ -6,9 +6,9 @@
 
 function test()
 {
-    InspectorTest.TestTimelineLoaderClient = function(callback)
+    InspectorTest.TestTimelineLoaderClient = function()
     {
-        this._callback = callback;
+        this._completePromise = new Promise(resolve => this._resolve = resolve);
     }
 
     InspectorTest.TestTimelineLoaderClient.prototype = {
@@ -29,19 +29,18 @@ function test()
 
         loadingComplete: function(model)
         {
-            this.model = model;
             InspectorTest.addResult(`TimelineLoaderClient.loadingComplete(${!!model})`);
-            this._callback();
+            this._resolve(model);
         },
+
+        modelPromise: function()
+        {
+            return this._completePromise;
+        }
     }
 
-    function runTestWithDataAndCheck(input, expectedOutput, callback)
+    async function runTestWithDataAndCheck(input, expectedOutput, callback)
     {
-        function createFileReader(file, delegate)
-        {
-            return new InspectorTest.FakeFileReader(input, delegate, () => {});
-        }
-
         function checkSaveData(output)
         {
             var saveData = JSON.parse(output);
@@ -49,36 +48,24 @@ function test()
             callback();
         }
 
-        InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLoaderClient(onTimelineLoaded);
-        Timeline.TimelineLoader.loadFromFile({}, delegate);
-        async function onTimelineLoaded()
-        {
-            var saver = new Timeline.TracingTimelineSaver();
-            var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
-            var storage = delegate.model.backingStorage();
-            await stream.open("");
-            storage.writeToStream(stream, saver);
-        }
+        Bindings.ChunkedFileReader = InspectorTest.FakeFileReader;
+        var client = new InspectorTest.TestTimelineLoaderClient();
+        var loader = Timeline.TimelineLoader.loadFromFile(input, client);
+        var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
+        var model = await client.modelPromise();
+        var storage = model.backingStorage();
+        await stream.open("");
+        storage.writeToStream(stream);
     }
 
-    function runTestOnMalformedInput(input, callback)
+    async function runTestOnMalformedInput(input, callback)
     {
-        function createFileReader(file, delegate)
-        {
-            return new InspectorTest.FakeFileReader(input, delegate, () => {});
-        }
-
-        function checkLoadedData(data)
-        {
-            var model = delegate.model;
-            InspectorTest.addResult("Model is empty: " + (!model || (!model.minimumRecordTime() && !model.maximumRecordTime())));
-            callback();
-        }
-
-        InspectorTest.override(Timeline.TimelineLoader, "_createFileReader", createFileReader);
-        var delegate = new InspectorTest.TestTimelineLoaderClient(checkLoadedData);
-        Timeline.TimelineLoader.loadFromFile({}, delegate);
+        Bindings.ChunkedFileReader = InspectorTest.FakeFileReader;
+        var client = new InspectorTest.TestTimelineLoaderClient();
+        var loader = Timeline.TimelineLoader.loadFromFile(input, client);
+        var model = await client.modelPromise();
+        InspectorTest.addResult("Model is empty: " + (!model || (!model.minimumRecordTime() && !model.maximumRecordTime())));
+        callback();
     }
 
     var data = [{"args":{"number":32},"cat":"__metadata","name":"num_cpus","ph":"M","pid":32127,"tid":0,"ts":0},

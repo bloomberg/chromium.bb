@@ -6,7 +6,7 @@
 <script src="../resources/timeline-data.js"></script>
 <script>
 
-function test()
+async function test()
 {
     var timeline = UI.panels.timeline;
     timeline._onModeChanged();
@@ -19,7 +19,8 @@ function test()
     }
 
     timeline.requestWindowTimes = requestWindowTimesHook;
-    InspectorTest.loadTimeline(InspectorTest.timelineData()).then(() => InspectorTest.completeTest());
+    await InspectorTest.loadTimeline(InspectorTest.timelineData());
+    InspectorTest.completeTest();
 }
 
 </script>

@@ -108,13 +108,12 @@ function test()
             var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
             InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
             profilesPanel._loadFromFile(file);
-            var onTransferFinished = Profiler.CPUProfileHeader.prototype.onTransferFinished;
-            Profiler.CPUProfileHeader.prototype.onTransferFinished = function()
-            {
+            InspectorTest.addSniffer(Profiler.CPUProfileHeader.prototype, "updateStatus", function(statusText) {
+                if (!statusText.startsWith("Parsing"))
+                    return;
                 loadedProfileData = this._jsonifiedProfile;
-                onTransferFinished.call(this);
-                UI.panels.js_profiler.showProfile(this);
-            }
+                setTimeout(() => UI.panels.js_profiler.showProfile(this), 0);
+            }, true);
         }
 
     ]);
