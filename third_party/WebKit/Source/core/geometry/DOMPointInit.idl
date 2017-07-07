@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://dev.w3.org/fxtf/geometry/#DOMPoint
+// https://drafts.fxtf.org/geometry/#DOMPoint
 
 dictionary DOMPointInit {
     unrestricted double x = 0;

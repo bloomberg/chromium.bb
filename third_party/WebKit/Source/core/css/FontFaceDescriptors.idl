@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://dev.w3.org/csswg/css-font-loading/#dictdef-fontfacedescriptors
+// https://drafts.csswg.org/css-font-loading/#dictdef-fontfacedescriptors
 
 dictionary FontFaceDescriptors {
     DOMString style = "normal";
