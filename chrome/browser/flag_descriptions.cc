@@ -2378,13 +2378,6 @@ const char kEnableNtpMostLikelyFaviconsFromServerDescription[] =
     "If enabled, missing favicons for NTP tiles get downloaded from Google. "
     "This only applies to tiles that originate from synced history.";
 
-const char kEnableContentSuggestionsCategoriesName[] =
-    "Organize content suggestions by categories.";
-
-const char kEnableContentSuggestionsCategoriesDescription[] =
-    "If enabled, the content suggestions will be grouped by categories or "
-    "topics. Only remote content suggestions are shown when this is enabled.";
-
 const char kEnableContentSuggestionsLargeThumbnailName[] =
     "Large thumbnails layout for content suggestions cards.";
 

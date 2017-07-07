@@ -22,7 +22,6 @@ extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kChromeHomeFeature;
 extern const base::Feature kChromeHomeExpandButton;
 extern const base::Feature kChromeHomeSwipeLogic;
-extern const base::Feature kContentSuggestionsCategories;
 extern const base::Feature kContentSuggestionsLargeThumbnail;
 extern const base::Feature kContentSuggestionsVideoOverlay;
 extern const base::Feature kContentSuggestionsSettings;
