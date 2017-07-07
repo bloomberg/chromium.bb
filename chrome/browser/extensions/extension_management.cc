@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_management.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
@@ -162,8 +162,7 @@ bool ExtensionManagement::IsAllowedManifestType(
     return true;
   const std::vector<Manifest::Type>& allowed_types =
       global_settings_->allowed_types;
-  return std::find(allowed_types.begin(), allowed_types.end(), manifest_type) !=
-         allowed_types.end();
+  return base::ContainsValue(allowed_types, manifest_type);
 }
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(

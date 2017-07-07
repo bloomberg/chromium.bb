@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/extension_management.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_parser.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -369,15 +369,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyAllowedTypes) {
       ReadGlobalSettings()->allowed_types;
   ASSERT_TRUE(ReadGlobalSettings()->has_restricted_allowed_types);
   EXPECT_EQ(allowed_types.size(), 2u);
-  EXPECT_FALSE(std::find(allowed_types.begin(),
-                         allowed_types.end(),
-                         Manifest::TYPE_EXTENSION) != allowed_types.end());
-  EXPECT_TRUE(std::find(allowed_types.begin(),
-                        allowed_types.end(),
-                        Manifest::TYPE_THEME) != allowed_types.end());
-  EXPECT_TRUE(std::find(allowed_types.begin(),
-                   allowed_types.end(),
-                   Manifest::TYPE_USER_SCRIPT) != allowed_types.end());
+  EXPECT_FALSE(base::ContainsValue(allowed_types, Manifest::TYPE_EXTENSION));
+  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_THEME));
+  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_USER_SCRIPT));
 }
 
 // Verify that preference controlled by legacy ExtensionInstallBlacklist policy
@@ -484,12 +478,8 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   const std::vector<Manifest::Type>& allowed_types =
       ReadGlobalSettings()->allowed_types;
   EXPECT_EQ(allowed_types.size(), 2u);
-  EXPECT_TRUE(std::find(allowed_types.begin(),
-                        allowed_types.end(),
-                        Manifest::TYPE_THEME) != allowed_types.end());
-  EXPECT_TRUE(std::find(allowed_types.begin(),
-                        allowed_types.end(),
-                        Manifest::TYPE_USER_SCRIPT) != allowed_types.end());
+  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_THEME));
+  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_USER_SCRIPT));
 
   // Verifies blocked permission list settings.
   APIPermissionSet api_permission_set;
