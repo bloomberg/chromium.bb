@@ -49,10 +49,10 @@ void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
 }
 
 void RunDecodeCallbackOnTaskRunner(
-    const data_decoder::mojom::ImageDecoder::DecodeImageCallback& callback,
+    data_decoder::mojom::ImageDecoder::DecodeImageCallback callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const SkBitmap& image) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, image));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), image));
 }
 
 void DecodeImage(
@@ -60,7 +60,7 @@ void DecodeImage(
     data_decoder::mojom::ImageCodec codec,
     bool shrink_to_fit,
     const gfx::Size& desired_image_frame_size,
-    const data_decoder::mojom::ImageDecoder::DecodeImageCallback& callback,
+    data_decoder::mojom::ImageDecoder::DecodeImageCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -69,10 +69,11 @@ void DecodeImage(
       service_manager::Connector::Create(&connector_request);
   BindToBrowserConnector(std::move(connector_request));
 
-  data_decoder::DecodeImage(connector.get(), image_data, codec, shrink_to_fit,
-                            kMaxImageSizeInBytes, desired_image_frame_size,
-                            base::Bind(&RunDecodeCallbackOnTaskRunner, callback,
-                                       callback_task_runner));
+  data_decoder::DecodeImage(
+      connector.get(), image_data, codec, shrink_to_fit, kMaxImageSizeInBytes,
+      desired_image_frame_size,
+      base::BindOnce(&RunDecodeCallbackOnTaskRunner, std::move(callback),
+                     std::move(callback_task_runner)));
 }
 
 }  // namespace
