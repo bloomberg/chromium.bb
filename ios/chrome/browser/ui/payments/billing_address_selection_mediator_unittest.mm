@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payments_profile_comparator.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -59,8 +58,7 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
         payment_request_test_util::CreateTestWebPaymentRequest(),
         chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
     profile_comparator_ = base::MakeUnique<FakePaymentsProfileComparator>(
-        GetApplicationContext()->GetApplicationLocale(),
-        *payment_request_.get());
+        payment_request_->GetApplicationLocale(), *payment_request_.get());
     payment_request_->SetProfileComparator(profile_comparator_.get());
   }
 

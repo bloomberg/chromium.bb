@@ -18,7 +18,6 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/credit_card_edit_mediator.h"
@@ -223,12 +222,12 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
       creditCard.SetInfo(
           autofill::AutofillType(autofill::CREDIT_CARD_EXP_MONTH),
           base::SysNSStringToUTF16(expMonth),
-          GetApplicationContext()->GetApplicationLocale());
+          _paymentRequest->GetApplicationLocale());
       NSString* expYear = fieldComponents[1];
       creditCard.SetInfo(
           autofill::AutofillType(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR),
           base::SysNSStringToUTF16(expYear),
-          GetApplicationContext()->GetApplicationLocale());
+          _paymentRequest->GetApplicationLocale());
     } else if (field.autofillUIType == AutofillUITypeCreditCardSaveToChrome) {
       saveCreditCard = [field.value boolValue];
     } else if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
@@ -237,7 +236,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
       creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
                              field.autofillUIType)),
                          base::SysNSStringToUTF16(field.value),
-                         GetApplicationContext()->GetApplicationLocale());
+                         _paymentRequest->GetApplicationLocale());
     }
   }
 

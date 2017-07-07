@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
@@ -173,7 +172,7 @@
   autofill::CountryComboboxModel countryModel;
   countryModel.SetCountries(*_paymentRequest->GetPersonalDataManager(),
                             base::Callback<bool(const std::string&)>(),
-                            GetApplicationContext()->GetApplicationLocale());
+                            _paymentRequest->GetApplicationLocale());
   const autofill::CountryComboboxModel::CountryVector& countriesVector =
       countryModel.countries();
 
@@ -227,8 +226,7 @@
   std::string unused;
   autofill::GetAddressComponents(
       base::SysNSStringToUTF8(self.selectedCountryCode),
-      GetApplicationContext()->GetApplicationLocale(), &addressComponents,
-      &unused);
+      _paymentRequest->GetApplicationLocale(), &addressComponents, &unused);
 
   for (size_t lineIndex = 0; lineIndex < addressComponents.GetSize();
        ++lineIndex) {
@@ -328,8 +326,7 @@
         self.address
             ? base::SysUTF16ToNSString(
                   payments::data_util::GetFormattedPhoneNumberForDisplay(
-                      *self.address,
-                      GetApplicationContext()->GetApplicationLocale()))
+                      *self.address, _paymentRequest->GetApplicationLocale()))
             : nil;
     field = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
@@ -352,7 +349,7 @@
                          fieldType:(autofill::ServerFieldType)fieldType {
   return profile ? base::SysUTF16ToNSString(profile->GetInfo(
                        autofill::AutofillType(fieldType),
-                       GetApplicationContext()->GetApplicationLocale()))
+                       _paymentRequest->GetApplicationLocale()))
                  : nil;
 }
 

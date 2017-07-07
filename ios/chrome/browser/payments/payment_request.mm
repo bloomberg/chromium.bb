@@ -73,8 +73,7 @@ PaymentRequest::PaymentRequest(
       selected_contact_profile_(nullptr),
       selected_payment_method_(nullptr),
       selected_shipping_option_(nullptr),
-      profile_comparator_(GetApplicationContext()->GetApplicationLocale(),
-                          *this),
+      profile_comparator_(GetApplicationLocale(), *this),
       journey_logger_(IsIncognito(), GetLastCommittedURL(), GetUkmRecorder()) {
   PopulateAvailableShippingOptions();
   PopulateProfileCache();
@@ -153,8 +152,7 @@ autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {
       GetAddressInputSource(
           personal_data_manager_->GetURLRequestContextGetter())
           .release(),
-      GetAddressInputStorage().release(),
-      GetApplicationContext()->GetApplicationLocale());
+      GetAddressInputStorage().release(), GetApplicationLocale());
 }
 
 ukm::UkmRecorder* PaymentRequest::GetUkmRecorder() {
@@ -206,7 +204,7 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
         base::UTF16ToASCII(web_payment_request_.details.total.amount.currency),
         base::UTF16ToASCII(
             web_payment_request_.details.total.amount.currency_system),
-        GetApplicationContext()->GetApplicationLocale()));
+        GetApplicationLocale()));
   }
   return currency_formatter_.get();
 }
@@ -290,8 +288,7 @@ AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
   // effectively owned by this object.
   payment_method_cache_.push_back(base::MakeUnique<AutofillPaymentInstrument>(
       method_name, credit_card, matches_merchant_card_type_exactly,
-      billing_profiles(), GetApplicationContext()->GetApplicationLocale(),
-      this));
+      billing_profiles(), GetApplicationLocale(), this));
 
   PopulateAvailablePaymentMethods();
 

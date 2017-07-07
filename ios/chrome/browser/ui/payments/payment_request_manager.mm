@@ -29,7 +29,6 @@
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -380,7 +379,7 @@ struct PendingPaymentResponse {
 
   const std::string default_country_code =
       autofill::AutofillCountry::CountryCodeForLocale(
-          GetApplicationContext()->GetApplicationLocale());
+          _paymentRequest->GetApplicationLocale());
 
   _addressNormalizationManager =
       base::MakeUnique<payments::AddressNormalizationManager>(
@@ -734,7 +733,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     paymentResponse.shipping_address =
         payments::data_util::GetPaymentAddressFromAutofillProfile(
             _pendingPaymentResponse.shippingAddress,
-            GetApplicationContext()->GetApplicationLocale());
+            _paymentRequest->GetApplicationLocale());
 
     web::PaymentShippingOption* shippingOption =
         _paymentRequest->selected_shipping_option();
@@ -745,7 +744,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   if (_paymentRequest->request_payer_name()) {
     paymentResponse.payer_name = _pendingPaymentResponse.contactAddress.GetInfo(
         autofill::AutofillType(autofill::NAME_FULL),
-        GetApplicationContext()->GetApplicationLocale());
+        _paymentRequest->GetApplicationLocale());
   }
 
   if (_paymentRequest->request_payer_email()) {
@@ -777,7 +776,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
              (const autofill::AutofillProfile&)shippingAddress {
   payments::PaymentAddress address =
       payments::data_util::GetPaymentAddressFromAutofillProfile(
-          shippingAddress, GetApplicationContext()->GetApplicationLocale());
+          shippingAddress, _paymentRequest->GetApplicationLocale());
   [_paymentRequestJsManager updateShippingAddress:address
                                 completionHandler:nil];
   [self setUnblockEventQueueTimer];

@@ -13,7 +13,6 @@
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
@@ -266,10 +265,9 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
   // Card holder name field.
   NSString* creditCardName =
-      _creditCard
-          ? autofill::GetCreditCardName(
-                *_creditCard, GetApplicationContext()->GetApplicationLocale())
-          : nil;
+      _creditCard ? autofill::GetCreditCardName(
+                        *_creditCard, _paymentRequest->GetApplicationLocale())
+                  : nil;
   fieldKey = [NSNumber numberWithInt:AutofillUITypeCreditCardHolderFullName];
   EditorField* creditCardNameField = self.fieldsMap[fieldKey];
   if (!creditCardNameField) {
