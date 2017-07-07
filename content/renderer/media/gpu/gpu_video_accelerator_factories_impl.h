@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
-#define CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#ifndef CONTENT_RENDERER_MEDIA_GPU_GPU_VIDEO_ACCELERATOR_FACTORIES_IMPL_H_
+#define CONTENT_RENDERER_MEDIA_GPU_GPU_VIDEO_ACCELERATOR_FACTORIES_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,7 +26,7 @@
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferManager;
-}
+}  // namespace gpu
 
 namespace ui {
 class ContextProviderCommandBuffer;
@@ -39,15 +39,15 @@ namespace content {
 // RenderViewImpl and only has its own header to allow extraction of its
 // implementation from render_view_impl.cc which is already far too large.
 //
-// The RendererGpuVideoAcceleratorFactories can be constructed on any thread,
+// The GpuVideoAcceleratorFactoriesImpl can be constructed on any thread,
 // but subsequent calls to all public methods of the class must be called from
 // the |task_runner_|, as provided during construction.
-class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
+class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
     : public media::GpuVideoAcceleratorFactories {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
-  static std::unique_ptr<RendererGpuVideoAcceleratorFactories> Create(
+  static std::unique_ptr<GpuVideoAcceleratorFactoriesImpl> Create(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
@@ -94,15 +94,15 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   media::VideoDecodeAccelerator::Capabilities
   GetVideoDecodeAcceleratorCapabilities() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetVideoEncodeAcceleratorSupportedProfiles() override;
+  GetVideoEncodeAcceleratorSupportedProfiles() override;
 
   void ReleaseContextProvider();
   scoped_refptr<ui::ContextProviderCommandBuffer> ContextProviderMainThread();
 
-  ~RendererGpuVideoAcceleratorFactories() override;
+  ~GpuVideoAcceleratorFactoriesImpl() override;
 
  private:
-  RendererGpuVideoAcceleratorFactories(
+  GpuVideoAcceleratorFactoriesImpl(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
@@ -136,9 +136,9 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererGpuVideoAcceleratorFactories);
+  DISALLOW_COPY_AND_ASSIGN(GpuVideoAcceleratorFactoriesImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
+#endif  // CONTENT_RENDERER_MEDIA_GPU_GPU_VIDEO_ACCELERATOR_FACTORIES_IMPL_H_

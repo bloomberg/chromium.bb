@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
+#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"

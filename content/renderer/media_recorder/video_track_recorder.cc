@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
+#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media_recorder/vea_encoder.h"
 #include "content/renderer/media_recorder/vpx_encoder.h"
 #include "content/renderer/render_thread_impl.h"
