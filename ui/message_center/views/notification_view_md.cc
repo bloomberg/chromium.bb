@@ -117,6 +117,8 @@ class ItemView : public views::View {
   explicit ItemView(const message_center::NotificationItem& item);
   ~ItemView() override;
 
+  const char* GetClassName() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ItemView);
 };
@@ -143,6 +145,10 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
 
 ItemView::~ItemView() = default;
 
+const char* ItemView::GetClassName() const {
+  return "ItemView";
+}
+
 // CompactTitleMessageView /////////////////////////////////////////////////////
 
 // CompactTitleMessageView shows notification title and message in a single
@@ -151,6 +157,8 @@ class CompactTitleMessageView : public views::View {
  public:
   explicit CompactTitleMessageView();
   ~CompactTitleMessageView() override;
+
+  const char* GetClassName() const override;
 
   void OnPaint(gfx::Canvas* canvas) override;
 
@@ -167,7 +175,11 @@ class CompactTitleMessageView : public views::View {
   views::Label* message_view_ = nullptr;
 };
 
-CompactTitleMessageView::~CompactTitleMessageView() {}
+CompactTitleMessageView::~CompactTitleMessageView() = default;
+
+const char* CompactTitleMessageView::GetClassName() const {
+  return "CompactTitleMessageView";
+}
 
 CompactTitleMessageView::CompactTitleMessageView() {
   SetLayoutManager(new views::FillLayout());
@@ -230,6 +242,7 @@ class NotificationButtonMD : public views::LabelButton {
   ~NotificationButtonMD() override;
 
   void SetText(const base::string16& text) override;
+  const char* GetClassName() const override;
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
@@ -258,6 +271,10 @@ NotificationButtonMD::~NotificationButtonMD() = default;
 
 void NotificationButtonMD::SetText(const base::string16& text) {
   views::LabelButton::SetText(base::i18n::ToUpper(text));
+}
+
+const char* NotificationButtonMD::GetClassName() const {
+  return "NotificationButtonMD";
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -315,10 +332,12 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateIconView(notification);
   CreateOrUpdateSmallIconView(notification);
   CreateOrUpdateImageView(notification);
-  CreateOrUpdateActionButtonViews(notification);
   CreateOrUpdateCloseButtonView(notification);
   CreateOrUpdateSettingsButtonView(notification);
   UpdateViewForExpandedState(expanded_);
+  // Should be called at the last because SynthesizeMouseMoveEvent() requires
+  // everything is in the right location when called.
+  CreateOrUpdateActionButtonViews(notification);
 }
 
 NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
@@ -483,8 +502,10 @@ void NotificationViewMD::CreateOrUpdateContextTitleView(
 
 void NotificationViewMD::CreateOrUpdateTitleView(
     const Notification& notification) {
-  if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
-    left_content_->RemoveChildView(title_view_);
+  if (notification.title().empty() ||
+      notification.type() == NOTIFICATION_TYPE_PROGRESS) {
+    if (title_view_)
+      left_content_->RemoveChildView(title_view_);
     title_view_ = nullptr;
     return;
   }
@@ -539,7 +560,8 @@ void NotificationViewMD::CreateOrUpdateMessageView(
 void NotificationViewMD::CreateOrUpdateCompactTitleMessageView(
     const Notification& notification) {
   if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
-    left_content_->RemoveChildView(compact_title_message_view_);
+    if (compact_title_message_view_)
+      left_content_->RemoveChildView(compact_title_message_view_);
     compact_title_message_view_ = nullptr;
     return;
   }
@@ -556,7 +578,8 @@ void NotificationViewMD::CreateOrUpdateCompactTitleMessageView(
 void NotificationViewMD::CreateOrUpdateProgressBarView(
     const Notification& notification) {
   if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
-    left_content_->RemoveChildView(progress_bar_view_);
+    if (progress_bar_view_)
+      left_content_->RemoveChildView(progress_bar_view_);
     progress_bar_view_ = nullptr;
     header_row_->ClearProgress();
     return;
@@ -604,7 +627,8 @@ void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
       notification.type() == NOTIFICATION_TYPE_MULTIPLE) {
-    right_content_->RemoveChildView(icon_view_);
+    if (icon_view_)
+      right_content_->RemoveChildView(icon_view_);
     icon_view_ = nullptr;
     return;
   }
@@ -696,11 +720,14 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
     }
   }
 
-  if (new_buttons) {
-    // TODO(fukino): Investigate if this Layout() is necessary.
-    Layout();
+  // Inherit mouse hover state when action button views reset.
+  // If the view is not expanded, there should be no hover state.
+  if (new_buttons && expanded_) {
     views::Widget* widget = GetWidget();
-    if (widget != NULL) {
+    if (widget) {
+      // This Layout() is needed because button should be in the right location
+      // in the view hierarchy when SynthesizeMouseMoveEvent() is called.
+      Layout();
       widget->SetSize(widget->GetContentsView()->GetPreferredSize());
       GetWidget()->SynthesizeMouseMoveEvent();
     }
