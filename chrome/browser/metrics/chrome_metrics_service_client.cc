@@ -27,8 +27,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -179,7 +179,6 @@ void RegisterOrRemovePreviousRunMetricsFile(
     const base::FilePath& dir,
     base::StringPiece metrics_name,
     metrics::FileMetricsProvider::SourceAssociation association,
-    scoped_refptr<base::TaskRunner> task_runner,
     metrics::FileMetricsProvider* file_metrics_provider) {
   base::FilePath metrics_file;
   base::GlobalHistogramAllocator::ConstructFilePaths(
@@ -194,25 +193,20 @@ void RegisterOrRemovePreviousRunMetricsFile(
   } else {
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                         metrics_file, /*recursive=*/false));
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), metrics_file,
+                       /*recursive=*/false));
   }
 }
 
 std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     bool metrics_reporting_enabled) {
-  // Fetch a worker-pool for performing I/O tasks that are not allowed on
-  // the main UI thread.
-  scoped_refptr<base::TaskRunner> task_runner =
-      content::BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-
   // Create an object to monitor files of metrics and include them in reports.
   std::unique_ptr<metrics::FileMetricsProvider> file_metrics_provider(
-      new metrics::FileMetricsProvider(task_runner,
-                                       g_browser_process->local_state()));
+      new metrics::FileMetricsProvider(g_browser_process->local_state()));
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
@@ -224,7 +218,7 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
         kCrashpadHistogramAllocatorName,
         metrics::FileMetricsProvider::
             ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
-        task_runner, file_metrics_provider.get());
+        file_metrics_provider.get());
 
     base::FilePath browser_metrics_upload_dir = user_data_dir.AppendASCII(
         ChromeMetricsServiceClient::kBrowserMetricsName);

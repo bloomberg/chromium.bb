@@ -87,6 +87,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
         prefs_(new TestingPrefServiceSimple) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     FileMetricsProvider::RegisterPrefs(prefs_->registry(), kMetricsName);
+    FileMetricsProvider::SetTaskRunnerForTesting(task_runner_);
   }
 
   ~FileMetricsProviderTest() override {
@@ -106,7 +107,7 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
 
   FileMetricsProvider* provider() {
     if (!provider_)
-      provider_.reset(new FileMetricsProvider(task_runner_, prefs()));
+      provider_.reset(new FileMetricsProvider(prefs()));
     return provider_.get();
   }
 
