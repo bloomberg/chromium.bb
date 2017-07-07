@@ -321,21 +321,29 @@ def GetOldPreCQBuildActions(change, action_history,
 
   actions_for_old_patches = ActionsForOldPatches(change, action_history)
   cancelled_builds = GetCancelledPreCQBuilds(action_history)
+  cancelled_buildbucket_ids = set([x.buildbucket_id for x in cancelled_builds])
 
   old_pre_cq_build_actions = [
       a for a in actions_for_old_patches
       if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
           a.buildbucket_id is not None and
-          a.buildbucket_id not in cancelled_builds and
+          a.buildbucket_id not in cancelled_buildbucket_ids and
           a.timestamp is not None and
           a.timestamp > min_timestamp)]
 
   return old_pre_cq_build_actions
 
 def GetCancelledPreCQBuilds(action_history):
-  """Get buildbucket_id set of cancelled pre-cq builds."""
-  return set([a.buildbucket_id
-              for a in action_history
+  """Get cancelled pre-cq builds.
+
+  Args:
+    action_history: List of clactions.CLAction instances.
+
+  Returns:
+    A set of clactions.CLAction instances with action
+    constants.CL_ACTION_TRYBOT_CANCELLED.
+  """
+  return set([a for a in action_history
               if a.buildbucket_id is not None and
               a.action == constants.CL_ACTION_TRYBOT_CANCELLED])
 

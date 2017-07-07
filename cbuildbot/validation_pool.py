@@ -1887,18 +1887,24 @@ class ValidationPool(object):
     candidates = []
 
     if self.pre_cq_trybot:
-      _, db = self._run.GetCIDBHandle()
+      build_id, db = self._run.GetCIDBHandle()
       action_history = []
       if db:
         action_history = db.GetActionsForChanges(changes)
 
-      for change in changes:
-        # Don't reject changes that have already passed the pre-cq.
-        pre_cq_status = clactions.GetCLPreCQStatus(
-            change, action_history)
-        if pre_cq_status == constants.CL_STATUS_PASSED:
-          continue
-        candidates.append(change)
+      cancelled_pre_cqs = clactions.GetCancelledPreCQBuilds(action_history)
+      cancelled_build_ids = set([x.build_id for x in cancelled_pre_cqs])
+      if build_id in cancelled_build_ids:
+        logging.info('This Pre-CQ build was cancelled on demand, do not blame '
+                     'on CLs.')
+      else:
+        for change in changes:
+          # Don't reject changes that have already passed the pre-cq.
+          pre_cq_status = clactions.GetCLPreCQStatus(
+              change, action_history)
+          if pre_cq_status == constants.CL_STATUS_PASSED:
+            continue
+          candidates.append(change)
     else:
       candidates.extend(changes)
 

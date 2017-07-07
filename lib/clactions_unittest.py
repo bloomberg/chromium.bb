@@ -127,7 +127,6 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
 
-
     a1 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
         reason='binhost-pre-cq',
@@ -187,6 +186,28 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self.assertEqual([c.buildbucket_id for c in c2_old_actions],
                      [a2.buildbucket_id, a3.buildbucket_id,
                       a6.buildbucket_id])
+
+  def testGetCancelledPreCQBuilds(self):
+    """Test GetCancelledPreCQBuilds."""
+    c1 = metadata_lib.GerritPatchTuple(1, 1, False)
+    build_id = self.fake_db.InsertBuild('n', 'w', 1, 'c', 'h')
+    a1 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_CANCELLED,
+        reason='binhost-pre-cq')
+    a2 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        reason='binhost-pre-cq',
+        buildbucket_id='1')
+    a3 = clactions.CLAction.FromGerritPatchAndAction(
+        c1, constants.CL_ACTION_TRYBOT_CANCELLED,
+        reason='binhost-pre-cq',
+        buildbucket_id='2')
+    cl_actions = [a1, a2, a3]
+    self.fake_db.InsertCLActions(build_id, cl_actions)
+    action_history = self.fake_db.GetActionsForChanges([c1])
+    builds = clactions.GetCancelledPreCQBuilds(action_history)
+    self.assertEqual(len(builds), 1)
+    self.assertEqual(builds.pop().buildbucket_id, '2')
 
   def testGetRequeuedOrSpeculative(self):
     """Tests GetRequeuedOrSpeculative function."""

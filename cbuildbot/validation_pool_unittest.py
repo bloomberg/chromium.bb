@@ -23,6 +23,7 @@ from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -343,13 +344,28 @@ class ValidationFailureOrTimeout(MoxBase):
     self.assertEqual(0, self.remove.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
-  def testPreCQ(self):
+  def testPassedPreCQ(self):
+    """Do not RemoveReady for passed Pre-CQs."""
     for change in self._patches:
       self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
     self._pool.pre_cq_trybot = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
     self.assertEqual(0, self.remove.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_PRE_CQ_PASSED])
+
+  def testCancelledPreCQ(self):
+    """Do not RemoveReady for cancelled Pre-CQs."""
+    build_id, _ = self._pool._run.GetCIDBHandle()
+    for change in self._patches:
+      self.fake_db.InsertCLActions(
+          build_id, [clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_TRYBOT_CANCELLED,
+              buildbucket_id='100')])
+
+    self._pool.pre_cq_trybot = True
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(0, self.remove.call_count)
+    self._AssertActions(self._patches, [constants.CL_ACTION_TRYBOT_CANCELLED])
 
   def testPatchesWereNotRejectedByInsaneFailure(self):
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE], sanity=False)
