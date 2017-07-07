@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_proxy.h"
+#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -429,8 +430,8 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
 void MediaRouterMojoImpl::ProvideSinks(const std::string& provider_name,
                                        std::vector<MediaSinkInternal> sinks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "OnDialMediaSinkDiscovered found " << sinks.size()
-                         << " devices...";
+  DVLOG_WITH_INSTANCE(1) << "Provider [" << provider_name << "] found "
+                         << sinks.size() << " devices...";
 
   event_page_request_manager_->RunOrDefer(
       base::Bind(&MediaRouterMojoImpl::DoProvideSinks,
@@ -941,8 +942,7 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider() {
   }
 #endif
 
-  if (media_router::DialLocalDiscoveryEnabled())
-    StartDiscovery();
+  StartDiscovery();
 }
 
 #if defined(OS_WIN)
@@ -976,14 +976,25 @@ void MediaRouterMojoImpl::StartDiscovery() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "StartDiscovery";
 
-  if (!dial_media_sink_service_proxy_) {
-    dial_media_sink_service_proxy_ = new DialMediaSinkServiceProxy(
-        base::Bind(&MediaRouterMojoImpl::ProvideSinks,
-                   weak_factory_.GetWeakPtr(), "dial"),
-        context_);
+  if (media_router::DialLocalDiscoveryEnabled()) {
+    if (!dial_media_sink_service_proxy_) {
+      dial_media_sink_service_proxy_ = new DialMediaSinkServiceProxy(
+          base::Bind(&MediaRouterMojoImpl::ProvideSinks,
+                     weak_factory_.GetWeakPtr(), "dial"),
+          context_);
+    }
+    dial_media_sink_service_proxy_->Start();
   }
 
-  dial_media_sink_service_proxy_->Start();
+  if (media_router::CastDiscoveryEnabled()) {
+    if (!cast_media_sink_service_) {
+      cast_media_sink_service_ = new CastMediaSinkService(
+          base::Bind(&MediaRouterMojoImpl::ProvideSinks,
+                     weak_factory_.GetWeakPtr(), "cast"),
+          context_);
+    }
+    cast_media_sink_service_->Start();
+  }
 }
 
 void MediaRouterMojoImpl::UpdateMediaSinks(
