@@ -317,22 +317,22 @@ public class SectionList
     }
 
     /**
-     * Records the currently visible suggestion state: how many categories are visible and how many
+     * Records the currently visible suggestion state: which categories are visible and how many
      * suggestions per category.
      * @see org.chromium.chrome.browser.suggestions.SuggestionsEventReporter#onPageShown
      */
     private void recordDisplayedSuggestions(int[] categories) {
         int[] suggestionsPerCategory = new int[categories.length];
-        int visibleCategoriesCount = 0;
+        boolean[] isCategoryVisible = new boolean[categories.length];
 
         for (int i = 0; i < categories.length; ++i) {
             SuggestionsSection section = mSections.get(categories[i]);
-            suggestionsPerCategory[i] = section == null ? 0 : section.getSuggestionsCount();
-            visibleCategoriesCount += section == null ? 0 : 1;
+            suggestionsPerCategory[i] = section != null ? section.getSuggestionsCount() : 0;
+            isCategoryVisible[i] = section != null;
         }
 
         mUiDelegate.getEventReporter().onPageShown(
-                categories, suggestionsPerCategory, visibleCategoriesCount);
+                categories, suggestionsPerCategory, isCategoryVisible);
     }
 
     SuggestionsSection getSectionForTesting(@CategoryInt int categoryId) {

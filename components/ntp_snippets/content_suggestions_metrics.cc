@@ -23,8 +23,8 @@ const int kMaxSuggestionsPerCategory = 10;
 const int kMaxSuggestionsTotal = 50;
 const int kMaxCategories = 10;
 
-const char kHistogramCountOnNtpOpened[] =
-    "NewTabPage.ContentSuggestions.CountOnNtpOpened";
+const char kHistogramCountOnNtpOpenedIfVisible[] =
+    "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible";
 const char kHistogramSectionCountOnNtpOpened[] =
     "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened";
 const char kHistogramShown[] = "NewTabPage.ContentSuggestions.Shown";
@@ -218,17 +218,24 @@ void RecordContentSuggestionsUsage() {
 
 }  // namespace
 
-void OnPageShown(
-    const std::vector<std::pair<Category, int>>& suggestions_per_category,
-    int visible_categories_count) {
+void OnPageShown(const std::vector<Category>& categories,
+                 const std::vector<int>& suggestions_per_category,
+                 const std::vector<bool>& is_category_visible) {
+  DCHECK_EQ(categories.size(), suggestions_per_category.size());
+  DCHECK_EQ(categories.size(), is_category_visible.size());
   int suggestions_total = 0;
-  for (const std::pair<Category, int>& item : suggestions_per_category) {
-    LogCategoryHistogramPosition(kHistogramCountOnNtpOpened, item.first,
-                                 item.second, kMaxSuggestionsPerCategory);
-    suggestions_total += item.second;
+  int visible_categories_count = 0;
+  for (size_t i = 0; i < categories.size(); ++i) {
+    if (is_category_visible[i]) {
+      LogCategoryHistogramPosition(kHistogramCountOnNtpOpenedIfVisible,
+                                   categories[i], suggestions_per_category[i],
+                                   kMaxSuggestionsPerCategory);
+      suggestions_total += suggestions_per_category[i];
+      ++visible_categories_count;
+    }
   }
-  UMA_HISTOGRAM_EXACT_LINEAR(kHistogramCountOnNtpOpened, suggestions_total,
-                             kMaxSuggestionsTotal);
+  UMA_HISTOGRAM_EXACT_LINEAR(kHistogramCountOnNtpOpenedIfVisible,
+                             suggestions_total, kMaxSuggestionsTotal);
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramSectionCountOnNtpOpened,
                              visible_categories_count, kMaxCategories);
 }

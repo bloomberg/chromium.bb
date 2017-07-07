@@ -15,6 +15,7 @@ namespace metrics {
 namespace {
 
 using testing::ElementsAre;
+using testing::IsEmpty;
 
 TEST(ContentSuggestionsMetricsTest, ShouldLogOnSuggestionsShown) {
   base::HistogramTester histogram_tester;
@@ -43,6 +44,87 @@ TEST(ContentSuggestionsMetricsTest, ShouldLogOnSuggestionsShown) {
                   base::Bucket(/*min=*/1, /*count=*/1),
                   base::Bucket(/*min=*/10, /*count=*/1),
                   base::Bucket(/*min=*/11, /*count=*/1)));
+}
+
+TEST(ContentSuggestionsMetricsTest,
+     ShouldNotLogNotShownCategoriesWhenPageShown) {
+  base::HistogramTester histogram_tester;
+  OnPageShown(std::vector<Category>(
+                  {Category::FromKnownCategory(KnownCategories::ARTICLES)}),
+              /*suggestions_per_category=*/{0},
+              /*is_category_visible=*/{false});
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles"),
+      IsEmpty());
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+}
+
+TEST(ContentSuggestionsMetricsTest,
+     ShouldLogEmptyShownCategoriesWhenPageShown) {
+  base::HistogramTester histogram_tester;
+  OnPageShown(std::vector<Category>(
+                  {Category::FromKnownCategory(KnownCategories::ARTICLES)}),
+              /*suggestions_per_category=*/{0},
+              /*is_category_visible=*/{true});
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles"),
+      ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"),
+              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+}
+
+TEST(ContentSuggestionsMetricsTest,
+     ShouldLogNonEmptyShownCategoryWhenPageShown) {
+  base::HistogramTester histogram_tester;
+  OnPageShown(std::vector<Category>(
+                  {Category::FromKnownCategory(KnownCategories::ARTICLES)}),
+              /*suggestions_per_category=*/{10},
+              /*is_category_visible=*/{true});
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles"),
+      ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"),
+              ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"),
+              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+}
+
+TEST(ContentSuggestionsMetricsTest,
+     ShouldLogMultipleNonEmptyShownCategoriesWhenPageShown) {
+  base::HistogramTester histogram_tester;
+  OnPageShown(std::vector<Category>(
+                  {Category::FromKnownCategory(KnownCategories::ARTICLES),
+                   Category::FromKnownCategory(KnownCategories::BOOKMARKS)}),
+              /*suggestions_per_category=*/{10, 5},
+              /*is_category_visible=*/{true, true});
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles"),
+      ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Bookmarks"),
+      ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"),
+              ElementsAre(base::Bucket(/*min=*/15, /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"),
+              ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
 }
 
 }  // namespace

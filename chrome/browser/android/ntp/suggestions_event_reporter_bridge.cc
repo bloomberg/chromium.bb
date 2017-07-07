@@ -66,21 +66,22 @@ static void OnPageShown(
     const JavaParamRef<jclass>& caller,
     const JavaParamRef<jintArray>& jcategories,
     const JavaParamRef<jintArray>& jsuggestions_per_category,
-    jint j_visible_categories_count) {
+    const JavaParamRef<jbooleanArray>& jis_category_visible) {
   std::vector<int> categories_int;
   JavaIntArrayToIntVector(env, jcategories, &categories_int);
-  std::vector<int> suggestions_per_category_int;
+  std::vector<int> suggestions_per_category;
   JavaIntArrayToIntVector(env, jsuggestions_per_category,
-                          &suggestions_per_category_int);
-  DCHECK_EQ(categories_int.size(), suggestions_per_category_int.size());
-  std::vector<std::pair<Category, int>> suggestions_per_category;
+                          &suggestions_per_category);
+  DCHECK_EQ(categories_int.size(), suggestions_per_category.size());
+  std::vector<bool> is_category_visible;
+  JavaBooleanArrayToBoolVector(env, jis_category_visible, &is_category_visible);
+  DCHECK_EQ(categories_int.size(), is_category_visible.size());
+  std::vector<Category> categories;
   for (size_t i = 0; i < categories_int.size(); i++) {
-    suggestions_per_category.push_back(
-        std::make_pair(Category::FromIDValue(categories_int[i]),
-                       suggestions_per_category_int[i]));
+    categories.push_back(Category::FromIDValue(categories_int[i]));
   }
-  ntp_snippets::metrics::OnPageShown(suggestions_per_category,
-                                     j_visible_categories_count);
+  ntp_snippets::metrics::OnPageShown(categories, suggestions_per_category,
+                                     is_category_visible);
   GetUserClassifier()->OnEvent(UserClassifier::Metric::NTP_OPENED);
 }
 

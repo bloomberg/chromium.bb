@@ -19,7 +19,7 @@ public class DummySuggestionsEventReporter implements SuggestionsEventReporter {
 
     @Override
     public void onPageShown(
-            int[] categories, int[] suggestionsPerCategory, int visibleCategoriesCount) {}
+            int[] categories, int[] suggestionsPerCategory, boolean[] isCategoryVisible) {}
 
     @Override
     public void onSuggestionShown(SnippetArticle suggestion) {}

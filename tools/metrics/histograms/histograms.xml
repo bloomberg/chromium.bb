@@ -44912,10 +44912,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened">
+  <obsolete>
+    Deprecated in July 2017. This metric was replaced by
+    CountOnNtpOpenedIfVisible. Initially the metric was not recorded properly if
+    any category was not visible. This was fixed in
+    https://codereview.chromium.org/2874213002/, however, not visible categories
+    still were polluting the metric (they were recorded as showing 0
+    suggestions).
+  </obsolete>
   <owner>treib@chromium.org</owner>
   <summary>
     Android: The number of suggestion cards that were available at the time an
     NTP was opened.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The number of suggestion cards that were available at the time an
+    NTP was opened. Only visible categories (i.e. which can be seen by the user
+    on this NTP) are recorded, including empty ones.
   </summary>
 </histogram>
 
@@ -89120,7 +89137,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Experimental" label="Experimental"/>
   <suffix name="ReadingList" label="Reading List entries"/>
   <suffix name="BreakingNews" label="Breaking News entries"/>
-  <affected-histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened"/>
+  <affected-histogram
+      name="NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedUnvisited"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.DismissedVisited"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.MenuOpened"/>
