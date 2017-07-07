@@ -1775,6 +1775,7 @@ source_set("unit_tests") {
     "input_method/input_method_manager_impl_unittest.cc",
     "input_method/input_method_persistence_unittest.cc",
     "locale_change_guard_unittest.cc",
+    "lock_screen_apps/app_manager_impl_unittest.cc",
     "lock_screen_apps/state_controller_unittest.cc",
     "login/auth/cryptohome_authenticator_unittest.cc",
     "login/easy_unlock/easy_unlock_challenge_wrapper_unittest.cc",
