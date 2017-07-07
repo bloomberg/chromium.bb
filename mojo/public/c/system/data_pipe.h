@@ -78,10 +78,9 @@ const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_ALL_OR_NONE = 1 << 0;
 //
 //   |MOJO_READ_DATA_FLAG_NONE| - No flags; default mode.
 //   |MOJO_READ_DATA_FLAG_ALL_OR_NONE| - Read (or discard) either the requested
-//        number of elements or none. NOTE: This flag is not currently supported
-//        by |MojoBeginReadData()|.
+//        number of elements or none. For use with |MojoReadData()| only.
 //   |MOJO_READ_DATA_FLAG_DISCARD| - Discard (up to) the requested number of
-//        elements.
+//        elements. For use with |MojoReadData()| only.
 //   |MOJO_READ_DATA_FLAG_QUERY| - Query the number of elements available to
 //       read. For use with |MojoReadData()| only. Mutually exclusive with
 //       |MOJO_READ_DATA_FLAG_DISCARD|, and |MOJO_READ_DATA_FLAG_ALL_OR_NONE|
@@ -309,10 +308,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadData(MojoHandle data_pipe_consumer_handle,
 //   |MOJO_RESULT_SHOULD_WAIT| if no data can currently be read (and the
 //       producer is still open).
 MOJO_SYSTEM_EXPORT MojoResult
-    MojoBeginReadData(MojoHandle data_pipe_consumer_handle,
-                      const void** buffer,         // Out.
-                      uint32_t* buffer_num_bytes,  // In/out.
-                      MojoReadDataFlags flags);
+MojoBeginReadData(MojoHandle data_pipe_consumer_handle,
+                  const void** buffer,         // Out.
+                  uint32_t* buffer_num_bytes,  // Out.
+                  MojoReadDataFlags flags);
 
 // Ends a two-phase read from the data pipe consumer given by
 // |data_pipe_consumer_handle| that was begun by a call to |MojoBeginReadData()|
