@@ -92,6 +92,14 @@ const char kSpeculativePrefetchDescription[] =
     R"*("Learning" means that only the database construction is enabled, )*"
     R"*("Prefetching" that learning and prefetching are enabled.)*";
 
+const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
+    "Enable speculative start of a service worker when a search is predicted.";
+
+const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
+    "If enabled, when the user enters text in the omnibox that looks like a "
+    "a query, any service worker associated with the search engine the query "
+    "will be sent to is started early.";
+
 const char kOffMainThreadFetchName[] = "Off-main-thread fetch for Web Workers";
 
 const char kOffMainThreadFetchDescription[] =

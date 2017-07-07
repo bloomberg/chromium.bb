@@ -2886,6 +2886,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOffMainThreadFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kOffMainThreadFetch)},
 
+    {"enable-speculative-service-worker-start-on-query-input",
+     flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputName,
+     flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
+
 #if defined(OS_MACOSX)
     {"tab-strip-keyboard-focus", flag_descriptions::kTabStripKeyboardFocusName,
      flag_descriptions::kTabStripKeyboardFocusDescription, kOsMac,

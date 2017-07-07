@@ -687,6 +687,9 @@ extern const char kSoftwareRasterizerDescription[];
 extern const char kSpeculativePrefetchName[];
 extern const char kSpeculativePrefetchDescription[];
 
+extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
+extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
+
 extern const char kSpellingFeedbackFieldTrialName[];
 extern const char kSpellingFeedbackFieldTrialDescription[];
 

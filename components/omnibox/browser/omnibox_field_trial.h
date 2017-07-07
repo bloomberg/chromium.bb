@@ -42,6 +42,7 @@ extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const base::Feature kUIExperimentNarrowDropdown;
 extern const base::Feature kUIExperimentVerticalLayout;
 extern const base::Feature kUIExperimentVerticalMargin;
+extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 }
 
 // The set of parameters customizing the HUP scoring.
