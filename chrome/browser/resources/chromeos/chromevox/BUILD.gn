@@ -146,6 +146,7 @@ chromevox_modules = [
   "cvox2/background/panel_command.js",
   "cvox2/background/panel_menu.js",
   "cvox2/background/panel_menu_item.js",
+  "cvox2/background/recovery_strategy.js",
   "cvox2/background/tabs_automation_handler.js",
   "cvox2/background/tree_walker.js",
   "cvox2/background/tutorial.js",
@@ -679,6 +680,7 @@ js2gtest("chromevox_extjs_tests") {
     "cvox2/background/live_regions_test.extjs",
     "cvox2/background/output_test.extjs",
     "cvox2/background/panel_test.extjs",
+    "cvox2/background/recovery_strategy_test.extjs",
     "cvox2/background/tree_walker_test.extjs",
     "host/chrome/tts_background_test.extjs",
   ]
