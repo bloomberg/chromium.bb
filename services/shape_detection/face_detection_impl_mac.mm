@@ -14,15 +14,9 @@ namespace shape_detection {
 
 namespace {
 
-void RunCallbackWithFaces(
-    const shape_detection::mojom::FaceDetection::DetectCallback& callback,
-    std::vector<shape_detection::mojom::FaceDetectionResultPtr> results) {
-  callback.Run(std::move(results));
-}
-
 void RunCallbackWithNoFaces(
     shape_detection::mojom::FaceDetection::DetectCallback callback) {
-  callback.Run(std::vector<shape_detection::mojom::FaceDetectionResultPtr>());
+  std::move(callback).Run({});
 }
 
 }  // anonymous namespace
@@ -48,10 +42,9 @@ FaceDetectionImplMac::FaceDetectionImplMac(
 FaceDetectionImplMac::~FaceDetectionImplMac() {}
 
 void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
-                                  const DetectCallback& callback) {
+                                  DetectCallback callback) {
   media::ScopedResultCallback<DetectCallback> scoped_callback(
-      base::Bind(&RunCallbackWithFaces, callback),
-      base::Bind(&RunCallbackWithNoFaces));
+      std::move(callback), base::Bind(&RunCallbackWithNoFaces));
 
   base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)

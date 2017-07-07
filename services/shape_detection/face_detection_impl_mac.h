@@ -19,9 +19,9 @@ class FaceDetectionImplMac : public shape_detection::mojom::FaceDetection {
       shape_detection::mojom::FaceDetectorOptionsPtr options);
   ~FaceDetectionImplMac() override;
 
-  void Detect(const SkBitmap& bitmap,
-              const shape_detection::mojom::FaceDetection::DetectCallback&
-                  callback) override;
+  void Detect(
+      const SkBitmap& bitmap,
+      shape_detection::mojom::FaceDetection::DetectCallback callback) override;
 
  private:
   base::scoped_nsobject<CIDetector> detector_;

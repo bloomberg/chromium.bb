@@ -17,16 +17,9 @@ namespace shape_detection {
 
 namespace {
 
-void RunCallbackWithBarcodes(
-    const shape_detection::mojom::BarcodeDetection::DetectCallback& callback,
-    std::vector<shape_detection::mojom::BarcodeDetectionResultPtr> results) {
-  callback.Run(std::move(results));
-}
-
 void RunCallbackWithNoBarcodes(
     shape_detection::mojom::BarcodeDetection::DetectCallback callback) {
-  callback.Run(
-      std::vector<shape_detection::mojom::BarcodeDetectionResultPtr>());
+  std::move(callback).Run({});
 }
 
 }  // anonymous namespace
@@ -52,10 +45,9 @@ BarcodeDetectionImplMac::BarcodeDetectionImplMac() {
 BarcodeDetectionImplMac::~BarcodeDetectionImplMac() {}
 
 void BarcodeDetectionImplMac::Detect(const SkBitmap& bitmap,
-                                     const DetectCallback& callback) {
+                                     DetectCallback callback) {
   media::ScopedResultCallback<DetectCallback> scoped_callback(
-      base::Bind(&RunCallbackWithBarcodes, callback),
-      base::Bind(&RunCallbackWithNoBarcodes));
+      std::move(callback), base::Bind(&RunCallbackWithNoBarcodes));
 
   base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)
