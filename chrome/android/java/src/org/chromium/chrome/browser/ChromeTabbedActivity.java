@@ -1732,14 +1732,7 @@ public class ChromeTabbedActivity
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
-        // Close the bottom sheet before trying to navigate back.
-        if (getBottomSheet() != null
-                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
-            getBottomSheet().getBottomSheetMetrics().setSheetCloseReason(
-                    BottomSheetMetrics.CLOSED_BY_BACK_PRESS);
-            getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-            return true;
-        }
+        if (getBottomSheet() != null && getBottomSheet().handleBackPress()) return true;
 
         if (currentTab == null) {
             recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);
