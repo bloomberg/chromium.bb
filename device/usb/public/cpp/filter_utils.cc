@@ -4,7 +4,6 @@
 
 #include "device/usb/public/cpp/filter_utils.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_device.h"
 
 namespace device {
@@ -19,10 +18,8 @@ bool UsbDeviceFilterMatches(const mojom::UsbDeviceFilter& filter,
       return false;
   }
 
-  if (filter.serial_number &&
-      device.serial_number() != base::UTF8ToUTF16(*filter.serial_number)) {
+  if (filter.serial_number && device.serial_number() != *filter.serial_number)
     return false;
-  }
 
   if (filter.has_class_code) {
     for (const UsbConfigDescriptor& config : device.configurations()) {

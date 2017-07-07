@@ -4,7 +4,8 @@
 
 module device.mojom;
 
-import "device.mojom";
+import "device/usb/public/interfaces/device.mojom";
+import "mojo/common/string16.mojom";
 
 struct UsbDeviceFilter {
   bool has_vendor_id;
@@ -22,7 +23,7 @@ struct UsbDeviceFilter {
   bool has_protocol_code;
   uint8 protocol_code;
 
-  string? serial_number;
+  mojo.common.mojom.String16? serial_number;
 };
 
 struct UsbEnumerationOptions {

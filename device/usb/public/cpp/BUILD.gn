@@ -9,7 +9,6 @@ source_set("cpp") {
   ]
 
   deps = [
-    "//base",
     "//device/usb",
     "//device/usb/public/interfaces",
   ]

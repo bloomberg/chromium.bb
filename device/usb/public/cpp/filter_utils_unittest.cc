@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_descriptors.h"
@@ -125,7 +125,7 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
 
 TEST_F(UsbFilterTest, MatchSerialNumber) {
   auto filter = mojom::UsbDeviceFilter::New();
-  filter->serial_number = std::string("ABC123");
+  filter->serial_number = base::ASCIIToUTF16("ABC123");
   EXPECT_TRUE(UsbDeviceFilterMatches(*filter, *android_phone_));
   filter->has_vendor_id = true;
   filter->vendor_id = 0x18d1;
@@ -133,7 +133,7 @@ TEST_F(UsbFilterTest, MatchSerialNumber) {
   filter->vendor_id = 0x18d2;
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
   filter->vendor_id = 0x18d1;
-  filter->serial_number = std::string("DIFFERENT");
+  filter->serial_number = base::ASCIIToUTF16("DIFFERENT");
   EXPECT_FALSE(UsbDeviceFilterMatches(*filter, *android_phone_));
 }
 
