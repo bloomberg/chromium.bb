@@ -254,14 +254,17 @@ if (CONFIG_AV1_DECODER)
 
     if (EMSCRIPTEN)
       add_preproc_definition(_POSIX_SOURCE)
-      add_compiler_flag_if_supported("-s TOTAL_MEMORY=134217728")
-      add_compiler_flag_if_supported("-s MODULARIZE=1")
-      add_compiler_flag_if_supported("-s EXPORT_NAME=\"\'DecoderModule\'\"")
-      add_compiler_flag_if_supported("--memory-init-file 0")
+      append_link_flag_to_target("inspect" "-s TOTAL_MEMORY=134217728")
+      append_link_flag_to_target("inspect" "-s MODULARIZE=1")
+      append_link_flag_to_target("inspect"
+                                 "-s EXPORT_NAME=\"\'DecoderModule\'\"")
+      append_link_flag_to_target("inspect" "--memory-init-file 0")
+
       if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
         # Default to -O3 when no build type specified.
-        add_compiler_flag_if_supported("-O3")
+        append_compiler_flag("-O3")
       endif ()
+
       em_link_post_js(inspect "${AOM_ROOT}/tools/inspect-post.js")
     endif ()
   endif ()

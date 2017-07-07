@@ -11,6 +11,8 @@
     recent version of [nasm](http://www.nasm.us/).
  5. Building the documentation requires [doxygen](http://doxygen.org).
  6. Building the unit tests requires [Python](https://www.python.org/).
+ 7. Emscripten builds require the portable
+   [EMSDK](https://kripken.github.io/emscripten-site/index.html).
 
 ### Basic build
 
@@ -115,6 +117,49 @@ demonstrates generating an Xcode project:
 
     $ cmake path/to/aom -G Xcode
 
+### Emscripten builds
+
+Building the AV1 codec library with Emscripten is supported. Typically this is
+used to hook into the AOMAnalyzer GUI application. These instructions focus on
+using the inspector with AOMAnalyzer, but all tools can be built with
+Emscripten.
+
+It is assumed here that you have already downloaded and installed the EMSDK,
+installed and activated at least one toolchain, and setup your environment
+appropriately using the emsdk\_env script.
+
+1. Download [AOMAnalyzer](https://people.xiph.org/~mbebenita/analyzer/).
+
+2. Configure the build:
+
+~~~
+    $ cmake path/to/aom \
+        -DENABLE_CCACHE=1 \
+        -DAOM_TARGET_CPU=generic \
+        -DENABLE_DOCS=0 \
+        -DCONFIG_ACCOUNTING=1 \
+        -DCONFIG_INSPECTION=1 \
+        -DCONFIG_MULTITHREAD=0 \
+        -DCONFIG_RUNTIME_CPU_DETECT=0 \
+        -DCONFIG_UNIT_TESTS=0 \
+        -DCONFIG_WEBM_IO=0 \
+        -DCMAKE_TOOLCHAIN_FILE=path/to/emsdk-portable/.../Emscripten.cmake
+~~~
+
+3. Build it: run make if that's your generator of choice:
+
+~~~
+    $ make inspect
+~~~
+
+4. Run the analyzer:
+
+~~~
+    # inspect.js is in the examples sub directory of the directory in which you
+    # executed cmake.
+    $ path/to/AOMAnalyzer path/to/examples/inspect.js path/to/av1/input/file
+~~~
+
 
 ## Testing the AV1 codec
 
@@ -198,3 +243,4 @@ please email aomediacodec@jointdevelopment.kavi.com for help.
 
 Bug reports can be filed in the Alliance for Open Media
 [issue tracker](https://bugs.chromium.org/p/aomedia/issues/list).
+
