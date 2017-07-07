@@ -910,16 +910,19 @@ void ScriptLoader::Execute() {
   DCHECK(!will_be_parser_executed_);
   DCHECK(async_exec_type_ != ScriptRunner::kNone);
   DCHECK(pending_script_->IsExternalOrModule());
+  DCHECK_EQ(pending_script_->IsExternal(), is_external_script_);
   bool error_occurred = false;
   Script* script = pending_script_->GetSource(NullURL(), error_occurred);
   const bool wasCanceled = pending_script_->WasCanceled();
+  const bool is_external = pending_script_->IsExternal();
   DetachPendingScript();
   if (error_occurred) {
     DispatchErrorEvent();
   } else if (!wasCanceled) {
     switch (ExecuteScript(script)) {
       case ExecuteScriptResult::kShouldFireLoadEvent:
-        DispatchLoadEvent();
+        if (is_external)
+          DispatchLoadEvent();
         break;
       case ExecuteScriptResult::kShouldFireErrorEvent:
         DispatchErrorEvent();
