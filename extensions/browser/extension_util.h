@@ -16,16 +16,12 @@ class StoragePartition;
 
 namespace extensions {
 class Extension;
-struct ExtensionInfo;
 
 namespace util {
 
 // TODO(benwells): Move functions from
 // chrome/browser/extensions/extension_util.h/cc that are only dependent on
 // extensions/ here.
-
-// Returns true if the extension has isolated storage.
-bool HasIsolatedStorage(const ExtensionInfo& info);
 
 // Returns true if the site URL corresponds to an extension or app and has
 // isolated storage.
