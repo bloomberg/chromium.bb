@@ -838,6 +838,12 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
+        'vars = {',
+        '  # src',
+        '  "DummyVariable": \'repo\',',
+        '',
+        '}',
+        '',
     ], deps_contents.splitlines())
 
 
