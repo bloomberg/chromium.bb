@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/exo/keyboard.h"
+
 #include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/macros.h"
 #include "components/exo/buffer.h"
-#include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
+#include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 
@@ -33,6 +37,16 @@ class MockKeyboardDelegate : public KeyboardDelegate {
   MOCK_METHOD1(OnKeyboardLeave, void(Surface*));
   MOCK_METHOD3(OnKeyboardKey, void(base::TimeTicks, ui::DomCode, bool));
   MOCK_METHOD1(OnKeyboardModifiers, void(int));
+};
+
+class MockKeyboardDeviceConfigurationDelegate
+    : public KeyboardDeviceConfigurationDelegate {
+ public:
+  MockKeyboardDeviceConfigurationDelegate() {}
+
+  // Overridden from KeyboardDeviceConfigurationDelegate:
+  MOCK_METHOD1(OnKeyboardDestroying, void(Keyboard*));
+  MOCK_METHOD1(OnKeyboardTypeChanged, void(bool));
 };
 
 TEST_F(KeyboardTest, OnKeyboardEnter) {
@@ -187,6 +201,55 @@ TEST_F(KeyboardTest, OnKeyboardModifiers) {
 
   EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
+}
+
+TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+
+  ui::DeviceDataManager* device_data_manager =
+      ui::DeviceDataManager::GetInstance();
+  ASSERT_TRUE(device_data_manager != nullptr);
+  const std::vector<ui::InputDevice> keyboards =
+      device_data_manager->GetKeyboardDevices();
+
+  ash::MaximizeModeController* maximize_mode_controller =
+      ash::Shell::Get()->maximize_mode_controller();
+  maximize_mode_controller->EnableMaximizeModeWindowManager(true);
+
+  MockKeyboardDelegate delegate;
+  std::unique_ptr<Keyboard> keyboard(new Keyboard(&delegate));
+  MockKeyboardDeviceConfigurationDelegate configuration_delegate;
+
+  EXPECT_CALL(configuration_delegate, OnKeyboardTypeChanged(true));
+  keyboard->SetDeviceConfigurationDelegate(&configuration_delegate);
+  EXPECT_TRUE(keyboard->HasDeviceConfigurationDelegate());
+
+  // Removing all keyboard devices in maximize mode calls
+  // OnKeyboardTypeChanged() with false.
+  EXPECT_CALL(configuration_delegate, OnKeyboardTypeChanged(false));
+  static_cast<ui::DeviceHotplugEventObserver*>(device_data_manager)
+      ->OnKeyboardDevicesUpdated(std::vector<ui::InputDevice>({}));
+
+  // Re-adding keyboards calls OnKeyboardTypeChanged() with true;
+  EXPECT_CALL(configuration_delegate, OnKeyboardTypeChanged(true));
+  static_cast<ui::DeviceHotplugEventObserver*>(device_data_manager)
+      ->OnKeyboardDevicesUpdated(keyboards);
+
+  EXPECT_CALL(delegate, OnKeyboardDestroying(keyboard.get()));
+  EXPECT_CALL(configuration_delegate, OnKeyboardDestroying(keyboard.get()));
+  keyboard.reset();
+
+  maximize_mode_controller->EnableMaximizeModeWindowManager(false);
 }
 
 }  // namespace
