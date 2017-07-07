@@ -69,9 +69,10 @@ void WebContentsCoordinationUnitImpl::RecalculateProperty(
     const mojom::PropertyType property_type) {
   if (property_type == mojom::PropertyType::kCPUUsage) {
     double cpu_usage = CalculateCPUUsage();
-
-    SetProperty(mojom::PropertyType::kCPUUsage,
-                base::MakeUnique<base::Value>(cpu_usage));
+    mojom::PropertyPtr property =
+        mojom::Property::New(mojom::PropertyType::kCPUUsage,
+                             base::MakeUnique<base::Value>(cpu_usage));
+    SetProperty(std::move(property));
   }
 }
 

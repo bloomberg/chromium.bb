@@ -84,8 +84,8 @@ ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
 }
 
 void ProcessCoordinationUnitImpl::PropagateProperty(
-    mojom::PropertyType property_type,
-    const base::Value& value) {
+    const mojom::PropertyPtr& property) {
+  mojom::PropertyType property_type = property->property_type;
   // Trigger tab coordination units to recalculate their CPU usage.
   if (property_type == mojom::PropertyType::kCPUUsage) {
     for (auto* tab_coordination_unit : GetAssociatedCoordinationUnitsOfType(
@@ -98,9 +98,9 @@ void ProcessCoordinationUnitImpl::PropagateProperty(
 
 void ProcessCoordinationUnitImpl::MeasureProcessCPUUsage() {
   double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
-
-  SetProperty(mojom::PropertyType::kCPUUsage,
-              base::MakeUnique<base::Value>(cpu_usage));
+  mojom::PropertyPtr property = mojom::Property::New(
+      mojom::PropertyType::kCPUUsage, base::MakeUnique<base::Value>(cpu_usage));
+  SetProperty(std::move(property));
 
   repeating_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCPUProfilingIntervalInSeconds),
