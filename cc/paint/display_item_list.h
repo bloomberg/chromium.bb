@@ -126,7 +126,6 @@ class CC_PAINT_EXPORT DisplayItemList
 
   gfx::Rect VisualRectForTesting(int index) { return visual_rects_[index]; }
 
-  void GatherDiscardableImages(DiscardableImageStore* image_store) const;
   const DiscardableImageMap& discardable_image_map_for_testing() const {
     return image_map_;
   }
@@ -180,8 +179,6 @@ class CC_PAINT_EXPORT DisplayItemList
   // For debugging, tracks if we're painting a visual rect range, to prevent
   // nesting.
   bool in_painting_ = false;
-
-  size_t op_count_ = 0u;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);
