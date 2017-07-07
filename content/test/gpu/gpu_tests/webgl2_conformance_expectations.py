@@ -42,9 +42,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
-    # TODO(kbr): remove following suppression during next WebGL conformance
-    # roll.
-    self.Fail('conformance2/extensions/ext-color-buffer-float.html', bug=736499)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
@@ -56,6 +53,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=483282) # owner:cwallez, test might be buggy
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=625738)
+
+    # Need to implement new lifetime/deletion semantics.
+    self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
 
     self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
         bug=1966) # angle bug ID
@@ -653,9 +653,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
 
     # Linux Intel
-    # TODO(kbr): re-enable after next conformance roll. crbug.com/736499
-    # self.Fail('conformance2/extensions/ext-color-buffer-float.html',
-    #     ['linux', 'intel'], bug=640389)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['linux', 'intel'], bug=640389)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['linux', 'intel'], bug=687210)
 
