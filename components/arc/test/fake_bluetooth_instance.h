@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
