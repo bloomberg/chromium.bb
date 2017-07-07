@@ -247,10 +247,18 @@ AutomationRichEditableText.prototype = {
     // extended from anchor or focus. The default behavior is to compute lines
     // via focus.
     var baseLineOnStart = prevFocusLine.isSameLineAndSelection(focusLine);
+    var isSameSelection =
+        baseLineOnStart && prevAnchorLine.isSameLineAndSelection(anchorLine);
 
-    var cur = new editing.EditableLine(
-        root.anchorObject, root.anchorOffset, root.focusObject,
-        root.focusOffset, baseLineOnStart);
+    var cur;
+    if (isSameSelection && this.line_) {
+      // Nothing changed, return.
+      return;
+    } else {
+      cur = new editing.EditableLine(
+          root.anchorObject, root.anchorOffset, root.focusObject,
+          root.focusOffset, baseLineOnStart);
+    }
     var prev = this.line_;
     this.line_ = cur;
 
@@ -311,8 +319,64 @@ AutomationRichEditableText.prototype = {
           .go();
     } else if (!cur.hasCollapsedSelection()) {
       // This is a selection.
-      cvox.ChromeVox.tts.speak(cur.selectedText, cvox.QueueMode.CATEGORY_FLUSH);
-      cvox.ChromeVox.tts.speak(Msgs.getMsg('selected'), cvox.QueueMode.QUEUE);
+
+      // Speech requires many more states than braille.
+      // TODO(dtseng): base/extent and anchor/focus are mismatched in AX. Swap
+      // once this works.
+      var curBase = baseLineOnStart ? focusLine : anchorLine;
+      var curExtent = baseLineOnStart ? anchorLine : focusLine;
+      var text = '';
+      var suffixMsg = '';
+      if (curBase.isBeforeLine(curExtent)) {
+        // Forward selection.
+        if (prev.isBeforeLine(curBase)) {
+          // Wrapped across the baseline. Read out the new selection.
+          suffixMsg = 'selected';
+          text = this.getTextSelection_(
+              curBase.startContainer_, curBase.localStartOffset,
+              curExtent.endContainer_, curExtent.localEndOffset);
+        } else {
+          if (prev.isBeforeLine(curExtent)) {
+            // Grew.
+            suffixMsg = 'selected';
+            text = this.getTextSelection_(
+                prev.endContainer_, prev.localEndOffset,
+                curExtent.endContainer_, curExtent.localEndOffset);
+          } else {
+            // Shrank.
+            suffixMsg = 'unselected';
+            text = this.getTextSelection_(
+                curExtent.endContainer_, curExtent.localEndOffset,
+                prev.endContainer_, prev.localEndOffset);
+          }
+        }
+      } else {
+        // Backward selection.
+        if (curBase.isBeforeLine(prev)) {
+          // Wrapped across the baseline. Read out the new selection.
+          suffixMsg = 'selected';
+          text = this.getTextSelection_(
+              curExtent.startContainer_, curExtent.localStartOffset,
+              curBase.endContainer_, curBase.localEndOffset);
+        } else {
+          if (curExtent.isBeforeLine(prev)) {
+            // Grew.
+            suffixMsg = 'selected';
+            text = this.getTextSelection_(
+                curExtent.startContainer_, curExtent.localStartOffset,
+                prev.startContainer_, prev.localStartOffset);
+          } else {
+            // Shrank.
+            suffixMsg = 'unselected';
+            text = this.getTextSelection_(
+                prev.startContainer_, prev.localStartOffset,
+                curExtent.startContainer_, curExtent.localStartOffset);
+          }
+        }
+      }
+
+      cvox.ChromeVox.tts.speak(text, cvox.QueueMode.CATEGORY_FLUSH);
+      cvox.ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), cvox.QueueMode.QUEUE);
       this.brailleCurrentRichLine_();
     } else {
       // Describe the current line. This accounts for previous/current
@@ -328,6 +392,40 @@ AutomationRichEditableText.prototype = {
     this.value = cur.text;
     this.start = cur.startOffset;
     this.end = cur.endOffset;
+  },
+
+  /**
+   * @param {AutomationNode|undefined} startNode
+   * @param {number} startOffset
+   * @param {AutomationNode|undefined} endNode
+   * @param {number} endOffset
+   * @return {string}
+   */
+  getTextSelection_: function(startNode, startOffset, endNode, endOffset) {
+    if (!startNode || !endNode)
+      return '';
+
+    if (startNode == endNode) {
+      return startNode.name ? startNode.name.substring(startOffset, endOffset) :
+                              '';
+    }
+
+    var text = '';
+    if (startNode.name)
+      text = startNode.name.substring(startOffset);
+
+    for (var node = startNode;
+         (node = AutomationUtil.findNextNode(
+              node, Dir.FORWARD, AutomationPredicate.leafOrStaticText)) &&
+         node != endNode;) {
+      // Padding needs to get added to break up speech utterances.
+      if (node.name)
+        text += ' ' + node.name;
+    }
+
+    if (endNode.name)
+      text += ' ' + endNode.name.substring(0, endOffset);
+    return text;
   },
 
   /**
@@ -537,6 +635,8 @@ editing.EditableLine = function(
   this.end_ = this.end_.deepEquivalent || this.end_;
   /** @private {number} */
   this.localContainerStartOffset_ = startIndex;
+  /** @private {number} */
+  this.localContainerEndOffset_ = endIndex;
 
   // Computed members.
   /** @private {Spannable} */
@@ -577,10 +677,16 @@ editing.EditableLine.prototype = {
     if (lineBase.node == lineExtend.node)
       this.value_.setSpan(lineExtend, 0, nameLen);
 
+    this.startContainer_ = this.start_.node;
+    if (this.startContainer_.role == RoleType.INLINE_TEXT_BOX)
+      this.startContainer_ = this.startContainer_.parent;
+    this.endContainer_ = this.end_.node;
+    if (this.endContainer_.role == RoleType.INLINE_TEXT_BOX)
+      this.endContainer_ = this.endContainer_.parent;
+
     // Initialize defaults.
     this.lineStart_ = lineBase.node;
     this.lineEnd_ = this.lineStart_;
-    this.startContainer_ = this.lineStart_.parent;
     this.lineStartContainer_ = this.lineStart_.parent;
     this.lineEndContainer_ = this.lineStart_.parent;
 
@@ -733,7 +839,7 @@ editing.EditableLine.prototype = {
    * @return {number}
    */
   get localStartOffset() {
-    return this.startOffset - this.containerStartOffset;
+    return this.localContainerStartOffset_;
   },
 
   /**
@@ -742,7 +848,7 @@ editing.EditableLine.prototype = {
    * @return {number}
    */
   get localEndOffset() {
-    return this.endOffset - this.containerStartOffset;
+    return this.localContainerEndOffset_;
   },
 
   /**
@@ -809,6 +915,19 @@ editing.EditableLine.prototype = {
     return this.isSameLine(otherLine) &&
         this.startOffset == otherLine.startOffset &&
         this.endOffset == otherLine.endOffset;
+  },
+
+  /**
+   * Returns whether this line comes before |otherLine| in document order.
+   * @return {boolean}
+   */
+  isBeforeLine: function(otherLine) {
+    if (this.isSameLine(otherLine) || !this.lineStartContainer_ ||
+        !otherLine.lineStartContainer_)
+      return false;
+    return AutomationUtil.getDirection(
+               this.lineStartContainer_, otherLine.lineStartContainer_) ==
+        Dir.FORWARD;
   }
 };
 
