@@ -187,8 +187,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                           const gfx::QuadF* clip_region);
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const gfx::QuadF* clip_region);
-  void DrawTextureQuad(const TextureDrawQuad* quad,
-                       const gfx::QuadF* clip_region);
   void EnqueueTextureQuad(const TextureDrawQuad* quad,
                           const gfx::QuadF* clip_region);
   void FlushTextureQuadCache(BoundGeometry flush_binding);
