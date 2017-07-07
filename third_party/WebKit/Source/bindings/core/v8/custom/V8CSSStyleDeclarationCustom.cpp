@@ -49,8 +49,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringConcatenate.h"
 
-using namespace WTF;
-
 namespace blink {
 
 // Check for a CSS prefix.
@@ -161,7 +159,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
         property_names.push_back(getJSPropertyName(property_id));
     }
     std::sort(property_names.begin(), property_names.end(),
-              CodePointCompareLessThan);
+              WTF::CodePointCompareLessThan);
     property_names_length = property_names.size();
   }
 
