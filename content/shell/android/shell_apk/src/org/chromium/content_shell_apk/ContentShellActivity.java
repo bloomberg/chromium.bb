@@ -146,7 +146,8 @@ public class ContentShellActivity extends Activity {
         super.onSaveInstanceState(outState);
         ContentViewCore contentViewCore = getActiveContentViewCore();
         if (contentViewCore != null) {
-            outState.putString(ACTIVE_SHELL_URL_KEY, contentViewCore.getWebContents().getUrl());
+            outState.putString(
+                    ACTIVE_SHELL_URL_KEY, contentViewCore.getWebContents().getLastCommittedUrl());
         }
 
         mWindowAndroid.saveInstanceState(outState);

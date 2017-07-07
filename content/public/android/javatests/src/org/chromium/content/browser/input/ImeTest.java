@@ -630,7 +630,7 @@ public class ImeTest {
 
     private void reloadPage() throws Throwable {
         // Reload the page, then focus will be lost and keyboard should be hidden.
-        mRule.fullyLoadUrl(mRule.getContentViewCore().getWebContents().getUrl());
+        mRule.fullyLoadUrl(mRule.getContentViewCore().getWebContents().getLastCommittedUrl());
     }
 
     @Test

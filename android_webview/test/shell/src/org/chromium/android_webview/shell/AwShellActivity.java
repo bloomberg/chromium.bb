@@ -247,7 +247,7 @@ public class AwShellActivity extends Activity {
                 mNextButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
                 mPrevButton.setVisibility(hasFocus ? View.GONE : View.VISIBLE);
                 if (!hasFocus) {
-                    mUrlTextView.setText(mWebContents.getUrl());
+                    mUrlTextView.setText(mWebContents.getVisibleUrl());
                 }
             }
         });

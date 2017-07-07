@@ -35,7 +35,10 @@ public class ContentShellUrlTest {
         Assert.assertNotNull(activity);
 
         // Make sure that the URL is set as expected.
-        Assert.assertEquals(
-                URL, activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
+        Assert.assertEquals(URL,
+                activity.getActiveShell()
+                        .getContentViewCore()
+                        .getWebContents()
+                        .getVisibleUrl());
     }
 }

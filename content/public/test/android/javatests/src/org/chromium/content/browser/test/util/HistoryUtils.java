@@ -100,11 +100,11 @@ public class HistoryUtils {
     }
 
     /**
-     * Calls {@link NavigationController#getHostname()} on UI Thread to get the current URL.
+     * Calls {@link WebContents#getLastCommittedUrl()} on UI Thread to get the current URL.
      *
      * @param instrumentation an Instrumentation instance.
      * @param contentViewCore a ContentViewCore instance.
-     * @return the URL of the current page
+     * @return the last committed URL of the provided ContentViewCore.
      * @throws Throwable
      */
     public static String getUrlOnUiThread(Instrumentation instrumentation,
@@ -113,7 +113,7 @@ public class HistoryUtils {
                 instrumentation, new Callable<String>() {
                     @Override
                     public String call() throws Exception {
-                        return webContents.getUrl();
+                        return webContents.getLastCommittedUrl();
                     }
                 });
     }
