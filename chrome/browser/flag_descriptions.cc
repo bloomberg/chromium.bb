@@ -2397,14 +2397,6 @@ const char kEnableNtpRemoteSuggestionsDescription[] =
     "allows to override the source used to retrieve these server-side "
     "suggestions.";
 
-const char kEnableNtpRecentOfflineTabSuggestionsName[] =
-    "Show recent offline tabs on the New Tab page";
-
-const char kEnableNtpRecentOfflineTabSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain pages that were captured offline during browsing (see "
-    "#offlining-recent-pages)";
-
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 
@@ -2426,14 +2418,6 @@ const char kEnableNtpBookmarkSuggestionsName[] =
 const char kEnableNtpBookmarkSuggestionsDescription[] =
     "If enabled, the list of content suggestions on the New Tab page will "
     "contain recently visited bookmarks.";
-
-const char kEnableNtpPhysicalWebPageSuggestionsName[] =
-    "Show Physical Web pages on the New Tab page";
-
-const char kEnableNtpPhysicalWebPageSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain pages that are available through Physical Web (see "
-    "#enable-physical-web)";
 
 const char kEnableNtpForeignSessionsSuggestionsName[] =
     "Show recent foreign tabs on the New Tab page";
