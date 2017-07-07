@@ -216,7 +216,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
-  EXPECT_EQ(0, results.archived_binary.size());
+  EXPECT_EQ(1, results.archived_binary.size());
   ASSERT_EQ(1u, results.archived_archive_filenames.size());
   EXPECT_EQ(FILE_PATH_LITERAL("hello.zip"),
             results.archived_archive_filenames[0].value());
@@ -229,7 +229,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
-  EXPECT_EQ(0, results.archived_binary.size());
+  EXPECT_EQ(1, results.archived_binary.size());
   ASSERT_EQ(1u, results.archived_archive_filenames.size());
   EXPECT_EQ(FILE_PATH_LITERAL("hello.rar"),
             results.archived_archive_filenames[0].value());
@@ -242,7 +242,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
-  ASSERT_EQ(1, results.archived_binary.size());
+  ASSERT_EQ(2, results.archived_binary.size());
   ExpectBinary(kSignedExe, results.archived_binary.Get(0));
   ASSERT_EQ(1u, results.archived_archive_filenames.size());
   EXPECT_EQ(FILE_PATH_LITERAL("hello.7z"),
@@ -258,7 +258,7 @@ TEST_F(SandboxedZipAnalyzerTest,
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_TRUE(results.has_archive);
-  ASSERT_EQ(2, results.archived_binary.size());
+  ASSERT_EQ(3, results.archived_binary.size());
 
   BinaryData SignedExe = kSignedExe;
   SignedExe.file_basename = "signed.exe ";

@@ -65,7 +65,7 @@ void AnalyzeContainedFile(
     const base::FilePath& file_path,
     zip::ZipReader* reader,
     base::File* temp_file,
-    ClientDownloadRequest_ArchivedBinary* archived_binary) {
+    ClientDownloadRequest::ArchivedBinary* archived_binary) {
   std::string file_basename(file_path.BaseName().AsUTF8Unsafe());
   if (base::StreamingUtf8Validator::Validate(file_basename))
     archived_binary->set_file_basename(file_basename);
@@ -121,6 +121,13 @@ void AnalyzeZipFile(base::File zip_file,
       DVLOG(2) << "Downloaded a zipped archive: " << file.value();
       results->has_archive = true;
       archived_archive_filenames.insert(file.BaseName());
+      ClientDownloadRequest::ArchivedBinary* archived_archive =
+          results->archived_binary.Add();
+      std::string file_basename_utf8(file.BaseName().AsUTF8Unsafe());
+      if (base::StreamingUtf8Validator::Validate(file_basename_utf8))
+        archived_archive->set_file_basename(file_basename_utf8);
+      archived_archive->set_download_type(
+          ClientDownloadRequest::ZIPPED_ARCHIVE);
     } else if (FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file)) {
       DVLOG(2) << "Downloaded a zipped executable: " << file.value();
       results->has_executable = true;
