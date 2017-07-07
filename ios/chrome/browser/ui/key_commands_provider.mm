@@ -156,7 +156,7 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_IOS_ACCNAME_RELOAD)
                                     action:^{
-                                      execute(IDC_RELOAD);
+                                      [weakDispatcher reload];
                                     }],
     ]];
 
@@ -247,7 +247,7 @@
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      execute(IDC_STOP);
+                                      [weakDispatcher stopLoading];
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"?"
                              modifierFlags:UIKeyModifierCommand

@@ -38,4 +38,11 @@ extern NSString* const kToolsMenuHelpId;
 // Request mobile item accessibility Identifier.
 extern NSString* const kToolsMenuRequestMobileId;
 
+// Identifiers for tools menu items (for metrics purposes).
+typedef NS_ENUM(int, ToolsMenuItemID) {
+  // All of these values must be < 0.
+  TOOLS_STOP_ITEM = -1,
+  TOOLS_RELOAD_ITEM = -2,
+};
+
 #endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONSTANTS_H_
