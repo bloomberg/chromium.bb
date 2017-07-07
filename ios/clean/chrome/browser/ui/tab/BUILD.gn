@@ -63,6 +63,7 @@ source_set("unit_tests") {
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/shared/chrome/browser/ui/coordinators:test_support",
+    "//ios/shared/chrome/browser/ui/tab:test_support",
     "//ios/shared/chrome/browser/ui/toolbar:test_support",
     "//ios/web/public/test",
     "//testing/gtest",

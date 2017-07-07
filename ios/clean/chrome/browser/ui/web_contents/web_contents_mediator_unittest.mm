@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_consumer.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -31,31 +31,15 @@
 
 namespace {
 
-class StubNavigationManager : public web::TestNavigationManager {
- public:
-  int GetItemCount() const override { return item_count_; }
-
-  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {
-    has_loaded_url_ = true;
-  }
-
-  void SetItemCount(int count) { item_count_ = count; }
-  bool GetHasLoadedUrl() { return has_loaded_url_; }
-
- private:
-  int item_count_;
-  bool has_loaded_url_;
-};
-
 class WebContentsMediatorTest : public PlatformTest {
  public:
   WebContentsMediatorTest() {
-    auto navigation_manager = base::MakeUnique<StubNavigationManager>();
+    auto navigation_manager = base::MakeUnique<TabNavigationManager>();
     navigation_manager->SetItemCount(0);
     test_web_state_.SetView([[UIView alloc] init]);
     test_web_state_.SetNavigationManager(std::move(navigation_manager));
 
-    auto new_navigation_manager = base::MakeUnique<StubNavigationManager>();
+    auto new_navigation_manager = base::MakeUnique<TabNavigationManager>();
     new_test_web_state_.SetView([[UIView alloc] init]);
     new_test_web_state_.SetNavigationManager(std::move(new_navigation_manager));
 
@@ -63,13 +47,13 @@ class WebContentsMediatorTest : public PlatformTest {
   }
   ~WebContentsMediatorTest() override { [mediator_ disconnect]; }
 
-  StubNavigationManager* navigation_manager() {
-    return static_cast<StubNavigationManager*>(
+  TabNavigationManager* navigation_manager() {
+    return static_cast<TabNavigationManager*>(
         test_web_state_.GetNavigationManager());
   }
 
-  StubNavigationManager* new_navigation_manager() {
-    return static_cast<StubNavigationManager*>(
+  TabNavigationManager* new_navigation_manager() {
+    return static_cast<TabNavigationManager*>(
         new_test_web_state_.GetNavigationManager());
   }
 
