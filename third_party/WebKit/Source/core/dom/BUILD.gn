@@ -329,6 +329,8 @@ blink_core_sources("dom") {
     "StyleSheetCollection.h",
     "SuspendableObject.cpp",
     "SuspendableObject.h",
+    "SyncReattachContext.cpp",
+    "SyncReattachContext.h",
     "SynchronousMutationNotifier.cpp",
     "SynchronousMutationNotifier.h",
     "SynchronousMutationObserver.cpp",

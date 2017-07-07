@@ -95,6 +95,7 @@ class CORE_EXPORT HTMLPlugInElement
   // Node functions:
   void RemovedFrom(ContainerNode* insertion_point) override;
   void DidMoveToNewDocument(Document& old_document) override;
+  void AttachLayoutTree(AttachContext&) override;
 
   // Element functions:
   bool IsPresentationAttribute(const QualifiedName&) const override;
@@ -133,7 +134,6 @@ class CORE_EXPORT HTMLPlugInElement
   bool CanStartSelection() const override;
   bool WillRespondToMouseClickEvents() final;
   void DefaultEventHandler(Event*) final;
-  void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void FinishParsingChildren() final;
 

@@ -34,6 +34,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/SyncReattachContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/FormAssociated.h"
@@ -415,6 +416,7 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
 }
 
 void HTMLImageElement::AttachLayoutTree(AttachContext& context) {
+  SyncReattachContext reattach_context(context);
   HTMLElement::AttachLayoutTree(context);
   if (GetLayoutObject() && GetLayoutObject()->IsImage()) {
     LayoutImage* layout_image = ToLayoutImage(GetLayoutObject());
@@ -853,10 +855,10 @@ void HTMLImageElement::SetLayoutDisposition(
 
   layout_disposition_ = layout_disposition;
 
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
-  // so we need to reattach synchronously here.
   if (GetDocument().InStyleRecalc()) {
-    ReattachLayoutTree();
+    // This can happen inside of AttachLayoutTree() in the middle of a
+    // RebuildLayoutTree, so we need to reattach synchronously here.
+    ReattachLayoutTree(SyncReattachContext::CurrentAttachContext());
   } else {
     if (layout_disposition_ == LayoutDisposition::kFallbackContent) {
       EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;

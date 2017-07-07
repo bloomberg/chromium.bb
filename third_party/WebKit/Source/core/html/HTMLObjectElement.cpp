@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/SyncReattachContext.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
@@ -347,12 +348,13 @@ const AtomicString HTMLObjectElement::ImageSourceURL() const {
 
 // TODO(schenney): crbug.com/572908 Remove this hack.
 void HTMLObjectElement::ReattachFallbackContent() {
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
-  // so we need to reattach synchronously here.
-  if (GetDocument().InStyleRecalc())
-    ReattachLayoutTree();
-  else
+  if (GetDocument().InStyleRecalc()) {
+    // This can happen inside of AttachLayoutTree() in the middle of a
+    // RebuildLayoutTree, so we need to reattach synchronously here.
+    ReattachLayoutTree(SyncReattachContext::CurrentAttachContext());
+  } else {
     LazyReattachIfAttached();
+  }
 }
 
 void HTMLObjectElement::RenderFallbackContent() {
@@ -441,6 +443,11 @@ bool HTMLObjectElement::WillUseFallbackContentAtLayout() const {
 
 void HTMLObjectElement::AssociateWith(HTMLFormElement* form) {
   AssociateByParser(form);
-};
+}
+
+void HTMLObjectElement::AttachLayoutTree(AttachContext& context) {
+  SyncReattachContext reattach_context(context);
+  HTMLPlugInElement::AttachLayoutTree(context);
+}
 
 }  // namespace blink
