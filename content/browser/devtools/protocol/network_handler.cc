@@ -508,7 +508,7 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 Response NetworkHandler::Disable() {
   enabled_ = false;
   user_agent_ = std::string();
-  EnableRequestInterception(false);
+  SetRequestInterceptionEnabled(false);
   return Response::FallThrough();
 }
 
@@ -826,7 +826,7 @@ std::string NetworkHandler::UserAgentOverride() const {
   return enabled_ ? user_agent_ : std::string();
 }
 
-DispatchResponse NetworkHandler::EnableRequestInterception(bool enabled) {
+DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(bool enabled) {
   if (interception_enabled_ == enabled)
     return Response::OK();  // Nothing to do.
 

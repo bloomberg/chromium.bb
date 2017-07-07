@@ -83,14 +83,14 @@ InspectorTest.startInterceptionTest = function(requestInterceptedDict,
         }
         InspectorTest.log("Network agent enabled");
         InspectorTest.sendCommand(
-            "Network.enableRequestInterception", {"enabled": true},
-            didEnableRequestInterception);
+            "Network.setRequestInterceptionEnabled", {"enabled": true},
+            didSetRequestInterceptionEnabled);
     }
 
-    function didEnableRequestInterception(messageObject)
+    function didSetRequestInterceptionEnabled(messageObject)
     {
         if (messageObject.error) {
-            completeTest("FAIL: Couldn't enable fetch interception" +
+            completeTest("FAIL: Couldn't enable fetch interception " +
                                     messageObject.error.message);
             return;
         }
@@ -256,7 +256,7 @@ InspectorTest.mockResponse = function(event, rawResponse) {
 InspectorTest.disableRequestInterception = function(event) {
     var id = canonicalId(event.params.interceptionId);
     log(id, "----- disableRequestInterception -----");
-    InspectorTest.sendCommand("Network.enableRequestInterception", {
+    InspectorTest.sendCommand("Network.setRequestInterceptionEnabled", {
         "enabled": false,
     });
 }

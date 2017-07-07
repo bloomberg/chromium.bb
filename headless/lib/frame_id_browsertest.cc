@@ -203,8 +203,8 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
     if (EnableInterception()) {
       devtools_client_->GetNetwork()
           ->GetExperimental()
-          ->EnableRequestInterception(
-              network::EnableRequestInterceptionParams::Builder()
+          ->SetRequestInterceptionEnabled(
+              network::SetRequestInterceptionEnabledParams::Builder()
                   .SetEnabled(true)
                   .Build());
     }
