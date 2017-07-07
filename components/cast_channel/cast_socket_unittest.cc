@@ -9,11 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -27,13 +29,20 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/cert/pem_tokenizer.h"
+#include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/ssl_server_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/socket/tcp_server_socket.h"
 #include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +50,6 @@
 
 const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
-using ::testing::_;
 using ::testing::A;
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -49,8 +57,10 @@ using ::testing::InvokeArgument;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::_;
 
 namespace cast_channel {
+namespace {
 const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 
 // Returns an auth challenge message inline.
@@ -81,6 +91,16 @@ CastMessage CreateTestMessage() {
   test_message.set_payload_type(CastMessage::STRING);
   test_message.set_payload_utf8("payload");
   return test_message;
+}
+
+base::FilePath GetTestCertsDirectory() {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.Append(FILE_PATH_LITERAL("components"));
+  path = path.Append(FILE_PATH_LITERAL("test"));
+  path = path.Append(FILE_PATH_LITERAL("data"));
+  path = path.Append(FILE_PATH_LITERAL("cast_channel"));
+  return path;
 }
 
 class MockTCPSocket : public net::TCPClientSocket {
@@ -142,18 +162,6 @@ class MockTCPSocket : public net::TCPClientSocket {
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
 };
 
-class MockDelegate : public CastTransport::Delegate {
- public:
-  MockDelegate() {}
-  virtual ~MockDelegate() {}
-  MOCK_METHOD1(OnError, void(ChannelError error_state));
-  MOCK_METHOD1(OnMessage, void(const CastMessage& message));
-  MOCK_METHOD0(Start, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
-};
-
 class CompleteHandler {
  public:
   CompleteHandler() {}
@@ -167,31 +175,23 @@ class CompleteHandler {
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
 
-class TestCastSocket : public CastSocketImpl {
+class TestCastSocketBase : public CastSocketImpl {
  public:
-  static std::unique_ptr<TestCastSocket> CreateSecure(
-      Logger* logger,
-      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
-    return std::unique_ptr<TestCastSocket>(
-        new TestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
-                           logger, device_capabilities));
-  }
+  TestCastSocketBase(const net::IPEndPoint& ip_endpoint,
+                     int64_t timeout_ms,
+                     Logger* logger,
+                     uint64_t device_capabilities)
+      : TestCastSocketBase(ip_endpoint,
+                           timeout_ms,
+                           logger,
+                           new net::TestNetLog(),
+                           device_capabilities) {}
 
-  TestCastSocket(const net::IPEndPoint& ip_endpoint,
-                 int64_t timeout_ms,
-                 Logger* logger,
-                 uint64_t device_capabilities)
-      : TestCastSocket(ip_endpoint,
-                       timeout_ms,
-                       logger,
-                       new net::TestNetLog(),
-                       device_capabilities) {}
-
-  TestCastSocket(const net::IPEndPoint& ip_endpoint,
-                 int64_t timeout_ms,
-                 Logger* logger,
-                 net::TestNetLog* capturing_net_log,
-                 uint64_t device_capabilities)
+  TestCastSocketBase(const net::IPEndPoint& ip_endpoint,
+                     int64_t timeout_ms,
+                     Logger* logger,
+                     net::TestNetLog* capturing_net_log,
+                     uint64_t device_capabilities)
       : CastSocketImpl(ip_endpoint,
                        capturing_net_log,
                        base::TimeDelta::FromMilliseconds(timeout_ms),
@@ -205,11 +205,66 @@ class TestCastSocket : public CastSocketImpl {
         extract_cert_result_(true),
         verify_challenge_result_(true),
         verify_challenge_disallow_(false),
-        tcp_unresponsive_(false),
-        mock_timer_(new base::MockTimer(false, false)),
-        mock_transport_(nullptr) {}
+        mock_timer_(new base::MockTimer(false, false)) {}
 
-  ~TestCastSocket() override {}
+  void SetExtractCertResult(bool value) { extract_cert_result_ = value; }
+
+  void SetVerifyChallengeResult(bool value) {
+    verify_challenge_result_ = value;
+  }
+
+  void TriggerTimeout() { mock_timer_->Fire(); }
+
+  bool TestVerifyChannelPolicyNone() {
+    AuthResult authResult;
+    return VerifyChannelPolicy(authResult);
+  }
+
+  void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
+
+ protected:
+  ~TestCastSocketBase() override {}
+
+  scoped_refptr<net::X509Certificate> ExtractPeerCert() override {
+    return extract_cert_result_
+               ? net::ImportCertFromFile(GetTestCertsDirectory(),
+                                         "self_signed.pem")
+               : nullptr;
+  }
+
+  bool VerifyChallengeReply() override {
+    EXPECT_FALSE(verify_challenge_disallow_);
+    return verify_challenge_result_;
+  }
+
+  base::Timer* GetTimer() override { return mock_timer_.get(); }
+
+  std::unique_ptr<net::TestNetLog> capturing_net_log_;
+  net::IPEndPoint ip_;
+  // Simulated result of peer cert extraction.
+  bool extract_cert_result_;
+  // Simulated result of verifying challenge reply.
+  bool verify_challenge_result_;
+  bool verify_challenge_disallow_;
+  std::unique_ptr<base::MockTimer> mock_timer_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestCastSocketBase);
+};
+
+class MockTestCastSocket : public TestCastSocketBase {
+ public:
+  static std::unique_ptr<MockTestCastSocket> CreateSecure(
+      Logger* logger,
+      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+    return std::unique_ptr<MockTestCastSocket>(
+        new MockTestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
+                               logger, device_capabilities));
+  }
+
+  using TestCastSocketBase::TestCastSocketBase;
+
+  ~MockTestCastSocket() override {}
 
   void SetupMockTransport() {
     mock_transport_ = new MockCastTransport;
@@ -218,10 +273,10 @@ class TestCastSocket : public CastSocketImpl {
 
   // Socket connection helpers.
   void SetupTcpConnect(net::IoMode mode, int result) {
-    tcp_connect_data_.reset(new net::MockConnect(mode, result));
+    tcp_connect_data_.reset(new net::MockConnect(mode, result, ip_));
   }
   void SetupSslConnect(net::IoMode mode, int result) {
-    ssl_connect_data_.reset(new net::MockConnect(mode, result));
+    ssl_connect_data_.reset(new net::MockConnect(mode, result, ip_));
   }
 
   // Socket I/O helpers.
@@ -243,26 +298,11 @@ class TestCastSocket : public CastSocketImpl {
   // Helpers for modifying other connection-related behaviors.
   void SetupTcpConnectUnresponsive() { tcp_unresponsive_ = true; }
 
-  void SetExtractCertResult(bool value) { extract_cert_result_ = value; }
-
-  void SetVerifyChallengeResult(bool value) {
-    verify_challenge_result_ = value;
-  }
-
-  void TriggerTimeout() { mock_timer_->Fire(); }
-
-  bool TestVerifyChannelPolicyNone() {
-    AuthResult authResult;
-    return VerifyChannelPolicy(authResult);
-  }
-
   bool TestVerifyChannelPolicyAudioOnly() {
     AuthResult authResult;
     authResult.channel_policies |= AuthResult::POLICY_AUDIO_ONLY;
     return VerifyChannelPolicy(authResult);
   }
-
-  void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
 
   MockCastTransport* GetMockTransport() {
     CHECK(mock_transport_);
@@ -274,42 +314,21 @@ class TestCastSocket : public CastSocketImpl {
     if (tcp_unresponsive_) {
       return std::unique_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
     } else {
-      net::MockConnect* connect_data = tcp_connect_data_.get();
-      connect_data->peer_addr = ip_;
       return std::unique_ptr<net::TCPClientSocket>(
-          new MockTCPSocket(*connect_data));
+          new MockTCPSocket(*tcp_connect_data_));
     }
   }
 
   std::unique_ptr<net::SSLClientSocket> CreateSslSocket(
-      std::unique_ptr<net::StreamSocket> socket) override {
-    net::MockConnect* connect_data = ssl_connect_data_.get();
-    connect_data->peer_addr = ip_;
-
+      std::unique_ptr<net::StreamSocket>) override {
     ssl_data_.reset(new net::StaticSocketDataProvider(
         reads_.data(), reads_.size(), writes_.data(), writes_.size()));
-    ssl_data_->set_connect_data(*connect_data);
+    ssl_data_->set_connect_data(*ssl_connect_data_);
     // NOTE: net::MockTCPClientSocket inherits from net::SSLClientSocket !!
     return std::unique_ptr<net::SSLClientSocket>(new net::MockTCPClientSocket(
         net::AddressList(), capturing_net_log_.get(), ssl_data_.get()));
   }
 
-  scoped_refptr<net::X509Certificate> ExtractPeerCert() override {
-    return extract_cert_result_
-               ? net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                                         "ok_cert.pem")
-               : nullptr;
-  }
-
-  bool VerifyChallengeReply() override {
-    EXPECT_FALSE(verify_challenge_disallow_);
-    return verify_challenge_result_;
-  }
-
-  base::Timer* GetTimer() override { return mock_timer_.get(); }
-
-  std::unique_ptr<net::TestNetLog> capturing_net_log_;
-  net::IPEndPoint ip_;
   // Simulated connect data
   std::unique_ptr<net::MockConnect> tcp_connect_data_;
   std::unique_ptr<net::MockConnect> ssl_connect_data_;
@@ -317,26 +336,65 @@ class TestCastSocket : public CastSocketImpl {
   std::vector<net::MockWrite> writes_;
   std::vector<net::MockRead> reads_;
   std::unique_ptr<net::SocketDataProvider> ssl_data_;
-  // Simulated result of peer cert extraction.
-  bool extract_cert_result_;
-  // Simulated result of verifying challenge reply.
-  bool verify_challenge_result_;
-  bool verify_challenge_disallow_;
   // If true, makes TCP connection process stall. For timeout testing.
-  bool tcp_unresponsive_;
-  std::unique_ptr<base::MockTimer> mock_timer_;
-  MockCastTransport* mock_transport_;
+  bool tcp_unresponsive_ = false;
+  MockCastTransport* mock_transport_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(TestCastSocket);
+  DISALLOW_COPY_AND_ASSIGN(MockTestCastSocket);
 };
 
-class CastSocketTest : public testing::Test {
+class SslTestCastSocket : public TestCastSocketBase {
  public:
-  CastSocketTest()
-      : logger_(new Logger()), observer_(new MockCastSocketObserver()) {}
-  ~CastSocketTest() override {}
+  static std::unique_ptr<SslTestCastSocket> CreateSecure(
+      Logger* logger,
+      uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
+    return std::unique_ptr<SslTestCastSocket>(
+        new SslTestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
+                              logger, device_capabilities));
+  }
+
+  using TestCastSocketBase::TestCastSocketBase;
+
+  void SetTcpSocket(std::unique_ptr<net::TCPClientSocket> tcp_client_socket) {
+    tcp_client_socket_ = std::move(tcp_client_socket);
+  }
+
+ private:
+  std::unique_ptr<net::TCPClientSocket> CreateTcpSocket() override {
+    return std::move(tcp_client_socket_);
+  }
+
+  std::unique_ptr<net::TCPClientSocket> tcp_client_socket_;
+};
+
+class CastSocketTestBase : public testing::Test {
+ protected:
+  CastSocketTestBase()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        logger_(new Logger()),
+        observer_(new MockCastSocketObserver()) {}
+  ~CastSocketTestBase() override {}
 
   void SetUp() override { EXPECT_CALL(*observer_, OnMessage(_, _)).Times(0); }
+
+  // Runs all pending tasks in the message loop.
+  void RunPendingTasks() {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+  }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  Logger* logger_;
+  CompleteHandler handler_;
+  std::unique_ptr<MockCastSocketObserver> observer_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CastSocketTestBase);
+};
+
+class MockCastSocketTest : public CastSocketTestBase {
+ protected:
+  MockCastSocketTest() {}
 
   void TearDown() override {
     if (socket_.get()) {
@@ -347,7 +405,7 @@ class CastSocketTest : public testing::Test {
   }
 
   void CreateCastSocketSecure() {
-    socket_ = TestCastSocket::CreateSecure(logger_);
+    socket_ = MockTestCastSocket::CreateSecure(logger_);
   }
 
   void HandleAuthHandshake() {
@@ -358,6 +416,7 @@ class CastSocketTest : public testing::Test {
         .WillOnce(PostCompletionCallbackTask<1>(net::OK));
     EXPECT_CALL(*socket_->GetMockTransport(), Start());
     EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::NONE));
+    socket_->AddObserver(observer_.get());
     socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                                 base::Unretained(&handler_)));
     RunPendingTasks();
@@ -366,22 +425,160 @@ class CastSocketTest : public testing::Test {
     RunPendingTasks();
   }
 
- protected:
-  // Runs all pending tasks in the message loop.
-  void RunPendingTasks() {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
-
-  base::MessageLoop message_loop_;
-  Logger* logger_;
-  std::unique_ptr<TestCastSocket> socket_;
-  CompleteHandler handler_;
-  std::unique_ptr<MockCastSocketObserver> observer_;
+  std::unique_ptr<MockTestCastSocket> socket_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CastSocketTest);
+  DISALLOW_COPY_AND_ASSIGN(MockCastSocketTest);
 };
+
+class SslCastSocketTest : public CastSocketTestBase {
+ protected:
+  SslCastSocketTest() {}
+
+  void TearDown() override {
+    if (socket_.get()) {
+      EXPECT_CALL(handler_, OnCloseComplete(net::OK));
+      socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
+                                base::Unretained(&handler_)));
+    }
+  }
+
+  void CreateSockets() {
+    socket_ = SslTestCastSocket::CreateSecure(logger_);
+
+    server_cert_ =
+        net::ImportCertFromFile(GetTestCertsDirectory(), "self_signed.pem");
+    ASSERT_TRUE(server_cert_);
+    server_private_key_ = ReadTestKeyFromPEM("self_signed.pem");
+    ASSERT_TRUE(server_private_key_);
+    server_context_ = CreateSSLServerContext(
+        server_cert_.get(), *server_private_key_, server_ssl_config_);
+
+    tcp_server_socket_.reset(
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
+    ASSERT_EQ(net::OK,
+              tcp_server_socket_->ListenWithAddressAndPort("127.0.0.1", 0, 1));
+    net::IPEndPoint server_address;
+    ASSERT_EQ(net::OK, tcp_server_socket_->GetLocalAddress(&server_address));
+    tcp_client_socket_.reset(
+        new net::TCPClientSocket(net::AddressList(server_address), nullptr,
+                                 nullptr, net::NetLogSource()));
+
+    std::unique_ptr<net::StreamSocket> accepted_socket;
+    accept_result_ = tcp_server_socket_->Accept(
+        &accepted_socket, base::Bind(&SslCastSocketTest::TcpAcceptCallback,
+                                     base::Unretained(this)));
+    connect_result_ = tcp_client_socket_->Connect(base::Bind(
+        &SslCastSocketTest::TcpConnectCallback, base::Unretained(this)));
+    while (accept_result_ == net::ERR_IO_PENDING ||
+           connect_result_ == net::ERR_IO_PENDING) {
+      RunPendingTasks();
+    }
+    ASSERT_EQ(net::OK, accept_result_);
+    ASSERT_EQ(net::OK, connect_result_);
+    ASSERT_TRUE(accepted_socket);
+    ASSERT_TRUE(tcp_client_socket_->IsConnected());
+
+    server_socket_ =
+        server_context_->CreateSSLServerSocket(std::move(accepted_socket));
+    ASSERT_TRUE(server_socket_);
+
+    socket_->SetTcpSocket(std::move(tcp_client_socket_));
+  }
+
+  void ConnectSockets() {
+    socket_->AddObserver(observer_.get());
+    socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+                                base::Unretained(&handler_)));
+
+    net::TestCompletionCallback handshake_callback;
+    int server_ret = handshake_callback.GetResult(
+        server_socket_->Handshake(handshake_callback.callback()));
+
+    ASSERT_EQ(net::OK, server_ret);
+  }
+
+  void TcpAcceptCallback(int result) { accept_result_ = result; }
+
+  void TcpConnectCallback(int result) { connect_result_ = result; }
+
+  std::unique_ptr<crypto::RSAPrivateKey> ReadTestKeyFromPEM(
+      const base::StringPiece& name) {
+    base::FilePath key_path = GetTestCertsDirectory().AppendASCII(name);
+    std::vector<std::string> headers({"PRIVATE KEY"});
+    std::string pem_data;
+    if (!base::ReadFileToString(key_path, &pem_data)) {
+      return nullptr;
+    }
+    net::PEMTokenizer pem_tokenizer(pem_data, headers);
+    if (!pem_tokenizer.GetNext()) {
+      return nullptr;
+    }
+    std::vector<uint8_t> key_vector(pem_tokenizer.data().begin(),
+                                    pem_tokenizer.data().end());
+    std::unique_ptr<crypto::RSAPrivateKey> key(
+        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+    return key;
+  }
+
+  int ReadExactLength(net::IOBuffer* buffer,
+                      int buffer_length,
+                      net::Socket* socket) {
+    scoped_refptr<net::DrainableIOBuffer> draining_buffer(
+        new net::DrainableIOBuffer(buffer, buffer_length));
+    while (draining_buffer->BytesRemaining() > 0) {
+      net::TestCompletionCallback read_callback;
+      int read_result = read_callback.GetResult(server_socket_->Read(
+          draining_buffer.get(), draining_buffer->BytesRemaining(),
+          read_callback.callback()));
+      EXPECT_GT(read_result, 0);
+      draining_buffer->DidConsume(read_result);
+    }
+    return buffer_length;
+  }
+
+  int WriteExactLength(net::IOBuffer* buffer,
+                       int buffer_length,
+                       net::Socket* socket) {
+    scoped_refptr<net::DrainableIOBuffer> draining_buffer(
+        new net::DrainableIOBuffer(buffer, buffer_length));
+    while (draining_buffer->BytesRemaining() > 0) {
+      net::TestCompletionCallback write_callback;
+      int write_result = write_callback.GetResult(server_socket_->Write(
+          draining_buffer.get(), draining_buffer->BytesRemaining(),
+          write_callback.callback()));
+      EXPECT_GT(write_result, 0);
+      draining_buffer->DidConsume(write_result);
+    }
+    return buffer_length;
+  }
+
+  // Result values used for TCP socket setup.  These should contain values from
+  // net::Error.
+  int accept_result_;
+  int connect_result_;
+
+  // Underlying TCP sockets for |socket_| to communicate with |server_socket_|
+  // when testing with the real SSL implementation.
+  std::unique_ptr<net::TCPClientSocket> tcp_client_socket_;
+  std::unique_ptr<net::TCPServerSocket> tcp_server_socket_;
+
+  std::unique_ptr<SslTestCastSocket> socket_;
+
+  // |server_socket_| is used for the *RealSSL tests in order to test the
+  // CastSocket over a real SSL socket.  The other members below are used to
+  // initialize |server_socket_|.
+  std::unique_ptr<net::SSLServerSocket> server_socket_;
+  std::unique_ptr<net::SSLServerContext> server_context_;
+  std::unique_ptr<crypto::RSAPrivateKey> server_private_key_;
+  scoped_refptr<net::X509Certificate> server_cert_;
+  net::SSLServerConfig server_ssl_config_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SslCastSocketTest);
+};
+
+}  // namespace
 
 // Tests that the following connection flow works:
 // - TCP connection succeeds (async)
@@ -390,7 +587,7 @@ class CastSocketTest : public testing::Test {
 // - Challenge request is sent (async)
 // - Challenge response is received (async)
 // - Credentials are verified successfuly
-TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
+TEST_F(MockCastSocketTest, TestConnectFullSecureFlowAsync) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
   socket_->SetupSslConnect(net::ASYNC, net::OK);
@@ -408,7 +605,7 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
 // - Challenge request is sent (sync)
 // - Challenge response is received (sync)
 // - Credentials are verified successfuly
-TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
+TEST_F(MockCastSocketTest, TestConnectFullSecureFlowSync) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::OK);
@@ -421,7 +618,7 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
 
 // Test that an AuthMessage with a mangled namespace triggers cancelation
 // of the connection event loop.
-TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
+TEST_F(MockCastSocketTest, TestConnectAuthMessageCorrupted) {
   CreateCastSocketSecure();
   socket_->SetupMockTransport();
 
@@ -453,7 +650,7 @@ TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
 }
 
 // Test connection error - TCP connect fails (async)
-TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
+TEST_F(MockCastSocketTest, TestConnectTcpConnectErrorAsync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
@@ -468,7 +665,7 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
 }
 
 // Test connection error - TCP connect fails (sync)
-TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
+TEST_F(MockCastSocketTest, TestConnectTcpConnectErrorSync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::ERR_FAILED);
@@ -483,7 +680,7 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
 }
 
 // Test connection error - timeout
-TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
+TEST_F(MockCastSocketTest, TestConnectTcpTimeoutError) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnectUnresponsive();
   EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::CONNECT_TIMEOUT));
@@ -503,7 +700,7 @@ TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
 }
 
 // Test connection error - TCP socket returns timeout
-TEST_F(CastSocketTest, TestConnectTcpSocketTimeoutError) {
+TEST_F(MockCastSocketTest, TestConnectTcpSocketTimeoutError) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::ERR_CONNECTION_TIMED_OUT);
   EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::CONNECT_TIMEOUT));
@@ -520,7 +717,7 @@ TEST_F(CastSocketTest, TestConnectTcpSocketTimeoutError) {
 }
 
 // Test connection error - SSL connect fails (async)
-TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
+TEST_F(MockCastSocketTest, TestConnectSslConnectErrorAsync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
@@ -537,7 +734,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
 }
 
 // Test connection error - SSL connect fails (sync)
-TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
+TEST_F(MockCastSocketTest, TestConnectSslConnectErrorSync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
@@ -556,7 +753,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
 }
 
 // Test connection error - SSL connect times out (sync)
-TEST_F(CastSocketTest, TestConnectSslConnectTimeoutSync) {
+TEST_F(MockCastSocketTest, TestConnectSslConnectTimeoutSync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
@@ -574,7 +771,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutSync) {
 }
 
 // Test connection error - SSL connect times out (async)
-TEST_F(CastSocketTest, TestConnectSslConnectTimeoutAsync) {
+TEST_F(MockCastSocketTest, TestConnectSslConnectTimeoutAsync) {
   CreateCastSocketSecure();
 
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
@@ -590,7 +787,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutAsync) {
 }
 
 // Test connection error - challenge send fails
-TEST_F(CastSocketTest, TestConnectChallengeSendError) {
+TEST_F(MockCastSocketTest, TestConnectChallengeSendError) {
   CreateCastSocketSecure();
   socket_->SetupMockTransport();
 
@@ -611,7 +808,7 @@ TEST_F(CastSocketTest, TestConnectChallengeSendError) {
 
 // Test connection error - connection is destroyed after the challenge is
 // sent, with the async result still lurking in the task queue.
-TEST_F(CastSocketTest, TestConnectDestroyedAfterChallengeSent) {
+TEST_F(MockCastSocketTest, TestConnectDestroyedAfterChallengeSent) {
   CreateCastSocketSecure();
   socket_->SetupMockTransport();
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
@@ -626,7 +823,7 @@ TEST_F(CastSocketTest, TestConnectDestroyedAfterChallengeSent) {
 }
 
 // Test connection error - challenge reply receive fails
-TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
+TEST_F(MockCastSocketTest, TestConnectChallengeReplyReceiveError) {
   CreateCastSocketSecure();
   socket_->SetupMockTransport();
 
@@ -651,7 +848,7 @@ TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
   EXPECT_EQ(ChannelError::CAST_SOCKET_ERROR, socket_->error_state());
 }
 
-TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
+TEST_F(MockCastSocketTest, TestConnectChallengeVerificationFails) {
   CreateCastSocketSecure();
   socket_->SetupMockTransport();
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
@@ -679,7 +876,7 @@ TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
 
 // Sends message data through an actual non-mocked CastTransport object,
 // testing the two components in integration.
-TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
+TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
   socket_->SetupSslConnect(net::ASYNC, net::OK);
@@ -721,7 +918,7 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
 }
 
 // Same as TestConnectEndToEndWithRealTransportAsync, except synchronous.
-TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
+TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSslConnect(net::SYNCHRONOUS, net::OK);
@@ -762,7 +959,7 @@ TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
-TEST_F(CastSocketTest, TestObservers) {
+TEST_F(MockCastSocketTest, TestObservers) {
   CreateCastSocketSecure();
   // Test AddObserever
   MockCastSocketObserver observer1;
@@ -779,7 +976,7 @@ TEST_F(CastSocketTest, TestObservers) {
   delegate.OnError(cast_channel::ChannelError::CONNECT_ERROR);
 }
 
-TEST_F(CastSocketTest, TestOpenChannelConnectingSocket) {
+TEST_F(MockCastSocketTest, TestOpenChannelConnectingSocket) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnectUnresponsive();
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
@@ -794,7 +991,7 @@ TEST_F(CastSocketTest, TestOpenChannelConnectingSocket) {
   RunPendingTasks();
 }
 
-TEST_F(CastSocketTest, TestOpenChannelConnectedSocket) {
+TEST_F(MockCastSocketTest, TestOpenChannelConnectedSocket) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::ASYNC, net::OK);
   socket_->SetupSslConnect(net::ASYNC, net::OK);
@@ -806,7 +1003,7 @@ TEST_F(CastSocketTest, TestOpenChannelConnectedSocket) {
                               base::Unretained(&handler_)));
 }
 
-TEST_F(CastSocketTest, TestOpenChannelClosedSocket) {
+TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
   CreateCastSocketSecure();
   socket_->SetupTcpConnect(net::ASYNC, net::ERR_FAILED);
 
@@ -818,6 +1015,110 @@ TEST_F(CastSocketTest, TestOpenChannelClosedSocket) {
   EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::CONNECT_ERROR));
   socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
+}
+
+// Tests connecting through an actual non-mocked CastTransport object and
+// non-mocked SSLClientSocket, testing the components in integration.
+TEST_F(SslCastSocketTest, TestConnectEndToEndWithRealSSL) {
+  CreateSockets();
+  ConnectSockets();
+
+  // Set low-level auth challenge expectations.
+  CastMessage challenge = CreateAuthChallenge();
+  std::string challenge_str;
+  EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
+
+  int challenge_buffer_length = challenge_str.size();
+  scoped_refptr<net::IOBuffer> challenge_buffer(
+      new net::IOBuffer(challenge_buffer_length));
+  int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
+                             server_socket_.get());
+
+  EXPECT_EQ(challenge_buffer_length, read);
+  EXPECT_EQ(challenge_str,
+            std::string(challenge_buffer->data(), challenge_buffer_length));
+
+  // Set low-level auth reply expectations.
+  CastMessage reply = CreateAuthReply();
+  std::string reply_str;
+  EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
+
+  scoped_refptr<net::StringIOBuffer> reply_buffer(
+      new net::StringIOBuffer(reply_str));
+  int written = WriteExactLength(reply_buffer.get(), reply_buffer->size(),
+                                 server_socket_.get());
+
+  EXPECT_EQ(reply_buffer->size(), written);
+  EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::NONE));
+  RunPendingTasks();
+
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
+}
+
+// Sends message data through an actual non-mocked CastTransport object and
+// non-mocked SSLClientSocket, testing the components in integration.
+TEST_F(SslCastSocketTest, TestMessageEndToEndWithRealSSL) {
+  CreateSockets();
+  ConnectSockets();
+
+  // Set low-level auth challenge expectations.
+  CastMessage challenge = CreateAuthChallenge();
+  std::string challenge_str;
+  EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
+
+  int challenge_buffer_length = challenge_str.size();
+  scoped_refptr<net::IOBuffer> challenge_buffer(
+      new net::IOBuffer(challenge_buffer_length));
+
+  int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
+                             server_socket_.get());
+
+  EXPECT_EQ(challenge_buffer_length, read);
+  EXPECT_EQ(challenge_str,
+            std::string(challenge_buffer->data(), challenge_buffer_length));
+
+  // Set low-level auth reply expectations.
+  CastMessage reply = CreateAuthReply();
+  std::string reply_str;
+  EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
+
+  scoped_refptr<net::StringIOBuffer> reply_buffer(
+      new net::StringIOBuffer(reply_str));
+  int written = WriteExactLength(reply_buffer.get(), reply_buffer->size(),
+                                 server_socket_.get());
+
+  EXPECT_EQ(reply_buffer->size(), written);
+  EXPECT_CALL(handler_, OnConnectComplete(_, ChannelError::NONE));
+  RunPendingTasks();
+
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
+
+  // Send a test message through the ssl socket.
+  CastMessage test_message = CreateTestMessage();
+  std::string test_message_str;
+  EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
+
+  int test_message_length = test_message_str.size();
+  scoped_refptr<net::IOBuffer> test_message_buffer(
+      new net::IOBuffer(test_message_length));
+
+  EXPECT_CALL(handler_, OnWriteComplete(net::OK));
+  socket_->transport()->SendMessage(
+      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
+                               base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  read = ReadExactLength(test_message_buffer.get(), test_message_length,
+                         server_socket_.get());
+
+  EXPECT_EQ(test_message_length, read);
+  EXPECT_EQ(test_message_str,
+            std::string(test_message_buffer->data(), test_message_length));
+
+  EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
+  EXPECT_EQ(ChannelError::NONE, socket_->error_state());
 }
 
 }  // namespace cast_channel

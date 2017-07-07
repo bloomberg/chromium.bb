@@ -234,16 +234,8 @@ class CastSocketImpl : public CastSocket {
   void Connect();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestConnectAuthMessageCorrupted);
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest,
-                           TestConnectChallengeReplyReceiveError);
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest,
-                           TestConnectChallengeVerificationFails);
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestObservers);
+  FRIEND_TEST_ALL_PREFIXES(MockCastSocketTest, TestObservers);
   friend class AuthTransportDelegate;
-  friend class CastSocketMessageDelegate;
-  friend class CastSocketTest;
-  friend class TestCastSocket;
 
   void SetErrorState(ChannelError error_state) override;
 
