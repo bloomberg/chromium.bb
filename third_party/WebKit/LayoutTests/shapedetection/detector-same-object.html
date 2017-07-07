@@ -1,43 +1,35 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/textdetection.mojom.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <script src="resources/mock-textdetection.js"></script>
 <script>
 
-var createTestForImageData = function(createDetector, mockReady,
+var createTestForImageData = function(createDetector, mock,
                                       detectionResultTest) {
   async_test(function(t) {
 
     var img = new Image();
-    img.onload = function() {
+    img.onload = async function() {
 
       var canvas = document.createElement("canvas");;
       canvas.getContext("2d").drawImage(img, 0, 0);
 
-      var theMock = null;
-      mockReady()
-        .then(mock => {
-          theMock = mock;
-          var detector = createDetector();
-          return detector;
-        })
-        .catch(error => {
-          assert_unreached("Error creating Mock Detector: " + error);
-        })
-        .then(detector => {
-          return detector.detect(canvas.getContext("2d").getImageData(
-              0, 0, canvas.width, canvas.height));
-        })
-        .then(detectionResult => {
-          detectionResultTest(detectionResult);
-          t.done();
-        })
-        .catch(error => {
-          assert_unreached("Error during detect(canvas): " + error);
-        });
+      var detector = createDetector();
+      try {
+        var detectionResult = await detector.detect(canvas.getContext("2d")
+            .getImageData(0, 0, canvas.width, canvas.height));
+        detectionResultTest(detectionResult);
+        t.done();
+      } catch(error) {
+        assert_unreached("Error during detect(canvas): " + error);
+      }
     }
 
     img.src = "../media/content/greenbox.png";
@@ -69,19 +61,19 @@ generate_tests(createTestForImageData, [
   [
     "Face - detect(ImageData), [SameObject]",
     () => { return new FaceDetector(); },
-    () => { return mockFaceDetectionProviderReady; },
+    mockFaceDetectionProvider,
     CheckDetectedFaceSameObjects
   ],
   [
     "Barcode - detect(ImageData), [SameObject]",
     () => { return new BarcodeDetector(); },
-    () => { return mockBarcodeDetectionReady; },
+    mockBarcodeDetection,
     CheckDetectedBarcodesSameObjects
   ],
   [
     "Text - detect(ImageData), [SameObject]",
     () => { return new TextDetector(); },
-    () => { return mockTextDetectionReady; },
+    mockTextDetection,
     CheckDetectedTextBlocksSameObjects
   ]
 ]);

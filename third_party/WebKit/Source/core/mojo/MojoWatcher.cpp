@@ -43,9 +43,7 @@ MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
   return watcher;
 }
 
-MojoWatcher::~MojoWatcher() {
-  DCHECK(!handle_.is_valid());
-}
+MojoWatcher::~MojoWatcher() {}
 
 MojoResult MojoWatcher::cancel() {
   if (!watcher_handle_.is_valid())
