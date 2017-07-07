@@ -6,7 +6,6 @@ mechanisms.
 ## Software bootstrapped
   * Python (https://www.python.org/)
   * Git for Windows (https://git-for-windows.github.io/)
-  * Subversion (https://subversion.apache.org/)
 
 ## Mechanism
 

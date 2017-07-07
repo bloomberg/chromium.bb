@@ -3,7 +3,7 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-:: This script will determine if python, git, or svn binaries need updates.  It
+:: This script will determine if python or git binaries need updates. It
 :: returns 123 if the user's shell must restart, otherwise !0 is failure
 
 :: Sadly, we can't use SETLOCAL here otherwise it ERRORLEVEL is not correctly

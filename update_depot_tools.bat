@@ -23,7 +23,7 @@ IF EXIST "%DEPOT_TOOLS_DIR%.disable_auto_update" GOTO :EOF
 
 set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-:: Will download git, svn and python.
+:: Will download git and python.
 call "%DEPOT_TOOLS_DIR%bootstrap\win\win_tools.bat"
 if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
@@ -32,24 +32,9 @@ set errorlevel=
 :: Shall skip automatic update?
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
 
-:: We need either .\.svn\. or .\.git\. to be able to sync.
-IF EXIST "%DEPOT_TOOLS_DIR%.svn\." GOTO :SVN_UPDATE
+:: We need .\.git\. to be able to sync.
 IF EXIST "%DEPOT_TOOLS_DIR%.git\." GOTO :GIT_UPDATE
 echo Error updating depot_tools, no revision tool found.
-goto :EOF
-
-
-:SVN_UPDATE
-echo ========================
-echo WARNING: You have an SVN checkout of depot_tools!
-echo.
-echo depot_tools has migrated to Git. You are
-echo NO LONGER RECEIVING UPDATES to depot_tools.
-echo.
-echo You must follow these instructions[1] to get a Git copy of depot_tools.
-echo.
-echo [1]: https://www.chromium.org/developers/how-tos/install-depot-tools
-echo ========================
 goto :EOF
 
 
