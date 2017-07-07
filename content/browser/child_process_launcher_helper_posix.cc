@@ -115,7 +115,8 @@ std::unique_ptr<FileDescriptorInfo> CreateDefaultPosixFilesToMap(
       base::PlatformFile file =
           OpenFileIfNecessary(key_path_iter.second, &region);
       if (file == base::kInvalidPlatformFile) {
-        DLOG(ERROR) << "Ignoring invalid file " << key_path_iter.second.value();
+        DLOG(WARNING) << "Ignoring invalid file "
+                      << key_path_iter.second.value();
         continue;
       }
       file_switch_value_builder.AddEntry(key_path_iter.first, key);
