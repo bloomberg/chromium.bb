@@ -182,6 +182,10 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutUnit BorderRight() const override;
   LayoutUnit BorderTop() const override;
   LayoutUnit BorderBottom() const override;
+  LayoutUnit BorderStart() const override;
+  LayoutUnit BorderEnd() const override;
+  LayoutUnit BorderBefore() const override;
+  LayoutUnit BorderAfter() const override;
 
   void UpdateLayout() override;
 
@@ -212,6 +216,13 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutUnit PaddingBottom() const override;
   LayoutUnit PaddingLeft() const override;
   LayoutUnit PaddingRight() const override;
+
+  // FIXME: For now we just assume the cell has the same block flow direction as
+  // the table. It's likely we'll create an extra anonymous LayoutBlock to
+  // handle mixing directionality anyway, in which case we can lock the block
+  // flow directionality of the cells to the table's directionality.
+  LayoutUnit PaddingBefore() const override;
+  LayoutUnit PaddingAfter() const override;
 
   void SetOverrideLogicalContentHeightFromRowHeight(LayoutUnit);
 
@@ -419,11 +430,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     return 0;
   }
 
-  LogicalToPhysical<int> LogicalIntrinsicPaddingToPhysical() const {
-    return LogicalToPhysical<int>(
-        StyleRef().GetWritingMode(), StyleRef().Direction(), 0, 0,
-        intrinsic_padding_before_, intrinsic_padding_after_);
-  }
   void SetIntrinsicPaddingBefore(int p) { intrinsic_padding_before_ = p; }
   void SetIntrinsicPaddingAfter(int p) { intrinsic_padding_after_ = p; }
   void SetIntrinsicPadding(int before, int after) {

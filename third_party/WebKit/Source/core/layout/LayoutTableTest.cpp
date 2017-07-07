@@ -203,25 +203,6 @@ TEST_F(LayoutTableTest, CloseToMaxWidth) {
   EXPECT_EQ(999999, table->OffsetWidth());
 }
 
-TEST_F(LayoutTableTest, PaddingWithCollapsedBorder) {
-  SetBodyInnerHTML(
-      "<table id='table' style='padding: 20px; border-collapse: collapse'>"
-      "  <tr><td>TD</td</tr>"
-      "</table>");
-
-  auto* table = GetTableByElementId("table");
-  EXPECT_EQ(0, table->PaddingLeft());
-  EXPECT_EQ(0, table->PaddingRight());
-  EXPECT_EQ(0, table->PaddingTop());
-  EXPECT_EQ(0, table->PaddingBottom());
-  EXPECT_EQ(0, table->PaddingStart());
-  EXPECT_EQ(0, table->PaddingEnd());
-  EXPECT_EQ(0, table->PaddingBefore());
-  EXPECT_EQ(0, table->PaddingAfter());
-  EXPECT_EQ(0, table->PaddingOver());
-  EXPECT_EQ(0, table->PaddingUnder());
-}
-
 }  // anonymous namespace
 
 }  // namespace blink
