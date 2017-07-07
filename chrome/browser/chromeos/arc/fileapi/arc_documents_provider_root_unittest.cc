@@ -116,7 +116,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
       fake_file_system_.AddDocument(ToDocument(spec));
     }
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
     arc_service_manager_->AddService(
         ArcFileSystemOperationRunner::CreateForTesting(
             arc_service_manager_->arc_bridge_service()));

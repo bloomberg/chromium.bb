@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
@@ -61,8 +60,7 @@ std::string GetArcServiceName(...) {
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  explicit ArcServiceManager(
-      scoped_refptr<base::TaskRunner> blocking_task_runner);
+  ArcServiceManager();
   ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -102,10 +100,6 @@ class ArcServiceManager {
   // Called to shut down all ARC services.
   void Shutdown();
 
-  scoped_refptr<base::TaskRunner> blocking_task_runner() const {
-    return blocking_task_runner_;
-  }
-
   // Returns the activity resolver owned by ArcServiceManager.
   scoped_refptr<LocalActivityResolver> activity_resolver() {
     return activity_resolver_;
@@ -120,7 +114,6 @@ class ArcServiceManager {
   ArcService* GetNamedServiceInternal(const std::string& name);
 
   THREAD_CHECKER(thread_checker_);
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unordered_multimap<std::string, std::unique_ptr<ArcService>> services_;

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_stop_reason.h"
 
@@ -40,8 +39,7 @@ class ArcSession {
 
   // Creates a default instance of ArcSession.
   static std::unique_ptr<ArcSession> Create(
-      ArcBridgeService* arc_bridge_service,
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
+      ArcBridgeService* arc_bridge_service);
   virtual ~ArcSession();
 
   // Starts an instance for login screen. The instance is not a fully functional

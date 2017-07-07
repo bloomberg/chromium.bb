@@ -82,7 +82,7 @@ void ArcAppTest::SetUp(Profile* profile) {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
         profile_);
   }
-  arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>(nullptr);
+  arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>();
   arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
       base::MakeUnique<arc::ArcSessionRunner>(
           base::Bind(arc::FakeArcSession::Create)));

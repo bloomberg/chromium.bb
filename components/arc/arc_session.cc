@@ -17,10 +17,10 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_info.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
@@ -212,8 +212,7 @@ class ArcSessionImpl : public ArcSession,
     STOPPED,
   };
 
-  ArcSessionImpl(ArcBridgeService* arc_bridge_service,
-                 const scoped_refptr<base::TaskRunner>& blocking_task_runner);
+  explicit ArcSessionImpl(ArcBridgeService* arc_bridge_service);
   ~ArcSessionImpl() override;
 
   // ArcSession overrides:
@@ -266,9 +265,6 @@ class ArcSessionImpl : public ArcSession,
   // Owned by ArcServiceManager.
   ArcBridgeService* const arc_bridge_service_;
 
-  // Task runner to run a blocking tasks.
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
-
   // The state of the session.
   State state_ = State::NOT_STARTED;
 
@@ -301,12 +297,8 @@ class ArcSessionImpl : public ArcSession,
   DISALLOW_COPY_AND_ASSIGN(ArcSessionImpl);
 };
 
-ArcSessionImpl::ArcSessionImpl(
-    ArcBridgeService* arc_bridge_service,
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner)
-    : arc_bridge_service_(arc_bridge_service),
-      blocking_task_runner_(blocking_task_runner),
-      weak_factory_(this) {
+ArcSessionImpl::ArcSessionImpl(ArcBridgeService* arc_bridge_service)
+    : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
@@ -340,8 +332,8 @@ void ArcSessionImpl::Start() {
     VLOG(2) << "Starting ARC session";
     VLOG(2) << "Creating socket...";
     state_ = State::CREATING_SOCKET;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
         base::Bind(&ArcSessionImpl::CreateSocket),
         base::Bind(&ArcSessionImpl::OnSocketCreated, weak_factory_.GetWeakPtr(),
                    false /* not for login screen */));
@@ -526,8 +518,8 @@ void ArcSessionImpl::OnInstanceStarted(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::Bind(&ArcSessionImpl::ConnectMojo, base::Passed(&socket_fd),
                  base::Passed(&cancel_fd)),
       base::Bind(&ArcSessionImpl::OnMojoConnected, weak_factory_.GetWeakPtr()));
@@ -725,9 +717,8 @@ void ArcSessionImpl::StartForLoginScreen() {
   VLOG(2) << "Creating socket...";
   login_screen_instance_requested_ = true;
   state_ = State::CREATING_SOCKET;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&ArcSessionImpl::CreateSocket),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()}, base::Bind(&ArcSessionImpl::CreateSocket),
       base::Bind(&ArcSessionImpl::OnSocketCreated, weak_factory_.GetWeakPtr(),
                  true /* for login screen */));
 }
@@ -789,10 +780,8 @@ void ArcSession::RemoveObserver(Observer* observer) {
 
 // static
 std::unique_ptr<ArcSession> ArcSession::Create(
-    ArcBridgeService* arc_bridge_service,
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
-  return base::MakeUnique<ArcSessionImpl>(arc_bridge_service,
-                                          blocking_task_runner);
+    ArcBridgeService* arc_bridge_service) {
+  return base::MakeUnique<ArcSessionImpl>(arc_bridge_service);
 }
 
 }  // namespace arc

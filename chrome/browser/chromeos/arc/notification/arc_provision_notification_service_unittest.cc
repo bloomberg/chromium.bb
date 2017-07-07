@@ -69,7 +69,7 @@ class ArcProvisionNotificationServiceTest : public testing::Test {
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_ = profile_builder.Build();
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
     arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
         base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     std::unique_ptr<MockArcProvisionNotificationServiceDelegate>

@@ -91,7 +91,7 @@ TEST_F(ArcServiceManagerTest, BasicGetter) {
   bool named_service_alive = false;
 
   // ArcServiceManager is empty, GetService() should return nullptr.
-  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+  auto manager = base::MakeUnique<ArcServiceManager>();
   EXPECT_EQ(nullptr, manager->GetService<NamedService>());
 
   EXPECT_TRUE(manager->AddService(base::MakeUnique<NamedService>(
@@ -110,7 +110,7 @@ TEST_F(ArcServiceManagerTest, MultipleAnonymousServices) {
   bool anonymous_service_alive = false;
   bool second_anonymous_service_alive = false;
 
-  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+  auto manager = base::MakeUnique<ArcServiceManager>();
 
   EXPECT_TRUE(manager->AddService(base::MakeUnique<AnonymousService>(
       arc_bridge_service(), &anonymous_service_alive)));
@@ -131,7 +131,7 @@ TEST_F(ArcServiceManagerTest, MultipleNamedServices) {
   bool second_named_service_alive = false;
   bool different_named_service_alive = false;
 
-  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+  auto manager = base::MakeUnique<ArcServiceManager>();
 
   auto named_service = base::MakeUnique<NamedService>(arc_bridge_service(),
                                                       &named_service_alive);
@@ -168,7 +168,7 @@ TEST_F(ArcServiceManagerTest, MultipleNamedServices) {
 TEST_F(ArcServiceManagerTest, EmptyNamedServices) {
   bool empty_named_service_alive = false;
 
-  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+  auto manager = base::MakeUnique<ArcServiceManager>();
 
   EXPECT_TRUE(manager->AddService(base::MakeUnique<EmptyNamedService>(
       arc_bridge_service(), &empty_named_service_alive)));
@@ -187,7 +187,7 @@ TEST_F(ArcServiceManagerTest, TestGetGlobalService) {
 
   // Create a manager. This will automatically be registered as a global
   // instance.
-  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+  auto manager = base::MakeUnique<ArcServiceManager>();
 
   // The getter should return nullptr when the manager doesn't know about the
   // NamedService instance.
