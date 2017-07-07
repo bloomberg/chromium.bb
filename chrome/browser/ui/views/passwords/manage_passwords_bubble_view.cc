@@ -719,31 +719,29 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
-  // Create the pending credential item, update button.
-  View* item = nullptr;
-  if (parent->model()->ShouldShowMultipleAccountUpdateUI()) {
-    selection_view_ = new CredentialsSelectionView(parent->model());
-    item = selection_view_;
-  } else {
-    item = new ManagePasswordItemsView(parent_->model(),
-                                       &parent->model()->pending_password());
-  }
-  nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
-
-  update_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
-
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-
   // Credential row.
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(item);
+  if (parent->model()->ShouldShowMultipleAccountUpdateUI()) {
+    BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(new CredentialsSelectionView(parent->model()));
+  } else {
+    BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET);
+    layout->StartRow(0, DOUBLE_VIEW_COLUMN_SET);
+    const autofill::PasswordForm* password_form =
+        &parent_->model()->pending_password();
+    layout->AddView(GenerateUsernameLabel(*password_form).release());
+    layout->AddView(GeneratePasswordLabel(*password_form).release());
+  }
   layout->AddPaddingRow(
       0,
       layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS).bottom());
 
   // Button row.
+  nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+
+  update_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(
       0, DOUBLE_BUTTON_COLUMN_SET, 0,
