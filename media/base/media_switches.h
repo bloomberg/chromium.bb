@@ -108,6 +108,7 @@ MEDIA_EXPORT extern const base::Feature kComplexityBasedVideoBuffering;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;
 MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
+MEDIA_EXPORT extern const base::Feature kMediaEngagement;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 MEDIA_EXPORT extern const base::Feature kMojoCdm;
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
@@ -115,12 +116,12 @@ MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;
 MEDIA_EXPORT extern const base::Feature kSpecCompliantCanPlayThrough;
+MEDIA_EXPORT extern const base::Feature kSupportExperimentalCdmInterface;
 MEDIA_EXPORT extern const base::Feature kUseAndroidOverlay;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kVideoColorManagement;
 MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideo;
-MEDIA_EXPORT extern const base::Feature kMediaEngagement;
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;

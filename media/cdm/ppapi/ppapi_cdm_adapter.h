@@ -35,7 +35,8 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 // Content Decryption Module (CDM).
 class PpapiCdmAdapter : public pp::Instance,
                         public pp::ContentDecryptor_Private,
-                        public cdm::Host_8 {
+                        public cdm::Host_8,
+                        public cdm::Host_9 {
  public:
   PpapiCdmAdapter(PP_Instance instance, pp::Module* module);
   virtual ~PpapiCdmAdapter();
@@ -82,16 +83,18 @@ class PpapiCdmAdapter : public pp::Instance,
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) override;
 
-  // cdm::Host_8 implementation.
+  // cdm::Host_9 implementation.
   cdm::Buffer* Allocate(uint32_t capacity) override;
   void SetTimer(int64_t delay_ms, void* context) override;
   cdm::Time GetCurrentWallTime() override;
+  void OnResolveKeyStatusPromise(uint32_t promise_id,
+                                 cdm::KeyStatus key_status) override;
   void OnResolveNewSessionPromise(uint32_t promise_id,
                                   const char* session_id,
                                   uint32_t session_id_size) override;
   void OnResolvePromise(uint32_t promise_id) override;
   void OnRejectPromise(uint32_t promise_id,
-                       cdm::Error error,
+                       cdm::Exception exception,
                        uint32_t system_code,
                        const char* error_message,
                        uint32_t error_message_size) override;
@@ -99,9 +102,7 @@ class PpapiCdmAdapter : public pp::Instance,
                         uint32_t session_id_size,
                         cdm::MessageType message_type,
                         const char* message,
-                        uint32_t message_size,
-                        const char* legacy_destination_url,
-                        uint32_t legacy_destination_url_size) override;
+                        uint32_t message_size) override;
   void OnSessionKeysChange(const char* session_id,
                            uint32_t session_id_size,
                            bool has_additional_usable_key,
@@ -112,12 +113,6 @@ class PpapiCdmAdapter : public pp::Instance,
                           cdm::Time new_expiry_time) override;
   void OnSessionClosed(const char* session_id,
                        uint32_t session_id_size) override;
-  void OnLegacySessionError(const char* session_id,
-                            uint32_t session_id_size,
-                            cdm::Error error,
-                            uint32_t system_code,
-                            const char* error_message,
-                            uint32_t error_message_size) override;
   void SendPlatformChallenge(const char* service_id,
                              uint32_t service_id_size,
                              const char* challenge,
@@ -126,7 +121,28 @@ class PpapiCdmAdapter : public pp::Instance,
   void QueryOutputProtectionStatus() override;
   void OnDeferredInitializationDone(cdm::StreamType stream_type,
                                     cdm::Status decoder_status) override;
+  void RequestStorageId() override;
   cdm::FileIO* CreateFileIO(cdm::FileIOClient* client) override;
+
+  // cdm::Host_8 implementation (differences from Host_9).
+  void OnSessionMessage(const char* session_id,
+                        uint32_t session_id_size,
+                        cdm::MessageType message_type,
+                        const char* message,
+                        uint32_t message_size,
+                        const char* legacy_destination_url,
+                        uint32_t legacy_destination_url_size) override;
+  void OnRejectPromise(uint32_t promise_id,
+                       cdm::Error error,
+                       uint32_t system_code,
+                       const char* error_message,
+                       uint32_t error_message_size) override;
+  void OnLegacySessionError(const char* session_id,
+                            uint32_t session_id_size,
+                            cdm::Error error,
+                            uint32_t system_code,
+                            const char* error_message,
+                            uint32_t error_message_size) override;
 
  private:
   // These are reported to UMA server. Do not change the existing values!
@@ -142,10 +158,10 @@ class PpapiCdmAdapter : public pp::Instance,
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
   struct SessionError {
-    SessionError(cdm::Error error,
+    SessionError(cdm::Exception exception,
                  uint32_t system_code,
                  const std::string& error_description);
-    cdm::Error error;
+    cdm::Exception exception;
     uint32_t system_code;
     std::string error_description;
   };
@@ -187,7 +203,7 @@ class PpapiCdmAdapter : public pp::Instance,
                                     const std::string& session_id,
                                     cdm::Time new_expiry_time);
   void RejectPromise(uint32_t promise_id,
-                     cdm::Error error,
+                     cdm::Exception exception,
                      uint32_t system_code,
                      const std::string& error_message);
 

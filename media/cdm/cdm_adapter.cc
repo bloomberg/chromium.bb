@@ -66,26 +66,40 @@ cdm::InitDataType ToCdmInitDataType(EmeInitDataType init_data_type) {
   return cdm::kKeyIds;
 }
 
-CdmPromise::Exception ToMediaExceptionType(cdm::Error error) {
+CdmPromise::Exception ToMediaExceptionType(cdm::Exception exception) {
+  switch (exception) {
+    case cdm::kExceptionTypeError:
+      return CdmPromise::INVALID_ACCESS_ERROR;
+    case cdm::kExceptionNotSupportedError:
+      return CdmPromise::NOT_SUPPORTED_ERROR;
+    case cdm::kExceptionInvalidStateError:
+      return CdmPromise::INVALID_STATE_ERROR;
+    case cdm::kExceptionQuotaExceededError:
+      return CdmPromise::QUOTA_EXCEEDED_ERROR;
+  }
+
+  NOTREACHED() << "Unexpected cdm::Exception " << exception;
+  return CdmPromise::INVALID_STATE_ERROR;
+}
+
+cdm::Exception ToCdmExceptionType(cdm::Error error) {
   switch (error) {
     case cdm::kNotSupportedError:
-      return CdmPromise::NOT_SUPPORTED_ERROR;
+      return cdm::kExceptionNotSupportedError;
     case cdm::kInvalidStateError:
-      return CdmPromise::INVALID_STATE_ERROR;
+      return cdm::kExceptionTypeError;
     case cdm::kInvalidAccessError:
-      return CdmPromise::INVALID_ACCESS_ERROR;
+      return cdm::kExceptionInvalidStateError;
     case cdm::kQuotaExceededError:
-      return CdmPromise::QUOTA_EXCEEDED_ERROR;
+      return cdm::kExceptionQuotaExceededError;
     case cdm::kUnknownError:
-      return CdmPromise::UNKNOWN_ERROR;
     case cdm::kClientError:
-      return CdmPromise::CLIENT_ERROR;
     case cdm::kOutputError:
-      return CdmPromise::OUTPUT_ERROR;
+      break;
   }
 
   NOTREACHED() << "Unexpected cdm::Error " << error;
-  return CdmPromise::UNKNOWN_ERROR;
+  return cdm::kExceptionInvalidStateError;
 }
 
 CdmMessageType ToMediaMessageType(cdm::MessageType message_type) {
@@ -220,7 +234,7 @@ Decryptor::Status ToMediaDecryptorStatus(cdm::Status status) {
       return Decryptor::kError;
     case cdm::kDecodeError:
       return Decryptor::kError;
-    case cdm::kSessionError:
+    case cdm::kInitializationError:
     case cdm::kDeferredInitialization:
       break;
   }
@@ -294,7 +308,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return nullptr;
 
   static_assert(
-      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_8::kVersion,
+      cdm::ContentDecryptionModule::Host::kVersion == cdm::Host_9::kVersion,
       "update the code below");
 
   // Ensure IsSupportedCdmHostVersion matches implementation of this function.
@@ -304,10 +318,11 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   DCHECK(
       // Future version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_8::kVersion + 1) &&
+      !IsSupportedCdmHostVersion(cdm::Host_9::kVersion + 1) &&
       // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::Host_8::kVersion) &&
+      IsSupportedCdmHostVersion(cdm::Host_9::kVersion) &&
       // Include all previous supported versions (if any) here.
+      IsSupportedCdmHostVersion(cdm::Host_8::kVersion) &&
       // One older than the oldest supported version is not supported.
       !IsSupportedCdmHostVersion(cdm::Host_8::kVersion - 1));
   DCHECK(IsSupportedCdmHostVersion(host_interface_version));
@@ -317,6 +332,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   switch (host_interface_version) {
     case cdm::Host_8::kVersion:
       return static_cast<cdm::Host_8*>(cdm_adapter);
+    case cdm::Host_9::kVersion:
+      return static_cast<cdm::Host_9*>(cdm_adapter);
     default:
       NOTREACHED() << "Unexpected host interface version "
                    << host_interface_version;
@@ -734,6 +751,15 @@ cdm::Time CdmAdapter::GetCurrentWallTime() {
   return base::Time::Now().ToDoubleT();
 }
 
+void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
+                                           cdm::KeyStatus key_status) {
+  // TODO(xhwang): Implement HDCP Policy Check. https://crbug.com/709348.
+  NOTIMPLEMENTED();
+  cdm_promise_adapter_.RejectPromise(promise_id,
+                                     CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                                     "HDCP Policy Check not implemented.");
+}
+
 void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.ResolvePromise(promise_id);
@@ -748,14 +774,38 @@ void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
 }
 
 void CdmAdapter::OnRejectPromise(uint32_t promise_id,
-                                 cdm::Error error,
+                                 cdm::Exception exception,
                                  uint32_t system_code,
                                  const char* error_message,
                                  uint32_t error_message_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.RejectPromise(
-      promise_id, ToMediaExceptionType(error), system_code,
+      promise_id, ToMediaExceptionType(exception), system_code,
       std::string(error_message, error_message_size));
+}
+
+void CdmAdapter::OnRejectPromise(uint32_t promise_id,
+                                 cdm::Error error,
+                                 uint32_t system_code,
+                                 const char* error_message,
+                                 uint32_t error_message_size) {
+  // cdm::Host_8 version. Remove when CDM_8 no longer supported.
+  // https://crbug.com/737296.
+  OnRejectPromise(promise_id, ToCdmExceptionType(error), system_code,
+                  error_message, error_message_size);
+}
+
+void CdmAdapter::OnSessionMessage(const char* session_id,
+                                  uint32_t session_id_size,
+                                  cdm::MessageType message_type,
+                                  const char* message,
+                                  uint32_t message_size) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
+  session_message_cb_.Run(
+      std::string(session_id, session_id_size),
+      ToMediaMessageType(message_type),
+      std::vector<uint8_t>(message_ptr, message_ptr + message_size));
 }
 
 void CdmAdapter::OnSessionMessage(const char* session_id,
@@ -763,17 +813,12 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   cdm::MessageType message_type,
                                   const char* message,
                                   uint32_t message_size,
-                                  const char* legacy_destination_url,
-                                  uint32_t legacy_destination_url_size) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  // |legacy_destination_url| is obsolete and will be removed as part of
-  // https://crbug.com/570216.
-
-  const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
-  session_message_cb_.Run(
-      std::string(session_id, session_id_size),
-      ToMediaMessageType(message_type),
-      std::vector<uint8_t>(message_ptr, message_ptr + message_size));
+                                  const char* /* legacy_destination_url */,
+                                  uint32_t /* legacy_destination_url_size */) {
+  // cdm::Host_8 version. Remove when CDM_8 no longer supported.
+  // https://crbug.com/737296.
+  OnSessionMessage(session_id, session_id_size, message_type, message,
+                   message_size);
 }
 
 void CdmAdapter::OnSessionKeysChange(const char* session_id,
@@ -827,8 +872,9 @@ void CdmAdapter::OnLegacySessionError(const char* session_id,
                                       uint32_t system_code,
                                       const char* error_message,
                                       uint32_t error_message_size) {
+  // cdm::Host_8 version. Remove when CDM_8 no longer supported.
+  // https://crbug.com/737296.
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // Obsolete and will be removed as part of https://crbug.com/570216.
 }
 
 void CdmAdapter::SendPlatformChallenge(const char* service_id,
@@ -886,6 +932,12 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   // The CDM owns the returned object and must call FileIO::Close()
   // to release it.
   return file_io.release();
+}
+
+void CdmAdapter::RequestStorageId() {
+  // TODO(jrummell): Implement Storage Id. https://crbug.com/478960.
+  NOTIMPLEMENTED();
+  cdm_->OnStorageId(nullptr, 0);
 }
 
 bool CdmAdapter::AudioFramesDataToAudioFrames(
