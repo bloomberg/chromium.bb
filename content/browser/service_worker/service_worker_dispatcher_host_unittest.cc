@@ -200,7 +200,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
                               int64_t version_id,
                               int embedded_worker_id) {
     dispatcher_host_->OnSetHostedVersionId(provider_id, version_id,
-                                           embedded_worker_id);
+                                           embedded_worker_id, nullptr);
   }
 
   void SendProviderCreated(ServiceWorkerProviderType type,

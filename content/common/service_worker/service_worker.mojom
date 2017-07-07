@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_provider.mojom";
+import "content/public/common/url_loader_factory.mojom";
 
 // Per-process browser-side interface.
 // The renderer uses this interface to tell the browser when potential service
@@ -20,8 +21,12 @@ interface ServiceWorkerDispatcherHost {
   // Informs the browser that a service worker is starting up. |provider_id|
   // identifies the ServiceWorkerProviderHost hosting the service
   // worker. |version_id| identifies the ServiceWorkerVersion and
-  // |embedded_worker_id| identifies the EmbeddedWorkerInstance.  
+  // |embedded_worker_id| identifies the EmbeddedWorkerInstance.
+  // If ServiceWorkerUtils::IsServicificationEnabled() is true, this also
+  // populates |script_loader_factory| for script loading for the service
+  // worker.
   OnSetHostedVersionId(int32 provider_id,
                        int64 version_id,
-                       int32 embedded_worker_id);
+                       int32 embedded_worker_id,
+                       associated URLLoaderFactory& script_loader_factory);
 };

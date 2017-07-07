@@ -72,6 +72,12 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // ServiceWorkerVersion should be used.
   void SetServiceWorkerVersionId(int64_t version_id, int embedded_worker_id);
 
+  mojom::URLLoaderFactory* script_loader_factory() {
+    if (script_loader_factory_.is_bound())
+      return script_loader_factory_.get();
+    return nullptr;
+  }
+
   bool IsControlledByServiceWorker() const;
 
  private:
@@ -79,6 +85,8 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
   mojom::ServiceWorkerProviderHostAssociatedPtr provider_host_;
+  mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);
 };
 

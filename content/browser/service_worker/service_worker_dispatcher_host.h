@@ -20,6 +20,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 class GURL;
 
@@ -119,9 +120,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
-  void OnSetHostedVersionId(int provider_id,
-                            int64_t version_id,
-                            int embedded_worker_id) override;
+  void OnSetHostedVersionId(
+      int provider_id,
+      int64_t version_id,
+      int embedded_worker_id,
+      mojom::URLLoaderFactoryAssociatedRequest request) override;
 
   // IPC Message handlers
   void OnRegisterServiceWorker(int thread_id,

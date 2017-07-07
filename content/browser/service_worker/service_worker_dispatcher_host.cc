@@ -981,9 +981,11 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   }
 }
 
-void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
-                                                       int64_t version_id,
-                                                       int embedded_worker_id) {
+void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
+    int provider_id,
+    int64_t version_id,
+    int embedded_worker_id,
+    mojom::URLLoaderFactoryAssociatedRequest request) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnSetHostedVersionId");
   if (!GetContext())
@@ -1043,6 +1045,9 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
   }
 
   provider_host->SetHostedVersion(version);
+
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    provider_host->CreateScriptURLLoaderFactory(std::move(request));
 
   // Retrieve the registration associated with |version|. The registration
   // must be alive because the version keeps it during starting worker.
