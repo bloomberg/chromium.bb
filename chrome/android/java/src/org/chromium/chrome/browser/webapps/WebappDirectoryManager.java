@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -109,21 +108,6 @@ public class WebappDirectoryManager {
             Uri data = intent.getData();
             if (data != null && TextUtils.equals(WebappActivity.WEBAPP_SCHEME, data.getScheme())) {
                 liveWebapps.add(data.getHost());
-            }
-
-            // WebappManagedActivities have titles from "WebappActivity0" through "WebappActivity9".
-            ComponentName component = intent.getComponent();
-            if (component != null) {
-                String fullClassName = component.getClassName();
-                int lastPeriodIndex = fullClassName.lastIndexOf(".");
-                if (lastPeriodIndex != -1) {
-                    String className = fullClassName.substring(lastPeriodIndex + 1);
-                    if (className.startsWith(WEBAPP_DIRECTORY_NAME)
-                            && className.length() > WEBAPP_DIRECTORY_NAME.length()) {
-                        String activityIndex = className.substring(WEBAPP_DIRECTORY_NAME.length());
-                        liveWebapps.add(activityIndex);
-                    }
-                }
             }
         }
 
