@@ -178,10 +178,15 @@ h3 {
 }
 
 label.selectable-button {
-  -webkit-appearance: button;
   -webkit-user-select: none;
-  padding: 2px 5px;
-  margin-bottom: 5px;
+  display: inline-block;
+  background: #BDF;
+  cursor: pointer;
+  border: solid 1px #999;
+  border-radius: 3px;
+  padding: 6px;
+  margin: 4px 0;
+  line-height: 1.4;
 }
 
 input.selectable-button {
@@ -189,12 +194,25 @@ input.selectable-button {
 }
 
 input.selectable-button:checked + label.selectable-button {
-  background-color: #4AA9E4;
-  color: white;
+  background-color: #2196F3;
+  border-color: #666;
+  color: #FFF;
+}
+
+input.selectable-button:hover + label.selectable-button {
+  border-color: #666;
 }
 
 label.destructed-player {
-  background-color: #E4854A;
+  background-color: #EEE;
+}
+
+.player-name {
+  font-weight: bold;
+}
+
+.player-frame {
+  font-style: italic;
 }
 
 .no-players-selected #players .property-wrapper,

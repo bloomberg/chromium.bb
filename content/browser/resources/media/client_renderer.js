@@ -51,7 +51,7 @@ var ClientRenderer = (function() {
     NO_PLAYERS_SELECTED: 'no-players-selected',
     NO_COMPONENTS_SELECTED: 'no-components-selected',
     SELECTABLE_BUTTON: 'selectable-button',
-    DESTRUCTED_PLAYER: 'destructed-player'
+    DESTRUCTED_PLAYER: 'destructed-player',
   };
 
   function removeChildren(element) {
@@ -60,7 +60,7 @@ var ClientRenderer = (function() {
     }
   };
 
-  function createSelectableButton(id, groupName, text, select_cb,
+  function createSelectableButton(id, groupName, buttonLabel, select_cb,
                                   isDestructed) {
     // For CSS styling.
     var radioButton = document.createElement('input');
@@ -69,12 +69,10 @@ var ClientRenderer = (function() {
     radioButton.id = id;
     radioButton.name = groupName;
 
-    var buttonLabel = document.createElement('label');
     buttonLabel.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
     if (isDestructed)
       buttonLabel.classList.add(ClientRenderer.Css_.DESTRUCTED_PLAYER);
     buttonLabel.setAttribute('for', radioButton.id);
-    buttonLabel.appendChild(document.createTextNode(text));
 
     var fragment = document.createDocumentFragment();
     fragment.appendChild(radioButton);
@@ -177,14 +175,11 @@ var ClientRenderer = (function() {
         this.drawProperties_(player.properties, this.playerPropertiesTable);
         this.drawLog_();
       }
-      if (key === 'name' || key === 'url') {
-        this.redrawPlayerList_(players);
-      }
-      if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED') {
+      if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED')
         player.destructed = true;
-        document.querySelector(
-            "label.selectable-button[for='" + player.id + "']").classList.add(
-                ClientRenderer.Css_.DESTRUCTED_PLAYER);
+      if (['url', 'frame_url', 'frame_title', 'audio_codec_name',
+           'video_codec_name', 'width', 'height', 'event'].includes(key)) {
+        this.redrawPlayerList_(players);
       }
     },
 
@@ -307,8 +302,10 @@ var ClientRenderer = (function() {
         var button_cb = this.selectAudioComponent_.bind(
                 this, componentType, id, components[id]);
         var friendlyName = this.getAudioComponentName_(componentType, id);
+        var label = document.createElement('label');
+        label.appendChild(document.createTextNode(friendlyName));
         li.appendChild(createSelectableButton(
-            id, buttonGroupName, friendlyName, button_cb));
+            id, buttonGroupName, label, button_cb));
         fragment.appendChild(li);
       }
       removeChildren(listElement);
@@ -348,14 +345,53 @@ var ClientRenderer = (function() {
       for (var id in players) {
         hasPlayers = true;
         var player = players[id];
-        var usableName = player.properties.name ||
-            player.properties.url ||
-            'Player ' + player.id;
+        var p = player.properties;
+        var label = document.createElement('label');
+
+        var name_text = p.url || 'Player ' + player.id;
+        var name_node = document.createElement('span');
+        name_node.appendChild(document.createTextNode(name_text));
+        name_node.className = 'player-name';
+        label.appendChild(name_node);
+
+        var frame = [];
+        if (p.frame_title)
+          frame.push(p.frame_title);
+        if (p.frame_url)
+          frame.push(p.frame_url);
+        var frame_text = frame.join(' - ');
+        if (frame_text) {
+          label.appendChild(document.createElement('br'));
+          var frame_node = document.createElement('span');
+          frame_node.className = 'player-frame';
+          frame_node.appendChild(document.createTextNode(frame_text));
+          label.appendChild(frame_node);
+        }
+
+        var desc = []
+        if (p.width && p.height)
+          desc.push(p.width + 'x' + p.height);
+        if (p.video_codec_name)
+          desc.push(p.video_codec_name);
+        if (p.video_codec_name && p.audio_codec_name)
+          desc.push('+');
+        if (p.audio_codec_name)
+          desc.push(p.audio_codec_name);
+        if (p.event)
+          desc.push('(' + p.event + ')');
+        var desc_text = desc.join(' ');
+        if (desc_text) {
+          label.appendChild(document.createElement('br'));
+          var desc_node = document.createElement('span');
+          desc_node.className = 'player-desc';
+          desc_node.appendChild(document.createTextNode(desc_text));
+          label.appendChild(desc_node);
+        }
 
         var li = document.createElement('li');
         var button_cb = this.selectPlayer_.bind(this, player);
         li.appendChild(createSelectableButton(
-            id, buttonGroupName, usableName, button_cb, player.destructed));
+            id, buttonGroupName, label, button_cb, player.destructed));
         fragment.appendChild(li);
       }
       removeChildren(this.playerListElement);

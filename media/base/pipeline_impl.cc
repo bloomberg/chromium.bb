@@ -201,7 +201,6 @@ PipelineImpl::RendererWrapper::RendererWrapper(
       text_renderer_ended_(false),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
-  media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
 }
 
 PipelineImpl::RendererWrapper::~RendererWrapper() {
