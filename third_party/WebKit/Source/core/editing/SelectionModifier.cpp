@@ -178,17 +178,24 @@ VisiblePosition SelectionModifier::NextWordPositionForPlatform(
       SkipWhitespace(position_after_current_word.DeepEquivalent()));
 }
 
-static void AdjustPositionForUserSelectAll(VisiblePosition& pos,
-                                           bool is_forward) {
-  if (Node* root_user_select_all = EditingStrategy::RootUserSelectAllForNode(
-          pos.DeepEquivalent().AnchorNode()))
-    pos = CreateVisiblePosition(
-        is_forward ? MostForwardCaretPosition(
-                         Position::AfterNode(*root_user_select_all),
-                         kCanCrossEditingBoundary)
-                   : MostBackwardCaretPosition(
-                         Position::BeforeNode(*root_user_select_all),
-                         kCanCrossEditingBoundary));
+static VisiblePosition AdjustForwardPositionForUserSelectAll(
+    VisiblePosition& position) {
+  Node* const root_user_select_all = EditingStrategy::RootUserSelectAllForNode(
+      position.DeepEquivalent().AnchorNode());
+  if (!root_user_select_all)
+    return position;
+  return CreateVisiblePosition(MostForwardCaretPosition(
+      Position::AfterNode(*root_user_select_all), kCanCrossEditingBoundary));
+}
+
+static VisiblePosition AdjustBackwardPositionForUserSelectAll(
+    VisiblePosition& position) {
+  Node* const root_user_select_all = EditingStrategy::RootUserSelectAllForNode(
+      position.DeepEquivalent().AnchorNode());
+  if (!root_user_select_all)
+    return position;
+  return CreateVisiblePosition(MostBackwardCaretPosition(
+      Position::BeforeNode(*root_user_select_all), kCanCrossEditingBoundary));
 }
 
 VisiblePosition SelectionModifier::ModifyExtendingRight(
@@ -231,9 +238,9 @@ VisiblePosition SelectionModifier::ModifyExtendingRight(
       pos = ModifyExtendingForward(granularity);
       break;
   }
-  AdjustPositionForUserSelectAll(
-      pos, DirectionOfEnclosingBlock() == TextDirection::kLtr);
-  return pos;
+  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+    return AdjustForwardPositionForUserSelectAll(pos);
+  return AdjustBackwardPositionForUserSelectAll(pos);
 }
 
 VisiblePosition SelectionModifier::ModifyExtendingForward(
@@ -275,9 +282,9 @@ VisiblePosition SelectionModifier::ModifyExtendingForward(
         pos = EndOfDocument(pos);
       break;
   }
-  AdjustPositionForUserSelectAll(
-      pos, DirectionOfEnclosingBlock() == TextDirection::kLtr);
-  return pos;
+  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+    return AdjustForwardPositionForUserSelectAll(pos);
+  return AdjustBackwardPositionForUserSelectAll(pos);
 }
 
 VisiblePosition SelectionModifier::ModifyMovingRight(
@@ -410,9 +417,9 @@ VisiblePosition SelectionModifier::ModifyExtendingLeft(
       pos = ModifyExtendingBackward(granularity);
       break;
   }
-  AdjustPositionForUserSelectAll(
-      pos, !(DirectionOfEnclosingBlock() == TextDirection::kLtr));
-  return pos;
+  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+    return AdjustBackwardPositionForUserSelectAll(pos);
+  return AdjustForwardPositionForUserSelectAll(pos);
 }
 
 VisiblePosition SelectionModifier::ModifyExtendingBackward(
@@ -459,9 +466,9 @@ VisiblePosition SelectionModifier::ModifyExtendingBackward(
         pos = StartOfDocument(pos);
       break;
   }
-  AdjustPositionForUserSelectAll(
-      pos, !(DirectionOfEnclosingBlock() == TextDirection::kLtr));
-  return pos;
+  if (DirectionOfEnclosingBlock() == TextDirection::kLtr)
+    return AdjustBackwardPositionForUserSelectAll(pos);
+  return AdjustForwardPositionForUserSelectAll(pos);
 }
 
 VisiblePosition SelectionModifier::ModifyMovingLeft(
