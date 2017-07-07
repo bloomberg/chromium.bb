@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -40,15 +37,6 @@ public class PhotoPickerDialog extends AlertDialog {
         mCategoryView = new PickerCategoryView(context);
         mCategoryView.initialize(this, listener, multiSelectionAllowed, mimeTypes);
         setView(mCategoryView);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     @Override
