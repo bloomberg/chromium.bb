@@ -39,6 +39,8 @@ var kPrinterListFullHeight = 350;
  */
 function getEmptyPrinter_() {
   return {
+    ppdManufacturer: '',
+    ppdModel: '',
     printerAddress: '',
     printerAutoconf: false,
     printerDescription: '',
@@ -138,8 +140,8 @@ Polymer({
     // If we're switching to the manufacturer/model dialog, clear the existing
     // data we have about the PPD (if any), as we're dropping that in favor of
     // user selections.
-    this.selectedPrinter.printerManufacturer = '';
-    this.selectedPrinter.printerModel = '';
+    this.selectedPrinter.ppdManufacturer = '';
+    this.selectedPrinter.ppdModel = '';
     this.selectedPrinter.printerPPDPath = '';
     this.$$('add-printer-dialog').close();
     this.fire('open-manufacturer-model-dialog');
@@ -218,7 +220,7 @@ Polymer({
   },
 
   observers: [
-    'selectedManufacturerChanged_(newPrinter.printerManufacturer)',
+    'selectedManufacturerChanged_(newPrinter.ppdManufacturer)',
   ],
 
   /** @override */
@@ -235,7 +237,7 @@ Polymer({
    */
   selectedManufacturerChanged_: function(manufacturer) {
     // Reset model if manufacturer is changed.
-    this.set('newPrinter.printerModel', '');
+    this.set('newPrinter.ppdModel', '');
     if (manufacturer) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .getCupsPrinterModelsList(manufacturer)
@@ -298,14 +300,14 @@ Polymer({
   },
 
   /**
-   * @param {string} printerManufacturer
-   * @param {string} printerModel
+   * @param {string} ppdManufacturer
+   * @param {string} ppdModel
    * @param {string} printerPPDPath
    * @return {boolean} Whether we have enough information to set up the printer
    * @private
    */
-  canAddPrinter_: function(printerManufacturer, printerModel, printerPPDPath) {
-    return !!((printerManufacturer && printerModel) || printerPPDPath);
+  canAddPrinter_: function(ppdManufacturer, ppdModel, printerPPDPath) {
+    return !!((ppdManufacturer && ppdModel) || printerPPDPath);
   },
 });
 
