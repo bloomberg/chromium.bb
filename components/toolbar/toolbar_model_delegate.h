@@ -56,6 +56,10 @@ class ToolbarModelDelegate {
   // knowledge of those schemes into this component.
   virtual const gfx::VectorIcon* GetVectorIconOverride() const = 0;
 
+  // Returns whether the page is an offline page, sourced from a cache of
+  // previously-downloaded content.
+  virtual bool IsOfflinePage() const = 0;
+
  protected:
   virtual ~ToolbarModelDelegate() {}
 };

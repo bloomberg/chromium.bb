@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -22,7 +23,9 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#else
 #include "components/omnibox/browser/vector_icons.h" // nogncheck
 #include "components/toolbar/vector_icons.h"  // nogncheck
 #endif
@@ -124,6 +127,17 @@ const gfx::VectorIcon* ChromeToolbarModelDelegate::GetVectorIconOverride()
 #endif
 
   return nullptr;
+}
+
+bool ChromeToolbarModelDelegate::IsOfflinePage() const {
+#if defined(OS_ANDROID)
+  content::WebContents* web_contents = GetActiveWebContents();
+  return web_contents &&
+         offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+             web_contents);
+#else
+  return false;
+#endif
 }
 
 content::NavigationController*

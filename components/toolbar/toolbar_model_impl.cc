@@ -138,3 +138,7 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
 bool ToolbarModelImpl::ShouldDisplayURL() const {
   return delegate_->ShouldDisplayURL();
 }
+
+bool ToolbarModelImpl::IsOfflinePage() const {
+  return delegate_->IsOfflinePage();
+}

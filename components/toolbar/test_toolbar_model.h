@@ -31,6 +31,7 @@ class TestToolbarModel : public ToolbarModel {
   base::string16 GetSecureVerboseText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
+  bool IsOfflinePage() const override;
 
   void set_text(const base::string16& text) { text_ = text; }
   void set_url(const GURL& url) { url_ = url; }
@@ -44,14 +45,16 @@ class TestToolbarModel : public ToolbarModel {
   void set_should_display_url(bool should_display_url) {
     should_display_url_ = should_display_url;
   }
+  void set_offline_page(bool offline_page) { offline_page_ = offline_page; }
 
  private:
   base::string16 text_;
   GURL url_;
-  security_state::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_ = security_state::NONE;
   const gfx::VectorIcon* icon_ = nullptr;
   base::string16 ev_cert_name_;
-  bool should_display_url_;
+  bool should_display_url_ = false;
+  bool offline_page_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarModel);
 };

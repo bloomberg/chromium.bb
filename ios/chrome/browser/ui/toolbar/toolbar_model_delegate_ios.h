@@ -43,6 +43,7 @@ class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
+  bool IsOfflinePage() const override;
 
   WebStateList* web_state_list_;  // weak
 

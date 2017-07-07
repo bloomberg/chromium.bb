@@ -36,6 +36,7 @@ class ToolbarModelImpl : public ToolbarModel {
   base::string16 GetSecureVerboseText() const override;
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
+  bool IsOfflinePage() const override;
 
   ToolbarModelDelegate* delegate_;
   const size_t max_url_display_chars_;

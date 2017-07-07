@@ -47,7 +47,7 @@ class TestUrlBarTexture : public UrlBarTexture {
     unsupported_mode_ = UiUnsupportedMode::kCount;
     ToolbarState state(gurl, SecurityLevel::DANGEROUS,
                        &toolbar::kHttpsInvalidIcon,
-                       base::UTF8ToUTF16("Not secure"), true);
+                       base::UTF8ToUTF16("Not secure"), true, false);
     ASSERT_TRUE(state.should_display_url);
     SetToolbarState(state);
     gfx::Size texture_size = GetPreferredTextureSize(kUrlWidthPixels);
