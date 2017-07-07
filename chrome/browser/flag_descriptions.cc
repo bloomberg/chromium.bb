@@ -2416,63 +2416,62 @@ const char kEnableNtpRemoteSuggestionsName[] =
     "Show server-side suggestions on the New Tab page";
 
 const char kEnableNtpRemoteSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain server-side suggestions (e.g., "
-    "Articles for you). Furthermore, it allows to override the source used "
-    "to retrieve these server-side suggestions.";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain server-side suggestions (e.g., Articles for you). Furthermore, it "
+    "allows to override the source used to retrieve these server-side "
+    "suggestions.";
 
 const char kEnableNtpRecentOfflineTabSuggestionsName[] =
     "Show recent offline tabs on the New Tab page";
 
 const char kEnableNtpRecentOfflineTabSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain pages that were captured offline "
-    "during browsing (see #offlining-recent-pages)";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain pages that were captured offline during browsing (see "
+    "#offlining-recent-pages)";
 
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 
 const char kEnableNtpAssetDownloadSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain assets (e.g. books, pictures, "
-    "audio) that the user downloaded for later use.";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain assets (e.g. books, pictures, audio) that the user downloaded for "
+    "later use.";
 
 const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
     "Show offline page downloads on the New Tab page";
 
 const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain pages that the user downloaded for "
-    "later use.";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain pages that the user downloaded for later use.";
 
 const char kEnableNtpBookmarkSuggestionsName[] =
     "Show recently visited bookmarks on the New Tab page";
 
 const char kEnableNtpBookmarkSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain recently visited bookmarks.";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain recently visited bookmarks.";
 
 const char kEnableNtpPhysicalWebPageSuggestionsName[] =
     "Show Physical Web pages on the New Tab page";
 
 const char kEnableNtpPhysicalWebPageSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain pages that are available through "
-    "Physical Web (see #enable-physical-web)";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain pages that are available through Physical Web (see "
+    "#enable-physical-web)";
 
 const char kEnableNtpForeignSessionsSuggestionsName[] =
     "Show recent foreign tabs on the New Tab page";
 
 const char kEnableNtpForeignSessionsSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page (see "
-    "#enable-ntp-snippets) will contain recent foreign tabs.";
+    "If enabled, the list of content suggestions on the New Tab page will "
+    "contain recent foreign tabs.";
 
 const char kEnableNtpSuggestionsNotificationsName[] =
     "Notify about new content suggestions available at the New Tab page";
 
 const char kEnableNtpSuggestionsNotificationsDescription[] =
     "If enabled, notifications will inform about new content suggestions on "
-    "the New Tab page (see #enable-ntp-snippets).";
+    "the New Tab page.";
 
 const char kNtpCondensedLayoutName[] = "Condensed NTP layout";
 
