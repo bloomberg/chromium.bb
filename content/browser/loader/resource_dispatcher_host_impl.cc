@@ -87,7 +87,6 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_request_completion_status.h"
@@ -347,10 +346,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       allow_cross_origin_auth_prompt_(false),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(io_thread_runner),
-      experimental_web_features_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures)) {
+      io_thread_task_runner_(io_thread_runner) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -1603,13 +1599,11 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
         base::MakeUnique<WakeLockResourceThrottle>(request->url().host()));
   }
 
-  // The experimental Clear-Site-Data throttle.
-  if (experimental_web_features_enabled_) {
-    std::unique_ptr<ResourceThrottle> clear_site_data_throttle =
-        ClearSiteDataThrottle::MaybeCreateThrottleForRequest(request);
-    if (clear_site_data_throttle)
-      throttles.push_back(std::move(clear_site_data_throttle));
-  }
+  // The Clear-Site-Data throttle.
+  std::unique_ptr<ResourceThrottle> clear_site_data_throttle =
+      ClearSiteDataThrottle::MaybeCreateThrottleForRequest(request);
+  if (clear_site_data_throttle)
+    throttles.push_back(std::move(clear_site_data_throttle));
 
   // TODO(ricea): Stop looking this up so much.
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);

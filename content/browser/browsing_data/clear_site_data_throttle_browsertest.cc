@@ -21,7 +21,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/cache_test_util.h"
 #include "content/public/test/content_browser_test.h"
@@ -153,8 +152,6 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
 
     // We're redirecting all hosts to localhost even on HTTPS, so we'll get
     // certificate errors.
