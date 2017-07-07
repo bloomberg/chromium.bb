@@ -4223,7 +4223,7 @@ var keyboardOverlayData = {
     'g<>CTRL': 'keyboardOverlayFindTextAgain',
     'g<>CTRL<>SHIFT': 'keyboardOverlayFindPreviousText',
     'h<>CTRL': 'keyboardOverlayHistory',
-    'h<>SEARCH<>SHIFT': 'keyboardOverlayToggleHighContrastMode',
+    'h<>CTRL<>SEARCH': 'keyboardOverlayToggleHighContrastMode',
     'i<>ALT<>CTRL': 'keyboardOverlayTouchHudModeChange',
     'i<>ALT<>SHIFT': 'keyboardOverlayReportIssue',
     'i<>CTRL<>SHIFT': 'keyboardOverlayDeveloperTools',

@@ -1034,6 +1034,12 @@ Press Search or Shift to cancel.
       <message name="IDS_SHORTCUT_IME_BUBBLE_NEW" desc="the new shortcut to show the input options menu bubble in the shelf.">
         Search+Shift+K
       </message>
+      <message name="IDS_SHORTCUT_TOGGLE_HIGH_CONTRAST_OLD" desc="the old deprecated shortcut to toggle the high contrast display mode.">
+        Search+Shift+H
+      </message>
+      <message name="IDS_SHORTCUT_TOGGLE_HIGH_CONTRAST_NEW" desc="the new shortcut to toggle the high contrast display mode.">
+        Ctrl+Search+H
+      </message>
       <message name="IDS_DEPRECATED_LOCK_SCREEN_MSG"
                desc="Notification message to tell users about the deprecation of Ctrl+Shift+L shortcut to lock the screen.">
         The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+L</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Ctrl+Shift+L</ex></ph>.
@@ -1046,11 +1052,14 @@ Press Search or Shift to cancel.
                desc="Notification message to tell users about the deprecation of Alt+Shift+K shortcut to show the input options menu bubble in the shelf.">
         The shortcut to show the input options menu bubble in the shelf has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Search+Shift+K</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Alt+Shift+K</ex></ph>.
       </message>
+      <message name="IDS_DEPRECATED_TOGGLE_HIGH_CONTRAST_MSG" desc="Notification message to tell users about the deprecation of Search+Shift+H shortcut to toggle the high contrast display mode.">
+        The shortcut to toggle High Contrast Mode has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Ctrl+Search+H</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Search+Shift+H</ex></ph>.
+      </message>
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
       <message name="IDS_HIGH_CONTRAST_ACCEL_MSG"
                desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
-        High Contrast Mode enabled. Press Search+Shift+H again to toggle it off.
+        High Contrast Mode enabled. Press Ctrl+Search+H again to toggle it off.
       </message>
 
       <!-- Tray scale strings -->
