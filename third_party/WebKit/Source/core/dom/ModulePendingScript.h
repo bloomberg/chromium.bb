@@ -51,8 +51,9 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
 class CORE_EXPORT ModulePendingScript : public PendingScript {
  public:
   static ModulePendingScript* Create(ScriptElementBase* element,
-                                     ModulePendingScriptTreeClient* client) {
-    return new ModulePendingScript(element, client);
+                                     ModulePendingScriptTreeClient* client,
+                                     bool is_external) {
+    return new ModulePendingScript(element, client, is_external);
   }
 
   ~ModulePendingScript() override;
@@ -67,14 +68,16 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  ModulePendingScript(ScriptElementBase*, ModulePendingScriptTreeClient*);
+  ModulePendingScript(ScriptElementBase*,
+                      ModulePendingScriptTreeClient*,
+                      bool is_external);
 
   // PendingScript
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
   Script* GetSource(const KURL& document_url,
                     bool& error_occurred) const override;
   bool IsReady() const override { return ready_; }
-  bool IsExternal() const override { return true; }
+  bool IsExternal() const override { return is_external_; }
   bool ErrorOccurred() const override;
   bool WasCanceled() const override { return false; }
 
@@ -91,6 +94,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
   TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
   bool ready_ = false;
+  const bool is_external_;
 };
 
 }  // namespace blink

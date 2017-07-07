@@ -50,9 +50,11 @@ DEFINE_TRACE_WRAPPERS(ModulePendingScriptTreeClient) {
 }
 
 ModulePendingScript::ModulePendingScript(ScriptElementBase* element,
-                                         ModulePendingScriptTreeClient* client)
+                                         ModulePendingScriptTreeClient* client,
+                                         bool is_external)
     : PendingScript(element, TextPosition()),
-      module_tree_client_(this, client) {
+      module_tree_client_(this, client),
+      is_external_(is_external) {
   CHECK(this->GetElement());
   DCHECK(module_tree_client_);
   client->SetPendingScript(this);
