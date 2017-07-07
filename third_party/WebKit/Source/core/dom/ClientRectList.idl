@@ -30,7 +30,7 @@
 // It has since been replace by DOMRectList in CSSOM View Module and
 // Geometry Interfaces Module:
 // https://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
-// https://dev.w3.org/fxtf/geometry/#DOMRectList
+// https://drafts.fxtf.org/geometry/#DOMRectList
 
 // CSSOM View Module also says: "The DOMRectList interface is at-risk.
 // The authors of this specification await feedback from implementers

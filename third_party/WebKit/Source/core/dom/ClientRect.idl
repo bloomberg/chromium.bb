@@ -29,8 +29,8 @@
 
 // It has since been replaced by DOMRect in CSSOM View Module and
 // Geometry Interfaces Module:
-// https://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
-// https://dev.w3.org/fxtf/geometry/#DOMRect
+// https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface
+// https://drafts.fxtf.org/geometry/#DOMRect
 
 interface ClientRect {
     readonly attribute float top;
