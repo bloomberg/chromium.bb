@@ -28,7 +28,6 @@
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/route_message.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -1012,24 +1011,24 @@ namespace {
 
 // Used in the RouteMessages* tests to populate the messages that will be
 // processed and dispatched to RouteMessageObservers.
-void PopulateRouteMessages(std::vector<RouteMessage>* batch1,
-                           std::vector<RouteMessage>* batch2,
-                           std::vector<RouteMessage>* batch3) {
-  batch1->resize(1);
-  batch1->at(0).type = RouteMessage::TEXT;
-  batch1->at(0).text = std::string("text1");
-  batch2->resize(2);
-  batch2->at(0).type = RouteMessage::BINARY;
-  batch2->at(0).binary = std::vector<uint8_t>(1, UINT8_C(1));
-  batch2->at(1).type = RouteMessage::TEXT;
-  batch2->at(1).text = std::string("text2");
-  batch3->resize(3);
-  batch3->at(0).type = RouteMessage::TEXT;
-  batch3->at(0).text = std::string("text3");
-  batch3->at(1).type = RouteMessage::BINARY;
-  batch3->at(1).binary = std::vector<uint8_t>(1, UINT8_C(2));
-  batch3->at(2).type = RouteMessage::BINARY;
-  batch3->at(2).binary = std::vector<uint8_t>(1, UINT8_C(3));
+void PopulateRouteMessages(
+    std::vector<content::PresentationConnectionMessage>* batch1,
+    std::vector<content::PresentationConnectionMessage>* batch2,
+    std::vector<content::PresentationConnectionMessage>* batch3,
+    std::vector<content::PresentationConnectionMessage>* all_messages) {
+  batch1->clear();
+  batch2->clear();
+  batch3->clear();
+  batch1->emplace_back("text1");
+  batch2->emplace_back(std::vector<uint8_t>(1, UINT8_C(1)));
+  batch2->emplace_back("text2");
+  batch3->emplace_back("text3");
+  batch3->emplace_back(std::vector<uint8_t>(1, UINT8_C(2)));
+  batch3->emplace_back(std::vector<uint8_t>(1, UINT8_C(3)));
+  all_messages->clear();
+  all_messages->insert(all_messages->end(), batch1->begin(), batch1->end());
+  all_messages->insert(all_messages->end(), batch2->begin(), batch2->end());
+  all_messages->insert(all_messages->end(), batch3->begin(), batch3->end());
 }
 
 // Used in the RouteMessages* tests to observe and sanity-check that the
@@ -1038,8 +1037,13 @@ void PopulateRouteMessages(std::vector<RouteMessage>* batch1,
 // above.
 class ExpectedMessagesObserver : public RouteMessageObserver {
  public:
-  ExpectedMessagesObserver(MediaRouter* router, const MediaRoute::Id& route_id)
-      : RouteMessageObserver(router, route_id) {}
+  ExpectedMessagesObserver(
+      MediaRouter* router,
+      const MediaRoute::Id& route_id,
+      const std::vector<content::PresentationConnectionMessage>&
+          expected_messages)
+      : RouteMessageObserver(router, route_id),
+        expected_messages_(expected_messages) {}
 
   ~ExpectedMessagesObserver() final {
     CheckReceivedMessages();
@@ -1047,36 +1051,24 @@ class ExpectedMessagesObserver : public RouteMessageObserver {
 
  private:
   void OnMessagesReceived(
-      const std::vector<RouteMessage>& messages) final {
+      const std::vector<content::PresentationConnectionMessage>& messages)
+      final {
     messages_.insert(messages_.end(), messages.begin(), messages.end());
   }
 
   void CheckReceivedMessages() {
-    ASSERT_EQ(6u, messages_.size());
-    EXPECT_EQ(RouteMessage::TEXT, messages_[0].type);
-    ASSERT_TRUE(messages_[0].text);
-    EXPECT_EQ("text1", *messages_[0].text);
-    EXPECT_EQ(RouteMessage::BINARY, messages_[1].type);
-    ASSERT_TRUE(messages_[1].binary);
-    ASSERT_EQ(1u, messages_[1].binary->size());
-    EXPECT_EQ(UINT8_C(1), messages_[1].binary->front());
-    EXPECT_EQ(RouteMessage::TEXT, messages_[2].type);
-    ASSERT_TRUE(messages_[2].text);
-    EXPECT_EQ("text2", *messages_[2].text);
-    EXPECT_EQ(RouteMessage::TEXT, messages_[3].type);
-    ASSERT_TRUE(messages_[3].text);
-    EXPECT_EQ("text3", *messages_[3].text);
-    EXPECT_EQ(RouteMessage::BINARY, messages_[4].type);
-    ASSERT_TRUE(messages_[4].binary);
-    ASSERT_EQ(1u, messages_[4].binary->size());
-    EXPECT_EQ(UINT8_C(2), messages_[4].binary->front());
-    EXPECT_EQ(RouteMessage::BINARY, messages_[5].type);
-    ASSERT_TRUE(messages_[5].binary);
-    ASSERT_EQ(1u, messages_[5].binary->size());
-    EXPECT_EQ(UINT8_C(3), messages_[5].binary->front());
+    ASSERT_EQ(expected_messages_.size(), messages_.size());
+    for (size_t i = 0; i < expected_messages_.size(); i++) {
+      EXPECT_EQ(expected_messages_[i], messages_[i])
+          << "Message mismatch at index " << i << ": expected: "
+          << PresentationConnectionMessageToString(expected_messages_[i])
+          << ", actual: "
+          << PresentationConnectionMessageToString(messages_[i]);
+    }
   }
 
-  std::vector<RouteMessage> messages_;
+  std::vector<content::PresentationConnectionMessage> expected_messages_;
+  std::vector<content::PresentationConnectionMessage> messages_;
 };
 
 class NullMessageObserver : public RouteMessageObserver {
@@ -1085,14 +1077,18 @@ class NullMessageObserver : public RouteMessageObserver {
       : RouteMessageObserver(router, route_id) {}
   ~NullMessageObserver() final {}
 
-  void OnMessagesReceived(const std::vector<RouteMessage>& messages) final {}
+  void OnMessagesReceived(
+      const std::vector<content::PresentationConnectionMessage>& messages)
+      final {}
 };
 
 }  // namespace
 
 TEST_F(MediaRouterMojoImplTest, RouteMessagesSingleObserver) {
-  std::vector<RouteMessage> incoming_batch1, incoming_batch2, incoming_batch3;
-  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3);
+  std::vector<content::PresentationConnectionMessage> incoming_batch1,
+      incoming_batch2, incoming_batch3, all_messages;
+  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3,
+                        &all_messages);
 
   base::RunLoop run_loop;
   MediaRoute::Id expected_route_id("foo");
@@ -1102,7 +1098,7 @@ TEST_F(MediaRouterMojoImplTest, RouteMessagesSingleObserver) {
 
   // Creating ExpectedMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
-  ExpectedMessagesObserver observer(router(), expected_route_id);
+  ExpectedMessagesObserver observer(router(), expected_route_id, all_messages);
   run_loop.Run();  // Will quit when StartListeningForRouteMessages() is called.
   router()->OnRouteMessagesReceived(expected_route_id, incoming_batch1);
   router()->OnRouteMessagesReceived(expected_route_id, incoming_batch2);
@@ -1112,8 +1108,10 @@ TEST_F(MediaRouterMojoImplTest, RouteMessagesSingleObserver) {
 }
 
 TEST_F(MediaRouterMojoImplTest, RouteMessagesMultipleObservers) {
-  std::vector<RouteMessage> incoming_batch1, incoming_batch2, incoming_batch3;
-  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3);
+  std::vector<content::PresentationConnectionMessage> incoming_batch1,
+      incoming_batch2, incoming_batch3, all_messages;
+  PopulateRouteMessages(&incoming_batch1, &incoming_batch2, &incoming_batch3,
+                        &all_messages);
 
   base::RunLoop run_loop;
   MediaRoute::Id expected_route_id("foo");
@@ -1123,8 +1121,8 @@ TEST_F(MediaRouterMojoImplTest, RouteMessagesMultipleObservers) {
 
   // The ExpectedMessagesObservers will register themselves with the
   // MediaRouter, which in turn will start listening for route messages.
-  ExpectedMessagesObserver observer1(router(), expected_route_id);
-  ExpectedMessagesObserver observer2(router(), expected_route_id);
+  ExpectedMessagesObserver observer1(router(), expected_route_id, all_messages);
+  ExpectedMessagesObserver observer2(router(), expected_route_id, all_messages);
   run_loop.Run();  // Will quit when StartListeningForRouteMessages() is called.
   router()->OnRouteMessagesReceived(expected_route_id, incoming_batch1);
   router()->OnRouteMessagesReceived(expected_route_id, incoming_batch2);

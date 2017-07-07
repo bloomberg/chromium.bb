@@ -18,7 +18,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/route_message.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -123,7 +122,8 @@ class CastRemotingConnector::MessageObserver
 
  private:
   void OnMessagesReceived(
-      const std::vector<media_router::RouteMessage>& messages) final {
+      const std::vector<content::PresentationConnectionMessage>& messages)
+      final {
     connector_->ProcessMessagesFromRoute(messages);
   }
 
@@ -365,92 +365,78 @@ void CastRemotingConnector::SendMessageToProvider(const std::string& message) {
 }
 
 void CastRemotingConnector::ProcessMessagesFromRoute(
-    const std::vector<media_router::RouteMessage>& messages) {
+    const std::vector<content::PresentationConnectionMessage>& messages) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Note: If any calls to message parsing functions are added/changed here,
   // please update cast_remoting_connector_fuzzertest.cc as well!
 
-  for (const media_router::RouteMessage& message : messages) {
-    switch (message.type) {
-      case media_router::RouteMessage::TEXT:
-        // This is a notification message from the Cast Provider, about the
-        // execution state of the media remoting session between Chrome and the
-        // remote device.
-        DCHECK(message.text);
+  for (const auto& message : messages) {
+    if (message.is_binary()) {
+      // All binary messages are passed through to the source during an active
+      // remoting session.
+      if (active_bridge_)
+        active_bridge_->OnMessageFromSink(*message.data);
 
-        // If this is a "start streams" acknowledgement message, the
-        // CastRemotingSenders should now be available to begin consuming from
-        // the data pipes.
-        if (active_bridge_ &&
-            Messaging::IsMessageForSession(
-                *message.text,
-                Messaging::kStartedStreamsMessageFormatPartial,
-                session_counter_)) {
-          if (pending_audio_sender_request_.is_pending()) {
-            cast::CastRemotingSender::FindAndBind(
-                Messaging::GetStreamIdFromStartedMessage(
-                    *message.text,
-                    Messaging::kStartedStreamsMessageAudioIdSpecifier),
-                std::move(pending_audio_pipe_),
-                std::move(pending_audio_sender_request_),
-                base::Bind(&CastRemotingConnector::OnDataSendFailed,
-                           weak_factory_.GetWeakPtr()));
-          }
-          if (pending_video_sender_request_.is_pending()) {
-            cast::CastRemotingSender::FindAndBind(
-                Messaging::GetStreamIdFromStartedMessage(
-                    *message.text,
-                    Messaging::kStartedStreamsMessageVideoIdSpecifier),
-                std::move(pending_video_pipe_),
-                std::move(pending_video_sender_request_),
-                base::Bind(&CastRemotingConnector::OnDataSendFailed,
-                           weak_factory_.GetWeakPtr()));
-          }
-          break;
-        }
+      continue;
+    }
 
-        // If this is a failure message, call StopRemoting().
-        if (active_bridge_ &&
-            Messaging::IsMessageForSession(*message.text,
-                                           Messaging::kFailedMessageFormat,
-                                           session_counter_)) {
-          StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE);
-          break;
-        }
+    // This is a notification message from the Cast Provider, about the
+    // execution state of the media remoting session between Chrome and the
+    // remote device.
 
-        // If this is a stop acknowledgement message, indicating that the last
-        // session was stopped, notify all sources that the sink is once again
-        // available.
-        if (Messaging::IsMessageForSession(*message.text,
-                                           Messaging::kStoppedMessageFormat,
-                                           session_counter_)) {
-          if (active_bridge_) {
-            // Hmm...The Cast Provider was in a state that disagrees with this
-            // connector. Attempt to resolve this by shutting everything down to
-            // effectively reset to a known state.
-            LOG(WARNING) << "BUG: Cast Provider sent 'stopped' message during "
-                            "an active remoting session.";
-            StopRemoting(active_bridge_,
-                         RemotingStopReason::UNEXPECTED_FAILURE);
-          }
-          for (RemotingBridge* notifyee : bridges_)
-            notifyee->OnSinkAvailable(enabled_features_);
-          break;
-        }
-
-        LOG(WARNING) << "BUG: Unexpected message from Cast Provider: "
-                     << *message.text;
-        break;
-
-      case media_router::RouteMessage::BINARY:  // This is for the source.
-        DCHECK(message.binary);
-
-        // All binary messages are passed through to the source during an active
-        // remoting session.
-        if (active_bridge_)
-          active_bridge_->OnMessageFromSink(*message.binary);
-        break;
+    // If this is a "start streams" acknowledgement message, the
+    // CastRemotingSenders should now be available to begin consuming from
+    // the data pipes.
+    if (active_bridge_ &&
+        Messaging::IsMessageForSession(
+            *message.message, Messaging::kStartedStreamsMessageFormatPartial,
+            session_counter_)) {
+      if (pending_audio_sender_request_.is_pending()) {
+        cast::CastRemotingSender::FindAndBind(
+            Messaging::GetStreamIdFromStartedMessage(
+                *message.message,
+                Messaging::kStartedStreamsMessageAudioIdSpecifier),
+            std::move(pending_audio_pipe_),
+            std::move(pending_audio_sender_request_),
+            base::Bind(&CastRemotingConnector::OnDataSendFailed,
+                       weak_factory_.GetWeakPtr()));
+      }
+      if (pending_video_sender_request_.is_pending()) {
+        cast::CastRemotingSender::FindAndBind(
+            Messaging::GetStreamIdFromStartedMessage(
+                *message.message,
+                Messaging::kStartedStreamsMessageVideoIdSpecifier),
+            std::move(pending_video_pipe_),
+            std::move(pending_video_sender_request_),
+            base::Bind(&CastRemotingConnector::OnDataSendFailed,
+                       weak_factory_.GetWeakPtr()));
+      }
+    } else if (active_bridge_ &&
+               Messaging::IsMessageForSession(*message.message,
+                                              Messaging::kFailedMessageFormat,
+                                              session_counter_)) {
+      // If this is a failure message, call StopRemoting().
+      StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE);
+    } else if (Messaging::IsMessageForSession(*message.message,
+                                              Messaging::kStoppedMessageFormat,
+                                              session_counter_)) {
+      // If this is a stop acknowledgement message, indicating that the last
+      // session was stopped, notify all sources that the sink is once again
+      // available.
+      if (active_bridge_) {
+        // Hmm...The Cast Provider was in a state that disagrees with this
+        // connector. Attempt to resolve this by shutting everything down to
+        // effectively reset to a known state.
+        LOG(WARNING) << "BUG: Cast Provider sent 'stopped' message during "
+                        "an active remoting session.";
+        StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE);
+      }
+      for (RemotingBridge* notifyee : bridges_)
+        notifyee->OnSinkAvailable(enabled_features_);
+    } else {
+      LOG(WARNING) << "BUG: Unexpected message from Cast Provider: "
+                   << *message.message;
     }
   }
 }

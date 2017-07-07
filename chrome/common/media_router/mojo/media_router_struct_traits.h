@@ -157,53 +157,43 @@ struct StructTraits<media_router::mojom::CastMediaSinkDataView,
 
 template <>
 struct StructTraits<media_router::mojom::RouteMessageDataView,
-                    media_router::RouteMessage> {
+                    content::PresentationConnectionMessage> {
   static media_router::mojom::RouteMessage::Type type(
-      const media_router::RouteMessage& msg) {
-    switch (msg.type) {
-      case media_router::RouteMessage::TEXT:
-        return media_router::mojom::RouteMessage::Type::TEXT;
-      case media_router::RouteMessage::BINARY:
-        return media_router::mojom::RouteMessage::Type::BINARY;
-    }
+      const content::PresentationConnectionMessage& msg) {
+    if (msg.message)
+      return media_router::mojom::RouteMessage::Type::TEXT;
+    else if (msg.data)
+      return media_router::mojom::RouteMessage::Type::BINARY;
     NOTREACHED();
     return media_router::mojom::RouteMessage::Type::TEXT;
   }
 
   static const base::Optional<std::string>& message(
-      const media_router::RouteMessage& msg) {
-    return msg.text;
+      const content::PresentationConnectionMessage& msg) {
+    return msg.message;
   }
 
   static const base::Optional<std::vector<uint8_t>>& data(
-      const media_router::RouteMessage& msg) {
-    return msg.binary;
+      const content::PresentationConnectionMessage& msg) {
+    return msg.data;
   }
 
   static bool Read(media_router::mojom::RouteMessageDataView data,
-                   media_router::RouteMessage* out) {
+                   content::PresentationConnectionMessage* out) {
     media_router::mojom::RouteMessage::Type type;
     if (!data.ReadType(&type))
       return false;
     switch (type) {
       case media_router::mojom::RouteMessage::Type::TEXT: {
-        out->type = media_router::RouteMessage::TEXT;
-        base::Optional<std::string> text;
-        if (!data.ReadMessage(&text) || !text)
+        if (!data.ReadMessage(&out->message) || !out->message)
           return false;
-        out->text = std::move(text);
         break;
       }
       case media_router::mojom::RouteMessage::Type::BINARY: {
-        out->type = media_router::RouteMessage::BINARY;
-        base::Optional<std::vector<uint8_t>> binary;
-        if (!data.ReadData(&binary) || !binary)
+        if (!data.ReadData(&out->data) || !out->data)
           return false;
-        out->binary = std::move(binary);
         break;
       }
-      default:
-        return false;
     }
     return true;
   }

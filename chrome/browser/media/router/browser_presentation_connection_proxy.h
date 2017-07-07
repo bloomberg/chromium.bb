@@ -72,7 +72,9 @@ class BrowserPresentationConnectionProxy
   void OnClose() override {}
 
   // RouteMessageObserver implementation.
-  void OnMessagesReceived(const std::vector<RouteMessage>& messages) override;
+  void OnMessagesReceived(
+      const std::vector<content::PresentationConnectionMessage>& messages)
+      override;
 
  private:
   // |router_| not owned by this class.

@@ -13,13 +13,17 @@
 #include "base/macros.h"
 #include "chrome/common/media_router/media_route.h"
 
+namespace content {
+struct PresentationConnectionMessage;
+}
+
 namespace media_router {
 
 class MediaRouter;
-struct RouteMessage;
 
 // Observes messages originating from the MediaSink connected to a MediaRoute.
 // Messages are received from MediaRouter via |OnMessagesReceived|.
+// TODO(imcheng): Rename to PresentationConnectionMessageObserver.
 class RouteMessageObserver {
  public:
   // |route_id|: ID of MediaRoute to listen for messages.
@@ -30,7 +34,7 @@ class RouteMessageObserver {
   // Invoked by |router_| whenever messages are received from the route sink.
   // |messages| is guaranteed to be non-empty.
   virtual void OnMessagesReceived(
-      const std::vector<RouteMessage>& messages) = 0;
+      const std::vector<content::PresentationConnectionMessage>& messages) = 0;
 
   const MediaRoute::Id& route_id() const { return route_id_; }
 

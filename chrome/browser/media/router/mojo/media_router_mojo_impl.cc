@@ -30,8 +30,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/route_message.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "extensions/common/extension.h"
 
 #define DVLOG_WITH_INSTANCE(level) \
@@ -779,7 +779,7 @@ void MediaRouterMojoImpl::DoCreateMediaRouteController(
 
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const std::string& route_id,
-    const std::vector<RouteMessage>& messages) {
+    const std::vector<content::PresentationConnectionMessage>& messages) {
   DVLOG_WITH_INSTANCE(1) << "OnRouteMessagesReceived";
 
   if (messages.empty())
