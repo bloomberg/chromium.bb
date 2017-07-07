@@ -15,9 +15,9 @@ promise_test(() => {
           'readValue',
           'characteristicvaluechanged'));
     }).then(results => {
-      let read_value = results[0].buffer;
-      let event_value = results[1].buffer;
-      assert_equals(event_value, read_value);
+      let read_value = new Uint8Array(results[0].buffer);
+      let event_value = new Uint8Array(results[1].buffer);
+      assert_equals(event_value.buffer, read_value.buffer);
       assert_array_equals(event_value, read_value);
     });
 }, 'Reading a characteristic should fire an event.');

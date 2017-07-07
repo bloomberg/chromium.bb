@@ -17,7 +17,7 @@ promise_test(() => {
         .then(() => characteristic.readValue())
         .then(() => {
           assert_array_equals(
-            Array.from(new Uint8Array(characteristic.value.buffer)),
+            new Uint8Array(characteristic.value.buffer),
             EXPECTED_VALUE);
         });
     });
