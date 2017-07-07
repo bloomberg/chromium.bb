@@ -16,8 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -437,8 +436,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   TestStateObserver test_state_observer_;
 
  private:
-  // Allows tasks to be posted to the main thread.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(NetExportFileWriterTest, InitFail) {
