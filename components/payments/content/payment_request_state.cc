@@ -298,6 +298,9 @@ void PaymentRequestState::PopulateProfileCache() {
   journey_logger_->SetNumberOfSuggestionsShown(
       JourneyLogger::Section::SECTION_CREDIT_CARDS,
       available_instruments().size());
+
+  if (!available_instruments().empty())
+    journey_logger_->SetUserHadInitialFormOfPayment();
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {

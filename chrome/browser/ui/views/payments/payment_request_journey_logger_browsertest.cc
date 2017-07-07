@@ -434,8 +434,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   NavigateTo("/payment_request_email_test.html");
 
   // Initiated should be logged.
-  histogram_tester.ExpectBucketCount("PaymentRequest.CheckoutFunnel.Initiated",
-                                     1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
   // Show should not be logged.
   histogram_tester.ExpectTotalCount("PaymentRequest.CheckoutFunnel.Shown", 0);
   // Abort should not be logged.
@@ -455,6 +455,91 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
       "PaymentRequest.UserHadSuggestionsForEverything", 0);
   histogram_tester.ExpectTotalCount(
       "PaymentRequest.UserDidNotHaveSuggestionsForEverything", 0);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.UserHadInitialFormOfPayment", 0);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.UserDidNotHaveInitialFormOfPayment", 0);
+}
+
+class PaymentRequestInitialFormOfPaymentTest
+    : public PaymentRequestBrowserTestBase {
+ protected:
+  PaymentRequestInitialFormOfPaymentTest()
+      : PaymentRequestBrowserTestBase("/payment_request_email_test.html") {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestInitialFormOfPaymentTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
+                       UserHadInitialFormOfPayment) {
+  base::HistogramTester histogram_tester;
+
+  // Add an address and a credit card on file.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  // Show a Payment Request.
+  InvokePaymentRequestUI();
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  NavigateTo("/payment_request_email_test.html");
+
+  // The fact that the user had a form of payment on file should be recorded.
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion",
+      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      0);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestInitialFormOfPaymentTest,
+                       UserDidNotHaveInitialFormOfPayment_NoCard) {
+  base::HistogramTester histogram_tester;
+
+  // Show a Payment Request. The user has no form of payment on file.
+  InvokePaymentRequestUI();
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  NavigateTo("/payment_request_email_test.html");
+
+  // The fact that the user had no form of payment on file should be recorded.
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestInitialFormOfPaymentTest,
+    UserDidNotHaveInitialFormOfPayment_CardNetworkNotSupported) {
+  base::HistogramTester histogram_tester;
+
+  // Add an address and an AMEX credit card on file. AMEX is not supported by
+  // the merchant.
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard2();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // AMEX.
+
+  // Show a Payment Request.
+  InvokePaymentRequestUI();
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  NavigateTo("/payment_request_email_test.html");
+
+  // The fact that the user had no form of payment on file should be recorded.
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.UserDidNotHaveInitialFormOfPayment.EffectOnCompletion",
+      JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.UserHadInitialFormOfPayment.EffectOnCompletion", 0);
 }
 
 }  // namespace payments
