@@ -193,6 +193,13 @@ enum class SubmittedFormFrame {
   SUBMITTED_FORM_FRAME_COUNT
 };
 
+enum class SyncPasswordHashChange {
+  SAVED_ON_CHROME_SIGNIN,
+  SAVED_IN_CONTENT_AREA,
+  CLEARED_ON_CHROME_SIGNOUT,
+  SAVED_SYNC_PASSWORD_CHANGE_COUNT
+};
+
 // Metrics: "PasswordManager.AccessPasswordInSettings"
 enum AccessPasswordInSettingsEvent {
   ACCESS_PASSWORD_VIEWED = 0,
@@ -296,6 +303,9 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
+
+// Log a save sync password change event.
+void LogSyncPasswordHashChange(SyncPasswordHashChange event);
 
 }  // namespace metrics_util
 

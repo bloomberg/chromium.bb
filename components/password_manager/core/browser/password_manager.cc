@@ -726,6 +726,8 @@ void PasswordManager::OnLoginSuccessful() {
         password_manager::PasswordStore* store = client_->GetPasswordStore();
         // May be null in tests.
         if (store) {
+          metrics_util::LogSyncPasswordHashChange(
+              metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
           store->SaveSyncPasswordHash(
               provisional_save_manager_->submitted_form()->password_value);
         }
