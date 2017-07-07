@@ -1524,6 +1524,9 @@ crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stab
 crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html [ Failure ]
 crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 
+crbug.com/739514 external/wpt/html/semantics/scripting-1/the-script-element/load-error-events-2.html [ Failure ]
+crbug.com/715369 external/wpt/html/semantics/scripting-1/the-script-element/module/load-error-events-inline.html [ Failure ]
+
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
