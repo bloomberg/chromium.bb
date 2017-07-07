@@ -20,7 +20,6 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
@@ -38,9 +37,7 @@ namespace cc {
 
 struct BeginFrameAck;
 struct BeginFrameArgs;
-class BeginFrameSource;
 class CompositorFrame;
-class FrameSinkManagerClient;
 class Surface;
 
 namespace test {
@@ -132,35 +129,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // possibly because a renderer process has crashed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
 
-  // SurfaceClient, hierarchy, and BeginFrameSource can be registered and
-  // unregistered in any order with respect to each other.
-  //
-  // This happens in practice, e.g. the relationship to between ui::Compositor /
-  // DelegatedFrameHost is known before ui::Compositor has a surface/client).
-  // However, DelegatedFrameHost can register itself as a client before its
-  // relationship with the ui::Compositor is known.
-
-  // Associates a FrameSinkManagerClient with the surface id frame_sink_id it
-  // uses.
-  // FrameSinkManagerClient and surface namespaces/allocators have a 1:1
-  // mapping. Caller guarantees the client is alive between register/unregister.
-  // Reregistering the same namespace when a previous client is active is not
-  // valid.
-  void RegisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
-                                      FrameSinkManagerClient* client);
-  void UnregisterFrameSinkManagerClient(const FrameSinkId& frame_sink_id);
-
-  // Associates a |source| with a particular namespace.  That namespace and
-  // any children of that namespace with valid clients can potentially use
-  // that |source|.
-  void RegisterBeginFrameSource(BeginFrameSource* source,
-                                const FrameSinkId& frame_sink_id);
-  void UnregisterBeginFrameSource(BeginFrameSource* source);
-
-  // Returns a stable BeginFrameSource that forwards BeginFrames from the first
-  // available BeginFrameSource.
-  BeginFrameSource* GetPrimaryBeginFrameSource();
-
   // Register a relationship between two namespaces.  This relationship means
   // that surfaces from the child namespace will be displayed in the parent.
   // Children are allowed to use any begin frame source that their parent can
@@ -183,8 +151,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // collection to delete unreachable surfaces.
   void RemoveSurfaceReferences(const std::vector<SurfaceReference>& references);
 
-  // Assigns |frame_sink_id| as the owner of the temporary reference to
-  // |surface_id|. If |frame_sink_id| is invalidated the temporary reference
+  // Assigns |owner| as the owner of the temporary reference to
+  // |surface_id|. If |owner| is invalidated the temporary reference
   // will be removed. If a surface reference has already been added from the
   // parent to |surface_id| then this will do nothing.
   void AssignTemporaryReference(const SurfaceId& surface_id,
@@ -205,12 +173,16 @@ class CC_SURFACES_EXPORT SurfaceManager {
   const base::flat_set<SurfaceId>& GetSurfacesThatReferenceChild(
       const SurfaceId& surface_id) const;
 
-  scoped_refptr<SurfaceReferenceFactory> reference_factory() {
+  const scoped_refptr<SurfaceReferenceFactory>& reference_factory() {
     return reference_factory_;
   }
 
   bool using_surface_references() const {
     return lifetime_type_ == LifetimeType::REFERENCES;
+  }
+
+  const base::flat_set<FrameSinkId>& GetValidFrameSinkIds() {
+    return valid_frame_sink_ids_;
   }
 
  private:
@@ -279,8 +251,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // Use reference or sequence based lifetime management.
   LifetimeType lifetime_type_;
 
-  FrameSinkManager framesink_manager_;
-
   // SurfaceDependencyTracker needs to be destroyed after Surfaces are destroyed
   // because they will call back into the dependency tracker.
   SurfaceDependencyTracker dependency_tracker_;
@@ -293,7 +263,12 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   // Set of SurfaceSequences that have been satisfied by a frame but not yet
   // waited on.
-  std::unordered_set<SurfaceSequence, SurfaceSequenceHash> satisfied_sequences_;
+  base::flat_set<SurfaceSequence> satisfied_sequences_;
+
+  // Set of valid FrameSinkIds. When a FrameSinkId is removed from
+  // this set, any remaining (surface) sequences with that FrameSinkId are
+  // considered satisfied.
+  base::flat_set<FrameSinkId> valid_frame_sink_ids_;
 
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.

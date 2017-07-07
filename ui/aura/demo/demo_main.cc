@@ -138,10 +138,10 @@ int DemoMain() {
 #endif
 
   // The ContextFactory must exist before any Compositors are created.
-  viz::HostFrameSinkManager frame_sink_manager;
-  cc::SurfaceManager surface_manager;
+  viz::HostFrameSinkManager host_frame_sink_manager;
+  cc::FrameSinkManager frame_sink_manager;
   auto context_factory = base::MakeUnique<ui::InProcessContextFactory>(
-      &frame_sink_manager, &surface_manager);
+      &host_frame_sink_manager, &frame_sink_manager);
   context_factory->set_use_test_surface(false);
 
   // Create the message-loop here before creating the root window.

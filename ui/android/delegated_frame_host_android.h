@@ -17,7 +17,7 @@
 namespace cc {
 
 class CompositorFrame;
-class SurfaceManager;
+class FrameSinkManager;
 class SurfaceLayer;
 enum class SurfaceDrawStatus;
 
@@ -40,7 +40,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
-                            cc::SurfaceManager* surface_manager,
+                            cc::FrameSinkManager* frame_sink_manager,
                             Client* client,
                             const cc::FrameSinkId& frame_sink_id);
 
@@ -91,7 +91,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   ViewAndroid* view_;
 
-  cc::SurfaceManager* surface_manager_;
+  cc::FrameSinkManager* const frame_sink_manager_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 

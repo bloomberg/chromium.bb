@@ -30,8 +30,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,7 +66,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       weak_ptr_factory_(this),
       lock_timeout_weak_ptr_factory_(this) {
   if (context_factory_private) {
-    context_factory_private->GetSurfaceManager()->RegisterFrameSinkId(
+    context_factory_private->GetFrameSinkManager()->RegisterFrameSinkId(
         frame_sink_id_);
   }
   root_web_layer_ = cc::Layer::Create();
@@ -200,7 +200,7 @@ Compositor::~Compositor() {
 
   context_factory_->RemoveCompositor(this);
   if (context_factory_private_) {
-    auto* manager = context_factory_private_->GetSurfaceManager();
+    auto* manager = context_factory_private_->GetFrameSinkManager();
     for (auto& client : child_frame_sinks_) {
       DCHECK(client.is_valid());
       manager->UnregisterFrameSinkHierarchy(frame_sink_id_, client);
@@ -216,7 +216,7 @@ bool Compositor::IsForSubframe() {
 void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
-  context_factory_private_->GetSurfaceManager()->RegisterFrameSinkHierarchy(
+  context_factory_private_->GetFrameSinkManager()->RegisterFrameSinkHierarchy(
       frame_sink_id_, frame_sink_id);
   child_frame_sinks_.insert(frame_sink_id);
 }
@@ -227,7 +227,7 @@ void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
   auto it = child_frame_sinks_.find(frame_sink_id);
   DCHECK(it != child_frame_sinks_.end());
   DCHECK(it->is_valid());
-  context_factory_private_->GetSurfaceManager()->UnregisterFrameSinkHierarchy(
+  context_factory_private_->GetFrameSinkManager()->UnregisterFrameSinkHierarchy(
       frame_sink_id_, *it);
   child_frame_sinks_.erase(it);
 }

@@ -41,8 +41,8 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
-      surface_manager_(new SurfaceManager),
-      local_surface_id_allocator_(new LocalSurfaceIdAllocator()),
+      frame_sink_manager_(new FrameSinkManager),
+      local_surface_id_allocator_(new LocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
   // Always use sync tokens so that code paths in resource provider that deal
@@ -99,14 +99,14 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   constexpr bool handles_frame_sink_id_invalidation = true;
   constexpr bool needs_sync_points = true;
   support_ = CompositorFrameSinkSupport::Create(
-      this, surface_manager_.get(), frame_sink_id_, is_root,
+      this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
   client_->SetBeginFrameSource(&external_begin_frame_source_);
   if (begin_frame_source_) {
-    surface_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
-                                               frame_sink_id_);
+    frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
+                                                  frame_sink_id_);
   }
-  display_->Initialize(this, surface_manager_.get());
+  display_->Initialize(this, frame_sink_manager_->surface_manager());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetVisible(true);
@@ -115,13 +115,13 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
 
 void TestLayerTreeFrameSink::DetachFromClient() {
   if (begin_frame_source_)
-    surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
+    frame_sink_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
   client_->SetBeginFrameSource(nullptr);
   support_ = nullptr;
   display_ = nullptr;
   begin_frame_source_ = nullptr;
   local_surface_id_allocator_ = nullptr;
-  surface_manager_ = nullptr;
+  frame_sink_manager_ = nullptr;
   test_client_ = nullptr;
   LayerTreeFrameSink::DetachFromClient();
 }

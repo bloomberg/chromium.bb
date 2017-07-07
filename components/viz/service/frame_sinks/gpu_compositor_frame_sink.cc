@@ -10,7 +10,7 @@ namespace viz {
 
 GpuCompositorFrameSink::GpuCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
-    cc::SurfaceManager* surface_manager,
+    cc::FrameSinkManager* frame_sink_manager,
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest
@@ -19,7 +19,7 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
     : delegate_(delegate),
       support_(cc::CompositorFrameSinkSupport::Create(
           this,
-          surface_manager,
+          frame_sink_manager,
           frame_sink_id,
           false /* is_root */,
           true /* handles_frame_sink_id_invalidation */,

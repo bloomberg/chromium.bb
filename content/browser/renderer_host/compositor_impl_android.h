@@ -35,10 +35,10 @@ namespace cc {
 class AnimationHost;
 class Display;
 class FrameSinkId;
+class FrameSinkManager;
 class Layer;
 class LayerTreeHost;
 class OutputSurface;
-class SurfaceManager;
 class VulkanContextProvider;
 }
 
@@ -64,7 +64,7 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  static cc::SurfaceManager* GetSurfaceManager();
+  static cc::FrameSinkManager* GetFrameSinkManager();
   static viz::HostFrameSinkManager* GetHostFrameSinkManager();
   static cc::FrameSinkId AllocateFrameSinkId();
 

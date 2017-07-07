@@ -17,7 +17,7 @@
 
 namespace cc {
 class CompositorFrameSinkSupport;
-class SurfaceManager;
+class FrameSinkManager;
 }  // namespace cc
 
 namespace aura {
@@ -31,7 +31,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public cc::ExternalBeginFrameSourceClient {
  public:
   LayerTreeFrameSinkLocal(const cc::FrameSinkId& frame_sink_id,
-                          cc::SurfaceManager* surface_manager);
+                          cc::FrameSinkManager* frame_sink_manager);
   ~LayerTreeFrameSinkLocal() override;
 
   using SurfaceChangedCallback =
@@ -59,7 +59,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
 
  private:
   const cc::FrameSinkId frame_sink_id_;
-  cc::SurfaceManager* const surface_manager_;
+  cc::FrameSinkManager* const frame_sink_manager_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;

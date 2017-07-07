@@ -19,8 +19,8 @@ namespace cc {
 class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
+class FrameSinkManager;
 class LocalSurfaceIdAllocator;
-class SurfaceManager;
 }
 
 namespace gfx {
@@ -40,7 +40,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   static scoped_refptr<SurfacesInstance> GetOrCreateInstance();
 
   cc::FrameSinkId AllocateFrameSinkId();
-  cc::SurfaceManager* GetSurfaceManager();
+  cc::FrameSinkManager* GetFrameSinkManager();
 
   void DrawAndSwap(const gfx::Size& viewport,
                    const gfx::Rect& clip,
@@ -79,7 +79,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   cc::FrameSinkId frame_sink_id_;
 
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  std::unique_ptr<cc::FrameSinkManager> frame_sink_manager_;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
   std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;

@@ -21,6 +21,7 @@
 #include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -135,13 +136,13 @@ struct InProcessContextFactory::PerCompositorData {
 };
 
 InProcessContextFactory::InProcessContextFactory(
-    viz::HostFrameSinkManager* frame_sink_manager,
-    cc::SurfaceManager* surface_manager)
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    cc::FrameSinkManager* frame_sink_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
-      frame_sink_manager_(frame_sink_manager),
-      surface_manager_(surface_manager) {
-  DCHECK(frame_sink_manager);
+      host_frame_sink_manager_(host_frame_sink_manager),
+      frame_sink_manager_(frame_sink_manager) {
+  DCHECK(host_frame_sink_manager);
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
@@ -244,15 +245,15 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
-  GetSurfaceManager()->RegisterBeginFrameSource(begin_frame_source.get(),
-                                                compositor->frame_sink_id());
+  GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source.get(),
+                                                  compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
   data->begin_frame_source = std::move(begin_frame_source);
 
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto layer_tree_frame_sink = base::MakeUnique<cc::DirectLayerTreeFrameSink>(
-      compositor->frame_sink_id(), GetSurfaceManager(), display,
+      compositor->frame_sink_id(), GetFrameSinkManager(), display,
       context_provider, shared_worker_context_provider_,
       &gpu_memory_buffer_manager_, &shared_bitmap_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
@@ -290,7 +291,7 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
-  GetSurfaceManager()->UnregisterBeginFrameSource(
+  GetFrameSinkManager()->UnregisterBeginFrameSource(
       data->begin_frame_source.get());
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
@@ -317,12 +318,8 @@ cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
-cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
-  return surface_manager_;
-}
-
 viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
-  return frame_sink_manager_;
+  return host_frame_sink_manager_;
 }
 
 void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
@@ -350,6 +347,10 @@ void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
 
 void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+cc::FrameSinkManager* InProcessContextFactory::GetFrameSinkManager() {
+  return frame_sink_manager_;
 }
 
 InProcessContextFactory::PerCompositorData*

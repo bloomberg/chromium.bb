@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "components/exo/buffer.h"
@@ -101,8 +101,10 @@ TEST_F(SurfaceTest, RequestFrameCallback) {
 
 const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
   cc::SurfaceId surface_id = surface->GetSurfaceId();
-  cc::SurfaceManager* surface_manager =
-      aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager();
+  cc::SurfaceManager* surface_manager = aura::Env::GetInstance()
+                                            ->context_factory_private()
+                                            ->GetFrameSinkManager()
+                                            ->surface_manager();
   const cc::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
   return frame;

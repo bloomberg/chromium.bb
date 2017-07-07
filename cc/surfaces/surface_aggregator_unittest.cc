@@ -19,6 +19,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -70,8 +71,8 @@ class SurfaceAggregatorTest : public testing::Test {
                                                kRootIsRoot,
                                                kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)),
-        aggregator_(&manager_, NULL, use_damage_rect) {
-    manager_.AddObserver(&observer_);
+        aggregator_(manager_.surface_manager(), NULL, use_damage_rect) {
+    manager_.surface_manager()->AddObserver(&observer_);
   }
 
   SurfaceAggregatorTest() : SurfaceAggregatorTest(false) {}
@@ -83,7 +84,7 @@ class SurfaceAggregatorTest : public testing::Test {
   }
 
  protected:
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
   FakeSurfaceObserver observer_;
   FakeCompositorFrameSinkSupportClient fake_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
@@ -107,7 +108,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
   void SetUp() override {
     SurfaceAggregatorTest::SetUp();
     root_local_surface_id_ = allocator_.GenerateId();
-    root_surface_ = manager_.GetSurfaceForId(
+    root_surface_ = manager_.surface_manager()->GetSurfaceForId(
         SurfaceId(support_->frame_sink_id(), root_local_surface_id_));
   }
 
@@ -634,8 +635,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   }
 
   // Ensure copy requests have been removed from root surface.
-  const CompositorFrame& original_frame =
-      manager_.GetSurfaceForId(root_surface_id)->GetActiveFrame();
+  const CompositorFrame& original_frame = manager_.surface_manager()
+                                              ->GetSurfaceForId(root_surface_id)
+                                              ->GetActiveFrame();
   const RenderPassList& original_pass_list = original_frame.render_pass_list;
   ASSERT_EQ(2u, original_pass_list.size());
   DCHECK(original_pass_list[0]->copy_requests.empty());
@@ -1954,13 +1956,13 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
     resource_provider_ =
         FakeResourceProvider::Create(nullptr, shared_bitmap_manager_.get());
 
-    aggregator_.reset(
-        new SurfaceAggregator(&manager_, resource_provider_.get(), false));
+    aggregator_.reset(new SurfaceAggregator(manager_.surface_manager(),
+                                            resource_provider_.get(), false));
     aggregator_->set_output_is_secure(true);
   }
 
  protected:
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;

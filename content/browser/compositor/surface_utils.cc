@@ -164,14 +164,14 @@ cc::FrameSinkId AllocateFrameSinkId() {
 #endif
 }
 
-cc::SurfaceManager* GetSurfaceManager() {
+cc::FrameSinkManager* GetFrameSinkManager() {
 #if defined(OS_ANDROID)
-  return CompositorImpl::GetSurfaceManager();
+  return CompositorImpl::GetFrameSinkManager();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   if (factory == NULL)
     return nullptr;
-  return factory->GetContextFactoryPrivate()->GetSurfaceManager();
+  return factory->GetContextFactoryPrivate()->GetFrameSinkManager();
 #endif
 }
 

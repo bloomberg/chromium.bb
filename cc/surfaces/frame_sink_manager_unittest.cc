@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_source_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +19,7 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {}
 
   FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
-                             SurfaceManager* manager)
+                             FrameSinkManager* manager)
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {
     DCHECK(manager);
     Register(manager);
@@ -35,7 +35,7 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
   BeginFrameSource* source() { return source_; }
   const FrameSinkId& frame_sink_id() { return frame_sink_id_; }
 
-  void Register(SurfaceManager* manager) {
+  void Register(FrameSinkManager* manager) {
     EXPECT_EQ(nullptr, manager_);
     manager_ = manager;
     manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
@@ -55,32 +55,32 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
 
  private:
   BeginFrameSource* source_;
-  SurfaceManager* manager_;
+  FrameSinkManager* manager_;
   FrameSinkId frame_sink_id_;
 };
 
-class SurfaceManagerTest : public testing::Test {
+class FrameSinkManagerTest : public testing::Test {
  public:
   // These tests don't care about namespace registration, so just preregister
   // a set of namespaces that tests can use freely without worrying if they're
   // valid or not.
   enum { MAX_FRAME_SINK = 10 };
 
-  SurfaceManagerTest() {
+  FrameSinkManagerTest() {
     for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
       manager_.RegisterFrameSinkId(FrameSinkId(i, i));
   }
 
-  ~SurfaceManagerTest() override {
+  ~FrameSinkManagerTest() override {
     for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
       manager_.InvalidateFrameSinkId(FrameSinkId(i, i));
   }
 
  protected:
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
 };
 
-TEST_F(SurfaceManagerTest, SingleClients) {
+TEST_F(FrameSinkManagerTest, SingleClients) {
   FakeFrameSinkManagerClient client(FrameSinkId(1, 1));
   FakeFrameSinkManagerClient other_client(FrameSinkId(2, 2));
   StubBeginFrameSource source;
@@ -118,7 +118,7 @@ TEST_F(SurfaceManagerTest, SingleClients) {
 // This test verifies that a PrimaryBeginFrameSource will receive BeginFrames
 // from the first BeginFrameSource registered. If that BeginFrameSource goes
 // away then it will receive BeginFrames from the second BeginFrameSource.
-TEST_F(SurfaceManagerTest, PrimaryBeginFrameSource) {
+TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   // This PrimaryBeginFrameSource should track the first BeginFrameSource
   // registered with the SurfaceManager.
   testing::NiceMock<MockBeginFrameObserver> obs;
@@ -174,7 +174,7 @@ TEST_F(SurfaceManagerTest, PrimaryBeginFrameSource) {
   begin_frame_source->RemoveObserver(&obs);
 }
 
-TEST_F(SurfaceManagerTest, MultipleDisplays) {
+TEST_F(FrameSinkManagerTest, MultipleDisplays) {
   StubBeginFrameSource root1_source;
   StubBeginFrameSource root2_source;
 
@@ -244,7 +244,7 @@ TEST_F(SurfaceManagerTest, MultipleDisplays) {
 // This test verifies that a BeginFrameSource path to the root from a
 // FrameSinkId is preserved even if that FrameSinkId has no children
 // and does not have a corresponding FrameSinkManagerClient.
-TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
+TEST_F(FrameSinkManagerTest, ParentWithoutClientRetained) {
   StubBeginFrameSource root_source;
 
   constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
@@ -282,7 +282,7 @@ TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
 // However, this unit test registers the BeginFrameSource AFTER C
 // has been attached to A. This test verifies that the BeginFrameSource
 // propagates all the way to C.
-TEST_F(SurfaceManagerTest,
+TEST_F(FrameSinkManagerTest,
        ParentWithoutClientRetained_LateBeginFrameRegistration) {
   StubBeginFrameSource root_source;
 
@@ -324,7 +324,7 @@ TEST_F(SurfaceManagerTest,
 // are properly set up and cleaned up under the four permutations of orderings
 // of this nesting.
 
-class SurfaceManagerOrderingTest : public SurfaceManagerTest {
+class SurfaceManagerOrderingTest : public FrameSinkManagerTest {
  public:
   SurfaceManagerOrderingTest()
       : client_a_(FrameSinkId(1, 1)),

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/sys_info.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/compositor/compositor.h"
@@ -56,7 +57,8 @@ void InitializeContextFactoryForTests(
   g_host_frame_sink_manager = new viz::HostFrameSinkManager;
   g_frame_sink_manager_impl = new viz::FrameSinkManagerImpl(false, nullptr);
   g_implicit_factory = new InProcessContextFactory(
-      g_host_frame_sink_manager, g_frame_sink_manager_impl->surface_manager());
+      g_host_frame_sink_manager,
+      g_frame_sink_manager_impl->frame_sink_manager());
   g_implicit_factory->SetUseFastRefreshRateForTests();
   *context_factory = g_implicit_factory;
   *context_factory_private = g_implicit_factory;

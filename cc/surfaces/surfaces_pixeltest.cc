@@ -7,6 +7,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
@@ -43,7 +44,7 @@ class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
   ~SurfacesPixelTest() override { support_->EvictCurrentSurface(); }
 
  protected:
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
   LocalSurfaceIdAllocator allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 };
@@ -90,7 +91,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
   support_->SubmitCompositorFrame(root_local_surface_id, std::move(root_frame));
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  SurfaceAggregator aggregator(manager_.surface_manager(),
+                               resource_provider_.get(), true);
   CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
@@ -172,7 +174,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                                          std::move(child_frame));
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  SurfaceAggregator aggregator(manager_.surface_manager(),
+                               resource_provider_.get(), true);
   CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
@@ -313,7 +316,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                          std::move(child_frame));
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
+  SurfaceAggregator aggregator(manager_.surface_manager(),
+                               resource_provider_.get(), true);
   CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;

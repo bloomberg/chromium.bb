@@ -124,8 +124,8 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
   // Satisfy all destruction dependencies that are contained in sequences, and
   // remove them from sequences.
   void SatisfyDestructionDependencies(
-      std::unordered_set<SurfaceSequence, SurfaceSequenceHash>* sequences,
-      std::unordered_set<FrameSinkId, FrameSinkIdHash>* valid_id_namespaces);
+      base::flat_set<SurfaceSequence>* sequences,
+      base::flat_set<FrameSinkId>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
   }

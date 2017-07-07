@@ -29,7 +29,7 @@
 #include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
@@ -591,10 +591,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->widget());
 #endif
   if (data->synthetic_begin_frame_source) {
-    GetSurfaceManager()->UnregisterBeginFrameSource(
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->synthetic_begin_frame_source.get());
   } else if (data->gpu_vsync_begin_frame_source) {
-    GetSurfaceManager()->UnregisterBeginFrameSource(
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->gpu_vsync_begin_frame_source.get());
   }
 
@@ -609,8 +609,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
           compositor->task_runner().get()));
-  GetSurfaceManager()->RegisterBeginFrameSource(begin_frame_source,
-                                                compositor->frame_sink_id());
+  GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
+                                                  compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects
   // until we have reset |data->display|.
   data->synthetic_begin_frame_source = std::move(synthetic_begin_frame_source);
@@ -622,12 +622,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   auto layer_tree_frame_sink =
       vulkan_context_provider
           ? base::MakeUnique<cc::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetSurfaceManager(),
+                compositor->frame_sink_id(), GetFrameSinkManager(),
                 data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
           : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetSurfaceManager(),
+                compositor->frame_sink_id(), GetFrameSinkManager(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
                 viz::ServerSharedBitmapManager::current());
@@ -671,10 +671,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
 #endif
   if (data->synthetic_begin_frame_source) {
-    GetSurfaceManager()->UnregisterBeginFrameSource(
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->synthetic_begin_frame_source.get());
   } else if (data->gpu_vsync_begin_frame_source) {
-    GetSurfaceManager()->UnregisterBeginFrameSource(
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->gpu_vsync_begin_frame_source.get());
   }
   per_compositor_data_.erase(it);
@@ -725,10 +725,6 @@ GpuProcessTransportFactory::GetContextFactoryPrivate() {
 
 cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
-}
-
-cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
-  return BrowserMainLoop::GetInstance()->GetSurfaceManager();
 }
 
 viz::HostFrameSinkManager*
@@ -829,6 +825,10 @@ void GpuProcessTransportFactory::AddObserver(
 void GpuProcessTransportFactory::RemoveObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+cc::FrameSinkManager* GpuProcessTransportFactory::GetFrameSinkManager() {
+  return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
 
 viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {

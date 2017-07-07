@@ -24,12 +24,12 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(bool use_surface_references,
                    : cc::SurfaceManager::LifetimeType::SEQUENCES),
       display_provider_(display_provider),
       binding_(this) {
-  manager_.AddObserver(this);
+  manager_.surface_manager()->AddObserver(this);
 }
 
 FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  manager_.RemoveObserver(this);
+  manager_.surface_manager()->RemoveObserver(this);
 }
 
 void FrameSinkManagerImpl::BindPtrAndSetClient(

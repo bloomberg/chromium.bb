@@ -15,9 +15,9 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_info.h"
-#include "cc/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -440,14 +440,14 @@ void BrowserPluginGuest::SetChildFrameSurface(
 void BrowserPluginGuest::OnSatisfySequence(
     int instance_id,
     const cc::SurfaceSequence& sequence) {
-  GetSurfaceManager()->SatisfySequence(sequence);
+  GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
 }
 
 void BrowserPluginGuest::OnRequireSequence(
     int instance_id,
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
-  GetSurfaceManager()->RequireSequence(id, sequence);
+  GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
 
 void BrowserPluginGuest::ResendEventToEmbedder(

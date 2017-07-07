@@ -14,8 +14,8 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
@@ -46,7 +46,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         display_size_(1920, 1080),
         display_rect_(display_size_),
         context_provider_(TestContextProvider::Create()) {
-    surface_manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
+    frame_sink_manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
 
     std::unique_ptr<FakeOutputSurface> display_output_surface =
         FakeOutputSurface::Create3d();
@@ -65,7 +65,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     layer_tree_frame_sink_.reset(new TestDirectLayerTreeFrameSink(
-        kArbitraryFrameSinkId, &surface_manager_, display_.get(),
+        kArbitraryFrameSinkId, &frame_sink_manager_, display_.get(),
         context_provider_, nullptr, &gpu_memory_buffer_manager_,
         &bitmap_manager_));
 
@@ -107,7 +107,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
-  SurfaceManager surface_manager_;
+  FrameSinkManager frame_sink_manager_;
   TestSharedBitmapManager bitmap_manager_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 

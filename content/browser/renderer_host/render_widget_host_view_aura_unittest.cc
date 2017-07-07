@@ -27,9 +27,9 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
@@ -2447,8 +2447,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   cc::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* manager =
-      factory->GetContextFactoryPrivate()->GetSurfaceManager();
+  cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                    ->GetFrameSinkManager()
+                                    ->surface_manager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -2600,8 +2601,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager =
-        factory->GetContextFactoryPrivate()->GetSurfaceManager();
+    cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                      ->GetFrameSinkManager()
+                                      ->surface_manager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
 
@@ -3446,8 +3448,9 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   cc::FakeSurfaceObserver observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::SurfaceManager* surface_manager =
-      factory->GetContextFactoryPrivate()->GetSurfaceManager();
+  cc::SurfaceManager* surface_manager = factory->GetContextFactoryPrivate()
+                                            ->GetFrameSinkManager()
+                                            ->surface_manager();
   surface_manager->AddObserver(&observer);
 
   view_->SetNeedsBeginFrames(true);

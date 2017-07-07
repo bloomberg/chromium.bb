@@ -30,9 +30,9 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/gl_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
@@ -480,7 +480,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     cc::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
     delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
-        &view_, CompositorImpl::GetSurfaceManager(), this, frame_sink_id));
+        &view_, CompositorImpl::GetFrameSinkManager(), this, frame_sink_id));
 
     // Let the page-level input event router know about our frame sink ID
     // for surface-based hit testing.
@@ -842,7 +842,8 @@ cc::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
 
   cc::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
   if (surface_id.is_valid()) {
-    cc::SurfaceHittest hittest(delegate, GetSurfaceManager());
+    cc::SurfaceHittest hittest(delegate,
+                               GetFrameSinkManager()->surface_manager());
     gfx::Transform target_transform;
     surface_id = hittest.GetTargetSurfaceAtPoint(surface_id, point_in_pixels,
                                                  &target_transform);
@@ -905,7 +906,7 @@ bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
     return true;
 
   *transformed_point = point_in_pixels;
-  cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
+  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                              transformed_point))
     return false;

@@ -16,8 +16,8 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -33,7 +33,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
-  surfaces_->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+  surfaces_->GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateNewCompositorFrameSinkSupport();
 }
 
@@ -43,7 +43,7 @@ HardwareRenderer::~HardwareRenderer() {
   if (child_id_.is_valid())
     DestroySurface();
   support_.reset();
-  surfaces_->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
+  surfaces_->GetFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
 
   // Reset draw constraints.
   render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
@@ -263,7 +263,7 @@ void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
   constexpr bool needs_sync_points = true;
   support_.reset();
   support_ = cc::CompositorFrameSinkSupport::Create(
-      this, surfaces_->GetSurfaceManager(), frame_sink_id_, is_root,
+      this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 }
 

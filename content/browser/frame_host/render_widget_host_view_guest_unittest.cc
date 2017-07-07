@@ -265,7 +265,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #if !defined(OS_ANDROID)
   cc::SurfaceManager* manager = ImageTransportFactory::GetInstance()
                                     ->GetContextFactoryPrivate()
-                                    ->GetSurfaceManager();
+                                    ->GetFrameSinkManager()
+                                    ->surface_manager();
   cc::Surface* surface = manager->GetSurfaceForId(id);
   EXPECT_TRUE(surface);
   // There should be a SurfaceSequence created by the RWHVGuest.
