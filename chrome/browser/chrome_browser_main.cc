@@ -675,7 +675,7 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
+  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking) ||
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
   }
@@ -719,10 +719,12 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.
   bool result = http_header_provider->ForceVariationIds(
-      command_line->GetSwitchValueASCII(switches::kForceVariationIds),
+      command_line->GetSwitchValueASCII(
+          variations::switches::kForceVariationIds),
       &variation_ids);
   CHECK(result) << "Invalid list of variation ids specified (either in --"
-                << switches::kForceVariationIds << " or in chrome://flags)";
+                << variations::switches::kForceVariationIds
+                << " or in chrome://flags)";
 
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),

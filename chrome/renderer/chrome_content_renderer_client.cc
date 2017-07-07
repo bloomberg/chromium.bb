@@ -86,6 +86,7 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/task_scheduler_util/renderer/initialization.h"
+#include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -444,7 +445,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableBenchmarking))
+  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
   if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
     thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());

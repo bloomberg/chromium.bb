@@ -10,6 +10,10 @@ namespace switches {
 // Disable field trial tests configured in fieldtrial_testing_config.json.
 const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 
+// TODO(asvitkine): Consider removing or renaming this functionality.
+// Enables the benchmarking extensions.
+const char kEnableBenchmarking[] = "enable-benchmarking";
+
 // Fakes the channel of the browser for purposes of Variations filtering. This
 // is to be used for testing only. Possible values are "stable", "beta", "dev"
 // and "canary". Note that this only applies if the browser's reported channel
@@ -25,6 +29,11 @@ const char kFakeVariationsChannel[] = "fake-variations-channel";
 // Trial names, groups names, parameter names, and value should all be URL
 // escaped for all non-alphanumeric characters.
 const char kForceFieldTrialParams[] = "force-fieldtrial-params";
+
+// Forces additional Chrome Variation Ids that will be sent in X-Client-Data
+// header, specified as a 64-bit encoded list of numeric experiment ids. Ids
+// prefixed with the character "t" will be treated as Trigger Variation Ids.
+const char kForceVariationIds[] = "force-variation-ids";
 
 // Allows overriding the country used for evaluating variations. This is similar
 // to the "Override Variations Country" entry on chrome://translate-internals,
