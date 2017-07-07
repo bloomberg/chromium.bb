@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/resource_context_impl.h"
@@ -29,10 +28,6 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_data_item.h"
-#include "storage/browser/blob/blob_data_snapshot.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -42,49 +37,19 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 static void ReturnResultOnUIThread(
-    const base::Callback<void(const std::string&)>& callback,
+    base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
-}
-
-static void RequestPlatformPathFromBlobURL(
-    const GURL& url,
-    ResourceContext* resource_context,
-    const base::Callback<void(const std::string&)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ChromeBlobStorageContext* blob_storage_context =
-      GetChromeBlobStorageContextForResourceContext(resource_context);
-
-  std::unique_ptr<storage::BlobDataHandle> handle =
-      blob_storage_context->context()->GetBlobDataFromPublicURL(url);
-  if (!handle) {
-    // There are plenty of cases where handle can be empty. The most trivial is
-    // when JS has aready revoked the given blob URL via URL.revokeObjectURL
-    ReturnResultOnUIThread(callback, std::string());
-    return;
-  }
-  std::unique_ptr<storage::BlobDataSnapshot> data = handle->CreateSnapshot();
-  if (!data) {
-    ReturnResultOnUIThread(callback, std::string());
-    NOTREACHED();
-    return;
-  }
-  const std::vector<scoped_refptr<storage::BlobDataItem>>& items =
-      data->items();
-
-  // TODO(qinmin): handle the case when the blob data is not a single file.
-  DLOG_IF(WARNING, items.size() != 1u)
-      << "More than one blob item is present: " << items.size();
-  ReturnResultOnUIThread(callback, items[0]->path().value());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), result));
 }
 
 static void RequestPlaformPathFromFileSystemURL(
     const GURL& url,
     int render_process_id,
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const base::Callback<void(const std::string&)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    media::MediaResourceGetter::GetPlatformPathCB callback) {
+  DCHECK(file_system_context->default_file_task_runner()
+             ->RunsTasksInCurrentSequence());
   base::FilePath platform_path;
   SyncGetPlatformPath(file_system_context.get(),
                       render_process_id,
@@ -93,31 +58,34 @@ static void RequestPlaformPathFromFileSystemURL(
   base::FilePath data_storage_path;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
   if (data_storage_path.IsParent(platform_path))
-    ReturnResultOnUIThread(callback, platform_path.value());
+    ReturnResultOnUIThread(std::move(callback), platform_path.value());
   else
-    ReturnResultOnUIThread(callback, std::string());
+    ReturnResultOnUIThread(std::move(callback), std::string());
 }
 
 // Posts a task to the UI thread to run the callback function.
 static void PostMediaMetadataCallbackTask(
-    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback,
-    JNIEnv* env, ScopedJavaLocalRef<jobject>& j_metadata) {
+    media::MediaResourceGetter::ExtractMediaMetadataCB callback,
+    JNIEnv* env,
+    ScopedJavaLocalRef<jobject>& j_metadata) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::TimeDelta::FromMilliseconds(
-                               Java_MediaMetadata_getDurationInMilliseconds(
-                                   env, j_metadata)),
-                 Java_MediaMetadata_getWidth(env, j_metadata),
-                 Java_MediaMetadata_getHeight(env, j_metadata),
-                 Java_MediaMetadata_isSuccess(env, j_metadata)));
+      base::BindOnce(
+          std::move(callback),
+          base::TimeDelta::FromMilliseconds(
+              Java_MediaMetadata_getDurationInMilliseconds(env, j_metadata)),
+          Java_MediaMetadata_getWidth(env, j_metadata),
+          Java_MediaMetadata_getHeight(env, j_metadata),
+          Java_MediaMetadata_isSuccess(env, j_metadata)));
 }
 
 // Gets the metadata from a media URL. When finished, a task is posted to the UI
 // thread to run the callback function.
 static void GetMediaMetadata(
-    const std::string& url, const std::string& cookies,
+    const std::string& url,
+    const std::string& cookies,
     const std::string& user_agent,
-    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
+    media::MediaResourceGetter::ExtractMediaMetadataCB callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url);
@@ -127,8 +95,7 @@ static void GetMediaMetadata(
   ScopedJavaLocalRef<jobject> j_metadata =
       Java_MediaResourceGetter_extractMediaMetadata(env, j_url_string,
                                                     j_cookies, j_user_agent);
-
-  PostMediaMetadataCallbackTask(callback, env, j_metadata);
+  PostMediaMetadataCallbackTask(std::move(callback), env, j_metadata);
 }
 
 // Gets the metadata from a file descriptor. When finished, a task is posted to
@@ -137,14 +104,14 @@ static void GetMediaMetadataFromFd(
     const int fd,
     const int64_t offset,
     const int64_t size,
-    const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
+    media::MediaResourceGetter::ExtractMediaMetadataCB callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> j_metadata =
       Java_MediaResourceGetter_extractMediaMetadataFromFd(
           env, fd, offset, size);
 
-  PostMediaMetadataCallbackTask(callback, env, j_metadata);
+  PostMediaMetadataCallbackTask(std::move(callback), env, j_metadata);
 }
 
 // The task object that retrieves media resources on the IO thread.
@@ -161,18 +128,21 @@ class MediaResourceGetterTask
   net::AuthCredentials RequestAuthCredentials(const GURL& url) const;
 
   // Called by MediaResourceGetterImpl to start getting cookies for a URL.
-  void RequestCookies(
-      const GURL& url, const GURL& first_party_for_cookies,
-      const media::MediaResourceGetter::GetCookieCB& callback);
+  void RequestCookies(const GURL& url,
+                      const GURL& first_party_for_cookies,
+                      media::MediaResourceGetter::GetCookieCB callback);
+
+  // Returns the task runner that all methods should be called.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
 
  private:
   friend class base::RefCountedThreadSafe<MediaResourceGetterTask>;
   virtual ~MediaResourceGetterTask();
 
-  void CheckPolicyForCookies(
-      const GURL& url, const GURL& first_party_for_cookies,
-      const media::MediaResourceGetter::GetCookieCB& callback,
-      const net::CookieList& cookie_list);
+  void CheckPolicyForCookies(const GURL& url,
+                             const GURL& first_party_for_cookies,
+                             media::MediaResourceGetter::GetCookieCB callback,
+                             const net::CookieList& cookie_list);
 
   // Context getter used to get the CookieStore and auth cache.
   net::URLRequestContextGetter* context_getter_;
@@ -202,7 +172,7 @@ MediaResourceGetterTask::~MediaResourceGetterTask() {}
 
 net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
     const GURL& url) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   net::HttpTransactionFactory* factory =
       context_getter_->GetURLRequestContext()->http_transaction_factory();
   if (!factory)
@@ -224,33 +194,39 @@ net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
 }
 
 void MediaResourceGetterTask::RequestCookies(
-    const GURL& url, const GURL& first_party_for_cookies,
-    const media::MediaResourceGetter::GetCookieCB& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    media::MediaResourceGetter::GetCookieCB callback) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
   net::CookieStore* cookie_store =
       context_getter_->GetURLRequestContext()->cookie_store();
   if (!cookie_store) {
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
 
   cookie_store->GetAllCookiesForURLAsync(
-      url, base::Bind(&MediaResourceGetterTask::CheckPolicyForCookies, this,
-                      url, first_party_for_cookies, callback));
+      url, base::BindOnce(&MediaResourceGetterTask::CheckPolicyForCookies, this,
+                          url, first_party_for_cookies, std::move(callback)));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MediaResourceGetterTask::GetTaskRunner() const {
+  return context_getter_->GetNetworkTaskRunner();
 }
 
 void MediaResourceGetterTask::CheckPolicyForCookies(
-    const GURL& url, const GURL& first_party_for_cookies,
-    const media::MediaResourceGetter::GetCookieCB& callback,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    media::MediaResourceGetter::GetCookieCB callback,
     const net::CookieList& cookie_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, cookie_list,
       resource_context_, render_process_id_, render_frame_id_)) {
@@ -258,9 +234,9 @@ void MediaResourceGetterTask::CheckPolicyForCookies(
         context_getter_->GetURLRequestContext()->cookie_store();
     net::CookieOptions options;
     options.set_include_httponly();
-    cookie_store->GetCookiesWithOptionsAsync(url, options, callback);
+    cookie_store->GetCookiesWithOptionsAsync(url, options, std::move(callback));
   } else {
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
   }
 }
 
@@ -279,101 +255,95 @@ MediaResourceGetterImpl::MediaResourceGetterImpl(
 MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
 void MediaResourceGetterImpl::GetAuthCredentials(
-    const GURL& url, const GetAuthCredentialsCB& callback) {
+    const GURL& url,
+    GetAuthCredentialsCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<MediaResourceGetterTask> task = new MediaResourceGetterTask(
       browser_context_, 0, 0);
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&MediaResourceGetterTask::RequestAuthCredentials, task, url),
-      base::Bind(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
-                 weak_factory_.GetWeakPtr(), callback));
+  PostTaskAndReplyWithResult(
+      task->GetTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&MediaResourceGetterTask::RequestAuthCredentials, task,
+                     url),
+      base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void MediaResourceGetterImpl::GetCookies(
-    const GURL& url, const GURL& first_party_for_cookies,
-    const GetCookieCB& callback) {
+void MediaResourceGetterImpl::GetCookies(const GURL& url,
+                                         const GURL& first_party_for_cookies,
+                                         GetCookieCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<MediaResourceGetterTask> task = new MediaResourceGetterTask(
       browser_context_, render_process_id_, render_frame_id_);
 
-  GetCookieCB cb = base::Bind(&MediaResourceGetterImpl::GetCookiesCallback,
-                              weak_factory_.GetWeakPtr(),
-                              callback);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  GetCookieCB cb =
+      base::BindOnce(&MediaResourceGetterImpl::GetCookiesCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+  task->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&MediaResourceGetterTask::RequestCookies,
-                 task, url, first_party_for_cookies,
-                 base::Bind(&ReturnResultOnUIThread, cb)));
+      base::BindOnce(&MediaResourceGetterTask::RequestCookies, task, url,
+                     first_party_for_cookies,
+                     base::BindOnce(&ReturnResultOnUIThread, std::move(cb))));
 }
 
 void MediaResourceGetterImpl::GetAuthCredentialsCallback(
-    const GetAuthCredentialsCB& callback,
+    GetAuthCredentialsCB callback,
     const net::AuthCredentials& credentials) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback.Run(credentials.username(), credentials.password());
+  std::move(callback).Run(credentials.username(), credentials.password());
 }
 
-void MediaResourceGetterImpl::GetCookiesCallback(
-    const GetCookieCB& callback, const std::string& cookies) {
+void MediaResourceGetterImpl::GetCookiesCallback(GetCookieCB callback,
+                                                 const std::string& cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback.Run(cookies);
+  std::move(callback).Run(cookies);
 }
 
 void MediaResourceGetterImpl::GetPlatformPathFromURL(
-    const GURL& url, const GetPlatformPathCB& callback) {
+    const GURL& url,
+    GetPlatformPathCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(url::kBlobScheme));
+  DCHECK(url.SchemeIsFileSystem());
 
   GetPlatformPathCB cb =
-      base::Bind(&MediaResourceGetterImpl::GetPlatformPathCallback,
-                 weak_factory_.GetWeakPtr(),
-                 callback);
-
-  if (url.SchemeIs(url::kBlobScheme)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&RequestPlatformPathFromBlobURL, url,
-                   browser_context_->GetResourceContext(), cb));
-    return;
-  }
+      base::BindOnce(&MediaResourceGetterImpl::GetPlatformPathCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
 
   scoped_refptr<storage::FileSystemContext> context(file_system_context_);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&RequestPlaformPathFromFileSystemURL, url, render_process_id_,
-                 context, cb));
+  context->default_file_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&RequestPlaformPathFromFileSystemURL, url,
+                                render_process_id_, context, std::move(cb)));
 }
 
 void MediaResourceGetterImpl::GetPlatformPathCallback(
-    const GetPlatformPathCB& callback, const std::string& platform_path) {
+    GetPlatformPathCB callback,
+    const std::string& platform_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback.Run(platform_path);
+  std::move(callback).Run(platform_path);
 }
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
-    const std::string& url, const std::string& cookies,
-    const std::string& user_agent, const ExtractMediaMetadataCB& callback) {
+    const std::string& url,
+    const std::string& cookies,
+    const std::string& user_agent,
+    ExtractMediaMetadataCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&GetMediaMetadata, url, cookies, user_agent, callback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+                           base::BindOnce(&GetMediaMetadata, url, cookies,
+                                          user_agent, std::move(callback)));
 }
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
     const int fd,
     const int64_t offset,
     const int64_t size,
-    const ExtractMediaMetadataCB& callback) {
+    ExtractMediaMetadataCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&GetMediaMetadataFromFd, fd, offset, size, callback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+                           base::BindOnce(&GetMediaMetadataFromFd, fd, offset,
+                                          size, std::move(callback)));
 }
 
 }  // namespace content
