@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -240,10 +240,8 @@ void ActivityIconLoader::OnIconsReady(
     const OnIconsReadyCallback& cb,
     std::vector<mojom::ActivityIconPtr> icons) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ArcServiceManager* manager = ArcServiceManager::Get();
   base::PostTaskAndReplyWithResult(
-      manager->blocking_task_runner().get(), FROM_HERE,
-      base::Bind(&ResizeAndEncodeIcons, base::Passed(&icons)),
+      FROM_HERE, base::Bind(&ResizeAndEncodeIcons, base::Passed(&icons)),
       base::Bind(&ActivityIconLoader::OnIconsResized,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&cached_result),
                  cb));

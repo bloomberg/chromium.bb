@@ -8,15 +8,10 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/crash_collector.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
-
-namespace base {
-class TaskRunner;
-}  // namespace base
 
 namespace arc {
 
@@ -28,8 +23,7 @@ class ArcCrashCollectorBridge
       public InstanceHolder<mojom::CrashCollectorInstance>::Observer,
       public mojom::CrashCollectorHost {
  public:
-  ArcCrashCollectorBridge(ArcBridgeService* bridge,
-                          scoped_refptr<base::TaskRunner> blocking_task_runner);
+  explicit ArcCrashCollectorBridge(ArcBridgeService* bridge);
   ~ArcCrashCollectorBridge() override;
 
   // InstanceHolder<mojom::CrashCollectorInstance>::Observer overrides.
@@ -43,8 +37,6 @@ class ArcCrashCollectorBridge
                           const std::string& cpu_abi) override;
 
  private:
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
-
   mojo::Binding<mojom::CrashCollectorHost> binding_;
 
   std::string device_;

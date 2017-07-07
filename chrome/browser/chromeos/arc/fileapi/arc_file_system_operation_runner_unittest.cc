@@ -35,7 +35,7 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   ~ArcFileSystemOperationRunnerTest() override = default;
 
   void SetUp() override {
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &file_system_instance_);
     arc_service_manager_->AddService(

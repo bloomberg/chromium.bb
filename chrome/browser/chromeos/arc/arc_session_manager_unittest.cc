@@ -142,7 +142,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
+    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
     arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
         base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
