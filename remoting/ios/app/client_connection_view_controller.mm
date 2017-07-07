@@ -109,6 +109,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -153,11 +157,19 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [self.view addSubview:_pinEntryView];
   _pinEntryView.delegate = self;
 
+  _reconnectView.hidden = YES;
+
   [self
       initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
                                                _activityIndicator, _statusLabel,
                                                _iconView, _reconnectView,
                                                _pinEntryView)];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(hostSessionStatusChanged:)
+             name:kHostSessionStatusChanged
+           object:nil];
 }
 
 - (void)initializeLayoutConstraintsWithViews:(NSDictionary*)views {
@@ -176,7 +188,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   NSString* f;
 
   // Horizontal constraints:
-
   [self.view addConstraints:
                  [NSLayoutConstraint
                      constraintsWithVisualFormat:@"H:[_iconView(iconDiameter)]"
@@ -206,7 +217,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                                                       views:views]];
 
   // Anchors:
-
   _activityIndicatorTopConstraintFull =
       [_activityIndicator.topAnchor constraintEqualToAnchor:self.view.topAnchor
                                                    constant:kTopPadding];
@@ -217,7 +227,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       .active = YES;
 
   // Vertical constraints:
-
   [self.view addConstraints:
                  [NSLayoutConstraint
                      constraintsWithVisualFormat:@"V:[_iconView(iconDiameter)]"
@@ -263,12 +272,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.navigationController setNavigationBarHidden:YES animated:animated];
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(hostSessionStatusChanged:)
-             name:kHostSessionStatusChanged
-           object:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -291,7 +294,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
   [_activityIndicator stopAnimating];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -299,6 +301,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 }
 
 #pragma mark - Keyboard
+
+// TODO(nicholss): We need to listen to screen rotation and re-adjust the
+// topAnchor.
 
 - (void)keyboardWillShow:(NSNotification*)notification {
   CGSize keyboardSize =
@@ -347,6 +352,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     case ClientViewConnected:
       [self showConnectedState];
       break;
+    case ClientViewReconnect:
+      [self showReconnect];
+      break;
     case ClientViewClosed:
       [self.navigationController popToRootViewControllerAnimated:YES];
       break;
@@ -382,12 +390,15 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
       [NSString stringWithFormat:@"Connecting to %@", _remoteHostName];
+
+  _pinEntryView.hidden = YES;
+
+  _reconnectView.hidden = YES;
+
   [_activityIndicator stopAnimating];
   _activityIndicator.cycleColors = @[ [UIColor whiteColor] ];
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeIndeterminate;
   _activityIndicator.hidden = NO;
-  _pinEntryView.hidden = YES;
-  _reconnectView.hidden = YES;
   [_activityIndicator startAnimating];
 }
 
@@ -395,7 +406,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _statusLabel.text = [NSString stringWithFormat:@"%@", _remoteHostName];
   [_activityIndicator stopAnimating];
   _activityIndicator.hidden = YES;
+
   _pinEntryView.hidden = NO;
+  _reconnectView.hidden = YES;
+
   _reconnectView.hidden = YES;
 
   // TODO(yuweih): This may be called before viewDidAppear and miss the keyboard
@@ -407,8 +421,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
       [NSString stringWithFormat:@"Connected to %@", _remoteHostName];
-  _activityIndicator.progress = 0.0;
+
   _pinEntryView.hidden = YES;
+  [_pinEntryView clearPinEntry];
+
+  _activityIndicator.progress = 0.0;
   _activityIndicator.hidden = NO;
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeDeterminate;
   _activityIndicator.cycleColors = @[ [UIColor greenColor] ];
@@ -416,28 +433,42 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.progress = 1.0;
   _reconnectView.hidden = YES;
 
+  _reconnectView.hidden = YES;
+
   HostViewController* hostViewController =
       [[HostViewController alloc] initWithClient:_client];
   _client = nil;
 
-  // Replaces current (topmost) view controller with |hostViewController|.
-  NSMutableArray* controllers =
-      [self.navigationController.viewControllers mutableCopy];
-  [controllers removeLastObject];
-  [controllers addObject:hostViewController];
-  [self.navigationController setViewControllers:controllers animated:NO];
+  [self.navigationController pushViewController:hostViewController animated:NO];
+}
+
+- (void)showReconnect {
+  _statusLabel.text =
+      [NSString stringWithFormat:@"Connection closed for %@", _remoteHostName];
+  [_activityIndicator stopAnimating];
+  _activityIndicator.hidden = YES;
+
+  _pinEntryView.hidden = YES;
+
+  _reconnectView.hidden = NO;
+
+  [self.navigationController popToViewController:self animated:YES];
+  [MDCSnackbarManager
+      showMessage:[MDCSnackbarMessage messageWithText:@"Connection Closed."]];
 }
 
 - (void)showError {
   _statusLabel.text =
       [NSString stringWithFormat:@"Error connecting to %@", _remoteHostName];
-  _activityIndicator.progress = 0.0;
+
   _pinEntryView.hidden = YES;
-  _activityIndicator.hidden = NO;
+
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeDeterminate;
   _activityIndicator.cycleColors = @[ [UIColor redColor] ];
-  [_activityIndicator startAnimating];
   _activityIndicator.progress = 1.0;
+  _activityIndicator.hidden = NO;
+  [_activityIndicator startAnimating];
+
   _reconnectView.hidden = NO;
 
   MDCSnackbarMessage* message = nil;
@@ -537,7 +568,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       state = ClientViewError;
       break;
     case SessionClosed:
-      state = ClientViewClosed;
+      // If the session closes, offer the user to reconnect.
+      state = ClientViewReconnect;
       break;
     default:
       LOG(ERROR) << "Unknown State for Session, " << sessionDetails.state;
