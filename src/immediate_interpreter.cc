@@ -1723,6 +1723,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       if (AnyGesturingFingerLeft(*state_buffer_.Get(0),
                                  prev_gs_fingers_)) {
         current_gesture_type_ = GetFingerLiftGesture(current_gesture_type_);
+        moving_.clear();
         return;
       }
       // fallthrough
