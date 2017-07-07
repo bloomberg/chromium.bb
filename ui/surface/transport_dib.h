@@ -30,20 +30,9 @@ class SURFACE_EXPORT TransportDIB {
  public:
   ~TransportDIB();
 
-// A Handle is the type which can be sent over the wire so that the remote
-// side can map the transport DIB.
+  // A Handle is the type which can be sent over the wire so that the remote
+  // side can map the transport DIB.
   typedef base::SharedMemoryHandle Handle;
-
-  // Create a new TransportDIB, returning NULL on failure.
-  //
-  // The size is the minimum size in bytes of the memory backing the transport
-  // DIB (we may actually allocate more than that to give us better reuse when
-  // cached).
-  //
-  // The sequence number is used to uniquely identify the transport DIB. It
-  // should be unique for all transport DIBs ever created in the same
-  // renderer.
-  static TransportDIB* Create(size_t size, uint32_t sequence_num);
 
   // Map the referenced transport DIB.  The caller owns the returned object.
   // Returns NULL on failure.
