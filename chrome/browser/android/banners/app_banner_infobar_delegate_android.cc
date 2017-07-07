@@ -44,7 +44,6 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
-    int event_request_id,
     bool is_webapk,
     webapk::InstallSource webapk_install_source) {
   DCHECK(shortcut_info);
@@ -55,7 +54,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
           weak_manager, std::move(shortcut_info), primary_icon, badge_icon,
-          event_request_id, is_webapk, webapk_install_source));
+          is_webapk, webapk_install_source));
   auto* raw_delegate = infobar_delegate.get();
   auto infobar = base::MakeUnique<AppBannerInfoBarAndroid>(
       std::move(infobar_delegate), url, is_webapk);
@@ -84,11 +83,9 @@ bool AppBannerInfoBarDelegateAndroid::Create(
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
     const SkBitmap& icon,
     const std::string& native_app_package,
-    const std::string& referrer,
-    int event_request_id) {
+    const std::string& referrer) {
   auto infobar_delegate = base::WrapUnique(new AppBannerInfoBarDelegateAndroid(
-      app_title, native_app_data, icon, native_app_package, referrer,
-      event_request_id));
+      app_title, native_app_data, icon, native_app_package, referrer));
   return InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(base::MakeUnique<AppBannerInfoBarAndroid>(
            std::move(infobar_delegate), native_app_data));
@@ -205,7 +202,6 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
-    int event_request_id,
     bool is_webapk,
     webapk::InstallSource webapk_install_source)
     : weak_manager_(weak_manager),
@@ -213,7 +209,6 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
       shortcut_info_(std::move(shortcut_info)),
       primary_icon_(primary_icon),
       badge_icon_(badge_icon),
-      event_request_id_(event_request_id),
       has_user_interaction_(false),
       is_webapk_(is_webapk),
       install_state_(INSTALL_NOT_STARTED),
@@ -227,14 +222,12 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
     const SkBitmap& icon,
     const std::string& native_app_package,
-    const std::string& referrer,
-    int event_request_id)
+    const std::string& referrer)
     : app_title_(app_title),
       native_app_data_(native_app_data),
       primary_icon_(icon),
       native_app_package_(native_app_package),
       referrer_(referrer),
-      event_request_id_(event_request_id),
       has_user_interaction_(false),
       weak_ptr_factory_(this) {
   DCHECK(!native_app_data_.is_null());
@@ -342,7 +335,7 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
     return;
 
   if (TriggeredFromBanner())
-    weak_manager_->SendBannerAccepted(event_request_id_);
+    weak_manager_->SendBannerAccepted();
 
   // Send the appinstalled event. Note that this is fired *before* the
   // installation actually takes place (which can be a significant amount of
@@ -410,7 +403,7 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
       InfoBarService::WebContentsFromInfoBar(infobar());
 
   if (weak_manager_ && TriggeredFromBanner())
-    weak_manager_->SendBannerDismissed(event_request_id_);
+    weak_manager_->SendBannerDismissed();
 
   if (native_app_data_.is_null()) {
     if (is_webapk_)

@@ -249,7 +249,7 @@ void AppBannerManagerAndroid::ShowBanner() {
             contents, GetWeakPtr(),
             CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
                                badge_icon_url_, can_install_webapk_),
-            primary_icon_, badge_icon_, event_request_id(), can_install_webapk_,
+            primary_icon_, badge_icon_, can_install_webapk_,
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
@@ -260,7 +260,7 @@ void AppBannerManagerAndroid::ShowBanner() {
   } else {
     if (AppBannerInfoBarDelegateAndroid::Create(
             contents, native_app_title_, native_app_data_, primary_icon_,
-            native_app_package_, referrer_, event_request_id())) {
+            native_app_package_, referrer_)) {
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       ReportStatus(contents, SHOWING_NATIVE_APP_BANNER);

@@ -34,15 +34,13 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
       content::WebContents* web_contents,
       base::WeakPtr<AppBannerManager> weak_manager,
       extensions::BookmarkAppHelper* bookmark_app_helper,
-      const content::Manifest& manifest,
-      int event_request_id);
+      const content::Manifest& manifest);
 
  private:
   AppBannerInfoBarDelegateDesktop(
       base::WeakPtr<AppBannerManager> weak_manager,
       extensions::BookmarkAppHelper* bookmark_app_helper,
-      const content::Manifest& manifest,
-      int event_request_id);
+      const content::Manifest& manifest);
   ~AppBannerInfoBarDelegateDesktop() override;
 
   // ConfirmInfoBarDelegate:
@@ -58,7 +56,6 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
   base::WeakPtr<AppBannerManager> weak_manager_;
   extensions::BookmarkAppHelper* bookmark_app_helper_;
   content::Manifest manifest_;
-  int event_request_id_;
   bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateDesktop);

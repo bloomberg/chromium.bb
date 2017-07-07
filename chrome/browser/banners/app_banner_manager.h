@@ -68,13 +68,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // resolved, but is required by the install event spec.
   void OnInstall();
 
-  // Sends a message to the renderer that the user accepted the banner. Does
-  // nothing if |request_id| does not match the current request.
-  void SendBannerAccepted(int request_id);
+  // Sends a message to the renderer that the user accepted the banner.
+  void SendBannerAccepted();
 
-  // Sends a message to the renderer that the user dismissed the banner. Does
-  // nothing if |request_id| does not match the current request.
-  void SendBannerDismissed(int request_id);
+  // Sends a message to the renderer that the user dismissed the banner.
+  void SendBannerDismissed();
 
   // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
   // may bind callbacks without needing their own WeakPtrFactory.
@@ -217,7 +215,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Subclass accessors for private fields which should not be changed outside
   // this class.
   InstallableManager* manager() const { return manager_; }
-  int event_request_id() const { return event_request_id_; }
   bool is_active() const { return state_ == State::ACTIVE; }
   bool is_active_or_pending() const {
     switch (state_) {
@@ -266,6 +263,9 @@ class AppBannerManager : public content::WebContentsObserver,
  private:
   friend class AppBannerManagerTest;
 
+  // Voids all outstanding weak pointers and service pointers.
+  void ResetBindings();
+
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.
   void RecordCouldShowBanner();
@@ -287,10 +287,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
-
-  // A monotonically increasing id to verify the response to the
-  // beforeinstallprompt event from the renderer.
-  int event_request_id_;
 
   // We do not want to trigger a banner when the manager is attached to
   // a WebContents that is playing video. Banners triggering on a site in the
