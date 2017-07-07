@@ -31,28 +31,6 @@ class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
                                   v8::IdleTask* task) override;
   bool IdleTasksEnabled(v8::Isolate* isolate) override;
   double MonotonicallyIncreasingTime() override;
-  const uint8_t* GetCategoryGroupEnabled(const char* name) override;
-  const char* GetCategoryGroupName(
-      const uint8_t* category_enabled_flag) override;
-  uint64_t AddTraceEvent(
-      char phase,
-      const uint8_t* category_enabled_flag,
-      const char* name,
-      const char* scope,
-      uint64_t id,
-      uint64_t bind_id,
-      int32_t num_args,
-      const char** arg_names,
-      const uint8_t* arg_types,
-      const uint64_t* arg_values,
-      std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertibles,
-      unsigned int flags) override;
-  void UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
-                                const char* name,
-                                uint64_t handle) override;
-
-  void AddTraceStateObserver(v8::Platform::TraceStateObserver*) override;
-  void RemoveTraceStateObserver(v8::Platform::TraceStateObserver*) override;
   StackTracePrinter GetStackTracePrinter() override;
   v8::TracingController* GetTracingController() override;
 
