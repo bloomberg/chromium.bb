@@ -1378,8 +1378,8 @@ class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetNetwork()->Enable();
     devtools_client_->GetNetwork()
         ->GetExperimental()
-        ->EnableRequestInterception(
-            network::EnableRequestInterceptionParams::Builder()
+        ->SetRequestInterceptionEnabled(
+            network::SetRequestInterceptionEnabledParams::Builder()
                 .SetEnabled(true)
                 .Build());
 

@@ -27,7 +27,7 @@ class WebContents;
 
 // An interceptor that creates DevToolsURLInterceptorRequestJobs for requests
 // from pages where interception has been enabled via
-// Network.enableRequestInterception.
+// Network.setRequestInterceptionEnabled.
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
