@@ -49,11 +49,11 @@ onload = function() {
     document.getElementById("scroller").style.borderRadius = '5px';
     requestAnimationFrame(function() {
         if (window.internals) {
-            result += "Has border radius (should not be using composited scrolling): ";
+            result += "Has border radius (should also be using composited scrolling): ";
             if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
-                result += "Pass.\n";
+                result += "Fail.\n";
             else
-                result += "Fail.\n"
+                result += "Pass.\n"
         }
 
         if (window.testRunner) {

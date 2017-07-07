@@ -1967,11 +1967,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   // layer->layoutObject().style()->hasBorderDecoration() (missing background
   // behind dashed borders). Resolve this case, or not, and update this check
   // with the results.
-  if (layer->GetLayoutObject().Style()->HasBorderRadius()) {
-    non_composited_main_thread_scrolling_reasons_ |=
-        MainThreadScrollingReason::kHasBorderRadius;
-    needs_composited_scrolling = false;
-  }
   if (layer->GetLayoutObject().HasClip() ||
       layer->HasDescendantWithClipPath() || layer->HasAncestorWithClipPath()) {
     non_composited_main_thread_scrolling_reasons_ |=
