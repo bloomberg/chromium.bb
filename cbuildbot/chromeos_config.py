@@ -2257,7 +2257,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'samus',
       'scarlet',
-      'smaug',
       'stout',
       'stumpy',
       'tricky',

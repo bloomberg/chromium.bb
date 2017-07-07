@@ -15054,7 +15054,6 @@
             "samus-paladin",
             "scarlet-paladin",
             "sentry-paladin",
-            "smaug-paladin",
             "stout-paladin",
             "stumpy-paladin",
             "tatl-paladin",
@@ -22604,7 +22603,6 @@
     },
     "smaug-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
         "boards": [
             "smaug"
         ],
@@ -22612,6 +22610,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
