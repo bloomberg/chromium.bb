@@ -19,6 +19,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
@@ -55,7 +56,10 @@ public class PaymentManifestVerifierTest {
         mMatchingApps.add(mAlicePay);
         mMatchingApps.add(mBobPay);
 
-        mDownloader = new PaymentManifestDownloader(null) {
+        mDownloader = new PaymentManifestDownloader() {
+            @Override
+            public void initialize(WebContents webContents) {}
+
             @Override
             public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
                 callback.onPaymentMethodManifestDownloadSuccess("some content here");
@@ -65,6 +69,9 @@ public class PaymentManifestVerifierTest {
             public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
                 callback.onWebAppManifestDownloadSuccess("some content here");
             }
+
+            @Override
+            public void destroy() {}
         };
 
         mWebDataService = Mockito.mock(PaymentManifestWebDataService.class);
@@ -122,12 +129,18 @@ public class PaymentManifestVerifierTest {
     @Test
     public void testUnableToDownloadPaymentMethodManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(
-                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader(null) {
+                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader() {
+                    @Override
+                    public void initialize(WebContents webContents) {}
+
                     @Override
                     public void downloadPaymentMethodManifest(
                             URI uri, ManifestDownloadCallback callback) {
                         callback.onManifestDownloadFailure();
                     }
+
+                    @Override
+                    public void destroy() {}
                 }, mParser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
@@ -138,7 +151,10 @@ public class PaymentManifestVerifierTest {
     @Test
     public void testUnableToDownloadWebAppManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(
-                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader(null) {
+                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader() {
+                    @Override
+                    public void initialize(WebContents webContents) {}
+
                     @Override
                     public void downloadPaymentMethodManifest(
                             URI uri, ManifestDownloadCallback callback) {
@@ -149,6 +165,9 @@ public class PaymentManifestVerifierTest {
                     public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
                         callback.onManifestDownloadFailure();
                     }
+
+                    @Override
+                    public void destroy() {}
                 }, mParser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
@@ -220,9 +239,6 @@ public class PaymentManifestVerifierTest {
 
     private class CountingDownloader extends PaymentManifestDownloader {
         public int mDownloadWebAppManifestCounter;
-        public CountingDownloader() {
-            super(null);
-        }
     }
 
     /** If a single web app manifest fails to download, all downloads should be aborted. */

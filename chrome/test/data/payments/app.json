@@ -1,0 +1,12 @@
+{
+  "name": "BobPay",
+  "related_applications": [{
+    "platform": "play",
+    "id": "com.bobpay",
+    "min_version": "1",
+    "fingerprints": [{
+      "type": "sha256_cert",
+      "value": "59:5C:88:65:FF:C4:E8:20:CF:F7:3E:C8:64:D0:95:F0:06:19:2E:A6:7B:20:04:D1:03:07:92:E2:A5:31:67:66"
+    }]
+  }]
+}
