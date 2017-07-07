@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/timestamp_constants.h"
 #include "media/remoting/proto_enum_utils.h"
 
 namespace media {
@@ -346,6 +347,13 @@ void ConvertProtoToPipelineStatistics(
   // HACK: Set the following to prevent "disable video when hidden" logic in
   // media::blink::WebMediaPlayerImpl.
   stats->video_keyframe_distance_average = base::TimeDelta::Max();
+
+  // This field was added after the initial message definition. Check that
+  // sender provided the value.
+  if (stats_message.has_video_frame_duration_average_usec()) {
+    stats->video_frame_duration_average = base::TimeDelta::FromMicroseconds(
+        stats_message.video_frame_duration_average_usec());
+  }
 }
 
 void ConvertCdmKeyInfoToProto(

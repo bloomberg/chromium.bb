@@ -650,14 +650,20 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;
 
-  base::TimeDelta old_average =
+  if (stats.video_frame_duration_average != kNoTimestamp) {
+    shared_state_.statistics.video_frame_duration_average =
+        stats.video_frame_duration_average;
+  }
+
+  base::TimeDelta old_key_frame_distance_average =
       shared_state_.statistics.video_keyframe_distance_average;
   if (stats.video_keyframe_distance_average != kNoTimestamp) {
     shared_state_.statistics.video_keyframe_distance_average =
         stats.video_keyframe_distance_average;
   }
 
-  if (shared_state_.statistics.video_keyframe_distance_average != old_average) {
+  if (shared_state_.statistics.video_keyframe_distance_average !=
+      old_key_frame_distance_average) {
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&PipelineImpl::OnVideoAverageKeyframeDistanceUpdate,

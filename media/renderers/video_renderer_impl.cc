@@ -696,6 +696,9 @@ void VideoRendererImpl::UpdateStats_Locked() {
     const size_t memory_usage = algorithm_->GetMemoryUsage();
     statistics.video_memory_usage = memory_usage - last_video_memory_usage_;
 
+    statistics.video_frame_duration_average =
+        algorithm_->average_frame_duration();
+
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&VideoRendererImpl::OnStatisticsUpdate,
                                       weak_factory_.GetWeakPtr(), statistics));
