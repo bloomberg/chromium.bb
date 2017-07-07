@@ -12,7 +12,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
@@ -80,7 +79,7 @@
   if (field.autofillUIType == AutofillUITypeProfileHomePhoneWholeNumber) {
     const std::string countryCode =
         autofill::AutofillCountry::CountryCodeForLocale(
-            GetApplicationContext()->GetApplicationLocale());
+            _paymentRequest->GetApplicationLocale());
     field.value =
         base::SysUTF8ToNSString(payments::data_util::FormatPhoneForDisplay(
             base::SysNSStringToUTF8(field.value), countryCode));
@@ -119,8 +118,7 @@
         self.profile
             ? base::SysUTF16ToNSString(
                   payments::data_util::GetFormattedPhoneNumberForDisplay(
-                      *self.profile,
-                      GetApplicationContext()->GetApplicationLocale()))
+                      *self.profile, _paymentRequest->GetApplicationLocale()))
             : nil;
     EditorField* phoneField = [[EditorField alloc]
         initWithAutofillUIType:AutofillUITypeProfileHomePhoneWholeNumber
@@ -163,7 +161,7 @@
                          fieldType:(autofill::ServerFieldType)fieldType {
   return profile ? base::SysUTF16ToNSString(profile->GetInfo(
                        autofill::AutofillType(fieldType),
-                       GetApplicationContext()->GetApplicationLocale()))
+                       _paymentRequest->GetApplicationLocale()))
                  : nil;
 }
 

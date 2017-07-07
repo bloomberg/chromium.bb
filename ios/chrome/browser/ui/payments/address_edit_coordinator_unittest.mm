@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
@@ -120,8 +119,7 @@ class PaymentRequestAddressEditCoordinatorTest : public PlatformTest {
         chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
 
     profile_comparator_ = base::MakeUnique<MockPaymentsProfileComparator>(
-        GetApplicationContext()->GetApplicationLocale(),
-        *payment_request_.get());
+        payment_request_->GetApplicationLocale(), *payment_request_.get());
     payment_request_->SetProfileComparator(profile_comparator_.get());
 
     test_region_data_loader_.set_synchronous_callback(true);

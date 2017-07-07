@@ -15,7 +15,6 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/contact_info_edit_mediator.h"
@@ -98,7 +97,7 @@ using ::AutofillTypeFromAutofillUIType;
       case AutofillUITypeProfileHomePhoneWholeNumber: {
         const std::string countryCode =
             autofill::AutofillCountry::CountryCodeForLocale(
-                GetApplicationContext()->GetApplicationLocale());
+                self.paymentRequest->GetApplicationLocale());
         if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
                                           countryCode)) {
           return l10n_util::GetNSString(
@@ -140,7 +139,7 @@ using ::AutofillTypeFromAutofillUIType;
     profile.SetInfo(autofill::AutofillType(
                         AutofillTypeFromAutofillUIType(field.autofillUIType)),
                     base::SysNSStringToUTF16(field.value),
-                    GetApplicationContext()->GetApplicationLocale());
+                    self.paymentRequest->GetApplicationLocale());
   }
 
   if (!self.profile) {

@@ -84,7 +84,6 @@ class PaymentRequestTest : public testing::Test {
 // Tests that the payments::CurrencyFormatter is constructed with the correct
 // currency code and currency system.
 TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
-  ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
 
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
@@ -93,6 +92,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   TestPaymentRequest payment_request1(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
+  ASSERT_EQ("en", payment_request1.GetApplicationLocale());
   CurrencyFormatter* currency_formatter =
       payment_request1.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("$55.00"), currency_formatter->Format("55.00"));
@@ -102,6 +102,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   TestPaymentRequest payment_request2(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
+  ASSERT_EQ("en", payment_request2.GetApplicationLocale());
   currency_formatter = payment_request2.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("¥55"), currency_formatter->Format("55.00"));
   EXPECT_EQ("JPY", currency_formatter->formatted_currency_code());
@@ -112,6 +113,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
   TestPaymentRequest payment_request3(web_payment_request,
                                       chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
+  ASSERT_EQ("en", payment_request3.GetApplicationLocale());
   currency_formatter = payment_request3.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("55.00"), currency_formatter->Format("55.00"));
   EXPECT_EQ("USD", currency_formatter->formatted_currency_code());
