@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
@@ -183,7 +184,8 @@ public class IntentHandler {
     private static final String PACKAGE_MESSENGER = "com.google.android.apps.messaging";
     private static final String PACKAGE_LINE = "jp.naver.line.android";
     private static final String PACKAGE_WHATSAPP = "com.whatsapp";
-    private static final String FACEBOOK_LINK_PREFIX = "http://m.facebook.com/l.php?";
+    private static final String FACEBOOK_REFERRER_URL = "android-app://m.facebook.com";
+    private static final String FACEBOOK_INTERNAL_BROWSER_REFERRER = "http://m.facebook.com";
     private static final String TWITTER_LINK_PREFIX = "http://t.co/";
     private static final String NEWS_LINK_PREFIX = "http://news.google.com/news/url?";
 
@@ -292,12 +294,22 @@ public class IntentHandler {
         ExternalAppId externalId = ExternalAppId.OTHER;
         if (appId == null) {
             String url = getUrlFromIntent(intent);
+            String referrer = getReferrerUrl(intent);
             if (url != null && url.startsWith(TWITTER_LINK_PREFIX)) {
                 externalId = ExternalAppId.TWITTER;
-            } else if (url != null && url.startsWith(FACEBOOK_LINK_PREFIX)) {
+            } else if (FACEBOOK_REFERRER_URL.equals(referrer)) {
+                // This happens when "Links Open Externally" is checked in the Facebook app.
                 externalId = ExternalAppId.FACEBOOK;
             } else if (url != null && url.startsWith(NEWS_LINK_PREFIX)) {
                 externalId = ExternalAppId.NEWS;
+            } else {
+                Bundle headers = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
+                if (headers != null
+                        && FACEBOOK_INTERNAL_BROWSER_REFERRER.equals(headers.get("Referer"))) {
+                    // This happens when "Links Open Externally" is unchecked in the Facebook app,
+                    // and we use "Open With..." from the internal browser.
+                    externalId = ExternalAppId.FACEBOOK;
+                }
             }
         } else {
             if (appId.equals(PACKAGE_PLUS)) {
