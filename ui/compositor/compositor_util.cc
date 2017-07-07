@@ -13,8 +13,8 @@
 
 namespace ui {
 
-cc::RendererSettings CreateRendererSettings(uint32_t (
-    *get_texture_target)(gfx::BufferFormat format, gfx::BufferUsage usage)) {
+cc::RendererSettings CreateRendererSettings(
+    const cc::BufferToTextureTargetMap& image_targets) {
   cc::RendererSettings renderer_settings;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
@@ -31,19 +31,9 @@ cc::RendererSettings CreateRendererSettings(uint32_t (
   renderer_settings.enable_color_correct_rendering =
       base::FeatureList::IsEnabled(features::kColorCorrectRendering) ||
       command_line->HasSwitch(switches::kEnableHDR);
-  // Populate buffer_to_texture_target_map for all buffer usage/formats.
-  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
-       ++usage_idx) {
-    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
-    for (int format_idx = 0;
-         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
-         ++format_idx) {
-      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      renderer_settings.resource_settings
-          .buffer_to_texture_target_map[std::make_pair(usage, format)] =
-          get_texture_target(format, usage);
-    }
-  }
+  renderer_settings.resource_settings.buffer_to_texture_target_map =
+      image_targets;
+
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
   renderer_settings.allow_antialiasing =
