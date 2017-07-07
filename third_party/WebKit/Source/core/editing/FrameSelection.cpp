@@ -963,34 +963,39 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   // Calculation of absolute caret bounds requires clean layout.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  LayoutRect rect;
+  const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
+  if (selection.GetSelectionType() == kNoSelection)
+    return;
 
-  switch (ComputeVisibleSelectionInDOMTree().GetSelectionType()) {
-    case kNoSelection:
-      return;
+  LayoutRect rect;
+  switch (selection.GetSelectionType()) {
     case kCaretSelection:
       rect = LayoutRect(AbsoluteCaretBounds());
       break;
-    case kRangeSelection:
+    case kRangeSelection: {
       rect = LayoutRect(
           reveal_extent_option == kRevealExtent
-              ? AbsoluteCaretBoundsOf(CreateVisiblePosition(
-                    ComputeVisibleSelectionInDOMTree().Extent()))
+              ? AbsoluteCaretBoundsOf(CreateVisiblePosition(selection.Extent()))
               : AbsoluteSelectionBoundsOf(ComputeVisibleSelectionInFlatTree()));
+      break;
+    }
+    default:
+      NOTREACHED();
       break;
   }
 
-  Position start = ComputeVisibleSelectionInDOMTree().Start();
+  // FIXME: This code only handles scrolling the startContainer's layer, but
+  // the selection rect could intersect more than just that.
+  if (DocumentLoader* document_loader = frame_->Loader().GetDocumentLoader())
+    document_loader->GetInitialScrollState().was_scrolled_by_user = true;
+  const Position& start = selection.Start();
   DCHECK(start.AnchorNode());
-  if (start.AnchorNode() && start.AnchorNode()->GetLayoutObject()) {
-    // FIXME: This code only handles scrolling the startContainer's layer, but
-    // the selection rect could intersect more than just that.
-    if (DocumentLoader* document_loader = frame_->Loader().GetDocumentLoader())
-      document_loader->GetInitialScrollState().was_scrolled_by_user = true;
-    if (start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-            rect, alignment, alignment))
-      UpdateAppearance();
-  }
+  DCHECK(start.AnchorNode()->GetLayoutObject());
+  if (!start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
+          rect, alignment, alignment))
+    return;
+
+  UpdateAppearance();
 }
 
 void FrameSelection::SetSelectionFromNone() {
