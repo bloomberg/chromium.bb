@@ -3201,6 +3201,8 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ukm_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/page_load_metrics_util_unittest.cc",
+    "../browser/page_load_metrics/test/ukm_tester.cc",
+    "../browser/page_load_metrics/test/ukm_tester.h",
     "../browser/page_load_metrics/user_input_tracker_unittest.cc",
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/password_manager/password_manager_internals_service_unittest.cc",

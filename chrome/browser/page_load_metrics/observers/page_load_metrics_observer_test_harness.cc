@@ -6,11 +6,13 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -52,12 +54,13 @@ class TestPageLoadMetricsEmbedderInterface
 }  // namespace
 
 PageLoadMetricsObserverTestHarness::PageLoadMetricsObserverTestHarness()
-    : ChromeRenderViewHostTestHarness() {}
+    : ChromeRenderViewHostTestHarness(), ukm_tester_(&test_ukm_recorder_) {}
 
 PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 
 void PageLoadMetricsObserverTestHarness::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+  TestingBrowserProcess::GetGlobal()->SetUkmRecorder(&test_ukm_recorder_);
   SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL("http://www.google.com"));
   observer_ = MetricsWebContentsObserver::CreateForWebContents(
