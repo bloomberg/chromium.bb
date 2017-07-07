@@ -17,7 +17,6 @@
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
-#include "components/precache/core/proto/precache.pb.h"
 
 namespace tracked_objects {
 class Location;
@@ -34,8 +33,6 @@ namespace predictors {
 //  - UrlRedirectTable - key: url, value: RedirectData
 //  - HostResourceTable - key: host, value: PrefetchData
 //  - HostRedirectTable - key: host, value: RedirectData
-//  - ManifestTable - key: host with stripped "www." prefix,
-//                    value: precache::PrecacheManifest
 //  - OriginTable - key: host, value: OriginData
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
@@ -50,7 +47,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   virtual GlowplugKeyValueTable<RedirectData>* url_redirect_table();
   virtual GlowplugKeyValueTable<PrefetchData>* host_resource_table();
   virtual GlowplugKeyValueTable<RedirectData>* host_redirect_table();
-  virtual GlowplugKeyValueTable<precache::PrecacheManifest>* manifest_table();
   virtual GlowplugKeyValueTable<OriginData>* origin_table();
 
   // Removes the resources with more than |max_consecutive_misses| consecutive
@@ -66,10 +62,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Removes the redirects with more than |max_consecutive_misses| consecutive
   // misses from |data|.
   static void TrimRedirects(RedirectData* data, size_t max_consecutive_misses);
-
-  // Computes score of |data|.
-  static float ComputePrecacheResourceScore(
-      const precache::PrecacheResource& data);
 
   // Removes the origins with more than |max_consecutive_misses| consecutive
   // misses from |data|.
@@ -99,7 +91,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 9;
+  static constexpr int kDatabaseVersion = 10;
 
   // PredictorTableBase:
   void CreateTableIfNonExistent() override;
@@ -113,8 +105,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   std::unique_ptr<GlowplugKeyValueTable<RedirectData>> url_redirect_table_;
   std::unique_ptr<GlowplugKeyValueTable<PrefetchData>> host_resource_table_;
   std::unique_ptr<GlowplugKeyValueTable<RedirectData>> host_redirect_table_;
-  std::unique_ptr<GlowplugKeyValueTable<precache::PrecacheManifest>>
-      manifest_table_;
   std::unique_ptr<GlowplugKeyValueTable<OriginData>> origin_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorTables);

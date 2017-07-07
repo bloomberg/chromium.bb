@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/mime_util/mime_util.h"
-#include "components/precache/core/precache_manifest_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -50,7 +49,6 @@ const char* kFontMimeTypes[] = {"font/woff2",
                                 "application/font-sfnt",
                                 "application/font-ttf"};
 
-const size_t kMaxManifestByteSize = 16 * 1024;
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
 const float kMinOriginConfidenceToTriggerPreconnect = 0.75;
@@ -98,12 +96,6 @@ void InitializeOriginStatFromOriginRequestSummary(
   origin->set_average_position(summary.first_occurrence + 1);
   origin->set_always_access_network(summary.always_access_network);
   origin->set_accessed_network(summary.accessed_network);
-}
-
-bool IsManifestTooOld(const precache::PrecacheManifest& manifest) {
-  const base::TimeDelta kMaxManifestAge = base::TimeDelta::FromDays(5);
-  return base::Time::Now() - base::Time::FromDoubleT(manifest.id().id()) >
-         kMaxManifestAge;
 }
 
 // Used to fetch the visit count for a URL from the History database.
@@ -161,26 +153,15 @@ void InitializeOnDBThread(
     ResourcePrefetchPredictor::PrefetchDataMap* host_resource_data,
     ResourcePrefetchPredictor::RedirectDataMap* url_redirect_data,
     ResourcePrefetchPredictor::RedirectDataMap* host_redirect_data,
-    ResourcePrefetchPredictor::ManifestDataMap* manifest_data,
     ResourcePrefetchPredictor::OriginDataMap* origin_data) {
   url_resource_data->InitializeOnDBThread();
   host_resource_data->InitializeOnDBThread();
   url_redirect_data->InitializeOnDBThread();
   host_redirect_data->InitializeOnDBThread();
-  manifest_data->InitializeOnDBThread();
   origin_data->InitializeOnDBThread();
 }
 
 }  // namespace
-
-namespace internal {
-
-bool ManifestCompare::operator()(const precache::PrecacheManifest& lhs,
-                                 const precache::PrecacheManifest& rhs) const {
-  return lhs.id().id() < rhs.id().id();
-}
-
-}  // namespace internal
 
 PreconnectPrediction::PreconnectPrediction() = default;
 PreconnectPrediction::PreconnectPrediction(
@@ -413,8 +394,6 @@ void ResourcePrefetchPredictor::StartInitialization() {
       tables_, tables_->url_redirect_table(), config_.max_urls_to_track);
   auto host_redirect_data = base::MakeUnique<RedirectDataMap>(
       tables_, tables_->host_redirect_table(), config_.max_hosts_to_track);
-  auto manifest_data = base::MakeUnique<ManifestDataMap>(
-      tables_, tables_->manifest_table(), config_.max_hosts_to_track);
   auto origin_data = base::MakeUnique<OriginDataMap>(
       tables_, tables_->origin_table(), config_.max_hosts_to_track);
 
@@ -422,13 +401,12 @@ void ResourcePrefetchPredictor::StartInitialization() {
   // will be passed to the reply task.
   auto task = base::BindOnce(InitializeOnDBThread, url_resource_data.get(),
                              host_resource_data.get(), url_redirect_data.get(),
-                             host_redirect_data.get(), manifest_data.get(),
-                             origin_data.get());
+                             host_redirect_data.get(), origin_data.get());
   auto reply = base::BindOnce(
       &ResourcePrefetchPredictor::CreateCaches, weak_factory_.GetWeakPtr(),
       std::move(url_resource_data), std::move(host_resource_data),
       std::move(url_redirect_data), std::move(host_redirect_data),
-      std::move(manifest_data), std::move(origin_data));
+      std::move(origin_data));
 
   BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE, std::move(task),
                                   std::move(reply));
@@ -677,33 +655,17 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
   // Use host data if the URL-based prediction isn't available.
   std::string main_frame_url_host = main_frame_url.host();
   if (GetRedirectEndpoint(main_frame_url_host, *host_redirect_data_,
-                          &redirect_endpoint)) {
-    if (PopulatePrefetcherRequest(redirect_endpoint, *host_resource_data_,
-                                  urls)) {
-      if (prediction) {
-        prediction->is_host = true;
-        prediction->main_frame_key = redirect_endpoint;
-        prediction->is_redirected = (redirect_endpoint != main_frame_url_host);
-      }
-      return true;
+                          &redirect_endpoint) &&
+      PopulatePrefetcherRequest(redirect_endpoint, *host_resource_data_,
+                                urls)) {
+    if (prediction) {
+      prediction->is_host = true;
+      prediction->main_frame_key = redirect_endpoint;
+      prediction->is_redirected = (redirect_endpoint != main_frame_url_host);
     }
-
-    if (config_.is_manifests_enabled) {
-      // Use manifest data for host if available.
-      std::string manifest_host = redirect_endpoint;
-      if (base::StartsWith(manifest_host, "www.", base::CompareCase::SENSITIVE))
-        manifest_host.assign(manifest_host, 4, std::string::npos);
-      if (PopulateFromManifest(manifest_host, urls)) {
-        if (prediction) {
-          prediction->is_host = true;
-          prediction->main_frame_key = redirect_endpoint;
-          prediction->is_redirected =
-              (redirect_endpoint != main_frame_url_host);
-        }
-        return true;
-      }
-    }
+    return true;
   }
+
   return false;
 }
 
@@ -763,66 +725,11 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
   return has_prefetchable_resource;
 }
 
-bool ResourcePrefetchPredictor::PopulateFromManifest(
-    const std::string& manifest_host,
-    std::vector<GURL>* urls) const {
-  precache::PrecacheManifest manifest;
-  if (!manifest_data_->TryGetData(manifest_host, &manifest))
-    return false;
-
-  if (IsManifestTooOld(manifest))
-    return false;
-
-  // This is roughly in line with the threshold we use for resource confidence.
-  const float kMinWeight = 0.7f;
-
-  // Don't prefetch resource if it has false bit in any of the following
-  // bitsets. All bits assumed to be true if an optional has no value.
-  base::Optional<std::vector<bool>> not_unused =
-      precache::GetResourceBitset(manifest, internal::kUnusedRemovedExperiment);
-  base::Optional<std::vector<bool>> not_versioned = precache::GetResourceBitset(
-      manifest, internal::kVersionedRemovedExperiment);
-  base::Optional<std::vector<bool>> not_no_store = precache::GetResourceBitset(
-      manifest, internal::kNoStoreRemovedExperiment);
-
-  std::vector<const precache::PrecacheResource*> filtered_resources;
-
-  bool has_prefetchable_resource = false;
-  for (int i = 0; i < manifest.resource_size(); ++i) {
-    const precache::PrecacheResource& resource = manifest.resource(i);
-    if (resource.weight_ratio() > kMinWeight &&
-        (!not_unused.has_value() || not_unused.value()[i]) &&
-        (!not_versioned.has_value() || not_versioned.value()[i]) &&
-        (!not_no_store.has_value() || not_no_store.value()[i])) {
-      has_prefetchable_resource = true;
-      if (urls)
-        filtered_resources.push_back(&resource);
-    }
-  }
-
-  if (urls) {
-    std::sort(
-        filtered_resources.begin(), filtered_resources.end(),
-        [](const precache::PrecacheResource* x,
-           const precache::PrecacheResource* y) {
-          return ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
-                     *x) >
-                 ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
-                     *y);
-        });
-    for (auto* resource : filtered_resources)
-      urls->emplace_back(resource->url());
-  }
-
-  return has_prefetchable_resource;
-}
-
 void ResourcePrefetchPredictor::CreateCaches(
     std::unique_ptr<PrefetchDataMap> url_resource_data,
     std::unique_ptr<PrefetchDataMap> host_resource_data,
     std::unique_ptr<RedirectDataMap> url_redirect_data,
     std::unique_ptr<RedirectDataMap> host_redirect_data,
-    std::unique_ptr<ManifestDataMap> manifest_data,
     std::unique_ptr<OriginDataMap> origin_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZING, initialization_state_);
@@ -831,14 +738,12 @@ void ResourcePrefetchPredictor::CreateCaches(
   DCHECK(host_resource_data);
   DCHECK(url_redirect_data);
   DCHECK(host_redirect_data);
-  DCHECK(manifest_data);
   DCHECK(origin_data);
 
   url_resource_data_ = std::move(url_resource_data);
   host_resource_data_ = std::move(host_resource_data);
   url_redirect_data_ = std::move(url_redirect_data);
   host_redirect_data_ = std::move(host_redirect_data);
-  manifest_data_ = std::move(manifest_data);
   origin_data_ = std::move(origin_data);
 
   ConnectToHistoryService();
@@ -880,27 +785,23 @@ void ResourcePrefetchPredictor::DeleteAllUrls() {
   host_resource_data_->DeleteAllData();
   url_redirect_data_->DeleteAllData();
   host_redirect_data_->DeleteAllData();
-  manifest_data_->DeleteAllData();
   origin_data_->DeleteAllData();
 }
 
 void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
   std::vector<std::string> urls_to_delete;
   std::vector<std::string> hosts_to_delete;
-  std::vector<std::string> manifest_hosts_to_delete;
 
   // Transform GURLs to keys for given database.
   for (const auto& it : urls) {
     urls_to_delete.emplace_back(it.url().spec());
     hosts_to_delete.emplace_back(it.url().host());
-    manifest_hosts_to_delete.emplace_back(history::HostForTopHosts(it.url()));
   }
 
   url_resource_data_->DeleteData(urls_to_delete);
   host_resource_data_->DeleteData(hosts_to_delete);
   url_redirect_data_->DeleteData(urls_to_delete);
   host_redirect_data_->DeleteData(hosts_to_delete);
-  manifest_data_->DeleteData(manifest_hosts_to_delete);
   origin_data_->DeleteData(hosts_to_delete);
 }
 
@@ -1274,75 +1175,6 @@ void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
     history::HistoryService* history_service) {
   if (initialization_state_ == INITIALIZING) {
     OnHistoryAndCacheLoaded();
-  }
-}
-
-void ResourcePrefetchPredictor::OnManifestFetched(
-    const std::string& host,
-    const precache::PrecacheManifest& manifest) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
-
-  if (!config_.is_manifests_enabled || IsManifestTooOld(manifest))
-    return;
-
-  // The manifest host has "www." prefix stripped, the manifest host could
-  // correspond to two different hosts in the prefetch database.
-  UpdatePrefetchDataByManifest(host, host_resource_data_.get(), manifest);
-  UpdatePrefetchDataByManifest("www." + host, host_resource_data_.get(),
-                               manifest);
-
-  // The manifest is too large to store.
-  if (host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
-      static_cast<uint32_t>(manifest.ByteSize()) > kMaxManifestByteSize) {
-    return;
-  }
-
-  precache::PrecacheManifest data = manifest;
-  precache::RemoveUnknownFields(&data);
-  manifest_data_->UpdateData(host, data);
-}
-
-void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
-    const std::string& key,
-    PrefetchDataMap* resource_data,
-    const precache::PrecacheManifest& manifest) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  PrefetchData data;
-  bool exists = resource_data->TryGetData(key, &data);
-  if (!exists)
-    return;
-
-  std::map<std::string, int> manifest_index;
-  for (int i = 0; i < manifest.resource_size(); ++i)
-    manifest_index.insert({manifest.resource(i).url(), i});
-
-  base::Optional<std::vector<bool>> not_unused =
-      precache::GetResourceBitset(manifest, internal::kUnusedRemovedExperiment);
-
-  bool was_updated = false;
-  if (not_unused.has_value()) {
-    // Remove unused resources from |data|.
-    auto new_end = std::remove_if(
-        data.mutable_resources()->begin(), data.mutable_resources()->end(),
-        [&](const ResourceData& x) {
-          auto it = manifest_index.find(x.resource_url());
-          if (it == manifest_index.end())
-            return false;
-          return !not_unused.value()[it->second];
-        });
-    was_updated = new_end != data.mutable_resources()->end();
-    data.mutable_resources()->erase(new_end, data.mutable_resources()->end());
-  }
-
-  if (was_updated) {
-    if (data.resources_size() == 0)
-      resource_data->DeleteData({key});
-    else
-      resource_data->UpdateData(key, data);
   }
 }
 
