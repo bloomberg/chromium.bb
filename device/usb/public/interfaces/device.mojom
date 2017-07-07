@@ -4,6 +4,8 @@
 
 module device.mojom;
 
+import "mojo/common/string16.mojom";
+
 enum UsbOpenDeviceError {
   // Opening the device succeeded.
   OK,
@@ -55,7 +57,7 @@ struct UsbAlternateInterfaceInfo {
   uint8 class_code;
   uint8 subclass_code;
   uint8 protocol_code;
-  string? interface_name;
+  mojo.common.mojom.String16? interface_name;
   array<UsbEndpointInfo> endpoints;
 };
 
@@ -66,7 +68,7 @@ struct UsbInterfaceInfo {
 
 struct UsbConfigurationInfo {
   uint8 configuration_value;
-  string? configuration_name;
+  mojo.common.mojom.String16? configuration_name;
   array<UsbInterfaceInfo> interfaces;
 };
 
@@ -83,9 +85,9 @@ struct UsbDeviceInfo {
   uint8 device_version_major;
   uint8 device_version_minor;
   uint8 device_version_subminor;
-  string? manufacturer_name;
-  string? product_name;
-  string? serial_number;
+  mojo.common.mojom.String16? manufacturer_name;
+  mojo.common.mojom.String16? product_name;
+  mojo.common.mojom.String16? serial_number;
   uint8 active_configuration;
   array<UsbConfigurationInfo> configurations;
 };

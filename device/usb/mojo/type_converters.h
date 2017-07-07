@@ -9,7 +9,6 @@
 
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
-#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -18,7 +17,10 @@
 // that uses these conversions explicitly or implicitly.
 
 namespace device {
+struct UsbConfigDescriptor;
 class UsbDevice;
+struct UsbEndpointDescriptor;
+struct UsbInterfaceDescriptor;
 }
 
 namespace mojo {

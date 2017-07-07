@@ -10,8 +10,7 @@
 #include <map>
 #include <utility>
 
-#include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
+#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
 namespace mojo {
@@ -111,9 +110,9 @@ TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
   info->device_version_major = device.device_version() >> 8;
   info->device_version_minor = device.device_version() >> 4 & 0xf;
   info->device_version_subminor = device.device_version() & 0xf;
-  info->manufacturer_name = base::UTF16ToUTF8(device.manufacturer_string());
-  info->product_name = base::UTF16ToUTF8(device.product_string());
-  info->serial_number = base::UTF16ToUTF8(device.serial_number());
+  info->manufacturer_name = device.manufacturer_string();
+  info->product_name = device.product_string();
+  info->serial_number = device.serial_number();
   const device::UsbConfigDescriptor* config = device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
   info->configurations =
