@@ -1053,9 +1053,19 @@ def main(args):
     try:
       yield
     finally:
+      # Uninstall each named cache, returning it to the cache pool. If an
+      # uninstall fails for a given cache, it will remain in the task's
+      # temporary space, get cleaned up by the Swarming bot, and be lost.
+      #
+      # If the Swarming bot cannot clean up the cache, it will handle it like
+      # any other bot file that could not be removed.
       with named_cache_manager.open():
         for path, name in caches:
-          named_cache_manager.uninstall(path, name)
+          try:
+            named_cache_manager.uninstall(path, name)
+          except named_cache.Error:
+            logging.exception('Error while removing named cache %r at %r. '
+                              'The cache will be lost.', path, name)
 
   try:
     if options.isolate_server:
