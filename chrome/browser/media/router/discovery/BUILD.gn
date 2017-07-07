@@ -52,9 +52,14 @@ static_library("discovery") {
       "discovery_network_list_posix.cc",
       "discovery_network_list_wifi.h",
       "discovery_network_list_wifi_linux.cc",
+      "discovery_network_list_wifi_mac.mm",
       "discovery_network_list_win.cc",
       "discovery_network_monitor.cc",
       "discovery_network_monitor.h",
     ]
+  }
+
+  if (is_mac) {
+    libs = [ "CoreWLAN.framework" ]
   }
 }
