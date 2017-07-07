@@ -118,18 +118,6 @@ DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) const {
   return child ? child->DomWindow() : nullptr;
 }
 
-bool DOMWindow::AnonymousIndexedSetter(uint32_t index,
-                                       const ScriptValue& value) {
-  // https://html.spec.whatwg.org/C/browsers.html#windowproxy-defineownproperty
-  //   step 2 - 1. If P is an array index property name, return false.
-  //
-  // As an alternative way to implement WindowProxy.[[DefineOwnProperty]] for
-  // array index property names, we always intercept and ignore the set
-  // operation for indexed properties, i.e. [[DefineOwnProperty]] for array
-  // index property names has always no effect.
-  return true;  // Intercept unconditionally but do nothing.
-}
-
 bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
   if (GetFrame())
     SECURITY_CHECK(GetFrame()->DomWindow() == this);

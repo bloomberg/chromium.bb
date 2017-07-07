@@ -101,6 +101,39 @@ void V8TestSpecialOperationsNotEnumerable::indexedPropertyGetterCallback(uint32_
   TestSpecialOperationsNotEnumerableV8Internal::indexedPropertyGetter(index, info);
 }
 
+void V8TestSpecialOperationsNotEnumerable::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // No indexed property setter defined.  Do not fall back to the default
+  // setter.
+  V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+  if (info.ShouldThrowOnError()) {
+    ExceptionState exceptionState(info.GetIsolate(),
+                                  ExceptionState::kIndexedSetterContext,
+                                  "TestSpecialOperationsNotEnumerable");
+    exceptionState.ThrowTypeError("Index property setter is not supported.");
+  }
+}
+
+void V8TestSpecialOperationsNotEnumerable::indexedPropertyDefinerCallback(
+    uint32_t index,
+    const v8::PropertyDescriptor& desc,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
+  // 3.9.3. [[DefineOwnProperty]]
+  // step 1.2. If O does not implement an interface with an indexed property
+  //   setter, then return false.
+  //
+  // https://html.spec.whatwg.org/C/window-object.html#windowproxy-defineownproperty
+  // 7.4.6 [[DefineOwnProperty]] (P, Desc)
+  // step 2.1. If P is an array index property name, return false.
+  V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+  if (info.ShouldThrowOnError()) {
+    ExceptionState exceptionState(info.GetIsolate(),
+                                  ExceptionState::kIndexedSetterContext,
+                                  "TestSpecialOperationsNotEnumerable");
+    exceptionState.ThrowTypeError("Index property setter is not supported.");
+  }
+}
+
 static void installV8TestSpecialOperationsNotEnumerableTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
@@ -118,7 +151,15 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(
   // Register IDL constants, attributes and operations.
 
   // Indexed properties
-  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(V8TestSpecialOperationsNotEnumerable::indexedPropertyGetterCallback, nullptr, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
+      V8TestSpecialOperationsNotEnumerable::indexedPropertyGetterCallback,
+      V8TestSpecialOperationsNotEnumerable::indexedPropertySetterCallback,
+      nullptr,
+      nullptr,
+      nullptr,
+      V8TestSpecialOperationsNotEnumerable::indexedPropertyDefinerCallback,
+      v8::Local<v8::Value>(),
+      v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
   v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestSpecialOperationsNotEnumerable::namedPropertyGetterCallback, nullptr, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));

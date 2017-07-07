@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Indexed properties of the window object (non-strict mode) 
-FAIL Indexed properties of the window object (non-strict mode) 1 assert_throws: function "() => Object.defineProperty(window, 0, { value: "bar" })" did not throw
-FAIL Indexed properties of the window object (non-strict mode) 2 assert_throws: function "() => Object.defineProperty(window, 1, { value: "bar" })" did not throw
+FAIL Indexed properties of the window object (non-strict mode) 1 assert_equals: expected false but got true
+PASS Indexed properties of the window object (non-strict mode) 2 
 PASS Indexed properties of the window object (non-strict mode) 3 
 Harness: the test ran to completion.
 

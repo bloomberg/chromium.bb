@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Test [[DefineOwnProperty]] with no indexed property setter support. assert_equals: (assert_prop_desc_equals: property 'writable') expected false but got true
+FAIL Test [[DefineOwnProperty]] with indexed property setter support. assert_equals: (assert_prop_desc_equals: property 'enumerable') expected true but got false
+Harness: the test ran to completion.
+

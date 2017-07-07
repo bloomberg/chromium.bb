@@ -12266,6 +12266,28 @@ void V8TestObject::indexedPropertyDeleterCallback(uint32_t index, const v8::Prop
   TestObjectV8Internal::indexedPropertyDeleter(index, info);
 }
 
+void V8TestObject::indexedPropertyDefinerCallback(
+    uint32_t index,
+    const v8::PropertyDescriptor& desc,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
+  // 3.9.3. [[DefineOwnProperty]]
+  // step 1.1. If the result of calling IsDataDescriptor(Desc) is false, then
+  //   return false.
+  if (desc.has_get() || desc.has_set()) {
+    V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+    if (info.ShouldThrowOnError()) {
+      ExceptionState exceptionState(info.GetIsolate(),
+                                    ExceptionState::kIndexedSetterContext,
+                                    "TestObject");
+      exceptionState.ThrowTypeError("Accessor properties are not allowed.");
+    }
+    return;
+  }
+
+  // Return nothing and fall back to indexedPropertySetterCallback.
+}
+
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
@@ -12874,7 +12896,15 @@ static void installV8TestObjectTemplate(
       signature, V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
 
   // Indexed properties
-  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(V8TestObject::indexedPropertyGetterCallback, V8TestObject::indexedPropertySetterCallback, nullptr, V8TestObject::indexedPropertyDeleterCallback, IndexedPropertyEnumerator<TestObject>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
+      V8TestObject::indexedPropertyGetterCallback,
+      V8TestObject::indexedPropertySetterCallback,
+      nullptr,
+      V8TestObject::indexedPropertyDeleterCallback,
+      IndexedPropertyEnumerator<TestObject>,
+      V8TestObject::indexedPropertyDefinerCallback,
+      v8::Local<v8::Value>(),
+      v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
   v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestObject::namedPropertyGetterCallback, V8TestObject::namedPropertySetterCallback, V8TestObject::namedPropertyQueryCallback, V8TestObject::namedPropertyDeleterCallback, V8TestObject::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));

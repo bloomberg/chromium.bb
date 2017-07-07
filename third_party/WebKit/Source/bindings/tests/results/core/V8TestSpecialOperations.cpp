@@ -206,7 +206,15 @@ static void installV8TestSpecialOperationsTemplate(
       signature, V8TestSpecialOperationsMethods, WTF_ARRAY_LENGTH(V8TestSpecialOperationsMethods));
 
   // Indexed properties
-  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(V8TestSpecialOperations::indexedPropertyGetterCallback, V8TestSpecialOperations::indexedPropertySetterCallback, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
+      V8TestSpecialOperations::indexedPropertyGetterCallback,
+      V8TestSpecialOperations::indexedPropertySetterCallback,
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
+      v8::Local<v8::Value>(),
+      v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
   v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestSpecialOperations::namedPropertyGetterCallback, V8TestSpecialOperations::namedPropertySetterCallback, V8TestSpecialOperations::namedPropertyQueryCallback, nullptr, V8TestSpecialOperations::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings)));

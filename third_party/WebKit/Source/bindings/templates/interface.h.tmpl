@@ -245,11 +245,14 @@ class {{v8_class}} {
   {% if indexed_property_getter or named_property_getter %}
   {{exported}}static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
-  {% if indexed_property_setter or named_property_setter %}
+  {% if indexed_property_getter or named_property_setter %}
   {{exported}}static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if indexed_property_deleter or named_property_deleter %}
   {{exported}}static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>&);
+  {% endif %}
+  {% if indexed_property_getter %}
+  {{exported}}static void indexedPropertyDefinerCallback(uint32_t index, const v8::PropertyDescriptor&, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
 
   {% if needs_runtime_enabled_installer %}
