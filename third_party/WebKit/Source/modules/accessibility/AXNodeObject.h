@@ -70,8 +70,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String AriaAccessibilityDescription() const;
   String AriaAutoComplete() const;
   AccessibilityRole DetermineAriaRoleAttribute() const;
-  void AccessibilityChildrenFromAttribute(QualifiedName attr,
-                                          AXObject::AXObjectVector&) const;
+  void AccessibilityChildrenFromAOMProperty(AOMRelationListProperty,
+                                            AXObject::AXObjectVector&) const;
 
   bool HasContentEditableAttributeSet() const;
   bool IsTextControl() const override;

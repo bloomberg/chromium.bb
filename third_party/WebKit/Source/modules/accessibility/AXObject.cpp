@@ -392,6 +392,25 @@ Element* AXObject::GetAOMPropertyOrARIAAttribute(
   return target ? target->element() : nullptr;
 }
 
+bool AXObject::HasAOMProperty(AOMRelationListProperty property,
+                              HeapVector<Member<Element>>& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  return AccessibleNode::GetProperty(element, property, result);
+}
+
+bool AXObject::HasAOMPropertyOrARIAAttribute(
+    AOMRelationListProperty property,
+    HeapVector<Member<Element>>& result) const {
+  Element* element = this->GetElement();
+  if (!element)
+    return false;
+
+  return AccessibleNode::GetPropertyOrARIAAttribute(element, property, result);
+}
+
 bool AXObject::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
                                              bool& result) const {
   Element* element = this->GetElement();
@@ -977,26 +996,23 @@ String AXObject::AriaTextAlternative(bool recursive,
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
   if (!in_aria_labelled_by_traversal && !already_visited) {
-    const QualifiedName& attr =
-        HasAttribute(aria_labeledbyAttr) && !HasAttribute(aria_labelledbyAttr)
-            ? aria_labeledbyAttr
-            : aria_labelledbyAttr;
     name_from = kAXNameFromRelatedElement;
-    if (name_sources) {
-      name_sources->push_back(NameSource(*found_text_alternative, attr));
-      name_sources->back().type = name_from;
-    }
 
-    const AtomicString& aria_labelledby = GetAttribute(attr);
-    if (!aria_labelledby.IsNull()) {
-      if (name_sources)
-        name_sources->back().attribute_value = aria_labelledby;
+    // Check AOM property first.
+    HeapVector<Member<Element>> elements;
+    if (HasAOMProperty(AOMRelationListProperty::kLabeledBy, elements)) {
+      if (name_sources) {
+        name_sources->push_back(
+            NameSource(*found_text_alternative, aria_labelledbyAttr));
+        name_sources->back().type = name_from;
+      }
 
       // Operate on a copy of |visited| so that if |nameSources| is not null,
       // the set of visited objects is preserved unmodified for future
       // calculations.
       AXObjectSet visited_copy = visited;
-      text_alternative = TextFromAriaLabelledby(visited_copy, related_objects);
+      text_alternative =
+          TextFromElements(true, visited_copy, elements, related_objects);
       if (!text_alternative.IsNull()) {
         if (name_sources) {
           NameSource& source = name_sources->back();
@@ -1010,6 +1026,44 @@ String AXObject::AriaTextAlternative(bool recursive,
         }
       } else if (name_sources) {
         name_sources->back().invalid = true;
+      }
+    } else {
+      // Now check ARIA attribute
+      const QualifiedName& attr =
+          HasAttribute(aria_labeledbyAttr) && !HasAttribute(aria_labelledbyAttr)
+              ? aria_labeledbyAttr
+              : aria_labelledbyAttr;
+
+      if (name_sources) {
+        name_sources->push_back(NameSource(*found_text_alternative, attr));
+        name_sources->back().type = name_from;
+      }
+
+      const AtomicString& aria_labelledby = GetAttribute(attr);
+      if (!aria_labelledby.IsNull()) {
+        if (name_sources)
+          name_sources->back().attribute_value = aria_labelledby;
+
+        // Operate on a copy of |visited| so that if |nameSources| is not null,
+        // the set of visited objects is preserved unmodified for future
+        // calculations.
+        AXObjectSet visited_copy = visited;
+        text_alternative =
+            TextFromAriaLabelledby(visited_copy, related_objects);
+        if (!text_alternative.IsNull()) {
+          if (name_sources) {
+            NameSource& source = name_sources->back();
+            source.type = name_from;
+            source.related_objects = *related_objects;
+            source.text = text_alternative;
+            *found_text_alternative = true;
+          } else {
+            *found_text_alternative = true;
+            return text_alternative;
+          }
+        } else if (name_sources) {
+          name_sources->back().invalid = true;
+        }
       }
     }
   }

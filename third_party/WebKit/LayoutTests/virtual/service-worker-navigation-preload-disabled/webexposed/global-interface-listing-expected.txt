@@ -24,21 +24,26 @@ interface AccessibleNode
     getter colCount
     getter colIndex
     getter colSpan
+    getter controls
     getter current
+    getter describedBy
     getter details
     getter disabled
     getter errorMessage
     getter expanded
+    getter flowTo
     getter hidden
     getter invalid
     getter keyShortcuts
     getter label
+    getter labeledBy
     getter level
     getter live
     getter modal
     getter multiline
     getter multiselectable
     getter orientation
+    getter owns
     getter placeholder
     getter posInSet
     getter pressed
@@ -66,21 +71,26 @@ interface AccessibleNode
     setter colCount
     setter colIndex
     setter colSpan
+    setter controls
     setter current
+    setter describedBy
     setter details
     setter disabled
     setter errorMessage
     setter expanded
+    setter flowTo
     setter hidden
     setter invalid
     setter keyShortcuts
     setter label
+    setter labeledBy
     setter level
     setter live
     setter modal
     setter multiline
     setter multiselectable
     setter orientation
+    setter owns
     setter placeholder
     setter posInSet
     setter pressed
@@ -99,6 +109,15 @@ interface AccessibleNode
     setter valueMin
     setter valueNow
     setter valueText
+interface AccessibleNodeList
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method add
+    method constructor
+    method item
+    method remove
+    setter length
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter illuminance

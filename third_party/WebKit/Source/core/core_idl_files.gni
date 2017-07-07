@@ -84,6 +84,7 @@ core_idl_files = get_path_info([
                                  "css/cssom/StylePropertyMap.idl",
                                  "css/cssom/StylePropertyMapReadonly.idl",
                                  "dom/AccessibleNode.idl",
+                                 "dom/AccessibleNodeList.idl",
                                  "dom/ArrayBuffer.idl",
                                  "dom/ArrayBufferView.idl",
                                  "dom/Attr.idl",
