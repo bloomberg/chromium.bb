@@ -447,6 +447,32 @@ void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
   DecrementBlobRefCount(uuid);
 }
 
+std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
+    const std::string& uuid,
+    const std::string& content_type,
+    const std::string& content_disposition) {
+  DCHECK(!registry_.HasEntry(uuid));
+
+  BlobEntry* entry =
+      registry_.CreateEntry(uuid, content_type, content_disposition);
+  entry->set_size(DataElement::kUnknownSize);
+  entry->set_status(BlobStatus::PENDING_CONSTRUCTION);
+  entry->set_building_state(base::MakeUnique<BlobEntry::BuildingState>(
+      false, TransportAllowedCallback(), 0));
+  return CreateHandle(uuid, entry);
+}
+
+std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildPreregisteredBlob(
+    const BlobDataBuilder& content,
+    const TransportAllowedCallback& transport_allowed_callback) {
+  BlobEntry* entry = registry_.GetEntry(content.uuid());
+  DCHECK(entry);
+  DCHECK_EQ(BlobStatus::PENDING_CONSTRUCTION, entry->status());
+  entry->set_size(0);
+
+  return BuildBlobInternal(entry, content, transport_allowed_callback);
+}
+
 std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
     const BlobDataBuilder& content,
     const TransportAllowedCallback& transport_allowed_callback) {
@@ -455,6 +481,13 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
   BlobEntry* entry = registry_.CreateEntry(
       content.uuid(), content.content_type_, content.content_disposition_);
 
+  return BuildBlobInternal(entry, content, transport_allowed_callback);
+}
+
+std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
+    BlobEntry* entry,
+    const BlobDataBuilder& content,
+    const TransportAllowedCallback& transport_allowed_callback) {
   // This flattens all blob references in the transportion content out and
   // stores the complete item representation in the internal data.
   BlobFlattener flattener(content, entry, &registry_);
@@ -463,6 +496,8 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
          transport_allowed_callback)
       << "If we have pending unpopulated content then a callback is required";
 
+  DCHECK(flattener.total_size == 0 ||
+         flattener.total_size == entry->total_size());
   entry->set_size(flattener.total_size);
   entry->set_status(flattener.status);
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(content.uuid_, entry);
@@ -499,6 +534,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
     }
   }
 
+  auto previous_building_state = std::move(entry->building_state_);
   entry->set_building_state(base::MakeUnique<BlobEntry::BuildingState>(
       !flattener.pending_transport_items.empty(), transport_allowed_callback,
       num_building_dependent_blobs));
@@ -506,6 +542,19 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlob(
   std::swap(building_state->copies, flattener.copies);
   std::swap(building_state->dependent_blobs, dependent_blobs);
   std::swap(building_state->transport_items, flattener.transport_items);
+  if (previous_building_state) {
+    DCHECK(!previous_building_state->transport_items_present);
+    DCHECK(!previous_building_state->transport_allowed_callback);
+    DCHECK(previous_building_state->transport_items.empty());
+    DCHECK(previous_building_state->dependent_blobs.empty());
+    DCHECK(previous_building_state->copies.empty());
+    std::swap(building_state->build_completion_callbacks,
+              previous_building_state->build_completion_callbacks);
+    auto runner = base::ThreadTaskRunnerHandle::Get();
+    for (const auto& callback :
+         previous_building_state->build_started_callbacks)
+      runner->PostTask(FROM_HERE, base::BindOnce(callback, entry->status()));
+  }
 
   // Break ourselves if we have an error. BuildingState must be set first so the
   // callback is called correctly.
@@ -633,6 +682,18 @@ void BlobStorageContext::RunOnConstructionComplete(
   done.Run(entry->status());
 }
 
+void BlobStorageContext::RunOnConstructionBegin(
+    const std::string& uuid,
+    const BlobStatusCallback& done) {
+  BlobEntry* entry = registry_.GetEntry(uuid);
+  DCHECK(entry);
+  if (entry->status() == BlobStatus::PENDING_CONSTRUCTION) {
+    entry->building_state_->build_started_callbacks.push_back(done);
+    return;
+  }
+  done.Run(entry->status());
+}
+
 std::unique_ptr<BlobDataHandle> BlobStorageContext::CreateHandle(
     const std::string& uuid,
     BlobEntry* entry) {
@@ -663,6 +724,12 @@ void BlobStorageContext::CancelBuildingBlobInternal(BlobEntry* entry,
     transport_allowed_callback =
         entry->building_state_->transport_allowed_callback;
     entry->building_state_->transport_allowed_callback.Reset();
+  }
+  if (entry->building_state_ &&
+      entry->status() == BlobStatus::PENDING_CONSTRUCTION) {
+    auto runner = base::ThreadTaskRunnerHandle::Get();
+    for (const auto& callback : entry->building_state_->build_started_callbacks)
+      runner->PostTask(FROM_HERE, base::BindOnce(callback, reason));
   }
   ClearAndFreeMemory(entry);
   entry->set_status(reason);

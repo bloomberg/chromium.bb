@@ -116,7 +116,10 @@ enum class BlobStatus {
   // has been populated. See BlobEntry::BuildingState for more info.
   // TODO(dmurph): Change to PENDING_REFERENCED_BLOBS (crbug.com/670398).
   PENDING_INTERNALS = 203,
-  LAST = PENDING_INTERNALS
+  // Waiting for construction to begin.
+  PENDING_CONSTRUCTION = 204,
+  LAST_PENDING = PENDING_CONSTRUCTION,
+  LAST = LAST_PENDING
 };
 
 using BlobStatusCallback = base::Callback<void(BlobStatus)>;

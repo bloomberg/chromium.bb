@@ -65,10 +65,19 @@ class STORAGE_EXPORT BlobDataHandle
   // The callback will be run on the IO thread when construction of the blob
   // is complete. If construction is already complete, then the task is run
   // immediately on the current message loop (i.e. IO thread).
-  // Must be called on IO thread.  Returns if construction successful.
+  // Must be called on IO thread.
   // Calling this multiple times results in registering multiple
   // completion callbacks.
   void RunOnConstructionComplete(const BlobStatusCallback& done);
+
+  // The callback will be run on the IO thread when construction of the blob
+  // has began. If construction has already began (or has finished already),
+  // then the task is run immediately on the current message loop (i.e. IO
+  // thread).
+  // Must be called on IO thread.
+  // Calling this multiple times results in registering multiple
+  // callbacks.
+  void RunOnConstructionBegin(const BlobStatusCallback& done);
 
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period

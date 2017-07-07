@@ -146,6 +146,15 @@ void BlobDataHandle::RunOnConstructionComplete(const BlobStatusCallback& done) {
   shared_->context_->RunOnConstructionComplete(shared_->uuid_, done);
 }
 
+void BlobDataHandle::RunOnConstructionBegin(const BlobStatusCallback& done) {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (!shared_->context_.get()) {
+    done.Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
+    return;
+  }
+  shared_->context_->RunOnConstructionBegin(shared_->uuid_, done);
+}
+
 std::unique_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (!shared_->context_.get())

@@ -61,6 +61,7 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
     case BlobStatus::PENDING_QUOTA:
     case BlobStatus::PENDING_TRANSPORT:
     case BlobStatus::PENDING_INTERNALS:
+    case BlobStatus::PENDING_CONSTRUCTION:
       NOTREACHED();
   }
   NOTREACHED();
