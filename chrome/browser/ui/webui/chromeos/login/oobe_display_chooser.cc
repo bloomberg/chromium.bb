@@ -4,13 +4,17 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
 
+#include <stdint.h>
+
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
+#include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/display/display.h"
-#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 using content::BrowserThread;
 
@@ -22,6 +26,9 @@ bool TouchSupportAvailable(const display::Display& display) {
   return display.touch_support() ==
          display::Display::TouchSupport::TOUCH_SUPPORT_AVAILABLE;
 }
+
+// TODO(felixe): More context at crbug.com/738885
+const uint16_t kDeviceIds[] = {0x0457, 0x266e};
 
 }  // namespace
 
@@ -51,18 +58,21 @@ void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
 void OobeDisplayChooser::MoveToTouchDisplay() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const display::Displays& displays =
-      ash::Shell::Get()->display_manager()->active_only_display_list();
+  const ui::DeviceDataManager* device_manager =
+      ui::DeviceDataManager::GetInstance();
+  for (const ui::TouchscreenDevice& device :
+       device_manager->GetTouchscreenDevices()) {
+    if (!base::ContainsValue(kDeviceIds, device.vendor_id))
+      continue;
 
-  if (displays.size() <= 1)
-    return;
+    int64_t display_id =
+        device_manager->GetTargetDisplayForTouchDevice(device.id);
+    if (display_id == display::kInvalidDisplayId)
+      continue;
 
-  for (const display::Display& display : displays) {
-    if (TouchSupportAvailable(display)) {
-      ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
-          display.id());
-      break;
-    }
+    ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+        display_id);
+    break;
   }
 }
 
