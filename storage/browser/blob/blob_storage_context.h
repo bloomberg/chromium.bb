@@ -100,6 +100,25 @@ class STORAGE_EXPORT BlobStorageContext {
       const BlobDataBuilder& input_builder,
       const TransportAllowedCallback& transport_allowed_callback);
 
+  // Similar to BuildBlob, but this merely registers a blob that will be built
+  // in the future. The caller must later call either BuildPreregisteredBlob
+  // (to actually start building the blob), or CancelBuildingBlob (if an error
+  // occured).
+  // The returned BlobDataHandle (as well as any handles returned by
+  // GetBlobDataFromUUID before BuildPreregisteredBlob is called) will always
+  // have kUnknownSize for its size. A BlobDataHandle with the correct size is
+  // later returned by BuildPreregisteredBlob.
+  std::unique_ptr<BlobDataHandle> AddFutureBlob(
+      const std::string& uuid,
+      const std::string& content_type,
+      const std::string& content_disposition);
+
+  // Same as BuildBlob, but for a blob that was previously registered by calling
+  // AddFutureBlob.
+  std::unique_ptr<BlobDataHandle> BuildPreregisteredBlob(
+      const BlobDataBuilder& input_builder,
+      const TransportAllowedCallback& transport_allowed_callback);
+
   // This breaks a blob that is currently being built by using the BuildBlob
   // method above. Any callbacks waiting on this blob, including the
   // |transport_allowed_callback| callback given to BuildBlob, will be called
@@ -224,6 +243,11 @@ class STORAGE_EXPORT BlobStorageContext {
   void RunOnConstructionComplete(const std::string& uuid,
                                  const BlobStatusCallback& done_callback);
 
+  // Runs |done| when construction begins (when the blob is no longer
+  // PENDING_CONSTRUCTION) with the new status of the blob.
+  void RunOnConstructionBegin(const std::string& uuid,
+                              const BlobStatusCallback& done_callback);
+
   BlobStorageRegistry* mutable_registry() { return &registry_; }
 
   BlobMemoryController* mutable_memory_controller() {
@@ -231,6 +255,11 @@ class STORAGE_EXPORT BlobStorageContext {
   }
 
  private:
+  std::unique_ptr<BlobDataHandle> BuildBlobInternal(
+      BlobEntry* entry,
+      const BlobDataBuilder& input_builder,
+      const TransportAllowedCallback& transport_allowed_callback);
+
   std::unique_ptr<BlobDataHandle> CreateHandle(const std::string& uuid,
                                                BlobEntry* entry);
 

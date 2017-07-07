@@ -88,6 +88,10 @@ class STORAGE_EXPORT BlobEntry {
     // When our blob finishes building these callbacks are called.
     std::vector<BlobStatusCallback> build_completion_callbacks;
 
+    // When our blob is no longer in PENDING_CONSTRUCTION state these callbacks
+    // are called.
+    std::vector<BlobStatusCallback> build_started_callbacks;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(BuildingState);
   };

@@ -30,9 +30,14 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
                        const std::string& uuid) override;
 
  private:
+  class BlobUnderConstruction;
+
   BlobStorageContext* context_;
 
   mojo::BindingSet<mojom::BlobRegistry> bindings_;
+
+  std::map<std::string, std::unique_ptr<BlobUnderConstruction>>
+      blobs_under_construction_;
 
   base::WeakPtrFactory<BlobRegistryImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BlobRegistryImpl);

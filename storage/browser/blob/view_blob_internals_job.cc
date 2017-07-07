@@ -95,6 +95,9 @@ std::string StatusToString(BlobStatus status) {
     case BlobStatus::PENDING_INTERNALS:
       return "BlobStatus::PENDING_INTERNALS: Blob construction is pending on "
              "dependency blobs to finish construction.";
+    case BlobStatus::PENDING_CONSTRUCTION:
+      return "BlobStatus::PENDING_CONSTRUCTION: Blob construction is pending "
+             "on resolving the UUIDs of refereneced blobs.";
   }
   NOTREACHED();
   return "Invalid blob state.";

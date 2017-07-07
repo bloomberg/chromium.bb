@@ -29,7 +29,7 @@ bool BlobStatusIsError(BlobStatus status) {
 bool BlobStatusIsPending(BlobStatus status) {
   int status_int = static_cast<int>(status);
   return status_int >= static_cast<int>(BlobStatus::PENDING_QUOTA) &&
-         status_int <= static_cast<int>(BlobStatus::PENDING_INTERNALS);
+         status_int <= static_cast<int>(BlobStatus::LAST_PENDING);
 }
 
 bool BlobStatusIsBadIPC(BlobStatus status) {
