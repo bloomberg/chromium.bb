@@ -650,6 +650,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Must be accessed on UI thread.
   std::vector<int> aec_dump_consumers_;
+  base::Optional<bool> override_aec3_;
 
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
 
