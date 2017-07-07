@@ -86,7 +86,10 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
   //
   // TODO(hiroshige): Replace ExecuteScript() calls with ExecuteScriptBlock().
-  void ExecuteScriptBlock(PendingScript*, const KURL&);
+  //
+  // TODO(hiroshige): Currently this returns bool (true if success) only to
+  // preserve existing code structure around PrepareScript(). Clean up this.
+  bool ExecuteScriptBlock(PendingScript*, const KURL&);
 
   // Creates a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().

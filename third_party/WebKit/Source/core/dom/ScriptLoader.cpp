@@ -676,22 +676,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                         ? element_document.Url()
                         : KURL();
 
-  switch (ExecuteScript(ClassicScript::Create(
-      ScriptSourceCode(element_->TextFromChildren(), script_url, position)))) {
-    case ExecuteScriptResult::kShouldFireLoadEvent:
-      // The load event is not fired because this is an inline script.
-      return true;
-
-    case ExecuteScriptResult::kShouldFireErrorEvent:
-      DispatchErrorEvent();
-      return false;
-
-    case ExecuteScriptResult::kShouldFireNone:
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
+  return ExecuteScriptBlock(ClassicPendingScript::Create(element_, position),
+                            script_url);
 }
 
 bool ScriptLoader::FetchClassicScript(
@@ -918,7 +904,7 @@ void ScriptLoader::Execute() {
 }
 
 // https://html.spec.whatwg.org/#execute-the-script-block
-void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
+bool ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
                                       const KURL& document_url) {
   DCHECK(pending_script);
   DCHECK_EQ(pending_script->IsExternal(), is_external_script_);
@@ -933,11 +919,11 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   //     element, and abort these steps."
   if (error_occurred) {
     DispatchErrorEvent();
-    return;
+    return false;
   }
 
   if (was_canceled)
-    return;
+    return false;
 
   // Steps 3--7 are in ExecuteScript().
   switch (ExecuteScript(script)) {
@@ -946,17 +932,20 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
       //     load at the script element."
       if (is_external)
         DispatchLoadEvent();
-      break;
+      return true;
 
     case ExecuteScriptResult::kShouldFireErrorEvent:
       // Consider as if "the script's script is null" retrospectively,
       // due to CSP check failures etc., which are considered as load failure.
       DispatchErrorEvent();
-      break;
+      return false;
 
     case ExecuteScriptResult::kShouldFireNone:
-      break;
+      return true;
   }
+
+  NOTREACHED();
+  return false;
 }
 
 void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
