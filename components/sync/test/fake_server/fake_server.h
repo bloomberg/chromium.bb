@@ -146,6 +146,18 @@ class FakeServer {
   // Returns the current FakeServer as a WeakPtr.
   base::WeakPtr<FakeServer> AsWeakPtr();
 
+  using ResponseTypeProvider =
+      base::RepeatingCallback<sync_pb::CommitResponse::ResponseType(
+          const FakeServerEntity& entity)>;
+
+  // Use this callback to generate response types for entities. They will still
+  // be "committed" and stored as normal, this only affects the response type
+  // the client sees. This allows tests to still inspect what the client has
+  // done, although not as useful of a mechanism for multi client tests. Care
+  // should be taken when failing responses, as the client will go into
+  // exponential backoff, which can cause tests to be slow or time out.
+  void OverrideResponseType(ResponseTypeProvider response_type_override);
+
  private:
   using EntityMap = std::map<std::string, std::unique_ptr<FakeServerEntity>>;
 
@@ -254,6 +266,8 @@ class FakeServer {
   // The last received client to server messages.
   sync_pb::ClientToServerMessage last_commit_message_;
   sync_pb::ClientToServerMessage last_getupdates_message_;
+
+  ResponseTypeProvider response_type_override_;
 
   // Used to verify that FakeServer is only used from one thread.
   base::ThreadChecker thread_checker_;

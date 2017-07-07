@@ -401,13 +401,20 @@ string FakeServer::CommitEntity(
   return id;
 }
 
+void FakeServer::OverrideResponseType(
+    ResponseTypeProvider response_type_override) {
+  response_type_override_ = std::move(response_type_override);
+}
+
 void FakeServer::BuildEntryResponseForSuccessfulCommit(
     const std::string& entity_id,
     sync_pb::CommitResponse_EntryResponse* entry_response) {
   EntityMap::const_iterator iter = entities_.find(entity_id);
   CHECK(iter != entities_.end());
   const FakeServerEntity& entity = *iter->second;
-  entry_response->set_response_type(sync_pb::CommitResponse::SUCCESS);
+  entry_response->set_response_type(response_type_override_
+                                        ? response_type_override_.Run(entity)
+                                        : sync_pb::CommitResponse::SUCCESS);
   entry_response->set_id_string(entity.id());
 
   if (entity.IsDeleted()) {
