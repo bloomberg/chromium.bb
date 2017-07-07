@@ -44,6 +44,15 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
          url1.path_piece() == url2.path_piece();
 }
 
+bool HasHomeTile(const NTPTilesVector& tiles) {
+  for (const auto& tile : tiles) {
+    if (tile.source == TileSource::HOMEPAGE) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(
@@ -239,7 +248,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   }
 
   mv_source_ = TileSource::TOP_SITES;
-  SaveNewTilesAndNotify(std::move(tiles));
+  InitiateNotificationForNewTiles(std::move(tiles));
 }
 
 void MostVisitedSites::OnSuggestionsProfileChanged(
@@ -295,7 +304,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
   }
 
   mv_source_ = TileSource::SUGGESTIONS_SERVICE;
-  SaveNewTilesAndNotify(std::move(tiles));
+  InitiateNotificationForNewTiles(std::move(tiles));
 }
 
 NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
@@ -375,16 +384,27 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   return popular_sites_tiles;
 }
 
-NTPTilesVector MostVisitedSites::CreatePersonalTilesWithHomeTile(
-    NTPTilesVector tiles) const {
+void MostVisitedSites::OnHomePageTitleDetermined(
+    NTPTilesVector tiles,
+    const base::Optional<base::string16>& title) {
+  if (!title.has_value()) {
+    return;  // If there is no title, the most recent tile was already sent out.
+  }
+  SaveTilesAndNotify(InsertHomeTile(std::move(tiles), title.value()));
+}
+
+NTPTilesVector MostVisitedSites::InsertHomeTile(
+    NTPTilesVector tiles,
+    const base::string16& title) const {
   DCHECK(home_page_client_);
   DCHECK_GT(num_sites_, 0u);
 
-  const GURL& home_page_url = home_page_client_->GetHomepageUrl();
+  const GURL& home_page_url = home_page_client_->GetHomePageUrl();
   NTPTilesVector new_tiles;
   // Add the home tile as first tile.
   NTPTile home_tile;
   home_tile.url = home_page_url;
+  home_tile.title = title;
   home_tile.source = TileSource::HOMEPAGE;
   new_tiles.push_back(std::move(home_tile));
 
@@ -393,6 +413,7 @@ NTPTilesVector MostVisitedSites::CreatePersonalTilesWithHomeTile(
       break;
     }
 
+    // TODO(fhorschig): Introduce a more sophisticated deduplication.
     if (tile.url.host() == home_page_url.host()) {
       continue;
     }
@@ -402,13 +423,22 @@ NTPTilesVector MostVisitedSites::CreatePersonalTilesWithHomeTile(
   return new_tiles;
 }
 
-void MostVisitedSites::SaveNewTilesAndNotify(NTPTilesVector personal_tiles) {
+void MostVisitedSites::InitiateNotificationForNewTiles(
+    NTPTilesVector new_tiles) {
+  if (ShouldAddHomeTile() && !HasHomeTile(new_tiles)) {
+    home_page_client_->QueryHomePageTitle(
+        base::BindOnce(&MostVisitedSites::OnHomePageTitleDetermined,
+                       base::Unretained(this), new_tiles));
+    // Don't wait for the homepage title from history but immediately serve a
+    // copy of new tiles.
+    new_tiles = InsertHomeTile(std::move(new_tiles), base::string16());
+  }
+  SaveTilesAndNotify(std::move(new_tiles));
+}
+
+void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
   size_t num_actual_tiles = 0u;
-
-  if (ShouldAddHomeTile()) {
-    personal_tiles = CreatePersonalTilesWithHomeTile(std::move(personal_tiles));
-  }
   AddToHostsAndTotalCount(personal_tiles, &used_hosts, &num_actual_tiles);
 
   NTPTilesVector whitelist_tiles =
@@ -487,9 +517,9 @@ bool MostVisitedSites::ShouldAddHomeTile() const {
          home_page_client_ &&  // No platform-specific implementation - no tile.
          home_page_client_->IsHomePageEnabled() &&
          !home_page_client_->IsNewTabPageUsedAsHomePage() &&
-         !home_page_client_->GetHomepageUrl().is_empty() &&
+         !home_page_client_->GetHomePageUrl().is_empty() &&
          !(top_sites_ &&
-           top_sites_->IsBlacklisted(home_page_client_->GetHomepageUrl()));
+           top_sites_->IsBlacklisted(home_page_client_->GetHomePageUrl()));
 }
 
 void MostVisitedSites::AddToHostsAndTotalCount(const NTPTilesVector& new_tiles,
