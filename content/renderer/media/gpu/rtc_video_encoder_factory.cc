@@ -11,23 +11,23 @@
 #include "content/renderer/media/gpu/rtc_video_encoder.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
-#include "third_party/webrtc/common_video/h264/profile_level_id.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace content {
 
 namespace {
 
 // Translate from media::VideoEncodeAccelerator::SupportedProfile to
-// cricket::WebRtcVideoEncoderFactory::VideoCodec, or return nothing if the
-// profile isn't supported.
-base::Optional<cricket::VideoCodec> VEAToWebRTCCodec(
+// one or more instances of cricket::WebRtcVideoEncoderFactory::VideoCodec
+void VEAToWebRTCCodecs(
+    std::vector<cricket::VideoCodec>* codecs,
     const media::VideoEncodeAccelerator::SupportedProfile& profile) {
   DCHECK_EQ(profile.max_framerate_denominator, 1U);
 
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
     if (base::FeatureList::IsEnabled(features::kWebRtcHWVP8Encoding)) {
-      return base::Optional<cricket::VideoCodec>(cricket::VideoCodec("VP8"));
+      codecs->push_back(cricket::VideoCodec("VP8"));
     }
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
@@ -41,41 +41,10 @@ base::Optional<cricket::VideoCodec> VEAToWebRTCCodec(
 #endif  // BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
     if (webrtc_h264_sw_enabled ||
         base::FeatureList::IsEnabled(features::kWebRtcHWH264Encoding)) {
-      webrtc::H264::Profile h264_profile;
-      switch (profile.profile) {
-        case media::H264PROFILE_BASELINE:
-          h264_profile = webrtc::H264::kProfileBaseline;
-          break;
-        case media::H264PROFILE_MAIN:
-          h264_profile = webrtc::H264::kProfileMain;
-          break;
-        case media::H264PROFILE_HIGH:
-          h264_profile = webrtc::H264::kProfileHigh;
-          break;
-        default:
-          // Unsupported H264 profile in WebRTC.
-          return base::Optional<cricket::VideoCodec>();
-      }
-
-      const int width = profile.max_resolution.width();
-      const int height = profile.max_resolution.height();
-      const int fps = profile.max_framerate_numerator;
-      DCHECK_EQ(1u, profile.max_framerate_denominator);
-
-      const rtc::Optional<webrtc::H264::Level> h264_level =
-          webrtc::H264::SupportedLevel(width * height, fps);
-      const webrtc::H264::ProfileLevelId profile_level_id(
-          h264_profile, h264_level.value_or(webrtc::H264::kLevel1));
-
-      cricket::VideoCodec codec("H264");
-      codec.SetParam(cricket::kH264FmtpProfileLevelId,
-                     *webrtc::H264::ProfileLevelIdToString(profile_level_id));
-      codec.SetParam(cricket::kH264FmtpLevelAsymmetryAllowed, "1");
-      codec.SetParam(cricket::kH264FmtpPacketizationMode, "1");
-      return base::Optional<cricket::VideoCodec>(codec);
+      // TODO(magjed): Propagate H264 profile information.
+      codecs->push_back(cricket::VideoCodec("H264"));
     }
   }
-  return base::Optional<cricket::VideoCodec>();
 }
 
 }  // anonymous namespace
@@ -85,36 +54,20 @@ RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     : gpu_factories_(gpu_factories) {
   const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
       gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
-  for (const auto& profile : profiles) {
-    base::Optional<cricket::VideoCodec> codec = VEAToWebRTCCodec(profile);
-    if (codec) {
-      supported_codecs_.push_back(std::move(*codec));
-      profiles_.push_back(profile.profile);
-    }
-  }
-  // There should be a 1:1 mapping between media::VideoCodecProfile and
-  // cricket::VideoCodec.
-  CHECK_EQ(profiles_.size(), supported_codecs_.size());
+  for (const auto& profile : profiles)
+    VEAToWebRTCCodecs(&supported_codecs_, profile);
 }
 
 RTCVideoEncoderFactory::~RTCVideoEncoderFactory() {}
 
 webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
     const cricket::VideoCodec& codec) {
-  for (size_t i = 0; i < supported_codecs_.size(); ++i) {
-    if (!cricket::CodecNamesEq(codec.name, supported_codecs_[i].name))
-      continue;
-    // Check H264 profile.
-    using webrtc::H264::ParseSdpProfileLevelId;
-    if (cricket::CodecNamesEq(codec.name.c_str(), cricket::kH264CodecName) &&
-        ParseSdpProfileLevelId(codec.params)->profile !=
-            ParseSdpProfileLevelId(supported_codecs_[i].params)->profile) {
-      continue;
+  for (const cricket::VideoCodec& supported_codec : supported_codecs_) {
+    if (cricket::CodecNamesEq(codec.name, supported_codec.name)) {
+      webrtc::VideoCodecType type = webrtc::PayloadNameToCodecType(codec.name)
+                                        .value_or(webrtc::kVideoCodecUnknown);
+      return new RTCVideoEncoder(type, gpu_factories_);
     }
-    // There should be a 1:1 mapping between media::VideoCodecProfile and
-    // cricket::VideoCodec.
-    CHECK_EQ(profiles_.size(), supported_codecs_.size());
-    return new RTCVideoEncoder(profiles_[i], gpu_factories_);
   }
   return nullptr;
 }
