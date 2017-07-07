@@ -28,7 +28,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::WebViewContainingText;
 using web::test::HttpServer;
 
 namespace {

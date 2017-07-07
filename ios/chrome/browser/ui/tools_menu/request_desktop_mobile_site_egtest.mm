@@ -27,8 +27,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::WebViewContainingText;
-
 namespace {
 
 const char kUserAgentTestURL[] =
@@ -95,20 +93,17 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that desktop user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 }
 
 // Tests that requesting desktop site of a page works and desktop user agent
@@ -120,21 +115,18 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that desktop user agent does not propagate to new tab.
   [ChromeEarlGreyUI openNewTab];
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 }
 
 // Tests that requesting desktop site of a page works and going back re-opens
@@ -146,21 +138,18 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Verify that going back returns to the mobile site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 }
 
 // Tests that requesting mobile site of a page works and the user agent
@@ -176,27 +165,23 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Verify that mobile user agent propagates.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 }
 
 // Tests that requesting mobile site of a page works and going back re-opens
@@ -212,28 +197,24 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Verify that going back returns to the desktop site.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 }
 
 // Tests that requesting desktop site button is not enabled on new tab pages.
@@ -264,15 +245,13 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 }
 
 // Tests that navigator.appVersion JavaScript API returns correct string for
@@ -285,22 +264,19 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 
   // Request and verify reception of the desktop site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestDesktopButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDesktopSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDesktopSiteLabel];
 
   // Request and verify reception of the mobile site.
   [ChromeEarlGreyUI openToolsMenu];
   [[EarlGrey selectElementWithMatcher:RequestMobileButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kMobileSiteLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kMobileSiteLabel];
 }
 
 @end

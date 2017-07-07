@@ -31,9 +31,6 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 // accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
 
-// Returns matcher for webview containing |text|.
-id<GREYMatcher> WebViewContainingText(std::string text);
-
 // Returns matcher for webview not containing |text|.
 id<GREYMatcher> WebViewNotContainingText(std::string text);
 
