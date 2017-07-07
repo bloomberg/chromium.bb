@@ -36,7 +36,7 @@
 #include "core/HTMLNames.h"
 #include "core/XMLNSNames.h"
 #include "core/dom/CDATASection.h"
-#include "core/dom/ClassicScript.h"
+#include "core/dom/ClassicPendingScript.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -1136,18 +1136,10 @@ void XMLDocumentParser::EndElementNs() {
 
     if (script_loader->ReadyToBeParserExecuted()) {
       // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
-      switch (script_loader->ExecuteScript(ClassicScript::Create(
-          ScriptSourceCode(script_element_base->TextFromChildren(),
-                           GetDocument()->Url(), script_start_position_)))) {
-        case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
-          script_loader->DispatchErrorEvent();
-          return;
-        case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
-          // The load event is not fired because this is an inline script.
-          break;
-        case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
-          break;
-      }
+      script_loader->ExecuteScriptBlock(
+          ClassicPendingScript::Create(script_element_base,
+                                       script_start_position_),
+          GetDocument()->Url());
     } else if (script_loader->WillBeParserExecuted()) {
       // 1st/2nd Clauses, Step 23 of
       // https://html.spec.whatwg.org/#prepare-a-script
