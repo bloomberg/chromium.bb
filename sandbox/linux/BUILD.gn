@@ -221,6 +221,8 @@ component("seccomp_bpf") {
     "bpf_dsl/trap_registry.h",
     "seccomp-bpf-helpers/baseline_policy.cc",
     "seccomp-bpf-helpers/baseline_policy.h",
+    "seccomp-bpf-helpers/baseline_policy_android.cc",
+    "seccomp-bpf-helpers/baseline_policy_android.h",
     "seccomp-bpf-helpers/sigsys_handlers.cc",
     "seccomp-bpf-helpers/sigsys_handlers.h",
     "seccomp-bpf-helpers/syscall_parameters_restrictions.cc",
