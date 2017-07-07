@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_COMMON_MEMORY_STATS_STRUCT_TRAITS_H_
 #define GPU_IPC_COMMON_MEMORY_STATS_STRUCT_TRAITS_H_
 
+#include "build/build_config.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/common/memory_stats.mojom-shared.h"
 
@@ -36,7 +37,7 @@ struct StructTraits<gpu::mojom::VideoMemoryUsageStatsDataView,
                     gpu::VideoMemoryUsageStats> {
   static std::map<int32_t, gpu::VideoMemoryUsageStats::ProcessStats>
   process_map(const gpu::VideoMemoryUsageStats& stats) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
     std::map<int32_t, gpu::VideoMemoryUsageStats::ProcessStats> map;
     for (const auto& pair : stats.process_map)
       map[static_cast<int32_t>(pair.first)] = pair.second;
@@ -52,7 +53,7 @@ struct StructTraits<gpu::mojom::VideoMemoryUsageStatsDataView,
 
   static bool Read(gpu::mojom::VideoMemoryUsageStatsDataView data,
                    gpu::VideoMemoryUsageStats* out) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
     std::map<int32_t, gpu::VideoMemoryUsageStats::ProcessStats> process_map;
     if (!data.ReadProcessMap(&process_map))
       return false;
