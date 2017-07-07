@@ -24,6 +24,11 @@
 #import "components/constrained_window/native_web_contents_modal_dialog_manager_views_mac.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#include "ui/compositor/dip_util.h"
+#endif
+
 using web_modal::ModalDialogHost;
 using web_modal::ModalDialogHostObserver;
 
@@ -126,6 +131,19 @@ void UpdateModalDialogPosition(views::Widget* widget,
   }
 
   widget->SetBounds(gfx::Rect(position, size));
+
+#if defined(USE_AURA)
+  if (!widget->is_top_level()) {
+    // Toplevel windows are automatiacally snapped, but CHILD windows
+    // may not. If it's not toplevel, snap the widget's layer to pixel
+    // based on the parent toplevel window, which should be snapped.
+    gfx::NativeView window = widget->GetNativeView();
+    views::Widget* toplevel =
+        views::Widget::GetTopLevelWidgetForNativeView(window->parent());
+    ui::SnapLayerToPhysicalPixelBoundary(toplevel->GetLayer(),
+                                         widget->GetLayer());
+  }
+#endif
 }
 
 }  // namespace
