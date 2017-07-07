@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -22,6 +23,12 @@
 
 namespace identity {
 namespace {
+
+#if defined(OS_CHROMEOS)
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
 
 const std::string kTestGaiaId = "dummyId";
 const std::string kTestEmail = "me@dummy.com";
@@ -81,7 +88,14 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   IdentityManagerTest()
       : ServiceTest("identity_unittests", false),
         signin_client_(&pref_service_),
+#if defined(OS_CHROMEOS)
         signin_manager_(&signin_client_, &account_tracker_) {
+#else
+        signin_manager_(&signin_client_,
+                        &token_service_,
+                        &account_tracker_,
+                        nullptr) {
+#endif
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -162,7 +176,7 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
-  FakeSigninManagerBase signin_manager_;
+  SigninManagerForTest signin_manager_;
   FakeProfileOAuth2TokenService token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
@@ -334,6 +348,65 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableTokenAvailableLater) {
   EXPECT_TRUE(account_state.has_refresh_token);
   EXPECT_TRUE(account_state.is_primary_account);
 }
+
+// Check that GetPrimaryAccountWhenAvailable() returns the expected account info
+// in the case where the token is available before the call is received but the
+// account is made authenticated only *after* the call is received. This test is
+// relevant only on non-ChromeOS platforms, as the flow being tested here is not
+// possible on ChromeOS.
+#if !defined(OS_CHROMEOS)
+TEST_F(IdentityManagerTest,
+       GetPrimaryAccountWhenAvailableAuthenticationAvailableLater) {
+  AccountInfo account_info;
+  AccountState account_state;
+
+  // Set the refresh token, but don't sign in yet.
+  std::string account_id_to_use =
+      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(account_id_to_use, kTestRefreshToken);
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info),
+      base::Unretained(&account_state)));
+
+  // Verify that the account is present and has a refresh token, but that the
+  // primary account is not yet considered available (this also serves to ensure
+  // that the preceding call has been received by the Identity Manager before
+  // proceeding).
+  base::RunLoop run_loop2;
+  identity_manager_->GetAccountInfoFromGaiaId(
+      kTestGaiaId,
+      base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
+                 base::Unretained(this), run_loop2.QuitClosure()));
+  run_loop2.Run();
+
+  EXPECT_TRUE(account_info_from_gaia_id_);
+  EXPECT_EQ(account_id_to_use, account_info_from_gaia_id_->account_id);
+  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
+  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
+  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
+  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
+
+  EXPECT_TRUE(account_info.account_id.empty());
+
+  // Sign the user in and check that the callback is invoked as expected (i.e.,
+  // the primary account is now considered available). Note that it is necessary
+  // to call SignIn() here to ensure that GoogleSigninSucceeded() is fired by
+  // the fake signin manager.
+  static_cast<FakeSigninManager*>(signin_manager())
+      ->SignIn(kTestGaiaId, kTestEmail, "password");
+
+  run_loop.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_TRUE(account_state.has_refresh_token);
+  EXPECT_TRUE(account_state.is_primary_account);
+}
+#endif
 
 // Check that GetPrimaryAccountWhenAvailable() returns the expected account
 // info to all callers in the case where the primary account is made available
