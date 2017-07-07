@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1271,9 +1272,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            referrer_chain.Get(3));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_SubFrameNewTabDownload DISABLED_SubFrameNewTabDownload
+#else
+#define MAYBE_SubFrameNewTabDownload SubFrameNewTabDownload
+#endif
 // Click a link in a subframe and open download in a new tab.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       SubFrameNewTabDownload) {
+                       MAYBE_SubFrameNewTabDownload) {
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   ClickTestLink("sub_frame_download_attribution", 1, initial_url);
   std::string test_name =
