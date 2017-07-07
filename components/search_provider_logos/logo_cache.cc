@@ -57,16 +57,16 @@ LogoCache::LogoCache(const base::FilePath& cache_directory)
     : cache_directory_(cache_directory),
       metadata_is_valid_(false) {
   // The LogoCache can be constructed on any thread, as long as it's used
-  // on a single thread after construction.
-  thread_checker_.DetachFromThread();
+  // on a single sequence after construction.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 LogoCache::~LogoCache() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void LogoCache::UpdateCachedLogoMetadata(const LogoMetadata& metadata) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_);
   DCHECK_EQ(metadata_->fingerprint, metadata.fingerprint);
 
@@ -75,24 +75,24 @@ void LogoCache::UpdateCachedLogoMetadata(const LogoMetadata& metadata) {
 }
 
 const LogoMetadata* LogoCache::GetCachedLogoMetadata() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ReadMetadataIfNeeded();
   return metadata_.get();
 }
 
 void LogoCache::SetCachedLogo(const EncodedLogo* logo) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<LogoMetadata> metadata;
   if (logo) {
-    metadata.reset(new LogoMetadata(logo->metadata));
+    metadata = base::MakeUnique<LogoMetadata>(logo->metadata);
     logo_num_bytes_ = static_cast<int>(logo->encoded_image->size());
   }
   UpdateMetadata(std::move(metadata));
-  WriteLogo(logo ? logo->encoded_image : NULL);
+  WriteLogo(logo ? logo->encoded_image : nullptr);
 }
 
 std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ReadMetadataIfNeeded();
   if (!metadata_)

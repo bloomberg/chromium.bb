@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -188,7 +189,7 @@ void ExpectLogosEqual(const Logo* expected_logo,
   Logo actual_logo;
   if (actual_encoded_logo)
     actual_logo = DecodeLogo(*actual_encoded_logo);
-  ExpectLogosEqual(expected_logo, actual_encoded_logo ? &actual_logo : NULL);
+  ExpectLogosEqual(expected_logo, actual_encoded_logo ? &actual_logo : nullptr);
 }
 
 ACTION_P(ExpectLogosEqualAction, expected_logo) {
@@ -234,18 +235,18 @@ class MockLogoCache : public LogoCache {
     logo_->metadata = metadata;
   }
 
-  virtual const LogoMetadata* GetCachedLogoMetadataInternal() {
+  const LogoMetadata* GetCachedLogoMetadataInternal() {
     return metadata_.get();
   }
 
-  virtual void SetCachedLogoInternal(const EncodedLogo* logo) {
-    logo_.reset(logo ? new EncodedLogo(*logo) : NULL);
-    metadata_.reset(logo ? new LogoMetadata(logo->metadata) : NULL);
+  void SetCachedLogoInternal(const EncodedLogo* logo) {
+    logo_ = logo ? base::MakeUnique<EncodedLogo>(*logo) : nullptr;
+    metadata_ = logo ? base::MakeUnique<LogoMetadata>(logo->metadata) : nullptr;
   }
 
   std::unique_ptr<EncodedLogo> GetCachedLogo() override {
     OnGetCachedLogo();
-    return base::WrapUnique(logo_ ? new EncodedLogo(*logo_) : NULL);
+    return logo_ ? base::MakeUnique<EncodedLogo>(*logo_) : nullptr;
   }
 
  private:
@@ -274,7 +275,7 @@ class MockLogoObserver : public LogoObserver {
   void ExpectFreshLogo(const Logo* expected_fresh_logo) {
     Mock::VerifyAndClearExpectations(this);
     EXPECT_CALL(*this, OnLogoAvailable(_, true)).Times(0);
-    EXPECT_CALL(*this, OnLogoAvailable(NULL, true));
+    EXPECT_CALL(*this, OnLogoAvailable(nullptr, true));
     EXPECT_CALL(*this, OnLogoAvailable(_, false))
         .WillOnce(ExpectLogosEqualAction(expected_fresh_logo));
     EXPECT_CALL(*this, OnObserverRemoved()).Times(1);
@@ -314,32 +315,29 @@ class TestLogoDelegate : public LogoDelegate {
 class LogoTrackerTest : public ::testing::Test {
  protected:
   LogoTrackerTest()
-      : message_loop_(new base::MessageLoop()),
-        logo_url_("https://google.com/doodleoftheday?size=hp"),
+      : logo_url_("https://google.com/doodleoftheday?size=hp"),
         test_clock_(new base::SimpleTestClock()),
         logo_cache_(new NiceMock<MockLogoCache>()),
-        fake_url_fetcher_factory_(NULL) {
+        fake_url_fetcher_factory_(nullptr) {
     test_clock_->SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
     logo_tracker_ =
-        new LogoTracker(base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
-                        base::ThreadTaskRunnerHandle::Get(),
-                        new net::TestURLRequestContextGetter(
-                            base::ThreadTaskRunnerHandle::Get()),
-                        std::unique_ptr<LogoDelegate>(new TestLogoDelegate()));
+        base::MakeUnique<LogoTracker>(base::FilePath(),
+                                      new net::TestURLRequestContextGetter(
+                                          base::ThreadTaskRunnerHandle::Get()),
+                                      base::MakeUnique<TestLogoDelegate>());
     logo_tracker_->SetServerAPI(
         logo_url_, base::Bind(&GoogleParseLogoResponse),
         base::Bind(&GoogleAppendQueryparamsToLogoURL, false));
-    logo_tracker_->SetClockForTests(std::unique_ptr<base::Clock>(test_clock_));
-    logo_tracker_->SetLogoCacheForTests(
-        std::unique_ptr<LogoCache>(logo_cache_));
+    logo_tracker_->SetClockForTests(base::WrapUnique(test_clock_));
+    logo_tracker_->SetLogoCacheForTests(base::WrapUnique(logo_cache_));
   }
 
-  virtual void TearDown() {
-    // logo_tracker_ owns logo_cache_, which gets destructed on the file thread
-    // after logo_tracker_'s destruction. Ensure that logo_cache_ is actually
-    // destructed before the test ends to make gmock happy.
-    delete logo_tracker_;
-    base::RunLoop().RunUntilIdle();
+  void TearDown() override {
+    // |logo_tracker_| owns |logo_cache_|, which gets destroyed on a background
+    // sequence after |logo_tracker_|s destruction. Ensure that |logo_cache_| is
+    // actually destroyed before the test ends to make gmock happy.
+    logo_tracker_.reset();
+    task_environment_.RunUntilIdle();
   }
 
   // Returns the response that the server would send for the given logo.
@@ -360,16 +358,16 @@ class LogoTrackerTest : public ::testing::Test {
           net::URLRequestStatus::SUCCESS,
       net::HttpStatusCode response_code = net::HTTP_OK);
 
-  // Calls logo_tracker_->GetLogo() with listener_ and waits for the
+  // Calls logo_tracker_->GetLogo() with |observer_| and waits for the
   // asynchronous response(s).
   void GetLogo();
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   GURL logo_url_;
   base::SimpleTestClock* test_clock_;
   NiceMock<MockLogoCache>* logo_cache_;
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
-  LogoTracker* logo_tracker_;
+  std::unique_ptr<LogoTracker> logo_tracker_;
   NiceMock<MockLogoObserver> observer_;
 };
 
@@ -401,7 +399,7 @@ void LogoTrackerTest::SetServerResponseWhenFingerprint(
 
 void LogoTrackerTest::GetLogo() {
   logo_tracker_->GetLogo(&observer_);
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests -----------------------------------------------------------------------
@@ -441,18 +439,18 @@ TEST_F(LogoTrackerTest, DownloadAndCacheLogo) {
 TEST_F(LogoTrackerTest, EmptyCacheAndFailedDownload) {
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
-  EXPECT_CALL(*logo_cache_, SetCachedLogo(NULL)).Times(AnyNumber());
+  EXPECT_CALL(*logo_cache_, SetCachedLogo(nullptr)).Times(AnyNumber());
 
   SetServerResponse("server is borked");
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 
   SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 
   SetServerResponse("", net::URLRequestStatus::SUCCESS, net::HTTP_BAD_GATEWAY);
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 }
 
@@ -506,7 +504,7 @@ TEST_F(LogoTrackerTest, ValidateCachedLogo) {
   observer_.ExpectCachedLogo(&cached_logo);
   GetLogo();
 
-  EXPECT_TRUE(logo_cache_->GetCachedLogoMetadata() != NULL);
+  ASSERT_TRUE(logo_cache_->GetCachedLogoMetadata());
   EXPECT_EQ(fresh_logo.metadata.expiration_time,
             logo_cache_->GetCachedLogoMetadata()->expiration_time);
 
@@ -571,10 +569,10 @@ TEST_F(LogoTrackerTest, InvalidateCachedLogo) {
   SetServerResponseWhenFingerprint(cached_logo.metadata.fingerprint,
                                    ")]}' {\"update\":{}}");
 
-  logo_cache_->ExpectSetCachedLogo(NULL);
+  logo_cache_->ExpectSetCachedLogo(nullptr);
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
-  observer_.ExpectCachedAndFreshLogos(&cached_logo, NULL);
+  observer_.ExpectCachedAndFreshLogos(&cached_logo, nullptr);
 
   GetLogo();
 }
@@ -587,9 +585,9 @@ TEST_F(LogoTrackerTest, DeleteCachedLogoFromOldUrl) {
 
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
-  EXPECT_CALL(*logo_cache_, SetCachedLogo(NULL)).Times(AnyNumber());
+  EXPECT_CALL(*logo_cache_, SetCachedLogo(nullptr)).Times(AnyNumber());
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 }
 
@@ -602,7 +600,7 @@ TEST_F(LogoTrackerTest, LogoWithTTLCannotBeShownAfterExpiration) {
 
   const LogoMetadata* cached_metadata =
       logo_cache_->GetCachedLogoMetadata();
-  EXPECT_TRUE(cached_metadata != NULL);
+  ASSERT_TRUE(cached_metadata);
   EXPECT_FALSE(cached_metadata->can_show_after_expiration);
   EXPECT_EQ(test_clock_->Now() + time_to_live,
             cached_metadata->expiration_time);
@@ -616,7 +614,7 @@ TEST_F(LogoTrackerTest, LogoWithoutTTLCanBeShownAfterExpiration) {
 
   const LogoMetadata* cached_metadata =
       logo_cache_->GetCachedLogoMetadata();
-  EXPECT_TRUE(cached_metadata != NULL);
+  ASSERT_TRUE(cached_metadata);
   EXPECT_TRUE(cached_metadata->can_show_after_expiration);
   EXPECT_EQ(test_clock_->Now() + base::TimeDelta::FromDays(30),
             cached_metadata->expiration_time);
@@ -665,9 +663,9 @@ TEST_F(LogoTrackerTest, DeleteAncientCachedLogo) {
 
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
-  EXPECT_CALL(*logo_cache_, SetCachedLogo(NULL)).Times(AnyNumber());
+  EXPECT_CALL(*logo_cache_, SetCachedLogo(nullptr)).Times(AnyNumber());
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 }
 
@@ -681,9 +679,9 @@ TEST_F(LogoTrackerTest, DeleteExpiredCachedLogo) {
 
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
-  EXPECT_CALL(*logo_cache_, SetCachedLogo(NULL)).Times(AnyNumber());
+  EXPECT_CALL(*logo_cache_, SetCachedLogo(nullptr)).Times(AnyNumber());
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
-  observer_.ExpectCachedLogo(NULL);
+  observer_.ExpectCachedLogo(nullptr);
   GetLogo();
 }
 
@@ -715,16 +713,16 @@ TEST_F(LogoTrackerTest, SupportOverlappingLogoRequests) {
   const int kNumListeners = 10;
   std::vector<std::unique_ptr<MockLogoObserver>> listeners;
   for (int i = 0; i < kNumListeners; ++i) {
-    MockLogoObserver* listener = new MockLogoObserver();
+    auto listener = base::MakeUnique<MockLogoObserver>();
     listener->ExpectCachedAndFreshLogos(&cached_logo, &fresh_logo);
-    listeners.push_back(base::WrapUnique(listener));
+    listeners.push_back(std::move(listener));
   }
-  EnqueueObservers(logo_tracker_, listeners, 0);
+  EnqueueObservers(logo_tracker_.get(), listeners, 0);
 
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(AtMost(3));
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(3));
 
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(LogoTrackerTest, DeleteObserversWhenLogoURLChanged) {
@@ -743,7 +741,7 @@ TEST_F(LogoTrackerTest, DeleteObserversWhenLogoURLChanged) {
   listener2.ExpectFreshLogo(&logo);
   logo_tracker_->GetLogo(&listener2);
 
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace

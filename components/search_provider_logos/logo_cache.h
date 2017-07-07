@@ -43,14 +43,14 @@ class LogoCache {
   // Updates the metadata for the cached logo.
   virtual void UpdateCachedLogoMetadata(const LogoMetadata& metadata);
 
-  // Returns metadata for the cached logo, or NULL if logo is cached.
+  // Returns metadata for the cached logo, or null if logo is cached.
   virtual const LogoMetadata* GetCachedLogoMetadata();
 
-  // Sets the cached logo and metadata. |logo| may be NULL, in which case the
+  // Sets the cached logo and metadata. |logo| may be null, in which case the
   // cached logo and metadata will be cleared.
   virtual void SetCachedLogo(const EncodedLogo* logo);
 
-  // Returns the cached logo, or NULL if no logo is cached or the cached logo is
+  // Returns the cached logo, or null if no logo is cached or the cached logo is
   // corrupt.
   virtual std::unique_ptr<EncodedLogo> GetCachedLogo();
 
@@ -62,7 +62,7 @@ class LogoCache {
   FRIEND_TEST_ALL_PREFIXES(LogoCacheTest, RetrieveCorruptMetadata);
   FRIEND_TEST_ALL_PREFIXES(LogoCacheTest, RetrieveCorruptLogo);
 
-  // Converts string |str| to a LogoMetadata object and returns it. Returns NULL
+  // Converts string |str| to a LogoMetadata object and returns it. Returns null
   // if |str| cannot be converted.
   static std::unique_ptr<LogoMetadata> LogoMetadataFromString(
       const std::string& str,
@@ -84,7 +84,7 @@ class LogoCache {
 
   // If the cached logo's metadata isn't available in memory (i.e.
   // |metadata_is_valid_| is false), reads it from disk and stores it in
-  // |metadata_|. If no logo is cached, |metadata_| will be updated to NULL.
+  // |metadata_|. If no logo is cached, |metadata_| will be updated to null.
   void ReadMetadataIfNeeded();
 
   // Writes the metadata for the cached logo to disk.
@@ -104,9 +104,9 @@ class LogoCache {
   // The directory in which the cached logo and metadata will be saved.
   base::FilePath cache_directory_;
 
-  // The metadata describing the cached logo, or NULL if no logo is cached. This
+  // The metadata describing the cached logo, or null if no logo is cached. This
   // value is meaningful iff |metadata_is_valid_| is true; otherwise, the
-  // metadata must be read from file and |metadata_| will be NULL.
+  // metadata must be read from file and |metadata_| will be null.
   // Note: Once read from file, metadata will be stored in memory indefinitely.
   std::unique_ptr<LogoMetadata> metadata_;
   bool metadata_is_valid_;
@@ -116,8 +116,8 @@ class LogoCache {
   // is complete and corresponds to the current metadata file.
   int logo_num_bytes_;
 
-  // Ensure LogoCache is only used on a single thread.
-  base::ThreadChecker thread_checker_;
+  // Ensure LogoCache is only used sequentially.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(LogoCache);
 };
