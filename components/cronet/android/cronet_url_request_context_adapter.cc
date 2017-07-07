@@ -1027,7 +1027,7 @@ void CronetURLRequestContextAdapter::StartNetLogOnNetworkThread(
   if (net_log_file_observer_)
     return;
   net_log_file_observer_ = net::FileNetLogObserver::CreateUnbounded(
-      GetFileThread()->task_runner(), file_path, /*constants=*/nullptr);
+      file_path, /*constants=*/nullptr);
   CreateNetLogEntriesForActiveObjects({context_.get()},
                                       net_log_file_observer_.get());
   net::NetLogCaptureMode capture_mode =
@@ -1052,8 +1052,7 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
   DCHECK(base::PathIsWritable(file_path));
 
   net_log_file_observer_ = net::FileNetLogObserver::CreateBounded(
-      GetFileThread()->task_runner(), file_path, size, kNumNetLogEventFiles,
-      /*constants=*/nullptr);
+      file_path, size, kNumNetLogEventFiles, /*constants=*/nullptr);
 
   CreateNetLogEntriesForActiveObjects({context_.get()},
                                       net_log_file_observer_.get());

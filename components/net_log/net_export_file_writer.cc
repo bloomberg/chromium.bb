@@ -184,9 +184,9 @@ void NetExportFileWriter::StartNetLog(
 
   std::unique_ptr<base::Value> constants(
       ChromeNetLog::GetConstants(command_line_string, channel_string));
-  // Instantiate a FileNetLogObserver in unbounded mode.
-  file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
-      file_task_runner_, log_path_, std::move(constants));
+
+  file_net_log_observer_ =
+      net::FileNetLogObserver::CreateUnbounded(log_path_, std::move(constants));
 
   net_task_runner_->PostTaskAndReply(
       FROM_HERE,
