@@ -12,7 +12,6 @@ static_library("discovery") {
     "//base:i18n",
     "//chrome/app:generated_resources",
     "//chrome/common:constants",
-    "//components/cast_channel",
     "//content/public/browser",
     "//content/public/common",
   ]
@@ -35,8 +34,6 @@ static_library("discovery") {
     "dial/parsed_dial_device_description.h",
     "dial/safe_dial_device_description_parser.cc",
     "dial/safe_dial_device_description_parser.h",
-    "mdns/cast_media_sink_service.cc",
-    "mdns/cast_media_sink_service.h",
     "mdns/dns_sd_delegate.cc",
     "mdns/dns_sd_delegate.h",
     "mdns/dns_sd_device_lister.cc",
