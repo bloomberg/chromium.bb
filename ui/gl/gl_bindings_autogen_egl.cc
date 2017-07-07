@@ -164,8 +164,6 @@ void DriverEGL::InitializeExtensionBindings() {
   ext.b_EGL_KHR_image = extensions.find("EGL_KHR_image ") != std::string::npos;
   ext.b_EGL_KHR_image_base =
       extensions.find("EGL_KHR_image_base ") != std::string::npos;
-  ext.b_EGL_KHR_reusable_sync =
-      extensions.find("EGL_KHR_reusable_sync ") != std::string::npos;
   ext.b_EGL_KHR_stream =
       extensions.find("EGL_KHR_stream ") != std::string::npos;
   ext.b_EGL_KHR_stream_consumer_gltexture =

@@ -219,7 +219,6 @@ struct ExtensionsEGL {
   bool b_EGL_KHR_gl_texture_2D_image;
   bool b_EGL_KHR_image;
   bool b_EGL_KHR_image_base;
-  bool b_EGL_KHR_reusable_sync;
   bool b_EGL_KHR_stream;
   bool b_EGL_KHR_stream_consumer_gltexture;
   bool b_EGL_KHR_swap_buffers_with_damage;
