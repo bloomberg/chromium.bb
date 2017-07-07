@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "net/base/hash_value.h"
 #include "net/cert/cert_verifier.h"
+#include "net/http/http_network_session.h"
 #include "net/nqe/effective_connection_type.h"
 
 namespace base {
@@ -186,6 +187,7 @@ struct URLRequestContextConfig {
   // the URLRequestContextConfig and URLRequestContextBuilder.
   void ParseAndSetExperimentalOptions(
       net::URLRequestContextBuilder* context_builder,
+      net::HttpNetworkSession::Params* session_params,
       net::NetLog* net_log,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
 
@@ -193,7 +195,8 @@ struct URLRequestContextConfig {
   // experiments and their corresponding configuration options. The format
   // is a JSON object with the name of the experiment as the key, and the
   // configuration options as the value. An example:
-  //   {"experiment1": {"option1": "option_value1", "option2": "option_value2",
+  //   {"experiment1": {"option1": "option_value1", "option2":
+  //   "option_value2",
   //    ...}, "experiment2: {"option3", "option_value3", ...}, ...}
   const std::string experimental_options;
 
