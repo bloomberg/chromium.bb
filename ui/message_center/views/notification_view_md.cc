@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -221,11 +222,14 @@ void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
 
 // This class is needed in addition to LabelButton mainly becuase we want to set
 // visible_opacity of InkDropHighlight.
+// This button capitalizes the given label string.
 class NotificationButtonMD : public views::LabelButton {
  public:
   NotificationButtonMD(views::ButtonListener* listener,
                        const base::string16& text);
   ~NotificationButtonMD() override;
+
+  void SetText(const base::string16& text) override;
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
@@ -236,7 +240,10 @@ class NotificationButtonMD : public views::LabelButton {
 
 NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
                                            const base::string16& text)
-    : views::LabelButton(listener, text, views::style::CONTEXT_BUTTON_MD) {
+    : views::LabelButton(listener,
+                         base::i18n::ToUpper(text),
+                         views::style::CONTEXT_BUTTON_MD) {
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetInkDropMode(views::LabelButton::InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(kActionButtonInkDropBaseColor);
@@ -248,6 +255,10 @@ NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
 }
 
 NotificationButtonMD::~NotificationButtonMD() = default;
+
+void NotificationButtonMD::SetText(const base::string16& text) {
+  views::LabelButton::SetText(base::i18n::ToUpper(text));
+}
 
 std::unique_ptr<views::InkDropHighlight>
 NotificationButtonMD::CreateInkDropHighlight() const {
