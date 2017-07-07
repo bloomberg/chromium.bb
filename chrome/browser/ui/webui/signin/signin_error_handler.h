@@ -66,6 +66,16 @@ class SigninErrorHandler : public content::WebUIMessageHandler,
   // its members after this call.
   void CloseDialog();
 
+  // Closes the modal sign-in view dialog.
+  //
+  // Virtual, so that it can be overriden from unit tests.
+  virtual void CloseBrowserModalSigninDialog();
+
+  // Closes the user manager profile dialog.
+  //
+  // Virtual, so that it can be overriden from unit tests.
+  virtual void CloseUserManagerProfileDialog();
+
  private:
   // Weak reference to the browser that showed the sign-in error dialog.
   // This is null when this sign-in error dialog is presented from the user
