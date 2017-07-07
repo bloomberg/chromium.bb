@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
+#include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -119,12 +120,10 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
           screen_list = base::MakeUnique<DesktopMediaListAsh>(
               DesktopMediaID::TYPE_SCREEN);
 #else   // !defined(USE_ASH)
-          webrtc::DesktopCaptureOptions capture_options =
-              webrtc::DesktopCaptureOptions::CreateDefault();
-          capture_options.set_disable_effects(false);
           screen_list = base::MakeUnique<NativeDesktopMediaList>(
-              DesktopMediaID::TYPE_SCREEN,
-              webrtc::DesktopCapturer::CreateScreenCapturer(capture_options));
+              content::DesktopMediaID::TYPE_SCREEN,
+              webrtc::DesktopCapturer::CreateScreenCapturer(
+                  content::CreateDesktopCaptureOptions()));
 #endif  // !defined(USE_ASH)
         }
         have_screen_list = true;
@@ -149,12 +148,10 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
           // windows) created here cannot share the same DesktopCaptureOptions
           // instance. DesktopCaptureOptions owns X connection, which cannot be
           // used on multiple threads concurrently.
-          webrtc::DesktopCaptureOptions capture_options =
-              webrtc::DesktopCaptureOptions::CreateDefault();
-          capture_options.set_disable_effects(false);
           window_list = base::MakeUnique<NativeDesktopMediaList>(
-              DesktopMediaID::TYPE_WINDOW,
-              webrtc::DesktopCapturer::CreateWindowCapturer(capture_options));
+              content::DesktopMediaID::TYPE_WINDOW,
+              webrtc::DesktopCapturer::CreateWindowCapturer(
+                  content::CreateDesktopCaptureOptions()));
 #endif  // !defined(USE_ASH)
         }
         have_window_list = true;

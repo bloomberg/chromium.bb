@@ -87,6 +87,8 @@ source_set("browser_sources") {
     "content_browser_client.h",
     "context_factory.h",
     "cookie_store_factory.h",
+    "desktop_capture.cc",
+    "desktop_capture.h",
     "desktop_media_id.cc",
     "desktop_media_id.h",
     "devtools_agent_host.h",
@@ -326,6 +328,7 @@ source_set("browser_sources") {
     "//ui/events",
     "//ui/gl",
     "//ui/surface",
+    "//third_party/webrtc/modules/desktop_capture",
   ]
 
   allow_circular_includes_from = [
