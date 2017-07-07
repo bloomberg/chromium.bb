@@ -17,14 +17,8 @@ namespace shape_detection {
 
 namespace {
 
-void RunCallbackWithResults(
-    const mojom::TextDetection::DetectCallback& callback,
-    std::vector<mojom::TextDetectionResultPtr> results) {
-  callback.Run(std::move(results));
-}
-
 void RunCallbackWithNoResults(mojom::TextDetection::DetectCallback callback) {
-  callback.Run(std::vector<mojom::TextDetectionResultPtr>());
+  std::move(callback).Run({});
 }
 
 }  // anonymous namespace
@@ -50,11 +44,10 @@ TextDetectionImplMac::TextDetectionImplMac() {
 TextDetectionImplMac::~TextDetectionImplMac() {}
 
 void TextDetectionImplMac::Detect(const SkBitmap& bitmap,
-                                  const DetectCallback& callback) {
+                                  DetectCallback callback) {
   DCHECK(base::mac::IsAtLeastOS10_11());
   media::ScopedResultCallback<DetectCallback> scoped_callback(
-      base::Bind(&RunCallbackWithResults, callback),
-      base::Bind(&RunCallbackWithNoResults));
+      std::move(callback), base::Bind(&RunCallbackWithNoResults));
 
   base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)

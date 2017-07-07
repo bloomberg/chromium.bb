@@ -18,7 +18,7 @@ class TextDetectionImplMac : public mojom::TextDetection {
   ~TextDetectionImplMac() override;
 
   void Detect(const SkBitmap& bitmap,
-              const mojom::TextDetection::DetectCallback& callback) override;
+              mojom::TextDetection::DetectCallback callback) override;
 
  private:
   base::scoped_nsobject<CIDetector> detector_;
