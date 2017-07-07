@@ -1480,11 +1480,10 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
 #endif  // CONFIG_EXT_INTER
   } else {
 #if CONFIG_EXT_INTER
-    if (mi->bmi[0].as_mode != ZEROMV || mi->bmi[1].as_mode != ZEROMV ||
-        mi->bmi[2].as_mode != ZEROMV || mi->bmi[3].as_mode != ZEROMV ||
-        mi->bmi[0].as_mode != ZERO_ZEROMV ||
-        mi->bmi[1].as_mode != ZERO_ZEROMV ||
-        mi->bmi[2].as_mode != ZERO_ZEROMV || mi->bmi[3].as_mode != ZERO_ZEROMV)
+    if ((mi->bmi[0].as_mode != ZEROMV && mi->bmi[0].as_mode != ZERO_ZEROMV) ||
+        (mi->bmi[1].as_mode != ZEROMV && mi->bmi[1].as_mode != ZERO_ZEROMV) ||
+        (mi->bmi[2].as_mode != ZEROMV && mi->bmi[2].as_mode != ZERO_ZEROMV) ||
+        (mi->bmi[3].as_mode != ZEROMV && mi->bmi[3].as_mode != ZERO_ZEROMV))
       return 0;
 #else
     if (mi->bmi[0].as_mode != ZEROMV || mi->bmi[1].as_mode != ZEROMV ||
