@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
-#define DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
+#ifndef SERVICES_DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
+#define SERVICES_DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
 
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
-#include "device/wake_lock/wake_lock_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/wake_lock/wake_lock_context.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace device {
@@ -48,4 +48,4 @@ class WakeLockProvider : public mojom::WakeLockProvider {
 
 }  // namespace device
 
-#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_
+#endif  // SERVICES_DEVICE_WAKE_LOCK_WAKE_LOCK_PROVIDER_H_

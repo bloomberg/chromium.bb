@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
-#include "device/wake_lock/wake_lock_provider.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/wake_lock/wake_lock_provider.h"
 
 namespace device {
 

@@ -14,6 +14,9 @@ mojom("interfaces") {
     "power_monitor.mojom",
     "time_zone_monitor.mojom",
     "vibration_manager.mojom",
+    "wake_lock.mojom",
+    "wake_lock_context.mojom",
+    "wake_lock_provider.mojom",
   ]
 
   public_deps = [

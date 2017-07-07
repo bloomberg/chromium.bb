@@ -1623,7 +1623,6 @@ split_static_library("browser") {
     "//crypto:platform",
     "//device/base",
     "//device/bluetooth:mojo",
-    "//device/power_save_blocker",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
     "//device/vr/features",
@@ -1974,9 +1973,9 @@ split_static_library("browser") {
       "//chrome/common/extensions/api:extensions_features",
       "//components/drive",
       "//components/guest_view/browser",
-      "//device/wake_lock/public/interfaces",
       "//extensions/components/javascript_dialog_extensions_client",
       "//media/cast:net",
+      "//services/device/public/interfaces",
     ]
   }
   if (enable_background) {
@@ -2125,10 +2124,9 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser",
-      "//device/wake_lock/public/interfaces",
       "//ppapi/features",
       "//ppapi/proxy:ipc",
-      "//services/device/public/interfaces:constants",
+      "//services/device/public/interfaces",
       "//third_party/adobe/flash:flapper_version_h",
     ]
   }

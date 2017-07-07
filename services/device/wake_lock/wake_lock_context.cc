@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/wake_lock/wake_lock_context.h"
+#include "services/device/wake_lock/wake_lock_context.h"
 
 #include <utility>
 
-#include "device/wake_lock/wake_lock.h"
+#include "services/device/wake_lock/wake_lock.h"
 
 namespace device {
 

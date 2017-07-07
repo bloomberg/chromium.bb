@@ -11,6 +11,6 @@ blink_modules_sources("wake_lock") {
   ]
 
   deps = [
-    "//device/wake_lock/public/interfaces:interfaces_blink",
+    "//services/device/public/interfaces:interfaces_blink",
   ]
 }

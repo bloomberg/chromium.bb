@@ -15,9 +15,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "components/drive/service/drive_service_interface.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 using google_apis::CancelCallback;
 using google_apis::FileResource;

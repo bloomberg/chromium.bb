@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
-#define DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
+#ifndef SERVICE_DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
+#define SERVICE_DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
 
 #include <memory>
 #include <utility>
@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace device {
@@ -47,4 +47,4 @@ class WakeLockContext : public mojom::WakeLockContext {
 
 }  // namespace device
 
-#endif  // DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_
+#endif  // SERVICE_DEVICE_WAKE_LOCK_WAKE_LOCK_CONTEXT_H_

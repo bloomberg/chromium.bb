@@ -58,7 +58,7 @@
 #include "ui/latency/latency_info.h"
 
 #if defined(OS_MACOSX)
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 #endif
 
 class SkBitmap;

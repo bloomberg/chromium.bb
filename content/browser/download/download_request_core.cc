@@ -32,7 +32,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
-#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -43,6 +42,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

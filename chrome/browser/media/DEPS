@@ -1,5 +1,4 @@
 include_rules = [
-  "+device/wake_lock/public/interfaces",
   "+media/audio",
   "+media/base",
   "+media/cast",

@@ -8,9 +8,9 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/PageVisibilityObserver.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Noncopyable.h"
+#include "services/device/public/interfaces/wake_lock.mojom-blink.h"
 
 namespace blink {
 

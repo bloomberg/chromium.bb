@@ -26,7 +26,7 @@ class CompositorFrameMetadata;
 }
 
 #if defined(OS_ANDROID)
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 #endif
 
 namespace content {

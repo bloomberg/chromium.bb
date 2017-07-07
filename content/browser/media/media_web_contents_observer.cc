@@ -13,9 +13,9 @@
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

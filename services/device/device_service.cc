@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/sensors/device_sensor_host.h"
-#include "device/wake_lock/wake_lock_provider.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
@@ -21,6 +20,7 @@
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
+#include "services/device/wake_lock/wake_lock_provider.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "ui/gfx/native_widget_types.h"
 

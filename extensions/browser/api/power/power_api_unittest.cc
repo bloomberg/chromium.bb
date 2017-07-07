@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/test_util.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace extensions {
 
