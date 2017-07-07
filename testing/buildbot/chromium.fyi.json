@@ -290,6 +290,44 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+        ],
+        "name": "chrome_public_test_vr_apk-marlin-cardboard-nougat",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "NMF26U",
+              "device_type": "marlin"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "chrome_public_test_vr_apk"
+      },
+      {
+        "args": [
+          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
+          "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk"
+        ],
+        "name": "chrome_public_test_vr_apk-marlin-ddview-nougat",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "NMF26U",
+              "device_type": "marlin"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "chrome_public_test_vr_apk"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
