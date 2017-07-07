@@ -5,6 +5,7 @@
 #include "core/dom/AccessibleNode.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/dom/AccessibleNodeList.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
 #include "core/frame/Settings.h"
@@ -63,6 +64,31 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationProperty property) {
       break;
     case AOMRelationProperty::kErrorMessage:
       return aria_errormessageAttr;
+      break;
+  }
+
+  NOTREACHED();
+  return g_null_name;
+}
+
+QualifiedName GetCorrespondingARIAAttribute(AOMRelationListProperty property) {
+  switch (property) {
+    case AOMRelationListProperty::kDescribedBy:
+      return aria_describedbyAttr;
+      break;
+    case AOMRelationListProperty::kControls:
+      return aria_controlsAttr;
+      break;
+    case AOMRelationListProperty::kFlowTo:
+      return aria_flowtoAttr;
+      break;
+    case AOMRelationListProperty::kLabeledBy:
+      // Note that there are two allowed spellings of this attribute.
+      // Callers should check both.
+      return aria_labelledbyAttr;
+      break;
+    case AOMRelationListProperty::kOwns:
+      return aria_ownsAttr;
       break;
   }
 
@@ -212,6 +238,43 @@ AccessibleNode* AccessibleNode::GetProperty(Element* element,
   return nullptr;
 }
 
+// static
+AccessibleNodeList* AccessibleNode::GetProperty(
+    Element* element,
+    AOMRelationListProperty property) {
+  if (!element)
+    return nullptr;
+
+  if (AccessibleNode* accessible_node = element->ExistingAccessibleNode()) {
+    for (const auto& item : accessible_node->relation_list_properties_) {
+      if (item.first == property && item.second)
+        return item.second;
+    }
+  }
+
+  return nullptr;
+}
+
+// static
+bool AccessibleNode::GetProperty(Element* element,
+                                 AOMRelationListProperty property,
+                                 HeapVector<Member<Element>>& targets) {
+  AccessibleNodeList* node_list = GetProperty(element, property);
+  if (!node_list)
+    return false;
+
+  for (size_t i = 0; i < node_list->length(); ++i) {
+    AccessibleNode* accessible_node = node_list->item(i);
+    if (accessible_node) {
+      Element* element = accessible_node->element();
+      if (element)
+        targets.push_back(element);
+    }
+  }
+
+  return true;
+}
+
 template <typename P, typename T>
 static T FindPropertyValue(P property,
                            bool& is_null,
@@ -324,6 +387,39 @@ AccessibleNode* AccessibleNode::GetPropertyOrARIAAttribute(
 }
 
 // static
+bool AccessibleNode::GetPropertyOrARIAAttribute(
+    Element* element,
+    AOMRelationListProperty property,
+    HeapVector<Member<Element>>& targets) {
+  if (!element)
+    return false;
+
+  if (GetProperty(element, property, targets))
+    return true;
+
+  // Fall back on the equivalent ARIA attribute.
+  QualifiedName attribute = GetCorrespondingARIAAttribute(property);
+  String value = element->FastGetAttribute(attribute).GetString();
+  if (value.IsEmpty() && property == AOMRelationListProperty::kLabeledBy)
+    value = element->FastGetAttribute(aria_labeledbyAttr).GetString();
+  if (value.IsEmpty())
+    return false;
+
+  value.SimplifyWhiteSpace();
+  Vector<String> ids;
+  value.Split(' ', ids);
+  if (ids.IsEmpty())
+    return false;
+
+  TreeScope& scope = element->GetTreeScope();
+  for (const auto& id : ids) {
+    if (Element* id_element = scope.getElementById(AtomicString(id)))
+      targets.push_back(id_element);
+  }
+  return true;
+}
+
+// static
 bool AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
                                                 AOMBooleanProperty property,
                                                 bool& is_null) {
@@ -429,7 +525,15 @@ void AccessibleNode::GetAllAOMProperties(
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
   for (auto& item : accessible_node->relation_properties_) {
+    if (!item.second)
+      continue;
     client->AddRelationProperty(item.first, *item.second);
+    shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
+  }
+  for (auto& item : accessible_node->relation_list_properties_) {
+    if (!item.second)
+      continue;
+    client->AddRelationListProperty(item.first, *item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
 }
@@ -507,6 +611,15 @@ void AccessibleNode::setColSpan(uint32_t col_span, bool is_null) {
   NotifyAttributeChanged(aria_colspanAttr);
 }
 
+AccessibleNodeList* AccessibleNode::controls() const {
+  return GetProperty(element_, AOMRelationListProperty::kControls);
+}
+
+void AccessibleNode::setControls(AccessibleNodeList* controls) {
+  SetRelationListProperty(AOMRelationListProperty::kControls, controls);
+  NotifyAttributeChanged(aria_controlsAttr);
+}
+
 AtomicString AccessibleNode::current() const {
   return GetProperty(element_, AOMStringProperty::kCurrent);
 }
@@ -516,6 +629,15 @@ void AccessibleNode::setCurrent(const AtomicString& current) {
 
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
     cache->HandleAttributeChanged(aria_currentAttr, element_);
+}
+
+AccessibleNodeList* AccessibleNode::describedBy() {
+  return GetProperty(element_, AOMRelationListProperty::kDescribedBy);
+}
+
+void AccessibleNode::setDescribedBy(AccessibleNodeList* described_by) {
+  SetRelationListProperty(AOMRelationListProperty::kDescribedBy, described_by);
+  NotifyAttributeChanged(aria_describedbyAttr);
 }
 
 AccessibleNode* AccessibleNode::details() const {
@@ -554,6 +676,15 @@ void AccessibleNode::setExpanded(bool expanded, bool is_null) {
   NotifyAttributeChanged(aria_expandedAttr);
 }
 
+AccessibleNodeList* AccessibleNode::flowTo() const {
+  return GetProperty(element_, AOMRelationListProperty::kFlowTo);
+}
+
+void AccessibleNode::setFlowTo(AccessibleNodeList* flow_to) {
+  SetRelationListProperty(AOMRelationListProperty::kFlowTo, flow_to);
+  NotifyAttributeChanged(aria_flowtoAttr);
+}
+
 bool AccessibleNode::hidden(bool& is_null) const {
   return GetProperty(element_, AOMBooleanProperty::kHidden, is_null);
 }
@@ -588,6 +719,15 @@ AtomicString AccessibleNode::label() const {
 void AccessibleNode::setLabel(const AtomicString& label) {
   SetStringProperty(AOMStringProperty::kLabel, label);
   NotifyAttributeChanged(aria_labelAttr);
+}
+
+AccessibleNodeList* AccessibleNode::labeledBy() {
+  return GetProperty(element_, AOMRelationListProperty::kLabeledBy);
+}
+
+void AccessibleNode::setLabeledBy(AccessibleNodeList* labeled_by) {
+  SetRelationListProperty(AOMRelationListProperty::kLabeledBy, labeled_by);
+  NotifyAttributeChanged(aria_labelledbyAttr);
 }
 
 uint32_t AccessibleNode::level(bool& is_null) const {
@@ -643,6 +783,15 @@ AtomicString AccessibleNode::orientation() const {
 void AccessibleNode::setOrientation(const AtomicString& orientation) {
   SetStringProperty(AOMStringProperty::kOrientation, orientation);
   NotifyAttributeChanged(aria_orientationAttr);
+}
+
+AccessibleNodeList* AccessibleNode::owns() const {
+  return GetProperty(element_, AOMRelationListProperty::kOwns);
+}
+
+void AccessibleNode::setOwns(AccessibleNodeList* owns) {
+  SetRelationListProperty(AOMRelationListProperty::kOwns, owns);
+  NotifyAttributeChanged(aria_ownsAttr);
 }
 
 AtomicString AccessibleNode::placeholder() const {
@@ -831,6 +980,22 @@ void AccessibleNode::SetRelationProperty(AOMRelationProperty property,
   relation_properties_.push_back(std::make_pair(property, value));
 }
 
+void AccessibleNode::SetRelationListProperty(AOMRelationListProperty property,
+                                             AccessibleNodeList* value) {
+  for (auto& item : relation_list_properties_) {
+    if (item.first == property) {
+      if (item.second)
+        item.second->RemoveOwner(property, this);
+      if (value)
+        value->AddOwner(property, this);
+      item.second = value;
+      return;
+    }
+  }
+
+  relation_list_properties_.push_back(std::make_pair(property, value));
+}
+
 template <typename P, typename T>
 static void SetProperty(P property,
                         T value,
@@ -874,6 +1039,10 @@ void AccessibleNode::SetFloatProperty(AOMFloatProperty property,
   SetProperty(property, value, is_null, float_properties_);
 }
 
+void AccessibleNode::OnRelationListChanged(AOMRelationListProperty property) {
+  NotifyAttributeChanged(GetCorrespondingARIAAttribute(property));
+}
+
 void AccessibleNode::NotifyAttributeChanged(
     const blink::QualifiedName& attribute) {
   // TODO(dmazzoni): Make a cleaner API for this rather than pretending
@@ -889,6 +1058,7 @@ AXObjectCache* AccessibleNode::GetAXObjectCache() {
 DEFINE_TRACE(AccessibleNode) {
   visitor->Trace(element_);
   visitor->Trace(relation_properties_);
+  visitor->Trace(relation_list_properties_);
 }
 
 }  // namespace blink

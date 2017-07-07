@@ -45,6 +45,7 @@ class SkMatrix44;
 
 namespace blink {
 
+class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
 class Element;
@@ -60,6 +61,7 @@ enum class AOMUIntProperty;
 enum class AOMIntProperty;
 enum class AOMFloatProperty;
 enum class AOMRelationProperty;
+enum class AOMRelationListProperty;
 
 typedef unsigned AXID;
 
@@ -354,6 +356,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // or the equivalent ARIA attribute, in that order.
   const AtomicString& GetAOMPropertyOrARIAAttribute(AOMStringProperty) const;
   Element* GetAOMPropertyOrARIAAttribute(AOMRelationProperty) const;
+  bool HasAOMProperty(AOMRelationListProperty,
+                      HeapVector<Member<Element>>& result) const;
+  bool HasAOMPropertyOrARIAAttribute(AOMRelationListProperty,
+                                     HeapVector<Member<Element>>& result) const;
   bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty, bool& result) const;
   bool AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty) const;
   bool AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty) const;
@@ -807,6 +813,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static AccessibilityRole AriaRoleToWebCoreRole(const String&);
   static const AtomicString& RoleName(AccessibilityRole);
   static const AtomicString& InternalRoleName(AccessibilityRole);
+  static void AccessibleNodeListToElementVector(const AccessibleNodeList&,
+                                                HeapVector<Member<Element>>&);
 
  protected:
   AXID id_;
@@ -841,7 +849,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   String TextFromAriaLabelledby(AXObjectSet& visited,
                                 AXRelatedObjectVector* related_objects) const;
   String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects) const;
-
   virtual const AXObject* InheritsPresentationalRoleFrom() const { return 0; }
 
   bool CanReceiveAccessibilityFocus() const;

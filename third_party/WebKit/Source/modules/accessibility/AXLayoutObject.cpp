@@ -1264,16 +1264,18 @@ String AXLayoutObject::TextAlternative(bool recursive,
 //
 
 void AXLayoutObject::AriaOwnsElements(AXObjectVector& owns) const {
-  AccessibilityChildrenFromAttribute(aria_ownsAttr, owns);
+  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kOwns, owns);
 }
 
 void AXLayoutObject::AriaDescribedbyElements(
     AXObjectVector& describedby) const {
-  AccessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
+  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kDescribedBy,
+                                       describedby);
 }
 
 void AXLayoutObject::AriaLabelledbyElements(AXObjectVector& labelledby) const {
-  AccessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
+  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kLabeledBy,
+                                       labelledby);
 }
 
 bool AXLayoutObject::AriaHasPopup() const {
@@ -2257,7 +2259,9 @@ bool AXLayoutObject::IsTabItemSelected() const {
     return false;
 
   HeapVector<Member<Element>> elements;
-  ElementsFromAttribute(elements, aria_controlsAttr);
+  if (!HasAOMPropertyOrARIAAttribute(AOMRelationListProperty::kControls,
+                                     elements))
+    return false;
 
   for (const auto& element : elements) {
     AXObject* tab_panel = AxObjectCache().GetOrCreate(element);

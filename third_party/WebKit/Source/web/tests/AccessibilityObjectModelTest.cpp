@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/AccessibleNode.h"
+#include "core/dom/AccessibleNodeList.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
@@ -340,6 +341,41 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
             sparse_attributes2
                 .object_attributes[AXObjectAttribute::kAriaErrorMessage]
                 ->RoleValue());
+}
+
+TEST_F(AccessibilityObjectModelTest, LabeledBy) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<input id=target aria-labelledby='l1 l2'>"
+      "<label id=l1>Label 1</label>"
+      "<label id=l2>Label 2</label>"
+      "<label id=l3>Label 3</label>");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* l1 = GetDocument().getElementById("l1");
+  auto* l2 = GetDocument().getElementById("l2");
+  auto* l3 = GetDocument().getElementById("l3");
+
+  HeapVector<Member<Element>> labeled_by;
+  ASSERT_TRUE(AccessibleNode::GetPropertyOrARIAAttribute(
+      target, AOMRelationListProperty::kLabeledBy, labeled_by));
+  ASSERT_EQ(2U, labeled_by.size());
+  ASSERT_EQ(l1, labeled_by[0]);
+  ASSERT_EQ(l2, labeled_by[1]);
+
+  AccessibleNodeList* node_list = target->accessibleNode()->labeledBy();
+  ASSERT_EQ(nullptr, node_list);
+
+  node_list = new AccessibleNodeList();
+  node_list->add(l3->accessibleNode());
+  target->accessibleNode()->setLabeledBy(node_list);
+
+  labeled_by.clear();
+  ASSERT_TRUE(AccessibleNode::GetPropertyOrARIAAttribute(
+      target, AOMRelationListProperty::kLabeledBy, labeled_by));
+  ASSERT_EQ(1U, labeled_by.size());
+  ASSERT_EQ(l3, labeled_by[0]);
 }
 
 }  // namespace
