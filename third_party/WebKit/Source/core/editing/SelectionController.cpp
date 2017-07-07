@@ -319,75 +319,6 @@ bool SelectionController::HandleSingleClick(
   return false;
 }
 
-static bool TargetPositionIsBeforeDragStartPosition(
-    Node* drag_start_node,
-    const LayoutPoint& drag_start_point,
-    Node* target,
-    const LayoutPoint& hit_test_point) {
-  const PositionInFlatTree& target_position =
-      ToPositionInFlatTree(target->GetLayoutObject()
-                               ->PositionForPoint(hit_test_point)
-                               .GetPosition());
-  const PositionInFlatTree& drag_start_position =
-      ToPositionInFlatTree(drag_start_node->GetLayoutObject()
-                               ->PositionForPoint(drag_start_point)
-                               .GetPosition());
-
-  return target_position.CompareTo(drag_start_position) < 0;
-}
-
-static SelectionInFlatTree ApplySelectAll(
-    const PositionInFlatTree& base_position,
-    const PositionInFlatTree& target_position,
-    Node* mouse_press_node,
-    const LayoutPoint& drag_start_point,
-    Node* target,
-    const LayoutPoint& hit_test_point) {
-  Node* const root_user_select_all_for_mouse_press_node =
-      EditingInFlatTreeStrategy::RootUserSelectAllForNode(mouse_press_node);
-  Node* const root_user_select_all_for_target =
-      EditingInFlatTreeStrategy::RootUserSelectAllForNode(target);
-
-  if (root_user_select_all_for_mouse_press_node &&
-      root_user_select_all_for_mouse_press_node ==
-          root_user_select_all_for_target) {
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(PositionInFlatTree::BeforeNode(
-                              *root_user_select_all_for_mouse_press_node),
-                          PositionInFlatTree::AfterNode(
-                              *root_user_select_all_for_mouse_press_node))
-        .Build();
-  }
-
-  SelectionInFlatTree::Builder builder;
-  // Reset base for user select all when base is inside user-select-all area
-  // and extent < base.
-  if (root_user_select_all_for_mouse_press_node &&
-      TargetPositionIsBeforeDragStartPosition(
-          mouse_press_node, drag_start_point, target, hit_test_point)) {
-    builder.Collapse(PositionInFlatTree::AfterNode(
-        *root_user_select_all_for_mouse_press_node));
-  } else {
-    builder.Collapse(base_position);
-  }
-
-  if (root_user_select_all_for_target && mouse_press_node->GetLayoutObject()) {
-    if (TargetPositionIsBeforeDragStartPosition(
-            mouse_press_node, drag_start_point, target, hit_test_point)) {
-      builder.Extend(
-          PositionInFlatTree::BeforeNode(*root_user_select_all_for_target));
-      return builder.Build();
-    }
-
-    builder.Extend(
-        PositionInFlatTree::AfterNode(*root_user_select_all_for_target));
-    return builder.Build();
-  }
-
-  builder.Extend(target_position);
-  return builder.Build();
-}
-
 // Returns true if selection starts from |SVGText| node and |target_node| is
 // not the containing block of |SVGText| node.
 // See https://bugs.webkit.org/show_bug.cgi?id=12334 for details.
@@ -452,26 +383,26 @@ void SelectionController::UpdateSelectionForMouseDrag(
   // |newSelection| are valid for |m_frame->document()|.
   // |dispatchSelectStart()| can change them by "selectstart" event handler.
 
+  const bool should_extend_selection =
+      selection_state_ == SelectionState::kExtendedSelection;
   // Always extend selection here because it's caused by a mouse drag
-  const PositionInFlatTree base_position =
-      selection_state_ == SelectionState::kExtendedSelection
-          ? Selection().ComputeVisibleSelectionInFlatTree().Base()
-          : target_position.DeepEquivalent();
   selection_state_ = SelectionState::kExtendedSelection;
-  if (base_position.IsNull())
-    return;
 
-  const SelectionInFlatTree& applied_selection = ApplySelectAll(
-      base_position, target_position.DeepEquivalent(), mouse_press_node,
-      drag_start_pos, target, hit_test_result.LocalPoint());
-  SelectionInFlatTree::Builder builder(applied_selection);
+  const VisibleSelectionInFlatTree& visible_selection =
+      Selection().ComputeVisibleSelectionInFlatTree();
+  const PositionInFlatTree& adjusted_position =
+      AdjustPositionRespectUserSelectAll(target, visible_selection.Start(),
+                                         visible_selection.End(),
+                                         target_position.DeepEquivalent());
+  const SelectionInFlatTree& adjusted_selection =
+      should_extend_selection
+          ? ExtendSelectionAsDirectional(adjusted_position, visible_selection,
+                                         Selection().Granularity())
+          : SelectionInFlatTree::Builder().Collapse(adjusted_position).Build();
 
-  if (Selection().Granularity() != kCharacterGranularity)
-    builder.SetGranularity(Selection().Granularity());
-
-  SetNonDirectionalSelectionIfNeeded(builder.Build(), Selection().Granularity(),
-                                     kAdjustEndpointsAtBidiBoundary,
-                                     HandleVisibility::kNotVisible);
+  SetNonDirectionalSelectionIfNeeded(
+      adjusted_selection, Selection().Granularity(),
+      kAdjustEndpointsAtBidiBoundary, HandleVisibility::kNotVisible);
 }
 
 bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
