@@ -2898,6 +2898,10 @@ bool RenderProcessHostImpl::StopWebRTCEventLog() {
 
 void RenderProcessHostImpl::SetEchoCanceller3(bool enable) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(hlundin) Implement a test to verify that the setting works both with
+  // aec_dump_consumers already registered, and with those registered in the
+  // future. crbug.com/740104
+  override_aec3_ = enable;
 
   // Piggybacking on AEC dumps.
   // TODO(hlundin): Change name for aec_dump_consumers_;
@@ -3729,6 +3733,9 @@ void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
     base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(
         WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath());
     EnableAecDumpForId(file_with_extensions, id);
+  }
+  if (override_aec3_) {
+    Send(new AudioProcessingMsg_EnableAec3(id, *override_aec3_));
   }
 }
 
