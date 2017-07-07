@@ -27,7 +27,8 @@ TEST(V8PlatformTest, TraceStateObserverAPI) {
   ASSERT_EQ(0, test_observer->Enabled());
   ASSERT_EQ(0, test_observer->Disabled());
 
-  V8Platform::Get()->AddTraceStateObserver(test_observer);
+  V8Platform::Get()->GetTracingController()->AddTraceStateObserver(
+      test_observer);
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig("*", ""),
       base::trace_event::TraceLog::RECORDING_MODE);
@@ -37,7 +38,8 @@ TEST(V8PlatformTest, TraceStateObserverAPI) {
   ASSERT_EQ(1, test_observer->Enabled());
   ASSERT_EQ(1, test_observer->Disabled());
 
-  V8Platform::Get()->RemoveTraceStateObserver(test_observer);
+  V8Platform::Get()->GetTracingController()->RemoveTraceStateObserver(
+      test_observer);
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig("*", ""),
       base::trace_event::TraceLog::RECORDING_MODE);
@@ -54,7 +56,8 @@ TEST(V8PlatformTest, TraceStateObserverFired) {
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       base::trace_event::TraceConfig("*", ""),
       base::trace_event::TraceLog::RECORDING_MODE);
-  V8Platform::Get()->AddTraceStateObserver(test_observer);
+  V8Platform::Get()->GetTracingController()->AddTraceStateObserver(
+      test_observer);
   ASSERT_EQ(1, test_observer->Enabled());
   ASSERT_EQ(0, test_observer->Disabled());
 }

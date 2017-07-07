@@ -261,51 +261,6 @@ v8::TracingController* V8Platform::GetTracingController() {
   return tracing_controller_.get();
 }
 
-const uint8_t* V8Platform::GetCategoryGroupEnabled(const char* name) {
-  return tracing_controller_->GetCategoryGroupEnabled(name);
-}
-
-const char* V8Platform::GetCategoryGroupName(
-    const uint8_t* category_enabled_flag) {
-  return base::trace_event::TraceLog::GetCategoryGroupName(
-      category_enabled_flag);
-}
-
-uint64_t V8Platform::AddTraceEvent(
-    char phase,
-    const uint8_t* category_enabled_flag,
-    const char* name,
-    const char* scope,
-    uint64_t id,
-    uint64_t bind_id,
-    int32_t num_args,
-    const char** arg_names,
-    const uint8_t* arg_types,
-    const uint64_t* arg_values,
-    std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertables,
-    unsigned int flags) {
-  return tracing_controller_->AddTraceEvent(
-      phase, category_enabled_flag, name, scope, id, bind_id, num_args,
-      arg_names, arg_types, arg_values, arg_convertables, flags);
-}
-
-void V8Platform::UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
-                                          const char* name,
-                                          uint64_t handle) {
-  tracing_controller_->UpdateTraceEventDuration(category_enabled_flag, name,
-                                                handle);
-}
-
-void V8Platform::AddTraceStateObserver(
-    v8::Platform::TraceStateObserver* observer) {
-  tracing_controller_->AddTraceStateObserver(observer);
-}
-
-void V8Platform::RemoveTraceStateObserver(
-    v8::Platform::TraceStateObserver* observer) {
-  tracing_controller_->RemoveTraceStateObserver(observer);
-}
-
 v8::Platform::StackTracePrinter V8Platform::GetStackTracePrinter() {
   return PrintStackTrace;
 }
