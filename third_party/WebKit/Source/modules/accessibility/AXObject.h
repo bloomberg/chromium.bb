@@ -887,7 +887,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
  private:
   bool IsCheckable() const;
-  static bool IsNativeInputInMixedState(const Node*);
+  static bool IsNativeCheckboxInMixedState(const Node*);
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
 
