@@ -24,11 +24,9 @@ class WebFactoryImpl : public WebFactory {
   WebLocalFrameBase* CreateMainWebLocalFrameBase(
       WebView*,
       WebFrameClient*,
-      InterfaceProvider*,
       InterfaceRegistry*) const override;
   WebLocalFrameBase* CreateWebLocalFrameBase(WebTreeScopeType,
                                              WebFrameClient*,
-                                             InterfaceProvider*,
                                              InterfaceRegistry*,
                                              WebFrame* opener) const override;
 };

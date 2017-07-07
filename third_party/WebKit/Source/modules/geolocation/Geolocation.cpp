@@ -40,8 +40,8 @@
 #include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 namespace {
@@ -446,7 +446,7 @@ void Geolocation::RequestPermission() {
     return;
 
   geolocation_permission_ = kPermissionRequested;
-  frame->GetInterfaceProvider()->GetInterface(
+  frame->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&permission_service_));
   permission_service_.set_connection_error_handler(
       ConvertToBaseCallback(WTF::Bind(&Geolocation::OnPermissionConnectionError,
@@ -518,7 +518,7 @@ void Geolocation::UpdateGeolocationServiceConnection() {
   if (geolocation_service_)
     return;
 
-  GetFrame()->GetInterfaceProvider()->GetInterface(
+  GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&geolocation_service_));
   geolocation_service_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&Geolocation::OnGeolocationConnectionError,

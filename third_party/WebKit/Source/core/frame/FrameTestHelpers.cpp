@@ -151,8 +151,8 @@ WebLocalFrameBase* CreateLocalChild(WebLocalFrame& parent,
                                     WebTreeScopeType scope,
                                     TestWebFrameClient* client) {
   auto owned_client = CreateDefaultClientIfNeeded(client);
-  WebLocalFrameBase* frame = ToWebLocalFrameBase(parent.CreateLocalChild(
-      scope, client, client->GetInterfaceProviderForTesting(), nullptr));
+  WebLocalFrameBase* frame =
+      ToWebLocalFrameBase(parent.CreateLocalChild(scope, client, nullptr));
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -163,8 +163,8 @@ WebLocalFrameBase* CreateLocalChild(
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
-  WebLocalFrameBase* frame = ToWebLocalFrameBase(parent.CreateLocalChild(
-      scope, client, self_owned->GetInterfaceProviderForTesting(), nullptr));
+  WebLocalFrameBase* frame =
+      ToWebLocalFrameBase(parent.CreateLocalChild(scope, client, nullptr));
   client->Bind(frame, std::move(self_owned));
   return frame;
 }
@@ -174,8 +174,8 @@ WebLocalFrameBase* CreateProvisional(WebRemoteFrame& old_frame,
   auto owned_client = CreateDefaultClientIfNeeded(client);
   WebLocalFrameBase* frame =
       ToWebLocalFrameBase(WebLocalFrame::CreateProvisional(
-          client, client->GetInterfaceProviderForTesting(), nullptr, &old_frame,
-          WebSandboxFlags::kNone, WebParsedFeaturePolicy()));
+          client, nullptr, &old_frame, WebSandboxFlags::kNone,
+          WebParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   // Create a local root, if necessary.
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -210,8 +210,8 @@ WebLocalFrameBase* CreateLocalChild(WebRemoteFrame& parent,
   auto owned_client = CreateDefaultClientIfNeeded(client);
   auto* frame = ToWebLocalFrameBase(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      client->GetInterfaceProviderForTesting(), nullptr, previous_sibling,
-      WebParsedFeaturePolicy(), properties, nullptr));
+      nullptr, previous_sibling, WebParsedFeaturePolicy(), properties,
+      nullptr));
   client->Bind(frame, std::move(owned_client));
 
   auto owned_widget_client = CreateDefaultClientIfNeeded(widget_client);
@@ -256,8 +256,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
 
   auto owned_web_frame_client = CreateDefaultClientIfNeeded(web_frame_client);
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view_, web_frame_client,
-      web_frame_client->GetInterfaceProviderForTesting(), nullptr, opener);
+      web_view_, web_frame_client, nullptr, opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
 
   // TODO(dcheng): The main frame widget currently has a special case.
@@ -362,7 +361,8 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client) {
 
 int TestWebFrameClient::loads_in_progress_ = 0;
 
-TestWebFrameClient::TestWebFrameClient() {}
+TestWebFrameClient::TestWebFrameClient()
+    : interface_provider_(new service_manager::InterfaceProvider()) {}
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {

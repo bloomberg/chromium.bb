@@ -254,12 +254,12 @@
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 #include <memory>
 
@@ -4718,7 +4718,7 @@ void Document::SendSensitiveInputVisibilityInternal() {
     return;
 
   mojom::blink::SensitiveInputVisibilityServicePtr sensitive_input_service_ptr;
-  GetFrame()->GetInterfaceProvider()->GetInterface(
+  GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&sensitive_input_service_ptr));
   if (password_count_ > 0) {
     sensitive_input_service_ptr->PasswordFieldVisibleInInsecureContext();

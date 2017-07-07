@@ -27,7 +27,6 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
-class InterfaceProvider;
 class InterfaceRegistry;
 class WebAssociatedURLLoader;
 class WebAutofillClient;
@@ -77,7 +76,6 @@ class WebLocalFrame : public WebFrame {
   BLINK_EXPORT static WebLocalFrame* CreateMainFrame(
       WebView*,
       WebFrameClient*,
-      blink::InterfaceProvider*,
       blink::InterfaceRegistry*,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
@@ -102,7 +100,6 @@ class WebLocalFrame : public WebFrame {
   // frame.
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
       WebFrameClient*,
-      blink::InterfaceProvider*,
       blink::InterfaceRegistry*,
       WebRemoteFrame*,
       WebSandboxFlags,
@@ -113,7 +110,6 @@ class WebLocalFrame : public WebFrame {
   // it's no longer needed.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           WebFrameClient*,
-                                          blink::InterfaceProvider*,
                                           blink::InterfaceRegistry*) = 0;
 
   // Returns the WebFrame associated with the current V8 context. This

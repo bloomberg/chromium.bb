@@ -41,8 +41,8 @@ class ElementVisibilityObserverTest : public ::testing::Test {
  protected:
   void SetUp() override {
     local_frame_client_ = new StubLocalFrameClient();
-    dummy_page_holder_ = DummyPageHolder::Create(
-        IntSize(), nullptr, local_frame_client_, nullptr, nullptr);
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(), nullptr,
+                                                 local_frame_client_, nullptr);
   }
 
   void TearDown() override {

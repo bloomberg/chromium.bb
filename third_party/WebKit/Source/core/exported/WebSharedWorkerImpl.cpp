@@ -63,7 +63,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
@@ -140,7 +139,7 @@ void WebSharedWorkerImpl::InitializeLoader(bool data_saver_enabled) {
   // Browser process when the worker is created (similar to
   // RenderThread::OnCreateNewView).
   main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
-      web_view_, this, Platform::Current()->GetInterfaceProvider(), nullptr);
+      web_view_, this, nullptr);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to pause worker context on start and wait for debugger

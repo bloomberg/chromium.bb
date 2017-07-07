@@ -23,14 +23,6 @@ BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
-BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
-    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
-    : remote_interfaces_(remote_interfaces),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
-  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-}
-
 BlinkInterfaceProviderImpl::~BlinkInterfaceProviderImpl() = default;
 
 void BlinkInterfaceProviderImpl::GetInterface(
@@ -49,14 +41,10 @@ void BlinkInterfaceProviderImpl::GetInterfaceInternal(
     return;
   }
 
-  if (connector_) {
-    connector_->BindInterface(
-        service_manager::Identity(mojom::kBrowserServiceName,
-                                  service_manager::mojom::kInheritUserID),
-        name, std::move(handle));
-  } else {
-    remote_interfaces_->GetInterface(name, std::move(handle));
-  }
+  connector_->BindInterface(
+      service_manager::Identity(mojom::kBrowserServiceName,
+                                service_manager::mojom::kInheritUserID),
+      name, std::move(handle));
 }
 
 }  // namespace content

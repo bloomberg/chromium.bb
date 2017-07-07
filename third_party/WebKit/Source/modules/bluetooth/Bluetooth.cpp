@@ -20,8 +20,8 @@
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -171,16 +171,11 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!service_) {
-    InterfaceProvider* interface_provider = nullptr;
-    if (context->IsDocument()) {
-      Document* document = ToDocument(context);
-      if (document->GetFrame())
-        interface_provider = document->GetFrame()->GetInterfaceProvider();
+  if (!service_ && context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (frame) {
+      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
     }
-
-    if (interface_provider)
-      interface_provider->GetInterface(mojo::MakeRequest(&service_));
   }
 
   if (!service_) {

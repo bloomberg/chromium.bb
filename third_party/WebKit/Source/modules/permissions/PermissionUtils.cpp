@@ -7,10 +7,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "public/platform/InterfaceProvider.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -34,7 +32,7 @@ bool ConnectToPermissionService(
   if (!frame)
     return false;
 
-  frame->GetInterfaceProvider()->GetInterface(std::move(request));
+  frame->GetInterfaceProvider().GetInterface(std::move(request));
   return true;
 }
 

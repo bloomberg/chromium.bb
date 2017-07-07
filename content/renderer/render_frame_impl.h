@@ -48,7 +48,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/media/media_factory.h"
-#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
@@ -1276,7 +1275,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   std::unique_ptr<service_manager::BinderRegistry> interface_registry_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
-  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
   service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;

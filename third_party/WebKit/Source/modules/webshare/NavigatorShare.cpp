@@ -14,8 +14,8 @@
 #include "modules/webshare/ShareData.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -124,7 +124,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   if (!service_) {
     LocalFrame* frame = doc->GetFrame();
     DCHECK(frame);
-    frame->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&service_));
+    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
     service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
         &NavigatorShare::OnConnectionError, WrapWeakPersistent(this))));
     DCHECK(service_);

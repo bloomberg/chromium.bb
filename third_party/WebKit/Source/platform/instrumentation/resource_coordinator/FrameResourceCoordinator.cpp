@@ -4,10 +4,9 @@
 
 #include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -24,12 +23,12 @@ bool FrameResourceCoordinator::IsEnabled() {
 
 // static
 FrameResourceCoordinator* FrameResourceCoordinator::Create(
-    InterfaceProvider* interface_provider) {
+    service_manager::InterfaceProvider* interface_provider) {
   return new FrameResourceCoordinator(interface_provider);
 }
 
 FrameResourceCoordinator::FrameResourceCoordinator(
-    InterfaceProvider* interface_provider) {
+    service_manager::InterfaceProvider* interface_provider) {
   interface_provider->GetInterface(mojo::MakeRequest(&service_));
 
   service_.set_connection_error_handler(

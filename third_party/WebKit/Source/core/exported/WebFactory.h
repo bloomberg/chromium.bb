@@ -17,7 +17,6 @@ class WebViewBase;
 class WebLocalFrameBase;
 class WebViewClient;
 class WebFrameClient;
-class InterfaceProvider;
 class InterfaceRegistry;
 class WebFrame;
 enum class WebTreeScopeType;
@@ -35,12 +34,10 @@ class CORE_EXPORT WebFactory {
   virtual WebLocalFrameBase* CreateMainWebLocalFrameBase(
       WebView*,
       WebFrameClient*,
-      InterfaceProvider*,
       InterfaceRegistry*) const = 0;
   virtual WebLocalFrameBase* CreateWebLocalFrameBase(
       WebTreeScopeType,
       WebFrameClient*,
-      InterfaceProvider*,
       InterfaceRegistry*,
       WebFrame* opener) const = 0;
 

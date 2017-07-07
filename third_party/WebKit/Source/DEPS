@@ -3,6 +3,7 @@ include_rules = [
     "+base/gtest_prod_util.h",
     "+build",
     "+services/service_manager/public/cpp/connector.h",
+    "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
     "+v8",

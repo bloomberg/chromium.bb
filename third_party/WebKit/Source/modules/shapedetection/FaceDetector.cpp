@@ -13,7 +13,6 @@
 #include "modules/shapedetection/DetectedFace.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
 #include "modules/shapedetection/Landmark.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/interfaces/facedetection_provider.mojom-blink.h"
@@ -38,7 +37,7 @@ FaceDetector::FaceDetector(ExecutionContext* context,
   if (context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (frame)
-      frame->GetInterfaceProvider()->GetInterface(std::move(request));
+      frame->GetInterfaceProvider().GetInterface(std::move(request));
   } else {
     WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
     thread->GetInterfaceProvider().GetInterface(std::move(request));

@@ -199,9 +199,8 @@ void CanvasRenderingContext2DTest::CreateContext(
 void CanvasRenderingContext2DTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  dummy_page_holder_ =
-      DummyPageHolder::Create(IntSize(800, 600), &page_clients, nullptr,
-                              override_settings_function_, nullptr);
+  dummy_page_holder_ = DummyPageHolder::Create(
+      IntSize(800, 600), &page_clients, nullptr, override_settings_function_);
   document_ = &dummy_page_holder_->GetDocument();
   document_->documentElement()->setInnerHTML(
       "<body><canvas id='c'></canvas></body>");

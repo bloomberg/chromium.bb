@@ -14,7 +14,6 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -44,7 +43,7 @@ PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
   if (context && context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (frame)
-      frame->GetInterfaceProvider()->GetInterface(std::move(request));
+      frame->GetInterfaceProvider().GetInterface(std::move(request));
   } else if (context && context->IsWorkerGlobalScope()) {
     WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
     thread->GetInterfaceProvider().GetInterface(std::move(request));
