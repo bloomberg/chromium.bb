@@ -95,6 +95,7 @@ class DelayWillProcessResponseObserver : public content::WebContentsObserver {
         GURL(kNonAdUrl), net::HostPortPair(),
         navigation_handle->GetRenderFrameHost()->GetFrameTreeNodeId(),
         navigation_handle->GetGlobalRequestID(),
+        navigation_handle->GetRenderFrameHost(),
         content::RESOURCE_TYPE_MAIN_FRAME, false /* was_cached */,
         nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
         0 /* original_network_content_length */, base::TimeTicks::Now(), 0);

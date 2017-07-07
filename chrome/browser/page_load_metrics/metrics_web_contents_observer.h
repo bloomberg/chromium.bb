@@ -96,12 +96,14 @@ class MetricsWebContentsObserver
       content::NavigationHandle* navigation_handle);
 
   // A resource request completed on the IO thread. This method is invoked on
-  // the UI thread.
+  // the UI thread. |render_frame_host_or_null will| be null for main or sub
+  // frame requests when browser-side navigation is enabled.
   void OnRequestComplete(
       const GURL& url,
       const net::HostPortPair& host_port_pair,
       int frame_tree_node_id,
       const content::GlobalRequestID& request_id,
+      content::RenderFrameHost* render_frame_host_or_null,
       content::ResourceType resource_type,
       bool was_cached,
       std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
@@ -156,6 +158,7 @@ class MetricsWebContentsObserver
   // PageLoadTrackers.
   PageLoadTracker* GetTrackerOrNullForRequest(
       const content::GlobalRequestID& request_id,
+      content::RenderFrameHost* render_frame_host_or_null,
       content::ResourceType resource_type,
       base::TimeTicks creation_time);
 

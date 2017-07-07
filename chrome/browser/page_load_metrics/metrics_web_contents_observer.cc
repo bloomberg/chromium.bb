@@ -218,6 +218,7 @@ void MetricsWebContentsObserver::WillProcessNavigationResponse(
 
 PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     const content::GlobalRequestID& request_id,
+    content::RenderFrameHost* render_frame_host_or_null,
     content::ResourceType resource_type,
     base::TimeTicks creation_time) {
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
@@ -240,23 +241,33 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     // Non main frame resources are always associated with the currently
     // committed load. If the resource request was started before this
     // navigation then it should be ignored.
+    if (!committed_load_ || creation_time < committed_load_->navigation_start())
+      return nullptr;
 
-    // TODO(jkarlin): There is a race here. Consider the following sequence:
-    // 1. renderer has a committed page A
-    // 2. navigation is initiated to page B
-    // 3. page A initiates URLRequests (e.g. in the unload handler)
-    // 4. page B commits
-    // 5. the URLRequests initiated by A complete
-    // In the above example, the URLRequests initiated by A will be attributed
-    // to page load B. This should be relatively rare but we may want to fix
-    // this at some point. We could fix this by comparing the URLRequest
-    // creation time against the committed load's commit time, however more
-    // investigation is needed to confirm that all cases would be handled
-    // correctly (for example Link: preloads).
-    if (committed_load_ &&
-        creation_time >= committed_load_->navigation_start()) {
+    // Sub-frame resources have a null RFH when browser-side navigation is
+    // enabled, so we can't perform the RFH check below for them.
+    //
+    // TODO(bmcquade): consider tracking GlobalRequestIDs for sub-frame
+    // navigations in each PageLoadTracker, and performing a lookup for
+    // sub-frames similar to the main-frame lookup above.
+    if (resource_type == content::RESOURCE_TYPE_SUB_FRAME)
       return committed_load_.get();
-    }
+
+    // There is a race here: a completed resource for the previously committed
+    // page can arrive after the new page has committed. In this case, we may
+    // attribute the resource to the wrong page load. We do our best to guard
+    // against this by verifying that the RFH for the resource matches the RFH
+    // for the currently committed load, however there are cases where the same
+    // RFH is used across page loads (same origin navigations, as well as some
+    // cross-origin render-initiated navigations).
+    //
+    // TODO(crbug.com/738577): use a DocumentId here instead, to eliminate this
+    // race.
+    DCHECK(render_frame_host_or_null != nullptr);
+    content::RenderFrameHost* main_frame_for_resource =
+        GetMainFrame(render_frame_host_or_null);
+    if (main_frame_for_resource == web_contents()->GetMainFrame())
+      return committed_load_.get();
   }
   return nullptr;
 }
@@ -266,6 +277,7 @@ void MetricsWebContentsObserver::OnRequestComplete(
     const net::HostPortPair& host_port_pair,
     int frame_tree_node_id,
     const content::GlobalRequestID& request_id,
+    content::RenderFrameHost* render_frame_host_or_null,
     content::ResourceType resource_type,
     bool was_cached,
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
@@ -278,8 +290,8 @@ void MetricsWebContentsObserver::OnRequestComplete(
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  PageLoadTracker* tracker =
-      GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
+  PageLoadTracker* tracker = GetTrackerOrNullForRequest(
+      request_id, render_frame_host_or_null, resource_type, creation_time);
   if (tracker) {
     ExtraRequestCompleteInfo extra_request_complete_info(
         url, host_port_pair, frame_tree_node_id, was_cached, raw_body_bytes,

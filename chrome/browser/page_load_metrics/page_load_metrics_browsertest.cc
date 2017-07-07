@@ -1023,6 +1023,27 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
   histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSizeChildFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/page_load_metrics/large_iframe.html"));
+  waiter->Wait();
+
+  // Payload histograms are only logged when a page load terminates, so force
+  // navigation to another page.
+  NavigateToUntrackedUrl();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+
+  // Verify that there is a single sample recorded in the 10kB bucket (the size
+  // of the iframe response).
+  histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        PayloadSizeIgnoresDownloads) {
   ASSERT_TRUE(embedded_test_server()->Start());

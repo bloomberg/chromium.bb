@@ -397,6 +397,8 @@ void NotifyUIThreadOfRequestComplete(
     const GURL& url,
     const net::HostPortPair& host_port_pair,
     const content::GlobalRequestID& request_id,
+    int render_process_id,
+    int render_frame_id,
     ResourceType resource_type,
     bool is_download,
     bool was_cached,
@@ -441,11 +443,15 @@ void NotifyUIThreadOfRequestComplete(
         page_load_metrics::MetricsWebContentsObserver::FromWebContents(
             web_contents);
     if (metrics_observer) {
+      // Will be null for main or sub frame resources, when browser-side
+      // navigation is enabled.
+      content::RenderFrameHost* render_frame_host_or_null =
+          content::RenderFrameHost::FromID(render_process_id, render_frame_id);
       metrics_observer->OnRequestComplete(
           url, host_port_pair, frame_tree_node_id_getter.Run(), request_id,
-          resource_type, was_cached, std::move(data_reduction_proxy_data),
-          raw_body_bytes, original_content_length, request_creation_time,
-          net_error);
+          render_frame_host_or_null, resource_type, was_cached,
+          std::move(data_reduction_proxy_data), raw_body_bytes,
+          original_content_length, request_creation_time, net_error);
     }
   }
 }
@@ -925,17 +931,17 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&NotifyUIThreadOfRequestComplete,
-                     info->GetWebContentsGetterForRequest(),
-                     info->GetFrameTreeNodeIdGetterForRequest(),
-                     url_request->url(), request_host_port,
-                     info->GetGlobalRequestID(), info->GetResourceType(),
-                     info->IsDownload(), url_request->was_cached(),
-                     base::Passed(&data_reduction_proxy_data), net_error,
-                     url_request->GetTotalReceivedBytes(),
-                     url_request->GetRawBodyBytes(), original_content_length,
-                     url_request->creation_time(),
-                     base::TimeTicks::Now() - url_request->creation_time()));
+      base::BindOnce(
+          &NotifyUIThreadOfRequestComplete,
+          info->GetWebContentsGetterForRequest(),
+          info->GetFrameTreeNodeIdGetterForRequest(), url_request->url(),
+          request_host_port, info->GetGlobalRequestID(), info->GetChildID(),
+          info->GetRenderFrameID(), info->GetResourceType(), info->IsDownload(),
+          url_request->was_cached(), base::Passed(&data_reduction_proxy_data),
+          net_error, url_request->GetTotalReceivedBytes(),
+          url_request->GetRawBodyBytes(), original_content_length,
+          url_request->creation_time(),
+          base::TimeTicks::Now() - url_request->creation_time()));
 }
 
 content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
