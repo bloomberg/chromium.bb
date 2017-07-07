@@ -675,9 +675,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
   base::HistogramBase* histogram_expiration_duration_minutes_;
-  base::HistogramBase* histogram_evicted_last_access_minutes_;
   base::HistogramBase* histogram_count_;
-  base::HistogramBase* histogram_cookie_deletion_cause_;
   base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_cookie_source_scheme_;
   base::HistogramBase* histogram_cookie_delete_equivalent_;

@@ -1937,15 +1937,6 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   static_assert(arraysize(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
                 "kChangeCauseMapping size should match DeletionCause size");
 
-  // See InitializeHistograms() for details.
-  DeletionCause deletion_cause_to_record = deletion_cause;
-  if (deletion_cause >= DELETE_COOKIE_CREATED_BETWEEN &&
-      deletion_cause <= DELETE_COOKIE_CANONICAL) {
-    deletion_cause_to_record = DELETE_COOKIE_EXPLICIT;
-  }
-  if (deletion_cause != DELETE_COOKIE_DONT_RECORD)
-    histogram_cookie_deletion_cause_->Add(deletion_cause_to_record);
-
   CanonicalCookie* cc = it->second.get();
   VLOG(kVlogSetCookies) << "InternalDeleteCookie()"
                         << ", cause:" << deletion_cause
@@ -2202,8 +2193,6 @@ size_t CookieMonster::GarbageCollectDeleteRange(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (CookieItVector::iterator it = it_begin; it != it_end; it++) {
-    histogram_evicted_last_access_minutes_->Add(
-        (current - (*it)->second->LastAccessDate()).InMinutes());
     InternalDeleteCookie((*it), true, cause);
   }
   return it_end - it_begin;
@@ -2348,16 +2337,10 @@ void CookieMonster::InitializeHistograms() {
   histogram_expiration_duration_minutes_ = base::Histogram::FactoryGet(
       "Cookie.ExpirationDurationMinutes", 1, kMinutesInTenYears, 50,
       base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_evicted_last_access_minutes_ = base::Histogram::FactoryGet(
-      "Cookie.EvictedLastAccessMinutes", 1, kMinutesInTenYears, 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
   histogram_count_ = base::Histogram::FactoryGet(
       "Cookie.Count", 1, 4000, 50, base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_ENUMERATION
-  histogram_cookie_deletion_cause_ = base::LinearHistogram::FactoryGet(
-      "Cookie.DeletionCause", 1, DELETE_COOKIE_LAST_ENTRY - 1,
-      DELETE_COOKIE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
   histogram_cookie_type_ = base::LinearHistogram::FactoryGet(
       "Cookie.Type", 1, (1 << COOKIE_TYPE_LAST_ENTRY) - 1,
       1 << COOKIE_TYPE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
