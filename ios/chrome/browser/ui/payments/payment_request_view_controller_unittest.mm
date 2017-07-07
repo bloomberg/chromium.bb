@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -29,6 +30,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -141,14 +143,15 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
  protected:
   PaymentRequestViewControllerTest()
       : autofill_profile_(autofill::test::GetFullProfile()),
-        credit_card_(autofill::test::GetCreditCard()) {
+        credit_card_(autofill::test::GetCreditCard()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     // Add testing profile and credit card to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_);
     personal_data_manager_.AddTestingCreditCard(&credit_card_);
 
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
 
     mediator_ = [[TestPaymentRequestMediator alloc] init];
   }
@@ -169,7 +172,9 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
+  web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   TestPaymentRequestMediator* mediator_;
 };

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/payments/payment_request.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -14,9 +16,11 @@
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_method_data.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,6 +47,9 @@ namespace payments {
 
 class PaymentRequestTest : public testing::Test {
  protected:
+  PaymentRequestTest()
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+
   // Returns PaymentDetails with one shipping option that's selected.
   web::PaymentDetails CreateDetailsWithShippingOption() {
     web::PaymentDetails details;
@@ -69,6 +76,9 @@ class PaymentRequestTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  web::TestWebState web_state_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
 // Tests that the payments::CurrencyFormatter is constructed with the correct
@@ -81,6 +91,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
 
   web_payment_request.details.total.amount.currency = base::ASCIIToUTF16("USD");
   TestPaymentRequest payment_request1(web_payment_request,
+                                      chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
   CurrencyFormatter* currency_formatter =
       payment_request1.GetOrCreateCurrencyFormatter();
@@ -89,6 +100,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
 
   web_payment_request.details.total.amount.currency = base::ASCIIToUTF16("JPY");
   TestPaymentRequest payment_request2(web_payment_request,
+                                      chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
   currency_formatter = payment_request2.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("¥55"), currency_formatter->Format("55.00"));
@@ -98,6 +110,7 @@ TEST_F(PaymentRequestTest, CreatesCurrencyFormatterCorrectly) {
       base::ASCIIToUTF16("NOT_ISO4217");
   web_payment_request.details.total.amount.currency = base::ASCIIToUTF16("USD");
   TestPaymentRequest payment_request3(web_payment_request,
+                                      chrome_browser_state_.get(), &web_state_,
                                       &personal_data_manager);
   currency_formatter = payment_request3.GetOrCreateCurrencyFormatter();
   EXPECT_EQ(base::UTF8ToUTF16("55.00"), currency_formatter->Format("55.00"));
@@ -117,6 +130,7 @@ TEST_F(PaymentRequestTest, AcceptedPaymentNetworks) {
   web_payment_request.method_data.push_back(method_datum2);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
@@ -138,6 +152,7 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
   web_payment_request.method_data.push_back(method_datum1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
@@ -164,6 +179,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
   web_payment_request.method_data.push_back(method_datum4);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   ASSERT_EQ(2U, payment_request.supported_card_networks().size());
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
@@ -180,6 +196,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_OnlyBasicCard) {
   web_payment_request.method_data.push_back(method_datum1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
 
   // All of the basic card networks are supported.
@@ -206,6 +223,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSpecificMethod) {
   web_payment_request.method_data.push_back(method_datum1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
 
   // All of the basic card networks are supported, but JCB is first because it
@@ -239,6 +257,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_Overlap) {
   web_payment_request.method_data.push_back(method_datum2);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
 
   EXPECT_EQ(3u, payment_request.supported_card_networks().size());
@@ -260,6 +279,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
   web_payment_request.method_data.push_back(method_datum1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
 
   // Only the specified networks are supported.
@@ -284,6 +304,7 @@ TEST_F(PaymentRequestTest, AddAutofillPaymentInstrument) {
   personal_data_manager.AddTestingCreditCard(&credit_card_1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(1U, payment_request.payment_methods().size());
 
@@ -308,6 +329,7 @@ TEST_F(PaymentRequestTest, AddAutofillProfile) {
   personal_data_manager.AddTestingProfile(&profile_1);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(1U, payment_request.shipping_profiles().size());
   EXPECT_EQ(1U, payment_request.contact_profiles().size());
@@ -344,6 +366,7 @@ TEST_F(PaymentRequestTest, SelectedShippingOptions) {
   web_payment_request.details = std::move(details);
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   // The last one marked "selected" should be selected.
   EXPECT_EQ(base::UTF8ToUTF16("option:3"),
@@ -367,6 +390,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_NoProfiles) {
 
   // No profiles are selected because none are available!
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
@@ -390,6 +414,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
 
   // address2 is selected because it has the most use count (Frecency model).
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
@@ -415,6 +440,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete_NoShippingOption) {
   // No shipping profile is selected because the merchant has not selected a
   // shipping option. However there is a suitable contact profile.
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
@@ -443,6 +469,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
   // Even though address1 has more use counts, address2 is selected because it
   // is complete.
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
@@ -479,6 +506,7 @@ TEST_F(PaymentRequestTest,
   // phone. address2 is selected as the shipping profile because it's the most
   // complete for shipping.
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(address2.guid(),
             payment_request.selected_shipping_profile()->guid());
@@ -494,6 +522,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_NoPaymentMethods) {
 
   // No payment methods are selected because none are available!
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(nullptr, payment_request.selected_payment_method());
 }
@@ -513,6 +542,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
 
   // credit_card is selected because expired cards are valid for payment.
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   EXPECT_EQ(payment_request.selected_payment_method()->type(),
             PaymentInstrument::Type::AUTOFILL);
@@ -542,6 +572,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
   // credit_card2 is selected because it has the most use count (Frecency
   // model).
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -568,6 +599,7 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
   // Even though credit_card2 has more use counts, credit_card is selected
   // because it is complete.
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -598,6 +630,7 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingAndContactInfo) {
       payment_request_test_util::CreateTestWebPaymentRequest();
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -634,6 +667,7 @@ TEST_F(PaymentRequestTest, RecordUseStats_SameShippingAndContactInfoProfile) {
       payment_request_test_util::CreateTestWebPaymentRequest();
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -671,6 +705,7 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingOnly) {
   web_payment_request.options.request_payer_phone = false;
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -704,6 +739,7 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestContactInfoOnly) {
   web_payment_request.options.request_shipping = false;
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(
@@ -739,6 +775,7 @@ TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
   web_payment_request.options.request_payer_phone = false;
 
   TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
   AutofillPaymentInstrument* payment_instrument =
       static_cast<AutofillPaymentInstrument*>(

@@ -78,10 +78,8 @@ class FakeResultDelegate
 class PaymentRequestFullCardRequesterTest : public ChromeWebTest {
  protected:
   PaymentRequestFullCardRequesterTest()
-      : credit_card_(autofill::test::GetCreditCard()) {
-    TestChromeBrowserState::Builder test_cbs_builder;
-    chrome_browser_state_ = test_cbs_builder.Build();
-  }
+      : credit_card_(autofill::test::GetCreditCard()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
   void SetUp() override {
     ChromeWebTest::SetUp();

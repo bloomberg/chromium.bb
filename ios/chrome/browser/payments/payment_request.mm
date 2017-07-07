@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/web/public/payments/payment_request.h"
+#include "ios/web/public/web_state/web_state.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
@@ -56,10 +57,12 @@ namespace payments {
 PaymentRequest::PaymentRequest(
     const web::PaymentRequest& web_payment_request,
     ios::ChromeBrowserState* browser_state,
+    web::WebState* web_state,
     autofill::PersonalDataManager* personal_data_manager,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
     : web_payment_request_(web_payment_request),
       browser_state_(browser_state),
+      web_state_(web_state),
       personal_data_manager_(personal_data_manager),
       payment_request_ui_delegate_(payment_request_ui_delegate),
       address_normalizer_(new AddressNormalizerImpl(
@@ -71,7 +74,8 @@ PaymentRequest::PaymentRequest(
       selected_payment_method_(nullptr),
       selected_shipping_option_(nullptr),
       profile_comparator_(GetApplicationContext()->GetApplicationLocale(),
-                          *this) {
+                          *this),
+      journey_logger_(IsIncognito(), GetLastCommittedURL(), GetUkmRecorder()) {
   PopulateAvailableShippingOptions();
   PopulateProfileCache();
   PopulateAvailableProfiles();
@@ -129,8 +133,7 @@ bool PaymentRequest::IsSslCertificateValid() {
 }
 
 const GURL& PaymentRequest::GetLastCommittedURL() const {
-  NOTREACHED() << "Implementation is never used";
-  return GURL::EmptyGURL();
+  return web_state_->GetLastCommittedURL();
 }
 
 void PaymentRequest::DoFullCardRequest(

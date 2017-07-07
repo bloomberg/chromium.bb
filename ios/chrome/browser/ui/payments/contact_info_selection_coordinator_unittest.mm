@@ -11,10 +11,12 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -28,20 +30,24 @@ class PaymentRequestContactInfoSelectionCoordinatorTest : public PlatformTest {
  protected:
   PaymentRequestContactInfoSelectionCoordinatorTest()
       : autofill_profile_1_(autofill::test::GetFullProfile()),
-        autofill_profile_2_(autofill::test::GetFullProfile2()) {
+        autofill_profile_2_(autofill::test::GetFullProfile2()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     // Add testing profiles to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_1_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_2_);
+
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile autofill_profile_1_;
   autofill::AutofillProfile autofill_profile_2_;
+  web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 

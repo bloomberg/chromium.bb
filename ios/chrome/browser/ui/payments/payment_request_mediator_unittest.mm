@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #include "ios/web/public/payments/payment_request.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,7 +69,7 @@ class PaymentRequestMediatorTest : public PlatformTest {
 
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
     payment_request_->SetPrefService(pref_service_.get());
 
     mediator_ = [[PaymentRequestMediator alloc]
@@ -81,10 +82,11 @@ class PaymentRequestMediatorTest : public PlatformTest {
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
+  web::TestWebState web_state_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   PaymentRequestMediator* mediator_;
 };
 

@@ -24,6 +24,7 @@ class PaymentsProfileComparator;
 namespace web {
 class PaymentRequest;
 class PaymentShippingOption;
+class WebState;
 }  // namespace web
 
 class PrefService;
@@ -33,13 +34,16 @@ namespace payments {
 // PaymentRequest for use in tests.
 class TestPaymentRequest : public PaymentRequest {
  public:
-  // |personal_data_manager| should not be null and should outlive this object.
+  // |browser_state|, |web_state|, and |personal_data_manager| should not be
+  // null and should outlive this object.
   TestPaymentRequest(const web::PaymentRequest& web_payment_request,
                      ios::ChromeBrowserState* browser_state,
+                     web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager,
                      id<PaymentRequestUIDelegate> payment_request_ui_delegate)
       : PaymentRequest(web_payment_request,
                        browser_state,
+                       web_state,
                        personal_data_manager,
                        payment_request_ui_delegate),
         region_data_loader_(nullptr),
@@ -48,16 +52,11 @@ class TestPaymentRequest : public PaymentRequest {
 
   TestPaymentRequest(const web::PaymentRequest& web_payment_request,
                      ios::ChromeBrowserState* browser_state,
+                     web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager)
       : TestPaymentRequest(web_payment_request,
                            browser_state,
-                           personal_data_manager,
-                           nil) {}
-
-  TestPaymentRequest(const web::PaymentRequest& web_payment_request,
-                     autofill::PersonalDataManager* personal_data_manager)
-      : TestPaymentRequest(web_payment_request,
-                           nil,
+                           web_state,
                            personal_data_manager,
                            nil) {}
 

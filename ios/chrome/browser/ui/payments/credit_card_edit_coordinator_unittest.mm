@@ -14,11 +14,13 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -40,8 +42,12 @@ class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
 class MockPaymentRequest : public payments::TestPaymentRequest {
  public:
   MockPaymentRequest(web::PaymentRequest web_payment_request,
+                     ios::ChromeBrowserState* browser_state,
+                     web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager)
       : payments::TestPaymentRequest(web_payment_request,
+                                     browser_state,
+                                     web_state,
                                      personal_data_manager) {}
   MOCK_METHOD1(
       AddAutofillPaymentInstrument,
@@ -109,15 +115,18 @@ using ::testing::_;
 
 class PaymentRequestCreditCardEditCoordinatorTest : public PlatformTest {
  protected:
-  PaymentRequestCreditCardEditCoordinatorTest() {
+  PaymentRequestCreditCardEditCoordinatorTest()
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     payment_request_ = base::MakeUnique<MockPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
+  web::TestWebState web_state_;
   MockTestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<MockPaymentRequest> payment_request_;
 };
 

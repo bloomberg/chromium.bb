@@ -12,10 +12,12 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -45,15 +47,17 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
       : autofill_profile_1_(autofill::test::GetFullProfile()),
         autofill_profile_2_(autofill::test::GetFullProfile2()),
         autofill_profile_3_(autofill::test::GetIncompleteProfile1()),
-        autofill_profile_4_(autofill::test::GetIncompleteProfile2()) {
+        autofill_profile_4_(autofill::test::GetIncompleteProfile2()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     // Add testing profiles to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_1_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_2_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_3_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_4_);
+
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
     profile_comparator_ = base::MakeUnique<FakePaymentsProfileComparator>(
         GetApplicationContext()->GetApplicationLocale(),
         *payment_request_.get());
@@ -76,9 +80,11 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
   autofill::AutofillProfile autofill_profile_2_;
   autofill::AutofillProfile autofill_profile_3_;
   autofill::AutofillProfile autofill_profile_4_;
+  web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
   std::unique_ptr<FakePaymentsProfileComparator> profile_comparator_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
 // Tests that the expected selectable items are created and that the index of
