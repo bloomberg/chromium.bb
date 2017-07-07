@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Worker: Test Performance Observer inside a worker. assert_equals: expected "SUCCESS" but got "FAILURE"
+Harness: the test ran to completion.
+
