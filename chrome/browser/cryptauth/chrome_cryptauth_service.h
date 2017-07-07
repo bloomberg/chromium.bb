@@ -12,6 +12,7 @@
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
@@ -25,7 +26,8 @@ class ChromeCryptAuthService
     : public KeyedService,
       public cryptauth::CryptAuthService,
       public cryptauth::CryptAuthEnrollmentManager::Observer,
-      public OAuth2TokenService::Observer {
+      public OAuth2TokenService::Observer,
+      public SigninManagerBase::Observer {
  public:
   static std::unique_ptr<ChromeCryptAuthService> Create(Profile* profile);
   ~ChromeCryptAuthService() override;
@@ -56,11 +58,16 @@ class ChromeCryptAuthService
       std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager,
       std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager,
       Profile* profile,
-      OAuth2TokenService* token_service);
+      OAuth2TokenService* token_service,
+      SigninManagerBase* signin_manager);
 
  private:
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  // SigninManagerBase::Observer:
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username) override;
 
   void PerformEnrollmentAndDeviceSync();
 
@@ -69,6 +76,7 @@ class ChromeCryptAuthService
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager_;
   Profile* profile_;
   OAuth2TokenService* token_service_;
+  SigninManagerBase* signin_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptAuthService);
 };
