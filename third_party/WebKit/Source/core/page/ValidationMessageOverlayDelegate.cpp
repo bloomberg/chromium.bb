@@ -12,6 +12,7 @@
 #include "core/page/PagePopupClient.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/graphics/paint/CullRect.h"
+#include "platform/text/PlatformLocale.h"
 
 namespace blink {
 
@@ -129,7 +130,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
                        SubstituteData(data, "text/html", "UTF-8", KURL(),
                                       kForceSynchronousLoad)));
 
-  Element& container = BubbleContainer();
+  Element& container = GetElementById("container");
   if (LayoutTestSupport::IsRunningLayoutTest())
     container.SetInlineStyleProperty(CSSPropertyTransition, "none");
   // Get the size to decide position later.
@@ -137,8 +138,8 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   bubble_size_ = container.VisibleBoundsInVisualViewport().Size();
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
-  container.SetInlineStyleProperty(CSSPropertyMinWidth,
-                                   bubble_size_.Width() + 1,
+  bubble_size_.Expand(1, 0);
+  container.SetInlineStyleProperty(CSSPropertyMinWidth, bubble_size_.Width(),
                                    CSSPrimitiveValue::UnitType::kPixels);
 }
 
@@ -146,11 +147,15 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
   DCHECK(data);
   PagePopupClient::AddString("<!DOCTYPE html><html><head><style>", data);
   data->Append(Platform::Current()->GetDataResource("validation_bubble.css"));
+  PagePopupClient::AddString("</style></head>", data);
   PagePopupClient::AddString(
-      "</style></head><body>"
+      Locale::DefaultLocale().IsRTL() ? "<body dir=rtl>" : "<body dir=ltr>",
+      data);
+  PagePopupClient::AddString(
       "<div id=container>"
       "<div id=outer-arrow-top></div>"
       "<div id=inner-arrow-top></div>"
+      "<div id=spacer-top></div>"
       "<main id=bubble-body>",
       data);
   data->Append(Platform::Current()->GetDataResource("input_alert.svg"));
@@ -168,16 +173,18 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
       "</div></main>"
       "<div id=outer-arrow-bottom></div>"
       "<div id=inner-arrow-bottom></div>"
+      "<div id=spacer-bottom></div>"
       "</div></body></html>\n",
       data);
 }
 
-Element& ValidationMessageOverlayDelegate::BubbleContainer() const {
-  Element* container = ToLocalFrame(page_->MainFrame())
-                           ->GetDocument()
-                           ->getElementById("container");
-  DCHECK(container) << "Failed to load the document?";
-  return *container;
+Element& ValidationMessageOverlayDelegate::GetElementById(
+    const AtomicString& id) const {
+  Element* element =
+      ToLocalFrame(page_->MainFrame())->GetDocument()->getElementById(id);
+  DCHECK(element) << "No element with id=" << id
+                  << ". Failed to load the document?";
+  return *element;
 }
 
 void ValidationMessageOverlayDelegate::AdjustBubblePosition(
@@ -196,7 +203,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
   else if (bubble_x + bubble_size_.Width() > view_size.Width())
     bubble_x = view_size.Width() - bubble_size_.Width();
 
-  Element& container = BubbleContainer();
+  Element& container = GetElementById("container");
   container.SetInlineStyleProperty(CSSPropertyLeft, bubble_x,
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.SetInlineStyleProperty(CSSPropertyTop, bubble_y,
@@ -208,7 +215,54 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
   else
     container.removeAttribute(HTMLNames::classAttr);
 
-  // TODO(tkent): Adjust arrow position.
+  // Should match to --arrow-size in validation_bubble.css.
+  const int kArrowSize = 8;
+  const int kArrowMargin = 10;
+  const int kMinArrowAnchorX = kArrowSize + kArrowMargin;
+  double max_arrow_anchor_x =
+      bubble_size_.Width() - (kArrowSize + kArrowMargin);
+  double arrow_anchor_x;
+  const int kOffsetToAnchorRect = 8;
+  double anchor_rect_center = anchor_rect.X() + anchor_rect.Width() / 2;
+  if (!Locale::DefaultLocale().IsRTL()) {
+    double anchor_rect_left = anchor_rect.X() + kOffsetToAnchorRect;
+    if (anchor_rect_left > anchor_rect_center)
+      anchor_rect_left = anchor_rect_center;
+
+    arrow_anchor_x = kMinArrowAnchorX;
+    if (bubble_x + arrow_anchor_x < anchor_rect_left) {
+      arrow_anchor_x = anchor_rect_left - bubble_x;
+      if (arrow_anchor_x > max_arrow_anchor_x)
+        arrow_anchor_x = max_arrow_anchor_x;
+    }
+  } else {
+    double anchor_rect_right = anchor_rect.MaxX() - kOffsetToAnchorRect;
+    if (anchor_rect_right < anchor_rect_center)
+      anchor_rect_right = anchor_rect_center;
+
+    arrow_anchor_x = max_arrow_anchor_x;
+    if (bubble_x + arrow_anchor_x > anchor_rect_right) {
+      arrow_anchor_x = anchor_rect_right - bubble_x;
+      if (arrow_anchor_x < kMinArrowAnchorX)
+        arrow_anchor_x = kMinArrowAnchorX;
+    }
+  }
+  double arrow_x = arrow_anchor_x - kArrowSize;
+  if (show_bottom_arrow) {
+    GetElementById("outer-arrow-bottom")
+        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+                                CSSPrimitiveValue::UnitType::kPixels);
+    GetElementById("inner-arrow-bottom")
+        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+                                CSSPrimitiveValue::UnitType::kPixels);
+  } else {
+    GetElementById("outer-arrow-top")
+        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+                                CSSPrimitiveValue::UnitType::kPixels);
+    GetElementById("inner-arrow-top")
+        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+                                CSSPrimitiveValue::UnitType::kPixels);
+  }
 }
 
 }  // namespace blink

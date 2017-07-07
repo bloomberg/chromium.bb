@@ -49,7 +49,7 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
   void UpdateFrameViewState(const PageOverlay&, const IntSize& view_size);
   void EnsurePage(const PageOverlay&, const IntSize& view_size);
   void WriteDocument(SharedBuffer*);
-  Element& BubbleContainer() const;
+  Element& GetElementById(const AtomicString&) const;
   void AdjustBubblePosition(const IntSize& view_size);
 
   // An internal Page and a ChromeClient for it.
