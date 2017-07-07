@@ -39,7 +39,7 @@ void UtilityThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
 }
 
-void UtilityThreadImpl::ReleaseProcessIfNeeded() {
+void UtilityThreadImpl::ReleaseProcess() {
   if (!IsInBrowserProcess()) {
     ChildProcess::current()->ReleaseProcess();
     return;
