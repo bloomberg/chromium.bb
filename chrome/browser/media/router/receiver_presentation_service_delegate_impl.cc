@@ -69,7 +69,8 @@ void ReceiverPresentationServiceDelegateImpl::
         const content::ReceiverConnectionAvailableCallback&
             receiver_available_callback) {
   offscreen_presentation_manager_->OnOffscreenPresentationReceiverCreated(
-      presentation_id_, web_contents_->GetLastCommittedURL(),
+      content::PresentationInfo(web_contents_->GetLastCommittedURL(),
+                                presentation_id_),
       receiver_available_callback);
 }
 

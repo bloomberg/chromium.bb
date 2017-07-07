@@ -43,6 +43,12 @@ const char kPresentationUrl3[] =
     "https://google.com/cast#__castAppId__=233637DE";
 const char kFrameUrl[] = "http://anotherframeurl.fakeurl.com/";
 
+// Matches content::PresentationInfo.
+MATCHER_P(InfoEquals, expected, "") {
+  return expected.presentation_url == arg.presentation_url &&
+         expected.presentation_id == arg.presentation_id;
+}
+
 }  // namespace
 
 namespace media_router {
@@ -74,27 +80,24 @@ class MockCreatePresentationConnnectionCallbacks {
 class MockOffscreenPresentationManager : public OffscreenPresentationManager {
  public:
   void RegisterOffscreenPresentationController(
-      const std::string& presentation_id,
-      const GURL& presentation_url,
+      const content::PresentationInfo& presentation_info,
       const RenderFrameHostId& render_frame_id,
       content::PresentationConnectionPtr controller,
       content::PresentationConnectionRequest,
       const MediaRoute& route) override {
-    RegisterOffscreenPresentationController(presentation_id, presentation_url,
-                                            render_frame_id, route);
+    RegisterOffscreenPresentationController(presentation_info, render_frame_id,
+                                            route);
   }
 
-  MOCK_METHOD4(RegisterOffscreenPresentationController,
-               void(const std::string& presentation_id,
-                    const GURL& presentation_url,
+  MOCK_METHOD3(RegisterOffscreenPresentationController,
+               void(const content::PresentationInfo& presentation_info,
                     const RenderFrameHostId& render_frame_id,
                     const MediaRoute& route));
   MOCK_METHOD2(UnregisterOffscreenPresentationController,
                void(const std::string& presentation_id,
                     const RenderFrameHostId& render_frame_id));
-  MOCK_METHOD3(OnOffscreenPresentationReceiverCreated,
-               void(const std::string& presentation_id,
-                    const GURL& presentation_url,
+  MOCK_METHOD2(OnOffscreenPresentationReceiverCreated,
+               void(const content::PresentationInfo& presentation_info,
                     const content::ReceiverConnectionAvailableCallback&
                         receiver_callback));
   MOCK_METHOD1(OnOffscreenPresentationReceiverTerminated,
@@ -614,7 +617,7 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToOffscreenPresentation) {
   auto& mock_offscreen_manager = GetMockOffscreenPresentationManager();
   EXPECT_CALL(mock_offscreen_manager,
               RegisterOffscreenPresentationController(
-                  presentation_id, presentation_url,
+                  InfoEquals(presentation_info),
                   RenderFrameHostId(render_process_id, render_frame_id),
                   Equals(media_route)));
 
