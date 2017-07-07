@@ -9,6 +9,7 @@
 #include <objc/runtime.h>
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -18,10 +19,33 @@
 #include "content/common/sandbox_init_mac.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/mac/seatbelt.h"
+
+extern "C" {
+void CGSSetDenyWindowServerConnections(bool);
+void CGSShutdownServerConnections();
+OSStatus SetApplicationIsDaemon(Boolean isDaemon);
+};
 
 namespace content {
 
 namespace {
+
+// This disconnects from the window server, and then indicates that Chrome
+// should continue execution without access to launchservicesd.
+void DisconnectWindowServer() {
+  // Now disconnect from WindowServer, after all objects have been warmed up.
+  // Shutting down the connection requires connecting to WindowServer,
+  // so do this before actually engaging the sandbox. This may cause two log
+  // messages to be printed to the system logger on certain OS versions.
+  CGSSetDenyWindowServerConnections(true);
+  CGSShutdownServerConnections();
+  // Allow the process to continue without a LaunchServices ASN. The
+  // INIT_Process function in HIServices will abort if it cannot connect to
+  // launchservicesd to get an ASN. By setting this flag, HIServices skips
+  // that.
+  SetApplicationIsDaemon(true);
+}
 
 // You are about to read a pretty disgusting hack. In a static initializer,
 // CoreFoundation decides to connect with cfprefsd(8) using Mach IPC. There is
@@ -128,8 +152,15 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  // Enable the sandbox.
-  bool sandbox_initialized = InitializeSandbox();
+  bool sandbox_initialized = sandbox::Seatbelt::IsSandboxed();
+
+  // If the sandbox is already engaged, just disconnect from the window server.
+  if (sandbox_initialized) {
+    DisconnectWindowServer();
+  } else {
+    sandbox_initialized = InitializeSandboxWithPostWarmupHook(
+        base::BindOnce(&DisconnectWindowServer));
+  }
 
   // The sandbox is now engaged. Make sure that the renderer has not connected
   // itself to Cocoa.

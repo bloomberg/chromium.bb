@@ -4,6 +4,7 @@
 
 #include "content/common/sandbox_init_mac.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -14,12 +15,26 @@
 
 namespace content {
 
-bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
+namespace {
+
+bool InitializeSandbox(int sandbox_type,
+                       const base::FilePath& allowed_dir,
+                       base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
   Sandbox::SandboxWarmup(sandbox_type);
 
+  // Execute the post warmup callback.
+  if (!hook.is_null())
+    std::move(hook).Run();
+
   // Actually sandbox the process.
   return Sandbox::EnableSandbox(sandbox_type, allowed_dir);
+}
+
+}  // namespace
+
+bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
+  return InitializeSandbox(sandbox_type, allowed_dir, base::OnceClosure());
 }
 
 // Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
@@ -72,12 +87,16 @@ bool GetSandboxTypeFromCommandLine(int* sandbox_type,
   return true;
 }
 
-bool InitializeSandbox() {
+bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook) {
   int sandbox_type = 0;
   base::FilePath allowed_dir;
   if (!GetSandboxTypeFromCommandLine(&sandbox_type, &allowed_dir))
     return true;
-  return InitializeSandbox(sandbox_type, allowed_dir);
+  return InitializeSandbox(sandbox_type, allowed_dir, std::move(hook));
+}
+
+bool InitializeSandbox() {
+  return InitializeSandboxWithPostWarmupHook(base::OnceClosure());
 }
 
 }  // namespace content
