@@ -4,7 +4,7 @@
 
 #include "ui/aura/local/window_port_local.h"
 
-#include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
@@ -103,7 +103,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
       aura::Env::GetInstance()->context_factory_private();
   frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
   auto frame_sink = base::MakeUnique<LayerTreeFrameSinkLocal>(
-      frame_sink_id_, context_factory_private->GetSurfaceManager());
+      frame_sink_id_, context_factory_private->GetFrameSinkManager());
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));
   if (window_->GetRootWindow())
@@ -133,7 +133,8 @@ void WindowPortLocal::OnSurfaceChanged(const cc::SurfaceId& surface_id,
   scoped_refptr<cc::SurfaceReferenceFactory> reference_factory =
       aura::Env::GetInstance()
           ->context_factory_private()
-          ->GetSurfaceManager()
+          ->GetFrameSinkManager()
+          ->surface_manager()
           ->reference_factory();
   window_->layer()->SetShowPrimarySurface(surface_info, reference_factory);
   window_->layer()->SetFallbackSurface(surface_info);

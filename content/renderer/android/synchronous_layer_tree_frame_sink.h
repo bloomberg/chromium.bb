@@ -30,8 +30,8 @@ class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class ContextProvider;
 class Display;
+class FrameSinkManager;
 class LocalSurfaceIdAllocator;
-class SurfaceManager;
 }  // namespace cc
 
 namespace IPC {
@@ -153,19 +153,19 @@ class SynchronousLayerTreeFrameSink
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
-  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  std::unique_ptr<cc::FrameSinkManager> frame_sink_manager_;
   std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   cc::LocalSurfaceId child_local_surface_id_;
   cc::LocalSurfaceId root_local_surface_id_;
   gfx::Size child_size_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
-  // Uses surface_manager_.
+  // Uses frame_sink_manager_.
   std::unique_ptr<cc::CompositorFrameSinkSupport> root_support_;
-  // Uses surface_manager_.
+  // Uses frame_sink_manager_.
   std::unique_ptr<cc::CompositorFrameSinkSupport> child_support_;
   StubDisplayClient display_client_;
-  // Uses surface_manager_.
+  // Uses frame_sink_manager_.
   std::unique_ptr<cc::Display> display_;
   // Owned by |display_|.
   SoftwareOutputSurface* software_output_surface_ = nullptr;

@@ -11,9 +11,9 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_info.h"
-#include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_reference.h"
 
 namespace cc {
@@ -21,7 +21,7 @@ namespace cc {
 // static
 std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     CompositorFrameSinkSupportClient* client,
-    SurfaceManager* surface_manager,
+    FrameSinkManager* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
@@ -30,7 +30,7 @@ std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
       base::WrapUnique(new CompositorFrameSinkSupport(
           client, frame_sink_id, is_root, handles_frame_sink_id_invalidation,
           needs_sync_tokens));
-  support->Init(surface_manager);
+  support->Init(frame_sink_manager);
   return support;
 }
 
@@ -48,9 +48,9 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   }
 
   EvictCurrentSurface();
-  surface_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
+  frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
-    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
+    frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
@@ -305,11 +305,12 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {}
 
-void CompositorFrameSinkSupport::Init(SurfaceManager* surface_manager) {
-  surface_manager_ = surface_manager;
+void CompositorFrameSinkSupport::Init(FrameSinkManager* frame_sink_manager) {
+  frame_sink_manager_ = frame_sink_manager;
+  surface_manager_ = frame_sink_manager->surface_manager();
   if (handles_frame_sink_id_invalidation_)
-    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
+    frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_);
+  frame_sink_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
@@ -348,7 +349,7 @@ Surface* CompositorFrameSinkSupport::CreateSurface(
   seen_first_frame_activation_ = false;
   return surface_manager_->CreateSurface(
       weak_factory_.GetWeakPtr(), surface_info,
-      surface_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
+      frame_sink_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
 }
 
 void CompositorFrameSinkSupport::RequestCopyOfSurface(

@@ -19,9 +19,9 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
-#include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -53,8 +53,9 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
       frame_evictor_(new viz::FrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
-  factory->GetContextFactoryPrivate()->GetSurfaceManager()->RegisterFrameSinkId(
-      frame_sink_id_);
+  factory->GetContextFactoryPrivate()
+      ->GetFrameSinkManager()
+      ->RegisterFrameSinkId(frame_sink_id_);
   CreateCompositorFrameSinkSupport();
 }
 
@@ -176,7 +177,8 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (!surface_id.is_valid())
     return surface_id;
-  cc::SurfaceHittest hittest(delegate, GetSurfaceManager());
+  cc::SurfaceHittest hittest(delegate,
+                             GetFrameSinkManager()->surface_manager());
   gfx::Transform target_transform;
   cc::SurfaceId target_local_surface_id =
       hittest.GetTargetSurfaceAtPoint(surface_id, point, &target_transform);
@@ -197,7 +199,7 @@ bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
   if (original_surface == surface_id)
     return true;
 
-  cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
+  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
   return hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                                transformed_point);
 }
@@ -448,8 +450,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     EvictDelegatedFrame();
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager =
-        factory->GetContextFactoryPrivate()->GetSurfaceManager();
+    cc::FrameSinkManager* manager =
+        factory->GetContextFactoryPrivate()->GetFrameSinkManager();
 
     frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                        skipped_latency_info_list_.begin(),
@@ -466,7 +468,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
       cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
                                    frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-          surface_info, manager->reference_factory());
+          surface_info, manager->surface_manager()->reference_factory());
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
@@ -776,7 +778,7 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   ResetCompositorFrameSinkSupport();
 
   factory->GetContextFactoryPrivate()
-      ->GetSurfaceManager()
+      ->GetFrameSinkManager()
       ->InvalidateFrameSinkId(frame_sink_id_);
 
   DCHECK(!vsync_manager_.get());
@@ -842,7 +844,7 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   constexpr bool needs_sync_points = true;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   support_ = cc::CompositorFrameSinkSupport::Create(
-      this, factory->GetContextFactoryPrivate()->GetSurfaceManager(),
+      this, factory->GetContextFactoryPrivate()->GetFrameSinkManager(),
       frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
       needs_sync_points);
   if (compositor_)

@@ -8,6 +8,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
@@ -52,8 +53,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
     }
-    aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
-                                            optimize_damage));
+    aggregator_.reset(new SurfaceAggregator(
+        manager_.surface_manager(), resource_provider_.get(), optimize_damage));
     for (int i = 0; i < num_surfaces; i++) {
       LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
 
@@ -149,7 +150,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   }
 
  protected:
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;

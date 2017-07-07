@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -1319,7 +1320,7 @@ class SurfaceHitTestReadyNotifier {
 SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
     RenderWidgetHostViewBase* target_view)
     : target_view_(target_view) {
-  surface_manager_ = GetSurfaceManager();
+  surface_manager_ = GetFrameSinkManager()->surface_manager();
 }
 
 void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(

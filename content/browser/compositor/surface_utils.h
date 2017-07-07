@@ -15,7 +15,7 @@
 
 namespace cc {
 class CopyOutputResult;
-class SurfaceManager;
+class FrameSinkManager;
 }  // namespace cc
 
 namespace viz {
@@ -27,7 +27,7 @@ namespace content {
 
 CONTENT_EXPORT cc::FrameSinkId AllocateFrameSinkId();
 
-CONTENT_EXPORT cc::SurfaceManager* GetSurfaceManager();
+CONTENT_EXPORT cc::FrameSinkManager* GetFrameSinkManager();
 
 CONTENT_EXPORT viz::HostFrameSinkManager* GetHostFrameSinkManager();
 

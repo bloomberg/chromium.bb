@@ -4,9 +4,9 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
-#include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -97,13 +97,13 @@ void CrossProcessFrameConnector::SetChildFrameSurface(
 
 void CrossProcessFrameConnector::OnSatisfySequence(
     const cc::SurfaceSequence& sequence) {
-  GetSurfaceManager()->SatisfySequence(sequence);
+  GetFrameSinkManager()->surface_manager()->SatisfySequence(sequence);
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
-  GetSurfaceManager()->RequireSequence(id, sequence);
+  GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
@@ -139,7 +139,7 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
   // is necessary.
   *transformed_point =
       gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
-  cc::SurfaceHittest hittest(nullptr, GetSurfaceManager());
+  cc::SurfaceHittest hittest(nullptr, GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
                                              transformed_point))
     return false;

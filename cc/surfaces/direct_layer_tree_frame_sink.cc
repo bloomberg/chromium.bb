@@ -9,15 +9,15 @@
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_manager.h"
 
 namespace cc {
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
-    SurfaceManager* surface_manager,
+    FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
@@ -28,7 +28,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
                          gpu_memory_buffer_manager,
                          shared_bitmap_manager),
       frame_sink_id_(frame_sink_id),
-      surface_manager_(surface_manager),
+      frame_sink_manager_(frame_sink_manager),
       display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.must_always_swap = true;
@@ -39,12 +39,12 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     const FrameSinkId& frame_sink_id,
-    SurfaceManager* surface_manager,
+    FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : LayerTreeFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
-      surface_manager_(surface_manager),
+      frame_sink_manager_(frame_sink_manager),
       display_(display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.must_always_swap = true;
@@ -69,7 +69,7 @@ bool DirectLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   constexpr bool is_root = true;
   constexpr bool handles_frame_sink_id_invalidation = false;
   support_ = CompositorFrameSinkSupport::Create(
-      this, surface_manager_, frame_sink_id_, is_root,
+      this, frame_sink_manager_, frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation,
       capabilities_.delegated_sync_points_required);
   begin_frame_source_ = base::MakeUnique<ExternalBeginFrameSource>(this);
@@ -77,7 +77,7 @@ bool DirectLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  display_->Initialize(this, surface_manager_);
+  display_->Initialize(this, frame_sink_manager_->surface_manager());
   return true;
 }
 

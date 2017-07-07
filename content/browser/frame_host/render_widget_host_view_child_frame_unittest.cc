@@ -205,8 +205,9 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager =
-        factory->GetContextFactoryPrivate()->GetSurfaceManager();
+    cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
+                                      ->GetFrameSinkManager()
+                                      ->surface_manager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
     // There should be a SurfaceSequence created by the RWHVChildFrame.

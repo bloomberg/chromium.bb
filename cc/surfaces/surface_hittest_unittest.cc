@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
@@ -65,7 +66,7 @@ using namespace test;
 // This test verifies that hit testing on a surface that does not exist does
 // not crash.
 TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
   FrameSinkId root_frame_sink_id(kArbitraryFrameSinkId);
   std::unique_ptr<CompositorFrameSinkSupport> root_support =
       CompositorFrameSinkSupport::Create(
@@ -96,7 +97,7 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
                                       std::move(root_frame));
 
   {
-    SurfaceHittest hittest(nullptr, &manager);
+    SurfaceHittest hittest(nullptr, manager.surface_manager());
     // It is expected this test will complete without crashes.
     gfx::Transform transform;
     EXPECT_EQ(root_surface_id,
@@ -108,7 +109,7 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
 
   // Set up root FrameSink.
   FrameSinkId root_frame_sink_id(1, 1);
@@ -137,13 +138,13 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
     },
   };
 
-  RunTests(nullptr, &manager, tests, arraysize(tests));
+  RunTests(nullptr, manager.surface_manager(), tests, arraysize(tests));
 
   root_support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_ChildSurface) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
 
   // Set up root FrameSink.
   FrameSinkId root_frame_sink_id(1, 1);
@@ -242,7 +243,7 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
     }
   };
 
-  RunTests(nullptr, &manager, tests, arraysize(tests));
+  RunTests(nullptr, manager.surface_manager(), tests, arraysize(tests));
 
   // Submit another root frame, with a slightly perturbed child Surface.
   root_frame = CreateCompositorFrame(root_rect, &root_pass);
@@ -260,7 +261,7 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   // Verify that point (100, 100) no longer falls on the child surface.
   // Verify that the transform to the child surface's space has also shifted.
   {
-    SurfaceHittest hittest(nullptr, &manager);
+    SurfaceHittest hittest(nullptr, manager.surface_manager());
 
     gfx::Point point(100, 100);
     gfx::Transform transform;
@@ -286,7 +287,7 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
 // This test verifies that hit testing will progress to the next quad if it
 // encounters an invalid RenderPassDrawQuad for whatever reason.
 TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
 
   // Set up root FrameSink.
   FrameSinkId root_frame_sink_id(1, 1);
@@ -390,14 +391,14 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
     }
   };
 
-  RunTests(nullptr, &manager, tests, arraysize(tests));
+  RunTests(nullptr, manager.surface_manager(), tests, arraysize(tests));
 
   root_support->EvictCurrentSurface();
   child_support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
   FrameSinkId root_frame_sink_id(kArbitraryFrameSinkId);
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
@@ -494,13 +495,13 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
     }
   };
 
-  RunTests(nullptr, &manager, tests, arraysize(tests));
+  RunTests(nullptr, manager.surface_manager(), tests, arraysize(tests));
 
   support->EvictCurrentSurface();
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
-  SurfaceManager manager;
+  FrameSinkManager manager;
 
   // Set up root FrameSink.
   FrameSinkId root_frame_sink_id(1, 1);
@@ -572,7 +573,8 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   };
 
   TestSurfaceHittestDelegate empty_delegate;
-  RunTests(&empty_delegate, &manager, test_expectations_without_insets,
+  RunTests(&empty_delegate, manager.surface_manager(),
+           test_expectations_without_insets,
            arraysize(test_expectations_without_insets));
 
   // Verify that insets have NOT affected hit targeting.
@@ -603,7 +605,8 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   TestSurfaceHittestDelegate reject_delegate;
   reject_delegate.AddInsetsForRejectSurface(child_surface_id,
                                             gfx::Insets(10, 10, 10, 10));
-  RunTests(&reject_delegate, &manager, test_expectations_with_reject_insets,
+  RunTests(&reject_delegate, manager.surface_manager(),
+           test_expectations_with_reject_insets,
            arraysize(test_expectations_with_reject_insets));
 
   // Verify that insets have affected hit targeting.
@@ -627,7 +630,8 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   TestSurfaceHittestDelegate accept_delegate;
   accept_delegate.AddInsetsForAcceptSurface(child_surface_id,
                                             gfx::Insets(5, 5, 5, 5));
-  RunTests(&accept_delegate, &manager, test_expectations_with_accept_insets,
+  RunTests(&accept_delegate, manager.surface_manager(),
+           test_expectations_with_accept_insets,
            arraysize(test_expectations_with_accept_insets));
 
   // Verify that insets have affected hit targeting.

@@ -18,6 +18,7 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -153,7 +154,7 @@ class DisplayTest : public testing::Test {
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
-  SurfaceManager manager_;
+  FrameSinkManager manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
@@ -187,7 +188,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_);
+  display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
   LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
@@ -445,7 +446,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_);
+  display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
   LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
@@ -514,7 +515,7 @@ TEST_F(DisplayTest, Finish) {
   SetUpDisplay(settings, std::move(context));
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_);
+  display_->Initialize(&client, manager_.surface_manager());
 
   display_->SetLocalSurfaceId(local_surface_id1, 1.f);
 
@@ -584,7 +585,7 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
   SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
 
   CountLossDisplayClient client;
-  display_->Initialize(&client, &manager_);
+  display_->Initialize(&client, manager_.surface_manager());
 
   // Verify DidLoseOutputSurface callback is hooked up correctly.
   EXPECT_EQ(0, client.loss_count());
@@ -605,7 +606,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   // Set up first display.
   SetUpDisplay(settings, nullptr);
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_);
+  display_->Initialize(&client, manager_.surface_manager());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   // Set up second frame sink + display.
@@ -624,7 +625,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   manager_.RegisterBeginFrameSource(begin_frame_source2.get(),
                                     kAnotherFrameSinkId);
   StubDisplayClient client2;
-  display2->Initialize(&client2, &manager_);
+  display2->Initialize(&client2, manager_.surface_manager());
   display2->SetLocalSurfaceId(local_surface_id, 1.f);
 
   display_->Resize(gfx::Size(100, 100));

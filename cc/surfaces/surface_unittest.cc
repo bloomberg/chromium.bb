@@ -6,8 +6,9 @@
 #include "base/memory/ptr_util.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_manager.h"
+#include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
@@ -24,19 +25,20 @@ constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, SurfaceLifetime) {
-  SurfaceManager manager;
+  FrameSinkManager frame_sink_manager;
+  SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
-          nullptr, &manager, kArbitraryFrameSinkId, kIsRoot,
+          nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
   support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
-  EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
 
-  EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
+  EXPECT_EQ(NULL, surface_manager->GetSurfaceForId(surface_id));
 }
 
 TEST(SurfaceTest, SurfaceIds) {
@@ -56,23 +58,24 @@ void TestCopyResultCallback(bool* called,
 // Test that CopyOutputRequests can outlive the current frame and be
 // aggregated on the next frame.
 TEST(SurfaceTest, CopyRequestLifetime) {
-  SurfaceManager manager;
+  FrameSinkManager frame_sink_manager;
+  SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   std::unique_ptr<CompositorFrameSinkSupport> support =
       CompositorFrameSinkSupport::Create(
-          nullptr, &manager, kArbitraryFrameSinkId, kIsRoot,
+          nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
   CompositorFrame frame = test::MakeCompositorFrame();
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
-  Surface* surface = manager.GetSurfaceForId(surface_id);
+  Surface* surface = surface_manager->GetSurfaceForId(surface_id);
   ASSERT_TRUE(!!surface);
 
   bool copy_called = false;
   support->RequestCopyOfSurface(CopyOutputRequest::CreateRequest(
       base::Bind(&TestCopyResultCallback, &copy_called)));
-  EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
+  EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);
 
   int max_frame = 3, start_id = 200;

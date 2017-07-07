@@ -25,9 +25,9 @@
 
 namespace cc {
 
-SurfaceManager::SurfaceReferenceInfo::SurfaceReferenceInfo() {}
+SurfaceManager::SurfaceReferenceInfo::SurfaceReferenceInfo() = default;
 
-SurfaceManager::SurfaceReferenceInfo::~SurfaceReferenceInfo() {}
+SurfaceManager::SurfaceReferenceInfo::~SurfaceReferenceInfo() = default;
 
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
     : lifetime_type_(lifetime_type),
@@ -129,11 +129,12 @@ void SurfaceManager::SatisfySequence(const SurfaceSequence& sequence) {
 }
 
 void SurfaceManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
-  framesink_manager_.RegisterFrameSinkId(frame_sink_id);
+  bool inserted = valid_frame_sink_ids_.insert(frame_sink_id).second;
+  DCHECK(inserted);
 }
 
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  framesink_manager_.InvalidateFrameSinkId(frame_sink_id);
+  valid_frame_sink_ids_.erase(frame_sink_id);
 
   // Remove any temporary references owned by |frame_sink_id|.
   std::vector<SurfaceId> temp_refs_to_clear;
@@ -277,7 +278,7 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
     const SurfaceId& surface_id = map_entry.first;
     Surface* surface = map_entry.second.get();
     surface->SatisfyDestructionDependencies(&satisfied_sequences_,
-                                  framesink_manager_.GetValidFrameSinkIds());
+                                            &valid_frame_sink_ids_);
 
     if (!IsMarkedForDestruction(surface_id) ||
         surface->GetDestructionDependencyCount() > 0) {
@@ -400,45 +401,6 @@ void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
   // range tracking map entry.
   if (frame_sink_temp_refs.empty())
     temporary_reference_ranges_.erase(frame_sink_id);
-}
-
-void SurfaceManager::RegisterFrameSinkManagerClient(
-    const FrameSinkId& frame_sink_id,
-    FrameSinkManagerClient* client) {
-  framesink_manager_.RegisterFrameSinkManagerClient(frame_sink_id, client);
-}
-
-void SurfaceManager::UnregisterFrameSinkManagerClient(
-    const FrameSinkId& frame_sink_id) {
-  framesink_manager_.UnregisterFrameSinkManagerClient(frame_sink_id);
-}
-
-void SurfaceManager::RegisterBeginFrameSource(
-    BeginFrameSource* source,
-    const FrameSinkId& frame_sink_id) {
-  framesink_manager_.RegisterBeginFrameSource(source, frame_sink_id);
-}
-
-void SurfaceManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
-  framesink_manager_.UnregisterBeginFrameSource(source);
-}
-
-BeginFrameSource* SurfaceManager::GetPrimaryBeginFrameSource() {
-  return framesink_manager_.GetPrimaryBeginFrameSource();
-}
-
-void SurfaceManager::RegisterFrameSinkHierarchy(
-    const FrameSinkId& parent_frame_sink_id,
-    const FrameSinkId& child_frame_sink_id) {
-  framesink_manager_.RegisterFrameSinkHierarchy(parent_frame_sink_id,
-                                                child_frame_sink_id);
-}
-
-void SurfaceManager::UnregisterFrameSinkHierarchy(
-    const FrameSinkId& parent_frame_sink_id,
-    const FrameSinkId& child_frame_sink_id) {
-  framesink_manager_.UnregisterFrameSinkHierarchy(parent_frame_sink_id,
-                                                child_frame_sink_id);
 }
 
 Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {

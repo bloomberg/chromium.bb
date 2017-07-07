@@ -41,13 +41,13 @@ namespace cc {
 class AnimationHost;
 class AnimationTimeline;
 class ContextProvider;
+class FrameSinkManager;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LocalSurfaceId;
 class ResourceSettings;
-class SurfaceManager;
 class TaskGraphRunner;
 }
 
@@ -105,8 +105,10 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   // Allocate a new client ID for the display compositor.
   virtual cc::FrameSinkId AllocateFrameSinkId() = 0;
 
-  // Gets the surface manager.
-  virtual cc::SurfaceManager* GetSurfaceManager() = 0;
+  // Gets the frame sink manager.
+  // TODO(staraz): Remove GetFrameSinkManager once FrameSinkManager is merged
+  // into FrameSinkManagerImpl.
+  virtual cc::FrameSinkManager* GetFrameSinkManager() = 0;
 
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;

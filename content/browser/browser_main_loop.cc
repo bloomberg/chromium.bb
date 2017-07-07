@@ -1215,7 +1215,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 #if !defined(OS_ANDROID)
   host_frame_sink_manager_.reset();
-  frame_sink_manager_.reset();
+  frame_sink_manager_impl_.reset();
 #endif
 
   // The device monitors are using |system_monitor_| as dependency, so delete
@@ -1361,8 +1361,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 #if !defined(OS_ANDROID)
-cc::SurfaceManager* BrowserMainLoop::GetSurfaceManager() const {
-  return frame_sink_manager_->surface_manager();
+cc::FrameSinkManager* BrowserMainLoop::GetFrameSinkManager() const {
+  return frame_sink_manager_impl_->frame_sink_manager();
 }
 #endif
 
@@ -1452,7 +1452,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #if !defined(OS_ANDROID)
   if (!service_manager::ServiceManagerIsRemote()) {
-    frame_sink_manager_ =
+    frame_sink_manager_impl_ =
         base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
 
     host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
@@ -1460,7 +1460,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_.get());
+        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
   }
 #endif
 
