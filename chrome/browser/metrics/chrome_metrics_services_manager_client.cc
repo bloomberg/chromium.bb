@@ -10,11 +10,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/metrics/variations/ui_string_overrider_factory.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -288,5 +290,15 @@ bool ChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
 }
 
 bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
-  return chrome::IsIncognitoSessionActive();
+#if defined(OS_ANDROID)
+  // TODO(crbug/739971) On Android, we don't get notifications from TabModel
+  // when incognito tabs are opened, so this won't get re-evaluated reliably
+  // yet.  Assume there always an incognito tab open, which will keep UKM
+  // disabled.
+  return true;
+#else
+  // Depending directly on BrowserList, since that is the implementation
+  // that we get correct notifications for.
+  return BrowserList::IsIncognitoSessionActive();
+#endif
 }
