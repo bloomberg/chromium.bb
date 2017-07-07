@@ -962,13 +962,9 @@ void AppsGridView::MoveSelected(int page_delta,
   SetSelectedItemByIndex(Index(target_page, target_slot));
 }
 
-void AppsGridView::CalculateIdealBounds() {
+const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
+    int page_of_view) const {
   gfx::Size grid_size = GetTileGridSize();
-
-  // Page size including padding pixels. A tile.x + page_width means the same
-  // tile slot in the next page; similarly for tile.y + page_height.
-  const int page_width = grid_size.width() + kPagePadding;
-  const int page_height = grid_size.height() + kPagePadding;
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
@@ -979,6 +975,44 @@ void AppsGridView::CalculateIdealBounds() {
   // Transition to previous page means negative offset.
   const int dir = transition.target_page > current_page ? -1 : 1;
 
+  int x_offset = 0;
+  int y_offset = 0;
+
+  if (pagination_controller_->scroll_axis() ==
+      PaginationController::SCROLL_AXIS_HORIZONTAL) {
+    // Page size including padding pixels. A tile.x + page_width means the same
+    // tile slot in the next page.
+    const int page_width = grid_size.width() + kPagePadding;
+    if (page_of_view < current_page)
+      x_offset = -page_width;
+    else if (page_of_view > current_page)
+      x_offset = page_width;
+
+    if (is_valid) {
+      if (page_of_view == current_page ||
+          page_of_view == transition.target_page) {
+        x_offset += transition.progress * page_width * dir;
+      }
+    }
+  } else {
+    const int page_height = grid_size.height() + kPagePadding;
+    if (page_of_view < current_page)
+      y_offset = -page_height;
+    else if (page_of_view > current_page)
+      y_offset = page_height;
+
+    if (is_valid) {
+      if (page_of_view == current_page ||
+          page_of_view == transition.target_page) {
+        y_offset += transition.progress * page_height * dir;
+      }
+    }
+  }
+
+  return gfx::Vector2d(x_offset, y_offset);
+}
+
+void AppsGridView::CalculateIdealBounds() {
   const int total_views =
       view_model_.view_size() + pulsing_blocks_model_.view_size();
   int slot_index = 0;
@@ -994,41 +1028,11 @@ void AppsGridView::CalculateIdealBounds() {
       view_index = GetIndexFromModelIndex(slot_index);
     }
 
-    // Decide the x or y offset for current item.
-    int x_offset = 0;
-    int y_offset = 0;
-
-    if (pagination_controller_->scroll_axis() ==
-        PaginationController::SCROLL_AXIS_HORIZONTAL) {
-      if (view_index.page < current_page)
-        x_offset = -page_width;
-      else if (view_index.page > current_page)
-        x_offset = page_width;
-
-      if (is_valid) {
-        if (view_index.page == current_page ||
-            view_index.page == transition.target_page) {
-          x_offset += transition.progress * page_width * dir;
-        }
-      }
-    } else {
-      if (view_index.page < current_page)
-        y_offset = -page_height;
-      else if (view_index.page > current_page)
-        y_offset = page_height;
-
-      if (is_valid) {
-        if (view_index.page == current_page ||
-            view_index.page == transition.target_page) {
-          y_offset += transition.progress * page_height * dir;
-        }
-      }
-    }
-
     const int row = view_index.slot / cols_;
     const int col = view_index.slot % cols_;
     gfx::Rect tile_slot = GetExpectedTileBounds(row, col);
-    tile_slot.Offset(x_offset, y_offset);
+    const gfx::Vector2d offset = CalculateTransitionOffset(view_index.page);
+    tile_slot.Offset(offset.x(), offset.y());
     if (i < view_model_.view_size()) {
       view_model_.set_ideal_bounds(i, tile_slot);
     } else {
