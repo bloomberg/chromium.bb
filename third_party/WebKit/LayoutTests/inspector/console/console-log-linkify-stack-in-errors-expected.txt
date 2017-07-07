@@ -6,7 +6,7 @@ break
     at forStack (console-log-linkify-stack-in-errors.html:11:17)
     at console-log-linkify-stack-in-errors.html:14:1
 CONSOLE MESSAGE: line 30: TypeError: Cannot read property 'removeChild' of null
-    at domError (console-log-linkify-stack-in-errors.html:28:22)
+    at domError (console-log-linkify-stack-in-errors.html:28:23)
     at console-log-linkify-stack-in-errors.html:34:1
 CONSOLE MESSAGE: line 41: Error: some error
 CONSOLE MESSAGE: line 47: Error message without stacks http://www.chromium.org/
