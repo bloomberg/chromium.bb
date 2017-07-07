@@ -47,25 +47,16 @@ struct RTCTimestamps {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RTCTimestamps);
 };
 
-// Translate from webrtc::VideoCodecType and webrtc::VideoCodec to
-// media::VideoCodecProfile.
-media::VideoCodecProfile WebRTCVideoCodecToVideoCodecProfile(
-    webrtc::VideoCodecType type,
-    const webrtc::VideoCodec* codec_settings) {
-  DCHECK_EQ(type, codec_settings->codecType);
-  switch (type) {
-    case webrtc::kVideoCodecVP8:
-      return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecVP9:
-      return media::VP9PROFILE_MIN;
-    case webrtc::kVideoCodecH264:
-      // TODO(magjed): WebRTC is only using Baseline profile for now. Update
-      // once http://crbug/webrtc/6337 is fixed.
-      return media::H264PROFILE_BASELINE;
-    default:
-      NOTREACHED() << "Unrecognized video codec type";
-      return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
+    media::VideoCodecProfile profile) {
+  if (profile >= media::VP8PROFILE_MIN && profile <= media::VP8PROFILE_MAX) {
+    return webrtc::kVideoCodecVP8;
+  } else if (profile >= media::H264PROFILE_MIN &&
+             profile <= media::H264PROFILE_MAX) {
+    return webrtc::kVideoCodecH264;
   }
+  NOTREACHED() << "Invalid profile " << GetProfileName(profile);
+  return webrtc::kVideoCodecUnknown;
 }
 
 // Populates struct webrtc::RTPFragmentationHeader for H264 codec.
@@ -792,12 +783,12 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
 }
 
 RTCVideoEncoder::RTCVideoEncoder(
-    webrtc::VideoCodecType type,
+    media::VideoCodecProfile profile,
     media::GpuVideoAcceleratorFactories* gpu_factories)
-    : video_codec_type_(type),
+    : profile_(profile),
       gpu_factories_(gpu_factories),
       gpu_task_runner_(gpu_factories->GetTaskRunner()) {
-  DVLOG(1) << "RTCVideoEncoder(): codec type=" << type;
+  DVLOG(1) << "RTCVideoEncoder(): profile=" << GetProfileName(profile);
 }
 
 RTCVideoEncoder::~RTCVideoEncoder() {
@@ -818,9 +809,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
     Release();
   }
 
-  impl_ = new Impl(gpu_factories_, video_codec_type_);
-  const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
-      impl_->video_codec_type(), codec_settings);
+  impl_ = new Impl(gpu_factories_, ProfileToWebRtcVideoCodecType(profile_));
 
   base::WaitableEvent initialization_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -828,17 +817,14 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::Impl::CreateAndInitializeVEA,
-                 impl_,
+      base::Bind(&RTCVideoEncoder::Impl::CreateAndInitializeVEA, impl_,
                  gfx::Size(codec_settings->width, codec_settings->height),
-                 codec_settings->startBitrate,
-                 profile,
-                 &initialization_waiter,
+                 codec_settings->startBitrate, profile_, &initialization_waiter,
                  &initialization_retval));
 
   // webrtc::VideoEncoder expects this call to be synchronous.
   initialization_waiter.Wait();
-  RecordInitEncodeUMA(initialization_retval, profile);
+  RecordInitEncodeUMA(initialization_retval, profile_);
   return initialization_retval;
 }
 
