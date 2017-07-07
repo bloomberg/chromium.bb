@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 
+#include <set>
 #include <string>
 
 #include "base/base64.h"
@@ -14,14 +15,38 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "net/base/load_flags.h"
 #include "net/cert/ct_serialization.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
+#include "net/url_request/url_request_context.h"
 
 namespace {
+
+// Returns true if |request| contains any of the |allowed_values| in a response
+// header field named |header|. |allowed_values| are expected to be lower-case
+// and the check is case-insensitive.
+bool HasHeaderValues(net::URLRequest* request,
+                     const std::string& header,
+                     const std::set<std::string>& allowed_values) {
+  std::string response_headers;
+  request->GetResponseHeaderByName(header, &response_headers);
+  const std::vector<std::string> response_values = base::SplitString(
+      response_headers, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& value : response_values) {
+    for (const auto& allowed : allowed_values) {
+      if (base::ToLowerASCII(allowed) == base::ToLowerASCII(value)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 std::string TimeToISO8601(const base::Time& t) {
   base::Time::Exploded exploded;
@@ -129,7 +154,8 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
     : report_sender_(
-          new net::ReportSender(request_context, kTrafficAnnotation)) {}
+          new net::ReportSender(request_context, kTrafficAnnotation)),
+      request_context_(request_context) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 
@@ -173,7 +199,85 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
 
   UMA_HISTOGRAM_BOOLEAN("SSL.ExpectCTReportSendingAttempt", true);
 
-  report_sender_->Send(report_uri, "application/json; charset=utf-8",
-                       serialized_report, base::Callback<void()>(),
+  SendPreflight(report_uri, serialized_report);
+}
+
+void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
+                                               int net_error) {
+  auto preflight_it = inflight_preflights_.find(request);
+  DCHECK(inflight_preflights_.end() != inflight_preflights_.find(request));
+  PreflightInProgress* preflight = preflight_it->second.get();
+
+  const int response_code = request->GetResponseCode();
+
+  // Check that the preflight succeeded: it must have an HTTP OK status code,
+  // with the following headers:
+  // - Access-Control-Allow-Origin: * or null
+  // - Access-Control-Allow-Methods: POST
+  // - Access-Control-Allow-Headers: Content-Type
+
+  if (!request->status().is_success() || response_code < 200 ||
+      response_code > 299) {
+    RecordUMAOnFailure(preflight->report_uri, request->status().error(),
+                       request->status().is_success() ? response_code : -1);
+    inflight_preflights_.erase(request);
+    // Do not use |preflight| after this point, since it has been erased above.
+    return;
+  }
+
+  if (!HasHeaderValues(request, "Access-Control-Allow-Origin", {"*", "null"}) ||
+      !HasHeaderValues(request, "Access-Control-Allow-Methods", {"post"}) ||
+      !HasHeaderValues(request, "Access-Control-Allow-Headers",
+                       {"content-type"})) {
+    RecordUMAOnFailure(preflight->report_uri, request->status().error(),
+                       response_code);
+    inflight_preflights_.erase(request);
+    // Do not use |preflight| after this point, since it has been erased above.
+    return;
+  }
+
+  report_sender_->Send(preflight->report_uri,
+                       "application/expect-ct-report+json; charset=utf-8",
+                       preflight->serialized_report, base::Callback<void()>(),
                        base::Bind(RecordUMAOnFailure));
+  inflight_preflights_.erase(request);
+}
+
+void ChromeExpectCTReporter::OnReadCompleted(net::URLRequest* request,
+                                             int bytes_read) {
+  NOTREACHED();
+}
+
+ChromeExpectCTReporter::PreflightInProgress::PreflightInProgress(
+    std::unique_ptr<net::URLRequest> request,
+    const std::string& serialized_report,
+    const GURL& report_uri)
+    : request(std::move(request)),
+      serialized_report(serialized_report),
+      report_uri(report_uri) {}
+
+ChromeExpectCTReporter::PreflightInProgress::~PreflightInProgress() {}
+
+void ChromeExpectCTReporter::SendPreflight(
+    const GURL& report_uri,
+    const std::string& serialized_report) {
+  std::unique_ptr<net::URLRequest> url_request =
+      request_context_->CreateRequest(report_uri, net::DEFAULT_PRIORITY, this,
+                                      kTrafficAnnotation);
+  url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+                            net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                            net::LOAD_DO_NOT_SEND_COOKIES |
+                            net::LOAD_DO_NOT_SAVE_COOKIES);
+  url_request->set_method("OPTIONS");
+
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.SetHeader("Origin", "null");
+  extra_headers.SetHeader("Access-Control-Request-Method", "POST");
+  extra_headers.SetHeader("Access-Control-Request-Headers", "content-type");
+  url_request->SetExtraRequestHeaders(extra_headers);
+
+  net::URLRequest* raw_request = url_request.get();
+  inflight_preflights_[raw_request] = base::MakeUnique<PreflightInProgress>(
+      std::move(url_request), serialized_report, report_uri);
+  raw_request->Start();
 }
