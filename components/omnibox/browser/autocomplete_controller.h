@@ -248,6 +248,11 @@ class AutocompleteController : public AutocompleteProviderListener {
   // notifications until Start() has been invoked on all providers.
   bool in_start_;
 
+  // True if the signal predicting a likely search has already been sent to the
+  // service worker context during the current input session. False on
+  // controller creation and after |ResetSession| is called.
+  bool search_service_worker_signal_sent_;
+
   TemplateURLService* template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);

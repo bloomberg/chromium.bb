@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -204,6 +205,7 @@ AutocompleteController::AutocompleteController(
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
+      search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
@@ -341,6 +343,24 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // need the edit model to update the display.
   UpdateResult(false, true);
 
+  // If the input looks like a query, send a signal predicting that the user is
+  // going to issue a search (either to the default search engine or to a
+  // keyword search engine, as indicated by the destination_url). This allows
+  // any associated service worker to start up early and reduce the latency of a
+  // resulting search. However, to avoid a potentially expensive operation, we
+  // only do this once per session. Additionally, a default match is expected to
+  // be available at this point but we check anyway to guard against an invalid
+  // dereference.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kSpeculativeServiceWorkerStartOnQueryInput) &&
+      (input.type() == metrics::OmniboxInputType::QUERY) &&
+      !search_service_worker_signal_sent_ &&
+      (result_.default_match() != result_.end())) {
+    search_service_worker_signal_sent_ = true;
+    provider_client_->StartServiceWorker(
+        result_.default_match()->destination_url);
+  }
+
   if (!done_) {
     StartExpireTimer();
     StartStopTimer();
@@ -400,6 +420,8 @@ void AutocompleteController::AddProvidersInfo(
 }
 
 void AutocompleteController::ResetSession() {
+  search_service_worker_signal_sent_ = false;
+
   for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
        ++i)
     (*i)->ResetSession();

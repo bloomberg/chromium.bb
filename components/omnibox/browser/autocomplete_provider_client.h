@@ -110,6 +110,12 @@ class AutocompleteProviderClient {
 
   virtual void PrefetchImage(const GURL& url) = 0;
 
+  // Sends a hint to the service worker context that navigation to
+  // |desination_url| is likely. On platforms where this is supported, the
+  // service worker lookup can be expensive so this method should only be
+  // called once per input session.
+  virtual void StartServiceWorker(const GURL& destination_url) {}
+
   // Called by |controller| when its results have changed and all providers are
   // done processing the autocomplete request. At the //chrome level, this
   // callback results in firing the
