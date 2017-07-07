@@ -112,13 +112,11 @@ MESSAGE_CENTER_EXPORT gfx::Size GetImageSizeForContainerSize(
 // Not used when --enabled-new-style-notification is set.
 const size_t kNotificationMaximumItems = 5;
 
-// Timing.
+// Timing. Web Notifications always use high-priority timings. Given the absence
+// of a notification center on non-Chrome OS platforms, this improves users'
+// ability to interact with the toasts.
 const int kAutocloseDefaultDelaySeconds = 8;
 const int kAutocloseHighPriorityDelaySeconds = 25;
-// Web notifications use a larger timeout for now, which improves re-engagement.
-// TODO(johnme): Use Finch to experiment with different values, then consider
-// replacing kAutocloseDefaultDelaySeconds with this (https://crbug.com/530697)
-const int kAutocloseWebPageDelaySeconds = 20;
 
 // Buttons.
 const int kButtonHeight = 38;              // In DIPs.
