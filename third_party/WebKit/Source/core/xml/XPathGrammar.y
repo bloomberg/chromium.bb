@@ -49,9 +49,7 @@ void* yyFastMalloc(size_t size)
 #define YYDEBUG 0
 #define YYMAXDEPTH 10000
 
-using namespace blink;
-using namespace XPath;
-
+using blink::XPath::Step;
 %}
 
 %pure-parser
@@ -73,7 +71,7 @@ using namespace XPath;
 
 %{
 
-static int xpathyylex(YYSTYPE* yylval) { return Parser::Current()->Lex(yylval); }
+static int xpathyylex(YYSTYPE* yylval) { return blink::XPath::Parser::Current()->Lex(yylval); }
 static void xpathyyerror(void*, const char*) { }
 
 %}
@@ -140,7 +138,7 @@ LocationPath:
 AbsoluteLocationPath:
     '/'
     {
-        $$ = new LocationPath;
+        $$ = new blink::XPath::LocationPath;
     }
     |
     '/' RelativeLocationPath
@@ -158,7 +156,7 @@ AbsoluteLocationPath:
 RelativeLocationPath:
     Step
     {
-        $$ = new LocationPath;
+        $$ = new blink::XPath::LocationPath;
         $$->AppendStep($1);
     }
     |
@@ -274,13 +272,13 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new blink::HeapVector<blink::Member<Predicate>>;
-        $$->push_back(new Predicate($1));
+        $$ = new blink::HeapVector<blink::Member<blink::XPath::Predicate>>;
+        $$->push_back(new blink::XPath::Predicate($1));
     }
     |
     PredicateList Predicate
     {
-        $$->push_back(new Predicate($2));
+        $$->push_back(new blink::XPath::Predicate($2));
     }
     ;
 
@@ -313,7 +311,7 @@ AbbreviatedStep:
 PrimaryExpr:
     VARIABLEREFERENCE
     {
-        $$ = new VariableReference(*$1);
+        $$ = new blink::XPath::VariableReference(*$1);
         parser->DeleteString($1);
     }
     |
@@ -324,13 +322,13 @@ PrimaryExpr:
     |
     LITERAL
     {
-        $$ = new StringExpression(*$1);
+        $$ = new blink::XPath::StringExpression(*$1);
         parser->DeleteString($1);
     }
     |
     NUMBER
     {
-        $$ = new Number($1->ToDouble());
+        $$ = new blink::XPath::Number($1->ToDouble());
         parser->DeleteString($1);
     }
     |
@@ -340,7 +338,7 @@ PrimaryExpr:
 FunctionCall:
     FUNCTIONNAME '(' ')'
     {
-        $$ = CreateFunction(*$1);
+        $$ = blink::XPath::CreateFunction(*$1);
         if (!$$)
             YYABORT;
         parser->DeleteString($1);
@@ -348,7 +346,7 @@ FunctionCall:
     |
     FUNCTIONNAME '(' ArgumentList ')'
     {
-        $$ = CreateFunction(*$1, *$3);
+        $$ = blink::XPath::CreateFunction(*$1, *$3);
         if (!$$)
             YYABORT;
         parser->DeleteString($1);
@@ -358,7 +356,7 @@ FunctionCall:
 ArgumentList:
     Argument
     {
-        $$ = new blink::HeapVector<blink::Member<Expression>>;
+        $$ = new blink::HeapVector<blink::Member<blink::XPath::Expression>>;
         $$->push_back($1);
     }
     |
@@ -377,7 +375,7 @@ UnionExpr:
     |
     UnionExpr '|' PathExpr
     {
-        $$ = new Union;
+        $$ = new blink::XPath::Union;
         $$->AddSubExpression($1);
         $$->AddSubExpression($3);
     }
@@ -419,7 +417,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new LogicalOp(LogicalOp::kOP_Or, $1, $3);
+        $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_Or, $1, $3);
     }
     ;
 
@@ -428,7 +426,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new LogicalOp(LogicalOp::kOP_And, $1, $3);
+        $$ = new blink::XPath::LogicalOp(blink::XPath::LogicalOp::kOP_And, $1, $3);
     }
     ;
 
@@ -437,7 +435,7 @@ EqualityExpr:
     |
     EqualityExpr EQOP RelationalExpr
     {
-        $$ = new EqTestOp($2, $1, $3);
+        $$ = new blink::XPath::EqTestOp($2, $1, $3);
     }
     ;
 
@@ -446,7 +444,7 @@ RelationalExpr:
     |
     RelationalExpr RELOP AdditiveExpr
     {
-        $$ = new EqTestOp($2, $1, $3);
+        $$ = new blink::XPath::EqTestOp($2, $1, $3);
     }
     ;
 
@@ -455,12 +453,12 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::kOP_Add, $1, $3);
+        $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Add, $1, $3);
     }
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::kOP_Sub, $1, $3);
+        $$ = new blink::XPath::NumericOp(blink::XPath::NumericOp::kOP_Sub, $1, $3);
     }
     ;
 
@@ -469,7 +467,7 @@ MultiplicativeExpr:
     |
     MultiplicativeExpr MULOP UnaryExpr
     {
-        $$ = new NumericOp($2, $1, $3);
+        $$ = new blink::XPath::NumericOp($2, $1, $3);
     }
     ;
 
@@ -478,7 +476,7 @@ UnaryExpr:
     |
     MINUS UnaryExpr
     {
-        $$ = new Negative;
+        $$ = new blink::XPath::Negative;
         $$->AddSubExpression($2);
     }
     ;
