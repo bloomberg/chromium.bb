@@ -113,8 +113,10 @@ class CONTENT_EXPORT RenderMessageFilter
   void GenerateRoutingID(GenerateRoutingIDCallback routing_id) override;
   void CreateNewWidget(int32_t opener_id,
                        blink::WebPopupType popup_type,
+                       mojom::WidgetPtr widget,
                        CreateNewWidgetCallback callback) override;
   void CreateFullscreenWidget(int opener_id,
+                              mojom::WidgetPtr widget,
                               CreateFullscreenWidgetCallback callback) override;
   void GetSharedBitmapAllocationNotifier(
       cc::mojom::SharedBitmapAllocationNotifierAssociatedRequest request)

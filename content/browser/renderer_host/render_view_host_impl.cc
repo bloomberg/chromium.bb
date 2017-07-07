@@ -756,12 +756,16 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
 }
 
 void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
+                                         mojom::WidgetPtr widget,
                                          blink::WebPopupType popup_type) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
+  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, std::move(widget),
+                             popup_type);
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id,
+                                                   mojom::WidgetPtr widget) {
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id,
+                                       std::move(widget));
 }
 
 void RenderViewHostImpl::OnShowWidget(int route_id,

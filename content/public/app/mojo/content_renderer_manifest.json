@@ -44,6 +44,7 @@
           "blink::mojom::ManifestManager",
           "content::mojom::ImageDownloader",
           "content::mojom::FrameInputHandler",
+          "content::mojom::Widget",
           "mojom::MediaDevicesListener"
         ]
       },

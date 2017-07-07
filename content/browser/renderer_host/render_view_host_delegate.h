@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
@@ -130,11 +131,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // is (select, autofill...).
   virtual void CreateNewWidget(int32_t render_process_id,
                                int32_t route_id,
+                               mojom::WidgetPtr widget,
                                blink::WebPopupType popup_type) {}
 
   // Creates a full screen RenderWidget. Similar to above.
   virtual void CreateNewFullscreenWidget(int32_t render_process_id,
-                                         int32_t route_id) {}
+                                         int32_t route_id,
+                                         mojom::WidgetPtr widget) {}
 
   // Show the newly created widget with the specified bounds.
   // The widget is identified by the route_id passed to CreateNewWidget.

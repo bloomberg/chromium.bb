@@ -40,6 +40,7 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
   void CreateNewWidget(int32_t opener_id,
                        blink::WebPopupType popup_type,
+                       mojom::WidgetPtr widget,
                        CreateNewWidgetCallback callback) override {
     // See comment in CreateNewWindow().
     NOTREACHED();
@@ -47,6 +48,7 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
   bool CreateNewWidget(int32_t opener_id,
                        blink::WebPopupType popup_type,
+                       mojom::WidgetPtr widget,
                        int32_t* route_id) override {
     thread_->OnCreateWidget(opener_id, popup_type, route_id);
     return true;
@@ -54,6 +56,7 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
 
   void CreateFullscreenWidget(
       int opener_id,
+      mojom::WidgetPtr widget,
       CreateFullscreenWidgetCallback callback) override {
     NOTREACHED();
   }

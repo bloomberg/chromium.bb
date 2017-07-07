@@ -31,6 +31,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/features.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
@@ -44,6 +45,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -128,6 +130,7 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       NON_EXPORTED_BASE(virtual public blink::WebWidgetClient),
+      public mojom::Widget,
       public RenderWidgetCompositorDelegate,
       public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
@@ -446,7 +449,8 @@ class CONTENT_EXPORT RenderWidget
                const ScreenInfo& screen_info,
                bool swapped_out,
                bool hidden,
-               bool never_visible);
+               bool never_visible,
+               mojom::WidgetRequest widget_request = nullptr);
 
   ~RenderWidget() override;
 
@@ -897,6 +901,8 @@ class CONTENT_EXPORT RenderWidget
   cc::LocalSurfaceId local_surface_id_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
+
+  mojo::Binding<mojom::Widget> widget_binding_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
