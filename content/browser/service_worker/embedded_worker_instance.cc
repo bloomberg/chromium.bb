@@ -69,39 +69,79 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
       worker_process_id, worker_route_id);
 }
 
-void SetupOnUI(
-    int process_id,
-    const ServiceWorkerContextCore* service_worker_context,
-    const base::WeakPtr<ServiceWorkerContextCore>& service_worker_context_weak,
-    int64_t service_worker_version_id,
-    const GURL& url,
-    const GURL& scope,
-    bool is_installed,
-    mojom::EmbeddedWorkerInstanceClientRequest request,
-    const base::Callback<
-        void(std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
-             bool wait_for_debugger)>& callback) {
+using SetupProcessCallback = base::OnceCallback<void(
+    ServiceWorkerStatusCode,
+    std::unique_ptr<EmbeddedWorkerStartParams>,
+    std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
+    std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
+    bool wait_for_debugger)>;
+
+// Allocates a renderer process for starting a worker and does setup like
+// registering with DevTools. Called on the UI thread. Calls |callback| on the
+// IO thread. |context| and |weak_context| are only for passing to DevTools and
+// must not be dereferenced here on the UI thread.
+void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+                     bool can_use_existing_process,
+                     std::unique_ptr<EmbeddedWorkerStartParams> params,
+                     mojom::EmbeddedWorkerInstanceClientRequest request,
+                     ServiceWorkerContextCore* context,
+                     base::WeakPtr<ServiceWorkerContextCore> weak_context,
+                     SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto process_info =
+      base::MakeUnique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
+  std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
+  bool wait_for_debugger = false;
+  if (!process_manager) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT,
+                       std::move(params), std::move(process_info),
+                       std::move(devtools_proxy), wait_for_debugger));
+    return;
+  }
+
+  // Get a process.
+  ServiceWorkerStatusCode status = process_manager->AllocateWorkerProcess(
+      params->embedded_worker_id, params->scope, params->script_url,
+      can_use_existing_process, process_info.get());
+  if (status != SERVICE_WORKER_OK) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(std::move(callback), status, std::move(params),
+                       std::move(process_info), std::move(devtools_proxy),
+                       wait_for_debugger));
+    return;
+  }
+  const int process_id = process_info->process_id;
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  // TODO(falken): This CHECK is sometimes failing so it should be handled
-  // better. Consider also checking for rph->HasConnection() here.
+  // TODO(falken): This CHECK should no longer fail, so turn to a DCHECK it if
+  // crash reports agree. Consider also checking for rph->HasConnection().
   CHECK(rph);
-  int worker_devtools_agent_route_id = rph->GetNextRoutingID();
-  bool wait_for_debugger =
+
+  // Bind |request|, which is attached to |EmbeddedWorkerInstance::client_|, to
+  // the process. If the process dies, |client_|'s connection error callback
+  // will be called on the IO thread.
+  if (request.is_pending())
+    BindInterface(rph, std::move(request));
+
+  // Register to DevTools.
+  const int worker_devtools_agent_route_id = rph->GetNextRoutingID();
+  wait_for_debugger =
       ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
           process_id, worker_devtools_agent_route_id,
           ServiceWorkerDevToolsManager::ServiceWorkerIdentifier(
-              service_worker_context, service_worker_context_weak,
-              service_worker_version_id, url, scope),
-          is_installed);
-  if (request.is_pending())
-    BindInterface(rph, std::move(request));
-  std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy =
-      base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
-          process_id, worker_devtools_agent_route_id);
+              context, weak_context, params->service_worker_version_id,
+              params->script_url, params->scope),
+          params->is_installed);
+  devtools_proxy = base::MakeUnique<EmbeddedWorkerInstance::DevToolsProxy>(
+      process_id, worker_devtools_agent_route_id);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(callback, base::Passed(&devtools_proxy), wait_for_debugger));
+      base::BindOnce(std::move(callback), status, std::move(params),
+                     std::move(process_info), std::move(devtools_proxy),
+                     wait_for_debugger));
 }
 
 void CallDetach(EmbeddedWorkerInstance* instance) {
@@ -117,7 +157,6 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
   switch (phase) {
     case EmbeddedWorkerInstance::NOT_STARTING:
     case EmbeddedWorkerInstance::ALLOCATING_PROCESS:
-    case EmbeddedWorkerInstance::REGISTERING_TO_DEVTOOLS:
       return false;
     case EmbeddedWorkerInstance::SENT_START_WORKER:
     case EmbeddedWorkerInstance::SCRIPT_DOWNLOADING:
@@ -128,6 +167,7 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
     case EmbeddedWorkerInstance::SCRIPT_EVALUATED:
     case EmbeddedWorkerInstance::THREAD_STARTED:
       return true;
+    case EmbeddedWorkerInstance::REGISTERING_TO_DEVTOOLS:  // Obsolete
     case EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
   }
@@ -228,6 +268,7 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
 // destroyed on EmbeddedWorkerInstance::OnScriptEvaluated().
 // We can abort starting worker by destroying this task anytime during the
 // sequence.
+// Lives on the IO thread.
 class EmbeddedWorkerInstance::StartTask {
  public:
   enum class ProcessAllocationState { NOT_ALLOCATED, ALLOCATING, ALLOCATED };
@@ -289,6 +330,7 @@ class EmbeddedWorkerInstance::StartTask {
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
              const StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(instance_->context_);
     state_ = ProcessAllocationState::ALLOCATING;
     start_callback_ = callback;
     is_installed_ = params->is_installed;
@@ -296,19 +338,23 @@ class EmbeddedWorkerInstance::StartTask {
     if (!GetContentClient()->browser()->IsBrowserStartupComplete())
       started_during_browser_startup_ = true;
 
-    GURL scope(params->scope);
-    GURL script_url(params->script_url);
-
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
-                                      instance_);
     bool can_use_existing_process =
         instance_->context_->GetVersionFailureCount(
             params->service_worker_version_id) < kMaxSameProcessFailureCount;
-    instance_->context_->process_manager()->AllocateWorkerProcess(
-        instance_->embedded_worker_id_, scope, script_url,
-        can_use_existing_process,
-        base::Bind(&StartTask::OnProcessAllocated, weak_factory_.GetWeakPtr(),
-                   base::Passed(&params)));
+    DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
+                                      instance_);
+    // Hop to the UI thread for process allocation and setup. We will continue
+    // on the IO thread in StartTask::OnSetupCompleted().
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SetupOnUIThread,
+                       instance_->context_->process_manager()->AsWeakPtr(),
+                       can_use_existing_process, std::move(params),
+                       std::move(request_), instance_->context_.get(),
+                       instance_->context_,
+                       base::BindOnce(&StartTask::OnSetupCompleted,
+                                      weak_factory_.GetWeakPtr())));
   }
 
   static void RunStartCallback(StartTask* task,
@@ -323,13 +369,18 @@ class EmbeddedWorkerInstance::StartTask {
   bool is_installed() const { return is_installed_; }
 
  private:
-  void OnProcessAllocated(std::unique_ptr<EmbeddedWorkerStartParams> params,
-                          ServiceWorkerStatusCode status,
-                          int process_id,
-                          bool is_new_process,
-                          const EmbeddedWorkerSettings& settings) {
+  void OnSetupCompleted(
+      ServiceWorkerStatusCode status,
+      std::unique_ptr<EmbeddedWorkerStartParams> params,
+      std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
+          process_info,
+      std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
+      bool wait_for_debugger) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+    int process_id = process_info->process_id;
+    bool is_new_process = process_info->is_new_process;
+    const EmbeddedWorkerSettings& settings = process_info->settings;
     if (status != SERVICE_WORKER_OK) {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
                                       instance_, "Error",
@@ -369,45 +420,24 @@ class EmbeddedWorkerInstance::StartTask {
     // is running.
     params->settings.data_saver_enabled = settings.data_saver_enabled;
 
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
-                                      "REGISTERING_TO_DEVTOOLS", instance_);
-    // Register the instance to DevToolsManager on UI thread.
-    const int64_t service_worker_version_id = params->service_worker_version_id;
-    const GURL& scope = params->scope;
-    GURL script_url(params->script_url);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&SetupOnUI, process_id, instance_->context_.get(),
-                   instance_->context_, service_worker_version_id, script_url,
-                   scope, is_installed_, base::Passed(&request_),
-                   base::Bind(&StartTask::OnSetupOnUICompleted,
-                              weak_factory_.GetWeakPtr(), base::Passed(&params),
-                              is_new_process)));
-  }
-
-  void OnSetupOnUICompleted(
-      std::unique_ptr<EmbeddedWorkerStartParams> params,
-      bool is_new_process,
-      std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
-      bool wait_for_debugger) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    // Update params with info from DevTools.
     params->worker_devtools_agent_route_id = devtools_proxy->agent_route_id();
     params->wait_for_debugger = wait_for_debugger;
 
     // Notify the instance that it is registered to the devtools manager.
     instance_->OnRegisteredToDevToolsManager(
         is_new_process, std::move(devtools_proxy), wait_for_debugger);
-    TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "REGISTERING_TO_DEVTOOLS",
-                                    instance_);
 
-    ServiceWorkerStatusCode status =
-        instance_->SendStartWorker(std::move(params));
+    status = instance_->SendStartWorker(std::move(params));
     if (status != SERVICE_WORKER_OK) {
       StatusCallback callback = start_callback_;
       start_callback_.Reset();
       instance_->OnStartFailed(callback, status);
       // |this| may be destroyed.
     }
+
+    // |this|'s work is done here, but |instance_| still uses its state until
+    // startup is complete.
   }
 
   // |instance_| must outlive |this|.
@@ -568,7 +598,6 @@ void EmbeddedWorkerInstance::OnProcessAllocated(
   DCHECK(!process_handle_);
 
   process_handle_ = std::move(handle);
-  starting_phase_ = REGISTERING_TO_DEVTOOLS;
   start_situation_ = start_situation;
   for (auto& observer : listener_list_)
     observer.OnProcessAllocated();
@@ -992,8 +1021,6 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Not in STARTING status";
     case ALLOCATING_PROCESS:
       return "Allocating process";
-    case REGISTERING_TO_DEVTOOLS:
-      return "Registering to DevTools";
     case SENT_START_WORKER:
       return "Sent StartWorker message to renderer";
     case SCRIPT_DOWNLOADING:
@@ -1010,6 +1037,7 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script read finished";
     case SCRIPT_STREAMING:
       return "Script streaming";
+    case REGISTERING_TO_DEVTOOLS:  // Obsolete
     case STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
   }

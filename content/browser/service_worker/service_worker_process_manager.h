@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
@@ -29,6 +30,22 @@ class SiteInstance;
 // on the UI thread shortly after its ServiceWorkerContextWrapper is destroyed.
 class CONTENT_EXPORT ServiceWorkerProcessManager {
  public:
+  // The return value for AllocateWorkerProcess().
+  struct AllocatedProcessInfo {
+    // Same as RenderProcessHost::GetID().
+    int process_id;
+    // True if SiteInstance was used to retrieve the process. Even if true, this
+    // might not actually be a brand new process, since SiteInstance can return
+    // an existing process. If false, the process already existed in
+    // ServiceWorkerProcessManager's list of known processes.
+    // TODO(falken): Fix this.
+    bool is_new_process;
+    // Contains known settings for this worker. Currently the caller
+    // should only use |data_saver_enabled| since |v8_cache_options|
+    // remains uninitialized.
+    EmbeddedWorkerSettings settings;
+  };
+
   // |*this| must be owned by a ServiceWorkerContextWrapper in a
   // StoragePartition within |browser_context|.
   explicit ServiceWorkerProcessManager(BrowserContext* browser_context);
@@ -43,21 +60,25 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // Returns true if Shutdown() has been called. May be called by any thread.
   bool IsShutdown();
 
-  // Returns a reference to a running process suitable for starting the Service
-  // Worker at |script_url|. Posts |callback| to the IO thread to indicate
-  // whether creation succeeded and the process ID that has a new reference.
+  // Returns a reference to a running process suitable for starting the service
+  // worker described by |emdedded_worker_id|, |pattern|, and |script_url|.
+  //
+  // AllocateWorkerProcess() tries to return an existing process. If one is not
+  // available, or |can_use_existing_process| is false, it will create a new
+  // one.
+  //
+  // If SERVICE_WORKER_OK is returned, |out_info| contains information about the
+  // process.
   //
   // Allocation can fail with SERVICE_WORKER_PROCESS_NOT_FOUND if
   // RenderProcessHost::Init fails.
-  void AllocateWorkerProcess(
-      int embedded_worker_id,
-      const GURL& pattern,
-      const GURL& script_url,
-      bool can_use_existing_process,
-      const base::Callback<void(ServiceWorkerStatusCode,
-                                int process_id,
-                                bool is_new_process,
-                                const EmbeddedWorkerSettings&)>& callback);
+  //
+  // Called on the UI thread.
+  ServiceWorkerStatusCode AllocateWorkerProcess(int embedded_worker_id,
+                                                const GURL& pattern,
+                                                const GURL& script_url,
+                                                bool can_use_existing_process,
+                                                AllocatedProcessInfo* out_info);
 
   // Drops a reference to a process that was running a Service Worker, and its
   // SiteInstance.  This must match a call to AllocateWorkerProcess.
@@ -84,6 +105,10 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
   // Returns true if the |pattern| has at least one process to run.
   bool PatternHasProcessToRun(const GURL& pattern) const;
+
+  // AsWeakPtr() can be called from any thread, but the WeakPtr must be
+  // dereferenced on the UI thread only.
+  base::WeakPtr<ServiceWorkerProcessManager> AsWeakPtr() { return weak_this_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
