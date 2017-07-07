@@ -129,7 +129,7 @@ HttpNetworkSession::Params::Params()
       quic_estimate_initial_rtt(false),
       enable_token_binding(false),
       http_09_on_non_default_ports_enabled(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_37);
+  quic_supported_versions.push_back(QUIC_VERSION_39);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
