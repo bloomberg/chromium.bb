@@ -122,14 +122,14 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
 }
 
 void UtilityServiceFactory::OnServiceQuit() {
-  UtilityThread::Get()->ReleaseProcessIfNeeded();
+  UtilityThread::Get()->ReleaseProcess();
 }
 
 void UtilityServiceFactory::OnLoadFailed() {
   UtilityThreadImpl* utility_thread =
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();
-  utility_thread->ReleaseProcessIfNeeded();
+  utility_thread->ReleaseProcess();
 }
 
 std::unique_ptr<service_manager::Service>

@@ -39,7 +39,7 @@ class UtilityThreadImpl : public UtilityThread,
   void Shutdown() override;
 
   // UtilityThread:
-  void ReleaseProcessIfNeeded() override;
+  void ReleaseProcess() override;
   void EnsureBlinkInitialized() override;
 
  private:

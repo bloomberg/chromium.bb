@@ -80,5 +80,5 @@ void ProfileImportHandler::ImporterCleanup() {
   importer_ = NULL;
   bridge_ = NULL;
   import_thread_.reset();
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+  content::UtilityThread::Get()->ReleaseProcess();
 }

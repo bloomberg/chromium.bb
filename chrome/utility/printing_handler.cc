@@ -37,8 +37,8 @@ bool Send(IPC::Message* message) {
   return content::UtilityThread::Get()->Send(message);
 }
 
-void ReleaseProcessIfNeeded() {
-  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+void ReleaseProcess() {
+  content::UtilityThread::Get()->ReleaseProcess();
 }
 
 #if defined(OS_WIN)
@@ -126,7 +126,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
 }
 
 void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
-  ReleaseProcessIfNeeded();
+  ReleaseProcess();
 }
 
 #endif  // defined(OS_WIN)
@@ -145,7 +145,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
   } else {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed());
   }
-  ReleaseProcessIfNeeded();
+  ReleaseProcess();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -317,7 +317,7 @@ void PrintingHandler::OnGetPrinterCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
-  ReleaseProcessIfNeeded();
+  ReleaseProcess();
 }
 
 void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
@@ -337,7 +337,7 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed(
         printer_name));
   }
-  ReleaseProcessIfNeeded();
+  ReleaseProcess();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
