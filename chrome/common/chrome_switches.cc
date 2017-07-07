@@ -296,9 +296,6 @@ const char kEnableAudioDebugRecordingsFromExtension[] =
 // Inform users that their browser is being controlled by an automated test.
 const char kEnableAutomation[] = "enable-automation";
 
-// Enables the benchmarking extensions.
-const char kEnableBenchmarking[]            = "enable-benchmarking";
-
 // Enables the multi-level undo system for bookmarks.
 const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 
@@ -469,11 +466,6 @@ const char kForceFirstRun[]                 = "force-first-run";
 
 // Forces Chrome to use localNTP instead of server (GWS) NTP.
 const char kForceLocalNtp[]                 = "force-local-ntp";
-
-// Forces additional Chrome Variation Ids that will be sent in X-Client-Data
-// header, specified as a 64-bit encoded list of numeric experiment ids. Ids
-// prefixed with the character "t" will be treated as Trigger Variation Ids.
-const char kForceVariationIds[]             = "force-variation-ids";
 
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for

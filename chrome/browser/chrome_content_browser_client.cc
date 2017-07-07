@@ -161,6 +161,7 @@
 #include "components/ukm/ukm_interface.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -1804,7 +1805,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableBundledPpapiFlash,
       switches::kDisableCastStreamingHWEncoding,
       switches::kDisableJavaScriptHarmonyShipping,
-      switches::kEnableBenchmarking,
+      variations::switches::kEnableBenchmarking,
       switches::kEnableDistillabilityService,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)
@@ -1872,7 +1873,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   // The command line switch kEnableBenchmarking needs to be specified along
   // with the kEnableStatsTable switch to ensure that the stats table global
   // is initialized correctly.
-  if (command_line->HasSwitch(switches::kEnableBenchmarking))
+  if (command_line->HasSwitch(variations::switches::kEnableBenchmarking))
     DCHECK(command_line->HasSwitch(switches::kEnableStatsTable));
 
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(

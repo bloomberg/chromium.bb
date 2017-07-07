@@ -12,8 +12,10 @@ namespace switches {
 // each in the .cc file.
 
 extern const char kDisableFieldTrialTestingConfig[];
+extern const char kEnableBenchmarking[];
 extern const char kFakeVariationsChannel[];
 extern const char kForceFieldTrialParams[];
+extern const char kForceVariationIds[];
 extern const char kVariationsOverrideCountry[];
 extern const char kVariationsServerURL[];
 
