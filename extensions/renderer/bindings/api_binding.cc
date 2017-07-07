@@ -30,6 +30,21 @@ namespace extensions {
 
 namespace {
 
+std::string GetPlatformString() {
+#if defined(OS_CHROMEOS)
+  return "chromeos";
+#elif defined(OS_LINUX)
+  return "linux";
+#elif defined(OS_MACOSX)
+  return "mac";
+#elif defined(OS_WIN)
+  return "win";
+#else
+  NOTREACHED();
+  return std::string();
+#endif
+}
+
 // Returns the name of the enum value for use in JavaScript; JS enum entries use
 // SCREAMING_STYLE.
 std::string GetJSEnumEntryName(const std::string& original) {
@@ -426,6 +441,23 @@ void APIBinding::DecorateTemplateWithProperties(
       // seems, for lastError and inIncognitoContext, which are both handled
       // with custom bindings. Investigate, and remove.
       continue;
+    }
+
+    const base::ListValue* platforms = nullptr;
+    // TODO(devlin): This isn't great. It's bad to have availability primarily
+    // defined in the features files, and then partially defined within the
+    // API specification itself. Additionally, they aren't equivalent
+    // definitions. But given the rarity of property restrictions, and the fact
+    // that they are all limited by platform, it makes more sense to isolate
+    // this check here. If this becomes more common, we should really find a
+    // way of moving these checks to the features files.
+    if (dict->GetList("platforms", &platforms)) {
+      std::string this_platform = GetPlatformString();
+      auto is_this_platform = [&this_platform](const base::Value& platform) {
+        return platform.is_string() && platform.GetString() == this_platform;
+      };
+      if (std::none_of(platforms->begin(), platforms->end(), is_this_platform))
+        continue;
     }
 
     v8::Local<v8::String> v8_key = gin::StringToSymbol(isolate, iter.key());
