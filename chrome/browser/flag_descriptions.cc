@@ -1939,11 +1939,13 @@ const char kAutofillAccessoryViewDescription[] =
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 
 const char kReaderModeHeuristicsDescription[] =
-    "Determines what pages the Reader Mode button is shown on.";
+    "Determines what pages the Reader Mode infobar is shown on.";
 
 const char kReaderModeHeuristicsMarkup[] = "With article structured markup";
 
-const char kReaderModeHeuristicsAdaboost[] = "Appears to be an article";
+const char kReaderModeHeuristicsAdaboost[] = "Non-mobile-friendly articles";
+
+const char kReaderModeHeuristicsAllArticles[] = "All articles";
 
 const char kReaderModeHeuristicsAlwaysOff[] = "Never";
 

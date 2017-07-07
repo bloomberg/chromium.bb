@@ -21,6 +21,9 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
     if (switch_value == switches::reader_mode_heuristics::kAdaBoost) {
       return DistillerHeuristicsType::ADABOOST_MODEL;
     }
+    if (switch_value == switches::reader_mode_heuristics::kAllArticles) {
+      return DistillerHeuristicsType::ALL_ARTICLES;
+    }
     if (switch_value == switches::reader_mode_heuristics::kOGArticle) {
       return DistillerHeuristicsType::OG_ARTICLE;
     }
@@ -35,6 +38,10 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
     if (base::StartsWith(group_name, "AdaBoost",
                          base::CompareCase::INSENSITIVE_ASCII)) {
       return DistillerHeuristicsType::ADABOOST_MODEL;
+    }
+    if (base::StartsWith(group_name, "AllArticles",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return DistillerHeuristicsType::ALL_ARTICLES;
     }
     if (base::StartsWith(group_name, "OGArticle",
                          base::CompareCase::INSENSITIVE_ASCII)) {

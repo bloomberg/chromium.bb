@@ -41,7 +41,8 @@ enum RejectionBuckets {
 // The number of updates can be from 0 to 2. See the tests in
 // "distillable_page_utils_browsertest.cc".
 // Most heuristics types only require one update after parsing.
-// Adaboost is the only one doing the second update, which is after loading.
+// Adaboost-based heuristics are the only ones doing the second update,
+// which is after loading.
 bool NeedToUpdate(bool is_loaded) {
   switch (GetDistillerHeuristicsType()) {
     case DistillerHeuristicsType::ALWAYS_TRUE:
@@ -49,6 +50,7 @@ bool NeedToUpdate(bool is_loaded) {
     case DistillerHeuristicsType::OG_ARTICLE:
       return !is_loaded;
     case DistillerHeuristicsType::ADABOOST_MODEL:
+    case DistillerHeuristicsType::ALL_ARTICLES:
       return true;
     case DistillerHeuristicsType::NONE:
     default:
@@ -58,7 +60,8 @@ bool NeedToUpdate(bool is_loaded) {
 
 // Returns whether this update is the last one for the page.
 bool IsLast(bool is_loaded) {
-  if (GetDistillerHeuristicsType() == DistillerHeuristicsType::ADABOOST_MODEL)
+  if (GetDistillerHeuristicsType() == DistillerHeuristicsType::ADABOOST_MODEL ||
+      GetDistillerHeuristicsType() == DistillerHeuristicsType::ALL_ARTICLES)
     return is_loaded;
 
   return true;
@@ -76,7 +79,8 @@ bool IsBlacklisted(const GURL& url) {
 bool IsDistillablePageAdaboost(WebDocument& doc,
                                const DistillablePageDetector* detector,
                                const DistillablePageDetector* long_page,
-                               bool is_last) {
+                               bool is_last,
+                               bool exclude_mobile) {
   WebDistillabilityFeatures features = doc.DistillabilityFeatures();
   GURL parsed_url(doc.Url());
   if (!parsed_url.is_valid()) {
@@ -145,7 +149,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   if (blacklisted) {
     return false;
   }
-  if (features.is_mobile_friendly) {
+  if (exclude_mobile && features.is_mobile_friendly) {
     return false;
   }
   return distillable && long_article;
@@ -158,9 +162,13 @@ bool IsDistillablePage(WebDocument& doc, bool is_last) {
     case DistillerHeuristicsType::OG_ARTICLE:
       return doc.DistillabilityFeatures().open_graph;
     case DistillerHeuristicsType::ADABOOST_MODEL:
-      return IsDistillablePageAdaboost(doc,
-          DistillablePageDetector::GetNewModel(),
-          DistillablePageDetector::GetLongPageModel(), is_last);
+      return IsDistillablePageAdaboost(
+          doc, DistillablePageDetector::GetNewModel(),
+          DistillablePageDetector::GetLongPageModel(), is_last, true);
+    case DistillerHeuristicsType::ALL_ARTICLES:
+      return IsDistillablePageAdaboost(
+          doc, DistillablePageDetector::GetNewModel(),
+          DistillablePageDetector::GetLongPageModel(), is_last, false);
     case DistillerHeuristicsType::NONE:
     default:
       return false;

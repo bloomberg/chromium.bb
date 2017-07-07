@@ -148,6 +148,7 @@ void ReaderModeChecker::CheckIsDistillable() {
       CheckIsDistillableOG(receiver);
       break;
     case dom_distiller::DistillerHeuristicsType::ADABOOST_MODEL:
+    case dom_distiller::DistillerHeuristicsType::ALL_ARTICLES:
       CheckIsDistillableDetector(receiver);
       break;
     case dom_distiller::DistillerHeuristicsType::ALWAYS_TRUE:

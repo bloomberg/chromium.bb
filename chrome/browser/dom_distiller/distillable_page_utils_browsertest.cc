@@ -202,4 +202,26 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
   }
 }
 
+using DistillablePageUtilsBrowserTestAllArticles =
+    DistillablePageUtilsBrowserTestOption<kAllArticles>;
+
+IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
+                       TestDelegate) {
+  const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
+  for (unsigned i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
+    testing::InSequence dummy;
+    EXPECT_CALL(holder_, OnResult(true, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(true, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(paths[i], 0);
+  }
+  {
+    testing::InSequence dummy;
+    EXPECT_CALL(holder_, OnResult(false, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(false, true))
+        .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
+    NavigateAndWait(kNonArticlePath, 0);
+  }
+}
+
 }  // namespace dom_distiller
