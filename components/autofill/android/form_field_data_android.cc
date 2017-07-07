@@ -4,7 +4,9 @@
 
 #include "components/autofill/android/form_field_data_android.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "jni/FormFieldData_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -15,6 +17,7 @@ using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStrings;
 
 namespace autofill {
 
@@ -39,10 +42,16 @@ ScopedJavaLocalRef<jobject> FormFieldDataAndroid::GetJavaPeer() {
         ConvertUTF16ToJavaString(env, field_ptr_->id);
     ScopedJavaLocalRef<jstring> jtype =
         ConvertUTF8ToJavaString(env, field_ptr_->form_control_type);
+    ScopedJavaLocalRef<jobjectArray> joption_values =
+        ToJavaArrayOfStrings(env, field_ptr_->option_values);
+    ScopedJavaLocalRef<jobjectArray> joption_contents =
+        ToJavaArrayOfStrings(env, field_ptr_->option_contents);
 
     obj = Java_FormFieldData_createFormFieldData(
         env, jname, jlabel, jvalue, jautocomplete_attr,
-        field_ptr_->should_autocomplete, jplaceholder, jtype, jid);
+        field_ptr_->should_autocomplete, jplaceholder, jtype, jid,
+        joption_values, joption_contents, IsCheckable(field_ptr_->check_status),
+        IsChecked(field_ptr_->check_status));
     java_ref_ = JavaObjectWeakGlobalRef(env, obj);
   }
   return obj;
@@ -54,10 +63,16 @@ void FormFieldDataAndroid::GetValue() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jstring> jvalue = Java_FormFieldData_getValue(env, obj);
-  if (jvalue.is_null())
-    return;
-  field_ptr_->value = ConvertJavaStringToUTF16(env, jvalue);
+
+  if (IsCheckable(field_ptr_->check_status)) {
+    bool checked = Java_FormFieldData_isChecked(env, obj);
+    SetCheckStatus(field_ptr_, true, checked);
+  } else {
+    ScopedJavaLocalRef<jstring> jvalue = Java_FormFieldData_getValue(env, obj);
+    if (jvalue.is_null())
+      return;
+    field_ptr_->value = ConvertJavaStringToUTF16(env, jvalue);
+  }
   field_ptr_->is_autofilled = true;
 }
 
