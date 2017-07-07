@@ -14,6 +14,7 @@ ios_app_bundle("showcase") {
   output_name = "Showcase"
   deps = [
     ":features",
+    ":packed_resources",
     "//ios/showcase/core:main",
 
     # All shared libraries must have the sanitizer deps to properly link in
