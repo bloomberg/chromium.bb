@@ -52,9 +52,9 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     double avg_abs_error = 0;
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
-    const int count_ = 500;
+    const int count = 500;
 
-    for (int ci = 0; ci < count_; ci++) {
+    for (int ci = 0; ci < count; ci++) {
       int16_t expected[64 * 64] = { 0 };
       assert(txfm2d_size_ < ARRAY_SIZE(expected));
 
@@ -82,7 +82,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
           expected, actual, txfm2d_size_);
     }
 
-    avg_abs_error /= count_;
+    avg_abs_error /= count;
     // max_abs_avg_error comes from upper bound of
     // printf("txfm1d_size: %d accuracy_avg_abs_error: %f\n",
     // txfm1d_size_, avg_abs_error);
