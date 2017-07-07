@@ -23,7 +23,7 @@
 
 using blink::testing::CreateOpacityOnlyEffect;
 using blink::testing::DefaultPaintChunkProperties;
-using testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAre;
 
 namespace blink {
 

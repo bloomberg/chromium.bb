@@ -21,12 +21,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+using ::testing::ElementsAre;
 
 namespace blink {
 namespace {
 
-class TimerTest : public testing::Test {
+class TimerTest : public ::testing::Test {
  public:
   void SetUp() override {
     run_times_.clear();

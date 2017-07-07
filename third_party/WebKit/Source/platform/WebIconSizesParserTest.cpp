@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class WebIconSizesParserTest : public testing::Test {};
+class WebIconSizesParserTest : public ::testing::Test {};
 
 TEST(WebIconSizesParserTest, parseSizes) {
   WebString sizes_attribute = "32x33";

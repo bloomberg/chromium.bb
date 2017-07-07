@@ -54,7 +54,7 @@ bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
   if (!ApproximatelyEqual(m, n)) {
     return ::testing::AssertionFailure()
            << "       Value of:" << n_expr << std::endl
-           << "         Actual:" << testing::PrintToString(n) << std::endl
+           << "         Actual:" << ::testing::PrintToString(n) << std::endl
            << "Expected Approx:" << expr << std::endl
            << "       Which is:" << ::testing::PrintToString(m);
   }
@@ -70,7 +70,7 @@ bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
   if (!ApproximatelyEqual(m, new_m)) {
     return ::testing::AssertionFailure()
            << "        Value of:" << n_expr << std::endl
-           << "          Actual:" << testing::PrintToString(n) << std::endl
+           << "          Actual:" << ::testing::PrintToString(n) << std::endl
            << "Not Contained in:" << expr << std::endl
            << "        Which is:" << ::testing::PrintToString(m);
   }

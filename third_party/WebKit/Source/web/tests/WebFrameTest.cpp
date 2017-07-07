@@ -168,9 +168,9 @@
 
 using blink::URLTestHelpers::ToKURL;
 using blink::testing::RunPendingTasks;
-using testing::ElementsAre;
-using testing::Mock;
-using testing::_;
+using ::testing::ElementsAre;
+using ::testing::Mock;
+using ::testing::_;
 
 namespace blink {
 

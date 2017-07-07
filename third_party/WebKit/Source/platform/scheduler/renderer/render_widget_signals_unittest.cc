@@ -9,9 +9,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::AnyNumber;
-using testing::Mock;
-using testing::_;
+using ::testing::AnyNumber;
+using ::testing::Mock;
+using ::testing::_;
 
 namespace blink {
 namespace scheduler {
@@ -31,7 +31,7 @@ class MockObserver : public RenderWidgetSignals::Observer {
 };
 }
 
-class RenderWidgetSignalsTest : public testing::Test {
+class RenderWidgetSignalsTest : public ::testing::Test {
  public:
   RenderWidgetSignalsTest() {}
   ~RenderWidgetSignalsTest() override {}

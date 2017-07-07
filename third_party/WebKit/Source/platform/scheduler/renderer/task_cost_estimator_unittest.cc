@@ -14,7 +14,7 @@
 namespace blink {
 namespace scheduler {
 
-class TaskCostEstimatorTest : public testing::Test {
+class TaskCostEstimatorTest : public ::testing::Test {
  public:
   TaskCostEstimatorTest() {}
   ~TaskCostEstimatorTest() override {}

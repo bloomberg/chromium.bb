@@ -17,7 +17,7 @@
 namespace blink {
 namespace scheduler {
 
-class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
+class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
  public:
   AutoAdvancingVirtualTimeDomainTest() {}
   ~AutoAdvancingVirtualTimeDomainTest() override {}

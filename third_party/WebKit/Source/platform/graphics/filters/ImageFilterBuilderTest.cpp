@@ -31,7 +31,7 @@
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Test;
+using ::testing::Test;
 
 namespace blink {
 

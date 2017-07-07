@@ -53,7 +53,7 @@
 
 namespace blink {
 
-class GraphicsLayerTest : public testing::Test {
+class GraphicsLayerTest : public ::testing::Test {
  public:
   GraphicsLayerTest() {
     clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));

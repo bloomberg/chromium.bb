@@ -9,18 +9,19 @@
 
 namespace blink {
 
-testing::AssertionResult IsCJKIdeographOrSymbolWithMessage(UChar32 codepoint) {
+::testing::AssertionResult IsCJKIdeographOrSymbolWithMessage(
+    UChar32 codepoint) {
   const size_t kFormatBufferSize = 10;
   char formatted_as_hex[kFormatBufferSize];
   snprintf(formatted_as_hex, kFormatBufferSize, "0x%x", codepoint);
 
   if (Character::IsCJKIdeographOrSymbol(codepoint)) {
-    return testing::AssertionSuccess()
+    return ::testing::AssertionSuccess()
            << "Codepoint " << formatted_as_hex << " is a CJKIdeographOrSymbol.";
   }
 
-  return testing::AssertionFailure() << "Codepoint " << formatted_as_hex
-                                     << " is not a CJKIdeographOrSymbol.";
+  return ::testing::AssertionFailure() << "Codepoint " << formatted_as_hex
+                                       << " is not a CJKIdeographOrSymbol.";
 }
 
 TEST(CharacterTest, HammerEmojiVsCJKIdeographOrSymbol) {

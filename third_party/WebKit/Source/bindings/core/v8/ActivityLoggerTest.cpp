@@ -70,7 +70,7 @@ class TestActivityLogger : public V8DOMActivityLogger {
   Vector<String> logged_activities_;
 };
 
-class ActivityLoggerTest : public testing::Test {
+class ActivityLoggerTest : public ::testing::Test {
  protected:
   ActivityLoggerTest() {
     activity_logger_ = new TestActivityLogger();

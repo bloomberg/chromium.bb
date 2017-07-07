@@ -284,7 +284,7 @@ const int MockScriptData::kTable[] = {
     kGreek3 + kHan2 + kLatin,
 };
 
-class ScriptRunIteratorTest : public testing::Test {
+class ScriptRunIteratorTest : public ::testing::Test {
  protected:
   void CheckRuns(const Vector<TestRun>& runs) {
     String text(g_empty_string16_bit);
@@ -614,7 +614,7 @@ TEST_F(ScriptRunIteratorTest, CommonMalayalam) {
   CHECK_RUNS({{"100-ാം", USCRIPT_MALAYALAM}});
 }
 
-class ScriptRunIteratorICUDataTest : public testing::Test {
+class ScriptRunIteratorICUDataTest : public ::testing::Test {
  public:
   ScriptRunIteratorICUDataTest()
       : max_extensions_(0), max_extensions_codepoint_(0xffff) {

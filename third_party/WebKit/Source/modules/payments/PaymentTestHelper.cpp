@@ -213,26 +213,26 @@ PaymentRequestMockFunctionScope::PaymentRequestMockFunctionScope(
 PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope() {
   v8::MicrotasksScope::PerformCheckpoint(script_state_->GetIsolate());
   for (MockFunction* mock_function : mock_functions_) {
-    testing::Mock::VerifyAndClearExpectations(mock_function);
+    ::testing::Mock::VerifyAndClearExpectations(mock_function);
   }
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectCall(
     String* captor) {
   mock_functions_.push_back(new MockFunction(script_state_, captor));
-  EXPECT_CALL(*mock_functions_.back(), Call(testing::_));
+  EXPECT_CALL(*mock_functions_.back(), Call(::testing::_));
   return mock_functions_.back()->Bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectCall() {
   mock_functions_.push_back(new MockFunction(script_state_));
-  EXPECT_CALL(*mock_functions_.back(), Call(testing::_));
+  EXPECT_CALL(*mock_functions_.back(), Call(::testing::_));
   return mock_functions_.back()->Bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::ExpectNoCall() {
   mock_functions_.push_back(new MockFunction(script_state_));
-  EXPECT_CALL(*mock_functions_.back(), Call(testing::_)).Times(0);
+  EXPECT_CALL(*mock_functions_.back(), Call(::testing::_)).Times(0);
   return mock_functions_.back()->Bind();
 }
 
@@ -245,16 +245,16 @@ ACTION_P(SaveValueIn, captor) {
 PaymentRequestMockFunctionScope::MockFunction::MockFunction(
     ScriptState* script_state)
     : ScriptFunction(script_state) {
-  ON_CALL(*this, Call(testing::_)).WillByDefault(testing::ReturnArg<0>());
+  ON_CALL(*this, Call(::testing::_)).WillByDefault(::testing::ReturnArg<0>());
 }
 
 PaymentRequestMockFunctionScope::MockFunction::MockFunction(
     ScriptState* script_state,
     String* captor)
     : ScriptFunction(script_state), value_(captor) {
-  ON_CALL(*this, Call(testing::_))
+  ON_CALL(*this, Call(::testing::_))
       .WillByDefault(
-          testing::DoAll(SaveValueIn(value_), testing::ReturnArg<0>()));
+          ::testing::DoAll(SaveValueIn(value_), ::testing::ReturnArg<0>()));
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::MockFunction::Bind() {

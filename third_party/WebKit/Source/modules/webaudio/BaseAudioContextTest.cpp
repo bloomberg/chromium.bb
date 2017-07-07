@@ -733,9 +733,9 @@ TEST_P(BaseAudioContextAutoplayTest,
 INSTANTIATE_TEST_CASE_P(
     BaseAudioContextAutoplayTest,
     BaseAudioContextAutoplayTest,
-    testing::Values(AutoplayPolicy::Type::kNoUserGestureRequired,
-                    AutoplayPolicy::Type::kUserGestureRequired,
-                    AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin,
-                    AutoplayPolicy::Type::kDocumentUserActivationRequired));
+    ::testing::Values(AutoplayPolicy::Type::kNoUserGestureRequired,
+                      AutoplayPolicy::Type::kUserGestureRequired,
+                      AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin,
+                      AutoplayPolicy::Type::kDocumentUserActivationRequired));
 
 }  // namespace blink

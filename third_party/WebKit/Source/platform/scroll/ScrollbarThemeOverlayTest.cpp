@@ -9,10 +9,10 @@
 
 namespace blink {
 
-using testing::NiceMock;
-using testing::Return;
+using ::testing::NiceMock;
+using ::testing::Return;
 
-using ScrollbarThemeOverlayTest = testing::Test;
+using ScrollbarThemeOverlayTest = ::testing::Test;
 
 TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>

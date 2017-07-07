@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using testing::Test;
+using ::testing::Test;
 
 namespace blink {
 

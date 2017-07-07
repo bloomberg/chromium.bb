@@ -30,7 +30,7 @@ class IdleTimeEstimatorForTest : public IdleTimeEstimator {
                           estimation_percentile) {}
 };
 
-class IdleTimeEstimatorTest : public testing::Test {
+class IdleTimeEstimatorTest : public ::testing::Test {
  public:
   IdleTimeEstimatorTest()
       : frame_length_(base::TimeDelta::FromMilliseconds(16)) {}

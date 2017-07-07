@@ -190,7 +190,7 @@ struct ExpectedElement {
 
 }  // namespace
 
-class BlobDataHandleTest : public testing::Test {
+class BlobDataHandleTest : public ::testing::Test {
  public:
   BlobDataHandleTest()
       : enable_mojo_blobs_(true), testing_platform_(&mock_blob_registry_) {}

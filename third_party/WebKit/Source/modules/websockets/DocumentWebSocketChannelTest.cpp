@@ -26,17 +26,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::InSequence;
-using testing::PrintToString;
-using testing::AnyNumber;
-using testing::SaveArg;
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::PrintToString;
+using ::testing::AnyNumber;
+using ::testing::SaveArg;
 
 namespace blink {
 
 namespace {
 
-typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
+typedef ::testing::StrictMock<::testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient
     : public GarbageCollectedFinalized<MockWebSocketChannelClient>,
@@ -45,7 +45,7 @@ class MockWebSocketChannelClient
 
  public:
   static MockWebSocketChannelClient* Create() {
-    return new testing::StrictMock<MockWebSocketChannelClient>();
+    return new ::testing::StrictMock<MockWebSocketChannelClient>();
   }
 
   MockWebSocketChannelClient() {}
@@ -72,7 +72,7 @@ class MockWebSocketChannelClient
 class MockWebSocketHandle : public WebSocketHandle {
  public:
   static MockWebSocketHandle* Create() {
-    return new testing::StrictMock<MockWebSocketHandle>();
+    return new ::testing::StrictMock<MockWebSocketHandle>();
   }
 
   MockWebSocketHandle() {}
@@ -100,7 +100,7 @@ class MockWebSocketHandle : public WebSocketHandle {
 class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
  public:
   static MockWebSocketHandshakeThrottle* Create() {
-    return new testing::StrictMock<MockWebSocketHandshakeThrottle>();
+    return new ::testing::StrictMock<MockWebSocketHandshakeThrottle>();
   }
   MockWebSocketHandshakeThrottle() {}
   ~MockWebSocketHandshakeThrottle() override { Destructor(); }

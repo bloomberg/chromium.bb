@@ -24,12 +24,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::AtLeast;
-using testing::Exactly;
-using testing::Invoke;
-using testing::Return;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::Exactly;
+using ::testing::Invoke;
+using ::testing::Return;
 
 namespace blink {
 namespace scheduler {
@@ -177,7 +177,7 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
   MOCK_METHOD1(OnPendingTasksChanged, void(bool has_tasks));
 };
 
-class BaseIdleHelperTest : public testing::Test {
+class BaseIdleHelperTest : public ::testing::Test {
  public:
   BaseIdleHelperTest(
       base::MessageLoop* message_loop,
@@ -427,7 +427,8 @@ class IdleHelperTestWithIdlePeriodObserver : public BaseIdleHelperTest {
     EXPECT_CALL(*idle_helper_, OnIdlePeriodEnded()).Times(0);
   }
 
-  void ExpectIdlePeriodStartsAndEnds(const testing::Cardinality& cardinality) {
+  void ExpectIdlePeriodStartsAndEnds(
+      const ::testing::Cardinality& cardinality) {
     EXPECT_CALL(*idle_helper_, OnIdlePeriodStarted()).Times(cardinality);
     EXPECT_CALL(*idle_helper_, OnIdlePeriodEnded()).Times(cardinality);
   }
@@ -524,9 +525,9 @@ TEST_F(IdleHelperWithMessageLoopTest,
       clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
   RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
-                                          std::string("4"), std::string("5"),
-                                          std::string("3")));
+  EXPECT_THAT(order, ::testing::ElementsAre(std::string("1"), std::string("2"),
+                                            std::string("4"), std::string("5"),
+                                            std::string("3")));
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriod) {
@@ -619,7 +620,7 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
   EXPECT_EQ(3, run_count);
   EXPECT_THAT(
       actual_deadlines,
-      testing::ElementsAre(
+      ::testing::ElementsAre(
           clock_before + maximum_idle_period_duration(),
           clock_before + idle_task_runtime + maximum_idle_period_duration(),
           clock_before + (2 * idle_task_runtime) +
@@ -701,7 +702,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodImmediatelyRestartsIfMaxDeadline) {
   EXPECT_EQ(2, run_count);
   EXPECT_THAT(
       actual_deadlines,
-      testing::ElementsAre(
+      ::testing::ElementsAre(
           clock_before + maximum_idle_period_duration(),
           clock_before + idle_task_runtime + maximum_idle_period_duration()));
 }
@@ -772,7 +773,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodPaused) {
   EXPECT_EQ(2, run_count);
   EXPECT_THAT(
       actual_deadlines,
-      testing::ElementsAre(
+      ::testing::ElementsAre(
           clock_before + maximum_idle_period_duration(),
           clock_before + idle_task_runtime + maximum_idle_period_duration()));
 
@@ -1126,7 +1127,7 @@ TEST_F(IdleHelperTest, OnPendingTasksChanged) {
   base::TimeTicks deadline_in_task;
 
   {
-    testing::InSequence dummy;
+    ::testing::InSequence dummy;
     // This will be called once. I.e when the one and only task is posted.
     EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(true)).Times(1);
     // This will be called once. I.e when the one and only task completes.
@@ -1157,7 +1158,7 @@ TEST_F(IdleHelperTest, OnPendingTasksChanged_TwoTasksAtTheSameTime) {
   base::TimeTicks deadline_in_task;
 
   {
-    testing::InSequence dummy;
+    ::testing::InSequence dummy;
     // This will be called 3 times. I.e when T1 and T2 are posted and when T1
     // completes.
     EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(true)).Times(3);

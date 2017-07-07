@@ -143,8 +143,8 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
   platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
-    SCOPED_TRACE(testing::Message() << "Host: " << test.host
-                                    << ", Origin: " << test.origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "Host: " << test.host << ", Origin: " << test.origin);
     RefPtr<SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
@@ -202,7 +202,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowRegisterableDomains);
 
-    SCOPED_TRACE(testing::Message()
+    SCOPED_TRACE(::testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
                  << ", Domain: " << entry1.Registerable().Utf8().data());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(*origin_to_test));
@@ -258,7 +258,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowRegisterableDomains);
 
-    SCOPED_TRACE(testing::Message()
+    SCOPED_TRACE(::testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
                  << ", Domain: " << entry1.Registerable().Utf8().data());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(*origin_to_test));
@@ -304,8 +304,8 @@ TEST(OriginAccessEntryTest, DisallowSubdomainsTest) {
   platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
-    SCOPED_TRACE(testing::Message() << "Host: " << test.host
-                                    << ", Origin: " << test.origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "Host: " << test.host << ", Origin: " << test.origin);
     RefPtr<SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
@@ -335,7 +335,7 @@ TEST(OriginAccessEntryTest, IPAddressTest) {
   platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
-    SCOPED_TRACE(testing::Message() << "Host: " << test.host);
+    SCOPED_TRACE(::testing::Message() << "Host: " << test.host);
     OriginAccessEntry entry(test.protocol, test.host,
                             OriginAccessEntry::kDisallowSubdomains);
     EXPECT_EQ(test.is_ip_address, entry.HostIsIPAddress()) << test.host;
@@ -363,8 +363,8 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
   platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
-    SCOPED_TRACE(testing::Message() << "Host: " << test.host
-                                    << ", Origin: " << test.origin);
+    SCOPED_TRACE(::testing::Message()
+                 << "Host: " << test.host << ", Origin: " << test.origin);
     RefPtr<SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,

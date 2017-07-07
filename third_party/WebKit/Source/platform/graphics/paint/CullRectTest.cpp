@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class CullRectTest : public testing::Test {
+class CullRectTest : public ::testing::Test {
  protected:
   IntRect Rect(const CullRect& cull_rect) { return cull_rect.rect_; }
 };

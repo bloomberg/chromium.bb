@@ -47,8 +47,8 @@
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Test;
-using testing::_;
+using ::testing::Test;
+using ::testing::_;
 
 namespace blink {
 
@@ -410,7 +410,7 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
         kDisableMultisampling);
     CHECK(drawing_buffer_);
     SetAndSaveRestoreState(true);
-    testing::Mock::VerifyAndClearExpectations(gl_);
+    ::testing::Mock::VerifyAndClearExpectations(gl_);
   }
 
   void TearDown() override {
@@ -438,7 +438,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(texture_mailbox.is_overlay_candidate());
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   GLuint image_id2 = gl_->NextImageIdToBeCreated();
@@ -452,7 +452,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   VerifyStateWasRestored();
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   VerifyStateWasRestored();
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id3 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id3)).Times(1);
@@ -462,7 +462,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
                                                      &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(texture_mailbox.is_overlay_candidate());
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id4 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id4)).Times(1);
@@ -475,7 +475,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   VerifyStateWasRestored();
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   VerifyStateWasRestored();
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 
   GLuint image_id5 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id5)).Times(1);
@@ -485,7 +485,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(texture_mailbox.is_overlay_candidate());
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 
   // Prepare one final mailbox and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
@@ -501,7 +501,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_CALL(*gl_, DestroyImageMock(image_id4)).Times(1);
   EXPECT_CALL(*gl_, ReleaseTexImage2DMock(image_id4)).Times(1);
   drawing_buffer_->BeginDestruction();
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 }
 
 TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
@@ -521,7 +521,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
                                                      &release_callback1));
   EXPECT_TRUE(texture_mailbox1.is_overlay_candidate());
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   // Force image CHROMIUM creation failure. Request another mailbox. It should
@@ -541,7 +541,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox3,
                                                      &release_callback3));
   EXPECT_TRUE(texture_mailbox3.is_overlay_candidate());
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
   VerifyStateWasRestored();
 
   release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
@@ -551,7 +551,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   EXPECT_CALL(*gl_, DestroyImageMock(_)).Times(3);
   EXPECT_CALL(*gl_, ReleaseTexImage2DMock(_)).Times(3);
   drawing_buffer_->BeginDestruction();
-  testing::Mock::VerifyAndClearExpectations(gl_);
+  ::testing::Mock::VerifyAndClearExpectations(gl_);
 }
 
 class DepthStencilTrackingGLES2Interface

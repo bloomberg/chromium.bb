@@ -16,8 +16,8 @@ namespace scheduler {
 
 namespace {
 
-using testing::_;
-using testing::Mock;
+using ::testing::_;
+using ::testing::Mock;
 
 class FakeHistogram : public base::HistogramBase {
  public:

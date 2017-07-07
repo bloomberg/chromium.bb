@@ -80,7 +80,7 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
-class CreateWindowTest : public testing::Test {
+class CreateWindowTest : public ::testing::Test {
  protected:
   void SetUp() override {
     web_view_ = helper_.Initialize(nullptr, &web_view_client_);
@@ -161,7 +161,7 @@ class FakeDateTimeChooserClient
   Member<Element> owner_element_;
 };
 
-class PagePopupSuppressionTest : public testing::Test {
+class PagePopupSuppressionTest : public ::testing::Test {
  public:
   PagePopupSuppressionTest() {}
 

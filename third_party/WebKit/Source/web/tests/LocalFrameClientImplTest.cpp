@@ -41,9 +41,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::Mock;
-using testing::Return;
+using ::testing::_;
+using ::testing::Mock;
+using ::testing::Return;
 
 namespace blink {
 namespace {

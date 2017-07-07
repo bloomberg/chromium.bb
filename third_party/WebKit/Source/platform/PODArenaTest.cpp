@@ -51,7 +51,7 @@ struct TestClass2 {
 
 }  // anonymous namespace
 
-class PODArenaTest : public testing::Test {};
+class PODArenaTest : public ::testing::Test {};
 
 // Make sure the arena can successfully allocate from more than one
 // region.

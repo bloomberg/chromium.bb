@@ -71,7 +71,7 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
 
   auto event_handler = new StrictMock<MockEventListener>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -86,7 +86,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
   auto event_handler = new StrictMock<MockEventListener>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -106,7 +106,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
   StrictMock<MockEventListener>* event_handler =
       new StrictMock<MockEventListener>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(1);
 
   receiver->connectionList(scope.GetScriptState());
 
@@ -127,7 +127,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   StrictMock<MockEventListener>* event_handler =
       new StrictMock<MockEventListener>();
   AddConnectionavailableEventListener(event_handler, receiver);
-  EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
+  EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
 
   WebPresentationInfo presentation_info(KURL(NullURL(), "http://example.com"),
                                         "id");
@@ -149,7 +149,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
 
 TEST_F(PresentationReceiverTest, CreateReceiver) {
   MockWebPresentationClient client;
-  EXPECT_CALL(client, SetReceiver(testing::_));
+  EXPECT_CALL(client, SetReceiver(::testing::_));
 
   V8TestingScope scope;
   new PresentationReceiver(&scope.GetFrame(), &client);

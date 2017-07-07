@@ -11,7 +11,7 @@
 namespace blink {
 namespace scheduler {
 
-using QueueingTimeEstimatorTest = testing::Test;
+using QueueingTimeEstimatorTest = ::testing::Test;
 
 class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
  public:
@@ -58,7 +58,7 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
 }
 
 // One 20 second long task, starting 3 seconds into the first window.
@@ -90,11 +90,11 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
-                                   base::TimeDelta::FromMilliseconds(15500),
-                                   base::TimeDelta::FromMilliseconds(10500),
-                                   base::TimeDelta::FromMilliseconds(5500),
-                                   base::TimeDelta::FromMilliseconds(900)));
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
+                                     base::TimeDelta::FromMilliseconds(15500),
+                                     base::TimeDelta::FromMilliseconds(10500),
+                                     base::TimeDelta::FromMilliseconds(5500),
+                                     base::TimeDelta::FromMilliseconds(900)));
 }
 
 // The main thread is considered unresponsive during a single long task. In this
@@ -253,11 +253,11 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(100)));
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(100)));
 }
 
 // If a task is too long, we assume it's invalid. Perhaps the user's machine
@@ -290,14 +290,14 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(100)));
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(0),
+                                     base::TimeDelta::FromMilliseconds(100)));
 }
 
 // ^ Instantaneous queuing time
@@ -330,16 +330,16 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
   estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
-                                   base::TimeDelta::FromMilliseconds(1600),
-                                   base::TimeDelta::FromMilliseconds(2100),
-                                   base::TimeDelta::FromMilliseconds(2400),
-                                   base::TimeDelta::FromMilliseconds(2500),
-                                   base::TimeDelta::FromMilliseconds(1600),
-                                   base::TimeDelta::FromMilliseconds(900),
-                                   base::TimeDelta::FromMilliseconds(400),
-                                   base::TimeDelta::FromMilliseconds(100),
-                                   base::TimeDelta::FromMilliseconds(0)));
+              ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
+                                     base::TimeDelta::FromMilliseconds(1600),
+                                     base::TimeDelta::FromMilliseconds(2100),
+                                     base::TimeDelta::FromMilliseconds(2400),
+                                     base::TimeDelta::FromMilliseconds(2500),
+                                     base::TimeDelta::FromMilliseconds(1600),
+                                     base::TimeDelta::FromMilliseconds(900),
+                                     base::TimeDelta::FromMilliseconds(400),
+                                     base::TimeDelta::FromMilliseconds(100),
+                                     base::TimeDelta::FromMilliseconds(0)));
 }
 
 // ^ Instantaneous queuing time
@@ -388,7 +388,7 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
       base::TimeDelta::FromMilliseconds(100),
       base::TimeDelta::FromMilliseconds(0)};
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAreArray(expected_durations));
+              ::testing::ElementsAreArray(expected_durations));
 }
 
 // ^ Instantaneous queuing time
@@ -445,7 +445,7 @@ TEST_F(QueueingTimeEstimatorTest,
       base::TimeDelta::FromMilliseconds(0)};
 
   EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAreArray(expected_durations));
+              ::testing::ElementsAreArray(expected_durations));
 }
 
 }  // namespace scheduler

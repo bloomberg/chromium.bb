@@ -60,7 +60,7 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
   DISALLOW_COPY_AND_ASSIGN(PerfTestTimeDomain);
 };
 
-class TaskQueueManagerPerfTest : public testing::Test {
+class TaskQueueManagerPerfTest : public ::testing::Test {
  public:
   TaskQueueManagerPerfTest()
       : num_queues_(0),
