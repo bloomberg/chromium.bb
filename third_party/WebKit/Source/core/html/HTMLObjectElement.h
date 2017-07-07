@@ -78,6 +78,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   FormAssociated* ToFormAssociatedOrNull() override { return this; };
   void AssociateWith(HTMLFormElement*) override;
+  void AttachLayoutTree(AttachContext&) final;
 
  private:
   HTMLObjectElement(Document&, bool created_by_parser);

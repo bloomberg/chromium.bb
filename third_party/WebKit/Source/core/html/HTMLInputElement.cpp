@@ -41,6 +41,7 @@
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/SyncReattachContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/editing/FrameSelection.h"
@@ -840,6 +841,7 @@ LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
 }
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
+  SyncReattachContext reattach_context(context);
   TextControlElement::AttachLayoutTree(context);
   if (GetLayoutObject()) {
     input_type_->OnAttachWithLayoutObject();

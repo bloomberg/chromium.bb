@@ -26,6 +26,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/SyncReattachContext.h"
 #include "core/events/MouseEvent.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
@@ -251,12 +252,14 @@ void ImageInputType::EnsurePrimaryContent() {
 }
 
 void ImageInputType::ReattachFallbackContent() {
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
-  // so we need to reattach synchronously here.
-  if (GetElement().GetDocument().InStyleRecalc())
-    GetElement().ReattachLayoutTree();
-  else
+  if (GetElement().GetDocument().InStyleRecalc()) {
+    // This can happen inside of AttachLayoutTree() in the middle of a
+    // RebuildLayoutTree, so we need to reattach synchronously here.
+    GetElement().ReattachLayoutTree(
+        SyncReattachContext::CurrentAttachContext());
+  } else {
     GetElement().LazyReattachIfAttached();
+  }
 }
 
 void ImageInputType::CreateShadowSubtree() {
