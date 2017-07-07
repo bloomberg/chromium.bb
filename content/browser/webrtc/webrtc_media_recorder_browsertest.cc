@@ -73,13 +73,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, StartAndStop) {
   MakeTypicalCall("testStartStopAndRecorderState();", kMediaRecorderHtmlFile);
 }
 
-// Flaky on Linux Tsan (crbug.com/736268)
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StartAndDataAvailable DISABLED_StartAndDataAvailable
-#else
-#define MAYBE_StartAndDataAvailable StartAndDataAvailable
-#endif
-IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MAYBE_StartAndDataAvailable) {
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, StartAndDataAvailable) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testStartAndDataAvailable(\"%s\");",
                                      GetParam().mime_type.c_str()),
@@ -150,27 +144,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, RecordWithTransparency) {
                   kMediaRecorderHtmlFile);
 }
 
-// Flaky on Linux Tsan (crbug.com/736268)
-#if defined(THREAD_SANITIZER)
-#define MAYBE_IllegalStopThrowsDOMError DISABLED_IllegalStopThrowsDOMError
-#else
-#define MAYBE_IllegalStopThrowsDOMError IllegalStopThrowsDOMError
-#endif
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       MAYBE_IllegalStopThrowsDOMError) {
+IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, IllegalStopThrowsDOMError) {
   MakeTypicalCall("testIllegalStopThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
-// Flaky on Linux Tsan (crbug.com/736268)
-#if defined(THREAD_SANITIZER)
-#define MAYBE_IllegalStartWhileRecordingThrowsDOMError \
-  DISABLED_IllegalStartWhileRecordingThrowsDOMError
-#else
-#define MAYBE_IllegalStartWhileRecordingThrowsDOMError \
-  IllegalStartWhileRecordingThrowsDOMError
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       MAYBE_IllegalStartWhileRecordingThrowsDOMError) {
+                       IllegalStartWhileRecordingThrowsDOMError) {
   MakeTypicalCall("testIllegalStartInRecordingStateThrowsDOMError();",
                   kMediaRecorderHtmlFile);
 }
