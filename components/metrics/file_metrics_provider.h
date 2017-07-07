@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -97,8 +97,7 @@ class FileMetricsProvider : public MetricsProvider,
     ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
   };
 
-  FileMetricsProvider(const scoped_refptr<base::TaskRunner>& task_runner,
-                      PrefService* local_state);
+  explicit FileMetricsProvider(PrefService* local_state);
   ~FileMetricsProvider() override;
 
   // Indicates a file or directory to be monitored and how the file or files
@@ -118,6 +117,10 @@ class FileMetricsProvider : public MetricsProvider,
   // typically the filename.
   static void RegisterPrefs(PrefRegistrySimple* prefs,
                             const base::StringPiece prefs_key);
+
+  // Sets the task runner to use for testing.
+  static void SetTaskRunnerForTesting(
+      const scoped_refptr<base::TaskRunner>& task_runner);
 
  private:
   friend class FileMetricsProviderTest;
@@ -225,7 +228,7 @@ class FileMetricsProvider : public MetricsProvider,
   // The preferences-service used to store persistent state about sources.
   PrefService* pref_service_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<FileMetricsProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProvider);

@@ -17,6 +17,8 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/strings/string_piece.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -93,6 +95,20 @@ void DeleteFileWhenPossible(const base::FilePath& path) {
                             base::File::FLAG_DELETE_ON_CLOSE);
 }
 
+// A task runner to use for testing.
+base::TaskRunner* g_task_runner_for_testing = nullptr;
+
+// Returns a task runner appropriate for running background tasks that perform
+// file I/O.
+scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
+  if (g_task_runner_for_testing)
+    return scoped_refptr<base::TaskRunner>(g_task_runner_for_testing);
+
+  return base::CreateTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+}
+
 }  // namespace
 
 // This structure stores all the information about the sources being monitored
@@ -133,10 +149,8 @@ struct FileMetricsProvider::SourceInfo {
   DISALLOW_COPY_AND_ASSIGN(SourceInfo);
 };
 
-FileMetricsProvider::FileMetricsProvider(
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    PrefService* local_state)
-    : task_runner_(task_runner),
+FileMetricsProvider::FileMetricsProvider(PrefService* local_state)
+    : task_runner_(CreateBackgroundTaskRunner()),
       pref_service_(local_state),
       weak_factory_(this) {
   base::StatisticsRecorder::RegisterHistogramProvider(
@@ -149,7 +163,7 @@ void FileMetricsProvider::RegisterSource(const base::FilePath& path,
                                          SourceType type,
                                          SourceAssociation source_association,
                                          const base::StringPiece prefs_key) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ensure that kSourceOptions has been filled for this type.
   DCHECK_GT(arraysize(kSourceOptions), static_cast<size_t>(type));
@@ -195,6 +209,13 @@ void FileMetricsProvider::RegisterPrefs(PrefRegistrySimple* prefs,
                                         const base::StringPiece prefs_key) {
   prefs->RegisterInt64Pref(metrics::prefs::kMetricsLastSeenPrefix +
                            prefs_key.as_string(), 0);
+}
+
+// static
+void FileMetricsProvider::SetTaskRunnerForTesting(
+    const scoped_refptr<base::TaskRunner>& task_runner) {
+  DCHECK(!g_task_runner_for_testing);
+  g_task_runner_for_testing = task_runner.get();
 }
 
 // static
@@ -438,7 +459,7 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromSource(
 }
 
 void FileMetricsProvider::ScheduleSourcesCheck() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (sources_to_check_.empty())
     return;
 
@@ -457,7 +478,7 @@ void FileMetricsProvider::ScheduleSourcesCheck() {
 }
 
 void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Sources that still have an allocator at this point are read/write "active"
   // files that may need their contents merged on-demand. If there is no
@@ -498,7 +519,7 @@ void FileMetricsProvider::DeleteFileAsync(const base::FilePath& path) {
 }
 
 void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Persistently record the "last seen" timestamp of the source file to
   // ensure that the file is never read again unless it is modified again.
@@ -510,7 +531,7 @@ void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
 }
 
 void FileMetricsProvider::OnDidCreateMetricsLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Schedule a check to see if there are new metrics to load. If so, they
   // will be reported during the next collection run after this one. The
@@ -531,7 +552,7 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
 bool FileMetricsProvider::ProvideIndependentMetrics(
     SystemProfileProto* system_profile_proto,
     base::HistogramSnapshotManager* snapshot_manager) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   while (!sources_with_profile_.empty()) {
     SourceInfo* source = sources_with_profile_.begin()->get();
@@ -584,7 +605,7 @@ bool FileMetricsProvider::ProvideIndependentMetrics(
 }
 
 bool FileMetricsProvider::HasInitialStabilityMetrics() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Measure the total time spent checking all sources as well as the time
   // per individual file. This method is called during startup and thus blocks
@@ -640,7 +661,7 @@ bool FileMetricsProvider::HasInitialStabilityMetrics() {
 
 void FileMetricsProvider::RecordInitialHistogramSnapshots(
     base::HistogramSnapshotManager* snapshot_manager) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Measure the total time spent processing all sources as well as the time
   // per individual file. This method is called during startup and thus blocks
@@ -667,7 +688,7 @@ void FileMetricsProvider::RecordInitialHistogramSnapshots(
 }
 
 void FileMetricsProvider::MergeHistogramDeltas() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Measure the total time spent processing all sources as well as the time
   // per individual file. This method is called on the UI thread so it's
