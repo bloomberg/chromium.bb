@@ -27,7 +27,6 @@
 #define InputMethodController_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/EphemeralRange.h"

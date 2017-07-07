@@ -29,17 +29,13 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "core/layout/ScrollAlignment.h"
-#include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 
@@ -51,6 +47,7 @@ class LocalFrame;
 class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
+class Range;
 class SelectionEditor;
 class LayoutSelection;
 class TextIteratorBehavior;
