@@ -70,7 +70,7 @@ void PendingScript::StopWatchingForLoad() {
   if (!IsWatchingForLoad())
     return;
   CheckState();
-  DCHECK(IsExternal());
+  DCHECK(IsExternalOrModule());
   client_ = nullptr;
 }
 

@@ -99,6 +99,11 @@ class CORE_EXPORT PendingScript
   virtual KURL UrlForClassicScript() const = 0;
   virtual void RemoveFromMemoryCache() = 0;
 
+  // Used for DCHECK()s.
+  bool IsExternalOrModule() const {
+    return IsExternal() || GetScriptType() == ScriptType::kModule;
+  }
+
   void Dispose();
 
  protected:
