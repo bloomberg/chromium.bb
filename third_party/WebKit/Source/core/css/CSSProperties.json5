@@ -3668,6 +3668,8 @@
     {
       name: "border-image",
       longhands: ["border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-left",
@@ -3900,6 +3902,8 @@
     {
       name: "-webkit-mask-box-image",
       longhands: ["-webkit-mask-box-image-source", "-webkit-mask-box-image-slice", "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset", "-webkit-mask-box-image-repeat"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-mask-position",
