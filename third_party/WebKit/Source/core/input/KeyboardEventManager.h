@@ -5,6 +5,7 @@
 #ifndef KeyboardEventManager_h
 #define KeyboardEventManager_h
 
+#include "build/build_config.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Visitor.h"
@@ -29,7 +30,7 @@ class CORE_EXPORT KeyboardEventManager
  public:
   static const int kAccessKeyModifiers =
 // TODO(crbug.com/618397): Add a settings to control this behavior.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
       WebInputEvent::kControlKey | WebInputEvent::kAltKey;
 #else
       WebInputEvent::kAltKey;

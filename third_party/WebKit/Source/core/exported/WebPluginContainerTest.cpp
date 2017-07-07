@@ -32,6 +32,8 @@
 
 #include <memory>
 #include <string>
+
+#include "build/build_config.h"
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/exported/FakeWebPlugin.h"
@@ -426,7 +428,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
   WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
       WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
       WebInputEvent::kIsLeft);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   modifier_key = static_cast<WebInputEvent::Modifiers>(
       WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
       WebInputEvent::kIsLeft);

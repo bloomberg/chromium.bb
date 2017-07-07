@@ -6,6 +6,8 @@
 
 #include <limits>
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/ClientRect.h"
@@ -42,7 +44,7 @@
 
 // The MediaTimelineWidths histogram suffix expected to be encountered in these
 // tests. Depends on the OS, since Android sizes its timeline differently.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define TIMELINE_W "80_127"
 #else
 #define TIMELINE_W "128_255"

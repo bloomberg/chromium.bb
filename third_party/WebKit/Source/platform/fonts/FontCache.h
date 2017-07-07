@@ -31,7 +31,10 @@
 #define FontCache_h
 
 #include <limits.h>
+
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FallbackListCompositeKey.h"
 #include "platform/fonts/FontCacheClient.h"
@@ -157,16 +160,16 @@ class PLATFORM_EXPORT FontCache {
   SkFontMgr* FontManager() { return font_manager_.get(); }
   static void SetFontManager(sk_sp<SkFontMgr>);
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   static const AtomicString& SystemFontFamily();
 #else
   static const AtomicString& LegacySystemFontFamily();
 #endif
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   static void SetSystemFontFamily(const AtomicString&);
 #endif
 
-#if OS(WIN)
+#if defined(OS_WIN)
   static bool AntialiasedTextEnabled() { return antialiased_text_enabled_; }
   static bool LcdTextEnabled() { return lcd_text_enabled_; }
   static float DeviceScaleFactor() { return device_scale_factor_; }
@@ -208,7 +211,7 @@ class PLATFORM_EXPORT FontCache {
 
   static void AcceptLanguagesChanged(const String&);
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   static AtomicString GetGenericFamilyNameForScript(
       const AtomicString& family_name,
       const FontDescription&);
@@ -258,7 +261,7 @@ class PLATFORM_EXPORT FontCache {
       const FontDescription&,
       const FontFaceCreationParams&,
       AlternateFontName = AlternateFontName::kAllowAlternate);
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   FontPlatformData* SystemFontPlatformData(const FontDescription&);
 #endif
 
@@ -279,7 +282,7 @@ class PLATFORM_EXPORT FontCache {
                                    const FontFaceCreationParams&,
                                    CString& name);
 
-#if OS(ANDROID) || OS(LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
   static AtomicString GetFamilyNameForCharacter(SkFontMgr*,
                                                 UChar32,
                                                 const FontDescription&,
@@ -297,7 +300,7 @@ class PLATFORM_EXPORT FontCache {
   // A leaky owning bare pointer.
   static SkFontMgr* static_font_manager_;
 
-#if OS(WIN)
+#if defined(OS_WIN)
   static bool antialiased_text_enabled_;
   static bool lcd_text_enabled_;
   static float device_scale_factor_;

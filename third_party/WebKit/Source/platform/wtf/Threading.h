@@ -30,14 +30,16 @@
 #ifndef Threading_h
 #define Threading_h
 
+#include <stdint.h>
+
+#include "build/build_config.h"
 #include "platform/wtf/Atomics.h"
 #include "platform/wtf/TypeTraits.h"
 #include "platform/wtf/WTFExport.h"
-#include <stdint.h>
 
 namespace WTF {
 
-#if OS(WIN)
+#if defined(OS_WIN)
 typedef uint32_t ThreadIdentifier;
 #else
 typedef intptr_t ThreadIdentifier;

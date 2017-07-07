@@ -4,6 +4,7 @@
 
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 
+#include "build/build_config.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -22,12 +23,12 @@
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "services/device/public/interfaces/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
-#endif  // OS(ANDROID)
+#endif  // defined(OS_ANDROID)
 
 #undef atan2  // to use std::atan2 instead of wtf_atan2
 #undef fmod   // to use std::fmod instead of wtf_fmod
@@ -203,7 +204,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
   }
 
 // Check whether the user locked screen orientation at the OS level.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetConnector()->BindInterface(
       device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor_));
@@ -212,7 +213,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
       WrapPersistent(this))));
 #else
   GotIsAutoRotateEnabledByUser(true);  // Assume always enabled on other OSes.
-#endif  // OS(ANDROID)
+#endif  // defined(OS_ANDROID)
 }
 
 void MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser(

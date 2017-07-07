@@ -32,7 +32,9 @@
 #include "web/ChromeClientImpl.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
@@ -631,7 +633,7 @@ void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor,
   if (cursor_overridden_)
     return;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // On Mac the mousemove event propagates to both the popup and main window.
   // If a popup is open we don't want the main window to change the cursor.
   if (web_view_->HasOpenedPopup())

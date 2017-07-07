@@ -31,6 +31,8 @@
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontGlobalContext.h"
@@ -46,7 +48,7 @@
 
 #include <hb-ot.h>
 #include <hb.h>
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <hb-coretext.h>
 #endif
 
@@ -267,7 +269,7 @@ static void DeleteTypefaceStream(void* stream_asset_ptr) {
 }
 
 hb_face_t* HarfBuzzFace::CreateFace() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // hb_face_t needs to be instantiated using the CoreText constructor for
   // compatibility with AAT font, in which case HarfBuzz' CoreText backend is
   // used. If we encounter a FreeType backed SkTypeface, for variable fonts on

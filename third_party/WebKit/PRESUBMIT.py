@@ -77,7 +77,6 @@ def _CommonChecks(input_api, output_api):
         maxlen=800, license_header=license_header))
     results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
     results.extend(_CheckTestExpectations(input_api, output_api))
-    results.extend(_CheckWtfOsMacros(input_api, output_api))
     results.extend(_CheckWatchlist(input_api, output_api))
     return results
 
@@ -129,20 +128,6 @@ def _CheckStyle(input_api, output_api):
             'Could not run check-webkit-style', [str(e)]))
 
     return results
-
-
-def _CheckWtfOsMacros(input_api, output_api):
-    """Ensures that Blink code uses no WTF's OS macros."""
-    os_macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bOS\(')
-    errors = input_api.canned_checks._FindNewViolationsOfRule(
-        lambda _, x: not os_macro_re.search(x),
-        input_api, None)
-    errors = ['Found deprecated OS() macro in %s. Include build/build_config.h '
-              'and use defined(OS_*) instead.'
-              % violation for violation in errors]
-    if errors:
-        return [output_api.PresubmitPromptWarning('\n'.join(errors))]
-    return []
 
 
 def _CheckForPrintfDebugging(input_api, output_api):

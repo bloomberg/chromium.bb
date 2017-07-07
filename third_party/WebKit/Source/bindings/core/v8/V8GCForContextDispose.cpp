@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8GCForContextDispose.h"
 
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -62,7 +63,7 @@ void V8GCForContextDispose::NotifyContextDisposed(
     WindowProxy::FrameReuseStatus frame_reuse_status) {
   did_dispose_context_for_main_frame_ = is_main_frame;
   last_context_disposal_time_ = WTF::CurrentTime();
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   // When a low end device is in a low memory situation we should prioritize
   // memory use and trigger a V8+Blink GC. However, on Android, if the frame
   // will not be reused, the process will likely to be killed soon so skip this.

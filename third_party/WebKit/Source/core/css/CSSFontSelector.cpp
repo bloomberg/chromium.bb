@@ -26,6 +26,7 @@
 
 #include "core/css/CSSFontSelector.h"
 
+#include "build/build_config.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
@@ -90,7 +91,7 @@ static AtomicString FamilyNameFromSettings(
     const GenericFontFamilySettings& settings,
     const FontDescription& font_description,
     const AtomicString& generic_family_name) {
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   if (font_description.GenericFamily() == FontDescription::kStandardFamily)
     return FontCache::GetGenericFamilyNameForScript(
         FontFamilyNames::webkit_standard, font_description);

@@ -28,9 +28,10 @@
 
 // Mac OS X - specific FFTFrame implementation
 
+#include "build/build_config.h"
 #include "platform/wtf/build_config.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 
 #include "platform/audio/FFTFrame.h"
 
@@ -140,4 +141,4 @@ void FFTFrame::Cleanup() {
 
 }  // namespace blink
 
-#endif  // #if OS(MACOSX)
+#endif  // #if defined(OS_MACOSX)

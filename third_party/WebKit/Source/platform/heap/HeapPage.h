@@ -934,10 +934,10 @@ inline uint32_t HeapObjectHeader::GetMagic() const {
   const uintptr_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
       base::trace_event::MemoryAllocatorDump::kNameSize)));
 
-#if OS(WIN)
+#if defined(OS_WIN)
   const uintptr_t random2 =
       ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
-#elif OS(POSIX)
+#elif defined(OS_POSIX)
   const uintptr_t random2 =
       ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
 #else

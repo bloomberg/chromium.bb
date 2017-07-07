@@ -43,6 +43,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
+#include "build/build_config.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -3184,7 +3185,7 @@ TEST_P(ParameterizedWebFrameTest, CanOverrideScaleLimits) {
 }
 
 // Android doesn't have scrollbars on the main LocalFrameView
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 TEST_F(WebFrameTest, DISABLED_updateOverlayScrollbarLayers)
 #else
 TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
@@ -5761,7 +5762,7 @@ TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest) {
   EXPECT_EQ(64, ComputeOffset(layout_object, 1000, 1000));
 }
 
-#if !OS(MACOSX) && !OS(LINUX)
+#if !defined(OS_MACOSX) && !defined(OS_LINUX)
 TEST_P(ParameterizedWebFrameTest,
        SelectRangeStaysHorizontallyAlignedWhenMoved) {
   RegisterMockedHttpURLLoad("move_caret.html");
@@ -8692,7 +8693,7 @@ TEST_P(ParameterizedWebFrameTest, NodeImageTestFloatLeft) {
 }
 
 // Crashes on Android: http://crbug.com/403804
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 TEST_P(ParameterizedWebFrameTest, DISABLED_PrintingBasic)
 #else
 TEST_P(ParameterizedWebFrameTest, PrintingBasic)

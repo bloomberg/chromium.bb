@@ -5,6 +5,8 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 
 #include <unicode/uscript.h>
+
+#include "build/build_config.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
@@ -96,7 +98,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 // If the specified VS is not in the font, it's mapped to .notdef.
 // then hb_ot_hide_default_ignorables() swaps it to a space with zero-advance.
 // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
       EXPECT_EQ(TestInfo(result)->FontDataForTesting(0)->SpaceGlyph(),
                 TestInfo(result)->GlyphForTesting(0, 1))
           << test.name;

@@ -30,13 +30,15 @@
 #define FFTFrame_h
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Threading.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
 #elif USE(WEBAUDIO_OPENMAX_DL_FFT)
 #include <dl/sp/api/omxSP.h>
@@ -99,7 +101,7 @@ class PLATFORM_EXPORT FFTFrame {
   AudioFloatArray real_data_;
   AudioFloatArray imag_data_;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   DSPSplitComplex& DspSplitComplex() { return frame_; }
   DSPSplitComplex DspSplitComplex() const { return frame_; }
   static FFTSetup FftSetupForSize(unsigned fft_size);

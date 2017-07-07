@@ -31,6 +31,7 @@
 
 #include "platform/text/LineEnding.h"
 
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/CString.h"
@@ -202,7 +203,7 @@ CString NormalizeLineEndingsToCRLF(const CString& from) {
 }
 
 void NormalizeLineEndingsToNative(const CString& from, Vector<char>& result) {
-#if OS(WIN)
+#if defined(OS_WIN)
   VectorCharAppendBuffer buffer(result);
   InternalNormalizeLineEndingsToCRLF(from, buffer);
 #else

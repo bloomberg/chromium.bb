@@ -5,6 +5,7 @@
 #include "platform/MemoryCoordinator.h"
 
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/fonts/FontGlobalContext.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -12,7 +13,7 @@
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/WebThread.h"
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
 #endif
 
@@ -40,7 +41,7 @@ void MemoryCoordinator::SetPhysicalMemoryMBForTesting(
 
 // static
 bool MemoryCoordinator::IsCurrentlyLowMemory() {
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   return base::android::SysUtils::IsCurrentlyLowMemory();
 #else
   return false;

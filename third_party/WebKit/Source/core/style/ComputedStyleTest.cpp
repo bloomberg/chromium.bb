@@ -4,6 +4,7 @@
 
 #include "core/style/ComputedStyle.h"
 
+#include "build/build_config.h"
 #include "core/style/ClipPathOperation.h"
 #include "core/style/ShapeValue.h"
 #include "core/style/StyleDifference.h"
@@ -47,7 +48,7 @@ TEST(ComputedStyleTest, ClipPathEqual) {
 TEST(ComputedStyleTest, FocusRingWidth) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetEffectiveZoom(3.5);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   style->SetOutlineStyle(EBorderStyle::kSolid);
   ASSERT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
@@ -62,7 +63,7 @@ TEST(ComputedStyleTest, FocusRingOutset) {
   style->SetOutlineStyle(EBorderStyle::kSolid);
   style->SetOutlineStyleIsAuto(kOutlineIsAutoOn);
   style->SetEffectiveZoom(4.75);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   ASSERT_EQ(4, style->OutlineOutsetExtent());
 #else
   ASSERT_EQ(3, style->OutlineOutsetExtent());

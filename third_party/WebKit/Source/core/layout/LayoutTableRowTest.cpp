@@ -25,6 +25,7 @@
 
 #include "core/layout/LayoutTableRow.h"
 
+#include "build/build_config.h"
 #include "core/layout/LayoutTestHelper.h"
 
 namespace blink {
@@ -58,7 +59,7 @@ TEST_F(LayoutTableRowDeathTest, CanSetRowToMaxRowIndex) {
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 // TODO(dgrogan): These tests started flaking on Mac try bots around 2016-07-28.
 // https://crbug.com/632816
-#if !OS(ANDROID) && !OS(MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 TEST_F(LayoutTableRowDeathTest, CrashIfRowOverflowOnSetting) {
   ASSERT_DEATH(row_->SetRowIndex(kMaxRowIndex + 1), "");

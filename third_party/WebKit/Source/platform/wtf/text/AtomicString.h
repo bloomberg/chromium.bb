@@ -21,14 +21,16 @@
 #ifndef AtomicString_h
 #define AtomicString_h
 
+#include <cstring>
+#include <iosfwd>
+
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/WTFString.h"
-#include <cstring>
-#include <iosfwd>
 
 namespace WTF {
 
@@ -236,7 +238,7 @@ class WTF_EXPORT AtomicString {
     return AddSlowCase(r);
   }
   static RefPtr<StringImpl> AddSlowCase(StringImpl*);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   static RefPtr<StringImpl> Add(CFStringRef);
 #endif
 };

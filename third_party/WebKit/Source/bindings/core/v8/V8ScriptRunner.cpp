@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -46,7 +47,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <malloc.h>
 #else
 #include <alloca.h>

@@ -5,6 +5,7 @@
 #include "platform/audio/PushPullFIFO.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/PtrUtil.h"
@@ -109,7 +110,7 @@ void PushPullFIFO::Push(const AudioBus* input_bus) {
 size_t PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
   MutexLocker locker(lock_);
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   if (!output_bus) {
     // Log when outputBus or FIFO object is invalid. (crbug.com/692423)
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)

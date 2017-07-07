@@ -25,6 +25,7 @@
 
 #include "core/layout/LayoutTableCell.h"
 
+#include "build/build_config.h"
 #include "core/layout/LayoutTestHelper.h"
 
 namespace blink {
@@ -59,7 +60,7 @@ TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex) {
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
 // TODO(dgrogan): These tests started flaking on Mac try bots around 2016-07-28.
 // https://crbug.com/632816
-#if !OS(ANDROID) && !OS(MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting) {
   ASSERT_DEATH(cell_->SetAbsoluteColumnIndex(kMaxColumnIndex + 1), "");

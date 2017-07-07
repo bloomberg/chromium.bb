@@ -24,6 +24,7 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include "build/build_config.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/wtf/text/CString.h"
@@ -83,7 +84,7 @@ void FontCache::GetFontForCharacter(
   }
 }
 
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
 PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 c,
@@ -167,6 +168,6 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   return FontDataFromFontPlatformData(platform_data.get(), kDoNotRetain);
 }
 
-#endif  // !OS(ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace blink

@@ -31,6 +31,8 @@
 #include "web/WebViewImpl.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/animation/CompositorMutatorImpl.h"
@@ -492,7 +494,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     if (event.button == WebMouseEvent::Button::kRight ||
         (event.button == WebMouseEvent::Button::kLeft &&
          event.GetModifiers() & WebMouseEvent::kControlKey))
@@ -1175,9 +1177,9 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
     return result;
   }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
-#if OS(WIN)
+#if defined(OS_WIN)
       WebInputEvent::kKeyUp;
 #else
       WebInputEvent::kRawKeyDown;
@@ -1197,7 +1199,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
     SendContextMenuEvent(event);
     return WebInputEventResult::kHandledSystem;
   }
-#endif  // !OS(MACOSX)
+#endif  // !defined(OS_MACOSX)
 
   return WebInputEventResult::kNotHandled;
 }
@@ -1619,7 +1621,7 @@ bool WebViewImpl::HasTouchEventHandlersAt(const WebPoint& point) {
   return true;
 }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 // Mac has no way to open a context menu based on a keyboard event.
 WebInputEventResult WebViewImpl::SendContextMenuEvent(
     const WebKeyboardEvent& event) {
@@ -2081,7 +2083,7 @@ void WebViewImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
   software_paint_rate_histogram.Count(pixels_per_sec / 1000000);
 }
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 void WebViewImpl::PaintIgnoringCompositing(WebCanvas* canvas,
                                            const WebRect& rect) {
   // This is called on a composited WebViewImpl, but we will ignore it,

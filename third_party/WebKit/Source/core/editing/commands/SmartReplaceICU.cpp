@@ -29,7 +29,9 @@
 
 #include "core/editing/commands/SmartReplace.h"
 
-#if !OS(MACOSX)
+#include "build/build_config.h"
+
+#if !defined(OS_MACOSX)
 #include <unicode/uset.h>
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
@@ -110,4 +112,4 @@ bool IsCharacterSmartReplaceExempt(UChar32 c, bool is_previous_character) {
 }
 }
 
-#endif  // !OS(MACOSX)
+#endif  // !defined(OS_MACOSX)

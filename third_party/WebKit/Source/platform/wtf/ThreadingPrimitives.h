@@ -31,23 +31,24 @@
 #ifndef ThreadingPrimitives_h
 #define ThreadingPrimitives_h
 
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Locker.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 #include <pthread.h>
 #endif
 
 namespace WTF {
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 struct PlatformMutex {
   pthread_mutex_t internal_mutex_;
 #if DCHECK_IS_ON()
@@ -55,7 +56,7 @@ struct PlatformMutex {
 #endif
 };
 typedef pthread_cond_t PlatformCondition;
-#elif OS(WIN)
+#elif defined(OS_WIN)
 struct PlatformMutex {
   CRITICAL_SECTION internal_mutex_;
   size_t recursion_count_;
@@ -151,7 +152,7 @@ class WTF_EXPORT ThreadCondition final {
   PlatformCondition condition_;
 };
 
-#if OS(WIN)
+#if defined(OS_WIN)
 // The absoluteTime is in seconds, starting on January 1, 1970. The time is
 // assumed to use the same time zone as WTF::currentTime().
 // Returns an interval in milliseconds suitable for passing to one of the Win32
@@ -168,7 +169,7 @@ using WTF::MutexLocker;
 using WTF::MutexTryLocker;
 using WTF::ThreadCondition;
 
-#if OS(WIN)
+#if defined(OS_WIN)
 using WTF::AbsoluteTimeToWaitTimeoutInterval;
 #endif
 

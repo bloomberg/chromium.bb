@@ -22,6 +22,7 @@
 
 #include "core/events/KeyboardEvent.h"
 
+#include "build/build_config.h"
 #include "core/editing/InputMethodController.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "platform/WindowsKeyboardCodes.h"
@@ -156,7 +157,7 @@ int KeyboardEvent::keyCode() const {
   if (!key_event_)
     return 0;
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   // FIXME: Check to see if this applies to other OS.
   // If the key event belongs to IME composition then propagate to JS.
   if (key_event_->native_key_code == 0xE5)  // VKEY_PROCESSKEY

@@ -4,6 +4,7 @@
 
 #include "core/input/MouseWheelEventManager.h"
 
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrameView.h"
@@ -75,7 +76,7 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
     }
   } else {  // !wheel_scroll_latching, wheel_target_ will be updated for each
             // wheel event.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     // Filter Mac OS specific phases, usually with a zero-delta.
     // https://crbug.com/553732
     // TODO(chongz): EventSender sends events with

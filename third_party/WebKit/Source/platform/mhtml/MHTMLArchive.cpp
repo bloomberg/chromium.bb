@@ -30,6 +30,7 @@
 
 #include "platform/mhtml/MHTMLArchive.h"
 
+#include "build/build_config.h"
 #include "platform/DateComponents.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
@@ -118,7 +119,7 @@ bool MHTMLArchive::CanLoadArchive(const KURL& url) {
     return true;
   if (url.ProtocolIsInHTTPFamily())
     return true;
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   if (url.ProtocolIs("content"))
     return true;
 #endif

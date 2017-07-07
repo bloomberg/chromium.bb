@@ -31,6 +31,8 @@
 #include "core/imagebitmap/ImageBitmap.h"
 
 #include "SkPixelRef.h"  // FIXME: qualify this skia header file.
+
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -226,7 +228,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
 
 // This test is failing on Android Arm 64 Official Test Bot.
 // See <http://crbug.com/721819>.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement \
   DISABLED_ImageBitmapColorSpaceConversionHTMLImageElement
 #else
@@ -353,7 +355,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
 
 // This test is failing on Android Arm 64 Official Test Bot.
 // See <http://crbug.com/721819>.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_ImageBitmapColorSpaceConversionImageBitmap \
   DISABLED_ImageBitmapColorSpaceConversionImageBitmap
 #else
@@ -477,7 +479,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
 
 // This test is failing on Android Arm 64 Official Test Bot.
 // See <http://crbug.com/721819>.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_ImageBitmapColorSpaceConversionStaticBitmapImage \
   DISABLED_ImageBitmapColorSpaceConversionStaticBitmapImage
 #else

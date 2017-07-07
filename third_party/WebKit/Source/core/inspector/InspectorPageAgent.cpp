@@ -31,8 +31,10 @@
 #include "core/inspector/InspectorPageAgent.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptRegexp.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
@@ -753,7 +755,7 @@ void InspectorPageAgent::DidRunJavaScriptDialog(bool result) {
 void InspectorPageAgent::DidResizeMainFrame() {
   if (!inspected_frames_->Root()->IsMainFrame())
     return;
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
   PageLayoutInvalidated(true);
 #endif
   GetFrontend()->frameResized();

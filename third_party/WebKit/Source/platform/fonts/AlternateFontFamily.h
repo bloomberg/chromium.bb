@@ -31,6 +31,7 @@
 #ifndef AlternateFontFamily_h
 #define AlternateFontFamily_h
 
+#include "build/build_config.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/wtf/text/AtomicString.h"
 
@@ -41,7 +42,7 @@ namespace blink {
 // path map certain common bitmap fonts to their truetype equivalent up front.
 inline const AtomicString& AdjustFamilyNameToAvoidUnsupportedFonts(
     const AtomicString& family_name) {
-#if OS(WIN)
+#if defined(OS_WIN)
   // On Windows, 'Courier New' (truetype font) is always present and
   // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
   // a truetype font. Thus pages asking for Courier are better of
@@ -79,7 +80,7 @@ inline const AtomicString& AlternateFamilyName(
   DEFINE_STATIC_LOCAL(AtomicString, courier_new, ("Courier New"));
   if (DeprecatedEqualIgnoringCase(family_name, courier))
     return courier_new;
-#if !OS(WIN)
+#if !defined(OS_WIN)
   // On Windows, Courier New (truetype font) is always present and
   // Courier is a bitmap font. So, we don't want to map Courier New to
   // Courier.

@@ -27,6 +27,8 @@
 #include "platform/graphics/GraphicsContext.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
@@ -366,7 +368,7 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 namespace {
 
 int AdjustedFocusRingOffset(int offset) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return offset + 2;
 #else
   return 0;

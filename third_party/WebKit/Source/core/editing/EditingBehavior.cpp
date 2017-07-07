@@ -26,6 +26,7 @@
 
 #include "core/editing/EditingBehavior.h"
 
+#include "build/build_config.h"
 #include "core/events/KeyboardEvent.h"
 #include "platform/KeyboardCodes.h"
 #include "public/platform/WebInputEvent.h"
@@ -42,7 +43,7 @@ const unsigned kCtrlKey = WebInputEvent::kControlKey;
 const unsigned kAltKey = WebInputEvent::kAltKey;
 const unsigned kShiftKey = WebInputEvent::kShiftKey;
 const unsigned kMetaKey = WebInputEvent::kMetaKey;
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
 const unsigned kOptionKey = kAltKey;
@@ -85,7 +86,7 @@ struct DomKeyKeyDownEntry {
 const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {VKEY_LEFT, 0, "MoveLeft"},
     {VKEY_LEFT, kShiftKey, "MoveLeftAndModifySelection"},
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     {VKEY_LEFT, kOptionKey, "MoveWordLeft"},
     {VKEY_LEFT, kOptionKey | kShiftKey, "MoveWordLeftAndModifySelection"},
 #else
@@ -94,7 +95,7 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
 #endif
     {VKEY_RIGHT, 0, "MoveRight"},
     {VKEY_RIGHT, kShiftKey, "MoveRightAndModifySelection"},
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     {VKEY_RIGHT, kOptionKey, "MoveWordRight"},
     {VKEY_RIGHT, kOptionKey | kShiftKey, "MoveWordRightAndModifySelection"},
 #else
@@ -107,7 +108,7 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {VKEY_DOWN, 0, "MoveDown"},
     {VKEY_DOWN, kShiftKey, "MoveDownAndModifySelection"},
     {VKEY_NEXT, kShiftKey, "MovePageDownAndModifySelection"},
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
     {VKEY_UP, kCtrlKey, "MoveParagraphBackward"},
     {VKEY_UP, kCtrlKey | kShiftKey, "MoveParagraphBackwardAndModifySelection"},
     {VKEY_DOWN, kCtrlKey, "MoveParagraphForward"},
@@ -117,32 +118,32 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
 #endif
     {VKEY_HOME, 0, "MoveToBeginningOfLine"},
     {VKEY_HOME, kShiftKey, "MoveToBeginningOfLineAndModifySelection"},
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     {VKEY_PRIOR, kOptionKey, "MovePageUp"},
     {VKEY_NEXT, kOptionKey, "MovePageDown"},
 #endif
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
     {VKEY_HOME, kCtrlKey, "MoveToBeginningOfDocument"},
     {VKEY_HOME, kCtrlKey | kShiftKey,
      "MoveToBeginningOfDocumentAndModifySelection"},
 #endif
     {VKEY_END, 0, "MoveToEndOfLine"},
     {VKEY_END, kShiftKey, "MoveToEndOfLineAndModifySelection"},
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
     {VKEY_END, kCtrlKey, "MoveToEndOfDocument"},
     {VKEY_END, kCtrlKey | kShiftKey, "MoveToEndOfDocumentAndModifySelection"},
 #endif
     {VKEY_BACK, 0, "DeleteBackward"},
     {VKEY_BACK, kShiftKey, "DeleteBackward"},
     {VKEY_DELETE, 0, "DeleteForward"},
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     {VKEY_BACK, kOptionKey, "DeleteWordBackward"},
     {VKEY_DELETE, kOptionKey, "DeleteWordForward"},
 #else
     {VKEY_BACK, kCtrlKey, "DeleteWordBackward"},
     {VKEY_DELETE, kCtrlKey, "DeleteWordForward"},
 #endif
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     {'B', kCommandKey, "ToggleBold"},
     {'I', kCommandKey, "ToggleItalic"},
 #else
@@ -162,7 +163,7 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {VKEY_INSERT, kCtrlKey, "Copy"},
     {VKEY_INSERT, kShiftKey, "Paste"},
     {VKEY_DELETE, kShiftKey, "Cut"},
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
     // On OS X, we pipe these back to the browser, so that it can do menu item
     // blinking.
     {'C', kCtrlKey, "Copy"},
@@ -267,19 +268,19 @@ bool EditingBehavior::ShouldInsertCharacter(const KeyboardEvent& event) const {
   // unexpected behaviour
   if (ch < ' ')
     return false;
-#if OS(LINUX)
+#if defined(OS_LINUX)
   // According to XKB map no keyboard combinations with ctrl key are mapped to
   // printable characters, however we need the filter as the DomKey/text could
   // contain printable characters.
   if (event.ctrlKey())
     return false;
-#elif !OS(WIN)
+#elif !defined(OS_WIN)
   // Don't insert ASCII character if ctrl w/o alt or meta is on.
   // On Mac, we should ignore events when meta is on (Command-<x>).
   if (ch < 0x80) {
     if (event.ctrlKey() && !event.altKey())
       return false;
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     if (event.metaKey())
       return false;
 #endif

@@ -25,10 +25,12 @@
 
 #include "platform/wtf/StringExtras.h"
 
+#include <limits>
+
+#include "build/build_config.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <limits>
 
 namespace WTF {
 
@@ -59,11 +61,11 @@ template <>
 struct PrintfFormatTrait<long long> {
   static const char kFormat[];
 };
-#if OS(WIN)
+#if defined(OS_WIN)
 const char PrintfFormatTrait<long long>::kFormat[] = "%I64i";
 #else
 const char PrintfFormatTrait<long long>::kFormat[] = "%lli";
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)
 
 template <>
 struct PrintfFormatTrait<unsigned short> {
@@ -87,11 +89,11 @@ template <>
 struct PrintfFormatTrait<unsigned long long> {
   static const char kFormat[];
 };
-#if OS(WIN)
+#if defined(OS_WIN)
 const char PrintfFormatTrait<unsigned long long>::kFormat[] = "%I64u";
 #else
 const char PrintfFormatTrait<unsigned long long>::kFormat[] = "%llu";
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)
 
 // FIXME: use snprintf from StringExtras.h
 template <typename IntegerType>

@@ -44,42 +44,42 @@
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Threading.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <AvailabilityMacros.h>
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 #define WTF_USE_APPLE_SYSTEM_LOG 1
 #include <asl.h>
 #endif
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)
 
 #if defined(COMPILER_MSVC)
 #include <crtdbg.h>
 #endif
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 
-#if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(__UCLIBC__))
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
 #endif
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #include <android/log.h>
 #endif
 
 PRINTF_FORMAT(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args) {
-#if OS(MACOSX) && USE(APPLE_SYSTEM_LOG)
+#if defined(OS_MACOSX) && USE(APPLE_SYSTEM_LOG)
   va_list copyOfArgs;
   va_copy(copyOfArgs, args);
   asl_vlog(0, 0, ASL_LEVEL_NOTICE, format, copyOfArgs);
   va_end(copyOfArgs);
-#elif OS(ANDROID)
+#elif defined(OS_ANDROID)
   __android_log_vprint(ANDROID_LOG_WARN, "WebKit", format, args);
-#elif OS(WIN)
+#elif defined(OS_WIN)
   if (IsDebuggerPresent()) {
     size_t size = 1024;
 

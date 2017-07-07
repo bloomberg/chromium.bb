@@ -27,7 +27,9 @@
 #include "core/page/DragController.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
@@ -91,7 +93,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebScreenInfo.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 
@@ -985,7 +987,7 @@ static IntPoint DragLocationForSelectionDrag(LocalFrame* source_frame) {
 }
 
 static const IntSize MaxDragImageSize(float device_scale_factor) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // Match Safari's drag image size.
   static const IntSize kMaxDragImageSize(400, 400);
 #else
@@ -1278,7 +1280,7 @@ DragOperation DragController::GetDragOperation(DragData* drag_data) {
 bool DragController::IsCopyKeyDown(DragData* drag_data) {
   int modifiers = drag_data->GetModifiers();
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return modifiers & WebInputEvent::kAltKey;
 #else
   return modifiers & WebInputEvent::kControlKey;

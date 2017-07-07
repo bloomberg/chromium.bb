@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "build/build_config.h"
 #include "core/page/CreateWindow.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebMouseEvent.h"
@@ -82,7 +83,7 @@ TEST_F(EffectiveNavigationPolicyTest, ShiftLeftClickPopup) {
 }
 
 TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClick) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -94,7 +95,7 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClick) {
 }
 
 TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClickPopup) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -106,7 +107,7 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClickPopup) {
 }
 
 TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -119,7 +120,7 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
 }
 
 TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;

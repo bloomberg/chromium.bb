@@ -4,6 +4,7 @@
 
 #include "core/input/MouseEventManager.h"
 
+#include "build/build_config.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/Element.h"
@@ -59,7 +60,7 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
 const double kFakeMouseMoveInterval = 0.1;
 
 // TODO(crbug.com/653490): Read these values from the OS.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
 constexpr TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.15);
@@ -242,7 +243,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   bool context_menu_event =
       !RuntimeEnabledFeatures::AuxclickEnabled() &&
       mev.Event().button == WebPointerProperties::Button::kRight;
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // FIXME: The Mac port achieves the same behavior by checking whether the
   // context menu is currently open in WebPage::mouseEvent(). Consider merging
   // the implementations.

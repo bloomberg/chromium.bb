@@ -5,6 +5,7 @@
 #include "public/platform/FilePathConversion.h"
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
@@ -21,7 +22,7 @@ base::FilePath WebStringToFilePath(const WebString& web_string) {
         base::StringPiece16(str.Characters16(), str.length()));
   }
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
   StringUTF8Adaptor utf8(str);
   return base::FilePath::FromUTF8Unsafe(utf8.AsStringPiece());
 #else
@@ -35,7 +36,7 @@ WebString FilePathToWebString(const base::FilePath& path) {
   if (path.empty())
     return WebString();
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
   return WebString::FromUTF8(path.value());
 #else
   return WebString::FromUTF16(path.AsUTF16Unsafe());

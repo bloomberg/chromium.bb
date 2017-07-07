@@ -30,6 +30,7 @@
 
 #include "core/html/forms/ExternalPopupMenu.h"
 
+#include "build/build_config.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewBase.h"
@@ -53,7 +54,7 @@
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebView.h"
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "core/page/ChromeClient.h"
 #endif
 
@@ -117,7 +118,7 @@ bool ExternalPopupMenu::ShowInternal() {
 void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // TODO(sashab): Change this back to WebViewBase::CurrentInputEvent() once
   // WebViewImpl is in core/.
   const WebInputEvent* current_event =

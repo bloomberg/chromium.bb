@@ -29,6 +29,7 @@
 
 #include "core/dom/ViewportDescription.h"
 
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -238,7 +239,7 @@ PageScaleConstraints ViewportDescription::Resolve(
 
 void ViewportDescription::ReportMobilePageStats(
     const LocalFrame* main_frame) const {
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   enum ViewportUMAType {
     kNoViewportTag,
     kDeviceWidth,

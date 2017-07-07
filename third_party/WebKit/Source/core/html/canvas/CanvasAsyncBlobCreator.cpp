@@ -4,6 +4,7 @@
 
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
+#include "build/build_config.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -36,7 +37,7 @@ const double kSlackBeforeDeadline =
 const double kIdleTaskStartTimeoutDelay = 200.0;
 // We should be more lenient on completion timeout delay to ensure that the
 // switch from idle to main thread only happens to a minority of toBlob calls
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
 // Png image encoding on 4k by 4k canvas on Mac HDD takes 5.7+ seconds
 const double kIdleTaskCompleteTimeoutDelay = 6700.0;
 #else

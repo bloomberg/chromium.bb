@@ -4,6 +4,7 @@
 
 #include "core/paint/PaintLayerClipper.h"
 
+#include "build/build_config.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
@@ -80,7 +81,7 @@ TEST_F(PaintLayerClipperTest, ControlClip) {
   target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
       .CalculateRects(context, LayoutRect(LayoutRect::InfiniteIntRect()),
                       layer_bounds, background_rect, foreground_rect);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // If the PaintLayer clips overflow, the background rect is intersected with
   // the PaintLayer bounds...
   EXPECT_EQ(LayoutRect(3, 4, 210, 28), background_rect.Rect());
@@ -188,9 +189,9 @@ TEST_F(PaintLayerClipperTest, ControlClipSelect) {
       .CalculateRects(context, LayoutRect(LayoutRect::InfiniteIntRect()),
                       layer_bounds, background_rect, foreground_rect);
 // The control clip for a select excludes the area for the down arrow.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   EXPECT_EQ(LayoutRect(16, 9, 79, 13), foreground_rect.Rect());
-#elif OS(WIN)
+#elif defined(OS_WIN)
   EXPECT_EQ(LayoutRect(17, 9, 60, 16), foreground_rect.Rect());
 #else
   EXPECT_EQ(LayoutRect(17, 9, 60, 15), foreground_rect.Rect());

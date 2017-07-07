@@ -43,7 +43,7 @@
 #include <stdint.h>
 #endif
 
-#if OS(OPENBSD)
+#if defined(OS_OPENBSD)
 #include <machine/ieee.h>
 #include <sys/types.h>
 #endif

@@ -42,6 +42,7 @@
 #ifndef WTF_ThreadSpecific_h
 #define WTF_ThreadSpecific_h
 
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/StackUtil.h"
@@ -51,15 +52,15 @@
 #include "platform/wtf/allocator/PartitionAllocator.h"
 #include "platform/wtf/allocator/Partitions.h"
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 #include <pthread.h>
-#elif OS(WIN)
+#elif defined(OS_WIN)
 #include <windows.h>
 #endif
 
 namespace WTF {
 
-#if OS(WIN)
+#if defined(OS_WIN)
 // ThreadSpecificThreadExit should be called each time when a thread is
 // detached.
 // This is done automatically for threads created with WTF::createThread.
@@ -80,7 +81,7 @@ class ThreadSpecific {
   T& operator*();
 
  private:
-#if OS(WIN)
+#if defined(OS_WIN)
   WTF_EXPORT friend void ThreadSpecificThreadExit();
 #endif
 
@@ -104,21 +105,21 @@ class ThreadSpecific {
 
     T* value;
     ThreadSpecific<T>* owner;
-#if OS(WIN)
+#if defined(OS_WIN)
     void (*destructor)(void*);
 #endif
   };
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
   pthread_key_t key_;
-#elif OS(WIN)
+#elif defined(OS_WIN)
   int index_;
 #endif
   // This member must only be accessed or modified on the main thread.
   T* main_thread_storage_ = nullptr;
 };
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 
 typedef pthread_key_t ThreadSpecificKey;
 
@@ -159,7 +160,7 @@ inline void ThreadSpecific<T>::Set(T* ptr) {
   pthread_setspecific(key_, new Data(ptr, this));
 }
 
-#elif OS(WIN)
+#elif defined(OS_WIN)
 
 // TLS_OUT_OF_INDEXES is not defined on WinCE.
 #ifndef TLS_OUT_OF_INDEXES
@@ -224,7 +225,7 @@ template <typename T>
 inline void ThreadSpecific<T>::Destroy(void* ptr) {
   Data* data = static_cast<Data*>(ptr);
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
   // We want get() to keep working while data destructor works, because it can
   // be called indirectly by the destructor.  Some pthreads implementations
   // zero out the pointer before calling destroy(), so we temporarily reset it.
@@ -241,9 +242,9 @@ inline void ThreadSpecific<T>::Destroy(void* ptr) {
   data->value->~T();
   Partitions::FastFree(data->value);
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
   pthread_setspecific(data->owner->key_, 0);
-#elif OS(WIN)
+#elif defined(OS_WIN)
   TlsSetValue(TlsKeys()[data->owner->index_], 0);
 #else
 #error ThreadSpecific is not implemented for this platform.
@@ -260,7 +261,7 @@ inline bool ThreadSpecific<T>::IsSet() {
 template <typename T>
 inline ThreadSpecific<T>::operator T*() {
   T* off_thread_ptr;
-#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
+#if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD)
   // TLS is fast on these platforms.
   // TODO(csharrison): Qualify this statement for Android.
   const bool kMainThreadAlwaysChecksTLS = true;

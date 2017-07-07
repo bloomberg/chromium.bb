@@ -4,6 +4,8 @@
 
 #include "platform/graphics/paint/PaintController.h"
 
+#include <memory>
+#include "build/build_config.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
@@ -18,7 +20,6 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 using blink::testing::CreateOpacityOnlyEffect;
 using blink::testing::DefaultPaintChunkProperties;
@@ -2065,7 +2066,7 @@ TEST_F(PaintControllerTestBase, BeginAndEndFrame) {
 }
 
 // Death tests don't work properly on Android.
-#if defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 class PaintControllerUnderInvalidationTest
     : public PaintControllerTestBase,
@@ -2322,6 +2323,6 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
   TestInvalidationInSubsequence();
 }
 
-#endif  // defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
+#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 }  // namespace blink

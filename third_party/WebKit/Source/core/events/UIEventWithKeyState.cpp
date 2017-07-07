@@ -20,6 +20,8 @@
 
 #include "core/events/UIEventWithKeyState.h"
 
+#include "build/build_config.h"
+
 namespace blink {
 
 UIEventWithKeyState::UIEventWithKeyState(
@@ -73,7 +75,7 @@ void UIEventWithKeyState::DidCreateEventInIsolatedWorld(bool ctrl_key,
                                                         bool shift_key,
                                                         bool alt_key,
                                                         bool meta_key) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   const bool new_tab_modifier_set = meta_key;
 #else
   const bool new_tab_modifier_set = ctrl_key;
@@ -118,7 +120,7 @@ bool UIEventWithKeyState::getModifierState(const String& key_identifier) const {
       {"Meta", WebInputEvent::kMetaKey},
       {"AltGraph", WebInputEvent::kAltGrKey},
       {"Accel",
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
        WebInputEvent::kMetaKey
 #else
        WebInputEvent::kControlKey

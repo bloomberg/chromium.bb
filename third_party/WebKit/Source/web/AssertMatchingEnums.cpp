@@ -32,9 +32,10 @@
 // matching blink defined enum values.
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "build/build_config.h"
 #include "core/dom/IconURL.h"
 #include "core/editing/SelectionType.h"
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "core/events/WheelEvent.h"
 #endif
 #include "core/fileapi/FileError.h"

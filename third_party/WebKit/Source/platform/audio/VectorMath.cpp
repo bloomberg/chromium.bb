@@ -31,7 +31,7 @@
 #include "platform/wtf/CPU.h"
 #include "platform/wtf/MathExtras.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
 
@@ -54,7 +54,7 @@ namespace blink {
 
 namespace VectorMath {
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 // On the Mac we use the highly optimized versions in Accelerate.framework
 // In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes
 // <vecLib/vDSP_translate.h> which defines macros of the same name as
@@ -893,7 +893,7 @@ void Vclip(const float* source_p,
   }
 }
 
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)
 
 }  // namespace VectorMath
 
