@@ -312,14 +312,11 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
 
 ResourceProvider::Resource::Resource(Resource&& other) = default;
 
-void ResourceProvider::Resource::set_mailbox(const TextureMailbox& mailbox) {
+void ResourceProvider::Resource::SetMailbox(const TextureMailbox& mailbox) {
   mailbox_ = mailbox;
   if (IsGpuResourceType(type)) {
-    // We assume that the mailbox has a valid sync token or else SetLocallyUsed
-    // must be called after this.
     synchronization_state_ =
-        (mailbox.sync_token().HasData() ? NEEDS_WAIT : SYNCHRONIZED);
-    needs_sync_token_ = false;
+        mailbox.sync_token().HasData() ? NEEDS_WAIT : SYNCHRONIZED;
   } else {
     synchronization_state_ = SYNCHRONIZED;
   }
@@ -328,7 +325,6 @@ void ResourceProvider::Resource::set_mailbox(const TextureMailbox& mailbox) {
 void ResourceProvider::Resource::SetLocallyUsed() {
   synchronization_state_ = LOCALLY_USED;
   mailbox_.set_sync_token(gpu::SyncToken());
-  needs_sync_token_ = IsGpuResourceType(type);
 }
 
 void ResourceProvider::Resource::SetSynchronized() {
@@ -337,13 +333,14 @@ void ResourceProvider::Resource::SetSynchronized() {
 
 void ResourceProvider::Resource::UpdateSyncToken(
     const gpu::SyncToken& sync_token) {
-  // In the case of context lost, this sync token may be empty since sync tokens
-  // may not be generated unless a successful flush occurred. However, we will
-  // assume the task runner is calling this function properly and update the
-  // state accordingly.
+  DCHECK(IsGpuResourceType(type));
+  // An empty sync token may be used if commands are guaranteed to have run on
+  // the gpu process or in case of context loss.
   mailbox_.set_sync_token(sync_token);
-  synchronization_state_ = NEEDS_WAIT;
-  needs_sync_token_ = false;
+  if (sync_token.HasData())
+    synchronization_state_ = NEEDS_WAIT;
+  else
+    synchronization_state_ = SYNCHRONIZED;
 }
 
 int8_t* ResourceProvider::Resource::GetSyncTokenData() {
@@ -353,10 +350,6 @@ int8_t* ResourceProvider::Resource::GetSyncTokenData() {
 void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
   // Make sure we are only called when state actually needs to wait.
   DCHECK_EQ(NEEDS_WAIT, synchronization_state_);
-
-  // Make sure sync token is not stale.
-  DCHECK(!needs_sync_token_);
-
   // In the case of context lost, this sync token may be empty (see comment in
   // the UpdateSyncToken() function). The WaitSyncTokenCHROMIUM() function
   // handles empty sync tokens properly so just wait anyways and update the
@@ -694,7 +687,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                      Resource::EXTERNAL, GL_LINEAR));
   }
   resource->allocated = true;
-  resource->set_mailbox(mailbox);
+  resource->SetMailbox(mailbox);
   resource->color_space = mailbox.color_space();
   resource->release_callback_impl =
       base::Bind(&SingleReleaseCallbackImpl::Run,
@@ -885,15 +878,13 @@ void ResourceProvider::CopyToResource(ResourceId id,
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
-  DCHECK(resource->origin == Resource::INTERNAL);
+  DCHECK_EQ(resource->origin, Resource::INTERNAL);
+  DCHECK_NE(resource->synchronization_state(), Resource::NEEDS_WAIT);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(ReadLockFenceHasPassed(resource));
 
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
-
-  if (resource->allocated)
-    WaitSyncTokenIfNeeded(id);
 
   if (resource->type == RESOURCE_TYPE_BITMAP) {
     DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
@@ -907,6 +898,8 @@ void ResourceProvider::CopyToResource(ResourceId id,
     SkCanvas dest(lock.sk_bitmap());
     dest.writePixels(source_info, image, image_stride, 0, 0);
   } else {
+    // No sync token needed because the lock will set synchronization state to
+    // LOCALLY_USED and a sync token will be generated in PrepareSendToParent.
     ScopedWriteLockGL lock(this, id, false);
     unsigned resource_texture_id = lock.texture_id();
     DCHECK(resource_texture_id);
@@ -923,52 +916,6 @@ void ResourceProvider::CopyToResource(ResourceId id,
       gl->TexSubImage2D(resource->target, 0, 0, 0, image_size.width(),
                         image_size.height(), GLDataFormat(resource->format),
                         GLDataType(resource->format), image);
-    }
-    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-    lock.set_sync_token(sync_token);
-    lock.set_synchronized(true);
-  }
-}
-
-void ResourceProvider::GenerateSyncTokenForResource(ResourceId resource_id) {
-  Resource* resource = GetResource(resource_id);
-  if (!resource->needs_sync_token())
-    return;
-
-  gpu::SyncToken sync_token;
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->OrderingBarrierCHROMIUM();
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-  resource->UpdateSyncToken(sync_token);
-  resource->SetSynchronized();
-}
-
-void ResourceProvider::GenerateSyncTokenForResources(
-    const ResourceIdArray& resource_ids) {
-  gpu::SyncToken sync_token;
-  bool created_sync_token = false;
-  for (ResourceId id : resource_ids) {
-    Resource* resource = GetResource(id);
-    if (resource->needs_sync_token()) {
-      if (!created_sync_token) {
-        GLES2Interface* gl = ContextGL();
-        DCHECK(gl);
-
-        const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-        gl->OrderingBarrierCHROMIUM();
-        gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-        created_sync_token = true;
-      }
-
-      resource->UpdateSyncToken(sync_token);
-      resource->SetSynchronized();
     }
   }
 }
@@ -1191,9 +1138,6 @@ ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
   Resource* resource = resource_provider_->GetResource(resource_id_);
   DCHECK(resource->locked_for_write);
-  // It's not sufficient to check sync_token_.HasData() here because the sync
-  // might be null because of context loss. Even in that case we want to set the
-  // sync token because it's checked in PrepareSendToParent while drawing.
   if (has_sync_token_)
     resource->UpdateSyncToken(sync_token_);
   if (synchronized_)
@@ -1486,22 +1430,8 @@ void ResourceProvider::PrepareSendToParent(
   // as pointers so we don't have to look up the resource id multiple times.
   std::vector<Resource*> resources;
   resources.reserve(resource_ids.size());
-  for (const ResourceId id : resource_ids) {
-    Resource* resource = GetResource(id);
-    // Check the synchronization and sync token state when delegated sync points
-    // are required. The only case where we allow a sync token to not be set is
-    // the case where the image is dirty. In that case we will bind the image
-    // lazily and generate a sync token at that point.
-    DCHECK(!settings_.delegated_sync_points_required || resource->dirty_image ||
-           !resource->needs_sync_token());
-
-    // If we are validating the resource to be sent, the resource cannot be
-    // in a LOCALLY_USED state. It must have been properly synchronized.
-    DCHECK(!settings_.delegated_sync_points_required ||
-           Resource::LOCALLY_USED != resource->synchronization_state());
-
-    resources.push_back(resource);
-  }
+  for (const ResourceId id : resource_ids)
+    resources.push_back(GetResource(id));
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
@@ -1606,9 +1536,9 @@ void ResourceProvider::ReceiveFromChild(
                              TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
                              it->format));
       resource->buffer_format = it->buffer_format;
-      resource->set_mailbox(TextureMailbox(it->mailbox_holder.mailbox,
-                                           it->mailbox_holder.sync_token,
-                                           it->mailbox_holder.texture_target));
+      resource->SetMailbox(TextureMailbox(it->mailbox_holder.mailbox,
+                                          it->mailbox_holder.sync_token,
+                                          it->mailbox_holder.texture_target));
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
       resource->is_overlay_candidate = it->is_overlay_candidate;
 #if defined(OS_ANDROID)
@@ -1765,7 +1695,7 @@ void ResourceProvider::CreateMailboxAndBindResource(
     gl->ProduceTextureDirectCHROMIUM(resource->gl_id,
                                      mailbox_holder.texture_target,
                                      mailbox_holder.mailbox.name);
-    resource->set_mailbox(TextureMailbox(mailbox_holder));
+    resource->SetMailbox(TextureMailbox(mailbox_holder));
     resource->SetLocallyUsed();
   }
 
