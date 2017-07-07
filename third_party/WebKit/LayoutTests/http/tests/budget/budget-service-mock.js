@@ -16,12 +16,16 @@ let budgetServiceMock = loadMojoModules(
   const [budgetService, bindings] = mojo.modules;
 
   class BudgetServiceMock {
-    constructor(interfaceProvider) {
-      interfaceProvider.addInterfaceOverrideForTesting(
+    constructor() {
+      // Register process-wide (worker) interface override.
+      mojo.interfaces.addInterfaceOverrideForTesting(
           budgetService.BudgetService.name,
           handle => this.bindingSet_.addBinding(this, handle));
 
-      this.interfaceProvider_ = interfaceProvider;
+      // Register frame interface override.
+      mojo.frameInterfaces.addInterfaceOverrideForTesting(
+          budgetService.BudgetService.name,
+          handle => this.bindingSet_.addBinding(this, handle));
 
       // Values to return for the next getBudget and getCost calls.
       this.cost_ = {};
@@ -88,5 +92,5 @@ let budgetServiceMock = loadMojoModules(
       return Promise.resolve({ error_type: this.error_, success: this.success_ });
     }
   }
-  return new BudgetServiceMock(mojo.interfaces);
+  return new BudgetServiceMock();
 });

@@ -4,7 +4,9 @@
 
 #include "modules/budget/WorkerNavigatorBudget.h"
 
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerNavigator.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/budget/BudgetService.h"
 
 namespace blink {
@@ -33,16 +35,19 @@ WorkerNavigatorBudget& WorkerNavigatorBudget::From(
   return *worker_navigator_budget;
 }
 
-BudgetService* WorkerNavigatorBudget::budget() {
-  if (!budget_)
-    budget_ = BudgetService::Create();
+BudgetService* WorkerNavigatorBudget::budget(ExecutionContext* context) {
+  if (!budget_) {
+    WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
+    budget_ = BudgetService::Create(&thread->GetInterfaceProvider());
+  }
   return budget_.Get();
 }
 
 // static
 BudgetService* WorkerNavigatorBudget::budget(
+    ExecutionContext* context,
     WorkerNavigator& worker_navigator) {
-  return WorkerNavigatorBudget::From(worker_navigator).budget();
+  return WorkerNavigatorBudget::From(worker_navigator).budget(context);
 }
 
 DEFINE_TRACE(WorkerNavigatorBudget) {

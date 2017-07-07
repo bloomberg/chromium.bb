@@ -4,6 +4,8 @@
 
 #include "modules/budget/NavigatorBudget.h"
 
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Navigator.h"
 #include "modules/budget/BudgetService.h"
 
@@ -32,8 +34,13 @@ NavigatorBudget& NavigatorBudget::From(Navigator& navigator) {
 }
 
 BudgetService* NavigatorBudget::budget() {
-  if (!budget_)
-    budget_ = BudgetService::Create();
+  if (!budget_) {
+    Navigator* navigator = GetSupplementable();
+    if (navigator->GetFrame()) {
+      budget_ = BudgetService::Create(
+          navigator->GetFrame()->Client()->GetInterfaceProvider());
+    }
+  }
   return budget_.Get();
 }
 

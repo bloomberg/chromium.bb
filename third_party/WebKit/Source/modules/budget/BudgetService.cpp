@@ -11,9 +11,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/budget/BudgetState.h"
 #include "platform/bindings/ScriptState.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/budget_service/budget_service.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 namespace {
@@ -43,9 +43,9 @@ DOMException* ErrorTypeToException(mojom::blink::BudgetServiceErrorType error) {
 
 }  // namespace
 
-BudgetService::BudgetService() {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+BudgetService::BudgetService(
+    service_manager::InterfaceProvider* interface_provider) {
+  interface_provider->GetInterface(mojo::MakeRequest(&service_));
 
   // Set a connection error handler, so that if an embedder doesn't
   // implement a BudgetSerice mojo service, the developer will get a

@@ -842,6 +842,13 @@ void CreateWebUsbChooserService(
   tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
 
+void CreateBudgetService(const service_manager::BindSourceInfo& source_info,
+                         blink::mojom::BudgetServiceRequest request,
+                         content::RenderFrameHost* render_frame_host) {
+  BudgetServiceImpl::Create(render_frame_host->GetProcess()->GetID(),
+                            source_info, std::move(request));
+}
+
 bool GetDataSaverEnabledPref(const PrefService* prefs) {
   // Enable data saver only when data saver pref is enabled and not part of
   // "Disabled" group of "SaveDataHeader" experiment.
@@ -3373,6 +3380,9 @@ void ChromeContentBrowserClient::InitFrameInterfaces() {
 #elif defined(OS_LINUX) || defined(OS_WIN)
   frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
 #endif
+
+  frame_interfaces_parameterized_->AddInterface(
+      base::Bind(&CreateBudgetService));
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)

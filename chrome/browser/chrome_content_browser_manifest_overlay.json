@@ -7,6 +7,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::BudgetService",
           "chrome::mojom::CacheStatsRecorder",
           "chrome::mojom::NetBenchmarking",
           "extensions::StashService",
@@ -51,6 +52,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::BudgetService",
           "blink::mojom::InstalledAppProvider",
           "blink::mojom::ShareService",
           "bluetooth::mojom::AdapterFactory",
