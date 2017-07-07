@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -65,13 +66,6 @@ void ConflictingModuleView::MaybeShow(Browser* browser,
   if (done_checking)
     return;  // Only show the bubble once per launch.
 
-  auto* model = EnumerateModulesModel::GetInstance();
-  GURL url = model->GetConflictUrl();
-  if (!url.is_valid()) {
-    done_checking = true;
-    return;
-  }
-
   // A pref that counts how often the Sideload Wipeout bubble has been shown.
   IntegerPrefMember bubble_shown;
   bubble_shown.Init(prefs::kModuleConflictBubbleShown,
@@ -88,8 +82,8 @@ void ConflictingModuleView::MaybeShow(Browser* browser,
   DCHECK(anchor_view);
   DCHECK(anchor_view->GetWidget());
 
-  ConflictingModuleView* bubble_delegate =
-      new ConflictingModuleView(anchor_view, browser, url);
+  ConflictingModuleView* bubble_delegate = new ConflictingModuleView(
+      anchor_view, browser, GURL(chrome::kChromeUIConflictsURL));
   views::BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   bubble_delegate->ShowBubble();
 

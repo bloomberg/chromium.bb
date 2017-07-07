@@ -302,12 +302,6 @@ class EnumerateModulesModel {
   // Gets the whole module list as a ListValue.
   std::unique_ptr<base::ListValue> GetModuleList();
 
-  // Returns the site to which the user should be taken when the conflict bubble
-  // or app menu item is clicked. For now this is simply chrome://conflicts,
-  // which contains detailed information about conflicts. Returns an empty URL
-  // if there are no conficts. May only be called on UI thread.
-  GURL GetConflictUrl();
-
  private:
   friend class ModuleEnumerator;
 

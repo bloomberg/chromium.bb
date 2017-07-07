@@ -216,16 +216,9 @@ void ShowExtensions(Browser* browser,
 
 void ShowConflicts(Browser* browser) {
 #if defined(OS_WIN)
-  EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
-  GURL conflict_url = model->GetConflictUrl();
-  if (conflict_url.is_valid()) {
-    ShowSingletonTab(browser, conflict_url);
-    model->AcknowledgeConflictNotification();
-    return;
-  }
+  EnumerateModulesModel::GetInstance()->AcknowledgeConflictNotification();
 #endif
 
-  base::RecordAction(UserMetricsAction("AboutConflicts"));
   ShowSingletonTab(browser, GURL(kChromeUIConflictsURL));
 }
 

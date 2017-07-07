@@ -15,6 +15,7 @@ class Browser;
 
 // This is the class that implements the UI for the bubble showing that there
 // is a 3rd party module loaded that conflicts with Chrome.
+// TODO(pmonette): Delete this view when EnumerateModulesModel gets removed.
 class ConflictingModuleView : public views::BubbleDialogDelegateView,
                               public EnumerateModulesModel::Observer {
  public:

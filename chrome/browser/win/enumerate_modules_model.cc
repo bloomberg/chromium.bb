@@ -655,14 +655,6 @@ std::unique_ptr<base::ListValue> EnumerateModulesModel::GetModuleList() {
   return list;
 }
 
-GURL EnumerateModulesModel::GetConflictUrl() {
-  // For now, simply bring up the chrome://conflicts page, which has detailed
-  // information about each module.
-  if (ShouldShowConflictWarning())
-    return GURL(L"chrome://conflicts");
-  return GURL();
-}
-
 EnumerateModulesModel::EnumerateModulesModel()
     : conflict_notification_acknowledged_(false),
       confirmed_bad_modules_detected_(0),

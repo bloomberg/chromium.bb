@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_CONFLICTS_UI_H_
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
