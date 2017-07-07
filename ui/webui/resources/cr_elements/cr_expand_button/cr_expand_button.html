@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="cr-expand-button">
   <template>
-    <style include="cr-shared-style">
+    <style include="cr-icons cr-shared-style">
       :host {
         display: inline-block;
       }
@@ -14,16 +14,15 @@
         pointer-events: none;
       }
 
-      paper-icon-button {
+      button[is=paper-icon-button-light] {
         @apply(--cr-paper-icon-button-margin);
       }
     </style>
     <content></content>
-    <paper-icon-button toggles active="{{expanded}}" disabled="[[disabled]]"
-        icon="[[iconName_(expanded)]]" alt="[[alt]]"
-        aria-active-attribute="aria-expanded"
-        on-tap="stopTap_">
-    </paper-icon-button>
+    <button is="paper-icon-button-light" class$="[[iconName_(expanded)]]"
+        toggles active="{{expanded}}" disabled="[[disabled]]" alt="[[alt]]"
+        aria-active-attribute="aria-expanded" on-tap="toggleExpand_">
+    </button>
   </template>
   <script src="cr_expand_button.js"></script>
 </dom-module>
