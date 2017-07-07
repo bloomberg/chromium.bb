@@ -14,7 +14,6 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -121,12 +120,9 @@ public class PersonalDataManagerTest {
     }
 
     @Test
-    /*
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    */
-    @DisabledTest(message = "crbug.com/739575")
     public void testAddAndDeleteProfile()
             throws InterruptedException, ExecutionException, TimeoutException {
         String profileOneGUID = mHelper.setProfile(createTestProfile());
@@ -261,11 +257,8 @@ public class PersonalDataManagerTest {
     }
 
     @Test
-    /*
     @SmallTest
     @Feature({"Autofill"})
-    */
-    @DisabledTest(message = "crbug.com/739575")
     public void testLabels() throws InterruptedException, ExecutionException, TimeoutException {
         AutofillProfile profile1 = new AutofillProfile(
                  "" /* guid */, "https://www.example.com" /* origin */,
@@ -317,11 +310,8 @@ public class PersonalDataManagerTest {
     }
 
     @Test
-    /*
     @SmallTest
     @Feature({"Autofill"})
-    */
-    @DisabledTest(message = "crbug.com/739575")
     public void testProfilesFrecency()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Create 3 profiles.
@@ -447,12 +437,9 @@ public class PersonalDataManagerTest {
     }
 
     @Test
-    /*
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    */
-    @DisabledTest(message = "crbug.com/739575")
     public void testCreditCardUseStatsSettingAndGetting()
             throws InterruptedException, ExecutionException, TimeoutException {
         String guid = mHelper.setCreditCard(
@@ -500,12 +487,9 @@ public class PersonalDataManagerTest {
     }
 
     @Test
-    /*
     @SmallTest
     @Feature({"Autofill"})
     @RetryOnFailure
-    */
-    @DisabledTest(message = "crbug.com/739575")
     public void testRecordAndLogCreditCardUse()
             throws InterruptedException, ExecutionException, TimeoutException {
         String guid = mHelper.setCreditCard(
