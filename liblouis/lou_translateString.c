@@ -1280,11 +1280,7 @@ _lou_translateWithTracing (const char *tableList, const widechar * inbufx,
     return 0;
   _lou_logMessage(LOG_ALL, "Performing translation: tableList=%s, inlen=%d", tableList, *inlen);
   _lou_logWidecharBuf(LOG_ALL, "Inbuf=", inbufx, *inlen);
-  if ((mode & otherTrans))
-    return _lou_other_translate (tableList, inbufx,
-			    inlen, outbuf, outlen,
-			    typeform, spacing, outputPos, inputPos, cursorPos,
-			    mode);
+
   table = lou_getTable (tableList);
   if (table == NULL || *inlen < 0 || *outlen < 0)
     return 0;
@@ -4611,8 +4607,7 @@ lou_dotsToChar (const char *tableList, widechar * inbuf, widechar * outbuf,
   widechar dots;
   if (tableList == NULL || inbuf == NULL || outbuf == NULL)
     return 0;
-  if ((mode & otherTrans))
-    return _lou_other_dotsToChar (tableList, inbuf, outbuf, length, mode);
+
   table = lou_getTable (tableList);
   if (table == NULL || length <= 0)
     return 0;
@@ -4634,8 +4629,6 @@ lou_charToDots (const char *tableList, const widechar * inbuf, widechar *
   int k;
   if (tableList == NULL || inbuf == NULL || outbuf == NULL)
     return 0;
-  if ((mode & otherTrans))
-    return _lou_other_charToDots (tableList, inbuf, outbuf, length, mode);
 
   table = lou_getTable (tableList);
   if (table == NULL || length <= 0)

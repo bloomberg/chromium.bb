@@ -39,7 +39,6 @@ liblouis_la_SOURCES =				\
 	findTable.c 				\
 	pattern.c				\
 	logging.c				\
-	wrappers.c				\
 	utils.c
 
 # Don't include liblouis.h in dist, this will break subdir builds

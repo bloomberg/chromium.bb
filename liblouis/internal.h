@@ -678,27 +678,6 @@ int EXPORT_CALL _lou_extParseChars(const char *inString, widechar *outString);
  */
 int EXPORT_CALL _lou_extParseDots(const char *inString, widechar *outString);
 
-/**
- * Call wrappers for other translators
- */
-int EXPORT_CALL _lou_other_translate(const char *trantab, const widechar *inbuf, int *inlen,
-                    widechar *outbuf, int *outlen, formtype *typeform,
-                    char *spacing, int *outputPos, int *inputPos,
-                    int *cursorPos, int mode);
-
-/**
- * Call wrappers for other back-translators.
- */
-int EXPORT_CALL _lou_other_backTranslate(const char *trantab, const widechar *inbuf, int *inlen,
-                        widechar *outbuf, int *outlen, formtype *typeform,
-                        char *spacing, int *outputPos, int *inputPos,
-                        int *cursorPos, int mode);
-
-int EXPORT_CALL _lou_other_dotsToChar(const char *trantab, widechar *inbuf, widechar *outbuf,
-                     int length, int mode);
-int EXPORT_CALL _lou_other_charToDots(const char *trantab, const widechar *inbuf,
-                     widechar *outbuf, int length, int mode);
-
 int EXPORT_CALL _lou_translateWithTracing(const char *tableList, const widechar *inbuf,
                          int *inlen, widechar *outbuf, int *outlen,
                          formtype *typeform, char *spacing, int *outputPos,

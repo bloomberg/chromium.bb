@@ -267,8 +267,6 @@ read_mode (yaml_parser_t *parser) {
       mode |= pass1Only;
     } else if (!strcmp((const char *)event.data.scalar.value, "compbrlLeftCursor")) {
       mode |= compbrlLeftCursor;
-    } else if (!strcmp((const char *)event.data.scalar.value, "otherTrans")) {
-      mode |= otherTrans;
     } else if (!strcmp((const char *)event.data.scalar.value, "ucBrl")) {
       mode |= ucBrl;
     } else if (!strcmp((const char *)event.data.scalar.value, "noUndefinedDots")) {

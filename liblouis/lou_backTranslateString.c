@@ -142,11 +142,6 @@ _lou_backTranslateWithTracing (const char *tableList, const widechar * inbuf,
   if (tableList == NULL || inbuf == NULL || inlen == NULL || outbuf ==
       NULL || outlen == NULL)
     return 0;
-  if ((modex & otherTrans))
-    return _lou_other_backTranslate (tableList, inbuf,
-				inlen, outbuf, outlen,
-				typeform, spacing, outputPos, inputPos,
-				cursorPos, modex);
   table = lou_getTable (tableList);
   if (table == NULL)
     return 0;

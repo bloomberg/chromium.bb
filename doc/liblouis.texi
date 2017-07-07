@@ -2294,7 +2294,7 @@ passed in using the ``flow style'' notation.
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
 @samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
-@samp{pass1Only}, @samp{compbrlLeftCursor}, @samp{otherTrans},
+@samp{pass1Only}, @samp{compbrlLeftCursor},
 @samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
 @end table
 
@@ -2710,20 +2710,6 @@ patterns to be Unicode Braille rather than the liblouis
 representation. Note that you will not notice any change when setting
 @code{ucBrl} unless @code{dotsIO} is also set. @code{lou_dotsToChar}
 and @code{lou_backTranslate} recognize Unicode braille automatically.
-
-The @code{otherTrans} mode needs special description. If it is set 
-liblouis will attempt to call a wrapper for another translator. These 
-other translators are usually for Asian languages. The calling sequence 
-is the same as for liblouis itself except that the @code{trantab} 
-parameter gives the name of the other translator, possibly abbreviated, 
-followed by a colon, followed by whatever other information the other 
-translator needs. This is specific for each translator. If no such 
-information is needed the colon should be omitted. The result of calling 
-either the translate or back-translate functions with this mode bit set 
-will be the same as calling without it set. That is, the wrapper for the 
-other translator simulates a call to liblouis. Note that the wrappers 
-are not implemented at this time. Setting this mode bit will result in 
-failure (return value of 0).
 
 @node lou_backTranslateString
 @section lou_backTranslateString
@@ -3220,6 +3206,6 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
 @c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
-@c  LocalWords:  dotsIO otherTrans ucBrl noUndefinedDots partialTrans
+@c  LocalWords:  dotsIO ucBrl noUndefinedDots partialTrans
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
 @c  LocalWords:  lbu EOF heckTable fn ispell
