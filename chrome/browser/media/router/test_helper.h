@@ -16,6 +16,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "content/public/browser/presentation_service_delegate.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -48,6 +49,9 @@ MATCHER_P(StateChangeInfoEquals, other, "") {
   return arg.state == other.state && arg.close_reason == other.close_reason &&
          arg.message == other.message;
 }
+
+std::string PresentationConnectionMessageToString(
+    const content::PresentationConnectionMessage& message);
 
 class MockIssuesObserver : public IssuesObserver {
  public:

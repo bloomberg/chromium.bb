@@ -26,17 +26,22 @@ struct CONTENT_EXPORT PresentationConnectionMessage {
   // Constructs a new, untyped message (for Mojo).  These messages are not valid
   // and exactly one of |message| or |data| must be set.
   PresentationConnectionMessage();
-  // PCM is a move-only type.
-  PresentationConnectionMessage(PresentationConnectionMessage&& other);
+  // Copy constructor / assignment are necessary due to MediaRouter allowing
+  // multiple RouteMessageObserver instances per MediaRoute.
+  PresentationConnectionMessage(const PresentationConnectionMessage& other);
+  PresentationConnectionMessage(PresentationConnectionMessage&& other) noexcept;
   // Constructs a text message from |message|.
   explicit PresentationConnectionMessage(std::string message);
   // Constructs a binary message from |data|.
   explicit PresentationConnectionMessage(std::vector<uint8_t> data);
+
   ~PresentationConnectionMessage();
 
   bool is_binary() const;
 
   bool operator==(const PresentationConnectionMessage& other) const;
+  PresentationConnectionMessage& operator=(
+      const PresentationConnectionMessage& other);
   PresentationConnectionMessage& operator=(
       PresentationConnectionMessage&& other);
 

@@ -10,12 +10,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
-#include "chrome/common/media_router/route_message.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 
 namespace content {
 class RenderFrameHost;
 class WebContents;
+struct PresentationConnectionMessage;
 }
 
 // CastRemotingConnector connects a single source (a media element in a render
@@ -134,13 +134,13 @@ class CastRemotingConnector
   void SendMessageToProvider(const std::string& message);
 
   // Called by the current MessageObserver to process messages observed on the
-  // remoting route. There are two types of messages: 1) TEXT notification
+  // remoting route. There are two types of messages: 1) text notification
   // messages from the Cast Provider, to report on the current state of a
-  // remoting session between Chrome and the remote device, and 2) BINARY
+  // remoting session between Chrome and the remote device, and 2) binary
   // messages, to be passed directly to the active remoting source during a
   // remoting session.
   void ProcessMessagesFromRoute(
-      const std::vector<media_router::RouteMessage>& messages);
+      const std::vector<content::PresentationConnectionMessage>& messages);
 
   // Error handlers for message/data sending during an active remoting
   // session. When a failure occurs, these immediately force-stop remoting.

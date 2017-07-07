@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 
 #include "chrome/browser/media/router/media_router.h"
-#include "chrome/common/media_router/route_message.h"
 
 namespace media_router {
 
@@ -58,25 +57,12 @@ void BrowserPresentationConnectionProxy::OnMessage(
 }
 
 void BrowserPresentationConnectionProxy::OnMessagesReceived(
-    const std::vector<RouteMessage>& messages) {
+    const std::vector<content::PresentationConnectionMessage>& messages) {
   DVLOG(2) << __func__ << ", number of messages : " << messages.size();
-  // TODO(mfoltz): Remove RouteMessage and replace with move-only
-  // PresentationConnectionMessage.
-  std::vector<content::PresentationConnectionMessage> presentation_messages;
-  for (const RouteMessage& message : messages) {
-    if (message.type == RouteMessage::TEXT && message.text) {
-      presentation_messages.emplace_back(message.text.value());
-    } else if (message.type == RouteMessage::BINARY && message.binary) {
-      presentation_messages.emplace_back(message.binary.value());
-    } else {
-      NOTREACHED() << "Unknown route message type";
-    }
-  }
-
   // TODO(imcheng): It would be slightly more efficient to send messages in
   // a single batch.
-  for (auto& message : presentation_messages) {
-    target_connection_ptr_->OnMessage(std::move(message),
+  for (const auto& message : messages) {
+    target_connection_ptr_->OnMessage(message,
                                       base::Bind(&OnMessageReceivedByRenderer));
   }
 }

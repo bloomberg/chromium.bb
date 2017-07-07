@@ -326,7 +326,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,
-      const std::vector<RouteMessage>& messages) override;
+      const std::vector<content::PresentationConnectionMessage>& messages)
+      override;
 
   // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
   // to the ID of the route that was terminated.

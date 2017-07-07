@@ -13,10 +13,11 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/route_message_observer.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/route_message.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/presentation_connection_message.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::PresentationConnectionMessage;
 
 using media::mojom::RemoterPtr;
 using media::mojom::RemoterRequest;
@@ -36,7 +38,7 @@ using media::mojom::RemotingStopReason;
 using media_router::MediaRoutesObserver;
 using media_router::MediaRoute;
 using media_router::MediaSource;
-using media_router::RouteMessage;
+using media_router::PresentationConnectionMessageToString;
 using media_router::RouteMessageObserver;
 
 using ::testing::_;
@@ -102,9 +104,7 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   }
 
   void OnMessageFromProvider(const std::string& message) {
-    inbound_messages_.push_back(RouteMessage());
-    inbound_messages_.back().type = RouteMessage::TEXT;
-    inbound_messages_.back().text = message;
+    inbound_messages_.emplace_back(message);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
@@ -112,20 +112,19 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   }
 
   void OnBinaryMessageFromProvider(const std::vector<uint8_t>& message) {
-    inbound_messages_.push_back(RouteMessage());
-    inbound_messages_.back().type = RouteMessage::BINARY;
-    inbound_messages_.back().binary = std::vector<uint8_t>(message);
+    inbound_messages_.emplace_back(message);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
                        weak_factory_.GetWeakPtr()));
   }
 
-  void TakeMessagesSentToProvider(RouteMessage::Type type,
-                                  std::vector<RouteMessage>* messages) {
+  void TakeMessagesSentToProvider(
+      bool text,
+      std::vector<PresentationConnectionMessage>* messages) {
     decltype(outbound_messages_) untaken_messages;
     for (auto& entry : outbound_messages_) {
-      if (entry.first.type == type) {
+      if (!entry.first.is_binary() == text) {
         messages->push_back(entry.first);
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                                 base::BindOnce(std::move(entry.second), true));
@@ -167,10 +166,8 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
                         SendRouteMessageCallback callback) final {
     EXPECT_EQ(message_observer_->route_id(), route_id);
     ASSERT_FALSE(callback.is_null());
-    RouteMessage message;
-    message.type = RouteMessage::TEXT;
-    message.text = text;
-    outbound_messages_.push_back(std::make_pair(message, std::move(callback)));
+    PresentationConnectionMessage message(text);
+    outbound_messages_.emplace_back(std::move(message), std::move(callback));
   }
 
   void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
@@ -179,10 +176,8 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
     EXPECT_EQ(message_observer_->route_id(), route_id);
     ASSERT_TRUE(!!data);
     ASSERT_FALSE(callback.is_null());
-    RouteMessage message;
-    message.type = RouteMessage::BINARY;
-    message.binary = std::move(*data);
-    outbound_messages_.push_back(std::make_pair(message, std::move(callback)));
+    PresentationConnectionMessage message(std::move(*data));
+    outbound_messages_.emplace_back(std::move(message), std::move(callback));
   }
 
  private:
@@ -205,10 +200,10 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
 
   std::vector<MediaRoute> routes_;
   // Messages from Cast Provider to the connector.
-  std::vector<RouteMessage> inbound_messages_;
+  std::vector<PresentationConnectionMessage> inbound_messages_;
   // Messages from the connector to the Cast Provider.
   using OutboundMessageAndCallback =
-      std::pair<RouteMessage, SendRouteMessageCallback>;
+      std::pair<PresentationConnectionMessage, SendRouteMessageCallback>;
   std::vector<OutboundMessageAndCallback> outbound_messages_;
 
   base::WeakPtrFactory<FakeMediaRouter> weak_factory_;
@@ -271,15 +266,15 @@ class CastRemotingConnectorTest : public ::testing::Test {
   }
 
   void ConnectorSentMessageToProvider(const std::string& expected_message) {
-    std::vector<RouteMessage> messages;
-    media_router_.TakeMessagesSentToProvider(RouteMessage::TEXT, &messages);
+    std::vector<PresentationConnectionMessage> messages;
+    media_router_.TakeMessagesSentToProvider(true, &messages);
     bool did_see_expected_message = false;
-    for (const RouteMessage& message : messages) {
-      if (message.text && expected_message == *message.text) {
+    for (const auto& message : messages) {
+      if (expected_message == message.message) {
         did_see_expected_message = true;
       } else {
-        ADD_FAILURE()
-            << "Unexpected message: " << message.ToHumanReadableString();
+        ADD_FAILURE() << "Unexpected message: "
+                      << PresentationConnectionMessageToString(message);
       }
     }
     EXPECT_TRUE(did_see_expected_message);
@@ -287,29 +282,29 @@ class CastRemotingConnectorTest : public ::testing::Test {
 
   void ConnectorSentMessageToSink(
       const std::vector<uint8_t>& expected_message) {
-    std::vector<RouteMessage> messages;
-    media_router_.TakeMessagesSentToProvider(RouteMessage::BINARY, &messages);
+    std::vector<PresentationConnectionMessage> messages;
+    media_router_.TakeMessagesSentToProvider(false, &messages);
     bool did_see_expected_message = false;
-    for (const RouteMessage& message : messages) {
-      if (message.binary && expected_message == *message.binary) {
+    for (const auto& message : messages) {
+      if (expected_message == message.data) {
         did_see_expected_message = true;
       } else {
-        ADD_FAILURE()
-            << "Unexpected message: " << message.ToHumanReadableString();
+        ADD_FAILURE() << "Unexpected message: "
+                      << PresentationConnectionMessageToString(message);
       }
     }
     EXPECT_TRUE(did_see_expected_message);
   }
 
   void ConnectorSentNoMessagesToProvider() {
-    std::vector<RouteMessage> messages;
-    media_router_.TakeMessagesSentToProvider(RouteMessage::TEXT, &messages);
+    std::vector<PresentationConnectionMessage> messages;
+    media_router_.TakeMessagesSentToProvider(true, &messages);
     EXPECT_TRUE(messages.empty());
   }
 
   void ConnectorSentNoMessagesToSink() {
-    std::vector<RouteMessage> messages;
-    media_router_.TakeMessagesSentToProvider(RouteMessage::BINARY, &messages);
+    std::vector<PresentationConnectionMessage> messages;
+    media_router_.TakeMessagesSentToProvider(false, &messages);
     EXPECT_TRUE(messages.empty());
   }
 

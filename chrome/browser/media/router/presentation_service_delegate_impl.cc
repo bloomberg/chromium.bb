@@ -26,7 +26,6 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/route_message.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"

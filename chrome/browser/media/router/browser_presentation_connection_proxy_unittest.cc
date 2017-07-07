@@ -10,7 +10,6 @@
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/media_source_helper.h"
-#include "chrome/common/media_router/route_message.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -121,29 +120,23 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageBinaryMessage) {
 }
 
 TEST_F(BrowserPresentationConnectionProxyTest, OnMessagesReceived) {
-  RouteMessage message_1;
-  message_1.type = RouteMessage::Type::TEXT;
-  message_1.text = std::string("foo");
-  RouteMessage message_2;
-  message_2.type = RouteMessage::Type::BINARY;
-  message_2.binary = std::vector<uint8_t>({1, 2, 3});
-  std::vector<RouteMessage> messages = {message_1, message_2};
+  content::PresentationConnectionMessage message_1;
+  message_1.message = std::string("foo");
+  content::PresentationConnectionMessage message_2;
+  message_2.data = std::vector<uint8_t>({1, 2, 3});
+  std::vector<content::PresentationConnectionMessage> messages = {message_1,
+                                                                  message_2};
 
-  content::PresentationConnectionMessage expected_message1("foo");
-  content::PresentationConnectionMessage expected_message2(
-      std::vector<uint8_t>({1, 2, 3}));
   EXPECT_CALL(*controller_connection_proxy(), OnMessageInternal(_, _))
-      .WillOnce(
-          Invoke([&expected_message1](
-                     const content::PresentationConnectionMessage& message,
-                     OnMessageCallback& callback) {
-            ExpectMessageAndRunCallback(expected_message1, message, callback);
+      .WillOnce(Invoke(
+          [&message_1](const content::PresentationConnectionMessage& message,
+                       OnMessageCallback& callback) {
+            ExpectMessageAndRunCallback(message_1, message, callback);
           }))
-      .WillOnce(
-          Invoke([&expected_message2](
-                     const content::PresentationConnectionMessage& message,
-                     OnMessageCallback& callback) {
-            ExpectMessageAndRunCallback(expected_message2, message, callback);
+      .WillOnce(Invoke(
+          [&message_2](const content::PresentationConnectionMessage& message,
+                       OnMessageCallback& callback) {
+            ExpectMessageAndRunCallback(message_2, message, callback);
           }));
   browser_connection_proxy()->OnMessagesReceived(messages);
   base::RunLoop().RunUntilIdle();
