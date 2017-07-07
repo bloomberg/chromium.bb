@@ -1349,7 +1349,7 @@ COMMON_GTESTS = {
   'audio_unittests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_ONLY,
+        'predicate': Predicates.FYI_AND_OPTIONAL,
       }
     ],
     # Don't run these tests on Android.
