@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_BACKGROUND_DOWNLOADER_WIN_H_
 #define COMPONENTS_UPDATE_CLIENT_BACKGROUND_DOWNLOADER_WIN_H_
 
-#include <windows.h>
 #include <bits.h>
+#include <windows.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -16,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/win/scoped_comptr.h"
 #include "components/update_client/crx_downloader.h"
 
 namespace base {
@@ -87,10 +87,12 @@ class BackgroundDownloader : public CrxDownloader {
   void StartTimer();
   void OnTimer();
 
-  HRESULT QueueBitsJob(const GURL& url, IBackgroundCopyJob** job);
-  HRESULT CreateOrOpenJob(const GURL& url, IBackgroundCopyJob** job);
+  HRESULT QueueBitsJob(const GURL& url,
+                       Microsoft::WRL::ComPtr<IBackgroundCopyJob>* job);
+  HRESULT CreateOrOpenJob(const GURL& url,
+                          Microsoft::WRL::ComPtr<IBackgroundCopyJob>* job);
   HRESULT InitializeNewJob(
-      const base::win::ScopedComPtr<IBackgroundCopyJob>& job,
+      const Microsoft::WRL::ComPtr<IBackgroundCopyJob>& job,
       const GURL& url);
 
   // Returns true if at the time of the call, it appears that the job
@@ -128,8 +130,8 @@ class BackgroundDownloader : public CrxDownloader {
   // COM interface pointers are valid for the thread that called
   // |UpdateInterfacePointers| to get pointers to COM proxies, which are valid
   // for that thread only.
-  base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager_;
-  base::win::ScopedComPtr<IBackgroundCopyJob> job_;
+  Microsoft::WRL::ComPtr<IBackgroundCopyManager> bits_manager_;
+  Microsoft::WRL::ComPtr<IBackgroundCopyJob> job_;
 
   // Contains the time when the download of the current url has started.
   base::TimeTicks download_start_time_;
