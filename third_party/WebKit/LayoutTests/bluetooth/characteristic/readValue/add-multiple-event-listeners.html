@@ -16,10 +16,10 @@ promise_test(() => {
           'characteristicvaluechanged',
           3 /* attach 3 listeners */));
     }).then(results => {
-      let read_value = results[0].buffer;
-      let event_values = results.slice(1).map(v => v.buffer);
+      let read_value = new Uint8Array(results[0].buffer);
+      let event_values = results.slice(1).map(v => new Uint8Array(v.buffer));
       for (let event_value of event_values) {
-        assert_equals(event_value, read_value);
+        assert_equals(event_value.buffer, read_value.buffer);
         assert_array_equals(event_value, read_value);
       }
     });
