@@ -1492,18 +1492,17 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
 static inline void cfl_update_costs(CFL_CTX *cfl, FRAME_CONTEXT *ec_ctx) {
   assert(ec_ctx->cfl_alpha_cdf[CFL_ALPHABET_SIZE - 1] ==
          AOM_ICDF(CDF_PROB_TOP));
-  const int prob_den = CDF_PROB_TOP;
 
-  int prob_num = AOM_ICDF(ec_ctx->cfl_alpha_cdf[0]);
-  cfl->costs[0] = av1_cost_zero(get_prob(prob_num, prob_den));
+  aom_cdf_prob prev_cdf = 0;
 
-  for (int c = 1; c < CFL_ALPHABET_SIZE; c++) {
-    int sign_bit_cost = (cfl_alpha_codes[c][CFL_PRED_U] != 0) +
-                        (cfl_alpha_codes[c][CFL_PRED_V] != 0);
-    prob_num = AOM_ICDF(ec_ctx->cfl_alpha_cdf[c]) -
-               AOM_ICDF(ec_ctx->cfl_alpha_cdf[c - 1]);
-    cfl->costs[c] = av1_cost_zero(get_prob(prob_num, prob_den)) +
-                    av1_cost_literal(sign_bit_cost);
+  for (int c = 0; c < CFL_ALPHABET_SIZE; c++) {
+    const int sign_bit_cost = (cfl_alpha_codes[c][CFL_PRED_U] != 0) +
+                              (cfl_alpha_codes[c][CFL_PRED_V] != 0);
+
+    aom_cdf_prob prob = AOM_ICDF(ec_ctx->cfl_alpha_cdf[c]) - prev_cdf;
+    prev_cdf = AOM_ICDF(ec_ctx->cfl_alpha_cdf[c]);
+
+    cfl->costs[c] = av1_cost_symbol(prob) + av1_cost_literal(sign_bit_cost);
   }
 }
 
