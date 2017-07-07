@@ -11,6 +11,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,231 +223,102 @@ TEST_F(CoordinationUnitImplTest, GetSetProperty) {
 
 TEST_F(CoordinationUnitImplTest,
        GetAssociatedCoordinationUnitsForSingleTabInSingleProcess) {
-  // The following coordination unit graph topology is created to emulate a
-  // scenario when a single tab are executes in a single process:
-  //
-  // T   P
-  //  \ /
-  //   F
-  //
-  // Where:
-  // T: tab_coordination_unit
-  // F: frame_coordination_unit
-  // P: process_coordination_unit
-  auto frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
-  tab_coordination_unit->AddChild(frame_coordination_unit->id());
-  process_coordination_unit->AddChild(frame_coordination_unit->id());
+  MockSingleTabInSingleProcessCoordinationUnitGraph cu_graph;
 
   auto tabs_associated_with_process =
-      process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(1u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u,
-            tabs_associated_with_process.count(tab_coordination_unit.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
 
   auto processes_associated_with_tab =
-      tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
   EXPECT_EQ(1u, processes_associated_with_tab.size());
-  EXPECT_EQ(
-      1u, processes_associated_with_tab.count(process_coordination_unit.get()));
+  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
        GetAssociatedCoordinationUnitsForMultipleTabsInSingleProcess) {
-  // The following coordination unit graph topology is created to emulate a
-  // scenario where multiple tabs are executing in a single process:
-  //
-  // T   P  OT
-  //  \ / \ /
-  //   F  OF
-  //
-  // Where:
-  // T: tab_coordination_unit
-  // OT: other_tab_coordination_unit
-  // F: frame_coordination_unit
-  // OF: other_frame_coordination_unit
-  // P: process_coordination_unit
-  auto frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto other_frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-  auto other_tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
-  tab_coordination_unit->AddChild(frame_coordination_unit->id());
-  other_tab_coordination_unit->AddChild(other_frame_coordination_unit->id());
-  process_coordination_unit->AddChild(frame_coordination_unit->id());
-  process_coordination_unit->AddChild(other_frame_coordination_unit->id());
+  MockMultipleTabsInSingleProcessCoordinationUnitGraph cu_graph;
 
   auto tabs_associated_with_process =
-      process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(2u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u,
-            tabs_associated_with_process.count(tab_coordination_unit.get()));
-  EXPECT_EQ(1u, tabs_associated_with_process.count(
-                    other_tab_coordination_unit.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.other_tab.get()));
 
   auto processes_associated_with_tab =
-      tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
   EXPECT_EQ(1u, processes_associated_with_tab.size());
-  EXPECT_EQ(
-      1u, processes_associated_with_tab.count(process_coordination_unit.get()));
+  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
 
   auto processes_associated_with_other_tab =
-      other_tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.other_tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
   EXPECT_EQ(1u, processes_associated_with_other_tab.size());
-  EXPECT_EQ(
-      1u, processes_associated_with_tab.count(process_coordination_unit.get()));
+  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
        GetAssociatedCoordinationUnitsForSingleTabWithMultipleProcesses) {
-  // The following coordination unit graph topology is created to emulate a
-  // scenario where a single tab that has frames executing in different
-  // processes (e.g. out-of-process iFrames):
-  //
-  // T   P
-  //  \ /
-  //   F  OP
-  //    \ /
-  //    OF
-  //
-  // Where:
-  // T: tab_coordination_unit
-  // F: frame_coordination_unit
-  // OF: other_frame_coordination_unit
-  // P: process_coordination_unit
-  // OP: other_process_coordination_unit
-  auto frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto other_frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto other_process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
-  frame_coordination_unit->AddChild(other_frame_coordination_unit->id());
-  tab_coordination_unit->AddChild(frame_coordination_unit->id());
-  tab_coordination_unit->AddChild(other_frame_coordination_unit->id());
-  process_coordination_unit->AddChild(frame_coordination_unit->id());
-  other_process_coordination_unit->AddChild(
-      other_frame_coordination_unit->id());
+  MockSingleTabWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
   auto tabs_associated_with_process =
-      process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(1u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u,
-            tabs_associated_with_process.count(tab_coordination_unit.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
 
   auto tabs_associated_with_other_process =
-      other_process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.other_process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(1u, tabs_associated_with_other_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_other_process.count(
-                    tab_coordination_unit.get()));
+  EXPECT_EQ(1u, tabs_associated_with_other_process.count(cu_graph.tab.get()));
 
   auto processes_associated_with_tab =
-      tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
   EXPECT_EQ(2u, processes_associated_with_tab.size());
-  EXPECT_EQ(
-      1u, processes_associated_with_tab.count(process_coordination_unit.get()));
-  EXPECT_EQ(1u, processes_associated_with_tab.count(
-                    other_process_coordination_unit.get()));
+  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
+  EXPECT_EQ(1u,
+            processes_associated_with_tab.count(cu_graph.other_process.get()));
 }
 
 TEST_F(CoordinationUnitImplTest,
-       GetAssociatedCoordinationUnitsForMultipeTabsWithMultipleProcesses) {
-  // The following coordination unit graph topology is created to emulate a
-  // scenario where multiple tabs are utilizing multiple processes (e.g.
-  // out-of-process iFrames and multiple tabs in a process):
-  //
-  // OT  P   T
-  //  \ / \ /
-  //  OF   F  OP
-  //        \ /
-  //         AF
-  //
-  // Where:
-  // T: tab_coordination_unit
-  // OT: other_tab_coordination_unit
-  // F: frame_coordination_unit
-  // OF: other_frame_coordination_unit
-  // AF: another_frame_coordination_unit
-  // P: process_coordination_unit
-  // OP: other_process_coordination_unit
-  auto frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto other_frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto another_frame_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  auto process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto other_process_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  auto tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-  auto other_tab_coordination_unit =
-      CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
-  frame_coordination_unit->AddChild(another_frame_coordination_unit->id());
-  tab_coordination_unit->AddChild(frame_coordination_unit->id());
-  other_tab_coordination_unit->AddChild(other_frame_coordination_unit->id());
-  process_coordination_unit->AddChild(frame_coordination_unit->id());
-  process_coordination_unit->AddChild(other_frame_coordination_unit->id());
-  other_process_coordination_unit->AddChild(
-      another_frame_coordination_unit->id());
+       GetAssociatedCoordinationUnitsForMultipleTabsWithMultipleProcesses) {
+  MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
   auto tabs_associated_with_process =
-      process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(2u, tabs_associated_with_process.size());
-  EXPECT_EQ(1u,
-            tabs_associated_with_process.count(tab_coordination_unit.get()));
-  EXPECT_EQ(1u, tabs_associated_with_process.count(
-                    other_tab_coordination_unit.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.tab.get()));
+  EXPECT_EQ(1u, tabs_associated_with_process.count(cu_graph.other_tab.get()));
 
   auto tabs_associated_with_other_process =
-      other_process_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.other_process->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kWebContents);
   EXPECT_EQ(1u, tabs_associated_with_other_process.size());
-  EXPECT_EQ(1u, tabs_associated_with_other_process.count(
-                    tab_coordination_unit.get()));
+  EXPECT_EQ(1u,
+            tabs_associated_with_other_process.count(cu_graph.other_tab.get()));
 
   auto processes_associated_with_tab =
-      tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(2u, processes_associated_with_tab.size());
-  EXPECT_EQ(
-      1u, processes_associated_with_tab.count(process_coordination_unit.get()));
-  EXPECT_EQ(1u, processes_associated_with_tab.count(
-                    other_process_coordination_unit.get()));
+  EXPECT_EQ(1u, processes_associated_with_tab.size());
+  EXPECT_EQ(1u, processes_associated_with_tab.count(cu_graph.process.get()));
 
   auto processes_associated_with_other_tab =
-      other_tab_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+      cu_graph.other_tab->GetAssociatedCoordinationUnitsOfType(
           CoordinationUnitType::kProcess);
-  EXPECT_EQ(1u, processes_associated_with_other_tab.size());
+  EXPECT_EQ(2u, processes_associated_with_other_tab.size());
+  EXPECT_EQ(1u,
+            processes_associated_with_other_tab.count(cu_graph.process.get()));
   EXPECT_EQ(1u, processes_associated_with_other_tab.count(
-                    process_coordination_unit.get()));
+                    cu_graph.other_process.get()));
 }
 
 }  // namespace resource_coordinator
