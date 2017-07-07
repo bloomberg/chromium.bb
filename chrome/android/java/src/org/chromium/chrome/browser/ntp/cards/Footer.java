@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -59,7 +59,7 @@ public class Footer extends OptionalLeaf {
                     new SpanApplier.SpanInfo("<link>", "</link>", link)));
             textView.setMovementMethod(LinkMovementMethod.getInstance());
 
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME)) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 itemView.setPadding(itemView.getPaddingLeft(),
                         root.getResources().getDimensionPixelSize(
                                 R.dimen.chrome_home_suggestions_footer_padding_top),
