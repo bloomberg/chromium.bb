@@ -965,8 +965,9 @@ TEST_P(CompositedLayerMappingTest,
       true);
   SetBodyInnerHTML(
       "<div id='container' style='overflow: scroll; width: 300px; height: "
-      "300px; border-radius: 5px; background: white; will-change: transform;'>"
-      "    <div style='background-color: blue; width: 2000px; height: "
+      "300px; background: white; will-change: transform;'>"
+      "    <div style='background-color: blue; clip-path: circle(600px at "
+      "1000px 1000px); width: 2000px; height: "
       "2000px;'></div>"
       "</div>");
 
