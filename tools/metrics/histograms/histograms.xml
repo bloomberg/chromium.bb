@@ -2061,6 +2061,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.Accelerators.Deprecated.ToggleHighContrast"
+    enum="DeprecatedAcceleratorUsage">
+  <owner>afakhry@chromium.org</owner>
+  <summary>
+    Toggling the high contrast display mode has two accelerators: -
+    Search+Shift+H which is deprecated.   - Ctrl+Search+H which is new. This
+    histogram shows the number of times each accelerator (deprecated and new) is
+    used.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ActiveTouchPoints">
   <obsolete>
     Deprecated 02/2017 due to lack of usage.
