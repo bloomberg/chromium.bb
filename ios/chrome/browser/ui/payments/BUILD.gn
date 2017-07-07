@@ -207,6 +207,7 @@ source_set("unit_tests") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",

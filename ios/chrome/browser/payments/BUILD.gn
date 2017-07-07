@@ -47,7 +47,9 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/web",
+    "//ios/web/public/test/fakes",
     "//testing/gmock",
     "//testing/gtest",
   ]

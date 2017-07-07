@@ -13,11 +13,13 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -33,7 +35,8 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
   PaymentRequestPaymentMethodSelectionCoordinatorTest()
       : autofill_profile_(autofill::test::GetFullProfile()),
         credit_card1_(autofill::test::GetCreditCard()),
-        credit_card2_(autofill::test::GetCreditCard2()) {
+        credit_card2_(autofill::test::GetCreditCard2()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     // Add testing credit cards to autofill::TestPersonalDataManager. Make the
     // less frequently used one incomplete.
     credit_card1_.set_use_count(10U);
@@ -44,7 +47,7 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
     personal_data_manager_.AddTestingCreditCard(&credit_card2_);
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
@@ -52,7 +55,9 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card1_;
   autofill::CreditCard credit_card2_;
+  web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 

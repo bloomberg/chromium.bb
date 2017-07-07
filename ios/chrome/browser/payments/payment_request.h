@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -37,6 +38,10 @@ namespace ios {
 class ChromeBrowserState;
 }  // namepsace ios
 
+namespace web {
+class WebState;
+}  // namespace web
+
 // A protocol implementd by any UI classes that the PaymentRequest object
 // needs to communicate with in order to perform certain actions such as
 // initiating UI to request full card details for payment.
@@ -55,14 +60,16 @@ namespace payments {
 // Has a copy of web::PaymentRequest as provided by the page invoking the
 // PaymentRequest API. Also caches credit cards and addresses provided by the
 // |personal_data_manager| and manages shared resources and user selections for
-// the current PaymentRequest flow. It must be initialized with a non-null
-// instance of |personal_data_manager| that outlives this class.
+// the current PaymentRequest flow. It must be initialized with non-null
+// instances of |browser_state|, |web_state|, and |personal_data_manager| that
+// outlive this class.
 class PaymentRequest : public PaymentOptionsProvider,
                        public PaymentRequestBaseDelegate {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
-                 ios::ChromeBrowserState* browser_state_,
+                 ios::ChromeBrowserState* browser_state,
+                 web::WebState* web_state,
                  autofill::PersonalDataManager* personal_data_manager,
                  id<PaymentRequestUIDelegate> payment_request_ui_delegate);
   ~PaymentRequest() override;
@@ -92,6 +99,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   const web::PaymentDetails& payment_details() const {
     return web_payment_request_.details;
   }
+
+  // Returns the JourneyLogger for this instance.
+  const JourneyLogger& journey_logger() const { return journey_logger_; }
 
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as
@@ -244,6 +254,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   ios::ChromeBrowserState* browser_state_;
 
   // Never null and outlives this object.
+  web::WebState* web_state_;
+
+  // Never null and outlives this object.
   autofill::PersonalDataManager* personal_data_manager_;
 
   // The PaymentRequestUIDelegate as provided by the UI object that originally
@@ -298,6 +311,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   web::PaymentShippingOption* selected_shipping_option_;
 
   PaymentsProfileComparator profile_comparator_;
+
+  // Keeps track of different stats during the lifetime of this object.
+  JourneyLogger journey_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

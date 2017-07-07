@@ -31,6 +31,7 @@
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/payments/payment_request.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -100,11 +101,11 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                                        &ios::BuildFakeSigninManager);
-    browser_state_ = test_cbs_builder.Build();
+    chrome_browser_state_ = test_cbs_builder.Build();
 
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        browser_state_.get(), &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
     payment_request_->SetPrefService(pref_service_.get());
   }
 
@@ -112,10 +113,11 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
+  web::TestWebState web_state_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and
@@ -129,7 +131,7 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   PaymentRequestCoordinator* coordinator = [[PaymentRequestCoordinator alloc]
       initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request_.get()];
-  [coordinator setBrowserState:browser_state_.get()];
+  [coordinator setBrowserState:chrome_browser_state_.get()];
 
   [coordinator start];
   // Spin the run loop to trigger the animation.
@@ -296,7 +298,7 @@ TEST_F(PaymentRequestCoordinatorTest, DidCancel) {
          EXPECT_EQ(coordinator, callerCoordinator);
        }];
   [coordinator setDelegate:delegate_mock];
-  [coordinator setBrowserState:browser_state_.get()];
+  [coordinator setBrowserState:chrome_browser_state_.get()];
 
   [coordinator start];
   // Spin the run loop to trigger the animation.

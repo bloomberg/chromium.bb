@@ -11,11 +11,13 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_consumer.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -29,13 +31,18 @@
 class PaymentRequestContactInfoEditMediatorTest : public PlatformTest {
  protected:
   PaymentRequestContactInfoEditMediatorTest()
-      : payment_request_(base::MakeUnique<payments::TestPaymentRequest>(
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()),
+        payment_request_(base::MakeUnique<payments::TestPaymentRequest>(
             payment_request_test_util::CreateTestWebPaymentRequest(),
+            chrome_browser_state_.get(),
+            &web_state_,
             &personal_data_manager_)) {}
 
   base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
+  web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 

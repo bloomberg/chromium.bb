@@ -15,9 +15,11 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/test_region_data_loader.h"
 #include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -33,7 +35,8 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
   PaymentRequestBillingAddressSelectionCoordinatorTest()
       : autofill_profile1_(autofill::test::GetFullProfile()),
         autofill_profile2_(autofill::test::GetFullProfile2()),
-        pref_service_(autofill::test::PrefServiceForTesting()) {
+        pref_service_(autofill::test::PrefServiceForTesting()),
+        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     personal_data_manager_.SetTestingPrefService(pref_service_.get());
     // Add testing profiles to autofill::TestPersonalDataManager. Make the less
     // frequently used one incomplete.
@@ -44,9 +47,10 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
         autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
         base::string16(), "en-US");
     personal_data_manager_.AddTestingProfile(&autofill_profile2_);
+
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
 
     test_region_data_loader_.set_synchronous_callback(true);
     payment_request_->SetRegionDataLoader(&test_region_data_loader_);
@@ -79,9 +83,11 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
 
   autofill::AutofillProfile autofill_profile1_;
   autofill::AutofillProfile autofill_profile2_;
+  web::TestWebState web_state_;
   std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
   autofill::TestRegionDataLoader test_region_data_loader_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 

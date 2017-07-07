@@ -410,7 +410,7 @@ struct PendingPaymentResponse {
   }
 
   _paymentRequest = base::MakeUnique<payments::PaymentRequest>(
-      webPaymentRequest, _browserState, _personalDataManager, self);
+      webPaymentRequest, _browserState, _webState, _personalDataManager, self);
 
   return YES;
 }
