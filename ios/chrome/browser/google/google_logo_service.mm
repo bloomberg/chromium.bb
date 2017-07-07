@@ -8,14 +8,12 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/image/image.h"
 
@@ -100,12 +98,9 @@ void GoogleLogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     return;
 
   if (!logo_tracker_) {
-    logo_tracker_.reset(new LogoTracker(
-        DoodleDirectory(),
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-        web::WebThread::GetBlockingPool(), browser_state_->GetRequestContext(),
-        std::unique_ptr<search_provider_logos::LogoDelegate>(
-            new IOSChromeLogoDelegate())));
+    logo_tracker_ = base::MakeUnique<LogoTracker>(
+        DoodleDirectory(), browser_state_->GetRequestContext(),
+        base::MakeUnique<IOSChromeLogoDelegate>());
   }
 
   logo_tracker_->SetServerAPI(
