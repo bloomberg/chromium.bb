@@ -111,7 +111,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 
 {##############################################################################}
 {% block indexed_property_setter_callback %}
-{% if indexed_property_setter or named_property_setter %}
+{% if indexed_property_getter or named_property_setter %}
 {% set setter = indexed_property_setter or named_property_setter %}
 void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if setter.is_ce_reactions %}
@@ -126,7 +126,7 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
   {{cpp_class}}V8Internal::indexedPropertySetter(index, v8Value, info);
   {% endif %}
 
-  {% else %}{# otherwise, named property #}
+  {% elif named_property_setter %}
 
   const AtomicString& propertyName = AtomicString::Number(index);
 
@@ -136,7 +136,19 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
   {{cpp_class}}V8Internal::namedPropertySetter(propertyName, v8Value, info);
   {% endif %}
 
-  {% endif %}{# indexed_property_setter #}
+  {% else %}{# neither of indexed_property_setter nor named_property_setter #}
+
+  // No indexed property setter defined.  Do not fall back to the default
+  // setter.
+  V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+  if (info.ShouldThrowOnError()) {
+    ExceptionState exceptionState(info.GetIsolate(),
+                                  ExceptionState::kIndexedSetterContext,
+                                  "{{interface_name}}");
+    exceptionState.ThrowTypeError("Index property setter is not supported.");
+  }
+
+  {% endif %}{# indexed/named_property_setter #}
 }
 
 {% endif %}
@@ -208,6 +220,53 @@ void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, con
 }
 
 {% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block indexed_property_definer_callback %}
+{% if indexed_property_getter %}
+void {{v8_class_or_partial}}::indexedPropertyDefinerCallback(
+    uint32_t index,
+    const v8::PropertyDescriptor& desc,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+{% if indexed_property_setter %}
+  // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
+  // 3.9.3. [[DefineOwnProperty]]
+  // step 1.1. If the result of calling IsDataDescriptor(Desc) is false, then
+  //   return false.
+  if (desc.has_get() || desc.has_set()) {
+    V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+    if (info.ShouldThrowOnError()) {
+      ExceptionState exceptionState(info.GetIsolate(),
+                                    ExceptionState::kIndexedSetterContext,
+                                    "{{interface_name}}");
+      exceptionState.ThrowTypeError("Accessor properties are not allowed.");
+    }
+    return;
+  }
+
+  // Return nothing and fall back to indexedPropertySetterCallback.
+{% else %}{# indexed_property_setter #}
+  // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
+  // 3.9.3. [[DefineOwnProperty]]
+  // step 1.2. If O does not implement an interface with an indexed property
+  //   setter, then return false.
+  //
+  // https://html.spec.whatwg.org/C/window-object.html#windowproxy-defineownproperty
+  // 7.4.6 [[DefineOwnProperty]] (P, Desc)
+  // step 2.1. If P is an array index property name, return false.
+  V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+  if (info.ShouldThrowOnError()) {
+    ExceptionState exceptionState(info.GetIsolate(),
+                                  ExceptionState::kIndexedSetterContext,
+                                  "{{interface_name}}");
+    exceptionState.ThrowTypeError("Index property setter is not supported.");
+  }
+{% endif %}{# indexed_property_setter #}
+}
+
+{% endif %}{# indexed_property_getter #}
 {% endblock %}
 
 
@@ -707,17 +766,28 @@ for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfigurati
        '%s::indexedPropertyGetterCallback' % v8_class_or_partial %}
 {% set indexed_property_setter_callback =
        '%s::indexedPropertySetterCallback' % v8_class_or_partial
-       if indexed_property_setter or named_property_setter else 'nullptr' %}
-{% set indexed_property_query_callback = 'nullptr' %}{# Unused #}
+       if indexed_property_getter or named_property_setter else 'nullptr' %}
+{% set indexed_property_descriptor_callback = 'nullptr' %}
 {% set indexed_property_deleter_callback =
        '%s::indexedPropertyDeleterCallback' % v8_class_or_partial
        if indexed_property_deleter or named_property_deleter else 'nullptr' %}
 {% set indexed_property_enumerator_callback =
        'IndexedPropertyEnumerator<%s>' % cpp_class
        if indexed_property_getter.is_enumerable else 'nullptr' %}
+{% set indexed_property_definer_callback =
+       '%s::indexedPropertyDefinerCallback' % v8_class_or_partial
+       if indexed_property_getter else 'nullptr' %}
 {% set property_handler_flags =
        'v8::PropertyHandlerFlags::kNone' %}
-v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}}, v8::Local<v8::Value>(), {{property_handler_flags}});
+v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
+    {{indexed_property_getter_callback}},
+    {{indexed_property_setter_callback}},
+    {{indexed_property_descriptor_callback}},
+    {{indexed_property_deleter_callback}},
+    {{indexed_property_enumerator_callback}},
+    {{indexed_property_definer_callback}},
+    v8::Local<v8::Value>(),
+    {{property_handler_flags}});
 {{target}}->SetHandler(indexedPropertyHandlerConfig);
 {%- endmacro %}
 

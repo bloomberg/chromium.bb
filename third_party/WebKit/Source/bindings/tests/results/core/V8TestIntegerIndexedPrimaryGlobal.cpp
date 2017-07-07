@@ -177,6 +177,28 @@ void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCallback(uint32_t 
   V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCustom(index, info);
 }
 
+void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDefinerCallback(
+    uint32_t index,
+    const v8::PropertyDescriptor& desc,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // https://heycam.github.io/webidl/#legacy-platform-object-defineownproperty
+  // 3.9.3. [[DefineOwnProperty]]
+  // step 1.1. If the result of calling IsDataDescriptor(Desc) is false, then
+  //   return false.
+  if (desc.has_get() || desc.has_set()) {
+    V8SetReturnValue(info, v8::Null(info.GetIsolate()));
+    if (info.ShouldThrowOnError()) {
+      ExceptionState exceptionState(info.GetIsolate(),
+                                    ExceptionState::kIndexedSetterContext,
+                                    "TestIntegerIndexedPrimaryGlobal");
+      exceptionState.ThrowTypeError("Accessor properties are not allowed.");
+    }
+    return;
+  }
+
+  // Return nothing and fall back to indexedPropertySetterCallback.
+}
+
 static const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedPrimaryGlobalAccessors[] = {
     { "length", V8TestIntegerIndexedPrimaryGlobal::lengthAttributeGetterCallback, V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
@@ -214,7 +236,15 @@ static void installV8TestIntegerIndexedPrimaryGlobalTemplate(
       signature, V8TestIntegerIndexedPrimaryGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalMethods));
 
   // Indexed properties
-  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(V8TestIntegerIndexedPrimaryGlobal::indexedPropertyGetterCallback, V8TestIntegerIndexedPrimaryGlobal::indexedPropertySetterCallback, nullptr, V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCallback, IndexedPropertyEnumerator<TestIntegerIndexedPrimaryGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
+  v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
+      V8TestIntegerIndexedPrimaryGlobal::indexedPropertyGetterCallback,
+      V8TestIntegerIndexedPrimaryGlobal::indexedPropertySetterCallback,
+      nullptr,
+      V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCallback,
+      IndexedPropertyEnumerator<TestIntegerIndexedPrimaryGlobal>,
+      V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDefinerCallback,
+      v8::Local<v8::Value>(),
+      v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
 
   // Array iterator (@@iterator)

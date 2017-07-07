@@ -22,7 +22,6 @@ class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;
-class ScriptValue;
 class SerializedScriptValue;
 class WindowProxyManager;
 
@@ -89,7 +88,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   // Indexed properties
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
-  bool AnonymousIndexedSetter(uint32_t index, const ScriptValue&);
 
   void postMessage(PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,

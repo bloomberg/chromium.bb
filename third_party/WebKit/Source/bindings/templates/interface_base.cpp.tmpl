@@ -244,6 +244,7 @@ static const struct {
 {% block indexed_property_getter_callback %}{% endblock %}
 {% block indexed_property_setter_callback %}{% endblock %}
 {% block indexed_property_deleter_callback %}{% endblock %}
+{% block indexed_property_definer_callback %}{% endblock %}
 
 {% if has_access_check_callbacks and not is_partial %}
 bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data) {

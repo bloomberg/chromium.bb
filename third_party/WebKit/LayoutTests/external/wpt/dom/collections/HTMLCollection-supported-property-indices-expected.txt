@@ -4,7 +4,7 @@ PASS Handling of property names that look like small nonnegative integers
 PASS Handling of property names that look like integers around 2^31 
 PASS Handling of property names that look like integers around 2^32 
 FAIL Trying to set an expando that would shadow an already-existing indexed property assert_true: expected true got false
-FAIL Trying to set an expando with an indexed property name past the end of the list assert_equals: expected (undefined) undefined but got (number) 5
+PASS Trying to set an expando with an indexed property name past the end of the list 
 FAIL Trying to delete an indexed property name should never work assert_true: expected true got false
 Harness: the test ran to completion.
 

@@ -68,8 +68,6 @@
     // indexed properties
     // https://html.spec.whatwg.org/C/browsers.html#windowproxy-getownproperty
     [NotEnumerable, CrossOrigin] getter Window (unsigned long index);
-    // https://html.spec.whatwg.org/C/browsers.html#windowproxy-defineownproperty
-    setter void (unsigned long index, any value);
 
     // named properties
     [Custom, NotEnumerable, CrossOrigin] getter object (DOMString name);
