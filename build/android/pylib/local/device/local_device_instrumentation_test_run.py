@@ -11,6 +11,7 @@ import sys
 import tempfile
 import time
 
+from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
@@ -143,23 +144,24 @@ class LocalDeviceInstrumentationTestRun(
 
       def install_helper(apk, permissions):
         @trace_event.traced("apk_path")
-        def install_helper_internal(apk_path=apk.path):
+        def install_helper_internal(d, apk_path=apk.path):
           # pylint: disable=unused-argument
-          dev.Install(apk, permissions=permissions)
-        return install_helper_internal
+          d.Install(apk, permissions=permissions)
+        return lambda: crash_handler.RetryOnSystemCrash(
+            install_helper_internal, dev)
 
-      def incremental_install_helper(dev, apk, script):
+      def incremental_install_helper(apk, script):
         @trace_event.traced("apk_path")
-        def incremental_install_helper_internal(apk_path=apk.path):
+        def incremental_install_helper_internal(d, apk_path=apk.path):
           # pylint: disable=unused-argument
           local_device_test_run.IncrementalInstall(
-              dev, apk, script)
-        return incremental_install_helper_internal
+              d, apk, script)
+        return lambda: crash_handler.RetryOnSystemCrash(
+            incremental_install_helper_internal, dev)
 
       if self._test_instance.apk_under_test:
         if self._test_instance.apk_under_test_incremental_install_script:
           steps.append(incremental_install_helper(
-                           dev,
                            self._test_instance.apk_under_test,
                            self._test_instance.
                                apk_under_test_incremental_install_script))
@@ -170,7 +172,6 @@ class LocalDeviceInstrumentationTestRun(
 
       if self._test_instance.test_apk_incremental_install_script:
         steps.append(incremental_install_helper(
-                         dev,
                          self._test_instance.test_apk,
                          self._test_instance.
                              test_apk_incremental_install_script))
