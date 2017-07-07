@@ -655,13 +655,11 @@ class IsolateServerGrpc(StorageApi):
             request.write_offset += slice_len
             chunk = chunk[slice_len:]
 
+      response = None
       try:
         response = self._stub.Write(slicer())
-      except grpc.Call as c:
-        # You might think that errors from gRPC would be rpc.RpcError. You'd
-        # be...  right... but it's *also* an instance of grpc.Call, and that's
-        # where the status code actually lives.
-        if c.code() == grpc.StatusCode.ALREADY_EXISTS:
+      except grpc.RpcError as r:
+        if r.code() == grpc.StatusCode.ALREADY_EXISTS:
           # This is legit - we didn't check before we pushed so no problem if
           # it's already there.
           self._already_exists += 1
@@ -670,13 +668,13 @@ class IsolateServerGrpc(StorageApi):
                 self._already_exists, self._num_pushes,
                 100.0 * self._already_exists / self._num_pushes))
         else:
-          logging.error('gRPC error during push: throwing as IOError (%s)' % c)
-          raise IOError(c)
+          logging.error('gRPC error during push: throwing as IOError (%s)' % r)
+          raise IOError(r)
       except Exception as e:
         logging.error('error during push: throwing as IOError (%s)' % e)
         raise IOError(e)
 
-      if response.committed_size != item.size:
+      if response is not None and response.committed_size != item.size:
         raise IOError('%s/%d: incorrect size written (%d)' % (
             item.digest, item.size, response.committed_size))
 
