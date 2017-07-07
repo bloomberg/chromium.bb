@@ -22,6 +22,7 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
@@ -155,6 +156,7 @@ URLRequestContextConfig::~URLRequestContextConfig() {}
 
 void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     net::URLRequestContextBuilder* context_builder,
+    net::HttpNetworkSession::Params* session_params,
     net::NetLog* net_log,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   if (experimental_options.empty())
@@ -189,6 +191,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
   effective_experimental_options = dict->CreateDeepCopy();
   StaleHostResolver::StaleOptions stale_dns_options;
   std::string host_resolver_rules_string;
+
   for (base::DictionaryValue::Iterator it(*dict.get()); !it.IsAtEnd();
        it.Advance()) {
     if (it.key() == kQuicFieldTrialName) {
@@ -202,8 +205,8 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string quic_connection_options;
       if (quic_args->GetString(kQuicConnectionOptions,
                                &quic_connection_options)) {
-        context_builder->set_quic_connection_options(
-            net::ParseQuicConnectionOptions(quic_connection_options));
+        session_params->quic_connection_options =
+            net::ParseQuicConnectionOptions(quic_connection_options);
       }
 
       // TODO(rtenneti): Delete this option after apps stop using it.
@@ -211,63 +214,63 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       bool quic_store_server_configs_in_properties = false;
       if (quic_args->GetBoolean(kQuicStoreServerConfigsInProperties,
                                 &quic_store_server_configs_in_properties)) {
-        context_builder->set_quic_max_server_configs_stored_in_properties(
-            net::kMaxQuicServersToPersist);
+        session_params->quic_max_server_configs_stored_in_properties =
+            net::kMaxQuicServersToPersist;
       }
 
       int quic_max_server_configs_stored_in_properties = 0;
       if (quic_args->GetInteger(
               kQuicMaxServerConfigsStoredInProperties,
               &quic_max_server_configs_stored_in_properties)) {
-        context_builder->set_quic_max_server_configs_stored_in_properties(
-            static_cast<size_t>(quic_max_server_configs_stored_in_properties));
+        session_params->quic_max_server_configs_stored_in_properties =
+            static_cast<size_t>(quic_max_server_configs_stored_in_properties);
       }
 
       int quic_idle_connection_timeout_seconds = 0;
       if (quic_args->GetInteger(kQuicIdleConnectionTimeoutSeconds,
                                 &quic_idle_connection_timeout_seconds)) {
-        context_builder->set_quic_idle_connection_timeout_seconds(
-            quic_idle_connection_timeout_seconds);
+        session_params->quic_idle_connection_timeout_seconds =
+            quic_idle_connection_timeout_seconds;
       }
 
       bool quic_close_sessions_on_ip_change = false;
       if (quic_args->GetBoolean(kQuicCloseSessionsOnIpChange,
                                 &quic_close_sessions_on_ip_change)) {
-        context_builder->set_quic_close_sessions_on_ip_change(
-            quic_close_sessions_on_ip_change);
+        session_params->quic_close_sessions_on_ip_change =
+            quic_close_sessions_on_ip_change;
       }
 
       bool quic_migrate_sessions_on_network_change = false;
       if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChange,
                                 &quic_migrate_sessions_on_network_change)) {
-        context_builder->set_quic_migrate_sessions_on_network_change(
-            quic_migrate_sessions_on_network_change);
+        session_params->quic_migrate_sessions_on_network_change =
+            quic_migrate_sessions_on_network_change;
       }
 
       std::string quic_user_agent_id;
       if (quic_args->GetString(kQuicUserAgentId, &quic_user_agent_id)) {
-        context_builder->set_quic_user_agent_id(quic_user_agent_id);
+        session_params->quic_user_agent_id = quic_user_agent_id;
       }
 
       bool quic_migrate_sessions_early = false;
       if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
                                 &quic_migrate_sessions_early)) {
-        context_builder->set_quic_migrate_sessions_early(
-            quic_migrate_sessions_early);
+        session_params->quic_migrate_sessions_early =
+            quic_migrate_sessions_early;
       }
 
       bool quic_disable_bidirectional_streams = false;
       if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
                                 &quic_disable_bidirectional_streams)) {
-        context_builder->set_quic_disable_bidirectional_streams(
-            quic_disable_bidirectional_streams);
+        session_params->quic_disable_bidirectional_streams =
+            quic_disable_bidirectional_streams;
       }
 
       bool quic_race_cert_verification = false;
       if (quic_args->GetBoolean(kQuicRaceCertVerification,
                                 &quic_race_cert_verification)) {
-        context_builder->set_quic_race_cert_verification(
-            quic_race_cert_verification);
+        session_params->quic_race_cert_verification =
+            quic_race_cert_verification;
       }
 
     } else if (it.key() == kAsyncDnsFieldTrialName) {
@@ -434,12 +437,16 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     context_builder->DisableHttpCache();
   }
   context_builder->set_user_agent(user_agent);
-  context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
   context_builder->set_sdch_enabled(enable_sdch);
+  net::HttpNetworkSession::Params session_params;
+  session_params.enable_http2 = enable_spdy;
+  session_params.enable_quic = enable_quic;
   if (enable_quic)
-    context_builder->set_quic_user_agent_id(quic_user_agent_id);
+    session_params.quic_user_agent_id = quic_user_agent_id;
 
-  ParseAndSetExperimentalOptions(context_builder, net_log, file_task_runner);
+  ParseAndSetExperimentalOptions(context_builder, &session_params, net_log,
+                                 file_task_runner);
+  context_builder->set_http_network_session_params(session_params);
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (mock_cert_verifier) {
