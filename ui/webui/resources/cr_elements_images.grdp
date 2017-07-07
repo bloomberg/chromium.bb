@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <!-- TODO(dschuyler): Many of these may be included for the unit tests which
+       don't appear to flatten the html. We may be able to avoid including
+       these if the browser_tests would not try to load them. -->
   <include name="IDR_WEBUI_IMAGES_ARROW_DOWN"
            file="images/arrow_down.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ARROW_RIGHT"
@@ -14,6 +17,10 @@
            file="images/icon_clear.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_DELETE"
            file="images/icon_delete.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_EXPAND_LESS"
+           file="images/icon_expand_less.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_EXPAND_MORE"
+           file="images/icon_expand_more.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_EXTERNAL"
            file="images/open_in_new.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_MORE_VERT"
