@@ -126,8 +126,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   } else if (NightLightController::IsFeatureEnabled() &&
              sender == night_light_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
-    Shell::Get()->night_light_controller()->Toggle();
-    night_light_button_->Update();
+    night_light_button_->Toggle();
   } else if (sender == lock_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()

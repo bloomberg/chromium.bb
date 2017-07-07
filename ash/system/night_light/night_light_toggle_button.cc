@@ -9,6 +9,7 @@
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -52,6 +53,13 @@ NightLightToggleButton::NightLightToggleButton(views::ButtonListener* listener)
                        kSystemMenuNightLightOffIcon,
                        IDS_ASH_STATUS_TRAY_NIGHT_LIGHT) {
   Update();
+}
+
+void NightLightToggleButton::Toggle() {
+  DCHECK(NightLightController::IsFeatureEnabled());
+  Shell::Get()->night_light_controller()->Toggle();
+  Update();
+  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
 }
 
 void NightLightToggleButton::Update() {
