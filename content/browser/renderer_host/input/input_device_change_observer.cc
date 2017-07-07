@@ -4,12 +4,15 @@
 
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/public/common/web_preferences.h"
 
 #if defined(OS_WIN)
 #include "ui/events/devices/input_device_observer_win.h"
 #elif defined(OS_LINUX)
 #include "ui/events/devices/input_device_manager.h"
+#elif defined(OS_ANDROID)
+#include "ui/events/devices/input_device_observer_android.h"
 #endif
 
 namespace content {
@@ -20,6 +23,8 @@ InputDeviceChangeObserver::InputDeviceChangeObserver(RenderViewHost* rvh) {
   ui::InputDeviceObserverWin::GetInstance()->AddObserver(this);
 #elif defined(OS_LINUX)
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
+#elif defined(OS_ANDROID)
+  ui::InputDeviceObserverAndroid::GetInstance()->AddObserver(this);
 #endif
 }
 
@@ -28,6 +33,8 @@ InputDeviceChangeObserver::~InputDeviceChangeObserver() {
   ui::InputDeviceObserverWin::GetInstance()->RemoveObserver(this);
 #elif defined(OS_LINUX)
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+#elif defined(OS_ANDROID)
+  ui::InputDeviceObserverAndroid::GetInstance()->RemoveObserver(this);
 #endif
   render_view_host_ = nullptr;
 }

@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 component("devices") {
   sources = [
     "device_data_manager.cc",
@@ -15,6 +20,8 @@ component("devices") {
     "input_device_event_observer.h",
     "input_device_manager.cc",
     "input_device_manager.h",
+    "input_device_observer_android.cc",
+    "input_device_observer_android.h",
     "input_device_observer_win.cc",
     "input_device_observer_win.h",
     "stylus_state.h",
@@ -35,4 +42,17 @@ component("devices") {
     "//ui/display/types",
     "//ui/gfx/geometry",
   ]
+
+  if (is_android) {
+    deps += [ ":ui_events_devices_jni_headers" ]
+  }
+}
+
+if (is_android) {
+  generate_jni("ui_events_devices_jni_headers") {
+    sources = [
+      "../../android/java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
+    ]
+    jni_package = "events/devices"
+  }
 }
