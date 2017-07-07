@@ -69,10 +69,13 @@ class GraphicsLayerTest : public testing::Test {
     layer_tree_view_ = WTF::WrapUnique(new WebLayerTreeViewImplForTesting);
     DCHECK(layer_tree_view_);
     layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
-    layer_tree_view_->RegisterViewportLayers(
-        scroll_elasticity_layer_->PlatformLayer(),
-        page_scale_layer_->PlatformLayer(), clip_layer_->PlatformLayer(),
-        nullptr, graphics_layer_->PlatformLayer(), nullptr);
+    WebLayerTreeView::ViewportLayers viewport_layers;
+    viewport_layers.overscroll_elasticity =
+        scroll_elasticity_layer_->PlatformLayer();
+    viewport_layers.page_scale = page_scale_layer_->PlatformLayer();
+    viewport_layers.inner_viewport_container = clip_layer_->PlatformLayer();
+    viewport_layers.inner_viewport_scroll = graphics_layer_->PlatformLayer();
+    layer_tree_view_->RegisterViewportLayers(viewport_layers);
     layer_tree_view_->SetViewportSize(WebSize(1, 1));
   }
 
