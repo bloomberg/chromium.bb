@@ -157,12 +157,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   gfx::Rect bounds = rtree_.GetBounds();
   DiscardableImageMap::ScopedMetadataGenerator generator(
       &image_map_, gfx::Size(bounds.right(), bounds.bottom()));
-  GatherDiscardableImages(generator.image_store());
-}
-
-void DisplayItemList::GatherDiscardableImages(
-    DiscardableImageStore* image_store) const {
-  image_store->GatherDiscardableImages(&paint_op_buffer_);
+  generator.image_store()->GatherDiscardableImages(&paint_op_buffer_);
 }
 
 void DisplayItemList::GetDiscardableImagesInRect(
@@ -190,7 +185,6 @@ void DisplayItemList::Reset() {
   current_range_start_ = 0;
   in_paired_begin_count_ = 0;
   in_painting_ = false;
-  op_count_ = 0u;
 }
 
 sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {
