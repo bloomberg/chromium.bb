@@ -42,7 +42,7 @@ public abstract class AutofillProvider {
      * @param values the array of autofill values, the key is virtual id of form
      *            field.
      */
-    public abstract void autofill(final SparseArray<String> values);
+    public abstract void autofill(final SparseArray<Object> values);
 
     /**
      * Invoked when autofill service needs the form structure.

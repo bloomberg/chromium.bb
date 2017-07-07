@@ -2355,7 +2355,7 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    public void autofill(final SparseArray<String> values) {
+    public void autofill(final SparseArray<Object> values) {
         if (mAutofillProvider != null) {
             mAutofillProvider.autofill(values);
         }
