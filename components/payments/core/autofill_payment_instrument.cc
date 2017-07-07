@@ -4,6 +4,7 @@
 
 #include "components/payments/core/autofill_payment_instrument.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/json/json_writer.h"
@@ -120,6 +121,44 @@ base::string16 AutofillPaymentInstrument::GetLabel() const {
 base::string16 AutofillPaymentInstrument::GetSublabel() const {
   return credit_card_.GetInfo(
       autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL), app_locale_);
+}
+
+bool AutofillPaymentInstrument::IsValidForModifier(
+    const std::vector<std::string>& method,
+    const std::set<autofill::CreditCard::CardType>& supported_types,
+    const std::vector<std::string>& supported_networks) const {
+  // This instrument only matches basic-card.
+  if (std::find(method.begin(), method.end(), "basic-card") == method.end())
+    return false;
+
+  // If supported_types is not specified and this instrument matches the method,
+  // the modifier is applicable. If supported_types is populated, it must
+  // contain this card's type to be applicable. The same is true for
+  // supported_networks.
+  bool is_supported_type =
+      supported_types.empty() ||
+      std::find(supported_types.begin(), supported_types.end(),
+                credit_card_.card_type()) != supported_types.end();
+
+  // supported_types may contain CARD_TYPE_UNKNOWN because of the parsing
+  // function but the modifiers shouldn't be applied since the website can't be
+  // sure that the instrument is an applicable card.
+  if (is_supported_type &&
+      credit_card_.card_type() ==
+          autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN)
+    return false;
+
+  bool is_supported_network = supported_networks.empty();
+  if (!is_supported_network) {
+    std::string basic_card_network =
+        autofill::data_util::GetPaymentRequestData(credit_card_.network())
+            .basic_card_issuer_network;
+    is_supported_network =
+        std::find(supported_networks.begin(), supported_networks.end(),
+                  basic_card_network) != supported_networks.end();
+  }
+
+  return is_supported_type && is_supported_network;
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(

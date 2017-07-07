@@ -170,35 +170,40 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_1,
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_2,
       DialogViewID::ORDER_SUMMARY_LINE_ITEM_3};
-  for (size_t i = 0; i < spec()->details().display_items.size(); i++) {
+  const auto& display_items =
+      spec()->GetDisplayItems(state()->selected_instrument());
+  for (size_t i = 0; i < display_items.size(); i++) {
     DialogViewID view_id =
         i < line_items.size() ? line_items[i] : DialogViewID::VIEW_ID_NONE;
     base::string16 currency = base::UTF8ToUTF16("");
     if (is_mixed_currency) {
-      currency = base::UTF8ToUTF16(
-          spec()->details().display_items[i]->amount->currency);
+      currency = base::UTF8ToUTF16((*display_items[i])->amount->currency);
     }
 
     content_view->AddChildView(
         CreateLineItemView(
-            base::UTF8ToUTF16(spec()->details().display_items[i]->label),
-            currency,
-            spec()->GetFormattedCurrencyAmount(
-                spec()->details().display_items[i]->amount),
+            base::UTF8ToUTF16((*display_items[i])->label), currency,
+            spec()->GetFormattedCurrencyAmount((*display_items[i])->amount),
             false, DialogViewID::VIEW_ID_NONE, view_id)
             .release());
   }
 
   base::string16 total_label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
-      base::UTF8ToUTF16(spec()->details().total->amount->currency),
-      spec()->GetFormattedCurrencyAmount(spec()->details().total->amount));
+      base::UTF8ToUTF16(
+          spec()->GetTotal(state()->selected_instrument())->amount->currency),
+      spec()->GetFormattedCurrencyAmount(
+          spec()->GetTotal(state()->selected_instrument())->amount));
 
   content_view->AddChildView(
       CreateLineItemView(
-          base::UTF8ToUTF16(spec()->details().total->label),
-          base::UTF8ToUTF16(spec()->details().total->amount->currency),
-          spec()->GetFormattedCurrencyAmount(spec()->details().total->amount),
+          base::UTF8ToUTF16(
+              spec()->GetTotal(state()->selected_instrument())->label),
+          base::UTF8ToUTF16(spec()
+                                ->GetTotal(state()->selected_instrument())
+                                ->amount->currency),
+          spec()->GetFormattedCurrencyAmount(
+              spec()->GetTotal(state()->selected_instrument())->amount),
           true, DialogViewID::ORDER_SUMMARY_TOTAL_CURRENCY_LABEL,
           DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());

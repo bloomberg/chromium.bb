@@ -20,6 +20,8 @@
 
 namespace payments {
 
+class PaymentInstrument;
+
 // Identifier for the basic card payment method in the PaymentMethodData.
 extern const char kBasicCardMethodName[];
 
@@ -112,19 +114,30 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     return selected_shipping_option_error_;
   }
 
-  const mojom::PaymentDetails& details() const { return *details_.get(); }
-
   void StartWaitingForUpdateWith(UpdateReason reason);
-
   bool IsMixedCurrency() const;
 
   UpdateReason current_update_reason() const { return current_update_reason_; }
 
+  // Returns the total object of this payment request, taking into account the
+  // applicable modifier for |selected_instrument| if any.
+  const mojom::PaymentItemPtr& GetTotal(
+      PaymentInstrument* selected_instrument) const;
+  // Returns the display items for this payment request, taking into account the
+  // applicable modifier for |selected_instrument| if any.
+  std::vector<const mojom::PaymentItemPtr*> GetDisplayItems(
+      PaymentInstrument* selected_instrument) const;
+
+  const std::vector<mojom::PaymentShippingOptionPtr>& GetShippingOptions()
+      const;
+
  private:
-  // Validates the |method_data| and fills |supported_card_networks_|,
-  // |supported_card_networks_set_| and |basic_card_specified_networks_|.
-  void PopulateValidatedMethodData(
-      const std::vector<mojom::PaymentMethodDataPtr>& method_data);
+  // Returns the first applicable modifier in the Payment Request for the
+  // |selected_instrument|.
+  const mojom::PaymentDetailsModifierPtr* GetApplicableModifier(
+      PaymentInstrument* selected_instrument) const;
+
+  const mojom::PaymentDetails& details() const { return *details_.get(); }
 
   // Updates the |selected_shipping_option| based on the data passed to this
   // payment request by the website. This will set selected_shipping_option_ to

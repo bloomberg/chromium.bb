@@ -48,6 +48,10 @@ class AutofillPaymentInstrument
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
+  bool IsValidForModifier(
+      const std::vector<std::string>& method,
+      const std::set<autofill::CreditCard::CardType>& supported_types,
+      const std::vector<std::string>& supported_networks) const override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(const autofill::CreditCard& card,
