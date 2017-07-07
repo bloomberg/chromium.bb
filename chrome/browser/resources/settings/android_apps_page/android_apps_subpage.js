@@ -60,7 +60,7 @@ Polymer({
 
   /**
    * Shows a confirmation dialog when disabling android apps.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onRemoveTap_: function(event) {

@@ -55,7 +55,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onTap_: function(event) {

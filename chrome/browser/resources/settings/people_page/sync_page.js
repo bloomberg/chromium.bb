@@ -293,7 +293,7 @@ Polymer({
   /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
-   * @param {Event} e
+   * @param {!Event} e
    */
   onSaveNewPassphraseTap_: function(e) {
     assert(this.creatingNewPassphrase_);
@@ -320,7 +320,7 @@ Polymer({
   /**
    * Sends the user-entered existing password to re-enable sync.
    * @private
-   * @param {Event} e
+   * @param {!Event} e
    */
   onSubmitExistingPassphraseTap_: function(e) {
     if (e.type == 'keypress' && e.key != 'Enter')

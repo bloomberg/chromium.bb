@@ -76,7 +76,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   handleKeyEvent_: function(event) {

@@ -121,7 +121,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e The mouse down event.
+   * @param {!Event} e The mouse down event.
    * @return {boolean}
    * @private
    */
@@ -134,7 +134,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e The mouse move event.
+   * @param {!Event} e The mouse move event.
    * @return {boolean}
    * @private
    */
@@ -144,7 +144,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e The touch start event.
+   * @param {!Event} e The touch start event.
    * @return {boolean}
    * @private
    */
@@ -160,7 +160,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e The touch move event.
+   * @param {!Event} e The touch move event.
    * @return {boolean}
    * @private
    */
@@ -197,7 +197,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e
+   * @param {!Event} e
    * @return {boolean}
    * @private
    */
@@ -211,7 +211,7 @@ var DragBehavior = {
   },
 
   /**
-   * @param {Event} e The event which triggers this drag.
+   * @param {!Event} e The event which triggers this drag.
    * @param {DragPosition} eventLocation The location of the event.
    * @return {boolean}
    * @private

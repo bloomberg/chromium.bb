@@ -177,7 +177,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!Event} e
    * @private
    */
   stopTap_: function(e) {
@@ -185,7 +185,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!Event} e
    * @private
    */
   onSubpageArrowTap_: function(e) {

@@ -206,7 +206,7 @@ Polymer({
 
   /**
    * Event triggered when the Other APN 'Save' button is tapped.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onSaveOtherTap_: function(event) {

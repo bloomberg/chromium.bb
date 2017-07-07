@@ -305,7 +305,7 @@ Polymer({
 
   /**
    * Event triggered when the 'Add connections' div is tapped.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onExpandAddConnectionsTap_: function(event) {

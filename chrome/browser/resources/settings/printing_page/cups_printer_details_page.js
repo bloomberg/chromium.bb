@@ -40,7 +40,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   toggleAdvancedExpanded_: function(event) {

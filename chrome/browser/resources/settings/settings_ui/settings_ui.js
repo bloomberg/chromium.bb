@@ -234,7 +234,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onIronActivate_: function(event) {

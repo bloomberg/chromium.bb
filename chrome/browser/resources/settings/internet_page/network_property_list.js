@@ -58,7 +58,7 @@ Polymer({
    * Event triggered when an input field changes. Fires a 'property-change'
    * event with the field (property) name set to the target id, and the value
    * set to the target input value.
-   * @param {Event} event The input change event.
+   * @param {!Event} event The input change event.
    * @private
    */
   onValueChange_: function(event) {

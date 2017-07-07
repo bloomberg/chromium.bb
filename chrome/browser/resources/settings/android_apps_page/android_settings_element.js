@@ -19,7 +19,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onManageAndroidAppsKeydown_: function(event) {
