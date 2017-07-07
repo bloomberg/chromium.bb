@@ -57,8 +57,8 @@ ResourcePrefetcher::ResourcePrefetcher(
     const GURL& main_frame_url,
     const std::vector<GURL>& urls)
     : state_(INITIALIZED),
-      delegate_(delegate),
-      context_getter_(context_getter),
+      delegate_(std::move(delegate)),
+      context_getter_(std::move(context_getter)),
       max_concurrent_requests_(max_concurrent_requests),
       max_concurrent_requests_per_host_(max_concurrent_requests_per_host),
       main_frame_url_(main_frame_url),
