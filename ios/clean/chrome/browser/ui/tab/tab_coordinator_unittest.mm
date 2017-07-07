@@ -11,6 +11,7 @@
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator_test.h"
+#import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
 #import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,24 +21,6 @@
 #endif
 
 namespace {
-
-class StubNavigationManager : public web::TestNavigationManager {
- public:
-  int GetItemCount() const override { return item_count_; }
-  bool CanGoForward() const override { return false; }
-  bool CanGoBack() const override { return false; }
-
-  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {
-    has_loaded_url_ = true;
-  }
-
-  void SetItemCount(int count) { item_count_ = count; }
-  bool GetHasLoadedUrl() { return has_loaded_url_; }
-
- private:
-  int item_count_;
-  bool has_loaded_url_;
-};
 
 class TabCoordinatorTest : public BrowserCoordinatorTest {
  protected:
@@ -49,7 +32,7 @@ class TabCoordinatorTest : public BrowserCoordinatorTest {
         objectForKey:@"EnableBottomToolbar"];
 
     // Initialize the web state.
-    auto navigation_manager = base::MakeUnique<StubNavigationManager>();
+    auto navigation_manager = base::MakeUnique<TabNavigationManager>();
     navigation_manager->SetItemCount(0);
     web_state_.SetNavigationManager(std::move(navigation_manager));
 
