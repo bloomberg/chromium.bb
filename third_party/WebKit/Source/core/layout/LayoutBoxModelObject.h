@@ -31,7 +31,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/text/WritingModeUtils.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -244,15 +243,14 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   }
   virtual LayoutUnit PaddingLeft() const { return ComputedCSSPaddingLeft(); }
   virtual LayoutUnit PaddingRight() const { return ComputedCSSPaddingRight(); }
-
-  LayoutUnit PaddingBefore() const {
-    return PhysicalPaddingToLogical().Before();
+  virtual LayoutUnit PaddingBefore() const {
+    return ComputedCSSPaddingBefore();
   }
-  LayoutUnit PaddingAfter() const { return PhysicalPaddingToLogical().After(); }
-  LayoutUnit PaddingStart() const { return PhysicalPaddingToLogical().Start(); }
-  LayoutUnit PaddingEnd() const { return PhysicalPaddingToLogical().End(); }
-  LayoutUnit PaddingOver() const { return PhysicalPaddingToLogical().Over(); }
-  LayoutUnit PaddingUnder() const { return PhysicalPaddingToLogical().Under(); }
+  virtual LayoutUnit PaddingAfter() const { return ComputedCSSPaddingAfter(); }
+  virtual LayoutUnit PaddingStart() const { return ComputedCSSPaddingStart(); }
+  virtual LayoutUnit PaddingEnd() const { return ComputedCSSPaddingEnd(); }
+  LayoutUnit PaddingOver() const { return ComputedCSSPaddingOver(); }
+  LayoutUnit PaddingUnder() const { return ComputedCSSPaddingUnder(); }
 
   virtual LayoutUnit BorderTop() const {
     return LayoutUnit(Style()->BorderTopWidth());
@@ -266,18 +264,29 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual LayoutUnit BorderRight() const {
     return LayoutUnit(Style()->BorderRightWidth());
   }
-
-  LayoutUnit BorderBefore() const { return PhysicalBorderToLogical().Before(); }
-  LayoutUnit BorderAfter() const { return PhysicalBorderToLogical().After(); }
-  LayoutUnit BorderStart() const { return PhysicalBorderToLogical().Start(); }
-  LayoutUnit BorderEnd() const { return PhysicalBorderToLogical().End(); }
-  LayoutUnit BorderOver() const { return PhysicalBorderToLogical().Over(); }
-  LayoutUnit BorderUnder() const { return PhysicalBorderToLogical().Under(); }
+  virtual LayoutUnit BorderBefore() const {
+    return LayoutUnit(Style()->BorderBeforeWidth());
+  }
+  virtual LayoutUnit BorderAfter() const {
+    return LayoutUnit(Style()->BorderAfterWidth());
+  }
+  virtual LayoutUnit BorderStart() const {
+    return LayoutUnit(Style()->BorderStartWidth());
+  }
+  virtual LayoutUnit BorderEnd() const {
+    return LayoutUnit(Style()->BorderEndWidth());
+  }
+  LayoutUnit BorderOver() const {
+    return LayoutUnit(Style()->BorderOverWidth());
+  }
+  LayoutUnit BorderUnder() const {
+    return LayoutUnit(Style()->BorderUnderWidth());
+  }
 
   LayoutUnit BorderWidth() const { return BorderLeft() + BorderRight(); }
   LayoutUnit BorderHeight() const { return BorderTop() + BorderBottom(); }
 
-  LayoutRectOutsets BorderBoxOutsets() const {
+  virtual LayoutRectOutsets BorderBoxOutsets() const {
     return LayoutRectOutsets(BorderTop(), BorderRight(), BorderBottom(),
                              BorderLeft());
   }
@@ -363,36 +372,21 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
            BorderBefore() + BorderAfter();
   }
 
+  virtual LayoutRectOutsets MarginBoxOutsets() const = 0;
   virtual LayoutUnit MarginTop() const = 0;
   virtual LayoutUnit MarginBottom() const = 0;
   virtual LayoutUnit MarginLeft() const = 0;
   virtual LayoutUnit MarginRight() const = 0;
-
-  LayoutUnit MarginBefore(const ComputedStyle* other_style = nullptr) const {
-    return PhysicalMarginToLogical(other_style).Before();
-  }
-  LayoutUnit MarginAfter(const ComputedStyle* other_style = nullptr) const {
-    return PhysicalMarginToLogical(other_style).After();
-  }
-  LayoutUnit MarginStart(const ComputedStyle* other_style = nullptr) const {
-    return PhysicalMarginToLogical(other_style).Start();
-  }
-  LayoutUnit MarginEnd(const ComputedStyle* other_style = nullptr) const {
-    return PhysicalMarginToLogical(other_style).End();
-  }
-  LayoutUnit MarginLineLeft() const {
-    return PhysicalMarginToLogical(nullptr).LineLeft();
-  }
-  LayoutUnit MarginLineRight() const {
-    return PhysicalMarginToLogical(nullptr).LineRight();
-  }
-  LayoutUnit MarginOver() const {
-    return PhysicalMarginToLogical(nullptr).Over();
-  }
-  LayoutUnit MarginUnder() const {
-    return PhysicalMarginToLogical(nullptr).Under();
-  }
-
+  virtual LayoutUnit MarginBefore(
+      const ComputedStyle* other_style = nullptr) const = 0;
+  virtual LayoutUnit MarginAfter(
+      const ComputedStyle* other_style = nullptr) const = 0;
+  virtual LayoutUnit MarginStart(
+      const ComputedStyle* other_style = nullptr) const = 0;
+  virtual LayoutUnit MarginEnd(
+      const ComputedStyle* other_style = nullptr) const = 0;
+  virtual LayoutUnit MarginOver() const = 0;
+  virtual LayoutUnit MarginUnder() const = 0;
   DISABLE_CFI_PERF LayoutUnit MarginHeight() const {
     return MarginTop() + MarginBottom();
   }
@@ -558,32 +552,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutUnit ComputedCSSPadding(const Length&) const;
   bool IsBoxModelObject() const final { return true; }
-
-  PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>
-  PhysicalPaddingToLogical() const {
-    return PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>(
-        StyleRef().GetWritingMode(), StyleRef().Direction(), *this,
-        &LayoutBoxModelObject::PaddingTop, &LayoutBoxModelObject::PaddingRight,
-        &LayoutBoxModelObject::PaddingBottom,
-        &LayoutBoxModelObject::PaddingLeft);
-  }
-
-  PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>
-  PhysicalMarginToLogical(const ComputedStyle* other_style) const {
-    const auto& style = other_style ? *other_style : StyleRef();
-    return PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>(
-        style.GetWritingMode(), style.Direction(), *this,
-        &LayoutBoxModelObject::MarginTop, &LayoutBoxModelObject::MarginRight,
-        &LayoutBoxModelObject::MarginBottom, &LayoutBoxModelObject::MarginLeft);
-  }
-
-  PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>
-  PhysicalBorderToLogical() const {
-    return PhysicalToLogicalGetter<LayoutUnit, LayoutBoxModelObject>(
-        StyleRef().GetWritingMode(), StyleRef().Direction(), *this,
-        &LayoutBoxModelObject::BorderTop, &LayoutBoxModelObject::BorderRight,
-        &LayoutBoxModelObject::BorderBottom, &LayoutBoxModelObject::BorderLeft);
-  }
 
   LayoutBoxModelObjectRareData& EnsureRareData() {
     if (!rare_data_)

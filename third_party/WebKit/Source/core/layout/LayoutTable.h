@@ -148,10 +148,40 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return Style()->BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
-  LayoutUnit BorderLeft() const override;
-  LayoutUnit BorderRight() const override;
-  LayoutUnit BorderTop() const override;
-  LayoutUnit BorderBottom() const override;
+  LayoutUnit BorderStart() const override;
+  LayoutUnit BorderEnd() const override;
+  LayoutUnit BorderBefore() const override;
+  LayoutUnit BorderAfter() const override;
+
+  LayoutUnit BorderLeft() const override {
+    if (Style()->IsHorizontalWritingMode())
+      return Style()->IsLeftToRightDirection() ? BorderStart() : BorderEnd();
+    return Style()->IsFlippedBlocksWritingMode() ? BorderAfter()
+                                                 : BorderBefore();
+  }
+
+  LayoutUnit BorderRight() const override {
+    if (Style()->IsHorizontalWritingMode())
+      return Style()->IsLeftToRightDirection() ? BorderEnd() : BorderStart();
+    return Style()->IsFlippedBlocksWritingMode() ? BorderBefore()
+                                                 : BorderAfter();
+  }
+
+  LayoutUnit BorderTop() const override {
+    if (Style()->IsHorizontalWritingMode()) {
+      return Style()->IsFlippedBlocksWritingMode() ? BorderAfter()
+                                                   : BorderBefore();
+    }
+    return Style()->IsLeftToRightDirection() ? BorderStart() : BorderEnd();
+  }
+
+  LayoutUnit BorderBottom() const override {
+    if (Style()->IsHorizontalWritingMode()) {
+      return Style()->IsFlippedBlocksWritingMode() ? BorderBefore()
+                                                   : BorderAfter();
+    }
+    return Style()->IsLeftToRightDirection() ? BorderEnd() : BorderStart();
+  }
 
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) override;
@@ -266,6 +296,15 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutUnit PaddingBottom() const override;
   LayoutUnit PaddingLeft() const override;
   LayoutUnit PaddingRight() const override;
+
+  // Override paddingStart/End to return pixel values to match behavor of
+  // LayoutTableCell.
+  LayoutUnit PaddingEnd() const override {
+    return LayoutUnit(LayoutBlock::PaddingEnd().ToInt());
+  }
+  LayoutUnit PaddingStart() const override {
+    return LayoutUnit(LayoutBlock::PaddingStart().ToInt());
+  }
 
   LayoutUnit BordersPaddingAndSpacingInRowDirection() const {
     // 'border-spacing' only applies to separate borders (see 17.6.1 The
@@ -549,13 +588,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
         return c;
     }
     return NumEffectiveColumns();
-  }
-
-  LogicalToPhysical<unsigned> LogicalCollapsedOuterBorderToPhysical() const {
-    return LogicalToPhysical<unsigned>(
-        StyleRef().GetWritingMode(), StyleRef().Direction(),
-        collapsed_outer_border_start_, collapsed_outer_border_end_,
-        collapsed_outer_border_before_, collapsed_outer_border_after_);
   }
 
   short h_spacing_;

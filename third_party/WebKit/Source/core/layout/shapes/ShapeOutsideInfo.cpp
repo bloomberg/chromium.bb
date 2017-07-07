@@ -116,10 +116,11 @@ static bool CheckShapeImageOrigin(Document& document,
 static LayoutRect GetShapeImageMarginRect(
     const LayoutBox& layout_box,
     const LayoutSize& reference_box_logical_size) {
-  LayoutPoint margin_box_origin(
-      -layout_box.MarginLineLeft() - layout_box.BorderAndPaddingLogicalLeft(),
-      -layout_box.MarginBefore() - layout_box.BorderBefore() -
-          layout_box.PaddingBefore());
+  LayoutPoint margin_box_origin(-layout_box.MarginLogicalLeft() -
+                                    layout_box.BorderAndPaddingLogicalLeft(),
+                                -layout_box.MarginBefore() -
+                                    layout_box.BorderBefore() -
+                                    layout_box.PaddingBefore());
   LayoutSize margin_box_size_delta(
       layout_box.MarginLogicalWidth() +
           layout_box.BorderAndPaddingLogicalWidth(),

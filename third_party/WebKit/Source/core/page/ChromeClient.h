@@ -39,7 +39,6 @@
 #include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"

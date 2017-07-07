@@ -1135,36 +1135,36 @@ void LayoutTable::RecalcSections() const {
   needs_section_recalc_ = false;
 }
 
-LayoutUnit LayoutTable::BorderLeft() const {
+LayoutUnit LayoutTable::BorderBefore() const {
   if (ShouldCollapseBorders()) {
     UpdateCollapsedOuterBorders();
-    return LayoutUnit(LogicalCollapsedOuterBorderToPhysical().Left());
+    return LayoutUnit(collapsed_outer_border_before_);
   }
-  return LayoutUnit(LayoutBlock::BorderLeft().ToInt());
+  return LayoutUnit(LayoutBlock::BorderBefore().ToInt());
 }
 
-LayoutUnit LayoutTable::BorderRight() const {
+LayoutUnit LayoutTable::BorderAfter() const {
   if (ShouldCollapseBorders()) {
     UpdateCollapsedOuterBorders();
-    return LayoutUnit(LogicalCollapsedOuterBorderToPhysical().Right());
+    return LayoutUnit(collapsed_outer_border_after_);
   }
-  return LayoutUnit(LayoutBlock::BorderRight().ToInt());
+  return LayoutUnit(LayoutBlock::BorderAfter().ToInt());
 }
 
-LayoutUnit LayoutTable::BorderTop() const {
+LayoutUnit LayoutTable::BorderStart() const {
   if (ShouldCollapseBorders()) {
     UpdateCollapsedOuterBorders();
-    return LayoutUnit(LogicalCollapsedOuterBorderToPhysical().Top());
+    return LayoutUnit(collapsed_outer_border_start_);
   }
-  return LayoutUnit(LayoutBlock::BorderTop().ToInt());
+  return LayoutUnit(LayoutBlock::BorderStart().ToInt());
 }
 
-LayoutUnit LayoutTable::BorderBottom() const {
+LayoutUnit LayoutTable::BorderEnd() const {
   if (ShouldCollapseBorders()) {
     UpdateCollapsedOuterBorders();
-    return LayoutUnit(LogicalCollapsedOuterBorderToPhysical().Bottom());
+    return LayoutUnit(collapsed_outer_border_end_);
   }
-  return LayoutUnit(LayoutBlock::BorderBottom().ToInt());
+  return LayoutUnit(LayoutBlock::BorderEnd().ToInt());
 }
 
 LayoutTableSection* LayoutTable::SectionAbove(
@@ -1502,36 +1502,28 @@ LayoutUnit LayoutTable::PaddingTop() const {
   if (ShouldCollapseBorders())
     return LayoutUnit();
 
-  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
-  // sub-pixel aware.
-  return LayoutUnit(LayoutBlock::PaddingTop().ToInt());
+  return LayoutBlock::PaddingTop();
 }
 
 LayoutUnit LayoutTable::PaddingBottom() const {
   if (ShouldCollapseBorders())
     return LayoutUnit();
 
-  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
-  // sub-pixel aware.
-  return LayoutUnit(LayoutBlock::PaddingBottom().ToInt());
+  return LayoutBlock::PaddingBottom();
 }
 
 LayoutUnit LayoutTable::PaddingLeft() const {
   if (ShouldCollapseBorders())
     return LayoutUnit();
 
-  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
-  // sub-pixel aware.
-  return LayoutUnit(LayoutBlock::PaddingLeft().ToInt());
+  return LayoutBlock::PaddingLeft();
 }
 
 LayoutUnit LayoutTable::PaddingRight() const {
   if (ShouldCollapseBorders())
     return LayoutUnit();
 
-  // TODO(crbug.com/377847): The ToInt call should be removed when Table is
-  // sub-pixel aware.
-  return LayoutUnit(LayoutBlock::PaddingRight().ToInt());
+  return LayoutBlock::PaddingRight();
 }
 
 unsigned LayoutTable::ComputeCollapsedOuterBorderBefore() const {
