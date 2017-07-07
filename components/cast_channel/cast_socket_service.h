@@ -37,7 +37,7 @@ class CastSocketService : public RefcountedKeyedService {
 
   // Returns the socket corresponding to |channel_id| if one exists, or nullptr
   // otherwise.
-  CastSocket* GetSocket(int channel_id) const;
+  virtual CastSocket* GetSocket(int channel_id) const;
 
   CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const;
 
@@ -72,10 +72,10 @@ class CastSocketService : public RefcountedKeyedService {
   // |open_cb|: OnOpenCallback invoked when cast socket is opened.
   // |observer|: Observer handles messages and errors on newly opened socket.
   // Does not take ownership of |observer|.
-  int OpenSocket(const net::IPEndPoint& ip_endpoint,
-                 net::NetLog* net_log,
-                 const CastSocket::OnOpenCallback& open_cb,
-                 CastSocket::Observer* observer);
+  virtual int OpenSocket(const net::IPEndPoint& ip_endpoint,
+                         net::NetLog* net_log,
+                         const CastSocket::OnOpenCallback& open_cb,
+                         CastSocket::Observer* observer);
 
   // Returns an observer corresponding to |id|.
   CastSocket::Observer* GetObserver(const std::string& id);
@@ -89,9 +89,10 @@ class CastSocketService : public RefcountedKeyedService {
   // Allow test to inject a mock cast socket.
   void SetSocketForTest(std::unique_ptr<CastSocket> socket_for_test);
 
- private:
+ protected:
   ~CastSocketService() override;
 
+ private:
   // RefcountedKeyedService implementation.
   void ShutdownOnUIThread() override;
 

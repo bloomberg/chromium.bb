@@ -7,7 +7,7 @@
 namespace media_router {
 
 MockDnsSdRegistry::MockDnsSdRegistry(DnsSdRegistry::DnsSdObserver* observer)
-    : observer_(observer) {}
+    : DnsSdRegistry(nullptr), observer_(observer) {}
 
 MockDnsSdRegistry::~MockDnsSdRegistry() {}
 
