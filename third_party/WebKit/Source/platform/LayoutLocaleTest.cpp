@@ -4,12 +4,13 @@
 
 #include "platform/LayoutLocale.h"
 
+#include "platform/fonts/FontGlobalContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 TEST(LayoutLocaleTest, Get) {
-  LayoutLocale::ClearForTesting();
+  FontGlobalContext::ClearForTesting();
 
   EXPECT_EQ(nullptr, LayoutLocale::Get(g_null_atom));
 
@@ -20,7 +21,7 @@ TEST(LayoutLocaleTest, Get) {
   EXPECT_STRCASEEQ("ja-jp",
                    LayoutLocale::Get("ja-jp")->LocaleString().Ascii().data());
 
-  LayoutLocale::ClearForTesting();
+  FontGlobalContext::ClearForTesting();
 }
 
 TEST(LayoutLocaleTest, GetCaseInsensitive) {

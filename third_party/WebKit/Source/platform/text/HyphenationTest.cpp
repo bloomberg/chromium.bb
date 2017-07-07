@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "platform/LayoutLocale.h"
+#include "platform/fonts/FontGlobalContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -31,7 +32,7 @@ TEST(HyphenationTest, Get) {
   LayoutLocale::SetHyphenationForTesting("en-UK", nullptr);
   EXPECT_EQ(nullptr, LayoutLocale::Get("en-UK")->GetHyphenation());
 
-  LayoutLocale::ClearForTesting();
+  FontGlobalContext::ClearForTesting();
 }
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)

@@ -6,6 +6,7 @@
 
 #include "platform/Language.h"
 #include "platform/fonts/AcceptLanguagesResolver.h"
+#include "platform/fonts/FontGlobalContext.h"
 #include "platform/text/ICUError.h"
 #include "platform/text/LocaleToScriptMapping.h"
 #include "platform/wtf/HashMap.h"
@@ -16,11 +17,6 @@
 #include <unicode/locid.h>
 
 namespace blink {
-
-const LayoutLocale* LayoutLocale::default_ = nullptr;
-const LayoutLocale* LayoutLocale::system_ = nullptr;
-const LayoutLocale* LayoutLocale::default_for_han_ = nullptr;
-bool LayoutLocale::default_for_han_computed_ = false;
 
 static hb_language_t ToHarfbuzLanguage(const AtomicString& locale) {
   CString locale_as_latin1 = locale.Latin1();
@@ -85,21 +81,21 @@ const LayoutLocale* LayoutLocale::LocaleForHan(
     const LayoutLocale* content_locale) {
   if (content_locale && content_locale->HasScriptForHan())
     return content_locale;
-  if (!default_for_han_computed_)
-    ComputeLocaleForHan();
-  return default_for_han_;
-}
 
-void LayoutLocale::ComputeLocaleForHan() {
+  if (FontGlobalContext::HasDefaultLocaleForHan())
+    return FontGlobalContext::GetDefaultLocaleForHan();
+
+  const LayoutLocale* default_for_han;
   if (const LayoutLocale* locale = AcceptLanguagesResolver::LocaleForHan())
-    default_for_han_ = locale;
+    default_for_han = locale;
   else if (GetDefault().HasScriptForHan())
-    default_for_han_ = &GetDefault();
+    default_for_han = &GetDefault();
   else if (GetSystem().HasScriptForHan())
-    default_for_han_ = &GetSystem();
+    default_for_han = &GetSystem();
   else
-    default_for_han_ = nullptr;
-  default_for_han_computed_ = true;
+    default_for_han = nullptr;
+  FontGlobalContext::SetDefaultLocaleForHan(default_for_han);
+  return default_for_han;
 }
 
 const char* LayoutLocale::LocaleForHanForSkFontMgr() const {
@@ -116,55 +112,43 @@ LayoutLocale::LayoutLocale(const AtomicString& locale)
       has_script_for_han_(false),
       hyphenation_computed_(false) {}
 
-using LayoutLocaleMap =
-    HashMap<AtomicString, RefPtr<LayoutLocale>, CaseFoldingHash>;
-
-static LayoutLocaleMap& GetLocaleMap() {
-  DEFINE_STATIC_LOCAL(LayoutLocaleMap, locale_map, ());
-  return locale_map;
-}
-
 const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {
   if (locale.IsNull())
     return nullptr;
 
-  auto result = GetLocaleMap().insert(locale, nullptr);
+  auto result = FontGlobalContext::GetLayoutLocaleMap().insert(locale, nullptr);
   if (result.is_new_entry)
     result.stored_value->value = AdoptRef(new LayoutLocale(locale));
   return result.stored_value->value.Get();
 }
 
 const LayoutLocale& LayoutLocale::GetDefault() {
-  if (default_)
-    return *default_;
+  if (const LayoutLocale* locale = FontGlobalContext::GetDefaultLayoutLocale())
+    return *locale;
 
-  AtomicString locale = DefaultLanguage();
-  default_ = Get(!locale.IsEmpty() ? locale : "en");
-  return *default_;
+  AtomicString language = DefaultLanguage();
+  const LayoutLocale* locale =
+      LayoutLocale::Get(!language.IsEmpty() ? language : "en");
+  FontGlobalContext::SetDefaultLayoutLocale(locale);
+  return *locale;
 }
 
 const LayoutLocale& LayoutLocale::GetSystem() {
-  if (system_)
-    return *system_;
+  if (const LayoutLocale* locale = FontGlobalContext::GetSystemLayoutLocale())
+    return *locale;
 
   // Platforms such as Windows can give more information than the default
   // locale, such as "en-JP" for English speakers in Japan.
   String name = icu::Locale::getDefault().getName();
-  system_ = Get(AtomicString(name.Replace('_', '-')));
-  return *system_;
+  const LayoutLocale* locale =
+      LayoutLocale::Get(AtomicString(name.Replace('_', '-')));
+  FontGlobalContext::SetSystemLayoutLocale(locale);
+  return *locale;
 }
 
 PassRefPtr<LayoutLocale> LayoutLocale::CreateForTesting(
     const AtomicString& locale) {
   return AdoptRef(new LayoutLocale(locale));
-}
-
-void LayoutLocale::ClearForTesting() {
-  default_ = nullptr;
-  system_ = nullptr;
-  default_for_han_ = nullptr;
-  default_for_han_computed_ = false;
-  GetLocaleMap().clear();
 }
 
 Hyphenation* LayoutLocale::GetHyphenation() const {

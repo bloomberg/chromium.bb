@@ -405,8 +405,10 @@ void FontCache::Invalidate() {
   font_platform_data_cache_.clear();
   generation_++;
 
-  for (const auto& client : *font_cache_clients_)
-    client->FontCacheInvalidated();
+  if (font_cache_clients_) {
+    for (const auto& client : *font_cache_clients_)
+      client->FontCacheInvalidated();
+  }
 
   Purge(kForcePurge);
 }
