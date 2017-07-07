@@ -11,10 +11,6 @@
       :host {
         display: block;
       }
-
-      .selectable {
-        -webkit-user-select: text;
-      }
     </style>
     <div class="list-frame" hidden$="[[sites.length]]">
       <div class="list-item secondary">$i18n{noSitesAdded}</div>
@@ -27,7 +23,7 @@
             <div class="favicon-image"
                 style$="[[computeSiteIcon(item.origin)]]">
             </div>
-            <div class="middle no-min-width selectable text-elide"
+            <div class="middle no-min-width text-elide"
                 id="displayName">
               [[item.displayName]]
             </div>
