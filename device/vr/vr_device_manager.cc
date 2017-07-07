@@ -26,11 +26,7 @@ namespace {
 VRDeviceManager* g_vr_device_manager = nullptr;
 }
 
-VRDeviceManager::VRDeviceManager()
-    : vr_initialized_(false),
-      keep_alive_(false),
-      has_scheduled_poll_(false),
-      has_activate_listeners_(false) {
+VRDeviceManager::VRDeviceManager() : keep_alive_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   RegisterProvider(base::MakeUnique<GvrDeviceProvider>());
@@ -42,15 +38,15 @@ VRDeviceManager::VRDeviceManager()
 }
 
 VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
-    : vr_initialized_(false), keep_alive_(true), has_scheduled_poll_(false) {
+    : keep_alive_(true) {
   thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
-  SetInstance(this);
+  CHECK(!g_vr_device_manager);
+  g_vr_device_manager = this;
 }
 
 VRDeviceManager::~VRDeviceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  StopSchedulingPollEvents();
   g_vr_device_manager = nullptr;
 }
 
@@ -58,19 +54,6 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
   if (!g_vr_device_manager)
     g_vr_device_manager = new VRDeviceManager();
   return g_vr_device_manager;
-}
-
-void VRDeviceManager::SetInstance(VRDeviceManager* instance) {
-  // Unit tests can create multiple instances but only one should exist at any
-  // given time so g_vr_device_manager should only go from nullptr to
-  // non-nullptr and vice versa.
-  CHECK_NE(!!instance, !!g_vr_device_manager);
-  g_vr_device_manager = instance;
-}
-
-bool VRDeviceManager::HasInstance() {
-  // For testing. Checks to see if a VRDeviceManager instance is active.
-  return !!g_vr_device_manager;
 }
 
 void VRDeviceManager::AddService(VRServiceImpl* service) {
@@ -183,26 +166,6 @@ void VRDeviceManager::InitializeProviders() {
 void VRDeviceManager::RegisterProvider(
     std::unique_ptr<VRDeviceProvider> provider) {
   providers_.push_back(std::move(provider));
-}
-
-void VRDeviceManager::SchedulePollEvents() {
-  if (has_scheduled_poll_)
-    return;
-
-  has_scheduled_poll_ = true;
-
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
-               &VRDeviceManager::PollEvents);
-}
-
-void VRDeviceManager::PollEvents() {
-  for (const auto& provider : providers_)
-    provider->PollEvents();
-}
-
-void VRDeviceManager::StopSchedulingPollEvents() {
-  if (has_scheduled_poll_)
-    timer_.Stop();
 }
 
 }  // namespace device

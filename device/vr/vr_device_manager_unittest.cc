@@ -34,8 +34,6 @@ class VRDeviceManagerTest : public testing::Test {
 
   std::unique_ptr<VRServiceImpl> BindService();
 
-  bool HasServiceInstance() { return VRDeviceManager::HasInstance(); }
-
   VRDevice* GetDevice(unsigned int index) {
     return device_manager_->GetDevice(index);
   }
