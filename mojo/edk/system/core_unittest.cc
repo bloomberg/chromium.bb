@@ -438,11 +438,16 @@ TEST_F(CoreTest, DataPipe) {
             core()->BeginReadData(ch, &read_ptr, &num_bytes,
                                   MOJO_READ_DATA_FLAG_PEEK));
 
-  // Read the remaining two characters, in two-phase mode (all-or-none).
-  num_bytes = 3;
-  ASSERT_EQ(MOJO_RESULT_OK,
+  // Try a two-phase read of the remaining two bytes with all-or-none. Should
+  // fail.
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             core()->BeginReadData(ch, &read_ptr, &num_bytes,
                                   MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+
+  // Read the remaining three characters, in two-phase mode.
+  num_bytes = 3;
+  ASSERT_EQ(MOJO_RESULT_OK, core()->BeginReadData(ch, &read_ptr, &num_bytes,
+                                                  MOJO_READ_DATA_FLAG_NONE));
   // Note: Count on still being able to do the contiguous read here.
   ASSERT_EQ(3u, num_bytes);
 

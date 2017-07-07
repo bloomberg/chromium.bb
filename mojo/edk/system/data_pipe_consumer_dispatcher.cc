@@ -201,7 +201,9 @@ MojoResult DataPipeConsumerDispatcher::BeginReadData(const void** buffer,
 
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
-      (flags & MOJO_READ_DATA_FLAG_QUERY) || (flags & MOJO_READ_DATA_FLAG_PEEK))
+      (flags & MOJO_READ_DATA_FLAG_QUERY) ||
+      (flags & MOJO_READ_DATA_FLAG_PEEK) ||
+      (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   const bool had_new_data = new_data_available_;

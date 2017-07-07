@@ -109,13 +109,9 @@ class DataPipeTest : public test::MojoTestBase {
     return MojoReadData(consumer_, nullptr, num_bytes, flags);
   }
 
-  MojoResult BeginReadData(const void** elements,
-                           uint32_t* num_bytes,
-                           bool all_or_none = false) {
-    MojoReadDataFlags flags = MOJO_READ_DATA_FLAG_NONE;
-    if (all_or_none)
-      flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
-    return MojoBeginReadData(consumer_, elements, num_bytes, flags);
+  MojoResult BeginReadData(const void** elements, uint32_t* num_bytes) {
+    return MojoBeginReadData(consumer_, elements, num_bytes,
+                             MOJO_READ_DATA_FLAG_NONE);
   }
 
   MojoResult EndReadData(uint32_t num_bytes_read) {
@@ -404,7 +400,7 @@ TEST_F(DataPipeTest, BasicProducerWaiting) {
   // Read one element, using a two-phase read.
   const void* read_buffer = nullptr;
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes));
   EXPECT_TRUE(read_buffer);
   // The two-phase read should be able to read at least one element.
   ASSERT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(elements[0])));
@@ -696,10 +692,9 @@ TEST_F(DataPipeTest, ConsumerWaitingTwoPhase) {
             hss.satisfiable_signals);
 
   // Read one element.
-  // Request two in all-or-none mode, but only read one.
+  // Two should be available, but only read one.
   const void* read_buffer = nullptr;
-  num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
-  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes, true));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes));
   EXPECT_TRUE(read_buffer);
   ASSERT_EQ(static_cast<uint32_t>(2u * sizeof(elements[0])), num_bytes);
   const int32_t* read_elements = static_cast<const int32_t*>(read_buffer);
@@ -1098,7 +1093,7 @@ TEST_F(DataPipeTest, WrapAround) {
   // checks an implementation detail; this behavior is not guaranteed.)
   const void* read_buffer_ptr = nullptr;
   num_bytes = 0;
-  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer_ptr, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer_ptr, &num_bytes));
   EXPECT_TRUE(read_buffer_ptr);
   ASSERT_EQ(90u, num_bytes);
   ASSERT_EQ(MOJO_RESULT_OK, EndReadData(0));
@@ -1554,7 +1549,7 @@ TEST_F(DataPipeTest, SendProducer) {
   // Check the data.
   const void* read_buffer = nullptr;
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes));
   ASSERT_EQ(0, memcmp(read_buffer, kTestData, kTestDataSize));
   EndReadData(num_bytes);
 
@@ -1590,7 +1585,7 @@ TEST_F(DataPipeTest, SendProducer) {
 
   // Check the second write.
   num_bytes = 0u;
-  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes, false));
+  ASSERT_EQ(MOJO_RESULT_OK, BeginReadData(&read_buffer, &num_bytes));
   ASSERT_EQ(0, memcmp(read_buffer, kExtraData, kExtraDataSize));
   EndReadData(num_bytes);
 
