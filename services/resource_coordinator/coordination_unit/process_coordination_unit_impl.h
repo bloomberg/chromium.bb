@@ -27,7 +27,8 @@ class ProcessCoordinationUnitImpl : public CoordinationUnitImpl {
 
  private:
   // CoordinationUnitImpl implementation.
-  void PropagateProperty(const mojom::PropertyPtr& property) override;
+  void PropagateProperty(mojom::PropertyType property_type,
+                         const base::Value& value) override;
 
   void MeasureProcessCPUUsage();
 
