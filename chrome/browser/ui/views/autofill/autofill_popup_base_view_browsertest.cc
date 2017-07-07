@@ -143,8 +143,10 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
 
   ShowView();
 
-  gfx::Point display_point =
-      static_cast<views::View*>(view_)->GetBoundsInScreen().origin();
+  gfx::Point display_point = static_cast<views::View*>(view_)
+                                 ->GetWidget()
+                                 ->GetClientAreaBoundsInScreen()
+                                 .origin();
   gfx::Point expected_point = bounds.origin();
   EXPECT_EQ(expected_point, display_point);
 }

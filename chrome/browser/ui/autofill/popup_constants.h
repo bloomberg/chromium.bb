@@ -5,10 +5,17 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_POPUP_CONSTANTS_H_
 #define CHROME_BROWSER_UI_AUTOFILL_POPUP_CONSTANTS_H_
 
+#include "build/build_config.h"
+
 namespace autofill {
 
+#if defined(TOOLKIT_VIEWS)
+// In views, the implementation takes care of the border itself.
+const int kPopupBorderThickness = 0;
+#else
 // TODO(crbug.com/676221): Change this to pixels
 const int kPopupBorderThickness = 1;
+#endif
 
 }  // namespace autofill
 

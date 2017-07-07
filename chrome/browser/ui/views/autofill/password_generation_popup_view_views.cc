@@ -169,8 +169,7 @@ void PasswordGenerationPopupViewViews::CreatePasswordView() {
   password_view_->Init(controller_->password(),
                        controller_->SuggestedText(),
                        font_list_);
-  password_view_->SetPosition(gfx::Point(kPopupBorderThickness,
-                                         kPopupBorderThickness));
+  password_view_->SetPosition(gfx::Point());
   password_view_->SizeToPreferredSize();
   AddChildView(password_view_);
 }
@@ -185,8 +184,7 @@ gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
     height +=
         PasswordGenerationPopupController::kPopupPasswordSectionHeight + 1;
   }
-  return gfx::Size(width + 2 * kPopupBorderThickness,
-                   height + 2 * kPopupBorderThickness);
+  return gfx::Size(width, height);
 }
 
 void PasswordGenerationPopupViewViews::Show() {
@@ -220,25 +218,22 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
 
 void PasswordGenerationPopupViewViews::Layout() {
   // Need to leave room for the border.
-  int y = kPopupBorderThickness;
-  int popup_width = bounds().width() - 2 * kPopupBorderThickness;
+  int y = 0;
+  int popup_width = bounds().width();
   if (controller_->display_password()) {
     // Currently the UI can change from not offering a password to offering
     // a password (e.g. the user is editing a generated password and deletes
     // it), but it can't change the other way around.
     CreatePasswordView();
     password_view_->SetBounds(
-        kPopupBorderThickness,
-        y,
-        popup_width,
+        0, 0, popup_width,
         PasswordGenerationPopupController::kPopupPasswordSectionHeight);
     divider_bounds_ =
-        gfx::Rect(kPopupBorderThickness, password_view_->bounds().bottom(),
-                  popup_width, 1);
+        gfx::Rect(0, password_view_->bounds().bottom(), popup_width, 1);
     y = divider_bounds_.bottom();
   }
 
-  help_label_->SetBounds(kPopupBorderThickness, y, popup_width,
+  help_label_->SetBounds(0, y, popup_width,
                          help_label_->GetHeightForWidth(popup_width));
 }
 
