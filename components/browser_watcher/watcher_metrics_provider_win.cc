@@ -23,6 +23,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/win/registry.h"
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/postmortem_report_collector.h"
@@ -162,6 +164,14 @@ void LogCollectionInitStatus(CollectionInitializationStatus status) {
                             INIT_STATUS_MAX);
 }
 
+// Returns a task runner appropriate for running background tasks that perform
+// file I/O.
+scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+}
+
 }  // namespace
 
 const char WatcherMetricsProviderWin::kBrowserExitCodeHistogramName[] =
@@ -171,18 +181,15 @@ WatcherMetricsProviderWin::WatcherMetricsProviderWin(
     const base::string16& registry_path,
     const base::FilePath& user_data_dir,
     const base::FilePath& crash_dir,
-    const GetExecutableDetailsCallback& exe_details_cb,
-    base::TaskRunner* io_task_runner)
+    const GetExecutableDetailsCallback& exe_details_cb)
     : recording_enabled_(false),
       cleanup_scheduled_(false),
       registry_path_(registry_path),
       user_data_dir_(user_data_dir),
       crash_dir_(crash_dir),
       exe_details_cb_(exe_details_cb),
-      io_task_runner_(io_task_runner),
-      weak_ptr_factory_(this) {
-  DCHECK(io_task_runner_);
-}
+      task_runner_(CreateBackgroundTaskRunner()),
+      weak_ptr_factory_(this) {}
 
 WatcherMetricsProviderWin::~WatcherMetricsProviderWin() {
 }
@@ -195,9 +202,10 @@ void WatcherMetricsProviderWin::OnRecordingDisabled() {
   if (!recording_enabled_ && !cleanup_scheduled_) {
     // When metrics reporting is disabled, the providers get an
     // OnRecordingDisabled notification at startup. Use that first notification
-    // to issue the cleanup task.
-    io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DeleteExitCodeRegistryKey, registry_path_));
+    // to issue the cleanup task. Runs in the background because interacting
+    // with the registry can block.
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&DeleteExitCodeRegistryKey, registry_path_));
 
     cleanup_scheduled_ = true;
   }
@@ -216,17 +224,16 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
 
 void WatcherMetricsProviderWin::CollectPostmortemReports(
     const base::Closure& done_callback) {
-  io_task_runner_->PostTaskAndReply(
+  task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(
-          &WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool,
-          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&WatcherMetricsProviderWin::CollectPostmortemReportsImpl,
+                     weak_ptr_factory_.GetWeakPtr()),
       done_callback);
 }
 
 // TODO(manzagop): consider mechanisms for partial collection if this is to be
 //     used on a critical path.
-void WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool() {
+void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
   SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Collect.TotalTime");
 
   bool is_stability_debugging_on =

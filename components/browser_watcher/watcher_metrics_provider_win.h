@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace browser_watcher {
@@ -26,14 +25,11 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
 
   static const char kBrowserExitCodeHistogramName[];
 
-  // Initializes the reporter. |io_task_runner| is used for collecting
-  // postmortem reports and clearing leftover data in registry if metrics
-  // reporting is disabled.
+  // Initializes the reporter.
   WatcherMetricsProviderWin(const base::string16& registry_path,
                             const base::FilePath& user_data_dir,
                             const base::FilePath& crash_dir,
-                            const GetExecutableDetailsCallback& exe_details_cb,
-                            base::TaskRunner* io_task_runner);
+                            const GetExecutableDetailsCallback& exe_details_cb);
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
@@ -59,7 +55,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  private:
   // TODO(manzagop): avoid collecting reports for clean exits from the fast exit
   // path.
-  void CollectPostmortemReportsOnBlockingPool();
+  void CollectPostmortemReportsImpl();
 
   bool recording_enabled_;
   bool cleanup_scheduled_;
@@ -67,7 +63,11 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   const base::FilePath user_data_dir_;
   const base::FilePath crash_dir_;
   GetExecutableDetailsCallback exe_details_cb_;
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+
+  // Used for collecting postmortem reports and clearing leftover data in
+  // registry if metrics reporting is disabled.
+  scoped_refptr<base::TaskRunner> task_runner_;
+
   base::WeakPtrFactory<WatcherMetricsProviderWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherMetricsProviderWin);
