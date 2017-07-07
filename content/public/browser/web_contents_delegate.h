@@ -18,6 +18,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
@@ -565,6 +566,10 @@ class CONTENT_EXPORT WebContentsDelegate {
                                                  bool allowed_per_prefs,
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
+
+  // Give WebContentsDelegates the opportunity to adjust the previews state.
+  virtual void AdjustPreviewsStateForNavigation(PreviewsState* previews_state) {
+  }
 
  protected:
   virtual ~WebContentsDelegate();

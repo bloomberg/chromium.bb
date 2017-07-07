@@ -180,9 +180,9 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "RequestComplete should not be called.";
   }
 
-  PreviewsState GetPreviewsState(
-      const net::URLRequest& url_request,
-      content::ResourceContext* resource_context) override {
+  PreviewsState GetPreviewsState(const net::URLRequest& url_request,
+                                 content::ResourceContext* resource_context,
+                                 PreviewsState previews_to_allow) override {
     ADD_FAILURE() << "GetPreviewsState should not be called.";
     return PREVIEWS_UNSPECIFIED;
   }

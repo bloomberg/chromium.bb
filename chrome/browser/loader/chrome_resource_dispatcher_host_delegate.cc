@@ -946,7 +946,8 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
 
 content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
     const net::URLRequest& url_request,
-    content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context,
+    content::PreviewsState previews_to_allow) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data =
       io_data->data_reduction_proxy_io_data();
@@ -979,6 +980,15 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
 
   if (previews_state == content::PREVIEWS_UNSPECIFIED)
     return content::PREVIEWS_OFF;
+
+  // If the allowed previews are limited, ensure we honor those limits.
+  if (previews_state != content::PREVIEWS_OFF &&
+      previews_state != content::PREVIEWS_NO_TRANSFORM) {
+    previews_state = previews_state & previews_to_allow;
+    // If no valid previews are left, set the state explictly to PREVIEWS_OFF.
+    if (previews_state == 0)
+      previews_state = content::PREVIEWS_OFF;
+  }
   return previews_state;
 }
 

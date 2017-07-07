@@ -76,6 +76,9 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
 
+  void AdjustPreviewsStateForNavigation(
+      content::PreviewsState* previews_state) override;
+
  private:
   friend class BackgroundLoaderContentsTest;
   friend class BackgroundLoaderContentsStub;

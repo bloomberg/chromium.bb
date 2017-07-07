@@ -88,7 +88,8 @@ void ResourceDispatcherHostDelegate::RequestComplete(
 
 PreviewsState ResourceDispatcherHostDelegate::GetPreviewsState(
     const net::URLRequest& url_request,
-    content::ResourceContext* resource_context) {
+    content::ResourceContext* resource_context,
+    PreviewsState previews_to_allow) {
   return PREVIEWS_UNSPECIFIED;
 }
 

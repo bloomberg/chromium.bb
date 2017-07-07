@@ -126,10 +126,13 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Asks the embedder for the PreviewsState which says which previews should
   // be enabled for the given request. The PreviewsState is a bitmask of
   // potentially several Previews optimizations. It is only called for requests
-  // with an unspecified Previews state.
+  // with an unspecified Previews state.  If previews_to_allow is set to
+  // anything other than PREVIEWS_UNSPECIFIED, it is taken as a limit on
+  // available preview states.
   virtual PreviewsState GetPreviewsState(
       const net::URLRequest& url_request,
-      content::ResourceContext* resource_context);
+      content::ResourceContext* resource_context,
+      PreviewsState previews_to_allow);
 
   // Asks the embedder for NavigationData related to this request. It is only
   // called for navigation requests.
