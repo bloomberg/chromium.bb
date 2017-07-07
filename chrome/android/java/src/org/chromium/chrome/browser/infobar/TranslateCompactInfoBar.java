@@ -182,6 +182,17 @@ public class TranslateCompactInfoBar extends InfoBar
                 (LinearLayout) LayoutInflater.from(getContext())
                         .inflate(R.layout.infobar_translate_compact_content, parent, false);
 
+        // When parent tab is being switched out (view detached), dismiss all menus and snackbars.
+        content.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {}
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+                dismissMenusAndSnackbars();
+            }
+        });
+
         mTabLayout = (TranslateTabLayout) content.findViewById(R.id.translate_infobar_tabs);
         mTabLayout.addTabs(mOptions.sourceLanguageName(), mOptions.targetLanguageName());
 
@@ -440,12 +451,17 @@ public class TranslateCompactInfoBar extends InfoBar
         if (mLanguageMenuHelper != null) mLanguageMenuHelper.dismiss();
     }
 
-    @Override
-    protected void onStartedHiding() {
+    // Dismiss all overflow menus and snackbars that belong to this infobar and remain open.
+    private void dismissMenusAndSnackbars() {
         dismissMenus();
         if (getSnackbarManager() != null && mSnackbarController != null) {
             getSnackbarManager().dismissSnackbars(mSnackbarController);
         }
+    }
+
+    @Override
+    protected void onStartedHiding() {
+        dismissMenusAndSnackbars();
     }
 
     /**
