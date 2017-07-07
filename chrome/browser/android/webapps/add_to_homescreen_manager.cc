@@ -180,6 +180,5 @@ void AddToHomescreenManager::CreateInfoBarForWebApk(
   banners::AppBannerInfoBarDelegateAndroid::Create(
       web_contents, app_banner_manager->GetWeakPtr(),
       base::MakeUnique<ShortcutInfo>(info), primary_icon, badge_icon,
-      -1 /* event_request_id */, true /* is_webapk */,
-      webapk::INSTALL_SOURCE_MENU);
+      true /* is_webapk */, webapk::INSTALL_SOURCE_MENU);
 }

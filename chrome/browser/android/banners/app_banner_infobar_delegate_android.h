@@ -42,7 +42,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                      std::unique_ptr<ShortcutInfo> info,
                      const SkBitmap& primary_icon,
                      const SkBitmap& badge_icon,
-                     int event_request_id,
                      bool is_webapk,
                      webapk::InstallSource webapk_install_source);
 
@@ -54,8 +53,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,
       const std::string& native_app_package,
-      const std::string& referrer,
-      int event_request_id);
+      const std::string& referrer);
 
   ~AppBannerInfoBarDelegateAndroid() override;
 
@@ -96,7 +94,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       std::unique_ptr<ShortcutInfo> info,
       const SkBitmap& primary_icon,
       const SkBitmap& badge_icon,
-      int event_request_id,
       bool is_webapk,
       webapk::InstallSource webapk_install_source);
 
@@ -106,8 +103,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const SkBitmap& icon,
       const std::string& native_app_package,
-      const std::string& referrer,
-      int event_request_id);
+      const std::string& referrer);
 
   void CreateJavaDelegate();
   bool AcceptNativeApp(content::WebContents* web_contents);
@@ -158,7 +154,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   std::string native_app_package_;
   std::string referrer_;
-  int event_request_id_;
   bool has_user_interaction_;
 
   bool is_webapk_;

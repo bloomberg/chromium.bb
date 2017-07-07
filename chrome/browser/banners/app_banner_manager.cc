@@ -30,7 +30,6 @@
 
 namespace {
 
-int gCurrentRequestID = -1;
 int gTimeDeltaInDaysForTesting = 0;
 
 InstallableParams ParamsToGetManifest() {
@@ -65,7 +64,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   // if it's been triggered from devtools.
   if (is_active_or_pending()) {
     DCHECK(is_debug_mode);
-    weak_factory_.InvalidateWeakPtrs();
+    ResetBindings();
   }
 
   UpdateState(State::ACTIVE);
@@ -115,20 +114,14 @@ void AppBannerManager::OnInstall() {
   installation_service->OnInstall();
 }
 
-void AppBannerManager::SendBannerAccepted(int request_id) {
-  if (request_id != gCurrentRequestID)
-    return;
-
-  DCHECK(event_.is_bound());
-  event_->BannerAccepted(GetBannerType());
+void AppBannerManager::SendBannerAccepted() {
+  if (event_.is_bound())
+    event_->BannerAccepted(GetBannerType());
 }
 
-void AppBannerManager::SendBannerDismissed(int request_id) {
-  if (request_id != gCurrentRequestID)
-    return;
-
-  DCHECK(event_.is_bound());
-  event_->BannerDismissed();
+void AppBannerManager::SendBannerDismissed() {
+  if (event_.is_bound())
+    event_->BannerDismissed();
 }
 
 base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
@@ -141,7 +134,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       state_(State::INACTIVE),
       manager_(InstallableManager::FromWebContents(web_contents)),
-      event_request_id_(-1),
       binding_(this),
       has_sufficient_engagement_(false),
       load_finished_(false),
@@ -340,11 +332,7 @@ void AppBannerManager::Stop() {
   // explicitly not logged.
   DCHECK(!need_to_log_status_ || is_active());
 
-  weak_factory_.InvalidateWeakPtrs();
-  binding_.Close();
-  controller_.reset();
-  event_.reset();
-
+  ResetBindings();
   UpdateState(State::COMPLETE);
   need_to_log_status_ = false;
   has_sufficient_engagement_ = false;
@@ -352,9 +340,7 @@ void AppBannerManager::Stop() {
 
 void AppBannerManager::SendBannerPromptRequest() {
   RecordCouldShowBanner();
-
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_CREATED);
-  event_request_id_ = ++gCurrentRequestID;
 
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
       mojo::MakeRequest(&controller_));
@@ -468,6 +454,13 @@ void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
       RequestAppBanner(url, false /* is_debug_mode */);
     }
   }
+}
+
+void AppBannerManager::ResetBindings() {
+  weak_factory_.InvalidateWeakPtrs();
+  binding_.Close();
+  controller_.reset();
+  event_.reset();
 }
 
 void AppBannerManager::RecordCouldShowBanner() {
