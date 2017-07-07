@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <iterator>
 #include <memory>
 #include <set>
@@ -18,6 +17,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
@@ -1023,7 +1023,7 @@ void ExtensionService::DisableUserExtensionsExcept(
             extensions::ManifestURL::GetUpdateURL(extension.get())))
       continue;
     const std::string& id = extension->id();
-    if (except_ids.end() == std::find(except_ids.begin(), except_ids.end(), id))
+    if (!base::ContainsValue(except_ids, id))
       DisableExtension(id, extensions::Extension::DISABLE_USER_ACTION);
   }
 }

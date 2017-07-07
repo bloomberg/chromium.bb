@@ -109,14 +109,6 @@ static void EventHandledOnIOThread(
       response);
 }
 
-// Searches |key| in |collection| by iterating over its elements and returns
-// true if found.
-template <typename Collection, typename Key>
-bool Contains(const Collection& collection, const Key& key) {
-  return std::find(collection.begin(), collection.end(), key) !=
-      collection.end();
-}
-
 // Returns whether |warnings| contains an extension for |extension_id|.
 bool HasWarning(const WarningSet& warnings,
                 const std::string& extension_id) {
@@ -1513,15 +1505,15 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
   EXPECT_EQ(2u, delta->added_response_headers.size());
-  EXPECT_TRUE(Contains(delta->added_response_headers,
-                       ResponseHeader("Key2", "Value1")));
-  EXPECT_TRUE(Contains(delta->added_response_headers,
-                       ResponseHeader("Key4", "Value4")));
+  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
+                                  ResponseHeader("Key2", "Value1")));
+  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
+                                  ResponseHeader("Key4", "Value4")));
   EXPECT_EQ(2u, delta->deleted_response_headers.size());
-  EXPECT_TRUE(Contains(delta->deleted_response_headers,
-                        ResponseHeader("Key2", "Value2, Bar")));
-  EXPECT_TRUE(Contains(delta->deleted_response_headers,
-                       ResponseHeader("Key3", "Value3")));
+  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
+                                  ResponseHeader("Key2", "Value2, Bar")));
+  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
+                                  ResponseHeader("Key3", "Value3")));
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {

@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -319,11 +318,9 @@ void ExtensionUpdater::AddToDownloader(
     // An extension might be overwritten by policy, and have its update url
     // changed. Make sure existing extensions aren't fetched again, if a
     // pending fetch for an extension with the same id already exists.
-    std::list<std::string>::const_iterator pending_id_iter = std::find(
-        pending_ids.begin(), pending_ids.end(), extension.id());
-    if (pending_id_iter == pending_ids.end()) {
-      if (downloader_->AddExtension(extension, request_id, fetch_priority))
-        request.in_progress_ids_.push_back(extension.id());
+    if (!base::ContainsValue(pending_ids, extension.id()) &&
+        downloader_->AddExtension(extension, request_id, fetch_priority)) {
+      request.in_progress_ids_.push_back(extension.id());
     }
   }
 }

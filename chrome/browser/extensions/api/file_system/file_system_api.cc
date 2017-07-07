@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -719,8 +720,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
       // If we still need to find suggested_extension, hunt for it inside the
       // extensions returned from GetFileTypesFromAcceptOption.
       if (need_suggestion &&
-          std::find(extensions.begin(), extensions.end(),
-                    suggested_extension) != extensions.end()) {
+          base::ContainsValue(extensions, suggested_extension)) {
         need_suggestion = false;
       }
     }
