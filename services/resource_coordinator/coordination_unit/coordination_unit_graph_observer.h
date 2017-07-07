@@ -54,7 +54,8 @@ class CoordinationUnitGraphObserver {
   // Called whenever a |property| within the |coordination_unit|'s
   // internal property store has changed.
   virtual void OnPropertyChanged(const CoordinationUnitImpl* coordination_unit,
-                                 const mojom::PropertyPtr& property) {}
+                                 const mojom::PropertyType property_type,
+                                 const base::Value& value) {}
 
   // Called whenever parent-child relationship ends where the
   // |coordination_unit| was the parent and the |child_coordination_unit|.

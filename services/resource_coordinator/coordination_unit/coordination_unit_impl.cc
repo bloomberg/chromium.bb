@@ -303,30 +303,19 @@ base::Value CoordinationUnitImpl::GetProperty(
     const mojom::PropertyType property_type) const {
   auto value_it = properties_.find(property_type);
 
-  return value_it != properties_.end() ? value_it->second : base::Value();
-}
-
-void CoordinationUnitImpl::ClearProperty(
-    const mojom::PropertyType property_type) {
-  properties_.erase(property_type);
-}
-
-void CoordinationUnitImpl::SetProperty(mojom::PropertyPtr property) {
-  SetProperty(property->property_type, *property->value);
-  PropagateProperty(property);
-  NOTIFY_OBSERVERS(observers_, OnPropertyChanged, this, property);
+  return value_it != properties_.end() ? base::Value(*value_it->second)
+                                       : base::Value();
 }
 
 void CoordinationUnitImpl::SetProperty(mojom::PropertyType property_type,
-                                       base::Value value) {
-  // setting a property with an empty value is effectively clearing the
-  // value from storage
-  if (value.IsType(base::Value::Type::NONE)) {
-    ClearProperty(property_type);
-    return;
-  }
-
-  properties_[property_type] = value;
+                                       std::unique_ptr<base::Value> value) {
+  // The |CoordinationUnitGraphObserver| API specification dictates that
+  // the property is guarranteed to be set on the |CoordinationUnitImpl|
+  // and propagated to the appropriate associated |CoordianationUnitImpl|
+  // before |OnPropertyChanged| is invoked on all of the registered observers.
+  properties_[property_type] = std::move(value);
+  PropagateProperty(property_type, *value);
+  NOTIFY_OBSERVERS(observers_, OnPropertyChanged, this, property_type, *value);
 }
 
 void CoordinationUnitImpl::BeforeDestroyed() {
