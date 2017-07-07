@@ -43,9 +43,6 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
-  // views::View
-  gfx::Size CalculatePreferredSize() const override;
-
   // StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
