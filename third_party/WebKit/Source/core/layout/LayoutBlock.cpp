@@ -278,11 +278,9 @@ void LayoutBlock::UpdateFromStyle() {
     if (!should_clip_overflow)
       GetScrollableArea()->InvalidateAllStickyConstraints();
     SetMayNeedPaintInvalidationSubtree();
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-      // The overflow clip paint property depends on whether overflow clip is
-      // present so we need to update paint properties if this changes.
-      SetNeedsPaintPropertyUpdate();
-    }
+    // The overflow clip paint property depends on whether overflow clip is
+    // present so we need to update paint properties if this changes.
+    SetNeedsPaintPropertyUpdate();
   }
   SetHasOverflowClip(should_clip_overflow);
 }

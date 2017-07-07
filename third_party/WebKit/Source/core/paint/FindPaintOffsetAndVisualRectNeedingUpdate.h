@@ -68,8 +68,7 @@ class FindVisualRectNeedingUpdateScopeBase {
         old_visual_rect_(old_visual_rect),
         needed_visual_rect_update_(context.NeedsVisualRectUpdate(object)) {
     if (needed_visual_rect_update_) {
-      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() ||
-             is_actually_needed);
+      DCHECK(is_actually_needed);
       return;
     }
     context.force_visual_rect_update_for_checking_ = true;

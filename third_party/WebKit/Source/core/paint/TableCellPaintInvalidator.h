@@ -27,7 +27,7 @@ class TableCellPaintInvalidator {
  private:
   void InvalidateContainerForCellGeometryChange(
       const LayoutObject& container,
-      const PaintInvalidatorContext* container_context);
+      const PaintInvalidatorContext& container_context);
 
   const LayoutTableCell& cell_;
   const PaintInvalidatorContext& context_;

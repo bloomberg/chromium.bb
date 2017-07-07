@@ -511,8 +511,7 @@ void LocalFrame::SetPrinting(bool printing,
       ToLocalFrame(child)->SetPrinting(printing, FloatSize(), FloatSize(), 0);
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    View()->SetSubtreeNeedsPaintPropertyUpdate();
+  View()->SetSubtreeNeedsPaintPropertyUpdate();
 
   if (!printing)
     GetDocument()->SetPrinting(Document::kNotPrinting);

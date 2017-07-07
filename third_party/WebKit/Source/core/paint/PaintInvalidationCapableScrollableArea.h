@@ -12,7 +12,6 @@
 namespace blink {
 
 class LayoutScrollbarPart;
-class PaintInvalidationState;
 struct PaintInvalidatorContext;
 
 // Base class of LocalFrameView and PaintLayerScrollableArea to share paint
@@ -28,7 +27,6 @@ class CORE_EXPORT PaintInvalidationCapableScrollableArea
 
   void WillRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
-  void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
   void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
 
   // Should be called when the previous visual rects are no longer valid.

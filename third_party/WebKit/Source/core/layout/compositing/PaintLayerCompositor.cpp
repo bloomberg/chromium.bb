@@ -718,7 +718,7 @@ bool PaintLayerCompositor::ScrollingLayerDidChange(PaintLayer* layer) {
 
 std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
     LayerTreeFlags flags) const {
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPaintInvalidationClean ||
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean ||
          layout_view_.GetFrameView()->ShouldThrottleRendering());
 
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output

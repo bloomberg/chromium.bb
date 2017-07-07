@@ -18,7 +18,7 @@ namespace blink {
 
 void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
     const LayoutObject& container,
-    const PaintInvalidatorContext* container_context) {
+    const PaintInvalidatorContext& container_context) {
   // We only need to do this if the container hasn't been fully invalidated.
   DCHECK(
       !IsFullPaintInvalidationReason(container.GetPaintInvalidationReason()));
@@ -27,20 +27,13 @@ void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
   // so we should invalidate the container immediately here instead of setting
   // paint invalidation flags.
   ObjectPaintInvalidator invalidator(container);
-  if (!container_context) {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-    ObjectPaintInvalidator(container).InvalidatePaintRectangle(
-        container.LocalVisualRect(), nullptr);
-    return;
-  }
-
-  container_context->painting_layer->SetNeedsRepaint();
+  container_context.painting_layer->SetNeedsRepaint();
   container.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       context_.paint_invalidation_container !=
-          container_context->paint_invalidation_container) {
-    ObjectPaintInvalidatorWithContext(container, *container_context)
+          container_context.paint_invalidation_container) {
+    ObjectPaintInvalidatorWithContext(container, container_context)
         .InvalidatePaintRectangleWithContext(
             container.VisualRect(), PaintInvalidationReason::kGeometry);
   }
@@ -60,19 +53,14 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
         (row.StyleRef().HasBackground() ||
          (table.HasCollapsedBorders() &&
           LIKELY(!table.ShouldPaintAllCollapsedBorders())))) {
-      InvalidateContainerForCellGeometryChange(
-          row, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
-                   ? context_.parent_context
-                   : nullptr);
+      InvalidateContainerForCellGeometryChange(row, *context_.parent_context);
     }
 
     if (UNLIKELY(table.ShouldPaintAllCollapsedBorders()) &&
         !IsFullPaintInvalidationReason(table.GetPaintInvalidationReason())) {
       DCHECK(table.HasCollapsedBorders());
       InvalidateContainerForCellGeometryChange(
-          table, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
-                     ? context_.parent_context->parent_context->parent_context
-                     : nullptr);
+          table, *context_.parent_context->parent_context->parent_context);
     }
 
     if (!IsFullPaintInvalidationReason(section.GetPaintInvalidationReason())) {
@@ -88,9 +76,7 @@ PaintInvalidationReason TableCellPaintInvalidator::InvalidatePaint() {
       }
       if (section_paints_background) {
         InvalidateContainerForCellGeometryChange(
-            section, RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
-                         ? context_.parent_context->parent_context
-                         : nullptr);
+            section, *context_.parent_context->parent_context);
       }
     }
   }

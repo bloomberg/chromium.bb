@@ -230,24 +230,6 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
         return true;
       if (next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-        if (next_state == kInPrePaint)
-          return true;
-      } else if (next_state == kInPaintInvalidation) {
-        return true;
-      }
-      break;
-    case kInPaintInvalidation:
-      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-      return next_state == kPaintInvalidationClean;
-    case kPaintInvalidationClean:
-      DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-      if (next_state == kInStyleRecalc)
-        return true;
-      if (next_state == kInPreLayout)
-        return true;
-      if (next_state == kInCompositingUpdate)
-        return true;
       if (next_state == kInPrePaint)
         return true;
       break;
@@ -265,8 +247,7 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
-          next_state == kInPrePaint)
+      if (next_state == kInPrePaint)
         return true;
       break;
     case kInPaint:
@@ -281,8 +262,7 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
           next_state == kInCompositingUpdate)
         return true;
-      if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
-          next_state == kInPrePaint)
+      if (next_state == kInPrePaint)
         return true;
       break;
     case kStopping:
@@ -306,8 +286,7 @@ bool DocumentLifecycle::CanRewindTo(LifecycleState next_state) const {
   return state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kAfterPerformLayout || state_ == kLayoutClean ||
          state_ == kCompositingInputsClean || state_ == kCompositingClean ||
-         state_ == kPaintInvalidationClean || state_ == kPrePaintClean ||
-         state_ == kPaintClean;
+         state_ == kPrePaintClean || state_ == kPaintClean;
 }
 
 #define DEBUG_STRING_CASE(StateName) \
@@ -331,8 +310,6 @@ static WTF::String StateAsDebugString(
     DEBUG_STRING_CASE(kInCompositingUpdate);
     DEBUG_STRING_CASE(kCompositingInputsClean);
     DEBUG_STRING_CASE(kCompositingClean);
-    DEBUG_STRING_CASE(kInPaintInvalidation);
-    DEBUG_STRING_CASE(kPaintInvalidationClean);
     DEBUG_STRING_CASE(kInPrePaint);
     DEBUG_STRING_CASE(kPrePaintClean);
     DEBUG_STRING_CASE(kInPaint);

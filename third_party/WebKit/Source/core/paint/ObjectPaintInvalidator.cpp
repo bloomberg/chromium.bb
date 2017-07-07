@@ -355,9 +355,7 @@ void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
 
   DCHECK(g_disable_paint_invalidation_state_asserts ||
          object_.GetDocument().Lifecycle().GetState() ==
-             (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()
-                  ? DocumentLifecycle::kInPrePaint
-                  : DocumentLifecycle::kInPaintInvalidation));
+             DocumentLifecycle::kInPrePaint);
 
   if (dirty_rect.IsEmpty())
     return;

@@ -214,8 +214,6 @@ blink_core_sources("layout") {
     "OrderIterator.cpp",
     "OrderIterator.h",
     "OverflowModel.h",
-    "PaintInvalidationState.cpp",
-    "PaintInvalidationState.h",
     "PointerEventsHitRules.cpp",
     "PointerEventsHitRules.h",
     "ScrollAlignment.cpp",

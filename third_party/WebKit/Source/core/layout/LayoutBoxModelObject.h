@@ -445,8 +445,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return false;
   }
 
-  void DeprecatedInvalidateTree(const PaintInvalidationState&) override;
-
   // http://www.w3.org/TR/css3-background/#body-background
   // <html> root element with no background steals background from its first
   // <body> child. The used background for such body element should be the

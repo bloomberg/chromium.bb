@@ -901,8 +901,7 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
     frame->GetEventHandler().ScheduleHoverStateUpdate();
     frame->GetChromeClient().FullscreenElementChanged(old_element, new_element);
 
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
-        !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       // Fullscreen status affects scroll paint properties through
       // LocalFrameView::UserInputScrollable().
       if (LocalFrameView* frame_view = frame->View())

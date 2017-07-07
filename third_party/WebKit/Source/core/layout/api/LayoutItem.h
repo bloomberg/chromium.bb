@@ -203,10 +203,6 @@ class LayoutItem {
     return layout_object_->NeedsOverflowRecalcAfterStyleChange();
   }
 
-  void DeprecatedInvalidateTree(const PaintInvalidationState& state) {
-    layout_object_->DeprecatedInvalidateTree(state);
-  }
-
   CompositingState GetCompositingState() const {
     return layout_object_->GetCompositingState();
   }

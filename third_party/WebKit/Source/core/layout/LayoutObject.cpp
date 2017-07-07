@@ -71,7 +71,6 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInvalidationState.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -1130,90 +1129,11 @@ LayoutRect LayoutObject::InvalidatePaintRectangle(
       dirty_rect, display_item_client);
 }
 
-void LayoutObject::DeprecatedInvalidateTree(
-    const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-  EnsureIsReadyForPaintInvalidation();
-
-  // If we didn't need paint invalidation then our children don't need as well.
-  // Skip walking down the tree as everything should be fine below us.
-  if (!ShouldCheckForPaintInvalidationWithPaintInvalidationState(
-          paint_invalidation_state))
-    return;
-
-  PaintInvalidationState new_paint_invalidation_state(paint_invalidation_state,
-                                                      *this);
-
-  if (MayNeedPaintInvalidationSubtree()) {
-    new_paint_invalidation_state
-        .SetForceSubtreeInvalidationCheckingWithinContainer();
-  }
-
-  PaintInvalidationReason reason =
-      DeprecatedInvalidatePaint(new_paint_invalidation_state);
-  new_paint_invalidation_state.UpdateForChildren(reason);
-  DeprecatedInvalidatePaintOfSubtrees(new_paint_invalidation_state);
-
-  ClearPaintInvalidationFlags();
-}
-
-DISABLE_CFI_PERF
-void LayoutObject::DeprecatedInvalidatePaintOfSubtrees(
-    const PaintInvalidationState& child_paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-
-  for (auto* child = SlowFirstChild(); child; child = child->NextSibling())
-    child->DeprecatedInvalidateTree(child_paint_invalidation_state);
-}
-
 LayoutRect LayoutObject::SelectionRectInViewCoordinates() const {
   LayoutRect selection_rect = LocalSelectionRect();
   if (!selection_rect.IsEmpty())
     MapToVisualRectInAncestorSpace(View(), selection_rect);
   return selection_rect;
-}
-
-PaintInvalidationReason LayoutObject::DeprecatedInvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK_EQ(&paint_invalidation_state.CurrentObject(), this);
-
-  if (StyleRef().HasOutline()) {
-    PaintLayer& layer = paint_invalidation_state.PaintingLayer();
-    if (&layer.GetLayoutObject() != this)
-      layer.SetNeedsPaintPhaseDescendantOutlines();
-  }
-
-  LayoutView* v = View();
-  if (v->GetDocument().Printing())
-    return PaintInvalidationReason::kNone;  // Don't invalidate paints if we're
-                                            // printing.
-
-  PaintInvalidatorContextAdapter context(paint_invalidation_state);
-
-  const LayoutBoxModelObject& paint_invalidation_container =
-      paint_invalidation_state.PaintInvalidationContainer();
-  DCHECK(paint_invalidation_container == ContainerForPaintInvalidation());
-
-  ObjectPaintInvalidator paint_invalidator(*this);
-  context.old_visual_rect = VisualRect();
-  context.old_location = paint_invalidator.LocationInBacking();
-  LayoutRect new_visual_rect =
-      paint_invalidation_state.ComputeVisualRectInBacking();
-  context.new_location = paint_invalidation_state.ComputeLocationInBacking(
-      new_visual_rect.Location());
-
-  SetVisualRect(new_visual_rect);
-  paint_invalidator.SetLocationInBacking(context.new_location);
-
-  if (!ShouldCheckForPaintInvalidation() &&
-      paint_invalidation_state
-          .ForcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
-    // We are done updating the visual rect. No other paint invalidation work
-    // to do for this object.
-    return PaintInvalidationReason::kNone;
-  }
-
-  return InvalidatePaint(context);
 }
 
 DISABLE_CFI_PERF
@@ -1741,10 +1661,9 @@ void LayoutObject::SetStyle(PassRefPtr<ComputedStyle> style) {
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() && !IsText() &&
-      (diff.TransformChanged() || diff.OpacityChanged() ||
-       diff.ZIndexChanged() || diff.FilterChanged() ||
-       diff.BackdropFilterChanged() || diff.CssClipChanged())) {
+  if (!IsText() && (diff.TransformChanged() || diff.OpacityChanged() ||
+                    diff.ZIndexChanged() || diff.FilterChanged() ||
+                    diff.BackdropFilterChanged() || diff.CssClipChanged())) {
     SetNeedsPaintPropertyUpdate();
 
     // We don't need to invalidate paint of objects on SPv2 when only paint
@@ -1936,7 +1855,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (old_style && old_style->StyleType() == kPseudoIdNone)
     ApplyPseudoStyleChanges(*old_style);
 
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() && old_style &&
+  if (old_style &&
       old_style->UsedTransformStyle3D() != StyleRef().UsedTransformStyle3D()) {
     // Change of transform-style may affect descendant transform property nodes.
     SetSubtreeNeedsPaintPropertyUpdate();
@@ -3446,12 +3365,6 @@ void LayoutObject::SetShouldInvalidateSelection() {
   GetFrameView()->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
-bool LayoutObject::ShouldCheckForPaintInvalidationWithPaintInvalidationState(
-    const PaintInvalidationState& paint_invalidation_state) const {
-  return paint_invalidation_state.HasForcedSubtreeInvalidationFlags() ||
-         ShouldCheckForPaintInvalidation();
-}
-
 void LayoutObject::SetShouldDoFullPaintInvalidation(
     PaintInvalidationReason reason) {
   SetNeedsPaintOffsetAndVisualRectUpdate();
@@ -3563,7 +3476,6 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
 }
 
 PropertyTreeState LayoutObject::ContentsProperties() const {
-  DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
   return rare_paint_data_->ContentsProperties();
 }
 

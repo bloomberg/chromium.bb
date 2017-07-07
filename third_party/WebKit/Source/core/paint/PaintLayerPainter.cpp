@@ -227,21 +227,6 @@ static bool ShouldRepaintSubsequence(
   if (paint_layer.NeedsRepaint())
     needs_repaint = true;
 
-  // Repaint if layer's clip changes.
-  if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-    ClipRects& clip_rects =
-        paint_layer.Clipper(PaintLayer::kDoNotUseGeometryMapper)
-            .PaintingClipRects(painting_info.root_layer, respect_overflow_clip,
-                               subpixel_accumulation);
-    ClipRects* previous_clip_rects = paint_layer.PreviousClipRects();
-    if (&clip_rects != previous_clip_rects &&
-        (!previous_clip_rects || clip_rects != *previous_clip_rects)) {
-      needs_repaint = true;
-      should_clear_empty_paint_phase_flags = true;
-    }
-    paint_layer.SetPreviousClipRects(clip_rects);
-  }
-
   // Repaint if previously the layer might be clipped by paintDirtyRect and
   // paintDirtyRect changes.
   if (paint_layer.PreviousPaintResult() == kMayBeClippedByPaintDirtyRect &&
@@ -445,11 +430,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       local_painting_info.paint_dirty_rect.MoveBy(offset_to_clipper);
     }
 
-    PaintLayer::GeometryMapperOption geometry_mapper_option =
-        PaintLayer::kDoNotUseGeometryMapper;
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-      geometry_mapper_option = PaintLayer::kUseGeometryMapper;
-
     // TODO(trchen): We haven't decided how to handle visual fragmentation with
     // SPv2.  Related thread
     // https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
@@ -458,7 +438,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
           layer_fragments, local_painting_info.root_layer,
           local_painting_info.paint_dirty_rect, cache_slot,
-          geometry_mapper_option, kIgnorePlatformOverlayScrollbarSize,
+          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
     } else if (IsFixedPositionObjectInPagedMedia()) {
@@ -466,7 +446,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_for_fragments->AppendSingleFragmentIgnoringPagination(
           single_fragment, local_painting_info.root_layer,
           local_painting_info.paint_dirty_rect, cache_slot,
-          geometry_mapper_option, kIgnorePlatformOverlayScrollbarSize,
+          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
       RepeatFixedPositionObjectInPages(single_fragment[0], painting_info,
@@ -475,7 +455,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
           local_painting_info.paint_dirty_rect, cache_slot,
-          geometry_mapper_option, kIgnorePlatformOverlayScrollbarSize,
+          PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
           respect_overflow_clip, &offset_from_root,
           local_painting_info.sub_pixel_accumulation);
       // PaintLayer::collectFragments depends on the paint dirty rect in
@@ -706,11 +686,6 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
   // its parent.
   PaintLayer* parent_layer = paint_layer_.Parent();
 
-  PaintLayer::GeometryMapperOption geometry_mapper_option =
-      PaintLayer::kDoNotUseGeometryMapper;
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    geometry_mapper_option = PaintLayer::kUseGeometryMapper;
-
   PaintResult result = kFullyPainted;
   PaintLayer* pagination_layer = paint_layer_.EnclosingPaginationLayer();
   PaintLayerFragments layer_fragments;
@@ -751,9 +726,10 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
     // here.
     pagination_layer->CollectFragments(
         layer_fragments, painting_info.root_layer,
-        painting_info.paint_dirty_rect, cache_slot, geometry_mapper_option,
-        kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip, nullptr,
-        painting_info.sub_pixel_accumulation, &transformed_extent);
+        painting_info.paint_dirty_rect, cache_slot,
+        PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
+        respect_overflow_clip, nullptr, painting_info.sub_pixel_accumulation,
+        &transformed_extent);
     // PaintLayer::collectFragments depends on the paint dirty rect in
     // complicated ways. For now, always assume a partially painted output
     // for fragmented content.
@@ -788,7 +764,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
                                     paint_layer_.GetLayoutObject()) ==
           kIgnoreOverflowClip)
         clip_rects_context.SetIgnoreOverflowClip();
-      paint_layer_.Clipper(geometry_mapper_option)
+      paint_layer_.Clipper(PaintLayer::kUseGeometryMapper)
           .CalculateBackgroundClipRect(clip_rects_context,
                                        ancestor_background_clip_rect);
     }

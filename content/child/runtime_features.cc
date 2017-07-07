@@ -266,15 +266,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
 
-  WebRuntimeFeatures::EnableSlimmingPaintInvalidation(
-      base::FeatureList::IsEnabled(features::kSlimmingPaintInvalidation));
-
-  if (command_line.HasSwitch(switches::kEnableSlimmingPaintInvalidation))
-    WebRuntimeFeatures::EnableSlimmingPaintInvalidation(true);
-
-  if (command_line.HasSwitch(switches::kDisableSlimmingPaintInvalidation))
-    WebRuntimeFeatures::EnableSlimmingPaintInvalidation(false);
-
   if (base::FeatureList::IsEnabled(features::kDocumentWriteEvaluator))
     WebRuntimeFeatures::EnableDocumentWriteEvaluator(true);
 

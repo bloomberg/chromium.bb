@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
@@ -292,9 +293,6 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
-  ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
-      true);
-
   Element* target = GetDocument().getElementById("target");
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -326,9 +324,6 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
-  ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
-      true);
-
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -362,9 +357,6 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
-  ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
-      true);
-
   Element* target = GetDocument().getElementById("target");
   LayoutObject* target_object = target->GetLayoutObject();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140), target_object->VisualRect());
@@ -403,9 +395,6 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
-  ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
-      true);
-
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "transform: rotate(45deg)");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -425,9 +414,6 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
-  ScopedSlimmingPaintInvalidationForTest scoped_slimming_paint_invalidation(
-      true);
-
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");

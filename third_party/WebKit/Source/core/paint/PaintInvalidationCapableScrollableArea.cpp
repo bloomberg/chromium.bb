@@ -10,7 +10,6 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
-#include "core/layout/PaintInvalidationState.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInvalidator.h"
@@ -203,13 +202,6 @@ void PaintInvalidationCapableScrollableArea::
   }
 
   ClearNeedsPaintInvalidationForScrollControls();
-}
-
-void PaintInvalidationCapableScrollableArea::
-    InvalidatePaintOfScrollControlsIfNeeded(
-        const PaintInvalidationState& paint_invalidation_state) {
-  InvalidatePaintOfScrollControlsIfNeeded(
-      PaintInvalidatorContextAdapter(paint_invalidation_state));
 }
 
 void PaintInvalidationCapableScrollableArea::ClearPreviousVisualRects() {

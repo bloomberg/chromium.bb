@@ -252,10 +252,6 @@ void WebRuntimeFeatures::EnableSlimmingPaintV2(bool enable) {
   RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled(enable);
 }
 
-void WebRuntimeFeatures::EnableSlimmingPaintInvalidation(bool enable) {
-  RuntimeEnabledFeatures::SetSlimmingPaintInvalidationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(enable);
 }

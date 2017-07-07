@@ -367,8 +367,6 @@ crbug.com/672605 external/wpt/encrypted-media [ WontFix ]
 # This W3C EME test fetches a file, which is not allowed.
 #external/wpt/encrypted-media/idlharness.html [ WontFix ]
 
-[ Win7 Debug ] virtual/disable-spinvalidation/compositing/perpendicular-layer-sorting.html [ WontFix ]
-
 # Below are manual tests from web-platform-tests without automation.
 external/wpt/2dcontext/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ WontFix ]
 external/wpt/battery-status/battery-charging-manual.https.html [ WontFix ]

@@ -25,13 +25,11 @@ typedef std::pair<bool, bool> SlimmingPaintAndRootLayerScrolling;
 class PrePaintTreeWalkTest
     : public ::testing::WithParamInterface<SlimmingPaintAndRootLayerScrolling>,
       private ScopedSlimmingPaintV2ForTest,
-      private ScopedSlimmingPaintInvalidationForTest,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:
   PrePaintTreeWalkTest()
       : ScopedSlimmingPaintV2ForTest(GetParam().second),
-        ScopedSlimmingPaintInvalidationForTest(true),
         ScopedRootLayerScrollingForTest(GetParam().first),
         RenderingTest(EmptyLocalFrameClient::Create()) {}
 

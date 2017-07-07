@@ -332,8 +332,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
     UpdateScrollSnapMappingAfterStyleChange(&new_style, old_style);
 
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
-        ShouldClipOverflow()) {
+    if (ShouldClipOverflow()) {
       // The overflow clip paint property depends on border sizes through
       // overflowClipRect(), and border radii, so we update properties on
       // border size or radii change.
@@ -1888,20 +1887,6 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   SetBackgroundChangedSinceLastPaintInvalidation();
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
       PaintInvalidationReason::kFull);
-}
-
-PaintInvalidationReason LayoutBox::DeprecatedInvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  if (HasBoxDecorationBackground()
-      // We also paint overflow controls in background phase.
-      || (HasOverflowClip() && GetScrollableArea()->HasOverflowControls())) {
-    PaintLayer& layer = paint_invalidation_state.PaintingLayer();
-    if (&layer.GetLayoutObject() != this)
-      layer.SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
-
-  return LayoutBoxModelObject::DeprecatedInvalidatePaint(
-      paint_invalidation_state);
 }
 
 PaintInvalidationReason LayoutBox::InvalidatePaint(

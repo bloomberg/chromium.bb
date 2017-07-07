@@ -11,7 +11,6 @@
 
 # FIXME: The below tests fails when the leak detector is disabled.
 crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
-crbug.com/366029 virtual/disable-spinvalidation/compositing/fixed-body-background-positioned.html [ Failure Pass ]
 
 # FIXME: The below tests crashes when the leak detector is run on debug builds
 crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
