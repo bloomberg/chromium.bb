@@ -8,24 +8,21 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/mock_media_router.h"
-#include "chrome/browser/media/router/route_message_observer.h"
-#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/presentation_connection_message.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using content::PresentationConnectionMessage;
 
 using media::mojom::RemoterPtr;
 using media::mojom::RemoterRequest;
@@ -34,28 +31,17 @@ using media::mojom::RemotingSourcePtr;
 using media::mojom::RemotingSourceRequest;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingStopReason;
-
-using media_router::MediaRoutesObserver;
-using media_router::MediaRoute;
-using media_router::MediaSource;
-using media_router::PresentationConnectionMessageToString;
-using media_router::RouteMessageObserver;
+using media::mojom::MirrorServiceRemoterPtr;
+using media::mojom::MirrorServiceRemoterRequest;
+using media::mojom::MirrorServiceRemotingSourcePtr;
+using media::mojom::MirrorServiceRemotingSourceRequest;
 
 using ::testing::_;
 using ::testing::AtLeast;
 
 namespace {
 
-constexpr char kRemotingMediaSource[] =
-    "urn:x-org.chromium.media:source:tab_content_remoting:123";
-constexpr char kRemotingMediaSink[] = "wiggles";
-constexpr char kRemotingMediaRoute[] =
-    "urn:x-org.chromium:media:route:garbly_gook_ssi7m4oa8oma7rasd/cast-wiggles";
-
-constexpr char kTabMirroringMediaSource[] =
-    "urn:x-org.chromium.media:source:tab:123";
-constexpr char kTabMirroringMediaRoute[] =
-    "urn:x-org.chromium:media:route:bloopity_blop_ohun48i56nh9oid/cast-wiggles";
+constexpr int32_t kRemotingTabId = 2;
 
 constexpr RemotingSinkCapabilities kAllCapabilities =
     RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING;
@@ -65,146 +51,40 @@ constexpr RemotingSinkCapabilities kAllCapabilities =
 // if any methods were called that should not have been called.
 class FakeMediaRouter : public media_router::MockMediaRouter {
  public:
-  FakeMediaRouter()
-      : routes_observer_(nullptr), message_observer_(nullptr),
-        weak_factory_(this) {}
+  FakeMediaRouter() : weak_factory_(this) {}
   ~FakeMediaRouter() final {}
 
-  //
-  // These methods are called by test code to create/destroy a media route and
-  // pass messages in both directions.
-  //
-
-  void OnRemotingRouteExists(bool exists) {
-    routes_.clear();
-
-    // Always add a non-remoting route to make sure CastRemotingConnector
-    // ignores non-remoting routes.
-    routes_.push_back(MediaRoute(
-        kTabMirroringMediaRoute, MediaSource(kTabMirroringMediaSource),
-        kRemotingMediaSink, "Cast Tab Mirroring", false, "", false));
-
-    if (exists) {
-      routes_.push_back(MediaRoute(
-          kRemotingMediaRoute, MediaSource(kRemotingMediaSource),
-          kRemotingMediaSink, "Cast Media Remoting", false, "", false));
-    } else {
-      // Cancel delivery of all messages in both directions.
-      inbound_messages_.clear();
-      for (auto& entry : outbound_messages_) {
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(std::move(entry.second), false));
-      }
-      outbound_messages_.clear();
-    }
-
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&FakeMediaRouter::DoUpdateRoutes,
-                                           weak_factory_.GetWeakPtr()));
+  void RegisterRemotingSource(int32_t tab_id,
+                              CastRemotingConnector* remoting_source) final {
+    EXPECT_EQ(-1, tab_id_);
+    tab_id_ = tab_id;
+    connector_ = remoting_source;
   }
 
-  void OnMessageFromProvider(const std::string& message) {
-    inbound_messages_.emplace_back(message);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
-                       weak_factory_.GetWeakPtr()));
+  void UnregisterRemotingSource(int32_t tab_id) final {
+    EXPECT_EQ(tab_id, tab_id_);
+    tab_id_ = -1;
+    connector_ = nullptr;
   }
 
-  void OnBinaryMessageFromProvider(const std::vector<uint8_t>& message) {
-    inbound_messages_.emplace_back(message);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&FakeMediaRouter::DoDeliverInboundMessages,
-                       weak_factory_.GetWeakPtr()));
+  void OnMediaRemoterCreated(
+      int32_t tab_id,
+      MirrorServiceRemoterPtr remoter,
+      MirrorServiceRemotingSourceRequest remoting_source) {
+    if (tab_id != tab_id_)
+      return;
+
+    EXPECT_TRUE(connector_);
+    connector_->ConnectToService(std::move(remoting_source),
+                                 std::move(remoter));
   }
 
-  void TakeMessagesSentToProvider(
-      bool text,
-      std::vector<PresentationConnectionMessage>* messages) {
-    decltype(outbound_messages_) untaken_messages;
-    for (auto& entry : outbound_messages_) {
-      if (!entry.first.is_binary() == text) {
-        messages->push_back(entry.first);
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(std::move(entry.second), true));
-      } else {
-        untaken_messages.push_back(std::move(entry));
-      }
-    }
-    outbound_messages_.swap(untaken_messages);
-  }
-
- protected:
-  void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) final {
-    CHECK(!routes_observer_);
-    routes_observer_ = observer;
-    CHECK(routes_observer_);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&FakeMediaRouter::DoUpdateRoutes,
-                                           weak_factory_.GetWeakPtr()));
-  }
-
-  void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) final {
-    CHECK_EQ(routes_observer_, observer);
-    routes_observer_ = nullptr;
-  }
-
-  void RegisterRouteMessageObserver(RouteMessageObserver* observer) final {
-    CHECK(!message_observer_);
-    message_observer_ = observer;
-    CHECK(message_observer_);
-  }
-
-  void UnregisterRouteMessageObserver(RouteMessageObserver* observer) final {
-    CHECK_EQ(message_observer_, observer);
-    message_observer_ = nullptr;
-  }
-
-  void SendRouteMessage(const MediaRoute::Id& route_id,
-                        const std::string& text,
-                        SendRouteMessageCallback callback) final {
-    EXPECT_EQ(message_observer_->route_id(), route_id);
-    ASSERT_FALSE(callback.is_null());
-    PresentationConnectionMessage message(text);
-    outbound_messages_.emplace_back(std::move(message), std::move(callback));
-  }
-
-  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
-                              std::unique_ptr<std::vector<uint8_t>> data,
-                              SendRouteMessageCallback callback) final {
-    EXPECT_EQ(message_observer_->route_id(), route_id);
-    ASSERT_TRUE(!!data);
-    ASSERT_FALSE(callback.is_null());
-    PresentationConnectionMessage message(std::move(*data));
-    outbound_messages_.emplace_back(std::move(message), std::move(callback));
-  }
+  // Get the registered tab ID.
+  int32_t tab_id() const { return tab_id_; }
 
  private:
-  // Asynchronous callback to notify the MediaRoutesObserver of a change in
-  // routes.
-  void DoUpdateRoutes() {
-    if (routes_observer_)
-      routes_observer_->OnRoutesUpdated(routes_, std::vector<MediaRoute::Id>());
-  }
-
-  // Asynchronous callback to deliver messages to the RouteMessageObserver.
-  void DoDeliverInboundMessages() {
-    if (message_observer_)
-      message_observer_->OnMessagesReceived(inbound_messages_);
-    inbound_messages_.clear();
-  }
-
-  MediaRoutesObserver* routes_observer_;
-  RouteMessageObserver* message_observer_;
-
-  std::vector<MediaRoute> routes_;
-  // Messages from Cast Provider to the connector.
-  std::vector<PresentationConnectionMessage> inbound_messages_;
-  // Messages from the connector to the Cast Provider.
-  using OutboundMessageAndCallback =
-      std::pair<PresentationConnectionMessage, SendRouteMessageCallback>;
-  std::vector<OutboundMessageAndCallback> outbound_messages_;
+  int32_t tab_id_ = -1;
+  CastRemotingConnector* connector_ = nullptr;
 
   base::WeakPtrFactory<FakeMediaRouter> weak_factory_;
 };
@@ -229,15 +109,53 @@ class MockRemotingSource : public media::mojom::RemotingSource {
   mojo::Binding<media::mojom::RemotingSource> binding_;
 };
 
+class MockMediaRemoter : public media::mojom::MirrorServiceRemoter {
+ public:
+  explicit MockMediaRemoter(FakeMediaRouter* media_router) : binding_(this) {
+    MirrorServiceRemoterPtr remoter;
+    binding_.Bind(mojo::MakeRequest(&remoter));
+    media_router->OnMediaRemoterCreated(kRemotingTabId, std::move(remoter),
+                                        mojo::MakeRequest(&source_));
+  }
+  ~MockMediaRemoter() final {}
+
+  void OnSinkAvailable() {
+    media::mojom::SinkCapabilitiesPtr capabilities =
+        media::mojom::SinkCapabilities::New();
+    source_->OnSinkAvailable(std::move(capabilities));
+  }
+
+  void SendMessageToSource(const std::vector<uint8_t>& message) {
+    source_->OnMessageFromSink(message);
+  }
+
+  void OnStopped(RemotingStopReason reason) { source_->OnStopped(reason); }
+
+  void OnError() { source_->OnError(); }
+
+  // media::mojom::MirrorServiceRemoter implementations.
+  void StartDataStreams(bool audio,
+                        bool video,
+                        StartDataStreamsCallback callback) override {}
+  MOCK_METHOD0(Start, void());
+  MOCK_METHOD1(Stop, void(RemotingStopReason));
+  MOCK_METHOD1(SendMessageToSink, void(const std::vector<uint8_t>&));
+
+ private:
+  mojo::Binding<media::mojom::MirrorServiceRemoter> binding_;
+  MirrorServiceRemotingSourcePtr source_;
+};
+
 }  // namespace
 
 class CastRemotingConnectorTest : public ::testing::Test {
  public:
-  CastRemotingConnectorTest()
-      : connector_(&media_router_, kRemotingMediaSource) {
+  CastRemotingConnectorTest() : connector_(&media_router_, kRemotingTabId) {
     // HACK: Override feature flags for testing.
     const_cast<RemotingSinkCapabilities&>(connector_.enabled_features_) =
         kAllCapabilities;
+
+    EXPECT_EQ(kRemotingTabId, media_router_.tab_id());
   }
 
   void TearDown() final {
@@ -257,77 +175,14 @@ class CastRemotingConnectorTest : public ::testing::Test {
     return remoter_ptr;
   }
 
-  void ProviderDiscoversSink() {
-    media_router_.OnRemotingRouteExists(true);
-  }
-
-  void ProviderLosesSink() {
-    media_router_.OnRemotingRouteExists(false);
-  }
-
-  void ConnectorSentMessageToProvider(const std::string& expected_message) {
-    std::vector<PresentationConnectionMessage> messages;
-    media_router_.TakeMessagesSentToProvider(true, &messages);
-    bool did_see_expected_message = false;
-    for (const auto& message : messages) {
-      if (expected_message == message.message) {
-        did_see_expected_message = true;
-      } else {
-        ADD_FAILURE() << "Unexpected message: "
-                      << PresentationConnectionMessageToString(message);
-      }
-    }
-    EXPECT_TRUE(did_see_expected_message);
-  }
-
-  void ConnectorSentMessageToSink(
-      const std::vector<uint8_t>& expected_message) {
-    std::vector<PresentationConnectionMessage> messages;
-    media_router_.TakeMessagesSentToProvider(false, &messages);
-    bool did_see_expected_message = false;
-    for (const auto& message : messages) {
-      if (expected_message == message.data) {
-        did_see_expected_message = true;
-      } else {
-        ADD_FAILURE() << "Unexpected message: "
-                      << PresentationConnectionMessageToString(message);
-      }
-    }
-    EXPECT_TRUE(did_see_expected_message);
-  }
-
-  void ConnectorSentNoMessagesToProvider() {
-    std::vector<PresentationConnectionMessage> messages;
-    media_router_.TakeMessagesSentToProvider(true, &messages);
-    EXPECT_TRUE(messages.empty());
-  }
-
-  void ConnectorSentNoMessagesToSink() {
-    std::vector<PresentationConnectionMessage> messages;
-    media_router_.TakeMessagesSentToProvider(false, &messages);
-    EXPECT_TRUE(messages.empty());
-  }
-
-  void ProviderPassesMessageFromSink(
-      const std::vector<uint8_t>& message) {
-    media_router_.OnBinaryMessageFromProvider(message);
-  }
-
-  void ProviderSaysToRemotingConnector(const std::string& message) {
-    media_router_.OnMessageFromProvider(message);
-  }
-
-  void MediaRouterTerminatesRoute() {
-    media_router_.OnRemotingRouteExists(false);
-  }
-
   static void RunUntilIdle() {
     base::RunLoop().RunUntilIdle();
   }
 
+  FakeMediaRouter media_router_;
+
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
-  FakeMediaRouter media_router_;
   CastRemotingConnector connector_;
 };
 
@@ -344,12 +199,15 @@ TEST_F(CastRemotingConnectorTest, NotifiesWhenSinkIsAvailableAndThenGone) {
   MockRemotingSource source;
   RemoterPtr remoter = CreateRemoter(&source);
 
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
+
   EXPECT_CALL(source, OnSinkAvailable(kAllCapabilities)).Times(1);
-  ProviderDiscoversSink();
+  media_remoter->OnSinkAvailable();
   RunUntilIdle();
 
   EXPECT_CALL(source, OnSinkGone()).Times(AtLeast(1));
-  ProviderLosesSink();
+  media_remoter.reset();
   RunUntilIdle();
 }
 
@@ -360,14 +218,17 @@ TEST_F(CastRemotingConnectorTest,
   MockRemotingSource source2;
   RemoterPtr remoter2 = CreateRemoter(&source2);
 
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
+
   EXPECT_CALL(source1, OnSinkAvailable(kAllCapabilities)).Times(1);
   EXPECT_CALL(source2, OnSinkAvailable(kAllCapabilities)).Times(1);
-  ProviderDiscoversSink();
+  media_remoter->OnSinkAvailable();
   RunUntilIdle();
 
   EXPECT_CALL(source1, OnSinkGone()).Times(AtLeast(1));
   EXPECT_CALL(source2, OnSinkGone()).Times(AtLeast(1));
-  ProviderLosesSink();
+  media_remoter.reset();
   RunUntilIdle();
 }
 
@@ -375,8 +236,11 @@ TEST_F(CastRemotingConnectorTest, HandlesTeardownOfRemotingSourceFirst) {
   std::unique_ptr<MockRemotingSource> source(new MockRemotingSource);
   RemoterPtr remoter = CreateRemoter(source.get());
 
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
+
   EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1);
-  ProviderDiscoversSink();
+  media_remoter->OnSinkAvailable();
   RunUntilIdle();
 
   source.reset();
@@ -387,11 +251,25 @@ TEST_F(CastRemotingConnectorTest, HandlesTeardownOfRemoterFirst) {
   MockRemotingSource source;
   RemoterPtr remoter = CreateRemoter(&source);
 
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
+
   EXPECT_CALL(source, OnSinkAvailable(kAllCapabilities)).Times(1);
-  ProviderDiscoversSink();
+  media_remoter->OnSinkAvailable();
   RunUntilIdle();
 
   remoter.reset();
+  RunUntilIdle();
+}
+
+TEST_F(CastRemotingConnectorTest, NoConnectedMediaRemoter) {
+  MockRemotingSource source;
+  RemoterPtr remoter = CreateRemoter(&source);
+
+  EXPECT_CALL(source,
+              OnStartFailed(RemotingStartFailReason::SERVICE_NOT_CONNECTED))
+      .Times(1);
+  remoter->Start();
   RunUntilIdle();
 }
 
@@ -424,6 +302,8 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
   RemoterPtr remoter = CreateRemoter(source.get());
   std::unique_ptr<MockRemotingSource> other_source(new MockRemotingSource());
   RemoterPtr other_remoter = CreateRemoter(other_source.get());
+  std::unique_ptr<MockMediaRemoter> media_remoter =
+      base::MakeUnique<MockMediaRemoter>(&media_router_);
 
   // Throughout this test |other_source| should not participate in the
   // remoting session, and so these method calls should never occur:
@@ -437,7 +317,7 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       .RetiresOnSaturation();
   EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
       .RetiresOnSaturation();
-  ProviderDiscoversSink();
+  media_remoter->OnSinkAvailable();
   RunUntilIdle();
 
   // When |source| starts a remoting session, |other_source| is notified the
@@ -445,24 +325,28 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
   // and |source| is notified that its request was successful.
   EXPECT_CALL(*source, OnStarted()).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*other_source, OnSinkGone()).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*media_remoter, Start()).Times(1).RetiresOnSaturation();
   remoter->Start();
   RunUntilIdle();
-  ConnectorSentMessageToProvider("START_CAST_REMOTING:session=1");
 
   // The |source| should now be able to send binary messages to the sink.
   // |other_source| should not!
   const std::vector<uint8_t> message_to_sink = { 3, 1, 4, 1, 5, 9 };
+  EXPECT_CALL(*media_remoter, SendMessageToSink(message_to_sink))
+      .Times(1)
+      .RetiresOnSaturation();
   remoter->SendMessageToSink(message_to_sink);
   const std::vector<uint8_t> ignored_message_to_sink = { 1, 2, 3 };
+  EXPECT_CALL(*media_remoter, SendMessageToSink(ignored_message_to_sink))
+      .Times(0);
   other_remoter->SendMessageToSink(ignored_message_to_sink);
   RunUntilIdle();
-  ConnectorSentMessageToSink(message_to_sink);
 
   // The sink should also be able to send binary messages to the |source|.
   const std::vector<uint8_t> message_to_source = { 2, 7, 1, 8, 2, 8 };
   EXPECT_CALL(*source, OnMessageFromSink(message_to_source)).Times(1)
       .RetiresOnSaturation();
-  ProviderPassesMessageFromSink(message_to_source);
+  media_remoter->SendMessageToSource(message_to_source);
   RunUntilIdle();
 
   // The |other_source| should not be allowed to start a remoting session.
@@ -471,7 +355,6 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       .Times(1).RetiresOnSaturation();
   other_remoter->Start();
   RunUntilIdle();
-  ConnectorSentNoMessagesToProvider();
 
   // What happens from here depends on how this remoting session will end...
   switch (how_it_ends()) {
@@ -482,19 +365,19 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       const RemotingStopReason reason = RemotingStopReason::LOCAL_PLAYBACK;
       EXPECT_CALL(*source, OnSinkGone()).Times(1).RetiresOnSaturation();
       EXPECT_CALL(*source, OnStopped(reason)).Times(1).RetiresOnSaturation();
+      EXPECT_CALL(*media_remoter, Stop(reason)).Times(1).RetiresOnSaturation();
       remoter->Stop(reason);
       RunUntilIdle();
-      ConnectorSentMessageToProvider("STOP_CAST_REMOTING:session=1");
 
       // Since remoting is stopped, any further messaging in either direction
       // must be dropped.
       const std::vector<uint8_t> message_to_sink = { 1, 6, 1, 8, 0, 3 };
       const std::vector<uint8_t> message_to_source = { 6, 2, 8, 3, 1, 8 };
       EXPECT_CALL(*source, OnMessageFromSink(_)).Times(0);
+      EXPECT_CALL(*media_remoter, SendMessageToSink(_)).Times(0);
       remoter->SendMessageToSink(message_to_sink);
-      ProviderPassesMessageFromSink(message_to_source);
+      media_remoter->SendMessageToSource(message_to_source);
       RunUntilIdle();
-      ConnectorSentNoMessagesToSink();
 
       // When the sink is ready, the Cast Provider sends a notification to the
       // connector. The connector will notify both sources that a sink is once
@@ -503,14 +386,14 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
           .RetiresOnSaturation();
       EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
           .RetiresOnSaturation();
-      ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
+      media_remoter->OnSinkAvailable();
       RunUntilIdle();
 
       // When the sink is no longer available, the Cast Provider notifies the
       // connector, and both sources are then notified the sink is gone.
       EXPECT_CALL(*source, OnSinkGone()).Times(AtLeast(1));
       EXPECT_CALL(*other_source, OnSinkGone()).Times(AtLeast(1));
-      ProviderLosesSink();
+      media_remoter.reset();
       RunUntilIdle();
 
       break;
@@ -519,22 +402,16 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
     case MOJO_PIPE_CLOSES:
       // When the Mojo pipes for |other_source| close, this should not affect
       // the current remoting session.
+      EXPECT_CALL(*media_remoter, Stop(_)).Times(0);
       other_source.reset();
       other_remoter.reset();
       RunUntilIdle();
-      ConnectorSentNoMessagesToProvider();
 
       // Now, when the Mojo pipes for |source| close, the Cast Provider will be
       // notified that the session has stopped.
+      EXPECT_CALL(*media_remoter, Stop(_)).Times(1).RetiresOnSaturation();
       source.reset();
       remoter.reset();
-      RunUntilIdle();
-      ConnectorSentMessageToProvider("STOP_CAST_REMOTING:session=1");
-
-      // The Cast Provider will detect when the sink is ready for the next
-      // remoting session, and then notify the connector. However, there are no
-      // sources to propagate this notification to.
-      ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
       RunUntilIdle();
 
       break;
@@ -544,20 +421,14 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       // terminated the route from the UI), the source and sink are immediately
       // cut off from one another.
       EXPECT_CALL(*source, OnSinkGone()).Times(AtLeast(1));
-      EXPECT_CALL(*source, OnStopped(RemotingStopReason::ROUTE_TERMINATED))
-          .Times(1).RetiresOnSaturation();
       EXPECT_CALL(*other_source, OnSinkGone()).Times(AtLeast(0));
-      MediaRouterTerminatesRoute();
-      RunUntilIdle();
-      ConnectorSentNoMessagesToProvider();
-
       // Furthermore, the connector and Cast Provider are also cut off from one
       // another and should not be able to exchange messages anymore. Therefore,
       // the connector will never try to notify the sources that the sink is
       // available again.
       EXPECT_CALL(*source, OnSinkAvailable(_)).Times(0);
       EXPECT_CALL(*other_source, OnSinkAvailable(_)).Times(0);
-      ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
+      media_remoter.reset();
       RunUntilIdle();
 
       break;
@@ -569,7 +440,10 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       EXPECT_CALL(*source, OnSinkGone()).Times(1).RetiresOnSaturation();
       EXPECT_CALL(*source, OnStopped(RemotingStopReason::UNEXPECTED_FAILURE))
           .Times(1).RetiresOnSaturation();
-      ProviderSaysToRemotingConnector("FAILED_CAST_REMOTING:session=1");
+      EXPECT_CALL(*media_remoter, Stop(RemotingStopReason::UNEXPECTED_FAILURE))
+          .Times(1)
+          .RetiresOnSaturation();
+      media_remoter->OnError();
       RunUntilIdle();
 
       // Since remoting is stopped, any further messaging in either direction
@@ -577,26 +451,16 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
       const std::vector<uint8_t> message_to_sink = { 1, 6, 1, 8, 0, 3 };
       const std::vector<uint8_t> message_to_source = { 6, 2, 8, 3, 1, 8 };
       EXPECT_CALL(*source, OnMessageFromSink(_)).Times(0);
+      EXPECT_CALL(*media_remoter, SendMessageToSink(_)).Times(0);
       remoter->SendMessageToSink(message_to_sink);
-      ProviderPassesMessageFromSink(message_to_source);
-      RunUntilIdle();
-      ConnectorSentNoMessagesToSink();
-
-      // Later, if whatever caused the external failure has resolved, the Cast
-      // Provider will notify the connector that the sink is available one
-      // again.
-      EXPECT_CALL(*source, OnSinkAvailable(kAllCapabilities)).Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*other_source, OnSinkAvailable(kAllCapabilities)).Times(1)
-          .RetiresOnSaturation();
-      ProviderSaysToRemotingConnector("STOPPED_CAST_REMOTING:session=1");
+      media_remoter->SendMessageToSource(message_to_source);
       RunUntilIdle();
 
       // When the sink is no longer available, the Cast Provider notifies the
       // connector, and both sources are then notified the sink is gone.
       EXPECT_CALL(*source, OnSinkGone()).Times(AtLeast(1));
       EXPECT_CALL(*other_source, OnSinkGone()).Times(AtLeast(1));
-      ProviderLosesSink();
+      media_remoter.reset();
       RunUntilIdle();
 
       break;

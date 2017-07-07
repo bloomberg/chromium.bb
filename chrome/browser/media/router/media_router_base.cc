@@ -155,4 +155,21 @@ void MediaRouterBase::Shutdown() {
 void MediaRouterBase::DetachRouteController(const MediaRoute::Id& route_id,
                                             MediaRouteController* controller) {}
 
+void MediaRouterBase::RegisterRemotingSource(
+    int32_t tab_id,
+    CastRemotingConnector* remoting_source) {
+  auto it = remoting_sources_.find(tab_id);
+  if (it != remoting_sources_.end()) {
+    DCHECK(remoting_source == it->second);
+    return;
+  }
+  remoting_sources_.emplace(tab_id, remoting_source);
+}
+
+void MediaRouterBase::UnregisterRemotingSource(int32_t tab_id) {
+  auto it = remoting_sources_.find(tab_id);
+  DCHECK(it != remoting_sources_.end());
+  remoting_sources_.erase(it);
+}
+
 }  // namespace media_router

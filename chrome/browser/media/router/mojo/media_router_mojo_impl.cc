@@ -1021,4 +1021,21 @@ void MediaRouterMojoImpl::OnMediaControllerCreated(
   MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(success);
 }
 
+void MediaRouterMojoImpl::OnMediaRemoterCreated(
+    int32_t tab_id,
+    media::mojom::MirrorServiceRemoterPtr remoter,
+    media::mojom::MirrorServiceRemotingSourceRequest source_request) {
+  DVLOG_WITH_INSTANCE(1) << __func__ << ": tab_id = " << tab_id;
+
+  auto it = remoting_sources_.find(tab_id);
+  if (it == remoting_sources_.end()) {
+    LOG(WARNING) << __func__
+                 << ": No registered remoting source for tab_id = " << tab_id;
+    return;
+  }
+
+  CastRemotingConnector* connector = it->second;
+  connector->ConnectToService(std::move(source_request), std::move(remoter));
+}
+
 }  // namespace media_router

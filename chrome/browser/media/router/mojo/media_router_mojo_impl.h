@@ -328,6 +328,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& route_id,
       const std::vector<content::PresentationConnectionMessage>& messages)
       override;
+  void OnMediaRemoterCreated(
+      int32_t tab_id,
+      media::mojom::MirrorServiceRemoterPtr remoter,
+      media::mojom::MirrorServiceRemotingSourceRequest source_request) override;
 
   // Result callback when Mojo terminateRoute is invoked.  |route_id| is bound
   // to the ID of the route that was terminated.

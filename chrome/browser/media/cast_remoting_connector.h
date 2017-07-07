@@ -9,13 +9,17 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/media/router/media_routes_observer.h"
+#include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class RenderFrameHost;
 class WebContents;
-struct PresentationConnectionMessage;
+}  // namespace content
+
+namespace media_router {
+class MediaRouter;
 }
 
 // CastRemotingConnector connects a single source (a media element in a render
@@ -23,7 +27,12 @@ struct PresentationConnectionMessage;
 // instance of a CastRemotingConnector per source WebContents (representing a
 // collection of render frames), and it is created on-demand. The source in the
 // render process represents itself by providing a media::mojom::RemotingSource
-// service instance. The sink is represented by the Media Router Cast Provider.
+// service instance. The sink is represented by a MediaRemoter in the Cast Media
+// Router Provider that handles the communication with the remote device. The
+// CastRemotingConnector and the MediaRemoter can communicate with each other
+// through the media::mojom::MirrorServiceRemoter and
+// media::mojom::MirrorServiceRemotingSource interfaces when a sink that is
+// capable of remoting is available.
 //
 // Whenever a candidate media source is created in a render frame,
 // ChromeContentBrowserClient will call CreateMediaRemoter() to instantiate a
@@ -33,43 +42,41 @@ struct PresentationConnectionMessage;
 // notify when a sink becomes available for remoting, and to pass binary
 // messages from the sink back to the source.
 //
-// At any time before or after the CastRemotingConnector is created, the
-// Media Router Cast Provider may create a tab remoting media route. This
-// indicates that the provider has found a sink that is capable of remoting and
-// is available for use. At this point, CastRemotingConnector notifies all
-// RemotingSources that a sink is available, and some time later a
-// RemotingSource can request the start of a remoting session. Once the sink is
-// no longer available, the provider terminates the route and
-// CastRemotingConnector notifies all RemotingSources that the sink is gone.
+// When the CastRemotingConnector is created, it registers itself in the
+// media_router::MediaRouter with a tab ID that uniquely identifies it. When a
+// mirroring route is created and available for remoting, the Cast MRP will
+// create a MediaRemoter and notify MediaRouter, which notifies the
+// CastRemotingConnector registered under the tab ID being remoted. At this
+// point, the CastRemotingConnector can communicate with the MediaRemoter. When
+// CastRemotingConnector gets notified that a sink is available, it notifies all
+// RemotingSources, and some time later a RemotingSource can request the start
+// of a remoting session.
 //
 // Note that only one RemotingSource can remote media at a time. Therefore,
 // CastRemotingConnector must mediate among simultaneous requests for media
 // remoting, and only allow one at a time. Currently, the policy is "first come,
 // first served."
 //
-// When starting a remoting session, the CastRemotingConnector sends control
-// messages to the Cast Provider. These control messages direct the provider to
-// start/stop remoting with the remote device (e.g., launching apps or services
-// on the remote device). Among its other duties, the provider will also set up
-// a Cast Streaming session to provide a bitstream transport for the media. Once
-// this is done, the provider sends notification messages back to
-// CastRemotingConnector to acknowledge this. Then, CastRemotingConnector knows
-// it can look-up and pass the mojo data pipe handles to CastRemotingSenders,
-// and the remoting session will be fully active. The CastRemotingConnector is
-// responsible for passing small binary messages between the source and sink,
-// while the CastRemotingSender handles the high-volume media data transfer.
+// When starting a remoting session, the Cast MRP will also set up a Cast
+// Streaming session to provide a bitstream transport for the media. Once this
+// is done, the MediaRemoter notifies the CastRemotingConnector. Then,
+// CastRemotingConnector knows it can look-up and pass the mojo data pipe
+// handles to CastRemotingSenders, and the remoting session will be fully active
+// The CastRemotingConnector is responsible for passing small binary messages
+// between the source and sink, while the CastRemotingSender handles the
+// high-volume media data transfer.
 //
 // Please see the unit tests in cast_remoting_connector_unittest.cc as a
-// reference for how CastRemotingConnector and a Cast Provider interact to
+// reference for how CastRemotingConnector and a MediaRemoter interact to
 // start/execute/stop remoting sessions.
-class CastRemotingConnector
-    : public base::SupportsUserData::Data,
-      public media_router::MediaRoutesObserver {
+class CastRemotingConnector : public base::SupportsUserData::Data,
+                              public media::mojom::MirrorServiceRemotingSource {
  public:
   ~CastRemotingConnector() final;
 
   // Returns the instance of the CastRemotingConnector associated with
-  // |source_contents|, creating a new instance if needed.
+  // |source_contents|, creating a new instance if needed. Returns nullptr if
+  // |source_contents| doesn't have a valid tab ID.
   static CastRemotingConnector* Get(content::WebContents* source_contents);
 
   // Used by ChromeContentBrowserClient to request a binding to a new
@@ -77,6 +84,13 @@ class CastRemotingConnector
   static void CreateMediaRemoter(content::RenderFrameHost* render_frame_host,
                                  media::mojom::RemotingSourcePtr source,
                                  media::mojom::RemoterRequest request);
+
+  // Called when a MediaRemoter is created and started in the Cast MRP. This
+  // call connects the CastRemotingConnector with the MediaRemoter. Remoting
+  // sessions can only be started after this is called.
+  void ConnectToService(
+      media::mojom::MirrorServiceRemotingSourceRequest source_request,
+      media::mojom::MirrorServiceRemoterPtr remoter);
 
  private:
   // Allow unit tests access to the private constructor and CreateBridge()
@@ -91,15 +105,9 @@ class CastRemotingConnector
   // mojo message pipe.
   class RemotingBridge;
 
-  // A RouteMessageObserver for the remoting route that passes messages from the
-  // Cast Provider back to this connector. An instance of this class only exists
-  // while a remoting route is available, and is owned by CastRemotingConnector.
-  class MessageObserver;
-
-  // Main constructor. |media_source_id| refers to any remoted content managed
+  // Main constructor. |tab_id| refers to any remoted content managed
   // by this instance (i.e., any remoted content from one tab/WebContents).
-  CastRemotingConnector(media_router::MediaRouter* router,
-                        const media_router::MediaSource::Id& media_source_id);
+  CastRemotingConnector(media_router::MediaRouter* router, int32_t tab_id);
 
   // Creates a RemotingBridge that implements the requested Remoter service, and
   // binds it to the interface |request|.
@@ -112,6 +120,12 @@ class CastRemotingConnector
   void RegisterBridge(RemotingBridge* bridge);
   void DeregisterBridge(RemotingBridge* bridge,
                         media::mojom::RemotingStopReason reason);
+
+  // media::mojom::MirrorServiceRemotingSource implementations.
+  void OnSinkAvailable(media::mojom::SinkCapabilitiesPtr capabilities) override;
+  void OnMessageFromSink(const std::vector<uint8_t>& message) override;
+  void OnStopped(media::mojom::RemotingStopReason reason) override;
+  void OnError() override;
 
   // These methods are called by RemotingBridge to forward media::mojom::Remoter
   // calls from a source through to this connector. They ensure that only one
@@ -129,35 +143,25 @@ class CastRemotingConnector
   void SendMessageToSink(RemotingBridge* bridge,
                          const std::vector<uint8_t>& message);
 
-  // Send a control message to the Cast Provider. This may or may not succeed,
-  // with the success status reported later via HandleSendMessageResult().
-  void SendMessageToProvider(const std::string& message);
+  // Called when RTP streams are started.
+  void OnDataStreamsStarted(
+      mojo::ScopedDataPipeConsumerHandle audio_pipe,
+      mojo::ScopedDataPipeConsumerHandle video_pipe,
+      media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
+      media::mojom::RemotingDataStreamSenderRequest video_sender_request,
+      int32_t audio_stream_id,
+      int32_t video_stream_id);
 
-  // Called by the current MessageObserver to process messages observed on the
-  // remoting route. There are two types of messages: 1) text notification
-  // messages from the Cast Provider, to report on the current state of a
-  // remoting session between Chrome and the remote device, and 2) binary
-  // messages, to be passed directly to the active remoting source during a
-  // remoting session.
-  void ProcessMessagesFromRoute(
-      const std::vector<content::PresentationConnectionMessage>& messages);
-
-  // Error handlers for message/data sending during an active remoting
-  // session. When a failure occurs, these immediately force-stop remoting.
-  void HandleSendMessageResult(bool success);
+  // Error handlers for message sending during an active remoting session. When
+  // a failure occurs, these immediately force-stop remoting.
   void OnDataSendFailed();
 
-  // MediaRoutesObserver implementation: Scans |routes| to check whether the
-  // existing remoting route has gone away and/or there is a new remoting route
-  // established, and take the necessary actions to notify sources and/or
-  // shutdown an active remoting session.
-  void OnRoutesUpdated(
-      const std::vector<media_router::MediaRoute>& routes,
-      const std::vector<media_router::MediaRoute::Id>& ignored) final;
+  // Called when any connection error/lost occurs with the MediaRemoter.
+  void OnMirrorServiceStopped();
 
-  // The MediaSource ID referring to any remoted content managed by this
-  // CastRemotingConnector.
-  const media_router::MediaSource::Id media_source_id_;
+  media_router::MediaRouter* const media_router_;
+
+  const int32_t tab_id_;
 
   // Describes the sink's capabilities according to what has been enabled via
   // |features::kMediaRemoting|. These are controlled manually via
@@ -169,28 +173,12 @@ class CastRemotingConnector
   // set.
   std::set<RemotingBridge*> bridges_;
 
-  // Created when the Media Router Cast Provider has created a media remoting
-  // route to a sink that supports remoting and is available for use. This
-  // observer simply dispatches messages from the Cast Provider and sink back to
-  // this connector. Once the route is gone, this is reset to null.
-  std::unique_ptr<MessageObserver> message_observer_;
-
-  // Incremented each time StartRemoting() is called, and used as a "current
-  // session ID" to ensure that control messaging between this connector and the
-  // Cast Provider are referring to the same remoting session. This allows both
-  // this connector and the provider to ignore stale messages.
-  unsigned int session_counter_;
-
   // When non-null, an active remoting session is taking place, with this
   // pointing to the RemotingBridge being used to communicate with the source.
   RemotingBridge* active_bridge_;
 
-  // These temporarily hold the mojo data pipe handles and interface requests
-  // until hand-off to the CastRemotingSenders.
-  mojo::ScopedDataPipeConsumerHandle pending_audio_pipe_;
-  mojo::ScopedDataPipeConsumerHandle pending_video_pipe_;
-  media::mojom::RemotingDataStreamSenderRequest pending_audio_sender_request_;
-  media::mojom::RemotingDataStreamSenderRequest pending_video_sender_request_;
+  mojo::Binding<media::mojom::MirrorServiceRemotingSource> binding_;
+  media::mojom::MirrorServiceRemoterPtr remoter_;
 
   // Produces weak pointers that are only valid for the current remoting
   // session. This is used to cancel any outstanding callbacks when a remoting

@@ -52,9 +52,35 @@ mojom("constants") {
   ]
 }
 
+mojom("remoting_common") {
+  sources = [
+    "remoting_common.mojom",
+  ]
+
+  # TODO(crbug.com/699569): Convert to use the new JS bindings.
+  use_new_js_bindings = false
+}
+
+mojom("mirror_service_remoting") {
+  sources = [
+    "mirror_service_remoting.mojom",
+  ]
+
+  public_deps = [
+    ":remoting_common",
+  ]
+
+  # TODO(crbug.com/699569): Convert to use the new JS bindings.
+  use_new_js_bindings = false
+}
+
 mojom("remoting") {
   sources = [
     "remoting.mojom",
+  ]
+
+  public_deps = [
+    ":remoting_common",
   ]
 }
 
