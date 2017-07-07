@@ -119,6 +119,7 @@
   (global-name "com.apple.distributed_notifications@Uv3")
   (global-name "com.apple.fonts")
   (global-name "com.apple.logd")
+  (global-name "com.apple.lsd.mapdb")
   (global-name "com.apple.system.logger")
   (global-name "com.apple.system.notification_center")
   (global-name "com.apple.system.opendirectoryd.libinfo")

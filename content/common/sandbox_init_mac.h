@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_SANDBOX_INIT_MAC_H_
 #define CONTENT_COMMON_SANDBOX_INIT_MAC_H_
 
+#include "base/callback_forward.h"
+
 namespace content {
 
 // Initialize the sandbox for renderer, gpu, utility, worker, and plugin
@@ -14,6 +16,10 @@ namespace content {
 // occurred.  If process_type isn't one that needs sandboxing, true is always
 // returned.
 bool InitializeSandbox();
+
+// Initializes the sandbox, as described above, but executes the callback after
+// warmup and before initialization.
+bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook);
 
 }  // namespace content
 
