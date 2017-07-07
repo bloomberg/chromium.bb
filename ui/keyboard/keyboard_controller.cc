@@ -278,7 +278,6 @@ KeyboardController::KeyboardController(KeyboardUI* ui,
                                        KeyboardLayoutDelegate* delegate)
     : ui_(ui),
       layout_delegate_(delegate),
-      input_method_(NULL),
       keyboard_visible_(false),
       show_on_resize_(false),
       keyboard_locked_(false),
@@ -286,8 +285,7 @@ KeyboardController::KeyboardController(KeyboardUI* ui,
       state_(KeyboardControllerState::UNKNOWN),
       weak_factory_(this) {
   CHECK(ui);
-  input_method_ = ui_->GetInputMethod();
-  input_method_->AddObserver(this);
+  ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
   ChangeState(KeyboardControllerState::INITIAL);
 }
@@ -299,8 +297,7 @@ KeyboardController::~KeyboardController() {
     container_->RemoveObserver(this);
     container_->RemovePreTargetHandler(&event_filter_);
   }
-  if (input_method_)
-    input_method_->RemoveObserver(this);
+  ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardClosed();
   ui_->SetController(nullptr);
@@ -545,12 +542,6 @@ void KeyboardController::OnTextInputStateChanged(
     // focus. Showing the keyboard requires an explicit call to
     // OnShowImeIfNeeded.
   }
-}
-
-void KeyboardController::OnInputMethodDestroyed(
-    const ui::InputMethod* input_method) {
-  DCHECK_EQ(input_method_, input_method);
-  input_method_ = NULL;
 }
 
 void KeyboardController::OnShowImeIfNeeded() {
