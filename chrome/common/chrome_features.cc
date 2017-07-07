@@ -270,6 +270,9 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 #endif
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
+const base::Feature kNetworkPrediction{"NetworkPrediction",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // If enabled, the list of content suggestions on the New Tab page will contain
 // pages that the user downloaded for later use.
 const base::Feature kOfflinePageDownloadSuggestionsFeature{

@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
@@ -192,11 +193,6 @@ void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
 
-  // Clear the FeatureList instance from base/test/test_suite.cc. Since this is
-  // a browser test, a FeatureList will be registered as part of normal browser
-  // start up in ChromeBrowserMainParts::SetupMetricsAndFieldTrials().
-  base::FeatureList::ClearInstanceForTesting();
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Auto-reload breaks many browser tests, which assume error pages won't be
@@ -204,6 +200,10 @@ void InProcessBrowserTest::SetUp() {
   // append switches::kEnableOfflineAutoReload, which will override the disable
   // here.
   command_line->AppendSwitch(switches::kDisableOfflineAutoReload);
+
+  // Turn off preconnects because they break the brittle python webserver;
+  // see http://crbug.com/60035.
+  scoped_feature_list_.InitAndDisableFeature(features::kNetworkPrediction);
 
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);

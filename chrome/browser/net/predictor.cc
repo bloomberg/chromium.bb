@@ -33,6 +33,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -58,9 +59,6 @@ using content::BrowserThread;
 namespace chrome_browser_net {
 
 namespace {
-
-const base::Feature kNetworkPrediction{"NetworkPrediction",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Disabled on Android, as there are no "pinned tabs", meaning that a startup
@@ -171,7 +169,8 @@ Predictor::~Predictor() {
 
 // static
 Predictor* Predictor::CreatePredictor(bool simple_shutdown) {
-  bool predictor_enabled = base::FeatureList::IsEnabled(kNetworkPrediction);
+  bool predictor_enabled =
+      base::FeatureList::IsEnabled(features::kNetworkPrediction);
   if (simple_shutdown)
     return new SimplePredictor(predictor_enabled);
   return new Predictor(predictor_enabled);
