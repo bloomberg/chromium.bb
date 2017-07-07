@@ -3,10 +3,28 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
+setlocal
+
 :: To allow this powershell script to run if it was a byproduct of downloading
 :: and unzipping the depot_tools.zip distribution, we clear the Zone.Identifier
 :: alternate data stream. This is equivalent to clicking the "Unblock" button
 :: in the file's properties dialog.
-echo.>"%~dp0\cipd.ps1:Zone.Identifier"
+set errorlevel=
+if not exist "%~dp0.cipd_client.exe" (
+  echo.>%~dp0cipd.ps1:Zone.Identifier
 
-powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "%~dp0\cipd.ps1" %* < nul
+  powershell -NoProfile -ExecutionPolicy RemoteSigned -Command "%~dp0cipd.ps1" < nul
+  if not errorlevel 0 goto :END
+)
+
+set /p CIPD_CLIENT_VER=<%~dp0cipd_client_version
+"%~dp0.cipd_client.exe" selfupdate -version "%CIPD_CLIENT_VER%"
+if not errorlevel 0 goto :END
+
+"%~dp0.cipd_client.exe" %*
+
+:END
+endlocal & (
+  set ERRORLEVEL=%ERRORLEVEL%
+)
+exit /b %ERRORLEVEL%

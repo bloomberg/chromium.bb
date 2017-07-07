@@ -69,12 +69,3 @@ while ($true) {
       }
   }
 }
-
-$_ = & $client selfupdate -version "$cipdClientVer"
-if ($LastExitCode -ne 0) {
-    Write-Host "selfupdate failed: " -ForegroundColor Red -NoNewline
-    Write-Host "run ``set CIPD_HTTP_USER_AGENT_PREFIX=$user_agent/manual && $client selfupdate -version $cipdClientVer`` to diagnose`n" -ForegroundColor White
-}
-
-& $client @args
-exit $LastExitCode
