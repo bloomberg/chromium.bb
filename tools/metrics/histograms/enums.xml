@@ -36761,9 +36761,12 @@ from previous Chrome versions.
 
 <enum name="TPMVersionFingerprint">
   <int value="305524852" label="IFX 4.32 build 0x36f variant 1"/>
+  <int value="368058567" label="STM 0xd08"/>
   <int value="517482723" label="IFX 4.32 build 0x36f variant 2"/>
+  <int value="639195905" label="IFX 4.32 build 0x36f variant 3"/>
   <int value="987235505" label="CROS 0dc5c85b01a68fe6"/>
   <int value="987973414" label="IFX 6.40 build 0xbe"/>
+  <int value="1311411160" label="WEC 0x345"/>
   <int value="1353576267" label="IFX 3.18 build 0x9"/>
   <int value="1437720528" label="IFX 133.32 build 0x5 variant 1"/>
   <int value="1451134301" label="IFX 147.18 build 0xf"/>
