@@ -44,7 +44,6 @@ class Extension;
 namespace media_router {
 
 enum class MediaRouteProviderWakeReason;
-class CastMediaSinkService;
 class DialMediaSinkServiceProxy;
 class EventPageRequestManager;
 
@@ -411,9 +410,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Media sink service for DIAL devices.
   scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
-
-  // Media sink service for CAST devices.
-  scoped_refptr<CastMediaSinkService> cast_media_sink_service_;
 
   content::BrowserContext* const context_;
 
