@@ -102,6 +102,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsAnchor() const final;
   bool IsControl() const override;
   bool IsControllingVideoElement() const;
+  bool IsMultiline() const override;
   bool IsEditable() const override { return IsNativeTextControl(); }
   bool IsEmbeddedObject() const final;
   bool IsFieldset() const final;

@@ -198,7 +198,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "haspopup");
   AddFilter(filters, "horizontal");
   AddFilter(filters, "invisible");
-  // TODO(aleventhal) multiline
+  AddFilter(filters, "multiline");
   AddFilter(filters, "multiselectable");
   AddFilter(filters, "protected");
   // TODO(aleventhal) Add readonly support back after control mode refactor

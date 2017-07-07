@@ -823,6 +823,36 @@ void AXNodeObject::AccessibilityChildrenFromAOMProperty(
   }
 }
 
+bool AXNodeObject::IsMultiline() const {
+  Node* node = this->GetNode();
+  if (!node)
+    return false;
+
+  const AccessibilityRole role = RoleValue();
+  const bool is_edit_box = role == kSearchBoxRole || role == kTextFieldRole;
+  if (!IsEditable() && !is_edit_box)
+    return false;  // Doesn't support multiline.
+
+  // Supports aria-multiline, so check for attribute.
+  bool is_multiline = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kMultiline,
+                                    is_multiline)) {
+    return is_multiline;
+  }
+
+  // Default for <textarea> is true.
+  if (isHTMLTextAreaElement(*node))
+    return true;
+
+  // Default for other edit boxes is false, including for ARIA, says CORE-AAM.
+  if (is_edit_box)
+    return false;
+
+  // If root of contenteditable area and no ARIA role of textbox/searchbox used,
+  // default to multiline=true which is what the default behavior is.
+  return HasContentEditableAttributeSet();
+}
+
 // This only returns true if this is the element that actually has the
 // contentEditable attribute set, unlike node->hasEditableStyle() which will
 // also return true if an ancestor is editable.
@@ -836,6 +866,9 @@ bool AXNodeObject::HasContentEditableAttributeSet() const {
          EqualIgnoringASCIICase(content_editable_value, "true");
 }
 
+// TODO(aleventhal) Find a more appropriate name or consider returning false
+// for everything but a searchbox or textfield, as a combobox and spinbox
+// can contain a field but should not be considered edit controls themselves.
 bool AXNodeObject::IsTextControl() const {
   if (HasContentEditableAttributeSet())
     return true;

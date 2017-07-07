@@ -1,5 +1,5 @@
 rootWebArea
-++genericContainer editable richlyEditable
+++genericContainer editable multiline richlyEditable
 ++++paragraph editable richlyEditable
 ++++++staticText editable richlyEditable name='This is editable.'
 ++++++++inlineTextBox name='This is editable.'
@@ -7,9 +7,9 @@ rootWebArea
 ++++++inlineTextBox name='This is not editable.'
 ++++lineBreak name='<newline>'
 ++++++inlineTextBox name='<newline>'
-++++paragraph editable richlyEditable
+++++paragraph editable multiline richlyEditable
 ++++++staticText editable richlyEditable name='But this one is.'
 ++++++++inlineTextBox name='But this one is.'
-++++paragraph editable richlyEditable
+++++paragraph editable multiline richlyEditable
 ++++++staticText editable richlyEditable name='So is this one.'
 ++++++++inlineTextBox name='So is this one.'

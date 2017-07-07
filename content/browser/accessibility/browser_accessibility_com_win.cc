@@ -2851,8 +2851,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   *num_children = owner()->PlatformChildCount();
   *unique_id = -owner()->unique_id();
 
-  if (owner()->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
-      owner()->GetRole() == ui::AX_ROLE_WEB_AREA) {
+  if (owner()->IsDocument()) {
     *node_type = NODETYPE_DOCUMENT;
   } else if (owner()->IsTextOnlyObject()) {
     *node_type = NODETYPE_TEXT;
@@ -3696,8 +3695,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
     win_attributes_->ia2_attributes.push_back(L"valuetext:" + value);
   } else {
     // On Windows, the value of a document should be its url.
-    if (owner()->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA ||
-        owner()->GetRole() == ui::AX_ROLE_WEB_AREA) {
+    if (owner()->IsDocument()) {
       value = base::UTF8ToUTF16(Manager()->GetTreeData().url);
     }
     // If this doesn't have a value and is linked then set its value to the url
@@ -4944,8 +4942,21 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
   if (owner()->HasState(ui::AX_STATE_HORIZONTAL))
     ia2_state |= IA2_STATE_HORIZONTAL;
 
-  if (owner()->HasState(ui::AX_STATE_EDITABLE))
+  const bool is_editable = owner()->HasState(ui::AX_STATE_EDITABLE);
+  if (is_editable)
     ia2_state |= IA2_STATE_EDITABLE;
+
+  if (owner()->IsRichTextControl() || owner()->IsEditField()) {
+    // Support multi/single line states if root editable or appropriate role.
+    // We support the edit box roles even if the area is not actually editable,
+    // because it is technically feasible for JS to implement the edit box
+    // by controlling selection.
+    if (owner()->HasState(ui::AX_STATE_MULTILINE)) {
+      ia2_state |= IA2_STATE_MULTI_LINE;
+    } else {
+      ia2_state |= IA2_STATE_SINGLE_LINE;
+    }
+  }
 
   if (!owner()->GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
@@ -5319,11 +5330,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_SEARCH_BOX:
       ia_role = ROLE_SYSTEM_TEXT;
-      if (owner()->HasState(ui::AX_STATE_MULTILINE)) {
-        ia2_state |= IA2_STATE_MULTI_LINE;
-      } else {
-        ia2_state |= IA2_STATE_SINGLE_LINE;
-      }
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_ABBR:
