@@ -82,23 +82,21 @@ const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
 // resources.
 enum { kMaxInFlightDecodes = 4 };
 
+struct GpuVideoDecoder::PendingDecoderBuffer {
+  PendingDecoderBuffer(std::unique_ptr<SHMBuffer> s,
+                       const scoped_refptr<DecoderBuffer>& b,
+                       const DecodeCB& done_cb)
+      : shm_buffer(std::move(s)), buffer(b), done_cb(done_cb) {}
+  std::unique_ptr<SHMBuffer> shm_buffer;
+  scoped_refptr<DecoderBuffer> buffer;
+  DecodeCB done_cb;
+};
+
 GpuVideoDecoder::SHMBuffer::SHMBuffer(std::unique_ptr<base::SharedMemory> m,
                                       size_t s)
     : shm(std::move(m)), size(s) {}
 
 GpuVideoDecoder::SHMBuffer::~SHMBuffer() {}
-
-GpuVideoDecoder::PendingDecoderBuffer::PendingDecoderBuffer(
-    SHMBuffer* s,
-    const scoped_refptr<DecoderBuffer>& b,
-    const DecodeCB& done_cb)
-    : shm_buffer(s), buffer(b), done_cb(done_cb) {
-}
-
-GpuVideoDecoder::PendingDecoderBuffer::PendingDecoderBuffer(
-    const PendingDecoderBuffer& other) = default;
-
-GpuVideoDecoder::PendingDecoderBuffer::~PendingDecoderBuffer() {}
 
 GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
                                         base::TimeDelta ts,
@@ -461,9 +459,9 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   DCHECK(
       !base::ContainsKey(bitstream_buffers_in_decoder_, bitstream_buffer.id()));
-  bitstream_buffers_in_decoder_.insert(std::make_pair(
+  bitstream_buffers_in_decoder_.emplace(
       bitstream_buffer.id(),
-      PendingDecoderBuffer(shm_buffer.release(), buffer, decode_cb)));
+      PendingDecoderBuffer(std::move(shm_buffer), buffer, decode_cb));
   DCHECK_LE(static_cast<int>(bitstream_buffers_in_decoder_.size()),
             kMaxInFlightDecodes);
   RecordBufferData(bitstream_buffer, *buffer.get());
@@ -763,14 +761,14 @@ std::unique_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
       return NULL;
     return base::MakeUnique<SHMBuffer>(std::move(shm), size_to_allocate);
   }
-  std::unique_ptr<SHMBuffer> ret(available_shm_segments_.back());
+  std::unique_ptr<SHMBuffer> ret(std::move(available_shm_segments_.back()));
   available_shm_segments_.pop_back();
   return ret;
 }
 
 void GpuVideoDecoder::PutSHM(std::unique_ptr<SHMBuffer> shm_buffer) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  available_shm_segments_.push_back(shm_buffer.release());
+  available_shm_segments_.push_back(std::move(shm_buffer));
 }
 
 void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
@@ -785,7 +783,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
     return;
   }
 
-  PutSHM(base::WrapUnique(it->second.shm_buffer));
+  PutSHM(std::move(it->second.shm_buffer));
   it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
                                           : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);
@@ -805,15 +803,9 @@ GpuVideoDecoder::~GpuVideoDecoder() {
     base::ResetAndReturn(&request_overlay_info_cb_)
         .Run(false, ProvideOverlayInfoCB());
 
-  for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
-    delete available_shm_segments_[i];
-  }
-  available_shm_segments_.clear();
-
   for (std::map<int32_t, PendingDecoderBuffer>::iterator it =
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
-    delete it->second.shm_buffer;
     it->second.done_cb.Run(DecodeStatus::ABORTED);
   }
   bitstream_buffers_in_decoder_.clear();

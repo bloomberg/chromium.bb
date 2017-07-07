@@ -99,16 +99,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   };
 
   // A SHMBuffer and the DecoderBuffer its data came from.
-  struct PendingDecoderBuffer {
-    PendingDecoderBuffer(SHMBuffer* s,
-                        const scoped_refptr<DecoderBuffer>& b,
-                        const DecodeCB& done_cb);
-    PendingDecoderBuffer(const PendingDecoderBuffer& other);
-    ~PendingDecoderBuffer();
-    SHMBuffer* shm_buffer;
-    scoped_refptr<DecoderBuffer> buffer;
-    DecodeCB done_cb;
-  };
+  struct PendingDecoderBuffer;
 
   typedef std::map<int32_t, PictureBuffer> PictureBufferMap;
 
@@ -196,7 +187,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the
   // steady-state of the decoder.
-  std::vector<SHMBuffer*> available_shm_segments_;
+  std::vector<std::unique_ptr<SHMBuffer>> available_shm_segments_;
 
   // Placeholder sync token that was created and validated after the most
   // recent picture buffers were created.
