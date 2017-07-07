@@ -227,6 +227,8 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
       pending_script->ParserBlockingLoadStartTime();
   ScriptElementBase* element = pending_script->GetElement();
 
+  const bool is_external = pending_script->IsExternal();
+
   // 1. "Let the script be the pending parsing-blocking script.
   //     There is no longer a pending parsing-blocking script."
   // Clear the pending script before possible re-entrancy from executeScript()
@@ -267,7 +269,8 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
           script_loader->DispatchErrorEvent();
           break;
         case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
-          element->DispatchLoadEvent();
+          if (is_external)
+            element->DispatchLoadEvent();
           break;
         case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
           break;
