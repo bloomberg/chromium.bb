@@ -15,7 +15,7 @@
 
 namespace remoting {
 
-FakeInputInjector::FakeInputInjector() {}
+FakeInputInjector::FakeInputInjector() : weak_factory_(this) {}
 FakeInputInjector::~FakeInputInjector() {}
 
 void FakeInputInjector::Start(
@@ -57,7 +57,9 @@ void FakeScreenControls::SetScreenResolution(
 FakeDesktopEnvironment::FakeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> capture_thread,
     const DesktopEnvironmentOptions& options)
-    : capture_thread_(std::move(capture_thread)), options_(options) {}
+    : capture_thread_(std::move(capture_thread)),
+      options_(options),
+      weak_factory_(this) {}
 
 FakeDesktopEnvironment::~FakeDesktopEnvironment() = default;
 
@@ -68,7 +70,7 @@ std::unique_ptr<AudioCapturer> FakeDesktopEnvironment::CreateAudioCapturer() {
 
 std::unique_ptr<InputInjector> FakeDesktopEnvironment::CreateInputInjector() {
   std::unique_ptr<FakeInputInjector> result(new FakeInputInjector());
-  last_input_injector_ = result->AsWeakPtr();
+  last_input_injector_ = result->weak_factory_.GetWeakPtr();
   return std::move(result);
 }
 
@@ -121,7 +123,7 @@ std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
   std::unique_ptr<FakeDesktopEnvironment> result(
       new FakeDesktopEnvironment(capture_thread_, options));
   result->set_frame_generator(frame_generator_);
-  last_desktop_environment_ = result->AsWeakPtr();
+  last_desktop_environment_ = result->weak_factory_.GetWeakPtr();
   return std::move(result);
 }
 

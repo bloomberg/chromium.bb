@@ -78,7 +78,7 @@ class IqSender : public SignalStrategy::Listener {
 };
 
 // This call must only be used on the thread it was created on.
-class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
+class IqRequest {
  public:
   IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback,
             const std::string& addressee);
@@ -102,6 +102,8 @@ class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
   IqSender* sender_;
   IqSender::ReplyCallback callback_;
   std::string addressee_;
+
+  base::WeakPtrFactory<IqRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IqRequest);
 };

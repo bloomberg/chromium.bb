@@ -11,15 +11,15 @@ namespace remoting {
 
 namespace protocol {
 struct TransportRoute;
-};
+}  // namespace protocol
 
 // Interface for host status observer. All methods are invoked on the
 // network thread. Observers must not tear-down ChromotingHost state
 // on receipt of these callbacks; they are purely informational.
 class HostStatusObserver {
  public:
-  HostStatusObserver() { }
-  virtual ~HostStatusObserver() { }
+  HostStatusObserver() {}
+  virtual ~HostStatusObserver() {}
 
   // Called when an unauthorized user attempts to connect to the host.
   virtual void OnAccessDenied(const std::string& jid) {}

@@ -5,18 +5,32 @@
 #ifndef REMOTING_HOST_HOST_STATUS_MONITOR_H_
 #define REMOTING_HOST_HOST_STATUS_MONITOR_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
+
 namespace remoting {
 
 class HostStatusObserver;
 
-// Interface for registering host status observers.
-class HostStatusMonitor {
+// Helper used to deliver host status notifications to observers.
+class HostStatusMonitor : public base::RefCountedThreadSafe<HostStatusMonitor> {
  public:
-  virtual ~HostStatusMonitor() {}
+  HostStatusMonitor();
 
   // Add/Remove |observer| to/from the list of status observers.
-  virtual void AddStatusObserver(HostStatusObserver* observer) = 0;
-  virtual void RemoveStatusObserver(HostStatusObserver* observer) = 0;
+  void AddStatusObserver(HostStatusObserver* observer);
+  void RemoveStatusObserver(HostStatusObserver* observer);
+
+  const base::ObserverList<HostStatusObserver>& observers() {
+    return observers_;
+  };
+
+ protected:
+  friend class base::RefCountedThreadSafe<HostStatusMonitor>;
+
+  base::ObserverList<HostStatusObserver> observers_;
+
+  virtual ~HostStatusMonitor();
 };
 
 }  // namespace remoting

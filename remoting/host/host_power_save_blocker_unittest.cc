@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "remoting/host/fake_host_status_monitor.h"
+#include "remoting/host/host_status_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -25,18 +25,18 @@ class HostPowerSaveBlockerTest : public testing::Test {
 
   base::MessageLoopForUI ui_message_loop_;
   base::Thread blocking_thread_;
-  FakeHostStatusMonitor monitor_;
+  scoped_refptr<HostStatusMonitor> monitor_;
   std::unique_ptr<HostPowerSaveBlocker> blocker_;
 };
 
 HostPowerSaveBlockerTest::HostPowerSaveBlockerTest()
-    : blocking_thread_("block-thread") {}
+    : blocking_thread_("block-thread"), monitor_(new HostStatusMonitor()) {}
 
 void HostPowerSaveBlockerTest::SetUp() {
   ASSERT_TRUE(blocking_thread_.StartWithOptions(
                   base::Thread::Options(base::MessageLoop::TYPE_IO, 0)) &&
               blocking_thread_.WaitUntilThreadStarted());
-  blocker_.reset(new HostPowerSaveBlocker(monitor_.AsWeakPtr(),
+  blocker_.reset(new HostPowerSaveBlocker(monitor_,
                                           ui_message_loop_.task_runner(),
                                           blocking_thread_.task_runner()));
 }

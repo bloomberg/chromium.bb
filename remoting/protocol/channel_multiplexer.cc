@@ -97,8 +97,7 @@ class ChannelMultiplexer::MuxChannel {
   DISALLOW_COPY_AND_ASSIGN(MuxChannel);
 };
 
-class ChannelMultiplexer::MuxSocket : public P2PStreamSocket,
-                                      public base::SupportsWeakPtr<MuxSocket> {
+class ChannelMultiplexer::MuxSocket : public P2PStreamSocket {
  public:
   MuxSocket(MuxChannel* channel);
   ~MuxSocket() override;
@@ -128,21 +127,20 @@ class ChannelMultiplexer::MuxSocket : public P2PStreamSocket,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  base::WeakPtrFactory<MuxSocket> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MuxSocket);
 };
 
-
-ChannelMultiplexer::MuxChannel::MuxChannel(
-    ChannelMultiplexer* multiplexer,
-    const std::string& name,
-    int send_id)
+ChannelMultiplexer::MuxChannel::MuxChannel(ChannelMultiplexer* multiplexer,
+                                           const std::string& name,
+                                           int send_id)
     : multiplexer_(multiplexer),
       name_(name),
       send_id_(send_id),
       id_sent_(false),
       receive_id_(kChannelIdUnknown),
-      socket_(nullptr) {
-}
+      socket_(nullptr) {}
 
 ChannelMultiplexer::MuxChannel::~MuxChannel() {
   // Socket must be destroyed before the channel.
@@ -212,8 +210,8 @@ ChannelMultiplexer::MuxSocket::MuxSocket(MuxChannel* channel)
     : channel_(channel),
       read_buffer_size_(0),
       write_pending_(false),
-      write_result_(0) {
-}
+      write_result_(0),
+      weak_factory_(this) {}
 
 ChannelMultiplexer::MuxSocket::~MuxSocket() {
   channel_->OnSocketDestroyed();
@@ -252,8 +250,9 @@ int ChannelMultiplexer::MuxSocket::Write(
   packet->mutable_data()->assign(buffer->data(), size);
 
   write_pending_ = true;
-  channel_->DoWrite(std::move(packet), base::Bind(
-      &ChannelMultiplexer::MuxSocket::OnWriteComplete, AsWeakPtr()));
+  channel_->DoWrite(std::move(packet),
+                    base::Bind(&ChannelMultiplexer::MuxSocket::OnWriteComplete,
+                               weak_factory_.GetWeakPtr()));
 
   // OnWriteComplete() might be called above synchronously.
   if (write_pending_) {

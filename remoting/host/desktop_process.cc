@@ -38,7 +38,8 @@ DesktopProcess::DesktopProcess(
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      daemon_channel_handle_(std::move(daemon_channel_handle)) {
+      daemon_channel_handle_(std::move(daemon_channel_handle)),
+      weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(base::MessageLoopForUI::IsCurrent());
 }
@@ -66,7 +67,7 @@ void DesktopProcess::InjectSas() {
   daemon_channel_->Send(new ChromotingDesktopDaemonMsg_InjectSas());
 }
 
-void DesktopProcess::LockWorkStation() {
+void DesktopProcess::LockWorkstation() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 #if defined(OS_WIN)
   if (base::win::OSInfo::GetInstance()->version_type() ==
@@ -145,7 +146,7 @@ bool DesktopProcess::Start(
 
   // Start the agent and create an IPC channel to talk to it.
   mojo::ScopedMessagePipeHandle desktop_pipe =
-      desktop_agent_->Start(AsWeakPtr());
+      desktop_agent_->Start(weak_factory_.GetWeakPtr());
 
   // Connect to the daemon.
   daemon_channel_ = IPC::ChannelProxy::Create(daemon_channel_handle_.release(),

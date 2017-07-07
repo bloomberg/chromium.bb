@@ -50,7 +50,8 @@ SignalingConnector::SignalingConnector(
       auth_failed_callback_(auth_failed_callback),
       dns_blackhole_checker_(std::move(dns_blackhole_checker)),
       oauth_token_getter_(oauth_token_getter),
-      reconnect_attempts_(0) {
+      reconnect_attempts_(0),
+      weak_factory_(this) {
   DCHECK(!auth_failed_callback_.is_null());
   DCHECK(dns_blackhole_checker_.get());
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -184,8 +185,8 @@ void SignalingConnector::OnDnsBlackholeCheckerDone(bool allow) {
 
   if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Attempting to connect signaling.";
-    oauth_token_getter_->CallWithToken(
-        base::Bind(&SignalingConnector::OnAccessToken, AsWeakPtr()));
+    oauth_token_getter_->CallWithToken(base::Bind(
+        &SignalingConnector::OnAccessToken, weak_factory_.GetWeakPtr()));
   }
 }
 

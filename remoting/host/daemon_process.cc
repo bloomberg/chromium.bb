@@ -46,10 +46,8 @@ std::ostream& operator<<(std::ostream& os, const ScreenResolution& resolution) {
 DaemonProcess::~DaemonProcess() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  host_event_logger_.reset();
-  weak_factory_.InvalidateWeakPtrs();
-
-  config_watcher_.reset();
+  host_event_logger_ = nullptr;
+  config_watcher_ = nullptr;
   DeleteAllDesktopSessions();
 }
 
@@ -67,18 +65,6 @@ void DaemonProcess::OnConfigWatcherError() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   Stop();
-}
-
-void DaemonProcess::AddStatusObserver(HostStatusObserver* observer) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  status_observers_.AddObserver(observer);
-}
-
-void DaemonProcess::RemoveStatusObserver(HostStatusObserver* observer) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  status_observers_.RemoveObserver(observer);
 }
 
 void DaemonProcess::OnChannelConnected(int32_t peer_pid) {
@@ -191,8 +177,8 @@ DaemonProcess::DaemonProcess(
       io_task_runner_(io_task_runner),
       next_terminal_id_(0),
       stopped_callback_(stopped_callback),
-      current_process_stats_("DaemonProcess"),
-      weak_factory_(this) {
+      status_monitor_(new HostStatusMonitor()),
+      current_process_stats_("DaemonProcess") {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
   // TODO(sammc): On OSX, mojo::edk::SetMachPortProvider() should be called with
   // a base::PortProvider implementation. Add it here when this code is used on
@@ -290,7 +276,7 @@ void DaemonProcess::Initialize() {
       caller_task_runner(), io_task_runner(), config_path));
   config_watcher_->Watch(this);
   host_event_logger_ =
-      HostEventLogger::Create(weak_factory_.GetWeakPtr(), kApplicationName);
+      HostEventLogger::Create(status_monitor_, kApplicationName);
 
   // Launch the process.
   LaunchNetworkProcess();

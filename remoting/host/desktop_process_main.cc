@@ -79,12 +79,15 @@ int DesktopProcessMain() {
   // Create a platform-dependent environment factory.
   std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory;
 #if defined(OS_WIN)
+  // base::Unretained() is safe here: |desktop_process| outlives run_loop.Run().
+  auto inject_sas_closure = base::Bind(&DesktopProcess::InjectSas,
+                                       base::Unretained(&desktop_process));
+  auto lock_workstation_closure = base::Bind(
+      &DesktopProcess::LockWorkstation, base::Unretained(&desktop_process));
+
   desktop_environment_factory.reset(new SessionDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,
-      ui_task_runner,
-      base::Bind(&DesktopProcess::InjectSas, desktop_process.AsWeakPtr()),
-      base::Bind(&DesktopProcess::LockWorkStation,
-                 desktop_process.AsWeakPtr())));
+      ui_task_runner, inject_sas_closure, lock_workstation_closure));
 #else  // !defined(OS_WIN)
   desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,
