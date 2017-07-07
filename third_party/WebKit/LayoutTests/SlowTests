@@ -385,6 +385,8 @@ crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter
 
 crbug.com/719298 fast/dnd/dropEffect-for-effectAllowed.html [ Slow ]
 
+crbug.com/725548 [ Debug ] storage/indexeddb/objectstore-keycursor.html [ Slow ]
+
 crbug.com/676572 [ Debug ] external/wpt/webstorage/storage_local_setitem_quotaexceedederr.html [ Slow ]
 
 # These tests were previously marked Slow in ASANExpectations.

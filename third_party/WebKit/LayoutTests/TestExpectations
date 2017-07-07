@@ -2774,7 +2774,6 @@ crbug.com/721435 external/wpt/image-decodes/image-decode-iframe.html [ Skip ]
 # Sheriff failures 2017-05-22
 crbug.com/725542 [ Debug ] editing/selection/doubleclick-beside-cr-span.html [ Pass Timeout ]
 crbug.com/725545 [ Debug ] fast/forms/number/number-stepup-stepdown-from-renderer.html [ Pass Timeout ]
-crbug.com/725548 [ Debug ] storage/indexeddb/objectstore-keycursor.html [ Pass Timeout ]
 
 # Sheriff failures 2017-05-23
 crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
