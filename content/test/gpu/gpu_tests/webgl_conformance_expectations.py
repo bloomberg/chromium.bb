@@ -92,6 +92,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    # Need to implement new lifetime/deletion semantics.
+    self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
+
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         bug=1619) # angle bug ID
@@ -208,6 +211,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
 
     # Win failures
+    self.Fail('conformance/glsl/bugs/angle-ambiguous-function-call.html',
+              bug=731324)
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
@@ -347,8 +352,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-vertex-array-object.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
+    # TODO(kbr): re-enable after fixing lifetime semantics. crbug.com/739604
+    # self.Fail('conformance/extensions/oes-vertex-array-object.html',
+    #     ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/glsl/bugs/' +
         'array-of-struct-with-int-first-position.html',
         ['win10', 'intel', 'opengl'], bug=680797)
