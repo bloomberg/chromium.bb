@@ -21,12 +21,9 @@ namespace media {
 namespace {
 
 const int kNoSampleRate = -1;
-const char kSoCreateFunction[] = "AudioPostProcessorShlib_Create";
 const char kProcessorKey[] = "processor";
 const char kNameKey[] = "name";
 }  // namespace
-
-using CreatePostProcessor = AudioPostProcessor* (*)(const std::string&, int);
 
 std::unique_ptr<PostProcessingPipeline> PostProcessingPipeline::Create(
     const std::string& name,
@@ -67,22 +64,16 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     const base::Value* processor_config_val;
     CHECK(processor_description_dict->Get("config", &processor_config_val));
     CHECK(processor_config_val->is_dict() || processor_config_val->is_string());
-    auto processor_config_string = SerializeToJson(*processor_config_val);
+    std::unique_ptr<std::string> processor_config_string =
+        SerializeToJson(*processor_config_val);
 
     LOG(INFO) << "Creating an instance of " << library_path << "("
               << *processor_config_string << ")";
-    libraries_.push_back(base::MakeUnique<base::ScopedNativeLibrary>(
-        base::FilePath(library_path)));
-    CHECK(libraries_.back()->is_valid())
-        << "Could not open post processing library " << library_path;
-    CreatePostProcessor create = reinterpret_cast<CreatePostProcessor>(
-        libraries_.back()->GetFunctionPointer(kSoCreateFunction));
 
-    CHECK(create) << "Could not find " << kSoCreateFunction << "() in "
-                  << library_path;
-    processors_.emplace_back(PostProcessorInfo{
-        base::WrapUnique(create(*processor_config_string, channels)),
-        processor_name});
+    processors_.emplace_back(
+        PostProcessorInfo{factory_.CreatePostProcessor(
+                              library_path, *processor_config_string, channels),
+                          processor_name});
   }
 }
 

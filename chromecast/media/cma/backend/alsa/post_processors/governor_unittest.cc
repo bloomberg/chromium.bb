@@ -11,10 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "chromecast/media/cma/backend/alsa/post_processor_factory.h"
 #include "chromecast/media/cma/backend/alsa/post_processors/governor.h"
 #include "chromecast/media/cma/backend/alsa/post_processors/post_processor_unittest.h"
-#include "media/base/audio_bus.h"
-#include "media/base/audio_sample_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
@@ -26,6 +25,7 @@ namespace {
 const char* kConfigTemplate =
     R"config({"onset_volume": %f, "clamp_multiplier": %f})config";
 
+const char kLibraryPath[] = "libcast_governor_1.0.so";
 const float kDefaultClamp = 0.6f;
 const int kNumFrames = 100;
 const int kFrequency = 2000;
@@ -111,24 +111,24 @@ INSTANTIATE_TEST_CASE_P(GovernorClampVolumeTest,
                         ::testing::Values(0.0f, 0.1f, 0.5f, 0.9f, 1.0f, 1.1f));
 
 // Default tests from post_processor_test
-TEST_P(PostProcessorTest, TestDelay) {
+TEST_P(PostProcessorTest, GovernorDelay) {
   std::string config = MakeConfigString(1.0, 1.0);
-  auto pp =
-      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  PostProcessorFactory factory;
+  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
   TestDelay(pp.get(), sample_rate_);
 }
 
-TEST_P(PostProcessorTest, TestRinging) {
+TEST_P(PostProcessorTest, GovernorRinging) {
   std::string config = MakeConfigString(1.0, 1.0);
-  auto pp =
-      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  PostProcessorFactory factory;
+  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
   TestRingingTime(pp.get(), sample_rate_);
 }
 
-TEST_P(PostProcessorTest, TestPassthrough) {
+TEST_P(PostProcessorTest, GovernorPassthrough) {
   std::string config = MakeConfigString(1.0, 1.0);
-  auto pp =
-      base::WrapUnique(AudioPostProcessorShlib_Create(config, kNumChannels));
+  PostProcessorFactory factory;
+  auto pp = factory.CreatePostProcessor(kLibraryPath, config, kNumChannels);
   TestPassthrough(pp.get(), sample_rate_);
 }
 

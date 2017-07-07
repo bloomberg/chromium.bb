@@ -55,8 +55,6 @@ class PostProcessingPipelineParser {
   const base::ListValue* GetMixPipeline();
   const base::ListValue* GetLinearizePipeline();
 
-  static std::string GetFilePath();
-
  private:
   const base::ListValue* GetPipelineByKey(const std::string& key);
 

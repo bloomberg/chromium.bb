@@ -75,10 +75,3 @@ void Governor::SetSlewTimeMsForTest(int slew_time_ms) {
 
 }  // namespace media
 }  // namespace chromecast
-
-chromecast::media::AudioPostProcessor* AudioPostProcessorShlib_Create(
-    const std::string& config,
-    int channels) {
-  return static_cast<chromecast::media::AudioPostProcessor*>(
-      new chromecast::media::Governor(config, channels));
-}

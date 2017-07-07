@@ -101,7 +101,9 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
   AudioContentType content_type;
   if (audio_device_id_ == kAlarmAudioDeviceId) {
     content_type = AudioContentType::kAlarm;
-  } else if (audio_device_id_ == kTtsAudioDeviceId) {
+  } else if (audio_device_id_ == kTtsAudioDeviceId ||
+             audio_device_id_ ==
+                 ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
     content_type = AudioContentType::kCommunication;
   } else {
     content_type = AudioContentType::kMedia;
