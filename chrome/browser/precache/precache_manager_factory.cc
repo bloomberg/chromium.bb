@@ -54,8 +54,6 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
       new PrecacheDatabase());
   base::FilePath db_path(browser_context->GetPath().Append(
       base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context));
   return new PrecacheManager(
       browser_context,
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
@@ -65,8 +63,6 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
           ServiceAccessType::IMPLICIT_ACCESS),
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context),
-      loading_predictor ? loading_predictor->resource_prefetch_predictor()
-                        : nullptr,
       db_path, std::move(precache_database));
 }
 

@@ -28,7 +28,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/precache/content/precache_manager.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -48,11 +47,6 @@ constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
 const uint32_t kVersionedRemovedExperiment = 0x03ff25e3;
 const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
 const uint32_t kNoStoreRemovedExperiment = 0xd90a199a;
-
-struct ManifestCompare {
-  bool operator()(const precache::PrecacheManifest& lhs,
-                  const precache::PrecacheManifest& rhs) const;
-};
 
 struct LastVisitTimeCompare {
   template <typename T>
@@ -99,9 +93,7 @@ struct PreconnectPrediction {
 //   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
 //   initiates resource prefetching using the ResourcePrefetcherManager. Owned
 //   by profile.
-class ResourcePrefetchPredictor
-    : public history::HistoryServiceObserver,
-      public precache::PrecacheManager::Delegate {
+class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
  public:
   // Data collected for origin-based prediction, for a single origin during a
   // page load (see PageRequestSummary).
@@ -194,8 +186,6 @@ class ResourcePrefetchPredictor
       GlowplugKeyValueData<PrefetchData, internal::LastVisitTimeCompare>;
   using RedirectDataMap =
       GlowplugKeyValueData<RedirectData, internal::LastVisitTimeCompare>;
-  using ManifestDataMap = GlowplugKeyValueData<precache::PrecacheManifest,
-                                               internal::ManifestCompare>;
   using OriginDataMap =
       GlowplugKeyValueData<OriginData, internal::LastVisitTimeCompare>;
   using NavigationMap =
@@ -228,10 +218,6 @@ class ResourcePrefetchPredictor
   // Returns true iff |resource| has sufficient confidence level and required
   // number of hits.
   bool IsResourcePrefetchable(const ResourceData& resource) const;
-
-  // precache::PrecacheManager::Delegate:
-  void OnManifestFetched(const std::string& host,
-                         const precache::PrecacheManifest& manifest) override;
 
   // Sets the |observer| to be notified when the resource prefetch predictor
   // data changes. Previously registered observer will be discarded. Call
@@ -287,12 +273,6 @@ class ResourcePrefetchPredictor
                            NavigationUrlNotInDBAndDBFull);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlInDB);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, ManifestHostNotInDB);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, ManifestHostInDB);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
-                           ManifestHostNotInDBAndDBFull);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
-                           ManifestUnusedRemoved);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRedirect);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -300,7 +280,6 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            PopulatePrefetcherRequest);
-  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, PopulateFromManifest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectEndpoint);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -349,19 +328,12 @@ class ResourcePrefetchPredictor
                                  const PrefetchDataMap& resource_data,
                                  std::vector<GURL>* urls) const;
 
-  // Returns true iff the manifest table contains PrecacheManifest that can be
-  // used for a |manifest_host| and fills |urls| with resources that need to be
-  // prefetched. |urls| may be nullptr to get the return value only.
-  bool PopulateFromManifest(const std::string& manifest_host,
-                            std::vector<GURL>* urls) const;
-
   // Callback for the task to read the predictor database. Takes ownership of
   // all arguments.
   void CreateCaches(std::unique_ptr<PrefetchDataMap> url_resource_data,
                     std::unique_ptr<PrefetchDataMap> host_resource_data,
                     std::unique_ptr<RedirectDataMap> url_redirect_data,
                     std::unique_ptr<RedirectDataMap> host_redirect_data,
-                    std::unique_ptr<ManifestDataMap> manifest_data,
                     std::unique_ptr<OriginDataMap> origin_data);
 
   // Called during initialization when history is read and the predictor
@@ -411,12 +383,6 @@ class ResourcePrefetchPredictor
   void OnHistoryServiceLoaded(
       history::HistoryService* history_service) override;
 
-  // Updates list of resources in the |resource_data| for the |key| according to
-  // the |manifest|.
-  void UpdatePrefetchDataByManifest(const std::string& key,
-                                    PrefetchDataMap* resource_data,
-                                    const precache::PrecacheManifest& manifest);
-
   // Used to connect to HistoryService or register for service loaded
   // notificatioan.
   void ConnectToHistoryService();
@@ -438,7 +404,6 @@ class ResourcePrefetchPredictor
   std::unique_ptr<PrefetchDataMap> host_resource_data_;
   std::unique_ptr<RedirectDataMap> url_redirect_data_;
   std::unique_ptr<RedirectDataMap> host_redirect_data_;
-  std::unique_ptr<ManifestDataMap> manifest_data_;
   std::unique_ptr<OriginDataMap> origin_data_;
 
   NavigationMap inflight_navigations_;

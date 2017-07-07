@@ -24,7 +24,6 @@ const char kUrlRedirectTableName[] = "resource_prefetch_predictor_url_redirect";
 const char kHostResourceTableName[] = "resource_prefetch_predictor_host";
 const char kHostRedirectTableName[] =
     "resource_prefetch_predictor_host_redirect";
-const char kManifestTableName[] = "resource_prefetch_predictor_manifest";
 const char kOriginTableName[] = "resource_prefetch_predictor_origin";
 
 const char kCreateGlobalMetadataStatementTemplate[] =
@@ -36,26 +35,6 @@ const char kCreateProtoTableStatementTemplate[] =
     "key TEXT, "
     "proto BLOB, "
     "PRIMARY KEY(key))";
-
-predictors::ResourceData::ResourceType PrecacheResourceTypeToResourceType(
-    precache::PrecacheResource::Type resource_type) {
-  using precache::PrecacheResource;
-  using predictors::ResourceData;
-  switch (resource_type) {
-    case PrecacheResource::RESOURCE_TYPE_IMAGE:
-      return ResourceData::RESOURCE_TYPE_IMAGE;
-    case PrecacheResource::RESOURCE_TYPE_FONT:
-      return ResourceData::RESOURCE_TYPE_FONT_RESOURCE;
-    case PrecacheResource::RESOURCE_TYPE_STYLESHEET:
-      return ResourceData::RESOURCE_TYPE_STYLESHEET;
-    case PrecacheResource::RESOURCE_TYPE_SCRIPT:
-      return ResourceData::RESOURCE_TYPE_SCRIPT;
-    case PrecacheResource::RESOURCE_TYPE_OTHER:
-    case PrecacheResource::RESOURCE_TYPE_UNKNOWN:
-    default:
-      return ResourceData::RESOURCE_TYPE_SUB_RESOURCE;
-  }
-}
 
 int GetResourceTypeMultiplier(
     predictors::ResourceData::ResourceType resource_type) {
@@ -144,9 +123,6 @@ ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables() {
       kHostResourceTableName);
   host_redirect_table_ = base::MakeUnique<GlowplugKeyValueTable<RedirectData>>(
       kHostRedirectTableName);
-  manifest_table_ =
-      base::MakeUnique<GlowplugKeyValueTable<precache::PrecacheManifest>>(
-          kManifestTableName);
   origin_table_ =
       base::MakeUnique<GlowplugKeyValueTable<OriginData>>(kOriginTableName);
 }
@@ -184,15 +160,6 @@ float ResourcePrefetchPredictorTables::ComputeResourceScore(
   return kMaxResourcesPerType *
              (priority_multiplier * 100 + type_multiplier * 10) -
          data.average_position();
-}
-
-// static
-float ResourcePrefetchPredictorTables::ComputePrecacheResourceScore(
-    const precache::PrecacheResource& resource) {
-  int type_multiplier = GetResourceTypeMultiplier(
-      PrecacheResourceTypeToResourceType(resource.type()));
-  // This means a strict ordering, since the weight_ratio is in [0,1).
-  return type_multiplier * 10 + resource.weight_ratio();
 }
 
 // static
@@ -250,10 +217,6 @@ GlowplugKeyValueTable<RedirectData>*
 ResourcePrefetchPredictorTables::host_redirect_table() {
   return host_redirect_table_.get();
 }
-GlowplugKeyValueTable<precache::PrecacheManifest>*
-ResourcePrefetchPredictorTables::manifest_table() {
-  return manifest_table_.get();
-}
 GlowplugKeyValueTable<OriginData>*
 ResourcePrefetchPredictorTables::origin_table() {
   return origin_table_.get();
@@ -272,6 +235,8 @@ bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
       "resource_prefetch_predictor_url_metadata";
   static const char kHostMetadataTableName[] =
       "resource_prefetch_predictor_host_metadata";
+  static const char kManifestTableName[] =
+      "resource_prefetch_predictor_manifest";
 
   if (incompatible_version) {
     for (const char* table_name :
@@ -334,7 +299,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
 
   for (const char* table_name :
        {kUrlResourceTableName, kHostResourceTableName, kUrlRedirectTableName,
-        kHostRedirectTableName, kManifestTableName, kOriginTableName}) {
+        kHostRedirectTableName, kOriginTableName}) {
     success = success &&
               (db->DoesTableExist(table_name) ||
                db->Execute(base::StringPrintf(

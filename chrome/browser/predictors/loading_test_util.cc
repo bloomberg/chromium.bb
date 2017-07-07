@@ -73,15 +73,6 @@ void InitializeRedirectStat(RedirectStat* redirect,
   redirect->set_consecutive_misses(consecutive_misses);
 }
 
-void InitializePrecacheResource(precache::PrecacheResource* resource,
-                                const std::string& url,
-                                double weight_ratio,
-                                precache::PrecacheResource::Type type) {
-  resource->set_url(url);
-  resource->set_weight_ratio(weight_ratio);
-  resource->set_type(type);
-}
-
 void InitializeOriginStat(OriginStat* origin_stat,
                           const std::string& origin,
                           int number_of_hits,
@@ -99,25 +90,6 @@ void InitializeOriginStat(OriginStat* origin_stat,
   origin_stat->set_accessed_network(accessed_network);
 }
 
-void InitializeExperiment(precache::PrecacheManifest* manifest,
-                          uint32_t experiment_id,
-                          const std::vector<bool>& bitset) {
-  std::string binary_bitset;
-  for (size_t i = 0; i < (bitset.size() + 7) / 8; ++i) {
-    char c = 0;
-    for (size_t j = 0; j < 8; ++j) {
-      if (i * 8 + j < bitset.size() && bitset[i * 8 + j])
-        c |= (1 << j);
-    }
-    binary_bitset.push_back(c);
-  }
-
-  precache::PrecacheResourceSelection prs;
-  prs.set_bitset(binary_bitset);
-  (*manifest->mutable_experiments()
-        ->mutable_resources_by_experiment_group())[experiment_id] = prs;
-}
-
 PrefetchData CreatePrefetchData(const std::string& primary_key,
                                 uint64_t last_visit_time) {
   PrefetchData data;
@@ -132,12 +104,6 @@ RedirectData CreateRedirectData(const std::string& primary_key,
   data.set_primary_key(primary_key);
   data.set_last_visit_time(last_visit_time);
   return data;
-}
-
-precache::PrecacheManifest CreateManifestData(int64_t id) {
-  precache::PrecacheManifest manifest;
-  manifest.mutable_id()->set_id(id);
-  return manifest;
 }
 
 OriginData CreateOriginData(const std::string& host, uint64_t last_visit_time) {
@@ -496,37 +462,3 @@ bool operator==(const PreconnectPrediction& lhs,
 }
 
 }  // namespace predictors
-
-namespace precache {
-
-std::ostream& operator<<(std::ostream& os, const PrecacheManifest& manifest) {
-  os << "[" << manifest.id().id() << "]" << std::endl;
-  for (const PrecacheResource& resource : manifest.resource())
-    os << "\t\t" << resource << std::endl;
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const PrecacheResource& resource) {
-  return os << "[" << resource.url() << "," << resource.top_host_name() << ","
-            << resource.weight_ratio() << "," << resource.weight() << "]";
-}
-
-bool operator==(const PrecacheManifest& lhs, const PrecacheManifest& rhs) {
-  bool equal = lhs.id().id() == rhs.id().id() &&
-               lhs.resource_size() == rhs.resource_size();
-
-  if (!equal)
-    return false;
-
-  for (int i = 0; i < lhs.resource_size(); ++i)
-    equal = equal && lhs.resource(i) == rhs.resource(i);
-
-  return equal;
-}
-
-bool operator==(const PrecacheResource& lhs, const PrecacheResource& rhs) {
-  return lhs.url() == rhs.url() &&
-         AlmostEqual(lhs.weight_ratio(), rhs.weight_ratio());
-}
-
-}  // namespace precache
