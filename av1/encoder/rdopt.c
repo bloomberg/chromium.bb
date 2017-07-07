@@ -4835,7 +4835,6 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                         ENTROPY_CONTEXT *left_ctx, RD_STATS *rd_stats) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
   const int tx_row = blk_row >> (1 - pd->subsampling_y);
@@ -4853,16 +4852,11 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
             : mbmi->inter_tx_size[tx_row][tx_col];
 
   if (tx_size == plane_tx_size) {
-    int i;
     ENTROPY_CONTEXT *ta = above_ctx + blk_col;
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
                       plane_bsize, ta, tl, rd_stats);
-
-    for (i = 0; i < tx_size_wide_unit[tx_size]; ++i)
-      ta[i] = !(p->eobs[block] == 0);
-    for (i = 0; i < tx_size_high_unit[tx_size]; ++i)
-      tl[i] = !(p->eobs[block] == 0);
+    av1_set_txb_context(x, plane, block, tx_size, ta, tl);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
