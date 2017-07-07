@@ -54,9 +54,9 @@
 
   test(function(t) {
     var ax = axElementById("element3");
-    assert_equals(ax.checked, "mixed");
+    assert_equals(ax.checked, "false");
   }, "A native radio that in a group with nothing checked" +
-      " must have the mixed state");
+      " must appear unchecked, not mixed");
 
   test(function(t) {
     var ax = axElementById("element4");
