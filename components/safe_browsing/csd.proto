@@ -483,7 +483,8 @@ message ClientDownloadRequest {
   // Fields 19-21 are reserved for server-side use and are never sent by the
   // client.
 
-  // A binary contained in an archive (e.g., a .zip archive).
+  // A binary or archive contained in an archive (e.g., a .exe in a .zip
+  // archive, or a .zip inside a .zip).
   message ArchivedBinary {
     optional string file_basename = 1;
     optional DownloadType download_type = 2;

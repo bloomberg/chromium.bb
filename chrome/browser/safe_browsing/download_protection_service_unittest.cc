@@ -1409,7 +1409,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     ASSERT_TRUE(HasClientDownloadRequest());
-    EXPECT_EQ(1, GetClientDownloadRequest()->archived_binary_size());
+    EXPECT_EQ(2, GetClientDownloadRequest()->archived_binary_size());
     EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
     EXPECT_EQ(ClientDownloadRequest_DownloadType_ZIPPED_EXECUTABLE,
               GetClientDownloadRequest()->download_type());
