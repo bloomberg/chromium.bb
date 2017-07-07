@@ -63,6 +63,13 @@ void ContentDecryptionModuleResultPromise::CompleteWithSession(
   Reject(kInvalidStateError, "Unexpected completion.");
 }
 
+void ContentDecryptionModuleResultPromise::CompleteWithKeyStatus(
+    WebEncryptedMediaKeyInformation::KeyStatus) {
+  if (!IsValidToFulfillPromise())
+    return;
+  Reject(kInvalidStateError, "Unexpected completion.");
+}
+
 void ContentDecryptionModuleResultPromise::CompleteWithError(
     WebContentDecryptionModuleException exception_code,
     unsigned long system_code,

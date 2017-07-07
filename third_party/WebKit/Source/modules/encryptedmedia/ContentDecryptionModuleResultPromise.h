@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/ContentDecryptionModuleResult.h"
+#include "public/platform/WebEncryptedMediaKeyInformation.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ class ContentDecryptionModuleResultPromise
       WebContentDecryptionModule*) override;
   void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus) override;
+  void CompleteWithKeyStatus(
+      WebEncryptedMediaKeyInformation::KeyStatus) override;
   void CompleteWithError(WebContentDecryptionModuleException,
                          unsigned long system_code,
                          const WebString&) override;

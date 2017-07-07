@@ -7,6 +7,7 @@
 
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebEncryptedMediaKeyInformation.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
 
 namespace blink {
@@ -22,6 +23,9 @@ class EncryptedMediaUtils {
   static WebEncryptedMediaSessionType ConvertToSessionType(
       const String& session_type);
   static String ConvertFromSessionType(WebEncryptedMediaSessionType);
+
+  static String ConvertKeyStatusToString(
+      const WebEncryptedMediaKeyInformation::KeyStatus);
 };
 
 }  // namespace blink

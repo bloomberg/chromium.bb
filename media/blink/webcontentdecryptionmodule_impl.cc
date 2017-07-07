@@ -101,6 +101,15 @@ void WebContentDecryptionModuleImpl::SetServerCertificate(
           new CdmResultPromise<>(result, std::string())));
 }
 
+void WebContentDecryptionModuleImpl::GetStatusForPolicy(
+    const blink::WebString& /* min_hdcp_version */,
+    blink::WebContentDecryptionModuleResult result) {
+  NOTIMPLEMENTED();
+  result.CompleteWithError(
+      blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
+      "Not Implemented");
+}
+
 scoped_refptr<ContentDecryptionModule>
 WebContentDecryptionModuleImpl::GetCdm() {
   return adapter_->GetCdm();

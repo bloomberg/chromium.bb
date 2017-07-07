@@ -46,6 +46,9 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
   virtual void SetServerCertificate(const unsigned char* certificate,
                                     size_t certificate_length,
                                     WebContentDecryptionModuleResult) = 0;
+
+  virtual void GetStatusForPolicy(const WebString& min_hdcp_version,
+                                  WebContentDecryptionModuleResult) = 0;
 };
 
 }  // namespace blink

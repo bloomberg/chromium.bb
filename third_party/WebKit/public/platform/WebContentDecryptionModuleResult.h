@@ -7,6 +7,7 @@
 
 #include "WebCommon.h"
 #include "WebContentDecryptionModuleException.h"
+#include "WebEncryptedMediaKeyInformation.h"
 #include "WebPrivatePtr.h"
 
 namespace blink {
@@ -51,6 +52,10 @@ class WebContentDecryptionModuleResult {
 
   // Called when the CDM completes a session operation.
   BLINK_PLATFORM_EXPORT void CompleteWithSession(SessionStatus);
+
+  // Called when the CDM completes getting key status for policy.
+  BLINK_PLATFORM_EXPORT void CompleteWithKeyStatus(
+      WebEncryptedMediaKeyInformation::KeyStatus);
 
   // Called when the operation fails.
   BLINK_PLATFORM_EXPORT void CompleteWithError(

@@ -36,12 +36,14 @@
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
+#include "modules/encryptedmedia/MediaKeysPolicy.h"
 #include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "public/platform/WebEncryptedMediaKeyInformation.h"
 
 #define MEDIA_KEYS_LOG_LEVEL 3
 
@@ -49,20 +51,41 @@ namespace blink {
 
 // A class holding a pending action.
 class MediaKeys::PendingAction final
-    : public GarbageCollected<MediaKeys::PendingAction> {
+    : public GarbageCollectedFinalized<MediaKeys::PendingAction> {
  public:
+  enum class Type { kSetServerCertificate, kGetStatusForPolicy };
+
+  Type GetType() const { return type_; }
+
   const Persistent<ContentDecryptionModuleResult> Result() const {
     return result_;
   }
 
-  DOMArrayBuffer* Data() const { return data_; }
+  DOMArrayBuffer* Data() const {
+    DCHECK_EQ(Type::kSetServerCertificate, type_);
+    return data_;
+  }
+
+  const String& StringData() const {
+    DCHECK_EQ(Type::kGetStatusForPolicy, type_);
+    return string_data_;
+  }
 
   static PendingAction* CreatePendingSetServerCertificate(
       ContentDecryptionModuleResult* result,
       DOMArrayBuffer* server_certificate) {
     DCHECK(result);
     DCHECK(server_certificate);
-    return new PendingAction(result, server_certificate);
+    return new PendingAction(Type::kSetServerCertificate, result,
+                             server_certificate, String());
+  }
+
+  static PendingAction* CreatePendingGetStatusForPolicy(
+      ContentDecryptionModuleResult* result,
+      const String& min_hdcp_version) {
+    DCHECK(result);
+    return new PendingAction(Type::kGetStatusForPolicy, result, nullptr,
+                             min_hdcp_version);
   }
 
   DEFINE_INLINE_TRACE() {
@@ -71,11 +94,16 @@ class MediaKeys::PendingAction final
   }
 
  private:
-  PendingAction(ContentDecryptionModuleResult* result, DOMArrayBuffer* data)
-      : result_(result), data_(data) {}
+  PendingAction(Type type,
+                ContentDecryptionModuleResult* result,
+                DOMArrayBuffer* data,
+                const String& string_data)
+      : type_(type), result_(result), data_(data), string_data_(string_data) {}
 
+  const Type type_;
   const Member<ContentDecryptionModuleResult> result_;
   const Member<DOMArrayBuffer> data_;
+  const String string_data_;
 };
 
 // This class wraps the promise resolver used when setting the certificate
@@ -90,7 +118,7 @@ class SetCertificateResultPromise
       : ContentDecryptionModuleResultPromise(script_state),
         media_keys_(media_keys) {}
 
-  ~SetCertificateResultPromise() override {}
+  ~SetCertificateResultPromise() override = default;
 
   // ContentDecryptionModuleResult implementation.
   void Complete() override {
@@ -125,6 +153,40 @@ class SetCertificateResultPromise
   }
 
  private:
+  // Keeping a reference to MediaKeys to prevent GC from collecting it while
+  // the promise is pending.
+  Member<MediaKeys> media_keys_;
+};
+
+// This class wraps the promise resolver used when getting the key status for
+// policy and is passed to Chromium to fullfill the promise.
+class GetStatusForPolicyResultPromise
+    : public ContentDecryptionModuleResultPromise {
+ public:
+  GetStatusForPolicyResultPromise(ScriptState* script_state,
+                                  MediaKeys* media_keys)
+      : ContentDecryptionModuleResultPromise(script_state),
+        media_keys_(media_keys) {}
+
+  ~GetStatusForPolicyResultPromise() override = default;
+
+  // ContentDecryptionModuleResult implementation.
+  void CompleteWithKeyStatus(
+      WebEncryptedMediaKeyInformation::KeyStatus key_status) override {
+    if (!IsValidToFulfillPromise())
+      return;
+
+    Resolve(EncryptedMediaUtils::ConvertKeyStatusToString(key_status));
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(media_keys_);
+    ContentDecryptionModuleResultPromise::Trace(visitor);
+  }
+
+ private:
+  // Keeping a reference to MediaKeys to prevent GC from collecting it while
+  // the promise is pending.
   Member<MediaKeys> media_keys_;
 };
 
@@ -220,7 +282,7 @@ ScriptPromise MediaKeys::setServerCertificate(
       new SetCertificateResultPromise(script_state, this);
   ScriptPromise promise = result->Promise();
 
-  // 5. Run the following steps asynchronously (documented in timerFired()).
+  // 5. Run the following steps asynchronously. See SetServerCertificateTask().
   pending_actions_.push_back(PendingAction::CreatePendingSetServerCertificate(
       result, server_certificate_buffer));
   if (!timer_.IsActive())
@@ -228,6 +290,55 @@ ScriptPromise MediaKeys::setServerCertificate(
 
   // 6. Return promise.
   return promise;
+}
+
+void MediaKeys::SetServerCertificateTask(
+    DOMArrayBuffer* server_certificate,
+    ContentDecryptionModuleResult* result) {
+  DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // 5.1 Let cdm be the cdm during the initialization of this object.
+  WebContentDecryptionModule* cdm = ContentDecryptionModule();
+
+  // 5.2 Use the cdm to process certificate.
+  cdm->SetServerCertificate(
+      static_cast<unsigned char*>(server_certificate->Data()),
+      server_certificate->ByteLength(), result->Result());
+
+  // 5.3 If any of the preceding steps failed, reject promise with a
+  //     new DOMException whose name is the appropriate error name.
+  // 5.4 Resolve promise.
+  // (These are handled by Chromium and the CDM.)
+}
+
+ScriptPromise MediaKeys::getStatusForPolicy(
+    ScriptState* script_state,
+    const MediaKeysPolicy& media_keys_policy) {
+  // TODO(xhwang): Pass MediaKeysPolicy classes all the way to Chromium when
+  // we have more than one policy to check.
+  String min_hdcp_version = media_keys_policy.minHdcpVersion();
+
+  // Let promise be a new promise.
+  GetStatusForPolicyResultPromise* result =
+      new GetStatusForPolicyResultPromise(script_state, this);
+  ScriptPromise promise = result->Promise();
+
+  // Run the following steps asynchronously. See GetStatusForPolicyTask().
+  pending_actions_.push_back(
+      PendingAction::CreatePendingGetStatusForPolicy(result, min_hdcp_version));
+  if (!timer_.IsActive())
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
+
+  // Return promise.
+  return promise;
+}
+
+void MediaKeys::GetStatusForPolicyTask(const String& min_hdcp_version,
+                                       ContentDecryptionModuleResult* result) {
+  DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << ": " << min_hdcp_version;
+
+  WebContentDecryptionModule* cdm = ContentDecryptionModule();
+  cdm->GetStatusForPolicy(min_hdcp_version, result->Result());
 }
 
 bool MediaKeys::ReserveForMediaElement(HTMLMediaElement* media_element) {
@@ -274,19 +385,16 @@ void MediaKeys::TimerFired(TimerBase*) {
 
   while (!pending_actions.IsEmpty()) {
     PendingAction* action = pending_actions.TakeFirst();
-    DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ") Certificate";
 
-    // 5.1 Let cdm be the cdm during the initialization of this object.
-    WebContentDecryptionModule* cdm = ContentDecryptionModule();
+    switch (action->GetType()) {
+      case PendingAction::Type::kSetServerCertificate:
+        SetServerCertificateTask(action->Data(), action->Result());
+        break;
 
-    // 5.2 Use the cdm to process certificate.
-    cdm->SetServerCertificate(
-        static_cast<unsigned char*>(action->Data()->Data()),
-        action->Data()->ByteLength(), action->Result()->Result());
-    // 5.3 If any of the preceding steps failed, reject promise with a
-    //     new DOMException whose name is the appropriate error name.
-    // 5.4 Resolve promise.
-    // (These are handled by Chromium and the CDM.)
+      case PendingAction::Type::kGetStatusForPolicy:
+        GetStatusForPolicyTask(action->StringData(), action->Result());
+        break;
+    }
   }
 }
 

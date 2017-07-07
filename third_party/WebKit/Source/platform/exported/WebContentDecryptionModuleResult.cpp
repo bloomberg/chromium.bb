@@ -25,6 +25,12 @@ void WebContentDecryptionModuleResult::CompleteWithSession(
   Reset();
 }
 
+void WebContentDecryptionModuleResult::CompleteWithKeyStatus(
+    WebEncryptedMediaKeyInformation::KeyStatus key_status) {
+  impl_->CompleteWithKeyStatus(key_status);
+  Reset();
+}
+
 void WebContentDecryptionModuleResult::CompleteWithError(
     WebContentDecryptionModuleException exception,
     unsigned long system_code,

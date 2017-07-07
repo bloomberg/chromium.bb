@@ -48,6 +48,10 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
       size_t server_certificate_length,
       blink::WebContentDecryptionModuleResult result) override;
 
+  void GetStatusForPolicy(
+      const blink::WebString& min_hdcp_version,
+      blink::WebContentDecryptionModuleResult result) override;
+
   // Returns a reference to the CDM used by |adapter_|.
   scoped_refptr<ContentDecryptionModule> GetCdm();
 
