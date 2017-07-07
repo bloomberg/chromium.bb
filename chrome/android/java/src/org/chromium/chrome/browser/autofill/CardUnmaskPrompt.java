@@ -200,6 +200,7 @@ public class CardUnmaskPrompt
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(confirmButtonLabel, null)
                 .create();
+        mDialog.setCanceledOnTouchOutside(false);
         mDialog.setOnDismissListener(this);
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
