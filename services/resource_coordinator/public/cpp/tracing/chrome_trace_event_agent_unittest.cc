@@ -89,16 +89,18 @@ class ChromeTraceEventAgentTest : public testing::Test {
     message_loop_.reset();
   }
 
-  void StartTracing(const std::string& categories, base::Closure quit_closure) {
+  void StartTracing(const std::string& categories) {
+    agent_->StartTracing(
+        base::trace_event::TraceConfig(categories, "").ToString(),
+        base::BindRepeating([] {}));
+  }
+
+  void StopAndFlush(base::Closure quit_closure) {
     mojom::RecorderPtr recorder_ptr;
     recorder_.reset(new MockRecorder(MakeRequest(&recorder_ptr)));
     recorder_->set_quit_closure(quit_closure);
-    agent_->StartTracing(
-        base::trace_event::TraceConfig(categories, "").ToString(),
-        std::move(recorder_ptr), base::BindRepeating([] {}));
+    agent_->StopAndFlush(std::move(recorder_ptr));
   }
-
-  void StopAndFlush() { agent_->StopAndFlush(); }
 
   void AddMetadataGeneratorFunction(
       ChromeTraceEventAgent::MetadataGeneratorFunction generator) {
@@ -130,19 +132,19 @@ class ChromeTraceEventAgentTest : public testing::Test {
 TEST_F(ChromeTraceEventAgentTest, StartTracing) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
   base::RunLoop run_loop;
-  StartTracing("*", run_loop.QuitClosure());
+  StartTracing("*");
   EXPECT_TRUE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
-  StopAndFlush();
+  StopAndFlush(run_loop.QuitClosure());
   run_loop.Run();
 }
 
 TEST_F(ChromeTraceEventAgentTest, StopAndFlushEvents) {
   EXPECT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
   base::RunLoop run_loop;
-  StartTracing(kTestCategory, run_loop.QuitClosure());
+  StartTracing(kTestCategory);
   TRACE_EVENT_INSTANT0(kTestCategory, "event1", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0(kTestCategory, "event2", TRACE_EVENT_SCOPE_THREAD);
-  StopAndFlush();
+  StopAndFlush(run_loop.QuitClosure());
   run_loop.Run();
 
   auto* mock_recorder = recorder();
@@ -167,8 +169,8 @@ TEST_F(ChromeTraceEventAgentTest, StopAndFlushMetadata) {
     metadata_dict->SetString(kTestMetadataKey, "test metadata");
     return metadata_dict;
   }));
-  StartTracing(kTestCategory, run_loop.QuitClosure());
-  StopAndFlush();
+  StartTracing(kTestCategory);
+  StopAndFlush(run_loop.QuitClosure());
   run_loop.Run();
 
   auto* mock_recorder = recorder();
