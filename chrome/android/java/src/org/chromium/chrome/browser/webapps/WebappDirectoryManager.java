@@ -111,28 +111,24 @@ public class WebappDirectoryManager {
             }
         }
 
-        if (webappBaseDirectory != null) {
-            // Delete all web app directories in the main directory, which were for pre-L web apps.
-            File appDirectory = new File(context.getApplicationInfo().dataDir);
-            String webappDirectoryAppBaseName = webappBaseDirectory.getName();
-            File[] files = appDirectory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    String filename = file.getName();
-                    if (!filename.startsWith(webappDirectoryAppBaseName)) continue;
-                    if (filename.length() == webappDirectoryAppBaseName.length()) continue;
-                    directoriesToDelete.add(file);
-                }
+        // Delete all web app directories in the main directory, which were for pre-L web apps.
+        File appDirectory = new File(context.getApplicationInfo().dataDir);
+        String webappDirectoryAppBaseName = webappBaseDirectory.getName();
+        File[] files = appDirectory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String filename = file.getName();
+                if (!filename.startsWith(webappDirectoryAppBaseName)) continue;
+                if (filename.length() == webappDirectoryAppBaseName.length()) continue;
+                directoriesToDelete.add(file);
             }
+        }
 
-            // Clean out web app directories no longer corresponding to tasks in Recents.
-            if (webappBaseDirectory.exists()) {
-                files = webappBaseDirectory.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (!liveWebapps.contains(file.getName())) directoriesToDelete.add(file);
-                    }
-                }
+        // Clean out web app directories no longer corresponding to tasks in Recents.
+        files = webappBaseDirectory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (!liveWebapps.contains(file.getName())) directoriesToDelete.add(file);
             }
         }
     }
