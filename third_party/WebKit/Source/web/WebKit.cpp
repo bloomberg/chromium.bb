@@ -88,6 +88,7 @@ bool FontAntialiasingEnabledForTest() {
 void ResetPluginCache(bool reload_pages) {
   DCHECK(!reload_pages);
   Page::RefreshPlugins();
+  Page::ResetPluginData();
 }
 
 void DecommitFreeableMemory() {

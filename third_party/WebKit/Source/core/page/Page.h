@@ -134,8 +134,15 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   ViewportDescription GetViewportDescription() const;
 
-  static void RefreshPlugins();
+  // Returns the plugin data associated with |main_frame_origin|.
   PluginData* GetPluginData(SecurityOrigin* main_frame_origin);
+
+  // Refreshes the browser-side plugin cache.
+  static void RefreshPlugins();
+
+  // Resets the plugin data for all pages in the renderer process and notifies
+  // PluginsChangedObservers.
+  static void ResetPluginData();
 
   EditorClient& GetEditorClient() const { return *editor_client_; }
   SpellCheckerClient& GetSpellCheckerClient() const {
@@ -304,6 +311,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // ScopedPageSuspender helpers.
   void SetSuspended(bool);
+
+  // Notify |plugins_changed_observers_| that plugins have changed.
+  void NotifyPluginsChanged() const;
 
   Member<PageAnimator> animator_;
   const Member<AutoscrollController> autoscroll_controller_;
