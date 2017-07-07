@@ -436,6 +436,8 @@ void XMLDocumentParser::InsertErrorMessageBlock() {
 void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
   DCHECK_EQ(unused_resource, pending_script_);
 
+  pending_script_->CheckResourceIntegrity(*GetDocument());
+
   ScriptSourceCode source_code(pending_script_.Get());
   bool error_occurred = pending_script_->ErrorOccurred();
   bool was_canceled = pending_script_->WasCanceled();
