@@ -39,19 +39,19 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void GetNextMagicWindowPose(
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) = 0;
 
-  virtual void AddDisplay(VRDisplayImpl* display);
-  virtual void RemoveDisplay(VRDisplayImpl* display);
+  void AddDisplay(VRDisplayImpl* display);
+  void RemoveDisplay(VRDisplayImpl* display);
 
-  virtual bool IsAccessAllowed(VRDisplayImpl* display);
-  virtual bool CheckPresentingDisplay(VRDisplayImpl* display);
+  bool IsAccessAllowed(VRDisplayImpl* display);
+  bool CheckPresentingDisplay(VRDisplayImpl* display);
 
-  virtual void OnChanged();
-  virtual void OnExitPresent();
-  virtual void OnBlur();
-  virtual void OnFocus();
-  virtual void OnActivate(mojom::VRDisplayEventReason reason,
-                          const base::Callback<void(bool)>& on_handled);
-  virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
+  void OnChanged();
+  void OnExitPresent();
+  void OnBlur();
+  void OnFocus();
+  void OnActivate(mojom::VRDisplayEventReason reason,
+                  const base::Callback<void(bool)>& on_handled);
+  void OnDeactivate(mojom::VRDisplayEventReason reason);
 
  protected:
   friend class VRDisplayImpl;
