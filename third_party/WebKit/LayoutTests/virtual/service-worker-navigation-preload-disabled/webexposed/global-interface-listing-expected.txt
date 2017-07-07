@@ -4053,7 +4053,12 @@ interface MediaKeys
     attribute @@toStringTag
     method constructor
     method createSession
+    method getStatusForPolicy
     method setServerCertificate
+interface MediaKeysPolicy
+    attribute @@toStringTag
+    getter minHdcpVersion
+    method constructor
 interface MediaList
     attribute @@toStringTag
     getter length

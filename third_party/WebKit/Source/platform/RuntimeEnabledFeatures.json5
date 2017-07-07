@@ -388,6 +388,10 @@
       status: "stable",
     },
     {
+      name: "EncryptedMediaHdcpPolicyCheck",
+      status: "test",
+    },
+    {
       name: "ExecCommandInJavaScript",
       status: "test",
     },

@@ -13,6 +13,7 @@ const char kPersistentLicense[] = "persistent-license";
 
 }  // namespace
 
+// static
 WebEncryptedMediaInitDataType EncryptedMediaUtils::ConvertToInitDataType(
     const String& init_data_type) {
   if (init_data_type == "cenc")
@@ -26,6 +27,7 @@ WebEncryptedMediaInitDataType EncryptedMediaUtils::ConvertToInitDataType(
   return WebEncryptedMediaInitDataType::kUnknown;
 }
 
+// static
 String EncryptedMediaUtils::ConvertFromInitDataType(
     WebEncryptedMediaInitDataType init_data_type) {
   switch (init_data_type) {
@@ -45,6 +47,7 @@ String EncryptedMediaUtils::ConvertFromInitDataType(
   return String();
 }
 
+// static
 WebEncryptedMediaSessionType EncryptedMediaUtils::ConvertToSessionType(
     const String& session_type) {
   if (session_type == kTemporary)
@@ -56,6 +59,7 @@ WebEncryptedMediaSessionType EncryptedMediaUtils::ConvertToSessionType(
   return WebEncryptedMediaSessionType::kUnknown;
 }
 
+// static
 String EncryptedMediaUtils::ConvertFromSessionType(
     WebEncryptedMediaSessionType session_type) {
   switch (session_type) {
@@ -73,6 +77,30 @@ String EncryptedMediaUtils::ConvertFromSessionType(
 
   NOTREACHED();
   return String();
+}
+
+// static
+String EncryptedMediaUtils::ConvertKeyStatusToString(
+    const WebEncryptedMediaKeyInformation::KeyStatus status) {
+  switch (status) {
+    case WebEncryptedMediaKeyInformation::KeyStatus::kUsable:
+      return "usable";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kExpired:
+      return "expired";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kReleased:
+      return "released";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kOutputRestricted:
+      return "output-restricted";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kOutputDownscaled:
+      return "output-downscaled";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kStatusPending:
+      return "status-pending";
+    case WebEncryptedMediaKeyInformation::KeyStatus::kInternalError:
+      return "internal-error";
+  }
+
+  NOTREACHED();
+  return "internal-error";
 }
 
 }  // namespace blink

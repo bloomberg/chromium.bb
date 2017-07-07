@@ -87,6 +87,12 @@ class SetContentDecryptionModuleResult final
     (*failure_callback_)(kInvalidStateError, "Unexpected completion.");
   }
 
+  void CompleteWithKeyStatus(
+      WebEncryptedMediaKeyInformation::KeyStatus key_status) override {
+    NOTREACHED();
+    (*failure_callback_)(kInvalidStateError, "Unexpected completion.");
+  }
+
   void CompleteWithError(WebContentDecryptionModuleException code,
                          unsigned long system_code,
                          const WebString& message) override {

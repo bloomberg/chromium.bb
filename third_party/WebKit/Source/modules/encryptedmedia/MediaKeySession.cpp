@@ -103,29 +103,6 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
   return false;
 }
 
-static String ConvertKeyStatusToString(
-    const WebEncryptedMediaKeyInformation::KeyStatus status) {
-  switch (status) {
-    case WebEncryptedMediaKeyInformation::KeyStatus::kUsable:
-      return "usable";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kExpired:
-      return "expired";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kReleased:
-      return "released";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kOutputRestricted:
-      return "output-restricted";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kOutputDownscaled:
-      return "output-downscaled";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kStatusPending:
-      return "status-pending";
-    case WebEncryptedMediaKeyInformation::KeyStatus::kInternalError:
-      return "internal-error";
-  }
-
-  NOTREACHED();
-  return "internal-error";
-}
-
 static ScriptPromise CreateRejectedPromiseNotCallable(
     ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
@@ -149,7 +126,7 @@ static ScriptPromise CreateRejectedPromiseAlreadyInitialized(
 }
 
 // A class holding a pending action.
-class MediaKeySession::PendingAction
+class MediaKeySession::PendingAction final
     : public GarbageCollectedFinalized<MediaKeySession::PendingAction> {
  public:
   enum Type { kGenerateRequest, kLoad, kUpdate, kClose, kRemove };
@@ -988,8 +965,8 @@ void MediaKeySession::KeysStatusesChange(
     const auto& key = keys[i];
     // 4.2.2 Insert an entry for pair's key ID into statuses with the
     //       value of pair's MediaKeyStatus value.
-    key_statuses_map_->AddEntry(key.Id(),
-                                ConvertKeyStatusToString(key.Status()));
+    key_statuses_map_->AddEntry(
+        key.Id(), EncryptedMediaUtils::ConvertKeyStatusToString(key.Status()));
   }
 
   // 5. Queue a task to fire a simple event named keystatuseschange

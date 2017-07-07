@@ -45,6 +45,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class HTMLMediaElement;
+class MediaKeysPolicy;
 class MediaKeySession;
 class ScriptState;
 class WebContentDecryptionModule;
@@ -71,6 +72,8 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
 
   ScriptPromise setServerCertificate(ScriptState*,
                                      const DOMArrayPiece& server_certificate);
+
+  ScriptPromise getStatusForPolicy(ScriptState*, const MediaKeysPolicy&);
 
   // Indicates that the provided HTMLMediaElement wants to use this object.
   // Returns true if no other HTMLMediaElement currently references this
@@ -106,6 +109,11 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
       const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
       std::unique_ptr<WebContentDecryptionModule>);
   class PendingAction;
+
+  void SetServerCertificateTask(DOMArrayBuffer* server_certificate,
+                                ContentDecryptionModuleResult*);
+  void GetStatusForPolicyTask(const String& min_hdcp_version,
+                              ContentDecryptionModuleResult*);
 
   bool SessionTypeSupported(WebEncryptedMediaSessionType);
   void TimerFired(TimerBase*);
