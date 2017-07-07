@@ -14,7 +14,7 @@
 namespace blink {
 namespace scheduler {
 
-class DeadlineTaskRunnerTest : public testing::Test {
+class DeadlineTaskRunnerTest : public ::testing::Test {
  public:
   DeadlineTaskRunnerTest() {}
   ~DeadlineTaskRunnerTest() override {}
@@ -45,7 +45,7 @@ TEST_F(DeadlineTaskRunnerTest, RunOnce) {
   deadline_task_runner_->SetDeadline(FROM_HERE, delay, clock_->NowTicks());
   RunUntilIdle();
 
-  EXPECT_THAT(run_times_, testing::ElementsAre(start_time + delay));
+  EXPECT_THAT(run_times_, ::testing::ElementsAre(start_time + delay));
 };
 
 TEST_F(DeadlineTaskRunnerTest, RunTwice) {
@@ -59,7 +59,7 @@ TEST_F(DeadlineTaskRunnerTest, RunTwice) {
   deadline_task_runner_->SetDeadline(FROM_HERE, delay2, clock_->NowTicks());
   RunUntilIdle();
 
-  EXPECT_THAT(run_times_, testing::ElementsAre(deadline1, deadline2));
+  EXPECT_THAT(run_times_, ::testing::ElementsAre(deadline1, deadline2));
 };
 
 TEST_F(DeadlineTaskRunnerTest, EarlierDeadlinesTakePrecidence) {
@@ -73,7 +73,7 @@ TEST_F(DeadlineTaskRunnerTest, EarlierDeadlinesTakePrecidence) {
 
   RunUntilIdle();
 
-  EXPECT_THAT(run_times_, testing::ElementsAre(start_time + delay1));
+  EXPECT_THAT(run_times_, ::testing::ElementsAre(start_time + delay1));
 };
 
 TEST_F(DeadlineTaskRunnerTest, LaterDeadlinesIgnored) {
@@ -85,7 +85,7 @@ TEST_F(DeadlineTaskRunnerTest, LaterDeadlinesIgnored) {
 
   RunUntilIdle();
 
-  EXPECT_THAT(run_times_, testing::ElementsAre(start_time + delay100));
+  EXPECT_THAT(run_times_, ::testing::ElementsAre(start_time + delay100));
 };
 
 TEST_F(DeadlineTaskRunnerTest, DeleteDeadlineTaskRunnerAfterPosting) {

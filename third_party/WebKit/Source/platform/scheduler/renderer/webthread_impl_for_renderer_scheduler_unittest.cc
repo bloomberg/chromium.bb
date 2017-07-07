@@ -39,7 +39,7 @@ class MockTaskObserver : public blink::WebThread::TaskObserver {
 };
 }  // namespace
 
-class WebThreadImplForRendererSchedulerTest : public testing::Test {
+class WebThreadImplForRendererSchedulerTest : public ::testing::Test {
  public:
   WebThreadImplForRendererSchedulerTest() {}
 
@@ -77,7 +77,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestTaskObserver) {
   MockTask task;
 
   {
-    testing::InSequence sequence;
+    ::testing::InSequence sequence;
     EXPECT_CALL(observer, WillProcessTask());
     EXPECT_CALL(task, Run());
     EXPECT_CALL(observer, DidProcessTask());
@@ -96,7 +96,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithOneTask) {
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
-    testing::InSequence sequence;
+    ::testing::InSequence sequence;
     EXPECT_CALL(observer, WillProcessTask());
     EXPECT_CALL(task, Run());
     EXPECT_CALL(observer, DidProcessTask());
@@ -116,7 +116,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithTwoTasks) {
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
-    testing::InSequence sequence;
+    ::testing::InSequence sequence;
     EXPECT_CALL(observer, WillProcessTask());
     EXPECT_CALL(task1, Run());
     EXPECT_CALL(observer, DidProcessTask());
@@ -143,7 +143,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestWorkBatchWithThreeTasks) {
 
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
-    testing::InSequence sequence;
+    ::testing::InSequence sequence;
     EXPECT_CALL(observer, WillProcessTask());
     EXPECT_CALL(task1, Run());
     EXPECT_CALL(observer, DidProcessTask());
@@ -183,7 +183,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
   thread_->AddTaskObserver(&observer);
 
   {
-    testing::InSequence sequence;
+    ::testing::InSequence sequence;
 
     // One callback for EnterRunLoop.
     EXPECT_CALL(observer, WillProcessTask());

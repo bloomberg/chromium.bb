@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class CompositorTest : public testing::Test {
+class CompositorTest : public ::testing::Test {
   WTF_MAKE_NONCOPYABLE(CompositorTest);
 
  public:

@@ -53,12 +53,12 @@
 
 #include <memory>
 
-using testing::AnyNumber;
-using testing::AtLeast;
-using testing::InSequence;
-using testing::Return;
-using testing::Test;
-using testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::InSequence;
+using ::testing::Return;
+using ::testing::Test;
+using ::testing::_;
 
 namespace blink {
 

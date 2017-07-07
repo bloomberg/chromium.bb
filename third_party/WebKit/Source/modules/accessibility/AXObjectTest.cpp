@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class AXObjectTest : public testing::Test {
+class AXObjectTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
 

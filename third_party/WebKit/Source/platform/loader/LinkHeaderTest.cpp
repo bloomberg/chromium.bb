@@ -175,7 +175,7 @@ TEST_P(SingleLinkHeaderTest, Single) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         SingleLinkHeaderTest,
-                        testing::ValuesIn(g_single_test_cases));
+                        ::testing::ValuesIn(g_single_test_cases));
 
 struct DoubleTestCase {
   const char* header_value;
@@ -219,7 +219,7 @@ TEST_P(DoubleLinkHeaderTest, Double) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         DoubleLinkHeaderTest,
-                        testing::ValuesIn(g_double_test_cases));
+                        ::testing::ValuesIn(g_double_test_cases));
 
 struct CrossOriginTestCase {
   const char* header_value;
@@ -281,7 +281,7 @@ TEST_P(CrossOriginLinkHeaderTest, CrossOrigin) {
 
 INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
                         CrossOriginLinkHeaderTest,
-                        testing::ValuesIn(g_cross_origin_test_cases));
+                        ::testing::ValuesIn(g_cross_origin_test_cases));
 
 }  // namespace
 }  // namespace blink

@@ -22,7 +22,7 @@
 namespace blink {
 namespace scheduler {
 
-class WebFrameSchedulerImplTest : public testing::Test {
+class WebFrameSchedulerImplTest : public ::testing::Test {
  public:
   WebFrameSchedulerImplTest() {}
   ~WebFrameSchedulerImplTest() override {}

@@ -16,7 +16,7 @@ class TimeDomain;
 
 namespace internal {
 
-class WorkQueueSetsTest : public testing::Test {
+class WorkQueueSetsTest : public ::testing::Test {
  public:
   void SetUp() override {
     work_queue_sets_.reset(new WorkQueueSets(kNumSets, "test"));

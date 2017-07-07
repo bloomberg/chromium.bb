@@ -20,8 +20,8 @@ namespace blink {
 
 namespace {
 
-using testing::_;
-using testing::Return;
+using ::testing::_;
+using ::testing::Return;
 
 class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
  public:
@@ -32,7 +32,7 @@ class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
 
 }  // namespace
 
-using ScrollableAreaTest = testing::Test;
+using ScrollableAreaTest = ::testing::Test;
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>

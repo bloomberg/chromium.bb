@@ -33,13 +33,13 @@
 #include "platform/scheduler/base/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::AnyNumber;
-using testing::Contains;
-using testing::ElementsAre;
-using testing::ElementsAreArray;
-using testing::Mock;
-using testing::Not;
-using testing::_;
+using ::testing::AnyNumber;
+using ::testing::Contains;
+using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
+using ::testing::Mock;
+using ::testing::Not;
+using ::testing::_;
 using blink::scheduler::internal::EnqueueOrder;
 
 namespace blink {
@@ -83,7 +83,7 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
   ~MessageLoopTaskRunner() override {}
 };
 
-class TaskQueueManagerTest : public testing::Test {
+class TaskQueueManagerTest : public ::testing::Test {
  public:
   TaskQueueManagerTest() {}
   void DeleteTaskQueueManager() { manager_.reset(); }
@@ -1781,7 +1781,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
       .Times(1);
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay1s);
   runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay10s);
-  testing::Mock::VerifyAndClearExpectations(&observer);
+  ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter0 =
       runners_[0]->CreateQueueEnabledVoter();

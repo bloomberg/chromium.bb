@@ -40,7 +40,7 @@ struct SegmenterExpectedRun {
         font_fallback_priority(the_font_fallback_priority) {}
 };
 
-class RunSegmenterTest : public testing::Test {
+class RunSegmenterTest : public ::testing::Test {
  protected:
   void CheckRuns(const Vector<SegmenterTestRun>& runs,
                  FontOrientation orientation) {

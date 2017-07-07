@@ -25,7 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+using ::testing::ElementsAre;
 
 namespace {
 bool MessageLoopTaskCounter(size_t* count) {
@@ -85,7 +85,7 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
 
 }  // namespace
 
-class TaskQueueThrottlerTest : public testing::Test {
+class TaskQueueThrottlerTest : public ::testing::Test {
  public:
   TaskQueueThrottlerTest() {}
   ~TaskQueueThrottlerTest() override {}

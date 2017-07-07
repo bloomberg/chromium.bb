@@ -27,7 +27,7 @@ class TestClass {
   base::WeakPtrFactory<TestClass> weak_factory_;
 };
 
-class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
+class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
                                            public IdleHelper::Delegate {
  public:
   IdleCanceledDelayedTaskSweeperTest()

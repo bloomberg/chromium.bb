@@ -23,13 +23,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+using ::testing::ElementsAre;
 using VirtualTimePolicy = blink::WebViewScheduler::VirtualTimePolicy;
 
 namespace blink {
 namespace scheduler {
 
-class WebViewSchedulerImplTest : public testing::Test {
+class WebViewSchedulerImplTest : public ::testing::Test {
  public:
   WebViewSchedulerImplTest() {}
   ~WebViewSchedulerImplTest() override {}

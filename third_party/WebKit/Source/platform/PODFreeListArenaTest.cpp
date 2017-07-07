@@ -54,7 +54,7 @@ struct TestClass2 {
 
 }  // anonymous namespace
 
-class PODFreeListArenaTest : public testing::Test {
+class PODFreeListArenaTest : public ::testing::Test {
  protected:
   int GetFreeListSize(PassRefPtr<PODFreeListArena<TestClass1>> arena) const {
     return arena->GetFreeListSizeForTesting();

@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAreArray;
+using ::testing::ElementsAreArray;
 
 namespace blink {
 namespace scheduler {
@@ -28,7 +28,7 @@ void AppendToVectorTestTask(std::vector<std::string>* vector,
 
 }  // namespace
 
-class WorkerGlobalScopeSchedulerTest : public testing::Test {
+class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
  public:
   WorkerGlobalScopeSchedulerTest()
       : clock_(new base::SimpleTestTickClock()),
@@ -76,7 +76,7 @@ TEST_F(WorkerGlobalScopeSchedulerTest, TestPostTasks) {
   RunUntilIdle();
   PostTestTask(&run_order, "T3");
   RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("T1", "T2", "T3"));
+  EXPECT_THAT(run_order, ::testing::ElementsAre("T1", "T2", "T3"));
 
   // Tasks should not run after the scheduler is disposed of.
   global_scope_scheduler_->Dispose();

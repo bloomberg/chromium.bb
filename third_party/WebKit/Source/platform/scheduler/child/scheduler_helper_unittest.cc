@@ -18,10 +18,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::Invoke;
-using testing::Return;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Invoke;
+using ::testing::Return;
 
 namespace blink {
 namespace scheduler {
@@ -47,7 +47,7 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
 
 };  // namespace
 
-class SchedulerHelperTest : public testing::Test {
+class SchedulerHelperTest : public ::testing::Test {
  public:
   SchedulerHelperTest()
       : clock_(new base::SimpleTestTickClock()),
@@ -105,8 +105,8 @@ TEST_F(SchedulerHelperTest, TestPostDefaultTask) {
 
   RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("D3"), std::string("D4")));
+              ::testing::ElementsAre(std::string("D1"), std::string("D2"),
+                                     std::string("D3"), std::string("D4")));
 }
 
 TEST_F(SchedulerHelperTest, TestRentrantTask) {
@@ -118,7 +118,7 @@ TEST_F(SchedulerHelperTest, TestRentrantTask) {
                             &count, 5));
   RunUntilIdle();
 
-  EXPECT_THAT(run_order, testing::ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(run_order, ::testing::ElementsAre(0, 1, 2, 3, 4));
 }
 
 TEST_F(SchedulerHelperTest, IsShutdown) {

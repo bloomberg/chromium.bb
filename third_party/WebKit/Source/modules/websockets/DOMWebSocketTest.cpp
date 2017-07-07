@@ -26,23 +26,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::InSequence;
-using testing::Ref;
-using testing::Return;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::InSequence;
+using ::testing::Ref;
+using ::testing::Return;
 
 namespace blink {
 
 namespace {
 
-typedef testing::StrictMock<testing::MockFunction<void(int)>>
+typedef ::testing::StrictMock<::testing::MockFunction<void(int)>>
     Checkpoint;  // NOLINT
 
 class MockWebSocketChannel : public WebSocketChannel {
  public:
   static MockWebSocketChannel* Create() {
-    return new testing::StrictMock<MockWebSocketChannel>();
+    return new ::testing::StrictMock<MockWebSocketChannel>();
   }
 
   ~MockWebSocketChannel() override {}

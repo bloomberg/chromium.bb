@@ -20,7 +20,7 @@ namespace {
 void NopTask() {}
 }
 
-class WorkQueueTest : public testing::Test {
+class WorkQueueTest : public ::testing::Test {
  public:
   void SetUp() override {
     time_domain_.reset(new RealTimeDomain());

@@ -516,7 +516,7 @@ TEST_F(SecurityOriginTest, CanonicalizeHost) {
   };
 
   for (const TestCase& test : cases) {
-    SCOPED_TRACE(testing::Message() << "raw host: '" << test.host << "'");
+    SCOPED_TRACE(::testing::Message() << "raw host: '" << test.host << "'");
     String host = String::FromUTF8(test.host);
     bool success = false;
     String canonical_host = SecurityOrigin::CanonicalizeHost(host, &success);

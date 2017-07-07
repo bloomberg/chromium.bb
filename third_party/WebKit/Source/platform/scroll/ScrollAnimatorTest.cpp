@@ -39,9 +39,9 @@
 
 namespace blink {
 
-using testing::AtLeast;
-using testing::Return;
-using testing::_;
+using ::testing::AtLeast;
+using ::testing::Return;
+using ::testing::_;
 
 static double g_mocked_time = 0.0;
 

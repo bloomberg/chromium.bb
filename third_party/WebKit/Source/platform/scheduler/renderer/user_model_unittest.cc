@@ -11,7 +11,7 @@
 namespace blink {
 namespace scheduler {
 
-class UserModelTest : public testing::Test {
+class UserModelTest : public ::testing::Test {
  public:
   UserModelTest() {}
   ~UserModelTest() override {}

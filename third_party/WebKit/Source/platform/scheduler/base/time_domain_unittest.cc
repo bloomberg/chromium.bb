@@ -15,9 +15,9 @@
 #include "platform/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::_;
-using testing::AnyNumber;
-using testing::Mock;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Mock;
 
 namespace blink {
 namespace scheduler {
@@ -64,7 +64,7 @@ class MockTimeDomain : public TimeDomain {
   DISALLOW_COPY_AND_ASSIGN(MockTimeDomain);
 };
 
-class TimeDomainTest : public testing::Test {
+class TimeDomainTest : public ::testing::Test {
  public:
   void SetUp() final {
     time_domain_ = base::WrapUnique(CreateMockTimeDomain());
@@ -194,7 +194,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 
-  testing::Mock::VerifyAndClearExpectations(time_domain_.get());
+  ::testing::Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(wake_up1)).Times(1);
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, wake_up2)).Times(1);
@@ -204,7 +204,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue2_.get(), next_task_queue);
 
-  testing::Mock::VerifyAndClearExpectations(time_domain_.get());
+  ::testing::Mock::VerifyAndClearExpectations(time_domain_.get());
 
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(wake_up2)).Times(1);
 

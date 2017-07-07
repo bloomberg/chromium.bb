@@ -80,9 +80,9 @@ TEST(ContiguousContainerTest, DestructorCalledOnceWhenClear) {
   auto& destructible = list.AllocateAndConstruct<MockDestructible>();
   EXPECT_EQ(&destructible, &list.First());
 
-  testing::MockFunction<void()> separator;
+  ::testing::MockFunction<void()> separator;
   {
-    testing::InSequence s;
+    ::testing::InSequence s;
     EXPECT_CALL(destructible, Destruct());
     EXPECT_CALL(separator, Call());
     EXPECT_CALL(destructible, Destruct()).Times(0);
@@ -97,9 +97,9 @@ TEST(ContiguousContainerTest, DestructorCalledOnceWhenRemoveLast) {
   auto& destructible = list.AllocateAndConstruct<MockDestructible>();
   EXPECT_EQ(&destructible, &list.First());
 
-  testing::MockFunction<void()> separator;
+  ::testing::MockFunction<void()> separator;
   {
-    testing::InSequence s;
+    ::testing::InSequence s;
     EXPECT_CALL(destructible, Destruct());
     EXPECT_CALL(separator, Call());
     EXPECT_CALL(destructible, Destruct()).Times(0);
@@ -114,13 +114,13 @@ TEST(ContiguousContainerTest, DestructorCalledWithMultipleRemoveLastCalls) {
   // free to use more space if the allocator provides it.
   ContiguousContainer<MockDestructible> list(sizeof(MockDestructible),
                                              1 * sizeof(MockDestructible));
-  testing::MockFunction<void()> separator;
+  ::testing::MockFunction<void()> separator;
 
   // We should be okay to allocate and remove a single one, like before.
   list.AllocateAndConstruct<MockDestructible>();
   EXPECT_EQ(1u, list.size());
   {
-    testing::InSequence s;
+    ::testing::InSequence s;
     EXPECT_CALL(list[0], Destruct());
     EXPECT_CALL(separator, Call());
     EXPECT_CALL(list[0], Destruct()).Times(0);
@@ -129,7 +129,7 @@ TEST(ContiguousContainerTest, DestructorCalledWithMultipleRemoveLastCalls) {
   separator.Call();
   EXPECT_EQ(0u, list.size());
 
-  testing::Mock::VerifyAndClearExpectations(&separator);
+  ::testing::Mock::VerifyAndClearExpectations(&separator);
 
   // We should also be okay to allocate and remove multiple.
   list.AllocateAndConstruct<MockDestructible>();
@@ -141,7 +141,7 @@ TEST(ContiguousContainerTest, DestructorCalledWithMultipleRemoveLastCalls) {
   EXPECT_EQ(6u, list.size());
   {
     // The last three should be destroyed by removeLast.
-    testing::InSequence s;
+    ::testing::InSequence s;
     EXPECT_CALL(list[5], Destruct());
     EXPECT_CALL(separator, Call());
     EXPECT_CALL(list[5], Destruct()).Times(0);

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-using testing::Return;
+using ::testing::Return;
 
 namespace {
 
@@ -29,7 +29,7 @@ class ScrollbarThemeAuraButtonOverride final : public ScrollbarThemeAura {
 
 }  // namespace
 
-using ScrollbarThemeAuraTest = testing::Test;
+using ScrollbarThemeAuraTest = ::testing::Test;
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>

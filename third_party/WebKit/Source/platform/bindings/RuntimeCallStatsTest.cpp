@@ -25,7 +25,7 @@ RuntimeCallStats::CounterId test_counter_2_id =
 
 }  // namespace
 
-class RuntimeCallStatsTest : public testing::Test {
+class RuntimeCallStatsTest : public ::testing::Test {
  public:
   void SetUp() override {
     // Add one millisecond because RuntimeCallTimer uses |start_ticks_| =

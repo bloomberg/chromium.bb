@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class PaintWorkletTest : public testing::Test {
+class PaintWorkletTest : public ::testing::Test {
  public:
   PaintWorkletTest() : page_(DummyPageHolder::Create()) {}
 

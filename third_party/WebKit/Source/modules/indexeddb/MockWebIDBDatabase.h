@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
+class MockWebIDBDatabase : public ::testing::StrictMock<WebIDBDatabase> {
  public:
   virtual ~MockWebIDBDatabase();
 

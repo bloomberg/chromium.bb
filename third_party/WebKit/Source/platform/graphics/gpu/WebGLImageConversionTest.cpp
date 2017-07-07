@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class WebGLImageConversionTest : public testing::Test {
+class WebGLImageConversionTest : public ::testing::Test {
  protected:
   void UnpackPixels(const uint16_t* source_data,
                     WebGLImageConversion::DataFormat source_data_format,

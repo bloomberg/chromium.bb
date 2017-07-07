@@ -28,8 +28,8 @@ class MockPaymentCompleter
 
  public:
   MockPaymentCompleter() {
-    ON_CALL(*this, Complete(testing::_, testing::_))
-        .WillByDefault(testing::ReturnPointee(&dummy_promise_));
+    ON_CALL(*this, Complete(::testing::_, ::testing::_))
+        .WillByDefault(::testing::ReturnPointee(&dummy_promise_));
   }
 
   ~MockPaymentCompleter() override {}

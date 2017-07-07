@@ -48,8 +48,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  EXPECT_CALL(*updater, OnUpdatePaymentDetails(testing::_));
-  EXPECT_CALL(*updater, OnUpdatePaymentDetailsFailure(testing::_)).Times(0);
+  EXPECT_CALL(*updater, OnUpdatePaymentDetails(::testing::_));
+  EXPECT_CALL(*updater, OnUpdatePaymentDetailsFailure(::testing::_)).Times(0);
 
   payment_details->Resolve("foo");
 }
@@ -67,8 +67,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  EXPECT_CALL(*updater, OnUpdatePaymentDetails(testing::_)).Times(0);
-  EXPECT_CALL(*updater, OnUpdatePaymentDetailsFailure(testing::_));
+  EXPECT_CALL(*updater, OnUpdatePaymentDetails(::testing::_)).Times(0);
+  EXPECT_CALL(*updater, OnUpdatePaymentDetailsFailure(::testing::_));
 
   payment_details->Reject("oops");
 }
