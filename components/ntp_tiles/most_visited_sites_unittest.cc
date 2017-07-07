@@ -71,6 +71,7 @@ using testing::StrictMock;
 using testing::_;
 
 const char kHomePageUrl[] = "http://ho.me/";
+const char kHomePageTitle[] = "Home";
 
 std::string PrintTile(const std::string& title,
                       const std::string& url,
@@ -222,7 +223,11 @@ class FakeHomePageClient : public MostVisitedSites::HomePageClient {
 
   bool IsNewTabPageUsedAsHomePage() const override { return ntp_is_homepage_; }
 
-  GURL GetHomepageUrl() const override { return home_page_url_; }
+  GURL GetHomePageUrl() const override { return home_page_url_; }
+
+  void QueryHomePageTitle(TitleCallback title_callback) override {
+    std::move(title_callback).Run(home_page_title_);
+  }
 
   void SetHomePageEnabled(bool home_page_enabled) {
     home_page_enabled_ = home_page_enabled;
@@ -234,10 +239,15 @@ class FakeHomePageClient : public MostVisitedSites::HomePageClient {
 
   void SetHomePageUrl(GURL home_page_url) { home_page_url_ = home_page_url; }
 
+  void SetHomePageTitle(const base::Optional<base::string16>& home_page_title) {
+    home_page_title_ = home_page_title;
+  }
+
  private:
   bool home_page_enabled_;
   bool ntp_is_homepage_;
   GURL home_page_url_;
+  base::Optional<base::string16> home_page_title_;
 };
 
 class MockIconCacher : public IconCacher {
@@ -458,6 +468,34 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageWithoutClient) {
   EXPECT_CALL(mock_observer_,
               OnMostVisitedURLsAvailable(Not(Contains(
                   MatchesTile("", kHomePageUrl, TileSource::HOMEPAGE)))));
+  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
+                                                  /*num_sites=*/3);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(MostVisitedSitesTest, ShouldIncludeHomeTileWithUrlBeforeQueryingName) {
+  // Because the query time for the real name might take a while, provide the
+  // home tile with URL as title immediately and update the tiles as soon as the
+  // real title was found.
+  FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
+  home_page_client->SetHomePageEnabled(true);
+  home_page_client->SetHomePageTitle(base::UTF8ToUTF16(kHomePageTitle));
+  DisableRemoteSuggestions();
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
+      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
+  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomePageUrl))))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
+  {
+    testing::Sequence seq;
+    EXPECT_CALL(mock_observer_,
+                OnMostVisitedURLsAvailable(Not(Contains(
+                    MatchesTile("", kHomePageUrl, TileSource::HOMEPAGE)))));
+    EXPECT_CALL(mock_observer_,
+                OnMostVisitedURLsAvailable(Not(Contains(MatchesTile(
+                    kHomePageTitle, kHomePageUrl, TileSource::HOMEPAGE)))));
+  }
   most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
                                                   /*num_sites=*/3);
   base::RunLoop().RunUntilIdle();

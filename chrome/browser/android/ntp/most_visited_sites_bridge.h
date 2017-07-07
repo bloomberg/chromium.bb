@@ -68,6 +68,7 @@ class MostVisitedSitesBridge {
   std::unique_ptr<JavaObserver> java_observer_;
 
   std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSitesBridge);
 };

@@ -110,8 +110,8 @@ public class TileView extends FrameLayout {
         assert mUrl.equals(tile.getUrl());
 
         if (tile.getIcon() != mIconView.getDrawable()) return false;
+        if (!tile.getTitle().equals(mTitleView.getText())) return false;
         if (tile.isOfflineAvailable() != (mBadgeView.getVisibility() == VISIBLE)) return false;
-        // We don't check the title since it's not likely to change, but that could also be done.
         return true;
     }
 
