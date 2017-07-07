@@ -78,7 +78,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   unsigned is_horizontal_writing_mode_ : 1;
 
   NGConstraintSpaceBuilder space_builder_;
-  NGBoxStrut border_and_padding_;
 };
 
 }  // namespace blink

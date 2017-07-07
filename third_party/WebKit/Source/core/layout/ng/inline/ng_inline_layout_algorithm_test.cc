@@ -79,6 +79,45 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   EXPECT_EQ(0u, wrapper2_break_token->ChildBreakTokens().size());
 }
 
+// A block with inline children generates fragment tree as follows:
+// - A box fragment created by NGBlockNode
+//   - A wrapper box fragment created by NGInlineNode
+//     - Line box fragments.
+// This test verifies that borders/paddings are applied to the wrapper box.
+TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    div {
+      padding-left: 5px;
+      padding-top: 10px;
+    }
+    </style>
+    <div id=container>test</div>
+  )HTML");
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
+  NGBlockNode block_node(block_flow);
+  RefPtr<NGConstraintSpace> space =
+      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
+  RefPtr<NGLayoutResult> layout_result = block_node.Layout(space.Get());
+
+  auto* block_box =
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+  EXPECT_TRUE(layout_result->BfcOffset().has_value());
+  EXPECT_EQ(0, layout_result->BfcOffset().value().inline_offset);
+  EXPECT_EQ(0, layout_result->BfcOffset().value().block_offset);
+
+  auto* wrapper = ToNGPhysicalBoxFragment(block_box->Children()[0].Get());
+  EXPECT_EQ(5, wrapper->Offset().left);
+  EXPECT_EQ(10, wrapper->Offset().top);
+
+  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
+  EXPECT_EQ(0, line->Offset().left);
+  EXPECT_EQ(0, line->Offset().top);
+}
+
 // The test leaks memory. crbug.com/721932
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_VerticalAlignBottomReplaced DISABLED_VerticalAlignBottomReplaced
