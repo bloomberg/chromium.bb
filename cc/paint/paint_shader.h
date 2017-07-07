@@ -17,11 +17,11 @@ namespace cc {
 class PaintOpBuffer;
 using PaintRecord = PaintOpBuffer;
 
-class CC_PAINT_EXPORT PaintShader {
+class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
  public:
-  static std::unique_ptr<PaintShader> MakeColor(SkColor color);
+  static sk_sp<PaintShader> MakeColor(SkColor color);
 
-  static std::unique_ptr<PaintShader> MakeLinearGradient(
+  static sk_sp<PaintShader> MakeLinearGradient(
       const SkPoint points[],
       const SkColor colors[],
       const SkScalar pos[],
@@ -31,7 +31,7 @@ class CC_PAINT_EXPORT PaintShader {
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
-  static std::unique_ptr<PaintShader> MakeRadialGradient(
+  static sk_sp<PaintShader> MakeRadialGradient(
       const SkPoint& center,
       SkScalar radius,
       const SkColor colors[],
@@ -42,7 +42,7 @@ class CC_PAINT_EXPORT PaintShader {
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
-  static std::unique_ptr<PaintShader> MakeTwoPointConicalGradient(
+  static sk_sp<PaintShader> MakeTwoPointConicalGradient(
       const SkPoint& start,
       SkScalar start_radius,
       const SkPoint& end,
@@ -55,7 +55,7 @@ class CC_PAINT_EXPORT PaintShader {
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
-  static std::unique_ptr<PaintShader> MakeSweepGradient(
+  static sk_sp<PaintShader> MakeSweepGradient(
       SkScalar cx,
       SkScalar cy,
       const SkColor colors[],
@@ -65,24 +65,18 @@ class CC_PAINT_EXPORT PaintShader {
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
-  static std::unique_ptr<PaintShader> MakeImage(sk_sp<const SkImage> image,
-                                                SkShader::TileMode tx,
-                                                SkShader::TileMode ty,
-                                                const SkMatrix* local_matrix);
+  static sk_sp<PaintShader> MakeImage(sk_sp<const SkImage> image,
+                                      SkShader::TileMode tx,
+                                      SkShader::TileMode ty,
+                                      const SkMatrix* local_matrix);
 
-  static std::unique_ptr<PaintShader> MakePaintRecord(
-      sk_sp<PaintRecord> record,
-      const SkRect& tile,
-      SkShader::TileMode tx,
-      SkShader::TileMode ty,
-      const SkMatrix* local_matrix);
+  static sk_sp<PaintShader> MakePaintRecord(sk_sp<PaintRecord> record,
+                                            const SkRect& tile,
+                                            SkShader::TileMode tx,
+                                            SkShader::TileMode ty,
+                                            const SkMatrix* local_matrix);
 
-  PaintShader(const PaintShader& other);
-  PaintShader(PaintShader&& other);
-  ~PaintShader();
-
-  PaintShader& operator=(const PaintShader& other);
-  PaintShader& operator=(PaintShader&& other);
+  ~PaintShader() override;
 
   const sk_sp<SkShader>& sk_shader() const { return sk_shader_; }
 

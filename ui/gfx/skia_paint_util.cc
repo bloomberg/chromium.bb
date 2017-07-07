@@ -13,15 +13,14 @@
 
 namespace gfx {
 
-std::unique_ptr<cc::PaintShader> CreateImageRepShader(
-    const gfx::ImageSkiaRep& image_rep,
-    SkShader::TileMode tile_mode,
-    const SkMatrix& local_matrix) {
+sk_sp<cc::PaintShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+                                            SkShader::TileMode tile_mode,
+                                            const SkMatrix& local_matrix) {
   return CreateImageRepShaderForScale(image_rep, tile_mode, local_matrix,
                                       image_rep.scale());
 }
 
-std::unique_ptr<cc::PaintShader> CreateImageRepShaderForScale(
+sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix,
@@ -43,10 +42,10 @@ std::unique_ptr<cc::PaintShader> CreateImageRepShaderForScale(
       &shader_scale);
 }
 
-std::unique_ptr<cc::PaintShader> CreateGradientShader(int start_point,
-                                                      int end_point,
-                                                      SkColor start_color,
-                                                      SkColor end_color) {
+sk_sp<cc::PaintShader> CreateGradientShader(int start_point,
+                                            int end_point,
+                                            SkColor start_color,
+                                            SkColor end_color) {
   SkColor grad_colors[2] = {start_color, end_color};
   SkPoint grad_points[2];
   grad_points[0].iset(0, start_point);

@@ -62,7 +62,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTypeface(sk_sp<SkTypeface> typeface);
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
-  void SetShader(std::unique_ptr<cc::PaintShader> shader);
+  void SetShader(sk_sp<cc::PaintShader> shader);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   virtual void DrawPosText(const SkPoint* pos,
                            const uint16_t* glyphs,

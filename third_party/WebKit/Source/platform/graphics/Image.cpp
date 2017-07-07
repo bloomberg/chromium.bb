@@ -228,12 +228,12 @@ void Image::DrawTiledBorder(GraphicsContext& ctxt,
 
 namespace {
 
-std::unique_ptr<PaintShader> CreatePatternShader(const PaintImage& image,
-                                                 const SkMatrix& shader_matrix,
-                                                 const PaintFlags& paint,
-                                                 const FloatSize& spacing,
-                                                 SkShader::TileMode tmx,
-                                                 SkShader::TileMode tmy) {
+sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
+                                       const SkMatrix& shader_matrix,
+                                       const PaintFlags& paint,
+                                       const FloatSize& spacing,
+                                       SkShader::TileMode tmx,
+                                       SkShader::TileMode tmy) {
   if (spacing.IsZero()) {
     return PaintShader::MakeImage(image.sk_image(), tmx, tmy, &shader_matrix);
   }

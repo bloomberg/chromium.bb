@@ -129,7 +129,7 @@ void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
   }
 }
 
-std::unique_ptr<PaintShader> Gradient::CreateShaderInternal(
+sk_sp<PaintShader> Gradient::CreateShaderInternal(
     const SkMatrix& local_matrix) {
   SortStopsIfNecessary();
   DCHECK(stops_sorted_);
@@ -159,7 +159,7 @@ std::unique_ptr<PaintShader> Gradient::CreateShaderInternal(
   uint32_t flags = color_interpolation_ == ColorInterpolation::kPremultiplied
                        ? SkGradientShader::kInterpolateColorsInPremul_Flag
                        : 0;
-  std::unique_ptr<PaintShader> shader =
+  sk_sp<PaintShader> shader =
       CreateShader(colors, pos, tile, flags, local_matrix, colors.back());
   DCHECK(shader);
 
@@ -175,7 +175,7 @@ void Gradient::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
     cached_shader_ = CreateShaderInternal(local_matrix);
   }
 
-  flags.setShader(WTF::MakeUnique<PaintShader>(*cached_shader_));
+  flags.setShader(cached_shader_);
 
   // Legacy behavior: gradients are always dithered.
   flags.setDither(true);
@@ -194,13 +194,12 @@ class LinearGradient final : public Gradient {
         p1_(p1) {}
 
  protected:
-  std::unique_ptr<PaintShader> CreateShader(
-      const ColorBuffer& colors,
-      const OffsetBuffer& pos,
-      SkShader::TileMode tile_mode,
-      uint32_t flags,
-      const SkMatrix& local_matrix,
-      SkColor fallback_color) const override {
+  sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
+                                  const OffsetBuffer& pos,
+                                  SkShader::TileMode tile_mode,
+                                  uint32_t flags,
+                                  const SkMatrix& local_matrix,
+                                  SkColor fallback_color) const override {
     SkPoint pts[2] = {p0_.Data(), p1_.Data()};
     return PaintShader::MakeLinearGradient(
         pts, colors.data(), pos.data(), static_cast<int>(colors.size()),
@@ -229,13 +228,12 @@ class RadialGradient final : public Gradient {
         aspect_ratio_(aspect_ratio) {}
 
  protected:
-  std::unique_ptr<PaintShader> CreateShader(
-      const ColorBuffer& colors,
-      const OffsetBuffer& pos,
-      SkShader::TileMode tile_mode,
-      uint32_t flags,
-      const SkMatrix& local_matrix,
-      SkColor fallback_color) const override {
+  sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
+                                  const OffsetBuffer& pos,
+                                  SkShader::TileMode tile_mode,
+                                  uint32_t flags,
+                                  const SkMatrix& local_matrix,
+                                  SkColor fallback_color) const override {
     SkTCopyOnFirstWrite<SkMatrix> adjusted_local_matrix(local_matrix);
     if (aspect_ratio_ != 1) {
       // CSS3 elliptical gradients: apply the elliptical scaling at the
@@ -282,13 +280,12 @@ class ConicGradient final : public Gradient {
         angle_(angle) {}
 
  protected:
-  std::unique_ptr<PaintShader> CreateShader(
-      const ColorBuffer& colors,
-      const OffsetBuffer& pos,
-      SkShader::TileMode tile_mode,
-      uint32_t flags,
-      const SkMatrix& local_matrix,
-      SkColor fallback_color) const override {
+  sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
+                                  const OffsetBuffer& pos,
+                                  SkShader::TileMode tile_mode,
+                                  uint32_t flags,
+                                  const SkMatrix& local_matrix,
+                                  SkColor fallback_color) const override {
     DCHECK_NE(tile_mode, SkShader::kMirror_TileMode);
 
     // Skia's sweep gradient angles are relative to the x-axis, not the y-axis.

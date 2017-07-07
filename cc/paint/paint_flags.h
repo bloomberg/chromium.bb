@@ -176,7 +176,7 @@ class CC_PAINT_EXPORT PaintFlags {
     return paint_.getShader()->isOpaque();
   }
 
-  ALWAYS_INLINE void setShader(std::unique_ptr<PaintShader> shader) {
+  ALWAYS_INLINE void setShader(sk_sp<PaintShader> shader) {
     paint_.setShader(shader ? shader->sk_shader() : nullptr);
   }
   ALWAYS_INLINE SkPathEffect* getPathEffect() const {
