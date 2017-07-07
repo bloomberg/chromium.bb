@@ -258,6 +258,8 @@ for dismissal.
 
 The following metrics are collected:
 
+*   `IOS.Spotlight.Action` when the user opens the QR scanner from searching for
+    it in Spotlight.
 *   `ApplicationShortcut.ScanQRCodePressed` when the user opens the QR scanner
     from 3D Touch application shortcuts.
 *   `MobileQRScannerClose` when the user closes the QR scanner without scanning
