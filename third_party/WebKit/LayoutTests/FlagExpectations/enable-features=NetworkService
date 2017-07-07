@@ -262,6 +262,7 @@ Bug(none) external/wpt/beacon/headers/header-referrer-no-referrer-when-downgrade
 Bug(none) external/wpt/beacon/headers/header-referrer-strict-origin-when-cross-origin.https.html [ Failure Timeout ]
 Bug(none) external/wpt/beacon/headers/header-referrer-strict-origin.https.html [ Failure Timeout ]
 Bug(none) external/wpt/beacon/headers/header-referrer-unsafe-url.https.html [ Failure Timeout ]
+Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/child-src/child-src-about-blank-allowed-by-default.sub.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/child-src/child-src-about-blank-allowed-by-scheme.sub.html [ Failure Timeout ]
 Bug(none) external/wpt/content-security-policy/child-src/child-src-allowed.sub.html [ Failure Timeout ]

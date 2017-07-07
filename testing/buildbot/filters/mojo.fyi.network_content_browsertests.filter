@@ -92,6 +92,7 @@
 -PaymentAppBrowserTest.PaymentAppInvocation
 -PaymentAppBrowserTest.PaymentAppOpenWindowFailed
 -PlzNavigateNavigationHandleImplBrowserTest.ErrorPageNetworkError
+-PowerMonitorTest.TestGpuProcess
 -PowerMonitorTest.TestRendererProcess
 -PowerMonitorTest.TestUtilityProcess
 -PreviewsStateResourceDispatcherHostBrowserTest.ShouldEnableLoFiModeNavigateBackThenForward
