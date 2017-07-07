@@ -115,10 +115,10 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/render_media_client.h"
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -1421,10 +1421,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
             GetMediaThreadTaskRunner();
         media_task_runner->PostTask(
             FROM_HERE,
-            base::Bind(
-                base::IgnoreResult(
-                    &RendererGpuVideoAcceleratorFactories::CheckContextLost),
-                base::Unretained(gpu_factories_.back().get())));
+            base::Bind(base::IgnoreResult(
+                           &GpuVideoAcceleratorFactoriesImpl::CheckContextLost),
+                       base::Unretained(gpu_factories_.back().get())));
       }
     }
   }
@@ -1465,7 +1464,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
 
-  gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
+  gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       media_task_runner, std::move(media_context_provider),
       enable_gpu_memory_buffer_video_frames, buffer_to_texture_target_map_,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
+#include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -44,8 +44,8 @@ void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
 }  // namespace
 
 // static
-std::unique_ptr<RendererGpuVideoAcceleratorFactories>
-RendererGpuVideoAcceleratorFactories::Create(
+std::unique_ptr<GpuVideoAcceleratorFactoriesImpl>
+GpuVideoAcceleratorFactoriesImpl::Create(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -55,13 +55,13 @@ RendererGpuVideoAcceleratorFactories::Create(
     bool enable_video_accelerator) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
-  return base::WrapUnique(new RendererGpuVideoAcceleratorFactories(
+  return base::WrapUnique(new GpuVideoAcceleratorFactoriesImpl(
       std::move(gpu_channel_host), main_thread_task_runner, task_runner,
       context_provider, enable_gpu_memory_buffer_video_frames,
       image_texture_targets, enable_video_accelerator));
 }
 
-RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
+GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -85,9 +85,9 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
   DCHECK(gpu_channel_host_);
 }
 
-RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
+GpuVideoAcceleratorFactoriesImpl::~GpuVideoAcceleratorFactoriesImpl() {}
 
-bool RendererGpuVideoAcceleratorFactories::CheckContextLost() {
+bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (context_provider_) {
     bool release_context_provider = false;
@@ -102,19 +102,18 @@ bool RendererGpuVideoAcceleratorFactories::CheckContextLost() {
       // Drop the reference on the main thread.
       main_thread_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(
-              &RendererGpuVideoAcceleratorFactories::ReleaseContextProvider,
-              base::Unretained(this)));
+          base::Bind(&GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider,
+                     base::Unretained(this)));
     }
   }
   return !context_provider_;
 }
 
-bool RendererGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
+bool GpuVideoAcceleratorFactoriesImpl::IsGpuVideoAcceleratorEnabled() {
   return video_accelerator_enabled_;
 }
 
-base::UnguessableToken RendererGpuVideoAcceleratorFactories::GetChannelToken() {
+base::UnguessableToken GpuVideoAcceleratorFactoriesImpl::GetChannelToken() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return base::UnguessableToken();
@@ -127,7 +126,7 @@ base::UnguessableToken RendererGpuVideoAcceleratorFactories::GetChannelToken() {
   return channel_token_;
 }
 
-int32_t RendererGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
+int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return 0;
@@ -135,7 +134,7 @@ int32_t RendererGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
 }
 
 std::unique_ptr<media::VideoDecodeAccelerator>
-RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
+GpuVideoAcceleratorFactoriesImpl::CreateVideoDecodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
@@ -147,7 +146,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
 }
 
 std::unique_ptr<media::VideoEncodeAccelerator>
-RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
+GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
@@ -158,7 +157,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
           context_provider_->GetCommandBufferProxy()));
 }
 
-bool RendererGpuVideoAcceleratorFactories::CreateTextures(
+bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(
     int32_t count,
     const gfx::Size& size,
     std::vector<uint32_t>* texture_ids,
@@ -183,15 +182,8 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
     gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     if (texture_target == GL_TEXTURE_2D) {
-      gles2->TexImage2D(texture_target,
-                        0,
-                        GL_RGBA,
-                        size.width(),
-                        size.height(),
-                        0,
-                        GL_RGBA,
-                        GL_UNSIGNED_BYTE,
-                        NULL);
+      gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
+                        0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     }
     gles2->GenMailboxCHROMIUM(texture_mailboxes->at(i).name);
     gles2->ProduceTextureCHROMIUM(texture_target,
@@ -207,7 +199,7 @@ bool RendererGpuVideoAcceleratorFactories::CreateTextures(
   return true;
 }
 
-void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32_t texture_id) {
+void GpuVideoAcceleratorFactoriesImpl::DeleteTexture(uint32_t texture_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return;
@@ -218,7 +210,7 @@ void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32_t texture_id) {
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
 }
 
-gpu::SyncToken RendererGpuVideoAcceleratorFactories::CreateSyncToken() {
+gpu::SyncToken GpuVideoAcceleratorFactoriesImpl::CreateSyncToken() {
   cc::ContextProvider::ScopedContextLock lock(context_provider_);
   gpu::gles2::GLES2Interface* gl = lock.ContextGL();
   gpu::SyncToken sync_token;
@@ -228,7 +220,7 @@ gpu::SyncToken RendererGpuVideoAcceleratorFactories::CreateSyncToken() {
   return sync_token;
 }
 
-void RendererGpuVideoAcceleratorFactories::WaitSyncToken(
+void GpuVideoAcceleratorFactoriesImpl::WaitSyncToken(
     const gpu::SyncToken& sync_token) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
@@ -243,7 +235,7 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncToken(
   gles2->ShallowFlushCHROMIUM();
 }
 
-void RendererGpuVideoAcceleratorFactories::ShallowFlushCHROMIUM() {
+void GpuVideoAcceleratorFactoriesImpl::ShallowFlushCHROMIUM() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return;
@@ -254,7 +246,7 @@ void RendererGpuVideoAcceleratorFactories::ShallowFlushCHROMIUM() {
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
-RendererGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
+GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
@@ -263,12 +255,12 @@ RendererGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
           size, format, usage, gpu::kNullSurfaceHandle);
   return buffer;
 }
-bool RendererGpuVideoAcceleratorFactories::
-    ShouldUseGpuMemoryBuffersForVideoFrames() const {
+bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames()
+    const {
   return enable_gpu_memory_buffer_video_frames_;
 }
 
-unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget(
+unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
     gfx::BufferFormat format) {
   auto found = image_texture_targets_.find(cc::BufferToTextureTargetKey(
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format));
@@ -277,7 +269,7 @@ unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget(
 }
 
 media::GpuVideoAcceleratorFactories::OutputFormat
-RendererGpuVideoAcceleratorFactories::VideoFrameOutputFormat() {
+GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
@@ -306,14 +298,14 @@ class ScopedGLContextLockImpl
 }  // namespace
 
 std::unique_ptr<media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
-RendererGpuVideoAcceleratorFactories::GetGLContextLock() {
+GpuVideoAcceleratorFactoriesImpl::GetGLContextLock() {
   if (CheckContextLost())
     return nullptr;
   return base::MakeUnique<ScopedGLContextLockImpl>(context_provider_);
 }
 
 std::unique_ptr<base::SharedMemory>
-RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
+GpuVideoAcceleratorFactoriesImpl::CreateSharedMemory(size_t size) {
   std::unique_ptr<base::SharedMemory> mem(
       ChildThreadImpl::AllocateSharedMemory(size));
   if (mem && !mem->Map(size))
@@ -322,25 +314,24 @@ RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
+GpuVideoAcceleratorFactoriesImpl::GetTaskRunner() {
   return task_runner_;
 }
 
 media::VideoDecodeAccelerator::Capabilities
-RendererGpuVideoAcceleratorFactories::GetVideoDecodeAcceleratorCapabilities() {
+GpuVideoAcceleratorFactoriesImpl::GetVideoDecodeAcceleratorCapabilities() {
   return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeCapabilities(
       gpu_channel_host_->gpu_info().video_decode_accelerator_capabilities);
 }
 
 media::VideoEncodeAccelerator::SupportedProfiles
-RendererGpuVideoAcceleratorFactories::
-    GetVideoEncodeAcceleratorSupportedProfiles() {
+GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
   return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       gpu_channel_host_->gpu_info()
           .video_encode_accelerator_supported_profiles);
 }
 
-void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
+void GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_RELEASED);
@@ -348,7 +339,7 @@ void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
 }
 
 scoped_refptr<ui::ContextProviderCommandBuffer>
-RendererGpuVideoAcceleratorFactories::ContextProviderMainThread() {
+GpuVideoAcceleratorFactoriesImpl::ContextProviderMainThread() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   return context_provider_refptr_;
 }
