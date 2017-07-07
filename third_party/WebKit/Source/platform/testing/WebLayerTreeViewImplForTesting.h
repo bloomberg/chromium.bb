@@ -58,14 +58,7 @@ class WebLayerTreeViewImplForTesting
   void SetNeedsBeginFrame() override;
   void DidStopFlinging() override;
   void SetDeferCommits(bool) override;
-  // TODO(pdr): Refactor to use a struct like LayerTreeHost::ViewportLayers.
-  void RegisterViewportLayers(
-      const blink::WebLayer* overscroll_elasticity_layer,
-      const blink::WebLayer* page_scale_layer_layer,
-      const blink::WebLayer* inner_viewport_container_layer,
-      const blink::WebLayer* outer_viewport_container_layer,
-      const blink::WebLayer* inner_viewport_scroll_layer,
-      const blink::WebLayer* outer_viewport_scroll_layer) override;
+  void RegisterViewportLayers(const WebLayerTreeView::ViewportLayers&) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const blink::WebSelection&) override;
   void ClearSelection() override;
