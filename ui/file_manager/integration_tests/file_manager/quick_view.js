@@ -37,8 +37,8 @@ testcase.openQuickView = function() {
                 'deepQueryAllElements', appId,
                 [['#quick-view', '#dialog'], null, ['display']])
             .then(function(results) {
-              chrome.test.assertEq(1, results.length);
-              if (results[0].styles.display === 'none') {
+              if (results.length === 0 ||
+                  results[0].styles.display === 'none') {
                 return pending('Quick View is not opened yet.');
               };
               return results;
