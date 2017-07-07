@@ -312,6 +312,8 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_SecureChannelNotEstablished) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
+  life_cycle_.set_connection(nullptr);
+  life_cycle_.set_messenger(nullptr);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
   unlock_manager_->OnLifeCycleStateChanged();
@@ -424,6 +426,24 @@ TEST_F(ProximityAuthUnlockManagerImplTest, SetRemoteDeviceLifeCycle_WakingUp) {
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       SetRemoteDeviceLifeCycle_TimesOutBeforeConnection) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  life_cycle_.set_connection(nullptr);
+  life_cycle_.set_messenger(nullptr);
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_PHONE));
+  // Simulate timing out before a connection is established.
+  RunPendingTasks();
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
@@ -593,15 +613,15 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnScreenDidLock_SetsWakingUpState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-
-  unlock_manager_.get()->OnScreenDidUnlock(
-      ScreenlockBridge::LockHandler::LOCK_SCREEN);
 
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
 
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  unlock_manager_.get()->OnScreenDidLock(
+      ScreenlockBridge::LockHandler::LOCK_SCREEN);
+
   unlock_manager_->OnLifeCycleStateChanged();
 }
 

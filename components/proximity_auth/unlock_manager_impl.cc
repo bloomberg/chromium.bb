@@ -247,9 +247,6 @@ void UnlockManagerImpl::OnScreenDidUnlock(
 void UnlockManagerImpl::OnFocusedUserChanged(const AccountId& account_id) {}
 
 void UnlockManagerImpl::OnScreenLockedOrUnlocked(bool is_locked) {
-  // TODO(tengs): Chrome will only start connecting to the phone when
-  // the screen is locked, for privacy reasons. We should reinvestigate
-  // this behaviour if we want automatic locking.
   if (is_locked && bluetooth_adapter_ && bluetooth_adapter_->IsPowered() &&
       life_cycle_ &&
       life_cycle_->GetState() ==
@@ -351,8 +348,11 @@ void UnlockManagerImpl::OnGotSignInChallenge(const std::string& challenge) {
 }
 
 ScreenlockState UnlockManagerImpl::GetScreenlockState() {
-  if (!life_cycle_ ||
-      life_cycle_->GetState() == RemoteDeviceLifeCycle::State::STOPPED)
+  if (!life_cycle_)
+    return ScreenlockState::INACTIVE;
+
+  RemoteDeviceLifeCycle::State life_cycle_state = life_cycle_->GetState();
+  if (life_cycle_state == RemoteDeviceLifeCycle::State::STOPPED)
     return ScreenlockState::INACTIVE;
 
   if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
@@ -361,17 +361,19 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   if (IsUnlockAllowed())
     return ScreenlockState::AUTHENTICATED;
 
-  if (life_cycle_->GetState() ==
-      RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
+  if (life_cycle_state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     return ScreenlockState::PHONE_NOT_AUTHENTICATED;
 
-  if (is_waking_up_ ||
-      life_cycle_->GetState() == RemoteDeviceLifeCycle::State::AUTHENTICATING ||
-      life_cycle_->GetState() ==
-          RemoteDeviceLifeCycle::State::FINDING_CONNECTION)
+  if (is_waking_up_)
     return ScreenlockState::BLUETOOTH_CONNECTING;
 
   Messenger* messenger = GetMessenger();
+
+  // Show a timeout state if we can not connect to the remote device in a
+  // reasonable amount of time.
+  if (!is_waking_up_ && !messenger)
+    return ScreenlockState::NO_PHONE;
+
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN && messenger &&
       !messenger->SupportsSignIn())
     return ScreenlockState::PHONE_UNSUPPORTED;
