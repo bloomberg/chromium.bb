@@ -73,6 +73,26 @@ public class AccountManagerHelper {
     }
 
     /**
+     * Adds an observer to receive accounts change notifications.
+     * @param observer the observer to add.
+     */
+    @MainThread
+    public void addObserver(AccountsChangeObserver observer) {
+        ThreadUtils.assertOnUiThread();
+        mDelegate.addObserver(observer);
+    }
+
+    /**
+     * Removes an observer that was previously added using {@link #addObserver}.
+     * @param observer the observer to remove.
+     */
+    @MainThread
+    public void removeObserver(AccountsChangeObserver observer) {
+        ThreadUtils.assertOnUiThread();
+        mDelegate.removeObserver(observer);
+    }
+
+    /**
      * @param delegate the account manager to use as a backend service
      */
     private AccountManagerHelper(AccountManagerDelegate delegate) {

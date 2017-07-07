@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.support.annotation.AnyThread;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
@@ -18,6 +19,20 @@ import org.chromium.base.Callback;
  * Provides methods for getting accounts and managing auth tokens.
  */
 public interface AccountManagerDelegate {
+    /**
+     * Adds an observer to get notified about accounts changes.
+     * @param observer the observer to add.
+     */
+    @MainThread
+    void addObserver(AccountsChangeObserver observer);
+
+    /**
+     * Removes an observer that was previously added using {@link #addObserver}.
+     * @param observer the observer to remove.
+     */
+    @MainThread
+    void removeObserver(AccountsChangeObserver observer);
+
     /**
      * Get all the accounts for a given {@code type}.
      * This is deprecated an will be removed soon.
