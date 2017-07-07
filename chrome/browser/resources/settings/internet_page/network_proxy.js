@@ -319,7 +319,7 @@ Polymer({
 
   /**
    * Event triggered when a proxy exclusion is added.
-   * @param {Event} event The add proxy exclusion event.
+   * @param {!Event} event The add proxy exclusion event.
    * @private
    */
   onAddProxyExclusionTap_: function(event) {
@@ -334,7 +334,7 @@ Polymer({
 
   /**
    * Event triggered when the proxy exclusion list changes.
-   * @param {Event} event The remove proxy exclusions change event.
+   * @param {!Event} event The remove proxy exclusions change event.
    * @private
    */
   onProxyExclusionsChange_: function(event) {
@@ -462,7 +462,7 @@ Polymer({
   /**
    * Handles the change event for the shared proxy checkbox. Shows a
    * confirmation dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onAllowSharedProxiesChange_: function(event) {

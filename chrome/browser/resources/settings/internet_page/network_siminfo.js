@@ -117,7 +117,7 @@ Polymer({
 
   /**
    * Opens the pin dialog when the sim lock enabled state changes.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onSimLockEnabledChange_: function(event) {
@@ -131,7 +131,7 @@ Polymer({
 
   /**
    * Sends the PIN value from the Enter PIN dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   sendEnterPin_: function(event) {
@@ -174,7 +174,7 @@ Polymer({
 
   /**
    * Sends the old and new PIN values from the Change PIN dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   sendChangePin_: function(event) {
@@ -213,7 +213,7 @@ Polymer({
 
   /**
    * Sends the PIN value from the Unlock PIN dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   sendUnlockPin_: function(event) {
@@ -244,7 +244,7 @@ Polymer({
 
   /**
    * Sends the PUK value and new PIN value from the Unblock PUK dialog.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   sendUnlockPuk_: function(event) {

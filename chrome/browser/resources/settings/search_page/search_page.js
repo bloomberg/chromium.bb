@@ -97,7 +97,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onHotwordSearchEnableChange_: function(event) {
@@ -167,7 +167,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   doNothing_: function(event) {

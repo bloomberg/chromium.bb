@@ -145,7 +145,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onDoNotTrackDomChange_: function(event) {
@@ -156,7 +156,7 @@ Polymer({
   /**
    * Handles the change event for the do-not-track toggle. Shows a
    * confirmation dialog when enabling the setting.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   onDoNotTrackChange_: function(event) {
@@ -289,7 +289,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!Event} e
    * @private
    */
   onRestartTap_: function(e) {

@@ -630,7 +630,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   toggleAdvancedExpanded_: function(event) {
@@ -640,7 +640,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   toggleNetworkExpanded_: function(event) {
@@ -650,7 +650,7 @@ Polymer({
   },
 
   /**
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   toggleProxyExpanded_: function(event) {

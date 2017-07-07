@@ -193,7 +193,7 @@ Polymer({
   /**
    * Fires a 'show-details' event with an item containing a |networkStateList_|
    * entry in the event model.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   fireShowDetails_: function(event) {
