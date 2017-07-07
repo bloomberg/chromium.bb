@@ -157,20 +157,10 @@ bool IsChromeHomeEnabled() {
 #endif
 }
 
-bool AreLocalCategoriesEnabled() {
-#if defined(OS_ANDROID)
-  return !base::FeatureList::IsEnabled(
-      chrome::android::kContentSuggestionsCategories);
-#else
-  return false;
-#endif
-}
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 bool IsRecentTabProviderEnabled() {
-  return AreLocalCategoriesEnabled() &&
-         base::FeatureList::IsEnabled(
+  return base::FeatureList::IsEnabled(
              ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
          base::FeatureList::IsEnabled(
              offline_pages::kOffliningRecentPagesFeature);
@@ -220,8 +210,7 @@ bool AreOfflinePageDownloadsEnabled() {
 }
 
 bool IsDownloadsProviderEnabled() {
-  return AreLocalCategoriesEnabled() &&
-         (AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled());
+  return AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled();
 }
 
 void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
@@ -273,8 +262,7 @@ void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
 #if defined(OS_ANDROID)
 
 bool IsPhysicalWebPageProviderEnabled() {
-  return AreLocalCategoriesEnabled() &&
-         base::FeatureList::IsEnabled(
+  return base::FeatureList::IsEnabled(
              ntp_snippets::kPhysicalWebPageSuggestionsFeature) &&
          base::FeatureList::IsEnabled(chrome::android::kPhysicalWebFeature);
 }
@@ -368,9 +356,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 }
 
 bool IsForeignSessionsProviderEnabled() {
-  return AreLocalCategoriesEnabled() &&
-         base::FeatureList::IsEnabled(
-             ntp_snippets::kForeignSessionsSuggestionsFeature);
+  return base::FeatureList::IsEnabled(
+      ntp_snippets::kForeignSessionsSuggestionsFeature);
 }
 
 void RegisterForeignSessionsProviderIfEnabled(
