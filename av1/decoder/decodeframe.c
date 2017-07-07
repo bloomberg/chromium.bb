@@ -5112,18 +5112,20 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
+#if !CONFIG_NEW_MULTISYMBOL
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
         }
       }
+#endif
 #if !CONFIG_EC_ADAPT
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         for (j = 0; j < INTERINTRA_MODES - 1; j++)
           av1_diff_update_prob(&r, &fc->interintra_mode_prob[i][j], ACCT_STR);
       }
 #endif
-#if CONFIG_WEDGE
+#if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {
           av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);

@@ -2559,8 +2559,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif
       cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
     const int bsize_group = size_group_lookup[bsize];
+#if CONFIG_NEW_MULTISYMBOL
+    const int interintra =
+        aom_read_symbol(r, ec_ctx->interintra_cdf[bsize_group], 2, ACCT_STR);
+#else
     const int interintra =
         aom_read(r, cm->fc->interintra_prob[bsize_group], ACCT_STR);
+#endif
     if (xd->counts) xd->counts->interintra[bsize_group][interintra]++;
     assert(mbmi->ref_frame[1] == NONE_FRAME);
     if (interintra) {
@@ -2580,8 +2585,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
       if (is_interintra_wedge_used(bsize)) {
+#if CONFIG_NEW_MULTISYMBOL
+        mbmi->use_wedge_interintra = aom_read_symbol(
+            r, ec_ctx->wedge_interintra_cdf[bsize], 2, ACCT_STR);
+#else
         mbmi->use_wedge_interintra =
             aom_read(r, cm->fc->wedge_interintra_prob[bsize], ACCT_STR);
+#endif
         if (xd->counts)
           xd->counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
         if (mbmi->use_wedge_interintra) {

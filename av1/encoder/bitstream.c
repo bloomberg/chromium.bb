@@ -2226,7 +2226,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         cpi->common.allow_interintra_compound && is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
       const int bsize_group = size_group_lookup[bsize];
+#if CONFIG_NEW_MULTISYMBOL
+      aom_write_symbol(w, interintra, ec_ctx->interintra_cdf[bsize_group], 2);
+#else
       aom_write(w, interintra, cm->fc->interintra_prob[bsize_group]);
+#endif
       if (interintra) {
 #if CONFIG_EC_ADAPT
         aom_write_symbol(w, mbmi->interintra_mode,
@@ -2238,8 +2242,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                         &interintra_mode_encodings[mbmi->interintra_mode]);
 #endif
         if (is_interintra_wedge_used(bsize)) {
+#if CONFIG_NEW_MULTISYMBOL
+          aom_write_symbol(w, mbmi->use_wedge_interintra,
+                           ec_ctx->wedge_interintra_cdf[bsize], 2);
+#else
           aom_write(w, mbmi->use_wedge_interintra,
                     cm->fc->wedge_interintra_prob[bsize]);
+#endif
           if (mbmi->use_wedge_interintra) {
             aom_write_literal(w, mbmi->interintra_wedge_index,
                               get_wedge_bits_lookup(bsize));
@@ -5112,12 +5121,14 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
+#if !CONFIG_NEW_MULTISYMBOL
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         if (is_interintra_allowed_bsize_group(i)) {
           av1_cond_prob_diff_update(header_bc, &fc->interintra_prob[i],
                                     cm->counts.interintra[i], probwt);
         }
       }
+#endif
 #if !CONFIG_EC_ADAPT
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         prob_diff_update(
@@ -5125,13 +5136,13 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
             counts->interintra_mode[i], INTERINTRA_MODES, probwt, header_bc);
       }
 #endif
-#if CONFIG_WEDGE
+#if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
           av1_cond_prob_diff_update(header_bc, &fc->wedge_interintra_prob[i],
                                     cm->counts.wedge_interintra[i], probwt);
       }
-#endif  // CONFIG_WEDGE
+#endif  // CONFIG_WEDGE && CONFIG_NEW_MULTISYMBOL
     }
 #endif  // CONFIG_INTERINTRA
 #if !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)

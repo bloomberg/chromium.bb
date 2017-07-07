@@ -212,6 +212,10 @@ typedef struct frame_contexts {
   aom_prob wedge_interintra_prob[BLOCK_SIZES];
   aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];
 #if CONFIG_EC_ADAPT
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(2)];
+  aom_cdf_prob wedge_interintra_cdf[BLOCK_SIZES][CDF_SIZE(2)];
+#endif
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
                                   [CDF_SIZE(INTERINTRA_MODES)];
 #endif

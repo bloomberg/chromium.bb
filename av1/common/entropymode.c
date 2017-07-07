@@ -1226,6 +1226,14 @@ static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES]
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   208, 208, 208, 208,
 };
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
+    2)] = { { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 } };
+#endif
+
 static const aom_prob
     default_interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1] = {
       { 88, 16, 150 },  // block_size < 8x8
@@ -1253,6 +1261,35 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
   208, 208, 208
 #endif  // CONFIG_EXT_PARTITION
 };
+
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob
+    default_wedge_interintra_cdf[BLOCK_SIZES][CDF_SIZE(2)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(216 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(224 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(224 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(224 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(240 * 128), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#endif  // CONFIG_NEW_MULTISYMBOL
 
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
@@ -4880,6 +4917,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->interintra_cdf, default_interintra_cdf);
+  av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
+#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
 #if CONFIG_EC_ADAPT
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
