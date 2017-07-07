@@ -20,11 +20,7 @@
 
 <dom-module id="site-list">
   <template>
-    <style include="settings-shared iron-flex">
-      .selectable {
-        -webkit-user-select: text;
-      }
-    </style>
+    <style include="settings-shared iron-flex"></style>
     <div id="category">
       <div class="settings-box first">
         <h2 class="start">[[categoryHeader]]</h2>
@@ -71,10 +67,10 @@
                   style$="[[computeSiteIcon(item.origin)]]">
               </div>
               <div class="middle no-min-width">
-                <div class="selectable text-elide">[[item.displayName]]</div>
+                <div class="text-elide">[[item.displayName]]</div>
 
                 <!-- This div must not contain extra whitespace. -->
-                <div class="selectable secondary text-elide"
+                <div class="secondary text-elide"
                     id="siteDescription">[[computeSiteDescription_(item)]]</div>
               </div>
               <template is="dom-if" if="[[enableSiteSettings_]]">
