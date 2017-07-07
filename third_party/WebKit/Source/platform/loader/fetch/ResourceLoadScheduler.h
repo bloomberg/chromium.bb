@@ -5,8 +5,10 @@
 #ifndef ResourceLoadScheduler_h
 #define ResourceLoadScheduler_h
 
+#include "platform/WebFrameScheduler.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
+#include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashSet.h"
@@ -30,7 +32,8 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 // them possibly with additional throttling/scheduling. This also keeps track of
 // in-flight requests that are granted but are not released (by Release()) yet.
 class PLATFORM_EXPORT ResourceLoadScheduler final
-    : public GarbageCollectedFinalized<ResourceLoadScheduler> {
+    : public GarbageCollectedFinalized<ResourceLoadScheduler>,
+      public WebFrameScheduler::Observer {
   WTF_MAKE_NONCOPYABLE(ResourceLoadScheduler);
 
  public:
@@ -50,13 +53,24 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   static constexpr ClientId kInvalidClientId = 0u;
 
-  static ResourceLoadScheduler* Create() { return new ResourceLoadScheduler(); }
+  static constexpr size_t kOutstandingUnlimited = 0u;
+
+  static ResourceLoadScheduler* Create(FetchContext* context = nullptr) {
+    return new ResourceLoadScheduler(context ? context
+                                             : &FetchContext::NullInstance());
+  }
   ~ResourceLoadScheduler() {}
   DECLARE_TRACE();
 
-  // Makes a request. ClientId should be set before Run() is invoked so that
-  // caller can call Release() with the assigned ClientId correctly even if
-  // the invocation happens synchronously.
+  // Stops all operations including observing throttling signals.
+  // ResourceLoadSchedulerClient::Run() will not be called once this method is
+  // called. This method can be called multiple times safely.
+  void Shutdown();
+
+  // Makes a request. This may synchronously call
+  // ResourceLoadSchedulerClient::Run(), but it is guaranteed that ClientId is
+  // populated before ResourceLoadSchedulerClient::Run() is called, so that the
+  // caller can call Release() with the assigned ClientId correctly.
   void Request(ResourceLoadSchedulerClient*, ThrottleOption, ClientId*);
 
   // ResourceLoadSchedulerClient should call this method when the loading is
@@ -64,11 +78,15 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // step, bug the ReleaseOption must be kReleaseOnly in such a case.
   bool Release(ClientId, ReleaseOption);
 
-  // Sets outstanding limit for testing.
+  // Sets outstanding limit for testing. Should be reset with
+  // kOutstandingUnlimited before calling Shutdown().
   void SetOutstandingLimitForTesting(size_t limit);
 
+  // WebFrameScheduler::Observer overrides:
+  void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
+
  private:
-  ResourceLoadScheduler();
+  ResourceLoadScheduler(FetchContext*);
 
   // Generates the next ClientId.
   ClientId GenerateClientId();
@@ -79,10 +97,20 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Grants a client to run,
   void Run(ClientId, ResourceLoadSchedulerClient*);
 
+  void SetOutstandingLimitAndMaybeRun(size_t limit);
+
+  // A flag to indicate an internal running state.
+  // TODO(toyoshim): We may want to use enum once we start to have more states.
+  bool is_shutdown_ = false;
+
+  // A mutable flag to indicate if the throttling and scheduling are enabled.
+  // Can be modified by field trial flags or for testing.
+  bool is_enabled_ = false;
+
   // Outstanding limit. 0u means unlimited.
   // TODO(crbug.com/735410): If this throttling is enabled always, it makes some
   // tests fail.
-  size_t outstanding_limit_ = 0;
+  size_t outstanding_limit_ = kOutstandingUnlimited;
 
   // The last used ClientId to calculate the next.
   ClientId current_id_ = kInvalidClientId;
@@ -94,6 +122,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   HeapHashMap<ClientId, Member<ResourceLoadSchedulerClient>>
       pending_request_map_;
   Deque<ClientId> pending_request_queue_;
+
+  // Holds FetchContext reference to contact WebFrameScheduler.
+  Member<FetchContext> context_;
 };
 
 }  // namespace blink

@@ -34,6 +34,11 @@ class ResourceLoadSchedulerTest : public ::testing::Test {
     scheduler_ = ResourceLoadScheduler::Create();
     scheduler()->SetOutstandingLimitForTesting(1);
   }
+  void TearDown() override {
+    scheduler()->SetOutstandingLimitForTesting(
+        ResourceLoadScheduler::kOutstandingUnlimited);
+    scheduler()->Shutdown();
+  }
 
   ResourceLoadScheduler* scheduler() { return scheduler_; }
 
