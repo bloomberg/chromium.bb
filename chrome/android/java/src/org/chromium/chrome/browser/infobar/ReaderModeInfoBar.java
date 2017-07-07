@@ -48,7 +48,6 @@ public class ReaderModeInfoBar extends InfoBar {
     protected void createCompactLayoutContent(InfoBarCompactLayout layout) {
         TextView prompt = new TextView(getContext());
         prompt.setText(R.string.reader_view_text);
-        prompt.setSingleLine();
         prompt.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getContext().getResources().getDimension(R.dimen.infobar_text_size));
         prompt.setTextColor(
@@ -57,6 +56,9 @@ public class ReaderModeInfoBar extends InfoBar {
         prompt.setOnClickListener(mNavigateListener);
 
         layout.findViewById(R.id.infobar_icon).setOnClickListener(mNavigateListener);
+        final int messagePadding = getContext().getResources().getDimensionPixelOffset(
+                R.dimen.reader_mode_infobar_text_padding);
+        prompt.setPadding(0, messagePadding, 0, messagePadding);
         layout.addContent(prompt, 1f);
     }
 
