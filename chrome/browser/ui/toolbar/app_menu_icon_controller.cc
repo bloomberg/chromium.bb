@@ -12,8 +12,10 @@
 #include "chrome/browser/upgrade_detector.h"
 
 #if defined(OS_WIN)
+#include "base/feature_list.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/enumerate_modules_model.h"
+#include "chrome/common/chrome_features.h"
 #endif
 
 namespace {
@@ -57,7 +59,8 @@ bool ShouldShowUpgradeRecommended() {
 // Returns true if we should show the warning for incompatible software.
 bool ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
-  return EnumerateModulesModel::GetInstance()->ShouldShowConflictWarning();
+  return !base::FeatureList::IsEnabled(features::kModuleDatabase) &&
+         EnumerateModulesModel::GetInstance()->ShouldShowConflictWarning();
 #else
   return false;
 #endif
@@ -77,9 +80,11 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
   UpgradeDetector::GetInstance()->AddObserver(this);
 
 #if defined(OS_WIN)
-  auto* modules = EnumerateModulesModel::GetInstance();
-  modules->AddObserver(this);
-  modules->MaybePostScanningTask();
+  if (!base::FeatureList::IsEnabled(features::kModuleDatabase)) {
+    auto* modules = EnumerateModulesModel::GetInstance();
+    modules->AddObserver(this);
+    modules->MaybePostScanningTask();
+  }
 #endif
 }
 
@@ -87,7 +92,8 @@ AppMenuIconController::~AppMenuIconController() {
   UpgradeDetector::GetInstance()->RemoveObserver(this);
 
 #if defined(OS_WIN)
-  EnumerateModulesModel::GetInstance()->RemoveObserver(this);
+  if (!base::FeatureList::IsEnabled(features::kModuleDatabase))
+    EnumerateModulesModel::GetInstance()->RemoveObserver(this);
 #endif
 }
 
