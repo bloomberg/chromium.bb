@@ -60,8 +60,9 @@ BLINK_EXPORT void SetMockThemeEnabledForTest(bool);
 BLINK_EXPORT void SetFontAntialiasingEnabledForTest(bool);
 BLINK_EXPORT bool FontAntialiasingEnabledForTest();
 
-// Purge the plugin list cache. If |reloadPages| is true, any pages
-// containing plugins will be reloaded after refreshing the plugin list.
+// Purge the plugin list cache. This can cause a web-visible and out-of-spec
+// change to |navigator.plugins| if the plugin list has changed (see
+// https://crbug.com/735854). |reloadPages| is unsupported and must be false.
 BLINK_EXPORT void ResetPluginCache(bool reload_pages = false);
 
 // The embedder should call this periodically in an attempt to balance overall

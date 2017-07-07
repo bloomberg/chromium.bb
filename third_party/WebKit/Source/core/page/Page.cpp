@@ -304,6 +304,15 @@ PluginData* Page::GetPluginData(SecurityOrigin* main_frame_origin) {
   return plugin_data_.Get();
 }
 
+void Page::ResetPluginData() {
+  for (Page* page : AllPages()) {
+    if (page->plugin_data_) {
+      page->plugin_data_->ResetPluginData();
+      page->NotifyPluginsChanged();
+    }
+  }
+}
+
 void Page::SetValidationMessageClient(ValidationMessageClient* client) {
   validation_message_client_ = client;
 }
@@ -567,13 +576,17 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       }
       break;
     case SettingsDelegate::kPluginsChange: {
-      HeapVector<Member<PluginsChangedObserver>, 32> observers;
-      CopyToVector(plugins_changed_observers_, observers);
-      for (PluginsChangedObserver* observer : observers)
-        observer->PluginsChanged();
+      NotifyPluginsChanged();
       break;
     }
   }
+}
+
+void Page::NotifyPluginsChanged() const {
+  HeapVector<Member<PluginsChangedObserver>, 32> observers;
+  CopyToVector(plugins_changed_observers_, observers);
+  for (PluginsChangedObserver* observer : observers)
+    observer->PluginsChanged();
 }
 
 void Page::UpdateAcceleratedCompositingSettings() {
