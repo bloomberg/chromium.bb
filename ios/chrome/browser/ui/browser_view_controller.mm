@@ -1789,10 +1789,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       new ToolbarModelDelegateIOS([_model webStateList]));
   _toolbarModelIOS.reset([_dependencyFactory
       newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
-  _toolbarController = [_dependencyFactory
-      newWebToolbarControllerWithDelegate:self
-                                urlLoader:self
-                          preloadProvider:_preloadController];
+  _toolbarController =
+      [_dependencyFactory newWebToolbarControllerWithDelegate:self
+                                                    urlLoader:self
+                                              preloadProvider:_preloadController
+                                                   dispatcher:self.dispatcher];
   [_dispatcher startDispatchingToTarget:_toolbarController
                             forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarController setTabCount:[_model count]];
@@ -4020,6 +4021,16 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return card;
 }
 
+#pragma mark - BrowserCommands
+
+- (void)goBack {
+  [[_model currentTab] goBack];
+}
+
+- (void)goForward {
+  [[_model currentTab] goForward];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4030,9 +4041,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* currentTab = [_model currentTab];
 
   switch (command) {
-    case IDC_BACK:
-      [[_model currentTab] goBack];
-      break;
     case IDC_BOOKMARK_PAGE:
       [self initializeBookmarkInteractionController];
       [_bookmarkInteractionController
@@ -4067,9 +4075,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       break;
     case IDC_FIND_UPDATE:
       [self searchFindInPage];
-      break;
-    case IDC_FORWARD:
-      [[_model currentTab] goForward];
       break;
     case IDC_FULLSCREEN:
       NOTIMPLEMENTED();
