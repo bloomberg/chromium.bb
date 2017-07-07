@@ -71271,6 +71271,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidGetAccountsTimeUiThread" units="ms">
+  <owner>bsazonov@chromium.org</owner>
+  <summary>
+    The time it takes to retrieve the list of accounts from the system on the UI
+    thread.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidSigninPromoAction"
     enum="AndroidSigninPromoAction">
   <obsolete>
@@ -88248,6 +88256,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="AccountManager" label="Using Android AccountManager API"/>
   <suffix name="GoogleAuthUtil" label="Using GoogleAuthUtil API"/>
   <affected-histogram name="Signin.AndroidGetAccountsTime"/>
+  <affected-histogram name="Signin.AndroidGetAccountsTimeUiThread"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidTabPersistentStoreTime" separator=".">
