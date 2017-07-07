@@ -167,9 +167,12 @@ devtools_domains = [
 
 generated_devtools_api = []
 generated_devtools_api_js = []
+generated_devtools_api_js_externs = []
 foreach(domain, devtools_domains) {
   generated_devtools_api_js +=
       [ "$target_gen_dir/public/devtools_js/" + domain + ".js" ]
+  generated_devtools_api_js_externs +=
+      [ "$target_gen_dir/public/devtools_js/externs/externs_" + domain + ".js" ]
   generated_devtools_api += [
     "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
     "$target_gen_dir/public/devtools/domains/" + domain + ".h",
@@ -191,10 +194,12 @@ action("gen_devtools_client_api") {
     "$root_gen_dir/blink/core/inspector/protocol.json",
   ]
 
-  outputs = generated_devtools_api + generated_devtools_api_js
+  outputs = generated_devtools_api + generated_devtools_api_js +
+            generated_devtools_api_js_externs
 
   sources = [
     "lib/browser/devtools_api/domain_cc.template",
+    "lib/browser/devtools_api/domain_externs_js.template",
     "lib/browser/devtools_api/domain_h.template",
     "lib/browser/devtools_api/domain_js.template",
     "lib/browser/devtools_api/domain_type_conversions_h.template",
