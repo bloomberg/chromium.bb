@@ -169,6 +169,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   UPDATE_CHECK_INTERVAL_PROGRESSBAR = 0.5
   UPDATE_CHECK_INTERVAL_NORMAL = 10
 
+  # Update engine perf files
+  REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH = \
+      '/mnt/stateful_partition/unencrypted/preserve/' \
+      'update_engine_performance_monitor.py'
+  REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH = '/var/log/perf_data_results.json'
+
 
   def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
                original_payload_dir=None, do_rootfs_update=True,
@@ -634,6 +640,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
         self.device, devserver_bin, static_dir=self.device_static_dir,
         log_dir=self.device.work_dir)
 
+    perf_id = None
+    if self.is_au_endtoendtest:
+      perf_id = self._StartPerformanceMonitoring()
+
     try:
       ds.Start()
       logging.debug('Successfully started devserver on the device on port '
@@ -709,6 +719,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           os.path.join(self.tempdir, '_'.join([os.path.basename(
               self.REMOTE_HOSTLOG_FILE_PATH), 'rootfs'])),
           **self._cmd_kwargs_omit_error)
+      if perf_id is not None:
+        self._StopPerformanceMonitoring(perf_id)
 
   def UpdateStateful(self, use_original_build=False):
     """Update the stateful partition of the device.
@@ -860,12 +872,35 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
         if not hostlog_data:
           logging.info('Hostlog empty. Trying again...')
+          time.sleep(DELAY_SEC_FOR_RETRY)
         else:
           break
 
       except cros_build_lib.RunCommandError as e:
         logging.debug('Exception raised while trying to write the hostlog: '
                       '%s', e)
+
+  def _StartPerformanceMonitoring(self):
+    """Start update_engine performance monitoring script in rootfs update."""
+    if self._clobber_stateful:
+      return None
+
+    cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--start-bg']
+    try:
+      perf_id = self.device.RunCommand(cmd).output.strip()
+      logging.info('update_engine_performance_monitors pid is %s.', perf_id)
+      return perf_id
+    except cros_build_lib.RunCommandError as e:
+      logging.debug('Could not start performance monitoring script: %s', e)
+    return None
+
+  def _StopPerformanceMonitoring(self, pid):
+    """Stop the performance monitoring script and save results to file."""
+    cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--stop-bg',
+           pid]
+    perf_json_data = self.device.RunCommand(cmd).output.strip()
+    self.device.RunCommand(['echo', json.dumps(perf_json_data), '>',
+                            self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
