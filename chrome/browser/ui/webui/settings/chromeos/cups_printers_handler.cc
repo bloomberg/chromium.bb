@@ -328,7 +328,6 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   std::string printer_model;
   std::string printer_address;
   std::string printer_protocol;
-  std::string printer_ppd_path;
   CHECK(printer_dict->GetString("printerId", &printer_id));
   CHECK(printer_dict->GetString("printerName", &printer_name));
   CHECK(printer_dict->GetString("printerDescription", &printer_description));
@@ -345,7 +344,14 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     printer_uri += "/" + printer_queue;
   }
 
-  // printerPPDPath might be null for an auto-discovered printer.
+  // Read PPD selection if it was used.
+  std::string ppd_manufacturer;
+  std::string ppd_model;
+  printer_dict->GetString("ppdManufacturer", &ppd_manufacturer);
+  printer_dict->GetString("ppdModel", &ppd_model);
+
+  // Read user provided PPD if it was used.
+  std::string printer_ppd_path;
   printer_dict->GetString("printerPPDPath", &printer_ppd_path);
 
   std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(printer_id);
@@ -370,15 +376,29 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
       return;
     }
     printer->mutable_ppd_reference()->user_supplied_ppd_url = tmp.spec();
-  } else if (!printer_manufacturer.empty() && !printer_model.empty()) {
+  } else if (!ppd_manufacturer.empty() && !ppd_model.empty()) {
     RecordPpdSource(kScs);
     // Using the manufacturer and model, get a ppd reference.
-    if (!ppd_provider_->GetPpdReference(printer_manufacturer, printer_model,
+    if (!ppd_provider_->GetPpdReference(ppd_manufacturer, ppd_model,
                                         printer->mutable_ppd_reference())) {
       LOG(ERROR) << "Failed to get ppd reference";
       OnAddPrinterError();
       return;
     }
+
+    if (printer->make_and_model().empty()) {
+      // In lieu of more accurate information, populate the make and model
+      // fields with the PPD information.
+      printer->set_manufacturer(ppd_manufacturer);
+      printer->set_model(ppd_model);
+      // PPD Model names are actually make and model.
+      printer->set_make_and_model(ppd_model);
+    }
+  } else {
+    // TODO(crbug.com/738514): Support PPD guessing for non-autoconf printers.
+    // i.e. !autoconf && !manufacturer.empty() && !model.empty()
+    NOTREACHED()
+        << "A configuration option must have been selected to add a printer";
   }
 
   // Copy the printer for the configurer.  Ownership needs to be transfered to

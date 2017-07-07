@@ -9,6 +9,8 @@
 
 /**
  * @typedef {{
+ *   ppdManufacturer: string,
+ *   ppdModel: string,
  *   printerAddress: string,
  *   printerAutoconf: boolean,
  *   printerDescription: string,

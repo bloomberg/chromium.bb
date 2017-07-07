@@ -298,7 +298,7 @@
             <div class="label">$i18n{printerManufacturer}</div>
             <div class="secondary">
               <drop-down-search-box items="[[manufacturerList]]"
-                  selected-item="{{newPrinter.printerManufacturer}}">
+                  selected-item="{{newPrinter.ppdManufacturer}}">
               </drop-down-search-box>
             </div>
           </div>
@@ -308,7 +308,7 @@
             <div class="label">$i18n{printerModel}</div>
             <div class="secondary">
               <drop-down-search-box items="[[modelList]]"
-                  selected-item="{{newPrinter.printerModel}}">
+                  selected-item="{{newPrinter.ppdModel}}">
               </drop-down-search-box>
             </div>
           </div>
@@ -335,8 +335,8 @@
           $i18n{cancelButtonText}
         </paper-button>
         <paper-button class="action-button" id="addPrinterButton"
-            disabled="[[!canAddPrinter_(newPrinter.printerManufacturer,
-                                        newPrinter.printerModel,
+            disabled="[[!canAddPrinter_(newPrinter.ppdManufacturer,
+                                        newPrinter.ppdModel,
                                         newPrinter.printerPPDPath)]]"
             on-tap="switchToConfiguringDialog_">
           $i18n{addPrinterButtonText}
