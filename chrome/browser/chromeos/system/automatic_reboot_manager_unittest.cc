@@ -264,7 +264,6 @@ TestAutomaticRebootManagerTaskRunner::~TestAutomaticRebootManagerTaskRunner() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnBeforeSelectingTask() {
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
@@ -273,7 +272,6 @@ void TestAutomaticRebootManagerTaskRunner::OnAfterTimePassed() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnAfterTaskRun() {
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 

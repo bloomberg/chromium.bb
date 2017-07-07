@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
@@ -101,6 +102,10 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void AddObserver(AutomaticRebootManagerObserver* observer);
   void RemoveObserver(AutomaticRebootManagerObserver* observer);
 
+  // Blocks until Init() is called and then returns true. If Init() is not
+  // called within |timeout|, returns false.
+  bool WaitForInitForTesting(const base::TimeDelta& timeout);
+
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
@@ -139,6 +144,9 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
 
   // Reboots immediately.
   void Reboot();
+
+  // Event that is signaled when Init() runs.
+  base::WaitableEvent initialized_;
 
   // A clock that can be mocked in tests to fast-forward time.
   std::unique_ptr<base::TickClock> clock_;
