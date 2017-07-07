@@ -27,14 +27,9 @@
 #define Position_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ContainerNode.h"
-#include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingStrategy.h"
 #include "platform/heap/Handle.h"
-#include "platform/text/TextDirection.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PassRefPtr.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

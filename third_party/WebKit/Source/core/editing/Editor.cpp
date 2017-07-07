@@ -57,6 +57,7 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UndoStack.h"
 #include "core/editing/iterators/SearchBuffer.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"

@@ -32,23 +32,23 @@
 #define TextFinder_h
 
 #include "core/CoreExport.h"
-#include "core/editing/FindOptions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebFloatRect.h"
-#include "public/platform/WebRect.h"
-#include "public/web/WebFindOptions.h"
 
 namespace blink {
 
 class LocalFrame;
 class Range;
 class WebLocalFrameBase;
+class WebString;
+struct WebFindOptions;
+struct WebFloatPoint;
+struct WebFloatRect;
+struct WebRect;
 
 template <typename T>
 class WebVector;

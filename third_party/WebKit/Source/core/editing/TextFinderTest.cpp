@@ -20,7 +20,9 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFloatRect.h"
 #include "public/web/WebDocument.h"
+#include "public/web/WebFindOptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::testing::RunPendingTasks;

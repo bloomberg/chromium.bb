@@ -26,6 +26,7 @@
 
 #include "EditingStyleUtilities.h"
 
+#include "core/CSSPropertyNames.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
