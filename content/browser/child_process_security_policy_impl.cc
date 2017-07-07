@@ -443,10 +443,12 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
   if (!url.is_valid())
     return;  // Can't grant the capability to request invalid URLs.
 
-  if (IsWebSafeScheme(url.scheme()))
+  const std::string& scheme = url.scheme();
+
+  if (IsWebSafeScheme(scheme))
     return;  // The scheme has already been whitelisted for every child process.
 
-  if (IsPseudoScheme(url.scheme())) {
+  if (IsPseudoScheme(scheme)) {
     return;  // Can't grant the capability to request pseudo schemes.
   }
 
@@ -462,7 +464,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
 
     // When the child process has been commanded to request this scheme,
     // we grant it the capability to request all URLs of that scheme.
-    state->second->GrantScheme(url.scheme());
+    state->second->GrantScheme(scheme);
   }
 }
 
@@ -632,7 +634,9 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
 
-  if (IsPseudoScheme(url.scheme())) {
+  const std::string& scheme = url.scheme();
+
+  if (IsPseudoScheme(scheme)) {
     // Every child process can request <about:blank>, <about:blank?foo>,
     // <about:blank/#foo> and <about:srcdoc>.
     if (url.IsAboutBlank() || url == kAboutSrcDocURL)
@@ -655,7 +659,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
            CanCommitURL(child_id, GURL(origin.Serialize()));
   }
 
-  if (IsWebSafeScheme(url.scheme()))
+  if (IsWebSafeScheme(scheme))
     return true;
 
   // If the process can commit the URL, it can request it.
@@ -672,9 +676,11 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   if (!url.is_valid())
     return false;  // Can't commit invalid URLs.
 
+  const std::string& scheme = url.scheme();
+
   // Of all the pseudo schemes, only about:blank and about:srcdoc are allowed to
   // commit.
-  if (IsPseudoScheme(url.scheme()))
+  if (IsPseudoScheme(scheme))
     return url == url::kAboutBlankURL || url == kAboutSrcDocURL;
 
   // Blob and filesystem URLs require special treatment; validate the inner
@@ -701,7 +707,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     // site, so CanCommitURL will need to rely on explicit, per-process grants.
     // Note how today, even with extension isolation, the line below does not
     // enforce that http pages cannot commit in an extension process.
-    if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, url.scheme()))
+    if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
     SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -719,10 +725,12 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   if (!url.is_valid())
     return false;  // Can't set invalid URLs as origin headers.
 
+  const std::string& scheme = url.scheme();
+
   // Suborigin URLs are a special case and are allowed to be an origin header.
-  if (url.scheme() == url::kHttpSuboriginScheme ||
-      url.scheme() == url::kHttpsSuboriginScheme) {
-    DCHECK(IsPseudoScheme(url.scheme()));
+  if (scheme == url::kHttpSuboriginScheme ||
+      scheme == url::kHttpsSuboriginScheme) {
+    DCHECK(IsPseudoScheme(scheme));
     return true;
   }
 
@@ -740,8 +748,7 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   // document origin.
   {
     base::AutoLock lock(lock_);
-    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_,
-                          url.scheme()))
+    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_, scheme))
       return true;
   }
   return false;
