@@ -52,6 +52,7 @@ class LocalFrame;
 class LocalFrameClient;
 class ResourceError;
 class ResourceResponse;
+class Settings;
 class WebTaskRunner;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
@@ -184,8 +185,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // BaseFetchContext overrides:
   KURL GetFirstPartyForCookies() const override;
-  ContentSettingsClient* GetContentSettingsClient() const override;
-  Settings* GetSettings() const override;
+  bool AllowScriptFromSource(const KURL&) const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   bool ShouldBlockRequestByInspector(const ResourceRequest&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
@@ -210,6 +210,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
+  ContentSettingsClient* GetContentSettingsClient() const;
+  Settings* GetSettings() const;
   String GetUserAgent() const;
   RefPtr<SecurityOrigin> GetRequestorOrigin();
   RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();

@@ -227,10 +227,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   }
 
   if (type == Resource::kScript || type == Resource::kImportResource) {
-    if (GetContentSettingsClient() &&
-        !GetContentSettingsClient()->AllowScriptFromSource(
-            !GetSettings() || GetSettings()->GetScriptEnabled(), url)) {
-      GetContentSettingsClient()->DidNotAllowScript();
+    if (!AllowScriptFromSource(url)) {
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::CSP;
