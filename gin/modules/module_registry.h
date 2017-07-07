@@ -10,11 +10,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"
@@ -77,7 +77,7 @@ class GIN_EXPORT ModuleRegistry {
   }
 
  private:
-  typedef ScopedVector<PendingModule> PendingModuleVector;
+  typedef std::vector<std::unique_ptr<PendingModule>> PendingModuleVector;
   typedef std::multimap<std::string, LoadModuleCallback> LoadModuleCallbackMap;
 
   explicit ModuleRegistry(v8::Isolate* isolate);
