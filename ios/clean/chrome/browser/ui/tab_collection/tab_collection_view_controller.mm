@@ -118,7 +118,8 @@
   [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
   DCHECK_LE(indexPath.item, INT_MAX);
   int index = static_cast<int>(indexPath.item);
-  cell.item = self.items[index];
+  // PLACEHOLDER: SnapshotCache will be passed into the cell.
+  [cell configureCell:self.items[index] snapshotCache:nil];
   return cell;
 }
 
@@ -133,7 +134,7 @@
 #pragma mark - SessionCellDelegate
 
 - (TabSwitcherCache*)tabSwitcherCache {
-  // PLACEHOLDER: return image cache.
+  // PLACEHOLDER: SnapshotCache will be passed into the cell.
   return nil;
 }
 
@@ -186,13 +187,15 @@
 }
 
 - (void)replaceItemAtIndex:(int)index withItem:(TabCollectionItem*)item {
+  DCHECK(item);
   DCHECK_GE(index, 0);
   DCHECK_LT(static_cast<NSUInteger>(index), self.items.count);
   self.items[index] = item;
   TabCollectionTabCell* cell = base::mac::ObjCCastStrict<TabCollectionTabCell>(
       [self.tabs cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index
                                                             inSection:0]]);
-  cell.item = self.items[index];
+  // PLACEHOLDER: SnapshotCache will be passed into the cell.
+  [cell configureCell:self.items[index] snapshotCache:nil];
 }
 
 - (void)populateItems:(NSArray<TabCollectionItem*>*)items

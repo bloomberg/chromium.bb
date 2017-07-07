@@ -4,6 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -20,6 +21,7 @@ const CGFloat kSelectedBorderWidth = 4.0f;
 }
 
 @interface TabCollectionTabCell ()
+@property(nonatomic, strong) TabCollectionItem* item;
 @property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UIImageView* favicon;
 @property(nonatomic, strong) TabSwitcherButton* snapshotButton;
@@ -38,19 +40,38 @@ const CGFloat kSelectedBorderWidth = 4.0f;
   return self;
 }
 
-#pragma mark - Properties
+#pragma mark - Cell lifecycle
 
-- (void)setItem:(TabCollectionItem*)item {
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.item = nil;
+}
+
+#pragma mark - Public methods
+
+- (void)configureCell:(TabCollectionItem*)item
+        snapshotCache:(SnapshotCache*)snapshotCache {
   DCHECK(item);
-  _item = item;
+  self.item = item;
   self.titleLabel.text = item.title;
   self.snapshotButton.accessibilityIdentifier =
       [NSString stringWithFormat:@"%@_button", item.title];
   self.contentView.accessibilityLabel = item.title;
   self.favicon.image = NativeImage(IDR_IOS_OMNIBOX_HTTP);
+  __weak TabCollectionTabCell* weakSelf = self;
+  [snapshotCache
+      retrieveImageForSessionID:self.item.tabID
+                       callback:^(UIImage* snapshot) {
+                         // PLACEHOLDER: This operation will be cancellable.
+                         if ([weakSelf.item.tabID isEqualToString:item.tabID]) {
+                           [weakSelf.snapshotButton
+                               setImage:snapshot
+                               forState:UIControlStateNormal];
+                         }
+                       }];
 }
 
-#pragma mark - Private
+#pragma mark - Private methods
 
 - (void)setupSelectedBackgroundView {
   self.selectedBackgroundView = [[UIView alloc] init];
