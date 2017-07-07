@@ -516,6 +516,14 @@ function OptionsDialogExtensionSettingsWebUITest() {}
 OptionsDialogExtensionSettingsWebUITest.prototype = {
   __proto__: InstallGoodExtensionSettingsWebUITest.prototype,
 
+  setUp() {
+    InstallGoodExtensionSettingsWebUITest.prototype.setUp.call(this);
+
+    // False positive on iframe hosting the <extensionoptions> guest view.
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'focusableElementNotVisibleAndNotAriaHidden', 'iframe');
+  },
+
   /** @override */
   browsePreload: ExtensionSettingsWebUITest.prototype.browsePreload +
       '?options=' + GOOD_EXTENSION_ID,
