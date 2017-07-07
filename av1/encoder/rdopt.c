@@ -5326,7 +5326,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 #endif  // CONFIG_PALETTE
 
-  for (int mode_idx = DC_PRED; mode_idx < INTRA_MODES; ++mode_idx) {
+  for (int mode_idx = 0; mode_idx < INTRA_MODES; ++mode_idx) {
     int this_rate;
     RD_STATS tokenonly_rd_stats;
     PREDICTION_MODE mode = intra_rd_search_mode_order[mode_idx];
@@ -5361,6 +5361,11 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     this_rate =
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
 
+#if CONFIG_CFL
+    if (mode == DC_PRED) {
+      this_rate += xd->cfl->costs[mbmi->cfl_alpha_idx];
+    }
+#endif
 #if CONFIG_EXT_INTRA
     if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type)) {
       this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
