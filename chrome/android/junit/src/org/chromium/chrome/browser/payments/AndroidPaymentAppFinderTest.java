@@ -289,7 +289,10 @@ public class AndroidPaymentAppFinderTest {
         Mockito.when(packageManagerDelegate.getPackageInfoWithSignatures("com.bobpay.app"))
                 .thenReturn(bobPayPackageInfo);
 
-        PaymentManifestDownloader downloader = new PaymentManifestDownloader(null) {
+        PaymentManifestDownloader downloader = new PaymentManifestDownloader() {
+            @Override
+            public void initialize(WebContents webContents) {}
+
             @Override
             public void downloadPaymentMethodManifest(URI uri, ManifestDownloadCallback callback) {
                 callback.onPaymentMethodManifestDownloadSuccess("some content here");
@@ -299,6 +302,9 @@ public class AndroidPaymentAppFinderTest {
             public void downloadWebAppManifest(URI uri, ManifestDownloadCallback callback) {
                 callback.onWebAppManifestDownloadSuccess("some content here");
             }
+
+            @Override
+            public void destroy() {}
         };
 
         PaymentManifestParser parser = new PaymentManifestParser() {

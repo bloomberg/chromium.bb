@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_DOWNLOADER_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_DOWNLOADER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_fetcher.h"
@@ -28,34 +30,23 @@ namespace payments {
 // HTTP response codes are 200.
 class PaymentManifestDownloader : public net::URLFetcherDelegate {
  public:
-  // The interface for receiving the result of downloading a manifest.
-  class Delegate {
-   public:
-    // Called when a manifest has been successfully downloaded.
-    virtual void OnManifestDownloadSuccess(const std::string& content) = 0;
+  // Called on completed download of a manifest. Download failure results in
+  // empty contents. Failure to download the manifest can happen because of the
+  // following reasons:
+  //  - HTTP response code is not 200. (204 is also allowed for HEAD request.)
+  //  - HTTP GET on the manifest URL returns empty content.
+  //
+  // In the case of a payment method manifest download, can also be called
+  // when:
+  //  - HTTP response headers are absent.
+  //  - HTTP response headers do not contain Link headers.
+  //  - Link header does not contain rel="payment-method-manifest".
+  //  - Link header does not contain a valid URL.
+  using DownloadCallback = base::OnceCallback<void(const std::string&)>;
 
-    // Called when failed to download the manifest for any reason:
-    //  - HTTP response code is not 200.
-    //  - HTTP GET on the manifest URL returns empty content.
-    //
-    // In the case of a payment method manifest download, can also be called
-    // when:
-    //  - HTTP response headers are absent.
-    //  - HTTP response headers do not contain Link headers.
-    //  - Link header does not contain rel="payment-method-manifest".
-    //  - Link header does not contain a valid URL.
-    virtual void OnManifestDownloadFailure() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
-  // |delegate| should not be null and must outlive this object. |url| should be
-  // a valid URL with HTTPS scheme.
-  PaymentManifestDownloader(
-      const scoped_refptr<net::URLRequestContextGetter>& context,
-      const GURL& url,
-      Delegate* delegate);
+  // |delegate| should not be null and must outlive this object.
+  explicit PaymentManifestDownloader(
+      const scoped_refptr<net::URLRequestContextGetter>& context);
 
   ~PaymentManifestDownloader() override;
 
@@ -76,28 +67,48 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
   //    The absolute location must use HTTPS scheme.
   //
   // 2) GET request for the payment method manifest file.
-  void DownloadPaymentMethodManifest();
+  //
+  // |url| should be a valid URL with HTTPS scheme.
+  void DownloadPaymentMethodManifest(const GURL& url,
+                                     DownloadCallback callback);
 
   // Download a web app manifest via a single HTTP request:
   //
   // 1) GET request for the payment method name.
-  void DownloadWebAppManifest();
+  //
+  // |url| should be a valid URL with HTTPS scheme.
+  void DownloadWebAppManifest(const GURL& url, DownloadCallback callback);
+
+  // Allows HTTP URLs. Should be used only for testing.
+  void AllowHttpForTest();
 
  private:
-  void InitiateDownload(const GURL& url,
-                        net::URLFetcher::RequestType request_type);
+  // Information about an ongoing download request.
+  struct Download {
+    Download();
+    ~Download();
+
+    net::URLFetcher::RequestType request_type;
+    std::unique_ptr<net::URLFetcher> fetcher;
+    DownloadCallback callback;
+  };
 
   // net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  void InitiateDownload(const GURL& url,
+                        net::URLFetcher::RequestType request_type,
+                        DownloadCallback callback);
+  bool IsValidManifestUrl(const GURL& url);
+
   scoped_refptr<net::URLRequestContextGetter> context_;
-  const GURL url_;
+  bool allow_http_for_test_;
 
-  // Non-owned. Never null. Outlives this object.
-  Delegate* delegate_;
-
-  bool is_downloading_http_link_header_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // Downloads are identified by net::URLFetcher pointers, because that's the
+  // only unique piece of information that OnURLFetchComplete() receives. Can't
+  // rely on the URL of the download, because of possible collision between HEAD
+  // and GET requests.
+  std::map<const net::URLFetcher*, std::unique_ptr<Download>> downloads_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestDownloader);
 };

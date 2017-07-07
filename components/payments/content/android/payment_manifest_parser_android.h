@@ -7,11 +7,7 @@
 
 #include <jni.h>
 
-#include <memory>
-#include <vector>
-
 #include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "components/payments/content/payment_manifest_parser_host.h"
 
