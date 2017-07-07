@@ -74,9 +74,6 @@ class CONTENT_EXPORT WebContentsAndroid
                          const base::android::JavaParamRef<jobject>& obj);
   jint GetBackgroundColor(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jstring> GetURL(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>&) const;
   base::android::ScopedJavaLocalRef<jstring> GetLastCommittedURL(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;

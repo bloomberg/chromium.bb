@@ -368,12 +368,6 @@ import java.util.UUID;
     }
 
     @Override
-    public String getUrl() {
-        if (isDestroyed()) return null;
-        return nativeGetURL(mNativeWebContentsAndroid);
-    }
-
-    @Override
     public String getLastCommittedUrl() {
         return nativeGetLastCommittedURL(mNativeWebContentsAndroid);
     }
@@ -664,7 +658,6 @@ import java.util.UUID;
     private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
     private native void nativeAdjustSelectionByCharacterOffset(
             long nativeWebContentsAndroid, int startAdjust, int endAdjust);
-    private native String nativeGetURL(long nativeWebContentsAndroid);
     private native String nativeGetLastCommittedURL(long nativeWebContentsAndroid);
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);
     private native void nativeResumeLoadingCreatedWebContents(long nativeWebContentsAndroid);

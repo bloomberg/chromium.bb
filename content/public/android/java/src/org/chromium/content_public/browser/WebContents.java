@@ -238,13 +238,6 @@ public interface WebContents extends Parcelable {
     public void adjustSelectionByCharacterOffset(int startAdjust, int endAdjust);
 
     /**
-     * Get the URL of the current page.
-     *
-     * @return The URL of the current page.
-     */
-    String getUrl();
-
-    /**
      * Gets the last committed URL. It represents the current page that is
      * displayed in this WebContents. It represents the current security context.
      *

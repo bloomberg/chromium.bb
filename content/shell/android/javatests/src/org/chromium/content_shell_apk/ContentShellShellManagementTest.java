@@ -40,14 +40,20 @@ public class ContentShellShellManagementTest {
         final ContentShellActivity activity =
                 mActivityTestRule.launchContentShellWithUrl(TEST_PAGE_1);
         Assert.assertEquals(TEST_PAGE_1,
-                activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
+                activity.getActiveShell()
+                        .getContentViewCore()
+                        .getWebContents()
+                        .getVisibleUrl());
 
         Shell previousActiveShell = activity.getActiveShell();
         Assert.assertFalse(previousActiveShell.isDestroyed());
 
         mActivityTestRule.loadNewShell(TEST_PAGE_2);
         Assert.assertEquals(TEST_PAGE_2,
-                activity.getActiveShell().getContentViewCore().getWebContents().getUrl());
+                activity.getActiveShell()
+                        .getContentViewCore()
+                        .getWebContents()
+                        .getVisibleUrl());
 
         Assert.assertNotSame(previousActiveShell, activity.getActiveShell());
         Assert.assertTrue(previousActiveShell.isDestroyed());

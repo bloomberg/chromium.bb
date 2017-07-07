@@ -317,12 +317,6 @@ jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
   return rwhva->GetCachedBackgroundColor();
 }
 
-ScopedJavaLocalRef<jstring> WebContentsAndroid::GetURL(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) const {
-  return ConvertUTF8ToJavaString(env, web_contents_->GetURL().spec());
-}
-
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetLastCommittedURL(
     JNIEnv* env,
     const JavaParamRef<jobject>&) const {

@@ -281,7 +281,7 @@ public class ModalDialogTest {
                 mActivityTestRule.getActivity()
                         .getCurrentContentViewCore()
                         .getWebContents()
-                        .getUrl());
+                        .getLastCommittedUrl());
         executeJavaScriptAndWaitForDialog("history.back();");
 
         jsDialog = getCurrentDialog();
@@ -297,7 +297,7 @@ public class ModalDialogTest {
                 mActivityTestRule.getActivity()
                         .getCurrentContentViewCore()
                         .getWebContents()
-                        .getUrl());
+                        .getLastCommittedUrl());
     }
 
     /**

@@ -390,7 +390,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         WebContents baseWebContents = getBasePageWebContents();
         if (baseWebContents == null || mChromeActivity == null || mTabModelSelector == null) return;
 
-        String url = baseWebContents.getUrl();
+        String url = baseWebContents.getLastCommittedUrl();
         if (url == null) return;
 
         ReaderModeTabInfo info = mTabStatusMap.get(mTabModelSelector.getCurrentTabId());

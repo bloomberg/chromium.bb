@@ -84,8 +84,8 @@ public interface TabCreatorManager {
          */
         public final boolean createTabWithWebContents(Tab parent,
                 WebContents webContents, int parentId, TabLaunchType type) {
-            return createTabWithWebContents(parent, webContents, parentId, type,
-                    webContents.getUrl());
+            return createTabWithWebContents(
+                    parent, webContents, parentId, type, webContents.getVisibleUrl());
         }
 
         /**

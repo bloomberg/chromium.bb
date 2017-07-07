@@ -85,7 +85,8 @@ public final class ContentShellTestCommon {
         ContentShellActivity activity = launchContentShellWithUrl(isolatedTestFileUrl);
         Assert.assertNotNull(mCallback.getActivityForTestCommon());
         waitForActiveShellToBeDoneLoading();
-        Assert.assertEquals(isolatedTestFileUrl, getContentViewCore().getWebContents().getUrl());
+        Assert.assertEquals(
+                isolatedTestFileUrl, getContentViewCore().getWebContents().getLastCommittedUrl());
         return activity;
     }
 
@@ -107,7 +108,8 @@ public final class ContentShellTestCommon {
                     updateFailureReason("Shell is still loading.");
                     return false;
                 }
-                if (TextUtils.isEmpty(shell.getContentViewCore().getWebContents().getUrl())) {
+                if (TextUtils.isEmpty(
+                            shell.getContentViewCore().getWebContents().getLastCommittedUrl())) {
                     updateFailureReason("Shell's URL is empty or null.");
                     return false;
                 }
