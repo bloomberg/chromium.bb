@@ -3,7 +3,6 @@
 <title> Change mobile throttling setting.</title>
 <script src = "../../http/tests/inspector/inspector-test.js"></script>
 <script>
-
 function initialize_ThrottlingTest() {
   InspectorTest.preloadPanel("network");
   InspectorTest.preloadPanel("timeline");
@@ -14,8 +13,8 @@ function test() {
   var deviceModeView = new Emulation.DeviceModeView();
 
   var deviceModeThrottling = deviceModeView._toolbar._throttlingConditionsItem;
-  var networkPanelThrottling = UI.panels.network._throttlingSelect;
-  var networkPanelOfflineCheckbox = UI.panels.network._offlineCheckbox.inputElement;
+  var networkPanelThrottling = UI.panels.network.throttlingSelectForTest();
+  var networkPanelOfflineCheckbox = UI.panels.network.offlineCheckboxForTest().inputElement;
   var networkConditionsDrawerThrottlingSelector =
       self.runtime.sharedInstance(Network.NetworkConfigView)._networkThrottlingSelect;
   var performancePanelNetworkThrottling = UI.panels.timeline._networkThrottlingSelect;
