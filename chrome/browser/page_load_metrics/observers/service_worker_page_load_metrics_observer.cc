@@ -49,6 +49,8 @@ const char kHistogramServiceWorkerDomContentLoaded[] =
 const char kHistogramServiceWorkerLoad[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired";
 
+const char kHistogramServiceWorkerParseStartInbox[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart.inbox";
 const char kHistogramServiceWorkerFirstContentfulPaintInbox[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint.inbox";
@@ -68,6 +70,8 @@ const char kHistogramServiceWorkerLoadInbox[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
     "inbox";
 
+const char kHistogramServiceWorkerParseStartSearch[] =
+    "PageLoad.Clients.ServiceWorker.ParseTiming.NavigationToParseStart.search";
 const char kHistogramServiceWorkerFirstContentfulPaintSearch[] =
     "PageLoad.Clients.ServiceWorker.PaintTiming."
     "NavigationToFirstContentfulPaint.search";
@@ -316,6 +320,14 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
           timing.parse_timing->parse_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
+
+    if (IsInboxSite(info.url)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartInbox,
+                          timing.parse_timing->parse_start.value());
+    } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartSearch,
+                          timing.parse_timing->parse_start.value());
+    }
     if (IsForwardBackLoad(transition_)) {
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramServiceWorkerParseStartForwardBack,
