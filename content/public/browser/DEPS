@@ -13,4 +13,10 @@ specific_include_rules = {
     # file will be moved elsewhere. See http://crbug.com/598073.
     "!content/browser/loader/resource_dispatcher_host_impl.h",
   ],
+
+  "desktop_capture\.h": [
+    # desktop_capture.h creates a DesktopCaptureOptions to share between
+    # content/browser and chrome/browser.
+    "+third_party/webrtc/modules/desktop_capture/desktop_capture_options.h",
+  ],
 }

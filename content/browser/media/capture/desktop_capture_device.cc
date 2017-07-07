@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -25,6 +24,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -78,11 +78,6 @@ std::unique_ptr<service_manager::Connector> GetServiceConnector() {
 }
 
 }  // namespace
-
-#if defined(OS_WIN)
-const base::Feature kDirectXCapturer{"DirectXCapturer",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  public:
@@ -401,20 +396,7 @@ void DesktopCaptureDevice::Core::RequestWakeLock(
 // static
 std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
     const DesktopMediaID& source) {
-  webrtc::DesktopCaptureOptions options =
-      webrtc::DesktopCaptureOptions::CreateDefault();
-  // Leave desktop effects enabled during WebRTC captures.
-  options.set_disable_effects(false);
-
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(kDirectXCapturer)) {
-    options.set_allow_use_magnification_api(true);
-  } else {
-    options.set_allow_directx_capturer(true);
-    options.set_allow_use_magnification_api(false);
-  }
-#endif
-
+  auto options = CreateDesktopCaptureOptions();
   std::unique_ptr<webrtc::DesktopCapturer> capturer;
 
   switch (source.type) {
