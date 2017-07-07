@@ -298,8 +298,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
     request.ClearHTTPHeaderField("Save-Data");
 
-  if (GetFrame()->GetSettings() &&
-      GetFrame()->GetSettings()->GetDataSaverEnabled())
+  if (GetSettings() && GetSettings()->GetDataSaverEnabled())
     request.SetHTTPHeaderField("Save-Data", "on");
 
   if (GetLocalFrameClient()->IsClientLoFiActiveForFrame()) {
@@ -889,17 +888,15 @@ MHTMLArchive* FrameFetchContext::Archive() const {
       ->Archive();
 }
 
-ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
-  if (IsDetached())
-    return nullptr;
-  return GetFrame()->GetContentSettingsClient();
-}
-
-Settings* FrameFetchContext::GetSettings() const {
-  if (IsDetached())
-    return nullptr;
-  DCHECK(GetFrame());
-  return GetFrame()->GetSettings();
+bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
+  ContentSettingsClient* settings_client = GetContentSettingsClient();
+  Settings* settings = GetSettings();
+  if (settings_client && !settings_client->AllowScriptFromSource(
+                             !settings || settings->GetScriptEnabled(), url)) {
+    settings_client->DidNotAllowScript();
+    return false;
+  }
+  return true;
 }
 
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
@@ -1037,6 +1034,19 @@ const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()
 void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
   if (document_)
     document_->AddConsoleMessage(message);
+}
+
+ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
+  if (IsDetached())
+    return nullptr;
+  return GetFrame()->GetContentSettingsClient();
+}
+
+Settings* FrameFetchContext::GetSettings() const {
+  if (IsDetached())
+    return nullptr;
+  DCHECK(GetFrame());
+  return GetFrame()->GetSettings();
 }
 
 String FrameFetchContext::GetUserAgent() const {

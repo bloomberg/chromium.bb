@@ -93,14 +93,14 @@ KURL WorkerFetchContext::GetFirstPartyForCookies() const {
   return web_context_->FirstPartyForCookies();
 }
 
-ContentSettingsClient* WorkerFetchContext::GetContentSettingsClient() const {
-  // TODO(horo): Implement this.
-  return nullptr;
-}
-
-Settings* WorkerFetchContext::GetSettings() const {
-  // TODO(horo): Implement this.
-  return nullptr;
+bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
+  // Currently we don't use WorkerFetchContext for loading scripts. So this
+  // method must not be called.
+  // TODO(horo): When we will use WorkerFetchContext for loading scripts, we
+  // need to have a copy the script rules of RendererContentSettingRules on the
+  // worker thread.
+  NOTREACHED();
+  return false;
 }
 
 SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
