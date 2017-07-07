@@ -38,11 +38,6 @@ bool IsKeyWhitelisted(const std::string& key) {
 
 }  // namespace
 
-SystemLogsSource::SystemLogsSource(const std::string& source_name)
-    : source_name_(source_name) {}
-
-SystemLogsSource::~SystemLogsSource() {}
-
 SystemLogsFetcher::SystemLogsFetcher(bool scrub_data)
     : response_(base::MakeUnique<SystemLogsResponse>()),
       num_pending_requests_(0),
