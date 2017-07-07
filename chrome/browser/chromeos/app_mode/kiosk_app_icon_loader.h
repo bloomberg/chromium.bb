@@ -51,8 +51,6 @@ class KioskAppIconLoader {
   // Delegate always lives longer than this class as it's owned by delegate.
   Delegate* const delegate_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   gfx::ImageSkia icon_;
 
   base::WeakPtrFactory<KioskAppIconLoader> weak_factory_;
