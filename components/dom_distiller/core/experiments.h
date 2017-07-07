@@ -6,14 +6,15 @@
 #define COMPONENTS_DOM_DISTILLER_CORE_EXPERIMENTS_H_
 
 namespace dom_distiller {
-  enum class DistillerHeuristicsType {
-    NONE,
-    OG_ARTICLE,
-    ADABOOST_MODEL,
-    ALWAYS_TRUE,
-  };
+enum class DistillerHeuristicsType {
+  NONE,
+  OG_ARTICLE,
+  ADABOOST_MODEL,
+  ALL_ARTICLES,
+  ALWAYS_TRUE,
+};
 
-  DistillerHeuristicsType GetDistillerHeuristicsType();
+DistillerHeuristicsType GetDistillerHeuristicsType();
 }
 
 #endif  // COMPONENTS_DOM_DISTILLER_CORE_EXPERIMENTS_H_

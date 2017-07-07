@@ -339,6 +339,9 @@ const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
      switches::reader_mode_heuristics::kAlwaysTrue},
     {flag_descriptions::kReaderModeHeuristicsAlwaysOff,
      switches::kReaderModeHeuristics, switches::reader_mode_heuristics::kNone},
+    {flag_descriptions::kReaderModeHeuristicsAllArticles,
+     switches::kReaderModeHeuristics,
+     switches::reader_mode_heuristics::kAllArticles},
 };
 
 const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
