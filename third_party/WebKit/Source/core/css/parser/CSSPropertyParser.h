@@ -105,9 +105,6 @@ class CSSPropertyParser {
   bool ConsumePlaceItemsShorthand(bool important);
   bool ConsumePlaceSelfShorthand(bool important);
 
-  // CSS3 Parsing Routines (for properties specific to CSS3)
-  bool ConsumeBorderImage(CSSPropertyID, bool default_fill, bool important);
-
   bool ConsumeLegacyBreakProperty(CSSPropertyID, bool important);
 
  private:

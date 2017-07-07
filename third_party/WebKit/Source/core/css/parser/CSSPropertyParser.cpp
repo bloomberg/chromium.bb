@@ -1789,62 +1789,6 @@ bool CSSPropertyParser::Consume4Values(const StylePropertyShorthand& shorthand,
   return range_.AtEnd();
 }
 
-// TODO(crbug.com/668012): refactor out property specific logic from this method
-// and remove CSSPropetyID argument
-bool CSSPropertyParser::ConsumeBorderImage(CSSPropertyID property,
-                                           bool default_fill,
-                                           bool important) {
-  CSSValue* source = nullptr;
-  CSSValue* slice = nullptr;
-  CSSValue* width = nullptr;
-  CSSValue* outset = nullptr;
-  CSSValue* repeat = nullptr;
-  if (CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
-          range_, context_, source, slice, width, outset, repeat,
-          default_fill)) {
-    switch (property) {
-      case CSSPropertyWebkitMaskBoxImage:
-        AddParsedProperty(
-            CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage,
-            source ? *source : *CSSInitialValue::Create(), important);
-        AddParsedProperty(
-            CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage,
-            slice ? *slice : *CSSInitialValue::Create(), important);
-        AddParsedProperty(
-            CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage,
-            width ? *width : *CSSInitialValue::Create(), important);
-        AddParsedProperty(
-            CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage,
-            outset ? *outset : *CSSInitialValue::Create(), important);
-        AddParsedProperty(
-            CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage,
-            repeat ? *repeat : *CSSInitialValue::Create(), important);
-        return true;
-      case CSSPropertyBorderImage:
-        AddParsedProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage,
-                          source ? *source : *CSSInitialValue::Create(),
-                          important);
-        AddParsedProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
-                          slice ? *slice : *CSSInitialValue::Create(),
-                          important);
-        AddParsedProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
-                          width ? *width : *CSSInitialValue::Create(),
-                          important);
-        AddParsedProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
-                          outset ? *outset : *CSSInitialValue::Create(),
-                          important);
-        AddParsedProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
-                          repeat ? *repeat : *CSSInitialValue::Create(),
-                          important);
-        return true;
-      default:
-        NOTREACHED();
-        return false;
-    }
-  }
-  return false;
-}
-
 static inline CSSValueID MapFromPageBreakBetween(CSSValueID value) {
   if (value == CSSValueAlways)
     return CSSValuePage;
@@ -2551,10 +2495,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeShorthandGreedily(borderLeftShorthand(), important);
     case CSSPropertyBorder:
       return ConsumeBorder(important);
-    case CSSPropertyBorderImage:
-      return ConsumeBorderImage(property, false /* default_fill */, important);
-    case CSSPropertyWebkitMaskBoxImage:
-      return ConsumeBorderImage(property, true /* default_fill */, important);
     case CSSPropertyPageBreakAfter:
     case CSSPropertyPageBreakBefore:
     case CSSPropertyPageBreakInside:
