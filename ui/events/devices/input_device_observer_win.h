@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DEVICE_OBSERVER_WIN_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DEVICE_OBSERVER_WIN_H_
+#ifndef UI_EVENTS_DEVICES_INPUT_DEVICE_OBSERVER_WIN_H_
+#define UI_EVENTS_DEVICES_INPUT_DEVICE_OBSERVER_WIN_H_
 
 #include "base/observer_list.h"
 #include "base/win/registry.h"
@@ -45,4 +45,4 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
 
 }  // namespace ui
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DEVICE_OBSERVER_WIN_H_
+#endif  // UI_EVENTS_DEVICES_INPUT_DEVICE_OBSERVER_WIN_H_
