@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/issue.h"
@@ -198,6 +199,14 @@ class MediaRouter : public KeyedService {
   // nullptr if no MediaRoute exists for the given |route_id|.
   virtual scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) = 0;
+
+  // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a
+  // given |tab_id|, only one CastRemotingConnector can be registered. The
+  // registered CastRemotingConnector should be removed before it is destroyed.
+  virtual void RegisterRemotingSource(
+      int32_t tab_id,
+      CastRemotingConnector* remoting_source) = 0;
+  virtual void UnregisterRemotingSource(int32_t tab_id) = 0;
 
  private:
   friend class IssuesObserver;

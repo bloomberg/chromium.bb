@@ -118,6 +118,7 @@ void RendererController::OnBecameDominantVisibleContent(bool is_dominant) {
 }
 
 void RendererController::OnSetCdm(CdmContext* cdm_context) {
+  VLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto* remoting_cdm_context = RemotingCdmContext::From(cdm_context);
@@ -131,6 +132,7 @@ void RendererController::OnSetCdm(CdmContext* cdm_context) {
 }
 
 void RendererController::OnRemotePlaybackDisabled(bool disabled) {
+  VLOG(2) << __func__ << ": disabled = " << disabled;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   is_remote_playback_disabled_ = disabled;
@@ -290,6 +292,10 @@ bool RendererController::ShouldBeRemoting() {
     case mojom::RemotingSinkCapabilities::RENDERING_ONLY:
     case mojom::RemotingSinkCapabilities::CONTENT_DECRYPTION_AND_RENDERING:
       break;  // The sink is capable of remote rendering.
+    default:
+      // TODO(xjz): Will be changed in a coming CL that passes the receiver's
+      // capabilities.
+      NOTREACHED();
   }
 
   if ((!has_audio() && !has_video()) ||
@@ -352,6 +358,7 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
 }
 
 void RendererController::OnRendererFatalError(StopTrigger stop_trigger) {
+  VLOG(2) << __func__ << ": stop_trigger= " << stop_trigger;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Do not act on errors caused by things like Mojo pipes being closed during

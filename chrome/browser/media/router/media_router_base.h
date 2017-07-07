@@ -37,6 +37,10 @@ class MediaRouterBase : public MediaRouter {
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 
+  void RegisterRemotingSource(int32_t tab_id,
+                              CastRemotingConnector* remoting_source) override;
+  void UnregisterRemotingSource(int32_t tab_id) override;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallback);
@@ -72,6 +76,11 @@ class MediaRouterBase : public MediaRouter {
       MediaRoute::Id,
       std::unique_ptr<PresentationConnectionStateChangedCallbacks>>
       presentation_connection_state_callbacks_;
+
+  // Stores CastRemotingConnectors that can be connected to the MediaRemoter
+  // for media remoting when MediaRemoter is started. The map uses the tab ID
+  // as the key.
+  std::unordered_map<int32_t, CastRemotingConnector*> remoting_sources_;
 
  private:
   friend class MediaRouterBaseTest;

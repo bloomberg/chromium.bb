@@ -4,6 +4,8 @@
 
 module media.mojom;
 
+import "media/mojo/interfaces/remoting_common.mojom";
+
 interface RemoterFactory {
   // Create a new Remoter associated with the given RemotingSource and bind it
   // to the given interface request. The RemotingSource will be notified when
@@ -32,7 +34,7 @@ interface RemotingDataStreamSender {
   // provide all of the frame's data.
   SendFrame();
 
-  // Cancel the transmission of all in-flight data to the remote, up to and
+  // Cancels the transmission of all in-flight data to the remote, up to and
   // including the last SendFrame() call; and also discard any data chunks
   // that were consumed from the data pipe for the next frame. This is used to
   // optimize seeking, when it is known that any in-flight data is no longer
@@ -41,26 +43,17 @@ interface RemotingDataStreamSender {
   CancelInFlightData();
 };
 
-enum RemotingStopReason {
-  ROUTE_TERMINATED,  // User-initiated disconnect, etc.
-  LOCAL_PLAYBACK,  // Media switched back to local playback.
-  SOURCE_GONE,  // RemotingSource has been destroyed.
-  MESSAGE_SEND_FAILED,  // Failed to send a message to the sink.
-  DATA_SEND_FAILED,  // Failed to consume from a data pipe or send to the sink.
-  UNEXPECTED_FAILURE,  // Unexpected failure or inconsistent state encountered.
-};
-
 // Interface used by the source to start/stop remoting and send data to the
 // sink.
 interface Remoter {
-  // Start a remoting session (once the sink has been reported to be available;
+  // Starts a remoting session (once the sink has been reported to be available;
   // see RemotingSource). Either RemotingSource.OnStarted() or OnStartFailed()
   // will be called to indicate success or failure. Once OnStarted() has been
   // invoked, the source may then make calls to SendMessageToSink() and expect
   // messages from the remote via RemotingSource.OnMessageFromSink().
   Start();
 
-  // Start remoting the media data streams. This is called after Start() to
+  // Starts remoting the media data streams. This is called after Start() to
   // provide data pipes from which the audio/video bitstream data is consumed
   // and then transported to the remote device. RemotingDataStreamSenders are
   // used by the source to control when data should be consumed from the data
@@ -71,37 +64,34 @@ interface Remoter {
                    RemotingDataStreamSender&? audio_sender,
                    RemotingDataStreamSender&? video_sender);
 
-  // Stop remoting media. Messages in both directions will be dropped after this
+  // Stops remoting media. Messages in both directions will be dropped after this
   // point as well as any pending or in-transit media bitstream data.
   Stop(RemotingStopReason reason);
 
-  // Send |message| to the sink. |message| is a serialized protobuf from
+  // Sends |message| to the sink. |message| is a serialized protobuf from
   // src/media/remoting/proto.
   SendMessageToSink(array<uint8> message);
 };
 
+// TODO(xjz): Replace this with the SinkCapabilities struct defined in
+// remoting_common.mojom.
 enum RemotingSinkCapabilities {
   NONE,
   RENDERING_ONLY,
   CONTENT_DECRYPTION_AND_RENDERING,
 };
 
-enum RemotingStartFailReason {
-  CANNOT_START_MULTIPLE,  // Remoting was already active.
-  ROUTE_TERMINATED,  // User-initated disconnect while starting remoting.
-};
-
 // Interface used for sending notifications back to the local source's control
 // logic, and to pass messages from the sink back to the local media pipeline.
 interface RemotingSource {
-  // Notify the source that the sink is now available to start remoting. It is
+  // Notifies the source that the sink is now available to start remoting. It is
   // up to the source's control logic to decide whether/when to start remoting.
   //
   // TODO(miu): In a later change, pass detailed information about the sink's
   // capabilities (e.g., codec support, DRM keysystem support, etc.).
   OnSinkAvailable(RemotingSinkCapabilities capabilities);
 
-  // Notify the source that the sink is no longer available for remoting. This
+  // Notifies the source that the sink is no longer available for remoting. This
   // may happen, for example, because the sink has been shut down, or because
   // another source has started remoting.
   OnSinkGone();
@@ -114,12 +104,12 @@ interface RemotingSource {
   OnStarted();
   OnStartFailed(RemotingStartFailReason reason);
 
-  // Pass a |message| from the sink back to the source. The |message| consists
+  // Passes a |message| from the sink back to the source. The |message| consists
   // of a serialized protobuf from src/media/remoting/proto. This will only be
   // called after OnStarted() and before OnStopped().
   OnMessageFromSink(array<uint8> message);
 
-  // Notify the source that remoting has terminated. This may or may not be in
+  // Notifies the source that remoting has terminated. This may or may not be in
   // response to a Remoter.Stop() call, as other events (possibly external) may
   // have caused remoting to end.
   OnStopped(RemotingStopReason reason);

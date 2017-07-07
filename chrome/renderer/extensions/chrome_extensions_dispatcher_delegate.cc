@@ -275,6 +275,11 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_MOJO_IP_ADDRESS_MOJOM_JS);
   source_map->RegisterSource("url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS);
   source_map->RegisterSource("url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS);
+  source_map->RegisterSource("media/mojo/interfaces/remoting_common.mojom",
+                             IDR_REMOTING_COMMON_JS);
+  source_map->RegisterSource(
+      "media/mojo/interfaces/mirror_service_remoting.mojom",
+      IDR_MEDIA_REMOTING_JS);
 
   // These bindings are unnecessary with native bindings enabled.
   if (!extensions::FeatureSwitch::native_crx_bindings()->IsEnabled()) {

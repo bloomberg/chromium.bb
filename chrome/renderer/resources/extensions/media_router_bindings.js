@@ -10,6 +10,8 @@ define('media_router_bindings', [
     'chrome/common/media_router/mojo/media_status.mojom',
     'content/public/renderer/frame_interfaces',
     'extensions/common/mojo/keep_alive.mojom',
+    'media/mojo/interfaces/mirror_service_remoting.mojom',
+    'media/mojo/interfaces/remoting_common.mojom',
     'mojo/common/time.mojom',
     'mojo/public/js/bindings',
     'net/interfaces/ip_address.mojom',
@@ -20,6 +22,8 @@ define('media_router_bindings', [
             mediaStatusMojom,
             frameInterfaces,
             keepAliveMojom,
+            remotingMojom,
+            remotingCommonMojom,
             timeMojom,
             bindings,
             ipAddressMojom,
@@ -279,11 +283,24 @@ define('media_router_bindings', [
       MediaController: mediaControllerMojom.MediaController,
       MediaStatus: mediaStatusMojom.MediaStatus,
       MediaStatusObserverPtr: mediaStatusMojom.MediaStatusObserverPtr,
+      MirrorServiceRemoter: remotingMojom.MirrorServiceRemoter,
+      MirrorServiceRemoterPtr: remotingMojom.MirrorServiceRemoterPtr,
+      MirrorServiceRemotingSourcePtr:
+          remotingMojom.MirrorServiceRemotingSourcePtr,
+      RemotingStopReason: remotingCommonMojom.RemotingStopReason,
+      RemotingStartFailReason: remotingCommonMojom.RemotingStartFailReason,
+      RemotingSinkFeatures: remotingCommonMojom.RemotingSinkFeatures,
+      RemotingSinkAudioCapabilities:
+          remotingCommonMojom.RemotingSinkAudioCapabilities,
+      RemotingSinkVideoCapabilities:
+          remotingCommonMojom.RemotingSinkVideoCapabilities,
+      SinkCapabilities: remotingCommonMojom.SinkCapabilities,
       Origin: originMojom.Origin,
       Sink: mediaRouterMojom.MediaSink,
       SinkExtraData: mediaRouterMojom.MediaSinkExtraData,
       TimeDelta: timeMojom.TimeDelta,
       Url: urlMojom.Url,
+      makeRequest: bindings.makeRequest,
     };
   };
 
@@ -463,6 +480,16 @@ define('media_router_bindings', [
     this.service_.onRouteMessagesReceived(
         routeId, messages.map(messageToMojo_));
   };
+
+  /**
+   * @param {number} tabId
+   * @param {!remotingMojom.MirrorServiceRemoterPtr} remoter
+   * @param {!remotingMojom.MirrorServiceRemotingSourcePtr} remotingSource
+   */
+  MediaRouter.prototype.onMediaRemoterCreated = function(tabId, remoter,
+      remotingSource) {
+    this.service_.onMediaRemoterCreated(tabId, remoter, remotingSource);
+  }
 
   /**
    * Object containing callbacks set by the provider manager.
