@@ -1,6 +1,12 @@
 include_rules = [
   "+cc/ipc",
   "+cc/surfaces",
+  "+gpu/command_buffer/client",
+  "+gpu/command_buffer/common",
+  "+gpu/ipc/client",
+  "+gpu/ipc/common",
+  "+gpu/ipc/host",
+  "+mojo/public/cpp/bindings",
   "+services/ui/gpu/interfaces",
 ]
 

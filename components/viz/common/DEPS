@@ -1,16 +1,22 @@
-include_rules = [
-  "+ui/gfx/geometry",
-  "+services/ui/gpu/interfaces",
-  "+third_party/skia",
-]
-
 specific_include_rules = {
+  # DEPS for GLHelper and friends which are in the root common/ directory.
+  ".*\.(cc|h)": [
+    "+gpu/GLES2",
+    "+gpu/command_buffer/client",
+    "+gpu/command_buffer/common",
+    "+gpu/ipc/common",
+    "+ui/gfx/geometry",
+    "+services/ui/gpu/interfaces",
+    "+third_party/skia",
+  ],
   ".*_unittest\.cc": [
+    "+gpu/ipc/gl_in_process_context.h",
     "+media/base",
     "+ui/gfx",
     "+ui/gl",
   ],
   ".*_benchmark\.cc": [
+    "+gpu/ipc/gl_in_process_context.h",
     "+ui/gfx",
   ],
 }
