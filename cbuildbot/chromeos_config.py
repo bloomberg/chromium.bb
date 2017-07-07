@@ -372,17 +372,19 @@ class HWTestList(object):
   # pylint: disable=unused-argument
   def CtsGtsTests(self, **kwargs):
     """Return a list of HWTestConfigs for CTS, GTS tests."""
-
     cts_config = dict(
         pool=constants.HWTEST_CTS_POOL,
         timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
-        priority='PostBuild'
-    )
+        priority='PostBuild',
+        async=True)
+    cts_config.update(kwargs)
+
     gts_config = dict(
         pool=constants.HWTEST_GTS_POOL,
         timeout=config_lib.HWTestConfig.GTS_QUAL_HW_TEST_TIMEOUT,
-        priority='PostBuild'
-    )
+        priority='PostBuild',
+        async=True)
+    gts_config.update(kwargs)
 
     return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
                                     **cts_config),
@@ -1462,7 +1464,10 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'release_cts_gts',
       site_config.templates.release,
-      hw_tests_override=hw_test_list.CtsGtsTests(),
+      hw_tests=(
+          hw_test_list.CtsGtsTests() +
+          hw_test_list.SharedPoolCanary()
+      ),
   )
 
   ### Release AFDO configs.
