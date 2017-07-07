@@ -606,6 +606,16 @@ TEST_F(APIBindingUnittest, TestProperties) {
       "      'subprop1': { 'value': 'some value', 'type': 'string' },"
       "      'subprop2': { 'value': true, 'type': 'boolean' }"
       "    }"
+      "  },"
+      "  'linuxOnly': {"
+      "    'value': 'linux',"
+      "    'type': 'string',"
+      "    'platforms': ['linux']"
+      "  },"
+      "  'nonLinuxOnly': {"
+      "    'value': 'nonlinux',"
+      "    'type': 'string',"
+      "    'platforms': ['win', 'mac', 'chromeos']"
       "  }"
       "}");
   InitializeBinding();
@@ -617,6 +627,18 @@ TEST_F(APIBindingUnittest, TestProperties) {
             GetStringPropertyFromObject(binding_object, context, "prop1"));
   EXPECT_EQ(R"({"subprop1":"some value","subprop2":true})",
             GetStringPropertyFromObject(binding_object, context, "prop2"));
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  EXPECT_EQ("\"linux\"",
+            GetStringPropertyFromObject(binding_object, context, "linuxOnly"));
+  EXPECT_EQ("undefined", GetStringPropertyFromObject(binding_object, context,
+                                                     "nonLinuxOnly"));
+#else
+  EXPECT_EQ("undefined",
+            GetStringPropertyFromObject(binding_object, context, "linuxOnly"));
+  EXPECT_EQ("\"nonlinux\"", GetStringPropertyFromObject(binding_object, context,
+                                                        "nonLinuxOnly"));
+#endif
 }
 
 TEST_F(APIBindingUnittest, TestRefProperties) {
