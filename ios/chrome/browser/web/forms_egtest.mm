@@ -30,7 +30,6 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -198,16 +197,14 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey reload];
   [self confirmResendWarning];
 
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -220,8 +217,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -229,8 +225,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey loadURL:GetGenericUrl()];
   [ChromeEarlGrey goBack];
   [self confirmResendWarning];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -243,16 +238,14 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey goForward];
   [self confirmResendWarning];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -265,8 +258,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -280,8 +272,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   [self confirmResendWarning];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -293,8 +284,7 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -323,8 +313,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Verify that navigation was cancelled, and forward navigation is possible.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kSubmitButtonLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel];
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -339,15 +328,13 @@ id<GREYMatcher> GoButtonMatcher() {
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kDestinationText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify the browser navigates to the original URL.
   [ChromeEarlGrey goBack];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kSubmitButtonLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kSubmitButtonLabel];
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetFormUrl().GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -363,8 +350,7 @@ id<GREYMatcher> GoButtonMatcher() {
   chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
 
   // Check that the redirect changes the POST to a GET.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("GET")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"GET"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -375,8 +361,7 @@ id<GREYMatcher> GoButtonMatcher() {
       ButtonWithAccessibilityLabelId(IDS_HTTP_POST_WARNING_RESEND);
   [[EarlGrey selectElementWithMatcher:resendWarning]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("GET")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"GET"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

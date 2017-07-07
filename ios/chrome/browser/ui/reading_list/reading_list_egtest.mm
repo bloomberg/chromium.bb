@@ -345,10 +345,7 @@ void AssertIsShowingDistillablePage(bool online) {
         waitForWebViewContainingText:base::SysNSStringToUTF8(contentToKeep)];
     [ChromeEarlGrey waitForStaticHTMLViewNotContainingText:contentToKeep];
   } else {
-    // TODO(crbug.com/714157): Remove matcher that asserts grey_nil().
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                            kContentToKeep)]
-        assertWithMatcher:grey_nil()];
+    [ChromeEarlGrey waitForWebViewNotContainingText:kContentToKeep];
     [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
   }
 
