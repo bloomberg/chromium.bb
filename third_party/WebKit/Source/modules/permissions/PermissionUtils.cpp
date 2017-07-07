@@ -15,7 +15,9 @@
 
 namespace blink {
 
-using mojom::blink::PermissionDescriptor;
+// There are two PermissionDescriptor, one in Mojo bindings and one
+// in v8 bindings so we'll rename one here.
+using MojoPermissionDescriptor = mojom::blink::PermissionDescriptor;
 using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 
@@ -37,7 +39,7 @@ bool ConnectToPermissionService(
 }
 
 PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {
-  auto descriptor = PermissionDescriptor::New();
+  auto descriptor = MojoPermissionDescriptor::New();
   descriptor->name = name;
   return descriptor;
 }
