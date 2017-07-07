@@ -5394,7 +5394,7 @@
       'id': 127,
       'caption': '''Enable metrics reporting''',
       'tags': ['admin-sharing'],
-      'desc': '''Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.''',
+      'desc': '''Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will report usage metrics and diagnostic data. If not configured or set to false, metrics and diagnostic data reporting will be disabled.''',
       'arc_support': 'This policy also controls Android usage and diagnostic data collection.',
     },
     {
