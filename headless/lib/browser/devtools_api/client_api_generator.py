@@ -518,6 +518,10 @@ def GenerateDomains(jinja_env, output_dirname, json_api):
       jinja_env, os.path.join(output_dirname, 'devtools_js'), json_api,
       'domain', ['js'],
       lambda domain_name: domain_name)
+  GeneratePerDomain(
+      jinja_env, os.path.join(output_dirname, 'devtools_js', 'externs'),
+      json_api, 'domain_externs', ['js'],
+      lambda domain_name: 'externs_%s' % (domain_name, ))
 
 
 def GenerateTypes(jinja_env, output_dirname, json_api):
