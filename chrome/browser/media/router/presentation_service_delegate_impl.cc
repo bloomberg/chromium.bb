@@ -289,8 +289,8 @@ void PresentationFrame::ConnectToPresentation(
         OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
             web_contents_);
     offscreen_presentation_manager->RegisterOffscreenPresentationController(
-        presentation_info.presentation_id, presentation_info.presentation_url,
-        render_frame_host_id_, std::move(controller_connection_ptr),
+        presentation_info, render_frame_host_id_,
+        std::move(controller_connection_ptr),
         std::move(receiver_connection_request), pid_route_it->second);
   } else {
     DVLOG(2)

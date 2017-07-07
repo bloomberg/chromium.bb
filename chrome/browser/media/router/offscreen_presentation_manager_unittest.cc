@@ -40,7 +40,7 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
  public:
   OffscreenPresentationManagerTest()
       : render_frame_host_id_(1, 1),
-        presentation_url_(kPresentationUrl),
+        presentation_info_(GURL(kPresentationUrl), kPresentationId),
         route_("route_1",
                MediaSource("source_1"),
                "sink_1",
@@ -65,25 +65,29 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
 
   void RegisterController(const std::string& presentation_id,
                           content::PresentationConnectionPtr controller) {
-    content::PresentationConnectionRequest receiver_conn_request;
-    manager()->RegisterOffscreenPresentationController(
-        presentation_id, presentation_url_, render_frame_host_id_,
-        std::move(controller), std::move(receiver_conn_request), route_);
+    RegisterController(
+        content::PresentationInfo(GURL(kPresentationUrl), presentation_id),
+        render_frame_host_id_, std::move(controller));
   }
 
   void RegisterController(const RenderFrameHostId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
-    content::PresentationConnectionRequest receiver_conn_request;
-    manager()->RegisterOffscreenPresentationController(
-        kPresentationId, presentation_url_, render_frame_id,
-        std::move(controller), std::move(receiver_conn_request), route_);
+    RegisterController(presentation_info_, render_frame_id,
+                       std::move(controller));
   }
 
   void RegisterController(content::PresentationConnectionPtr controller) {
+    RegisterController(presentation_info_, render_frame_host_id_,
+                       std::move(controller));
+  }
+
+  void RegisterController(const content::PresentationInfo& presentation_info,
+                          const RenderFrameHostId& render_frame_id,
+                          content::PresentationConnectionPtr controller) {
     content::PresentationConnectionRequest receiver_conn_request;
     manager()->RegisterOffscreenPresentationController(
-        kPresentationId, presentation_url_, render_frame_host_id_,
-        std::move(controller), std::move(receiver_conn_request), route_);
+        presentation_info, render_frame_id, std::move(controller),
+        std::move(receiver_conn_request), route_);
   }
 
   void RegisterReceiver(
@@ -95,7 +99,7 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
       const std::string& presentation_id,
       MockReceiverConnectionAvailableCallback& receiver_callback) {
     manager()->OnOffscreenPresentationReceiverCreated(
-        presentation_id, presentation_url_,
+        content::PresentationInfo(GURL(kPresentationUrl), presentation_id),
         base::Bind(&MockReceiverConnectionAvailableCallback::
                        OnReceiverConnectionAvailable,
                    base::Unretained(&receiver_callback)));
@@ -117,7 +121,7 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
 
  private:
   const RenderFrameHostId render_frame_host_id_;
-  GURL presentation_url_;
+  const content::PresentationInfo presentation_info_;
   OffscreenPresentationManager manager_;
   MediaRoute route_;
 };
