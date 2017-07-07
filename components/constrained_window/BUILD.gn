@@ -37,6 +37,7 @@ static_library("constrained_window") {
   if (use_aura) {
     deps += [
       "//ui/aura",
+      "//ui/compositor",
       "//ui/wm",
     ]
   }
