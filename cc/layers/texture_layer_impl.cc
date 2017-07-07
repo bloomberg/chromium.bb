@@ -13,11 +13,11 @@
 #include "cc/output/output_surface.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "components/viz/common/resources/platform_color.h"
 
 namespace cc {
 
@@ -122,7 +122,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
       std::vector<uint8_t> swizzled;
       uint8_t* pixels = texture_mailbox_.shared_bitmap()->pixels();
 
-      if (!PlatformColor::SameComponentOrder(texture_copy_->format())) {
+      if (!viz::PlatformColor::SameComponentOrder(texture_copy_->format())) {
         // Swizzle colors. This is slow, but should be really uncommon.
         size_t bytes = texture_mailbox_.SharedMemorySizeInBytes();
         swizzled.resize(bytes);

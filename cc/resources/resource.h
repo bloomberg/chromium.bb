@@ -16,21 +16,21 @@ namespace cc {
 
 class CC_EXPORT Resource {
  public:
-  Resource() : id_(0), format_(RGBA_8888) {}
+  Resource() : id_(0), format_(viz::RGBA_8888) {}
   Resource(unsigned id,
            const gfx::Size& size,
-           ResourceFormat format,
+           viz::ResourceFormat format,
            const gfx::ColorSpace& color_space)
       : id_(id), size_(size), format_(format), color_space_(color_space) {}
 
   ResourceId id() const { return id_; }
   const gfx::Size& size() const { return size_; }
-  ResourceFormat format() const { return format_; }
+  viz::ResourceFormat format() const { return format_; }
   const gfx::ColorSpace& color_space() const { return color_space_; }
 
  protected:
   void set_id(ResourceId id) { id_ = id; }
-  void set_dimensions(const gfx::Size& size, ResourceFormat format) {
+  void set_dimensions(const gfx::Size& size, viz::ResourceFormat format) {
     size_ = size;
     format_ = format;
   }
@@ -41,7 +41,7 @@ class CC_EXPORT Resource {
  private:
   ResourceId id_;
   gfx::Size size_;
-  ResourceFormat format_;
+  viz::ResourceFormat format_;
   gfx::ColorSpace color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(Resource);

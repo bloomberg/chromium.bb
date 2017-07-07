@@ -254,7 +254,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
 
   // TransferableResource constants.
   const uint32_t tr_id = 1337;
-  const ResourceFormat tr_format = ALPHA_8;
+  const viz::ResourceFormat tr_format = viz::ALPHA_8;
   const gfx::BufferFormat tr_buffer_format = gfx::BufferFormat::R_8;
   const uint32_t tr_filter = 1234;
   const gfx::Size tr_size(1234, 5678);
@@ -1146,7 +1146,7 @@ TEST_F(StructTraitsTest, TextureMailbox) {
 
 TEST_F(StructTraitsTest, TransferableResource) {
   const uint32_t id = 1337;
-  const ResourceFormat format = ALPHA_8;
+  const viz::ResourceFormat format = viz::ALPHA_8;
   const uint32_t filter = 1234;
   const gfx::Size size(1234, 5678);
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {

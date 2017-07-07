@@ -28,6 +28,7 @@
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -336,7 +337,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   }
 
   void GetPixels(const gfx::Size& size,
-                 ResourceFormat format,
+                 viz::ResourceFormat format,
                  uint8_t* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
@@ -353,13 +354,13 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
  private:
   void AllocateTexture(const gfx::Size& size, GLenum format) {
     CheckTextureIsBound(GL_TEXTURE_2D);
-    ResourceFormat texture_format = RGBA_8888;
+    viz::ResourceFormat texture_format = viz::RGBA_8888;
     switch (format) {
       case GL_RGBA:
-        texture_format = RGBA_8888;
+        texture_format = viz::RGBA_8888;
         break;
       case GL_BGRA_EXT:
-        texture_format = BGRA_8888;
+        texture_format = viz::BGRA_8888;
         break;
     }
     base::AutoLock lock_for_texture_access(namespace_->lock);
@@ -404,7 +405,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
                        ResourceProviderContext* context,
                        ResourceId id,
                        const gfx::Size& size,
-                       ResourceFormat format,
+                       viz::ResourceFormat format,
                        uint8_t* pixels) {
   resource_provider->WaitSyncTokenIfNeeded(id);
   switch (resource_provider->default_resource_type()) {
@@ -553,7 +554,7 @@ void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
   DCHECK_EQ(expected_default_type, resource_provider->default_resource_type());
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -585,7 +586,7 @@ TEST_P(ResourceProviderTest, Basic) {
 
 TEST_P(ResourceProviderTest, SimpleUpload) {
   gfx::Size size(2, 2);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(16U, pixel_size);
 
@@ -620,7 +621,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -995,7 +996,7 @@ class ResourceProviderTestNoSyncToken : public ResourceProviderTest {
 
 TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1103,7 +1104,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   uint8_t data1[4] = {1, 2, 3, 4};
   std::vector<ReturnedResource> returned_to_child;
@@ -1161,7 +1162,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
@@ -1228,7 +1229,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
@@ -1280,7 +1281,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
@@ -1345,7 +1346,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   ResourceId id1 = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
@@ -1404,7 +1405,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
     return;
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1612,7 +1613,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
           CreateResourceSettings()));
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1660,7 +1661,7 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
     return;
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1709,7 +1710,7 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
 
 TEST_P(ResourceProviderTest, DeleteExportedResources) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1809,7 +1810,7 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
 
 TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1926,7 +1927,7 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
 
 TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -1979,7 +1980,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
 
 TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   size_t pixel_size = TextureSizeBytes(size, format);
   ASSERT_EQ(4U, pixel_size);
 
@@ -2126,7 +2127,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
             resource_settings));
 
     gfx::Size size(1, 1);
-    ResourceFormat format = RGBA_8888;
+    viz::ResourceFormat format = viz::RGBA_8888;
     int child_texture_id = 1;
     int parent_texture_id = 2;
 
@@ -2317,8 +2318,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     unsigned other_texture =
         context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
-    context()->GetPixels(
-        gfx::Size(1, 1), RGBA_8888, test_data);
+    context()->GetPixels(gfx::Size(1, 1), viz::RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
 
     context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
@@ -2372,8 +2372,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     unsigned other_texture =
         context()->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint8_t test_data[4] = { 0 };
-    context()->GetPixels(
-        gfx::Size(1, 1), RGBA_8888, test_data);
+    context()->GetPixels(gfx::Size(1, 1), viz::RGBA_8888, test_data);
     EXPECT_EQ(0, memcmp(data, test_data, sizeof(data)));
 
     context()->produceTextureDirectCHROMIUM(other_texture, GL_TEXTURE_2D,
@@ -2407,7 +2406,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
 TEST_P(ResourceProviderTest, LostResourceInParent) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   ResourceId resource = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
       gfx::ColorSpace());
@@ -2463,7 +2462,7 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
 
 TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   ResourceId resource = child_resource_provider_->CreateResource(
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
       gfx::ColorSpace());
@@ -2761,7 +2760,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
           CreateResourceSettings()));
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   int texture_id = 1;
 
   ResourceId id = resource_provider->CreateResource(
@@ -2840,7 +2839,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
           CreateResourceSettings()));
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   int texture_id = 1;
 
   // Check that the texture gets created with the right sampler settings.
@@ -2883,7 +2882,7 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
           CreateResourceSettings()));
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   for (int texture_id = 1; texture_id <= 2; ++texture_id) {
     // Check that the texture gets created with the right sampler settings.
@@ -2927,7 +2926,7 @@ TEST_P(ResourceProviderTest, TextureHint) {
           CreateResourceSettings()));
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TEXTURE_HINT_DEFAULT,
@@ -3464,7 +3463,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   gfx::Size size(2, 2);
   gfx::Vector2d offset(0, 0);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   ResourceId id = 0;
   uint8_t pixels[16] = { 0 };
   int texture_id = 123;
@@ -3521,7 +3520,8 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
 
   gfx::Size size(2, 2);
 
-  const ResourceFormat formats[3] = {RGBA_8888, BGRA_8888, RGBA_F16};
+  const viz::ResourceFormat formats[3] = {viz::RGBA_8888, viz::BGRA_8888,
+                                          viz::RGBA_F16};
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TEXTURE_HINT_DEFAULT,
       ResourceProvider::TEXTURE_HINT_IMMUTABLE,
@@ -3539,7 +3539,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
       bool is_immutable_hint =
           hints[texture_id - 1] & ResourceProvider::TEXTURE_HINT_IMMUTABLE;
       bool support_immutable_texture =
-          is_immutable_hint && formats[i] != BGRA_8888;
+          is_immutable_hint && formats[i] != viz::BGRA_8888;
       EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
           .Times(support_immutable_texture ? 1 : 0);
       EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
@@ -3575,7 +3575,7 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
           CreateResourceSettings()));
 
   gfx::Size size(2, 2);
-  const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
+  const viz::ResourceFormat formats[2] = {viz::RGBA_8888, viz::BGRA_8888};
 
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TEXTURE_HINT_DEFAULT,
@@ -3620,7 +3620,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   const int kWidth = 2;
   const int kHeight = 2;
   gfx::Size size(kWidth, kHeight);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
   ResourceId id = 0;
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
@@ -3712,7 +3712,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   int texture_id = 123;
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1, gfx::ColorSpace());
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::ETC1,
+      gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3744,7 +3745,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
   uint8_t pixels[8];
 
   ResourceId id = resource_provider->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, ETC1, gfx::ColorSpace());
+      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::ETC1,
+      gfx::ColorSpace());
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -3785,7 +3787,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
   auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   {
     size_t kTextureAllocationChunkSize = 1;
@@ -3829,7 +3831,7 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
     return;
 
   gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
+  viz::ResourceFormat format = viz::RGBA_8888;
 
   // ~Random set of |release_count|s to set on sync tokens.
   uint64_t release_counts[5] = {7, 3, 10, 2, 5};

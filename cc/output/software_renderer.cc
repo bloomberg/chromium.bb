@@ -66,7 +66,7 @@ bool SoftwareRenderer::CanPartialSwap() {
   return true;
 }
 
-ResourceFormat SoftwareRenderer::BackbufferFormat() const {
+viz::ResourceFormat SoftwareRenderer::BackbufferFormat() const {
   return resource_provider_->best_texture_format();
 }
 

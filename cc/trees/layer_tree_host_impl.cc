@@ -4050,15 +4050,15 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     return;
   }
 
-  ResourceFormat format = resource_provider_->best_texture_format();
+  viz::ResourceFormat format = resource_provider_->best_texture_format();
   switch (bitmap.GetFormat()) {
     case UIResourceBitmap::RGBA8:
       break;
     case UIResourceBitmap::ALPHA_8:
-      format = ALPHA_8;
+      format = viz::ALPHA_8;
       break;
     case UIResourceBitmap::ETC1:
-      format = ETC1;
+      format = viz::ETC1;
       break;
   }
 

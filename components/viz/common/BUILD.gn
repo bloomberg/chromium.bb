@@ -12,9 +12,14 @@ source_set("common") {
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "quads/resource_format.h",
+    "resources/platform_color.h",
+    "resources/resource_format_utils.cc",
+    "resources/resource_format_utils.h",
   ]
 
   deps = [
+    "//base",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",
     "//ui/gfx/geometry",
@@ -29,6 +34,7 @@ source_set("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "resources/platform_color_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
 

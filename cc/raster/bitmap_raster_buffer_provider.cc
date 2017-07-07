@@ -16,8 +16,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_source.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
+#include "components/viz/common/resources/platform_color.h"
 
 namespace cc {
 namespace {
@@ -100,7 +100,7 @@ void BitmapRasterBufferProvider::OrderingBarrier() {
 
 void BitmapRasterBufferProvider::Flush() {}
 
-ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
+viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   return resource_provider_->best_texture_format();
 }

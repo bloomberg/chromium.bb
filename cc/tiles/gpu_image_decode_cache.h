@@ -15,8 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
-#include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_cache.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
@@ -102,7 +102,7 @@ class CC_EXPORT GpuImageDecodeCache
   enum class DecodeTaskType { PART_OF_UPLOAD_TASK, STAND_ALONE_DECODE_TASK };
 
   explicit GpuImageDecodeCache(ContextProvider* context,
-                               ResourceFormat decode_format,
+                               viz::ResourceFormat decode_format,
                                size_t max_working_set_bytes,
                                size_t max_cache_bytes);
   ~GpuImageDecodeCache() override;
@@ -347,7 +347,7 @@ class CC_EXPORT GpuImageDecodeCache
                               ImageData* image_data);
   void DeletePendingImages();
 
-  const ResourceFormat format_;
+  const viz::ResourceFormat format_;
   ContextProvider* context_;
   sk_sp<GrContextThreadSafeProxy> context_threadsafe_proxy_;
 

@@ -61,7 +61,7 @@ void WaitForQueryResult(gpu::gles2::GLES2Interface* gl, unsigned query_id) {
 
 }  // namespace
 
-StagingBuffer::StagingBuffer(const gfx::Size& size, ResourceFormat format)
+StagingBuffer::StagingBuffer(const gfx::Size& size, viz::ResourceFormat format)
     : size(size),
       format(format),
       texture_id(0),
@@ -91,7 +91,7 @@ void StagingBuffer::DestroyGLResources(gpu::gles2::GLES2Interface* gl) {
 }
 
 void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                                 ResourceFormat format,
+                                 viz::ResourceFormat format,
                                  bool in_free_list) const {
   if (!gpu_memory_buffer)
     return;
@@ -215,7 +215,7 @@ bool StagingBufferPool::OnMemoryDump(
 }
 
 void StagingBufferPool::AddStagingBuffer(const StagingBuffer* staging_buffer,
-                                         ResourceFormat format) {
+                                         viz::ResourceFormat format) {
   lock_.AssertAcquired();
 
   DCHECK(buffers_.find(staging_buffer) == buffers_.end());

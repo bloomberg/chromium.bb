@@ -426,7 +426,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
   bool nearest_neighbor = true;
-  ResourceFormat texture_format = RGBA_8888;
+  viz::ResourceFormat texture_format = viz::RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   scoped_refptr<RasterSource> raster_source =
@@ -633,7 +633,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   gfx::RectF tex_coord_rect(31.f, 12.f, 54.f, 20.f);
   gfx::Size texture_size(85, 32);
   bool nearest_neighbor = true;
-  ResourceFormat texture_format = RGBA_8888;
+  viz::ResourceFormat texture_format = viz::RGBA_8888;
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   scoped_refptr<RasterSource> raster_source =

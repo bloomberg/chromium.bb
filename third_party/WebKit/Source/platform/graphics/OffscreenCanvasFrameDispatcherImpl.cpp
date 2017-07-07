@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
@@ -275,7 +276,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 
   cc::TransferableResource resource;
   resource.id = next_resource_id_;
-  resource.format = cc::ResourceFormat::RGBA_8888;
+  resource.format = viz::ResourceFormat::RGBA_8888;
   resource.size = gfx::Size(width_, height_);
   // This indicates the filtering on the resource inherently, not the desired
   // filtering effect on the quad.

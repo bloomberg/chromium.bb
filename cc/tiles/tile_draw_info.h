@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/resources/platform_color.h"
 
 namespace cc {
 

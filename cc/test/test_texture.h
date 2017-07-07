@@ -12,22 +12,22 @@
 #include <unordered_map>
 
 #include "base/memory/ref_counted.h"
-#include "cc/resources/resource_format.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
-size_t TextureSizeBytes(const gfx::Size& size, ResourceFormat format);
+size_t TextureSizeBytes(const gfx::Size& size, viz::ResourceFormat format);
 
 struct TestTexture : public base::RefCounted<TestTexture> {
   TestTexture();
 
-  void Reallocate(const gfx::Size& size, ResourceFormat format);
+  void Reallocate(const gfx::Size& size, viz::ResourceFormat format);
   bool IsValidParameter(GLenum pname);
 
   gfx::Size size;
-  ResourceFormat format;
+  viz::ResourceFormat format;
   std::unique_ptr<uint8_t[]> data;
 
   using TextureParametersMap = std::unordered_map<GLenum, GLint>;

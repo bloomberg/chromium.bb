@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_RESOURCE_FORMAT_H_
-#define CC_RESOURCES_RESOURCE_FORMAT_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_RESOURCE_FORMAT_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_RESOURCE_FORMAT_H_
 
 #include "base/logging.h"
-#include "cc/cc_export.h"
 #include "ui/gfx/buffer_types.h"
 
 // TODO(prashant.n): Including third_party/khronos/GLES2/gl2.h causes
@@ -14,7 +13,7 @@
 // macros/functions defined in ui/gl/gl_bindings.h. (http://crbug.com/512833).
 typedef unsigned int GLenum;
 
-namespace cc {
+namespace viz {
 
 // Keep in sync with arrays below.
 enum ResourceFormat {
@@ -31,16 +30,6 @@ enum ResourceFormat {
   RESOURCE_FORMAT_MAX = RGBA_F16,
 };
 
-CC_EXPORT int BitsPerPixel(ResourceFormat format);
-CC_EXPORT GLenum GLDataType(ResourceFormat format);
-CC_EXPORT GLenum GLDataFormat(ResourceFormat format);
-CC_EXPORT GLenum GLInternalFormat(ResourceFormat format);
-CC_EXPORT GLenum GLCopyTextureInternalFormat(ResourceFormat format);
-CC_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
+}  // namespace viz
 
-bool IsResourceFormatCompressed(ResourceFormat format);
-bool DoesResourceFormatSupportAlpha(ResourceFormat format);
-
-}  // namespace cc
-
-#endif  // CC_RESOURCES_RESOURCE_FORMAT_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_RESOURCE_FORMAT_H_

@@ -25,9 +25,9 @@ void FakeRasterBufferProviderImpl::OrderingBarrier() {}
 
 void FakeRasterBufferProviderImpl::Flush() {}
 
-ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
+viz::ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
     bool must_support_alpha) const {
-  return ResourceFormat::RGBA_8888;
+  return viz::ResourceFormat::RGBA_8888;
 }
 
 bool FakeRasterBufferProviderImpl::IsResourceSwizzleRequired(

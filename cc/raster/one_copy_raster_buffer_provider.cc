@@ -16,10 +16,10 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/platform_color.h"
-#include "cc/resources/resource_format.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -74,7 +74,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
-    ResourceFormat preferred_tile_format,
+    viz::ResourceFormat preferred_tile_format,
     bool async_worker_context_enabled)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
@@ -150,7 +150,7 @@ void OneCopyRasterBufferProvider::Flush() {
   }
 }
 
-ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
+viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&
       (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||

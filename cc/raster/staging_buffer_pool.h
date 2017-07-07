@@ -31,16 +31,16 @@ namespace cc {
 class Resource;
 
 struct StagingBuffer {
-  StagingBuffer(const gfx::Size& size, ResourceFormat format);
+  StagingBuffer(const gfx::Size& size, viz::ResourceFormat format);
   ~StagingBuffer();
 
   void DestroyGLResources(gpu::gles2::GLES2Interface* gl);
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                    ResourceFormat format,
+                    viz::ResourceFormat format,
                     bool is_free) const;
 
   const gfx::Size size;
-  const ResourceFormat format;
+  const viz::ResourceFormat format;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   base::TimeTicks last_usage;
   unsigned texture_id;
@@ -74,7 +74,7 @@ class CC_EXPORT StagingBufferPool
 
  private:
   void AddStagingBuffer(const StagingBuffer* staging_buffer,
-                        ResourceFormat format);
+                        viz::ResourceFormat format);
   void RemoveStagingBuffer(const StagingBuffer* staging_buffer);
   void MarkStagingBufferAsFree(const StagingBuffer* staging_buffer);
   void MarkStagingBufferAsBusy(const StagingBuffer* staging_buffer);

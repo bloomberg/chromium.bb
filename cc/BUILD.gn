@@ -289,13 +289,8 @@ cc_component("cc") {
     "raster/zero_copy_raster_buffer_provider.h",
     "resources/memory_history.cc",
     "resources/memory_history.h",
-    "resources/platform_color.h",
     "resources/release_callback.h",
     "resources/resource.h",
-    "resources/resource_format.cc",
-    "resources/resource_format.h",
-    "resources/resource_format_utils.cc",
-    "resources/resource_format_utils.h",
     "resources/resource_pool.cc",
     "resources/resource_pool.h",
     "resources/resource_provider.cc",
@@ -478,6 +473,7 @@ cc_component("cc") {
 
   public_deps = [
     "//cc/base",
+    "//components/viz/common",
     "//skia",
   ]
   deps = [
@@ -792,7 +788,6 @@ cc_test("cc_unittests") {
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "raster/texture_compressor_etc1_unittest.cc",
-    "resources/platform_color_unittest.cc",
     "resources/resource_pool_unittest.cc",
     "resources/resource_provider_unittest.cc",
     "resources/resource_util_unittest.cc",
@@ -898,6 +893,7 @@ cc_test("cc_unittests") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//cc/surfaces:surfaces",
+    "//components/viz/common",
     "//gpu",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",

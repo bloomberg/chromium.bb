@@ -25,6 +25,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/aura/env.h"
@@ -439,7 +440,7 @@ bool Buffer::ProduceTransferableResource(
   }
 
   resource->id = resource_id;
-  resource->format = cc::RGBA_8888;
+  resource->format = viz::RGBA_8888;
   resource->filter = GL_LINEAR;
   resource->size = gpu_memory_buffer_->GetSize();
 

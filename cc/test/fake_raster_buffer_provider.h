@@ -23,7 +23,7 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override;
   void OrderingBarrier() override;
   void Flush() override;
-  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(ResourceId id) const override;

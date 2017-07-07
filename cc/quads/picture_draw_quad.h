@@ -32,7 +32,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool nearest_neighbor,
-              ResourceFormat texture_format,
+              viz::ResourceFormat texture_format,
               const gfx::Rect& content_rect,
               float contents_scale,
               scoped_refptr<RasterSource> raster_source);
@@ -45,7 +45,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool nearest_neighbor,
-              ResourceFormat texture_format,
+              viz::ResourceFormat texture_format,
               const gfx::Rect& content_rect,
               float contents_scale,
               scoped_refptr<RasterSource> raster_source);
@@ -53,7 +53,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   gfx::Rect content_rect;
   float contents_scale;
   scoped_refptr<RasterSource> raster_source;
-  ResourceFormat texture_format;
+  viz::ResourceFormat texture_format;
 
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
 

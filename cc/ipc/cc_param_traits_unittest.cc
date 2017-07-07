@@ -592,7 +592,7 @@ TEST_F(CCParamTraitsTest, Resources) {
 
   TransferableResource arbitrary_resource1;
   arbitrary_resource1.id = 2178312;
-  arbitrary_resource1.format = cc::RGBA_8888;
+  arbitrary_resource1.format = viz::RGBA_8888;
   arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
   arbitrary_resource1.mailbox_holder.mailbox.SetName(arbitrary_mailbox1);
@@ -606,7 +606,7 @@ TEST_F(CCParamTraitsTest, Resources) {
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
-  arbitrary_resource2.format = cc::RGBA_4444;
+  arbitrary_resource2.format = viz::RGBA_4444;
   arbitrary_resource2.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
   arbitrary_resource2.mailbox_holder.mailbox.SetName(arbitrary_mailbox2);

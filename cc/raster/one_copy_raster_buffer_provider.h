@@ -27,7 +27,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                               int max_copy_texture_chromium_size,
                               bool use_partial_raster,
                               int max_staging_buffer_usage_in_bytes,
-                              ResourceFormat preferred_tile_format,
+                              viz::ResourceFormat preferred_tile_format,
                               bool async_worker_context_enabled);
   ~OneCopyRasterBufferProvider() override;
 
@@ -39,7 +39,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override;
   void OrderingBarrier() override;
   void Flush() override;
-  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(ResourceId id) const override;
@@ -123,7 +123,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   // Context lock must be acquired when accessing this member.
   int bytes_scheduled_since_last_flush_;
 
-  const ResourceFormat preferred_tile_format_;
+  const viz::ResourceFormat preferred_tile_format_;
   StagingBufferPool staging_pool_;
 
   const bool async_worker_context_enabled_;

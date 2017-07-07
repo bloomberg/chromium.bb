@@ -142,7 +142,7 @@ ResourcePool::~ResourcePool() {
 }
 
 Resource* ResourcePool::ReuseResource(const gfx::Size& size,
-                                      ResourceFormat format,
+                                      viz::ResourceFormat format,
                                       const gfx::ColorSpace& color_space) {
   // Finding resources in |unused_resources_| from MRU to LRU direction, touches
   // LRU resources only if needed, which increases possibility of expiring more
@@ -171,7 +171,7 @@ Resource* ResourcePool::ReuseResource(const gfx::Size& size,
 }
 
 Resource* ResourcePool::CreateResource(const gfx::Size& size,
-                                       ResourceFormat format,
+                                       viz::ResourceFormat format,
                                        const gfx::ColorSpace& color_space) {
   std::unique_ptr<PoolResource> pool_resource =
       PoolResource::Create(resource_provider_);
@@ -203,7 +203,7 @@ Resource* ResourcePool::CreateResource(const gfx::Size& size,
 }
 
 Resource* ResourcePool::AcquireResource(const gfx::Size& size,
-                                        ResourceFormat format,
+                                        viz::ResourceFormat format,
                                         const gfx::ColorSpace& color_space) {
   Resource* reused_resource = ReuseResource(size, format, color_space);
   if (reused_resource)
