@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -57,6 +58,68 @@ autofill::CreditCard::CardType GetBasicCardType(
   return autofill::CreditCard::CARD_TYPE_UNKNOWN;
 }
 
+PaymentMethodData CreatePaymentMethodData(
+    const mojom::PaymentMethodDataPtr& method_data_entry) {
+  PaymentMethodData method_data;
+  method_data.supported_methods = method_data_entry->supported_methods;
+
+  // Transfer the supported basic card networks (visa, amex) and types
+  // (credit, debit).
+  for (const mojom::BasicCardNetwork& network :
+       method_data_entry->supported_networks) {
+    method_data.supported_networks.push_back(GetBasicCardNetworkName(network));
+  }
+  for (const mojom::BasicCardType& type : method_data_entry->supported_types) {
+    autofill::CreditCard::CardType card_type = GetBasicCardType(type);
+    method_data.supported_types.insert(card_type);
+  }
+  return method_data;
+}
+
+// Validates the |method_data| and fills |supported_card_networks_|,
+// |supported_card_networks_set_| and |basic_card_specified_networks_|.
+void PopulateValidatedMethodData(
+    const std::vector<PaymentMethodData>& method_data_vector,
+    std::vector<std::string>* supported_card_networks,
+    std::set<std::string>* basic_card_specified_networks,
+    std::set<std::string>* supported_card_networks_set,
+    std::set<autofill::CreditCard::CardType>* supported_card_types_set,
+    std::map<std::string, std::set<std::string>>* stringified_method_data) {
+  data_util::ParseBasicCardSupportedNetworks(method_data_vector,
+                                             supported_card_networks,
+                                             basic_card_specified_networks);
+  supported_card_networks_set->insert(supported_card_networks->begin(),
+                                      supported_card_networks->end());
+
+  data_util::ParseSupportedCardTypes(method_data_vector,
+                                     supported_card_types_set);
+}
+
+void PopulateValidatedMethodData(
+    const std::vector<mojom::PaymentMethodDataPtr>& method_data_mojom,
+    std::vector<std::string>* supported_card_networks,
+    std::set<std::string>* basic_card_specified_networks,
+    std::set<std::string>* supported_card_networks_set,
+    std::set<autofill::CreditCard::CardType>* supported_card_types_set,
+    std::map<std::string, std::set<std::string>>* stringified_method_data) {
+  std::vector<PaymentMethodData> method_data_vector;
+  method_data_vector.reserve(method_data_mojom.size());
+  for (const mojom::PaymentMethodDataPtr& method_data_entry :
+       method_data_mojom) {
+    for (const std::string& method : method_data_entry->supported_methods) {
+      (*stringified_method_data)[method].insert(
+          method_data_entry->stringified_data);
+    }
+
+    method_data_vector.push_back(CreatePaymentMethodData(method_data_entry));
+  }
+
+  PopulateValidatedMethodData(
+      method_data_vector, supported_card_networks,
+      basic_card_specified_networks, supported_card_networks_set,
+      supported_card_types_set, stringified_method_data);
+}
+
 }  // namespace
 
 const char kBasicCardMethodName[] = "basic-card";
@@ -74,7 +137,10 @@ PaymentRequestSpec::PaymentRequestSpec(
   if (observer)
     AddObserver(observer);
   UpdateSelectedShippingOption(/*after_update=*/false);
-  PopulateValidatedMethodData(method_data);
+  PopulateValidatedMethodData(
+      method_data, &supported_card_networks_, &basic_card_specified_networks_,
+      &supported_card_networks_set_, &supported_card_types_set_,
+      &stringified_method_data_);
 }
 PaymentRequestSpec::~PaymentRequestSpec() {}
 
@@ -161,44 +227,60 @@ bool PaymentRequestSpec::IsMixedCurrency() const {
                      });
 }
 
-void PaymentRequestSpec::PopulateValidatedMethodData(
-    const std::vector<mojom::PaymentMethodDataPtr>& method_data_mojom) {
-  std::vector<PaymentMethodData> method_data_vector;
-  method_data_vector.reserve(method_data_mojom.size());
-  for (const mojom::PaymentMethodDataPtr& method_data_entry :
-       method_data_mojom) {
-    for (const std::string& method : method_data_entry->supported_methods) {
-      stringified_method_data_[method].insert(
-          method_data_entry->stringified_data);
-    }
+const mojom::PaymentItemPtr& PaymentRequestSpec::GetTotal(
+    PaymentInstrument* selected_instrument) const {
+  const mojom::PaymentDetailsModifierPtr* modifier =
+      GetApplicableModifier(selected_instrument);
+  return modifier ? (*modifier)->total : details().total;
+}
 
-    PaymentMethodData method_data;
-    method_data.supported_methods = method_data_entry->supported_methods;
-
-    // Transfer the supported basic card networks (visa, amex) and types
-    // (credit, debit).
-    for (const mojom::BasicCardNetwork& network :
-         method_data_entry->supported_networks) {
-      method_data.supported_networks.push_back(
-          GetBasicCardNetworkName(network));
-    }
-    for (const mojom::BasicCardType& type :
-         method_data_entry->supported_types) {
-      autofill::CreditCard::CardType card_type = GetBasicCardType(type);
-      method_data.supported_types.insert(card_type);
-    }
-
-    method_data_vector.push_back(std::move(method_data));
+std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
+    PaymentInstrument* selected_instrument) const {
+  std::vector<const mojom::PaymentItemPtr*> display_items;
+  const mojom::PaymentDetailsModifierPtr* modifier =
+      GetApplicableModifier(selected_instrument);
+  for (const auto& item : details().display_items) {
+    display_items.push_back(&item);
   }
 
-  data_util::ParseBasicCardSupportedNetworks(method_data_vector,
-                                             &supported_card_networks_,
-                                             &basic_card_specified_networks_);
-  supported_card_networks_set_.insert(supported_card_networks_.begin(),
-                                      supported_card_networks_.end());
+  if (modifier) {
+    for (const auto& additional_item : (*modifier)->additional_display_items) {
+      display_items.push_back(&additional_item);
+    }
+  }
+  return display_items;
+}
 
-  data_util::ParseSupportedCardTypes(method_data_vector,
-                                     &supported_card_types_set_);
+const std::vector<mojom::PaymentShippingOptionPtr>&
+PaymentRequestSpec::GetShippingOptions() const {
+  return details().shipping_options;
+}
+
+const mojom::PaymentDetailsModifierPtr*
+PaymentRequestSpec::GetApplicableModifier(
+    PaymentInstrument* selected_instrument) const {
+  if (!selected_instrument)
+    return nullptr;
+
+  for (const auto& modifier : details().modifiers) {
+    std::vector<std::string> supported_networks;
+    std::set<autofill::CreditCard::CardType> supported_types;
+    // The following 3 are unused but required by PopulateValidatedMethodData.
+    std::set<std::string> basic_card_specified_networks;
+    std::set<std::string> supported_card_networks_set;
+    std::map<std::string, std::set<std::string>> stringified_method_data;
+    PopulateValidatedMethodData(
+        {CreatePaymentMethodData(modifier->method_data)}, &supported_networks,
+        &basic_card_specified_networks, &supported_card_networks_set,
+        &supported_types, &stringified_method_data);
+
+    if (selected_instrument->IsValidForModifier(
+            modifier->method_data->supported_methods, supported_types,
+            supported_networks)) {
+      return &modifier;
+    }
+  }
+  return nullptr;
 }
 
 void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {

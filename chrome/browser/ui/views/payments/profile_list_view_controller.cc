@@ -172,7 +172,7 @@ class ShippingProfileViewController : public ProfileListViewController,
   // | Warning icon | Warning message            |
   // ---------------------------------------------
   std::unique_ptr<views::View> CreateHeaderView() override {
-    if (!spec()->details().shipping_options.empty())
+    if (!spec()->GetShippingOptions().empty())
       return nullptr;
 
     auto header_view = base::MakeUnique<views::View>();

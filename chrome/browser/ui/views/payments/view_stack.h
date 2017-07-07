@@ -48,6 +48,9 @@ class ViewStack : public views::BoundsAnimatorObserver,
   void Layout() override;
   void RequestFocus() override;
 
+  // Returns the top state of the stack.
+  views::View* top() { return stack_.back().get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(
       ViewStackTest, TestPopStateRemovesChildViewAndCleansUpState);
@@ -57,9 +60,6 @@ class ViewStack : public views::BoundsAnimatorObserver,
   FRIEND_TEST_ALL_PREFIXES(ViewStackTest, TestLayoutUpdatesAnimations);
   friend class ViewStackTest;
   friend class payments::PaymentRequestBrowserTestBase;
-
-  // Returns the top state of the stack, used in tests.
-  views::View* top() { return stack_.back().get(); }
 
   // Marks all views, except the topmost, as invisible.
   void HideCoveredViews();

@@ -7,9 +7,11 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace payments {
 
@@ -54,6 +56,13 @@ class PaymentInstrument {
   // Return the sub/label of payment instrument, to be displayed to the user.
   virtual base::string16 GetLabel() const = 0;
   virtual base::string16 GetSublabel() const = 0;
+
+  // Returns true if this payment instrument can be used to fulfill a request
+  // specifying |method| as a supported method of payment, false otherwise.
+  virtual bool IsValidForModifier(
+      const std::vector<std::string>& method,
+      const std::set<autofill::CreditCard::CardType>& supported_types,
+      const std::vector<std::string>& supported_networks) const = 0;
 
   const std::string& method_name() const { return method_name_; }
   int icon_resource_id() const { return icon_resource_id_; }

@@ -555,8 +555,8 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
                      views::GridLayout::FIXED, kItemSummaryPriceFixedWidth,
                      kItemSummaryPriceFixedWidth);
 
-  const std::vector<mojom::PaymentItemPtr>& items =
-      spec()->details().display_items;
+  const std::vector<const mojom::PaymentItemPtr*>& items =
+      spec()->GetDisplayItems(state()->selected_instrument());
 
   bool is_mixed_currency = spec()->IsMixedCurrency();
   // The inline items section contains the first 2 display items of the
@@ -572,7 +572,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   for (size_t i = 0; i < items.size() && i < displayed_items; ++i) {
     layout->StartRow(0, 0);
     std::unique_ptr<views::Label> summary =
-        base::MakeUnique<views::Label>(base::UTF8ToUTF16(items[i]->label));
+        base::MakeUnique<views::Label>(base::UTF8ToUTF16((*items[i])->label));
     summary->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(summary.release());
 
@@ -580,9 +580,10 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
         CreateInlineCurrencyAmountItem(
             is_mixed_currency
                 ? base::UTF8ToUTF16(
-                      spec()->GetFormattedCurrencyCode(items[i]->amount))
+                      spec()->GetFormattedCurrencyCode((*items[i])->amount))
                 : base::string16(),
-            spec()->GetFormattedCurrencyAmount(items[i]->amount), true, false)
+            spec()->GetFormattedCurrencyAmount((*items[i])->amount), true,
+            false)
             .release());
   }
 
@@ -603,14 +604,17 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
   layout->StartRow(0, 0);
   layout->AddView(
-      CreateBoldLabel(base::UTF8ToUTF16(spec()->details().total->label))
+      CreateBoldLabel(
+          base::UTF8ToUTF16(
+              spec()->GetTotal(state()->selected_instrument())->label))
           .release());
 
   layout->AddView(
       CreateInlineCurrencyAmountItem(
           base::UTF8ToUTF16(spec()->GetFormattedCurrencyCode(
-              spec()->details().total->amount)),
-          spec()->GetFormattedCurrencyAmount(spec()->details().total->amount),
+              spec()->GetTotal(state()->selected_instrument())->amount)),
+          spec()->GetFormattedCurrencyAmount(
+              spec()->GetTotal(state()->selected_instrument())->amount),
           false, true)
           .release());
 
@@ -849,7 +853,7 @@ PaymentSheetViewController::CreateShippingOptionRow() {
   builder.Tag(PaymentSheetViewControllerTags::SHOW_SHIPPING_OPTION_BUTTON);
 
   if (state()->selected_shipping_profile()) {
-    if (spec()->details().shipping_options.empty()) {
+    if (spec()->GetShippingOptions().empty()) {
       // 1.1 No shipping options, do not display the row.
       return nullptr;
     }
@@ -868,16 +872,16 @@ PaymentSheetViewController::CreateShippingOptionRow() {
     } else {
       // 1.3 There are options, none are selected: show the enabled Choose
       // button.
+      const auto& shipping_options = spec()->GetShippingOptions();
       return builder
           .Id(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)
-          .CreateWithButton(
-              base::UTF8ToUTF16(spec()->details().shipping_options[0]->label),
-              l10n_util::GetPluralStringFUTF16(
-                  IDS_PAYMENT_REQUEST_SHIPPING_OPTIONS_PREVIEW,
-                  spec()->details().shipping_options.size() - 1),
-              spec()->details().shipping_options.size() - 1,
-              l10n_util::GetStringUTF16(IDS_CHOOSE),
-              /*button_enabled=*/true);
+          .CreateWithButton(base::UTF8ToUTF16(shipping_options[0]->label),
+                            l10n_util::GetPluralStringFUTF16(
+                                IDS_PAYMENT_REQUEST_SHIPPING_OPTIONS_PREVIEW,
+                                shipping_options.size() - 1),
+                            shipping_options.size() - 1,
+                            l10n_util::GetStringUTF16(IDS_CHOOSE),
+                            /*button_enabled=*/true);
     }
   } else {
     // 2. There is no selected address: do not show the shipping option section.
