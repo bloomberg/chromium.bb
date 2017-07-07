@@ -170,12 +170,12 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
                              const gfx::Rect& new_bounds) override;
 
   // InputMethodObserver overrides
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
-  void OnFocus() override {}
   void OnBlur() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
+  void OnFocus() override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
-  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnShowImeIfNeeded() override;
 
   // Show virtual keyboard immediately with animation.
@@ -206,7 +206,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // uses container_'s animator.
   std::unique_ptr<CallbackAnimationObserver> animation_observer_;
 
-  ui::InputMethod* input_method_;
   bool keyboard_visible_;
   bool show_on_resize_;
   // If true, the keyboard is always visible even if no window has input focus.
