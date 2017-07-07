@@ -236,7 +236,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[[factory stub] andReturn:nil]
         newWebToolbarControllerWithDelegate:[OCMArg any]
                                   urlLoader:[OCMArg any]
-                            preloadProvider:[OCMArg any]];
+                            preloadProvider:[OCMArg any]
+                                 dispatcher:[OCMArg any]];
     [[[factory stub] andReturn:shareController_] shareControllerInstance];
     [[[factory stub] andReturn:passKitViewController_]
         newPassKitViewControllerForPass:nil];

@@ -519,12 +519,9 @@ class PausableResponseProvider : public HtmlResponseProvider {
       performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kTestPage1];
 
-  // Quickly (using chrome command) navigate forward twice and wait for
-  // kChromeUIVersionURL to load.
-  GenericChromeCommand* forwardCommand =
-      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD];
-  chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
-  chrome_test_util::RunCommandWithActiveViewController(forwardCommand);
+  // Quickly navigate forward twice and wait for kChromeUIVersionURL to load.
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
 
   const std::string version = version_info::GetVersionNumber();
   [ChromeEarlGrey waitForWebViewContainingText:version];
