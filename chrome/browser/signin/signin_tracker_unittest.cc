@@ -66,7 +66,7 @@ class SigninTrackerTest : public testing::Test {
         static_cast<FakeProfileOAuth2TokenService*>(
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()));
 
-    mock_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
+    fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(profile_.get()));
 
     tracker_ =
@@ -91,7 +91,7 @@ class SigninTrackerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<SigninTracker> tracker_;
   std::unique_ptr<TestingProfile> profile_;
-  FakeSigninManagerForTesting* mock_signin_manager_;
+  FakeSigninManagerForTesting* fake_signin_manager_;
   FakeProfileOAuth2TokenService* fake_oauth2_token_service_;
   MockObserver observer_;
 };
@@ -105,7 +105,7 @@ TEST_F(SigninTrackerTest, SignInFails) {
   EXPECT_CALL(observer_, SigninSuccess()).Times(0);
   EXPECT_CALL(observer_, SigninFailed(error));
 
-  mock_signin_manager_->FailSignin(error);
+  fake_signin_manager_->FailSignin(error);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -119,6 +119,21 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   std::string email = "user@gmail.com";
   std::string account_id = service->SeedAccountInfo(gaia_id, email);
 
-  mock_signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email);
+  fake_signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email);
   fake_oauth2_token_service_->UpdateCredentials(account_id, "refresh_token");
 }
+
+#if !defined(OS_CHROMEOS)
+TEST_F(SigninTrackerTest, SignInSucceedsWithExistingAccount) {
+  EXPECT_CALL(observer_, SigninSuccess());
+  EXPECT_CALL(observer_, SigninFailed(_)).Times(0);
+
+  AccountTrackerService* service =
+      AccountTrackerServiceFactory::GetForProfile(profile_.get());
+  std::string gaia_id = "gaia_id";
+  std::string email = "user@gmail.com";
+  std::string account_id = service->SeedAccountInfo(gaia_id, email);
+  fake_oauth2_token_service_->UpdateCredentials(account_id, "refresh_token");
+  fake_signin_manager_->SignIn(gaia_id, email, std::string());
+}
+#endif

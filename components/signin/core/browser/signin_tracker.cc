@@ -32,6 +32,12 @@ void SigninTracker::Initialize() {
   cookie_manager_service_->AddObserver(this);
 }
 
+void SigninTracker::GoogleSigninSucceeded(const std::string& account_id,
+                                          const std::string& username) {
+  if (token_service_->RefreshTokenIsAvailable(account_id))
+    observer_->SigninSuccess();
+}
+
 void SigninTracker::GoogleSigninFailed(const GoogleServiceAuthError& error) {
   observer_->SigninFailed(error);
 }
