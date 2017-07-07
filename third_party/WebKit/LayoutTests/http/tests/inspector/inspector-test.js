@@ -856,7 +856,6 @@ InspectorTest.MockSetting.prototype = {
  * @constructor
  * @param {!string} dirPath
  * @param {!string} name
- * @param {!function(?Bindings.TempFile)} callback
  */
 InspectorTest.TempFileMock = function(dirPath, name)
 {
@@ -905,9 +904,10 @@ InspectorTest.TempFileMock.prototype = {
 
     /**
      * @param {!Common.OutputStream} outputStream
-     * @param {!Bindings.OutputStreamDelegate} delegate
+     * @param {function(*)=} progress
+     * @return {!Promise<boolean>}
      */
-    copyToOutputStream: function(outputStream, delegate)
+    copyToOutputStream: function(outputStream, progress)
     {
         var name = this._name;
         var text = this._chunks.join("");
@@ -929,11 +929,11 @@ InspectorTest.TempFileMock.prototype = {
 
             cancel: function() { }
         }
-        delegate.onTransferStarted(chunkedReaderMock);
         outputStream.write(text);
-        delegate.onChunkTransferred(chunkedReaderMock);
+        if (progress)
+          progress(chunkedReaderMock);
         outputStream.close();
-        delegate.onTransferFinished(chunkedReaderMock);
+        return Promise.resolve(true);
     },
 
     remove: function() { }

@@ -81,33 +81,31 @@ function test()
                 size: sourceStringified.length
             };
 
-            InspectorTest.override(Profiler.HeapProfileHeader.prototype, '_createFileReader', function(fileMock, delegate) {
-                return {
-                    start: function(receiver) {
-                        delegate.onTransferStarted(this);
-                        receiver.write(sourceStringified);
-                        delegate.onChunkTransferred(this);
-                        receiver.close();
-                        delegate.onTransferFinished(this);
-                    },
+            Bindings.ChunkedFileReader = class {
+                constructor() {}
 
-                    loadedSize: function()
-                    {
-                        return fileMock.size;
-                    },
+                read(receiver) {
+                    receiver.write(sourceStringified);
+                    receiver.close();
+                    return Promise.resolve(true);
+                }
 
-                    fileSize: function()
-                    {
-                        return fileMock.size;
-                    },
+                loadedSize()
+                {
+                    return fileMock.size;
+                }
 
-                    fileName: function()
-                    {
-                        return fileMock.name;
-                    }
-                };
-            });
-            InspectorTest.addSniffer(Profiler.HeapProfileHeader.prototype, "_snapshotReceived", function() { next(); });
+                fileSize()
+                {
+                    return fileMock.size;
+                }
+
+                fileName()
+                {
+                    return fileMock.name;
+                }
+            };
+            InspectorTest.addSniffer(Profiler.HeapProfileHeader.prototype, "_snapshotReceived", next);
             panel._loadFromFile(fileMock);
         },
 

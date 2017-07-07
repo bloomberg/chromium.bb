@@ -4,50 +4,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function initialize_ChunkedFileReaderTest()
-{
-
-InspectorTest.TestOutputStreamDelegate = function(doneCallback)
-{
-    this._doneCallback = doneCallback;
-    this._chunkCount = 0;
-}
-
-InspectorTest.TestOutputStreamDelegate.prototype = {
-    onTransferStarted: function()
-    {
-        InspectorTest.addResult("Bindings.OutputStreamDelegate.onTransferStarted() called");
-    },
-
-    onTransferFinished: function()
-    {
-        InspectorTest.addResult("Chunks transferred: " + this._chunkCount);
-        InspectorTest.addResult("Bindings.OutputStreamDelegate.onTransferFinished() called");
-        this._doneCallback();
-    },
-
-    /**
-     * @param {!Bindings.ChunkedReader} reader
-     */
-    onChunkTransferred: function(reader)
-    {
-        this._chunkCount++;
-    },
-
-    /**
-     * @param {!Bindings.ChunkedReader} reader
-     * @param {!Event} event
-     */
-    onError: function(reader, event)
-    {
-        InspectorTest.addResult("Bindings.OutputStreamDelegate.onError() called");
-        this._doneCallback();
-    }
-};
-
-}
-
-function test()
+async function test()
 {
     var text = ["Латынь из моды вышла ныне:\n",
         "Так, если правду вам сказать,\n",
@@ -58,15 +15,17 @@ function test()
     // Most of the characters above will be encoded as 2 bytes, so make sure we use odd
     // chunk size to cause chunk boundaries sometimes to happen between chaacter bytes.
     var chunkSize = 5;
-    var reader = new Bindings.ChunkedFileReader(blob, chunkSize, new InspectorTest.TestOutputStreamDelegate(onTransferFinished));
+    var chunkCount = 0;
+    var reader = new Bindings.ChunkedFileReader(blob, chunkSize, () => ++chunkCount);
     var output = new Common.StringOutputStream();
-    reader.start(output);
-    function onTransferFinished()
-    {
-        InspectorTest.assertEquals(text.join(""), output.data(), "Read text is different from written text");
-        InspectorTest.addResult("DONE");
-        InspectorTest.completeTest();
-    }
+
+    var error = await reader.read(output);
+
+    InspectorTest.addResult("Read result: " + error);
+    InspectorTest.addResult("Chunks transferred: " + chunkCount);
+    InspectorTest.assertEquals(text.join(""), output.data(), "Read text is different from written text");
+    InspectorTest.addResult("DONE");
+    InspectorTest.completeTest();
 }
 
 </script>
