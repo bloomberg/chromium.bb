@@ -17,7 +17,6 @@ class SingleThreadTaskRunner;
 
 namespace service_manager {
 class Connector;
-class InterfaceProvider;
 }
 
 namespace content {
@@ -28,8 +27,6 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
  public:
   explicit BlinkInterfaceProviderImpl(
       base::WeakPtr<service_manager::Connector> connector);
-  explicit BlinkInterfaceProviderImpl(
-      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
   ~BlinkInterfaceProviderImpl();
 
   // blink::InterfaceProvider override.
@@ -41,7 +38,6 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
                             mojo::ScopedMessagePipeHandle handle);
 
   const base::WeakPtr<service_manager::Connector> connector_;
-  const base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

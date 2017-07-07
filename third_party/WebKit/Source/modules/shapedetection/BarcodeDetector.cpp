@@ -11,7 +11,6 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedBarcode.h"
-#include "public/platform/InterfaceProvider.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -25,7 +24,7 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
   if (context->IsDocument()) {
     LocalFrame* frame = ToDocument(context)->GetFrame();
     if (frame)
-      frame->GetInterfaceProvider()->GetInterface(std::move(request));
+      frame->GetInterfaceProvider().GetInterface(std::move(request));
   } else {
     WorkerThread* thread = ToWorkerGlobalScope(context)->GetThread();
     thread->GetInterfaceProvider().GetInterface(std::move(request));

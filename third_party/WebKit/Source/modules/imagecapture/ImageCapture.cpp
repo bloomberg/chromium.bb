@@ -24,6 +24,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebImageCaptureFrameGrabber.h"
 #include "public/platform/WebMediaStreamTrack.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -623,8 +624,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   DCHECK(stream_track_);
   DCHECK(!service_.is_bound());
 
-  GetFrame()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+  GetFrame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
 
   service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &ImageCapture::OnServiceConnectionError, WrapWeakPersistent(this))));

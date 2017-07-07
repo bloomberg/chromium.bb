@@ -68,7 +68,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
@@ -298,7 +297,7 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   settings->SetAllowRunningOfInsecureContent(false);
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
   main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
-      web_view_, this, nullptr, nullptr);
+      web_view_, this, nullptr);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to wait for debugger then it is the good time to do that.

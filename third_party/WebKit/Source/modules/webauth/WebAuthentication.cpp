@@ -16,7 +16,7 @@
 #include "modules/webauth/ScopedCredential.h"
 #include "modules/webauth/ScopedCredentialOptions.h"
 #include "modules/webauth/ScopedCredentialParameters.h"
-#include "public/platform/InterfaceProvider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
 const char kNoAuthenticatorError[] = "Authenticator unavailable.";
@@ -258,7 +258,7 @@ ScriptPromise WebAuthentication::RejectIfNotSupported(
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(kNotSupportedError));
     }
-    GetFrame()->GetInterfaceProvider()->GetInterface(
+    GetFrame()->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&authenticator_));
 
     authenticator_.set_connection_error_handler(ConvertToBaseCallback(

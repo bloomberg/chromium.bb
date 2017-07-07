@@ -43,6 +43,10 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/HashSet.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}
+
 namespace blink {
 
 class Color;
@@ -62,7 +66,6 @@ class FrameResourceCoordinator;
 class FrameSelection;
 class InputMethodController;
 class CoreProbeSink;
-class InterfaceProvider;
 class InterfaceRegistry;
 class IntPoint;
 class IntSize;
@@ -96,7 +99,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static LocalFrame* Create(LocalFrameClient*,
                             Page&,
                             FrameOwner*,
-                            InterfaceProvider* = nullptr,
                             InterfaceRegistry* = nullptr);
 
   void Init();
@@ -225,12 +227,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   bool CanNavigate(const Frame&);
 
-  // This method is deprecated. Please use
-  // LocalFrameClient::GetInterfaceProvider() instead.
-  //
-  // TODO(crbug.com/726943): Remove this method.
-  InterfaceProvider* GetInterfaceProvider() { return interface_provider_; }
-
+  service_manager::InterfaceProvider& GetInterfaceProvider();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
   LocalFrameClient* Client() const;
@@ -282,7 +279,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   LocalFrame(LocalFrameClient*,
              Page&,
              FrameOwner*,
-             InterfaceProvider*,
              InterfaceRegistry*);
 
   // Intentionally private to prevent redundant checks when the type is
@@ -326,7 +322,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<CoreProbeSink> probe_sink_;
   Member<PerformanceMonitor> performance_monitor_;
 
-  InterfaceProvider* const interface_provider_;
   InterfaceRegistry* const interface_registry_;
 
   IntRect remote_viewport_intersection_;

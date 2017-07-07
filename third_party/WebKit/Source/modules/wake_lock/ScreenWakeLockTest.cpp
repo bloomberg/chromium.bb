@@ -13,10 +13,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <memory>
@@ -27,63 +27,41 @@ namespace {
 using device::mojom::blink::WakeLock;
 using device::mojom::blink::WakeLockRequest;
 
-// This class allows binding interface requests to a MockWakeLock.
-class MockInterfaceProvider : public InterfaceProvider {
+// A mock WakeLock used to intercept calls to the mojo methods.
+class MockWakeLock : public WakeLock {
  public:
-  MockInterfaceProvider() : wake_lock_status_(false) {}
-  ~MockInterfaceProvider() {}
+  MockWakeLock() : binding_(this) {}
+  ~MockWakeLock() = default;
 
-  void GetInterface(const char* name, mojo::ScopedMessagePipeHandle) override;
-
-  bool WakeLockStatus() const { return wake_lock_status_; }
-  void SetWakeLockStatus(bool status) { wake_lock_status_ = status; }
-
- private:
-  // A mock WakeLock used to intercept calls to the mojo methods.
-  class MockWakeLock : public WakeLock {
-   public:
-    MockWakeLock(MockInterfaceProvider* registry, WakeLockRequest request)
-        : binding_(this, std::move(request)), registry_(registry) {}
-    ~MockWakeLock() {}
-
-   private:
-    // mojom::WakeLock
-    void RequestWakeLock() override { registry_->SetWakeLockStatus(true); }
-    void CancelWakeLock() override { registry_->SetWakeLockStatus(false); }
-    void AddClient(device::mojom::blink::WakeLockRequest wake_lock) override {}
-    void ChangeType(device::mojom::WakeLockType type,
-                    ChangeTypeCallback callback) override {}
-    void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
-
-    mojo::Binding<WakeLock> binding_;
-    MockInterfaceProvider* const registry_;
-  };
-  std::unique_ptr<MockWakeLock> mock_wake_lock_;
-
-  bool wake_lock_status_;
-};
-
-void MockInterfaceProvider::GetInterface(const char* name,
-                                         mojo::ScopedMessagePipeHandle handle) {
-  mock_wake_lock_.reset(
-      new MockWakeLock(this, WakeLockRequest(std::move(handle))));
-}
-
-// A TestWebFrameClient to allow overriding the interfaceProvider() with a mock.
-class TestWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
- public:
-  ~TestWebFrameClient() override = default;
-  InterfaceProvider* GetInterfaceProviderForTesting() override {
-    return &interface_provider_;
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(WakeLockRequest(std::move(handle)));
   }
 
+  bool WakeLockStatus() { return wake_lock_status_; }
+
  private:
-  MockInterfaceProvider interface_provider_;
+  // mojom::WakeLock
+  void RequestWakeLock() override { wake_lock_status_ = true; }
+  void CancelWakeLock() override { wake_lock_status_ = false; }
+  void AddClient(device::mojom::blink::WakeLockRequest wake_lock) override {}
+  void ChangeType(device::mojom::WakeLockType type,
+                  ChangeTypeCallback callback) override {}
+  void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override {}
+
+  mojo::Binding<WakeLock> binding_;
+  bool wake_lock_status_ = false;
 };
 
 class ScreenWakeLockTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    service_manager::InterfaceProvider::TestApi test_api(
+        test_web_frame_client_.GetInterfaceProvider());
+    test_api.SetBinderForName(
+        WakeLock::Name_,
+        ConvertToBaseCallback(
+            WTF::Bind(&MockWakeLock::Bind, WTF::Unretained(&mock_wake_lock_))));
+
     web_view_helper_.Initialize(&test_web_frame_client_);
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8("http://example.com/"), testing::CoreTestDataPath(),
@@ -106,8 +84,8 @@ class ScreenWakeLockTest : public ::testing::Test {
 
   LocalFrame* GetFrame() {
     DCHECK(web_view_helper_.WebView());
-    DCHECK(web_view_helper_.LocalMainFrame());
-    return web_view_helper_.LocalMainFrame()->GetFrame();
+    DCHECK(web_view_helper_.WebView()->MainFrameImpl());
+    return web_view_helper_.WebView()->MainFrameImpl()->GetFrame();
   }
 
   Screen* GetScreen() {
@@ -121,11 +99,7 @@ class ScreenWakeLockTest : public ::testing::Test {
     return ScreenWakeLock::keepAwake(*GetScreen());
   }
 
-  bool ClientKeepScreenAwake() {
-    return static_cast<MockInterfaceProvider*>(
-               test_web_frame_client_.GetInterfaceProviderForTesting())
-        ->WakeLockStatus();
-  }
+  bool ClientKeepScreenAwake() { return mock_wake_lock_.WakeLockStatus(); }
 
   void SetKeepAwake(bool keepAwake) {
     DCHECK(GetScreen());
@@ -152,8 +126,10 @@ class ScreenWakeLockTest : public ::testing::Test {
 
   // Order of these members is important as we need to make sure that
   // test_web_frame_client_ outlives web_view_helper_ (destruction order)
-  TestWebFrameClient test_web_frame_client_;
+  FrameTestHelpers::TestWebFrameClient test_web_frame_client_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
+
+  MockWakeLock mock_wake_lock_;
 };
 
 TEST_F(ScreenWakeLockTest, setAndReset) {

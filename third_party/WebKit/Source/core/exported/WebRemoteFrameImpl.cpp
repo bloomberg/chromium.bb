@@ -150,14 +150,13 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebString& name,
     WebSandboxFlags sandbox_flags,
     WebFrameClient* client,
-    blink::InterfaceProvider* interface_provider,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* previous_sibling,
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
   WebLocalFrameBase* child = WebFactory::GetInstance().CreateWebLocalFrameBase(
-      scope, client, interface_provider, interface_registry, opener);
+      scope, client, interface_registry, opener);
   InsertAfter(child, previous_sibling);
   RemoteFrameOwner* owner =
       RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),

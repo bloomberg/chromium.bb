@@ -8,9 +8,11 @@
 #include "platform/heap/Handle.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
 
-namespace blink {
-
+namespace service_manager {
 class InterfaceProvider;
+}
+
+namespace blink {
 
 class PLATFORM_EXPORT FrameResourceCoordinator final
     : public GarbageCollectedFinalized<FrameResourceCoordinator> {
@@ -18,14 +20,14 @@ class PLATFORM_EXPORT FrameResourceCoordinator final
 
  public:
   static bool IsEnabled();
-  static FrameResourceCoordinator* Create(InterfaceProvider*);
+  static FrameResourceCoordinator* Create(service_manager::InterfaceProvider*);
   virtual ~FrameResourceCoordinator();
   void SendEvent(const resource_coordinator::mojom::blink::EventType&);
 
   DECLARE_TRACE();
 
  private:
-  explicit FrameResourceCoordinator(InterfaceProvider*);
+  explicit FrameResourceCoordinator(service_manager::InterfaceProvider*);
 
   resource_coordinator::mojom::blink::CoordinationUnitPtr service_;
 };
