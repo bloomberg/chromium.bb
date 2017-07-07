@@ -11,8 +11,9 @@
 cmake_minimum_required(VERSION 3.5)
 
 if (NOT EMSCRIPTEN)
-  if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE
+      "Build type: Debug, Release, RelWithDebInfo or MinSizeRel" STRING FORCE)
   endif ()
 endif ()
 
