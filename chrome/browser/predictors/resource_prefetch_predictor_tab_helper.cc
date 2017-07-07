@@ -53,6 +53,7 @@ void ResourcePrefetchPredictorTabHelper::DidLoadResourceFromMemoryCache(
   ResourcePrefetchPredictor::URLRequestSummary summary;
   summary.navigation_id = NavigationID(web_contents());
   summary.resource_url = url;
+  summary.request_url = url;
   summary.mime_type = mime_type;
   summary.resource_type =
       ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
