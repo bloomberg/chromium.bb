@@ -22,26 +22,24 @@
 
 namespace blink {
 
-using namespace {{namespace}}Names;
-
-typedef {{namespace}}Element* (*ConstructorFunction)(
+typedef {{namespace}}Element* (*{{namespace}}ConstructorFunction)(
     Document&,
     CreateElementFlags);
 
-typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
+typedef HashMap<AtomicString, {{namespace}}ConstructorFunction> {{namespace}}FunctionMap;
 
-static FunctionMap* g_constructors = 0;
+static {{namespace}}FunctionMap* g_{{namespace}}_constructors = 0;
 
 {% for tag in tags|sort if not tag.noConstructor %}
-static {{namespace}}Element* {{tag|symbol}}Constructor(
+static {{namespace}}Element* {{namespace}}{{tag|symbol}}Constructor(
     Document& document,
     CreateElementFlags flags) {
   {% if tag.runtimeEnabled %}
   if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
-    return {{fallback_interface}}::Create({{tag|symbol}}Tag, document);
+    return {{fallback_interface}}::Create({{namespace}}Names::{{tag|symbol}}Tag, document);
   {% endif %}
   return {{tag.interface}}::Create(
-      {%- if tag.multipleTagNames %}{{tag|symbol}}Tag, {% endif -%}
+      {%- if tag.multipleTagNames %}{{namespace}}Names::{{tag|symbol}}Tag, {% endif -%}
       document
       {%- if tag.constructorNeedsCreatedByParser %}, flags & kCreatedByParser{% endif -%}
   );
@@ -50,30 +48,30 @@ static {{namespace}}Element* {{tag|symbol}}Constructor(
 
 struct Create{{namespace}}FunctionMapData {
   const QualifiedName& tag;
-  ConstructorFunction func;
+  {{namespace}}ConstructorFunction func;
 };
 
 static void create{{namespace}}FunctionMap() {
-  DCHECK(!g_constructors);
-  g_constructors = new FunctionMap;
+  DCHECK(!g_{{namespace}}_constructors);
+  g_{{namespace}}_constructors = new {{namespace}}FunctionMap;
   // Empty array initializer lists are illegal [dcl.init.aggr] and will not
   // compile in MSVC. If tags list is empty, add check to skip this.
   static const Create{{namespace}}FunctionMapData data[] = {
   {% for tag in tags|sort if not tag.noConstructor %}
-    { {{tag|symbol}}Tag, {{tag|symbol}}Constructor },
+    { {{namespace}}Names::{{tag|symbol}}Tag, {{namespace}}{{tag|symbol}}Constructor },
   {% endfor %}
   };
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
-    g_constructors->Set(data[i].tag.LocalName(), data[i].func);
+    g_{{namespace}}_constructors->Set(data[i].tag.LocalName(), data[i].func);
 }
 
 {{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
     CreateElementFlags flags) {
-  if (!g_constructors)
+  if (!g_{{namespace}}_constructors)
     create{{namespace}}FunctionMap();
-  if (ConstructorFunction function = g_constructors->at(localName))
+  if ({{namespace}}ConstructorFunction function = g_{{namespace}}_constructors->at(localName))
     return function(document, flags);
 
   {% if namespace == 'HTML' %}
@@ -93,12 +91,12 @@ static void create{{namespace}}FunctionMap() {
   if (document.RegistrationContext() &&
       V0CustomElement::IsValidName(localName)) {
     Element* element = document.RegistrationContext()->CreateCustomTagElement(
-        document, QualifiedName(g_null_atom, localName, {{namespace_prefix}}NamespaceURI));
+        document, QualifiedName(g_null_atom, localName, {{namespace}}Names::{{namespace_prefix}}NamespaceURI));
     SECURITY_DCHECK(element->Is{{namespace}}Element());
     return To{{namespace}}Element(element);
   }
 
-  return {{fallback_interface}}::Create(QualifiedName(g_null_atom, localName, {{namespace_prefix}}NamespaceURI), document);
+  return {{fallback_interface}}::Create(QualifiedName(g_null_atom, localName, {{namespace}}Names::{{namespace_prefix}}NamespaceURI), document);
 }
 
 } // namespace blink
