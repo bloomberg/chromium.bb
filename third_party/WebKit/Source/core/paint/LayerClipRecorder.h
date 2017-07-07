@@ -16,7 +16,6 @@ namespace blink {
 
 class ClipRect;
 class GraphicsContext;
-class LayoutBoxModelObject;
 
 class CORE_EXPORT LayerClipRecorder {
   USING_FAST_MALLOC(LayerClipRecorder);
@@ -43,12 +42,13 @@ class CORE_EXPORT LayerClipRecorder {
   // Would be nice to clean up this.
   explicit LayerClipRecorder(
       GraphicsContext&,
-      const LayoutBoxModelObject&,
+      const PaintLayer&,
       DisplayItem::Type,
       const ClipRect&,
       const PaintLayer* clip_root,
       const LayoutPoint& fragment_offset,
       PaintLayerFlags,
+      const DisplayItemClient&,
       BorderRadiusClippingRule = kIncludeSelfForBorderRadius);
 
   ~LayerClipRecorder();
@@ -64,7 +64,7 @@ class CORE_EXPORT LayerClipRecorder {
   // The BorderRadiusClippingRule defines whether clips on the PaintLayer itself
   // are included. Output is appended to rounded_rect_clips.
   static void CollectRoundedRectClips(
-      PaintLayer&,
+      const PaintLayer&,
       const PaintLayer* clip_root,
       const LayoutPoint& offset_within_layer,
       bool cross_composited_scrollers,
@@ -73,7 +73,7 @@ class CORE_EXPORT LayerClipRecorder {
 
  private:
   GraphicsContext& graphics_context_;
-  const LayoutBoxModelObject& layout_object_;
+  const DisplayItemClient& client_;
   DisplayItem::Type clip_type_;
 };
 

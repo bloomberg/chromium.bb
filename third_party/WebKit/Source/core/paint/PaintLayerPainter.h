@@ -14,6 +14,7 @@
 namespace blink {
 
 class ClipRect;
+class DisplayItemClient;
 class PaintLayer;
 class GraphicsContext;
 class LayoutPoint;
@@ -136,7 +137,9 @@ class CORE_EXPORT PaintLayerPainter {
                                           const PaintLayerPaintingInfo&,
                                           PaintLayerFlags);
 
-  void FillMaskingFragment(GraphicsContext&, const ClipRect&);
+  void FillMaskingFragment(GraphicsContext&,
+                           const ClipRect&,
+                           const DisplayItemClient&);
 
   static bool NeedsToClip(const PaintLayerPaintingInfo& local_painting_info,
                           const ClipRect&,

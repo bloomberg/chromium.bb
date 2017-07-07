@@ -57,8 +57,9 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   if (clip_rect.Rect() != painting_info.paint_dirty_rect ||
       clip_rect.HasRadius()) {
     clip_recorder_ = WTF::WrapUnique(new LayerClipRecorder(
-        context, layer.GetLayoutObject(), DisplayItem::kClipLayerFilter,
-        clip_rect, painting_info.root_layer, LayoutPoint(), paint_flags));
+        context, layer, DisplayItem::kClipLayerFilter, clip_rect,
+        painting_info.root_layer, LayoutPoint(), paint_flags,
+        layer.GetLayoutObject()));
   }
 
   if (!context.GetPaintController().DisplayItemConstructionIsDisabled()) {
