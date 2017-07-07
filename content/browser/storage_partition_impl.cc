@@ -497,8 +497,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->cache_storage_context_->Init(path, quota_manager_proxy);
 
   partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
-  partition->service_worker_context_->Init(path, quota_manager_proxy.get(),
-                                           context->GetSpecialStoragePolicy());
   partition->service_worker_context_->set_storage_partition(partition.get());
 
   partition->appcache_service_ =
@@ -530,6 +528,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
 
+  scoped_refptr<ChromeBlobStorageContext> blob_context =
+      ChromeBlobStorageContext::GetFor(context);
+
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     static mojom::NetworkServicePtr* g_network_service =
         new mojom::NetworkServicePtr;
@@ -546,8 +547,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
         ->CreateNetworkContext(MakeRequest(&partition->network_context_),
                                std::move(context_params));
 
-    scoped_refptr<ChromeBlobStorageContext> blob_context =
-        ChromeBlobStorageContext::GetFor(context);
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);
     partition->blob_url_loader_factory_ = BlobURLLoaderFactory::Create(
@@ -556,6 +555,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
     partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();
     partition->url_loader_factory_getter_->Initialize(partition.get());
   }
+
+  partition->service_worker_context_->Init(
+      path, quota_manager_proxy.get(), context->GetSpecialStoragePolicy(),
+      blob_context.get(), partition->url_loader_factory_getter_.get());
 
   return partition;
 }

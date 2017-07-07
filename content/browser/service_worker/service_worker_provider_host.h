@@ -203,6 +203,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void SetHostedVersion(ServiceWorkerVersion* version);
 
+  // Creates a per-controller-worker URLLoaderFactory for script loading.
+  // The created factory is kept alive while the controller worker is alive.
+  // Used only when IsServicificationEnabled is true.
+  void CreateScriptURLLoaderFactory(
+      mojom::URLLoaderFactoryAssociatedRequest script_loader_factory_request);
+
   // Returns a handler for a request, the handler may return NULL if
   // the request doesn't require special handling.
   std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(

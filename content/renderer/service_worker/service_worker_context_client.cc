@@ -38,6 +38,7 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/push_event_payload.h"
@@ -101,6 +102,19 @@ class WebServiceWorkerNetworkProviderImpl
     // are initiated in a secure context.
     extra_data->set_initiated_in_secure_context(true);
     request.SetExtraData(extra_data.release());
+  }
+
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      base::SingleThreadTaskRunner* task_runner) override {
+    RenderThreadImpl* child_thread = RenderThreadImpl::current();
+    if (child_thread && provider_->script_loader_factory() &&
+        ServiceWorkerUtils::IsServicificationEnabled()) {
+      return base::MakeUnique<WebURLLoaderImpl>(
+          child_thread->resource_dispatcher(), task_runner,
+          provider_->script_loader_factory());
+    }
+    return nullptr;
   }
 
   int GetProviderID() const override { return provider_->provider_id(); }

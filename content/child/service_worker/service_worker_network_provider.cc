@@ -193,6 +193,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   context_ = new ServiceWorkerProviderContext(
       provider_id_, provider_type, std::move(client_request),
       ChildThreadImpl::current()->thread_safe_sender());
+
   ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
       &dispatcher_host_);
   dispatcher_host_->OnProviderCreated(std::move(host_info));
@@ -224,8 +225,9 @@ void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
   DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  dispatcher_host_->OnSetHostedVersionId(provider_id(), version_id,
-                                         embedded_worker_id);
+  dispatcher_host_->OnSetHostedVersionId(
+      provider_id(), version_id, embedded_worker_id,
+      mojo::MakeRequest(&script_loader_factory_));
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {

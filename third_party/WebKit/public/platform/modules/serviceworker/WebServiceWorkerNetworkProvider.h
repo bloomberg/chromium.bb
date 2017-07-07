@@ -31,6 +31,10 @@
 #ifndef WebServiceWorkerNetworkProvider_h
 #define WebServiceWorkerNetworkProvider_h
 
+#include <memory>
+
+#include "public/platform/WebURLLoader.h"
+
 namespace blink {
 
 class WebURLRequest;
@@ -61,6 +65,16 @@ class WebServiceWorkerNetworkProvider {
   // Returns an identifier of the service worker controlling the document
   // associated with the WebDataSource.
   virtual int64_t ServiceWorkerID() { return -1; }
+
+  // Returns a URLLoader for the associated context. May return nullptr
+  // if this doesn't provide a ServiceWorker specific URLLoader.
+  // Currently this returns non-null only for a controller worker case
+  // and only if servicification is enabled.
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest& request,
+      base::SingleThreadTaskRunner* task_runner) {
+    return nullptr;
+  }
 };
 
 }  // namespace blink
