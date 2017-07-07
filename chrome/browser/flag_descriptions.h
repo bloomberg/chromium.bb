@@ -127,9 +127,6 @@ extern const char kDefaultTileWidthVenti[];
 extern const char kDebugShortcutsName[];
 extern const char kDebugShortcutsDescription[];
 
-extern const char kDelayNavigationName[];
-extern const char kDelayNavigationDescription[];
-
 extern const char kDeviceDiscoveryNotificationsName[];
 extern const char kDeviceDiscoveryNotificationsDescription[];
 
@@ -168,9 +165,6 @@ extern const char kEasyUnlockProximityDetectionDescription[];
 
 extern const char kEmbeddedExtensionOptionsName[];
 extern const char kEmbeddedExtensionOptionsDescription[];
-
-extern const char kEnableAdjustableLargeCursorName[];
-extern const char kEnableAdjustableLargeCursorDescription[];
 
 extern const char kEnableAsmWasmName[];
 extern const char kEnableAsmWasmDescription[];
@@ -304,6 +298,9 @@ extern const char kExperimentalCanvasFeaturesDescription[];
 extern const char kExperimentalExtensionApisName[];
 extern const char kExperimentalExtensionApisDescription[];
 
+extern const char kExperimentalFullscreenExitUIName[];
+extern const char kExperimentalFullscreenExitUIDescription[];
+
 extern const char kExperimentalHotwordHardwareName[];
 extern const char kExperimentalHotwordHardwareDescription[];
 
@@ -345,9 +342,6 @@ extern const char kEffectiveConnectionTypeSlow2GDescription[];
 extern const char kEffectiveConnectionType2GDescription[];
 extern const char kEffectiveConnectionType3GDescription[];
 extern const char kEffectiveConnectionType4GDescription[];
-
-extern const char kExperimentalFullscreenExitUIName[];
-extern const char kExperimentalFullscreenExitUIDescription[];
 
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
