@@ -22761,6 +22761,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="GCM.DataMessageReceivedHasRegisteredApp"
     enum="BooleanRegistered">
+  <obsolete>
+    No longer used starting with Chrome 61 as the check was removed.
+  </obsolete>
   <owner>peter@chromium.org</owner>
   <summary>
     Records whether a matching registration was found for each received

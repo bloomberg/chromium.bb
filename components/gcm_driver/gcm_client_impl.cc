@@ -80,7 +80,6 @@ enum ResetStoreError {
   RESET_STORE_ERROR_COUNT
 };
 
-const char kGCMScope[] = "GCM";
 const int kMaxRegistrationRetries = 5;
 const int kMaxUnregistrationRetries = 5;
 const char kDeletedCountKey[] = "total_deleted";
@@ -1394,65 +1393,16 @@ void GCMClientImpl::HandleIncomingDataMessage(
     bool was_subtype,
     const mcs_proto::DataMessageStanza& data_message_stanza,
     MessageData& message_data) {
-  std::string sender = data_message_stanza.from();
+  UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceived", true);
 
-  // Drop the message when the app is not registered for the sender of the
-  // message.
-  bool registered = false;
+  bool has_collapse_key =
+      data_message_stanza.has_token() && !data_message_stanza.token().empty();
+  UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceivedHasCollapseKey",
+                        has_collapse_key);
 
-  // First, find among all GCM registrations.
-  std::unique_ptr<GCMRegistrationInfo> gcm_registration(
-      new GCMRegistrationInfo);
-  gcm_registration->app_id = app_id;
-  auto gcm_registration_iter = registrations_.find(
-      make_linked_ptr<RegistrationInfo>(gcm_registration.release()));
-  if (gcm_registration_iter != registrations_.end()) {
-    GCMRegistrationInfo* cached_gcm_registration =
-        GCMRegistrationInfo::FromRegistrationInfo(
-            gcm_registration_iter->first.get());
-    if (cached_gcm_registration &&
-        std::find(cached_gcm_registration->sender_ids.begin(),
-                  cached_gcm_registration->sender_ids.end(),
-                  sender) != cached_gcm_registration->sender_ids.end()) {
-      if (was_subtype)
-        DLOG(ERROR) << "GCM message for non-IID " << app_id << " used subtype";
-      else
-        registered = true;
-    }
-  }
-
-  // Then, find among all InstanceID registrations.
-  if (!registered) {
-    std::unique_ptr<InstanceIDTokenInfo> instance_id_token(
-        new InstanceIDTokenInfo);
-    instance_id_token->app_id = app_id;
-    instance_id_token->authorized_entity = sender;
-    instance_id_token->scope = kGCMScope;
-    auto instance_id_token_iter = registrations_.find(
-        make_linked_ptr<RegistrationInfo>(instance_id_token.release()));
-    if (instance_id_token_iter != registrations_.end()) {
-      if (was_subtype != InstanceIDUsesSubtypeForAppId(app_id)) {
-        DLOG(ERROR) << "GCM message for " << app_id
-                    << " incorrectly had was_subtype = " << was_subtype;
-      } else {
-        registered = true;
-      }
-    }
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceivedHasRegisteredApp", registered);
-  if (registered) {
-    UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceived", true);
-    bool has_collapse_key =
-        data_message_stanza.has_token() && !data_message_stanza.token().empty();
-    UMA_HISTOGRAM_BOOLEAN("GCM.DataMessageReceivedHasCollapseKey",
-                          has_collapse_key);
-  }
-  recorder_.RecordDataMessageReceived(app_id, sender,
-      data_message_stanza.ByteSize(), registered,
-      GCMStatsRecorder::DATA_MESSAGE);
-  if (!registered)
-    return;
+  recorder_.RecordDataMessageReceived(app_id, data_message_stanza.from(),
+                                      data_message_stanza.ByteSize(),
+                                      GCMStatsRecorder::DATA_MESSAGE);
 
   IncomingMessage incoming_message;
   incoming_message.sender_id = data_message_stanza.from();
@@ -1478,7 +1428,6 @@ void GCMClientImpl::HandleIncomingDeletedMessages(
 
   recorder_.RecordDataMessageReceived(app_id, data_message_stanza.from(),
                                       data_message_stanza.ByteSize(),
-                                      true /* to_registered_app */,
                                       GCMStatsRecorder::DELETED_MESSAGES);
   delegate_->OnMessagesDeleted(app_id);
 }

@@ -415,7 +415,6 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
     const std::string& app_id,
     const std::string& from,
     int message_byte_size,
-    bool to_registered_app,
     ReceivedMessageType message_type) {
   base::TimeTicks new_timestamp = base::TimeTicks::Now();
   if (last_received_data_message_burst_start_time_.is_null()) {
@@ -449,23 +448,16 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
 
   if (!is_recording_)
     return;
-  if (!to_registered_app) {
-    RecordReceiving(app_id,
-                    from,
-                    message_byte_size,
-                    "Data msg received",
-                    "No such registered app found");
-  } else {
-    switch (message_type) {
-      case GCMStatsRecorderImpl::DATA_MESSAGE:
-        RecordReceiving(app_id, from, message_byte_size, "Data msg received",
-                        std::string());
-        break;
-      case GCMStatsRecorderImpl::DELETED_MESSAGES:
-        RecordReceiving(app_id, from, message_byte_size, "Data msg received",
-                        "Message has been deleted on server");
-        break;
-    }
+
+  switch (message_type) {
+    case GCMStatsRecorderImpl::DATA_MESSAGE:
+      RecordReceiving(app_id, from, message_byte_size, "Data msg received",
+                      std::string());
+      break;
+    case GCMStatsRecorderImpl::DELETED_MESSAGES:
+      RecordReceiving(app_id, from, message_byte_size, "Data msg received",
+                      "Message has been deleted on server");
+      break;
   }
 }
 

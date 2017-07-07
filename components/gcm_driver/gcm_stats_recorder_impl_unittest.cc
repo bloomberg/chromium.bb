@@ -86,9 +86,6 @@ static const char kUnregistrationRetryDelayedDetails[] =
 
 static const char kDataReceivedEvent[] = "Data msg received";
 static const char kDataReceivedDetails[] = "";
-static const char kDataReceivedNotRegisteredEvent[] = "Data msg received";
-static const char kDataReceivedNotRegisteredDetails[] =
-    "No such registered app found";
 static const char kDataDeletedMessageEvent[] = "Data msg received";
 static const char kDataDeletedMessageDetails[] =
     "Message has been deleted on server";
@@ -270,13 +267,6 @@ class GCMStatsRecorderImplTest : public testing::Test {
                         remark);
   }
 
-  void VerifyDataMessageReceivedNotRegistered(const std::string& remark) {
-    VerifyReceivingData(recorder_.receiving_activities(),
-                        kDataReceivedNotRegisteredEvent,
-                        kDataReceivedNotRegisteredDetails,
-                        remark);
-  }
-
   void VerifyDataSentToWire(const std::string& remark) {
     VerifySendingData(recorder_.sending_activities(),
                       kDataSentToWireEvent,
@@ -410,12 +400,10 @@ TEST_F(GCMStatsRecorderImplTest, StartStopRecordingTest) {
   recorder_.RecordUnregistrationRetryDelayed(kAppId, source_, kDelay, kRetries);
   VerifyAllActivityQueueEmpty("no unregistration");
 
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize,
                                       GCMStatsRecorder::DATA_MESSAGE);
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize,
                                       GCMStatsRecorder::DELETED_MESSAGES);
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, false,
-                                      GCMStatsRecorder::DATA_MESSAGE);
   VerifyAllActivityQueueEmpty("no receiving");
 
   recorder_.RecordDataSentToWire(kAppId, kReceiverId, kMessageId, kQueuedSec);
@@ -511,20 +499,15 @@ TEST_F(GCMStatsRecorderImplTest, RegistrationTest) {
 TEST_F(GCMStatsRecorderImplTest, RecordReceivingTest) {
   recorder_.RecordConnectionInitiated(std::string());
   recorder_.RecordConnectionSuccess();
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize,
                                       GCMStatsRecorder::DATA_MESSAGE);
   VerifyRecordedReceivingCount(1);
   VerifyDataMessageReceived("1st call");
 
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, true,
+  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize,
                                       GCMStatsRecorder::DELETED_MESSAGES);
   VerifyRecordedReceivingCount(2);
   VerifyDataDeletedMessage("2nd call");
-
-  recorder_.RecordDataMessageReceived(kAppId, kFrom, kByteSize, false,
-                                      GCMStatsRecorder::DATA_MESSAGE);
-  VerifyRecordedReceivingCount(3);
-  VerifyDataMessageReceivedNotRegistered("3rd call");
 }
 
 TEST_F(GCMStatsRecorderImplTest, RecordSendingTest) {
