@@ -42,6 +42,8 @@ external/wpt/app-uri [ Skip ]
 # external/wpt/battery-status [ Pass ]
 ## Owners: ortuno@chromium.org,scheib@chromium.org
 # external/wpt/bluetooth [ Pass ]
+## Owners: msramek@chromium.org,mkwst@chromium.org
+# external/wpt/clear-site-data [ Pass ]
 ## Owners: none; No tests in the directory.
 # external/wpt/common [ Pass ]
 ## Owners: foolip@chromium.org
