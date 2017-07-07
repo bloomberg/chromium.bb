@@ -30,6 +30,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
@@ -5578,7 +5580,7 @@ class MemberSameThreadCheckTester {
 #if DCHECK_IS_ON()
 // TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
 // crbug.com/709069
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 TEST(HeapDeathTest, MemberSameThreadCheck) {
   EXPECT_DEATH(MemberSameThreadCheckTester().Test(), "");
 }
@@ -5621,7 +5623,7 @@ class PersistentSameThreadCheckTester {
 #if DCHECK_IS_ON()
 // TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
 // crbug.com/709069
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 TEST(HeapDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
 }
@@ -5675,7 +5677,7 @@ class MarkingSameThreadCheckTester {
 #if DCHECK_IS_ON()
 // TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
 // crbug.com/709069
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 TEST(HeapDeathTest, MarkingSameThreadCheck) {
   // This will crash during marking, at the DCHECK in Visitor::markHeader() or
   // earlier.
@@ -6033,7 +6035,7 @@ TEST(HeapTest, TraceDeepEagerly) {
 // The allocation & GC overhead is considerable for this test,
 // straining debug builds and lower-end targets too much to be
 // worth running.
-#if !DCHECK_IS_ON() && !OS(ANDROID)
+#if !DCHECK_IS_ON() && !defined(OS_ANDROID)
   DeepEagerly* obj = nullptr;
   for (int i = 0; i < 10000000; i++)
     obj = new DeepEagerly(obj);

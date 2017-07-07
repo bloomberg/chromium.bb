@@ -4,6 +4,7 @@
 
 #include "SkiaTextMetrics.h"
 
+#include "build/build_config.h"
 #include "platform/wtf/MathExtras.h"
 
 #include <SkPath.h>
@@ -60,7 +61,7 @@ void SkiaTextMetrics::GetGlyphExtentsForHarfBuzz(hb_codepoint_t codepoint,
 }
 
 void SkiaTextMetrics::GetSkiaBoundsForGlyph(Glyph glyph, SkRect* bounds) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // TODO(drott): Remove this once we have better metrics bounds
   // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
   SkPath path;

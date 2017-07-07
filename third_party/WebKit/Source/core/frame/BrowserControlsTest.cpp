@@ -29,6 +29,7 @@
  */
 #include "core/frame/BrowserControls.h"
 
+#include "build/build_config.h"
 #include "core/dom/ClientRect.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
@@ -149,7 +150,7 @@ class BrowserControlsTest : public ::testing::Test {
 // Disable these tests on Mac OSX until further investigation.
 // Local build on Mac is OK but the bot fails. This is not an issue as
 // Browser Controls are currently only used on Android.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #define MAYBE(test) DISABLED_##test
 #else
 #define MAYBE(test) test

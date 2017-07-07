@@ -29,13 +29,16 @@
 #include "platform/audio/Reverb.h"
 
 #include <math.h>
+
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 using namespace std;
 #endif
 

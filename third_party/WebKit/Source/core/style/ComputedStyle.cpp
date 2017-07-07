@@ -25,6 +25,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSPaintValue.h"
@@ -1882,7 +1884,7 @@ int ComputedStyle::OutlineOutsetExtent() const {
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return OutlineWidth();
 #else
   // Draw an outline with thickness in proportion to the zoom level, but never

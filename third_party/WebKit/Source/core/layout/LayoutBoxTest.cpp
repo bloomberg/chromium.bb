@@ -4,6 +4,7 @@
 
 #include "core/layout/LayoutBox.h"
 
+#include "build/build_config.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -225,7 +226,7 @@ TEST_F(LayoutBoxTest, ControlClip) {
   EXPECT_TRUE(target->HasControlClip());
   EXPECT_TRUE(target->HasClipRelatedProperty());
   EXPECT_TRUE(target->ShouldClipOverflow());
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->ClippingRect());
 #else
   EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->ClippingRect());

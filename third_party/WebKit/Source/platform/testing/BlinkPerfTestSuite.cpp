@@ -11,6 +11,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_log.h"
+#include "build/build_config.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,7 @@ void BlinkPerfTestSuite::Initialize() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath("log-file");
   if (log_path.empty()) {
     base::PathService::Get(base::FILE_EXE, &log_path);
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
     base::FilePath tmp_dir;
     base::PathService::Get(base::DIR_CACHE, &tmp_dir);
     log_path = tmp_dir.Append(log_path.BaseName());

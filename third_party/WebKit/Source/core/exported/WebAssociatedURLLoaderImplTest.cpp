@@ -31,6 +31,8 @@
 #include "public/web/WebAssociatedURLLoader.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -589,7 +591,7 @@ TEST_F(WebAssociatedURLLoaderTest, UntrustedCheckMethods) {
 }
 
 // This test is flaky on Windows and Android. See <http://crbug.com/471645>.
-#if OS(WIN) || OS(ANDROID)
+#if defined(OS_WIN) || defined(OS_ANDROID)
 #define MAYBE_UntrustedCheckHeaders DISABLED_UntrustedCheckHeaders
 #else
 #define MAYBE_UntrustedCheckHeaders UntrustedCheckHeaders

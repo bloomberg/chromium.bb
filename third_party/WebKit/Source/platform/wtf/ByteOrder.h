@@ -34,11 +34,11 @@
 #include "build/build_config.h"
 #include "platform/wtf/build_config.h"
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 #include <arpa/inet.h>
 #endif
 
-#if OS(WIN)
+#if defined(OS_WIN)
 
 #include "platform/wtf/ByteSwap.h"
 
@@ -70,6 +70,6 @@ inline uint32_t htonl(uint32_t x) {
 }
 #endif
 
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)
 
 #endif  // WTF_ByteOrder_h

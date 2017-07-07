@@ -30,7 +30,9 @@
 #include "platform/fonts/FontCache.h"
 
 #include <memory>
+
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -64,28 +66,28 @@ using namespace WTF;
 
 namespace blink {
 
-#if !OS(WIN) && !OS(LINUX)
+#if !defined(OS_WIN) && !defined(OS_LINUX)
 FontCache::FontCache() : purge_prevent_count_(0), font_manager_(nullptr) {}
-#endif  // !OS(WIN) && !OS(LINUX)
+#endif  // !defined(OS_WIN) && !defined(OS_LINUX)
 
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
-#if OS(WIN)
+#if defined(OS_WIN)
 bool FontCache::antialiased_text_enabled_ = false;
 bool FontCache::lcd_text_enabled_ = false;
 float FontCache::device_scale_factor_ = 1.0;
 bool FontCache::use_skia_font_fallback_ = false;
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)
 
 FontCache* FontCache::GetFontCache() {
   return &FontGlobalContext::GetFontCache();
 }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 FontPlatformData* FontCache::SystemFontPlatformData(
     const FontDescription& font_description) {
   const AtomicString& family = FontCache::SystemFontFamily();
-#if OS(LINUX)
+#if defined(OS_LINUX)
   if (family.IsEmpty() || family == FontFamilyNames::system_ui)
     return nullptr;
 #else
@@ -105,7 +107,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
     PlatformInit();
   }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   if (creation_params.CreationType() == kCreateFontByFamily &&
       creation_params.Family() == FontFamilyNames::system_ui) {
     return SystemFontPlatformData(font_description);
@@ -183,7 +185,7 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     float font_size) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return CreateFontPlatformData(font_description, creation_params, font_size);
 #else
   return WTF::MakeUnique<FontPlatformData>(font_platform_data, font_size);

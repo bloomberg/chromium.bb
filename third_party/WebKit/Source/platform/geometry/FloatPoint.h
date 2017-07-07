@@ -29,6 +29,8 @@
 
 #include <algorithm>
 #include <iosfwd>
+
+#include "build/build_config.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/wtf/Allocator.h"
@@ -36,7 +38,7 @@
 #include "platform/wtf/MathExtras.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 typedef struct CGPoint CGPoint;
 
 #ifdef __OBJC__
@@ -128,7 +130,7 @@ class PLATFORM_EXPORT FloatPoint {
     return FloatPoint(x_ * scale, y_ * scale);
   }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   FloatPoint(const CGPoint&);
   operator CGPoint() const;
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)

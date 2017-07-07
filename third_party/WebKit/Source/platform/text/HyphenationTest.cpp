@@ -4,10 +4,11 @@
 
 #include "platform/text/Hyphenation.h"
 
+#include "build/build_config.h"
 #include "platform/LayoutLocale.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #include "base/files/file_path.h"
 #include "platform/text/hyphenation/HyphenationMinikin.h"
 #endif
@@ -33,9 +34,9 @@ TEST(HyphenationTest, Get) {
   LayoutLocale::ClearForTesting();
 }
 
-#if OS(ANDROID) || OS(MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 TEST(HyphenationTest, LastHyphenLocation) {
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   // Because the mojo service to open hyphenation dictionaries is not accessible
   // from the unit test, open the dictionary file directly for testing.
   base::FilePath path("/system/usr/hyphen-data/hyph-en-us.hyb");

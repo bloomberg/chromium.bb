@@ -21,7 +21,9 @@
 
 #include "platform/wtf/ThreadSpecific.h"
 
-#if OS(WIN)
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
 
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/DoublyLinkedList.h"
@@ -126,4 +128,4 @@ void ThreadSpecificThreadExit() {
 
 }  // namespace WTF
 
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)

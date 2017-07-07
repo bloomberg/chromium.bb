@@ -25,6 +25,7 @@
 
 #include "platform/scroll/ScrollbarTheme.h"
 
+#include "build/build_config.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -44,7 +45,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarBehavior.h"
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 #include "public/platform/WebThemeEngine.h"
 #endif
 
@@ -212,7 +213,7 @@ void ScrollbarTheme::PaintScrollCorner(
 
   DrawingRecorder recorder(context, display_item_client,
                            DisplayItem::kScrollbarCorner, corner_rect);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   context.FillRect(corner_rect, Color::kWhite);
 #else
   Platform::Current()->ThemeEngine()->Paint(
@@ -232,7 +233,7 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                     const Scrollbar& scrollbar,
                                     const IntRect& rect) {
 // Android paints tickmarks in the browser at FindResultBar.java.
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
   if (scrollbar.Orientation() != kVerticalScrollbar)
     return;
 

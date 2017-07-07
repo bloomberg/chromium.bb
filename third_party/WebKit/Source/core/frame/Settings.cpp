@@ -27,6 +27,8 @@
 #include "core/frame/Settings.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/wtf/PtrUtil.h"
@@ -42,11 +44,11 @@ namespace blink {
 // 99) MacEditingBehavior is used a fallback.
 static EditingBehaviorType EditingBehaviorTypeForPlatform() {
   return
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
       kEditingMacBehavior
-#elif OS(WIN)
+#elif defined(OS_WIN)
       kEditingWindowsBehavior
-#elif OS(ANDROID)
+#elif defined(OS_ANDROID)
       kEditingAndroidBehavior
 #else  // Rest of the UNIX-like systems
       kEditingUnixBehavior
@@ -54,7 +56,7 @@ static EditingBehaviorType EditingBehaviorTypeForPlatform() {
       ;
 }
 
-#if OS(WIN)
+#if defined(OS_WIN)
 static const bool kDefaultSelectTrailingWhitespaceEnabled = true;
 #else
 static const bool kDefaultSelectTrailingWhitespaceEnabled = false;

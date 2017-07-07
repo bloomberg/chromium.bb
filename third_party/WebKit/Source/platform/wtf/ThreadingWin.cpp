@@ -98,7 +98,9 @@
 
 #include "platform/wtf/Threading.h"
 
-#if OS(WIN)
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
 
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
@@ -430,4 +432,4 @@ void WillCreateThread() {
 
 }  // namespace WTF
 
-#endif  // OS(WIN)
+#endif  // defined(OS_WIN)

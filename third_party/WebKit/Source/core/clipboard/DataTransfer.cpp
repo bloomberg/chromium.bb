@@ -26,6 +26,8 @@
 #include "core/clipboard/DataTransfer.h"
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
@@ -495,7 +497,7 @@ void DataTransfer::WriteSelection(const FrameSelection& selection) {
   }
 
   String str = selection.SelectedTextForClipboard();
-#if OS(WIN)
+#if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(str);
 #endif
   ReplaceNBSPWithSpace(str);

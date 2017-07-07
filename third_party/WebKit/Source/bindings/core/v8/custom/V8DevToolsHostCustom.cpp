@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8MouseEvent.h"
 #include "bindings/core/v8/V8Window.h"
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/DevToolsHost.h"
@@ -46,9 +47,9 @@ namespace blink {
 
 void V8DevToolsHost::platformMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "mac"));
-#elif OS(WIN)
+#elif defined(OS_WIN)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "windows"));
 #else  // Unix-like systems
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "linux"));

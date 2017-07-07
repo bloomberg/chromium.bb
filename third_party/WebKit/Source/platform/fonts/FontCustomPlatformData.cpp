@@ -32,19 +32,20 @@
 
 #include "platform/fonts/FontCustomPlatformData.h"
 
+#include "build/build_config.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/WebFontDecoder.h"
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "platform/fonts/mac/CoreTextVariationsSupport.h"
 #endif
 #include "platform/fonts/opentype/FontSettings.h"
 #include "platform/fonts/opentype/VariableFontCheck.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#if OS(WIN) || OS(MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
 #include "platform/wtf/PtrUtil.h"
@@ -76,9 +77,9 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   // handled by Skia with priority given to the last occuring
   // assignment.
   if (VariableFontCheck::IsVariableFont(base_typeface_.get())) {
-#if OS(WIN)
+#if defined(OS_WIN)
     sk_sp<SkFontMgr> fm(SkFontMgr_New_Custom_Empty());
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
     sk_sp<SkFontMgr> fm;
     if (CoreTextVersionSupportsVariations())
       fm = SkFontMgr::RefDefault();

@@ -20,7 +20,9 @@
 
 #include "platform/wtf/text/StringImpl.h"
 
-#if OS(MACOSX)
+#include "build/build_config.h"
+
+#if defined(OS_MACOSX)
 
 #include "platform/wtf/RetainPtr.h"
 #include "platform/wtf/Threading.h"
@@ -160,4 +162,4 @@ RetainPtr<CFStringRef> StringImpl::CreateCFString() {
 
 }  // namespace WTF
 
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)

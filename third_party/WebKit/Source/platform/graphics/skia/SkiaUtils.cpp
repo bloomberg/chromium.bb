@@ -30,6 +30,7 @@
 
 #include "platform/graphics/skia/SkiaUtils.h"
 
+#include "build/build_config.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
@@ -347,7 +348,7 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
   flags.setColor(color);
   flags.setStrokeWidth(width);
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   flags.setAlpha(64);
   const float corner_radius = (width - 1) * 0.5f;
 #else
@@ -356,7 +357,7 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
 
   DrawFocusRingPrimitive(primitive, canvas, flags, corner_radius);
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // Inner part
   flags.setAlpha(128);
   flags.setStrokeWidth(flags.getStrokeWidth() * 0.5f);

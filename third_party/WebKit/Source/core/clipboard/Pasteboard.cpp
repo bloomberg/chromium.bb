@@ -30,6 +30,7 @@
 
 #include "core/clipboard/Pasteboard.h"
 
+#include "build/build_config.h"
 #include "core/clipboard/DataObject.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
@@ -61,7 +62,7 @@ void Pasteboard::SetSelectionMode(bool selection_mode) {
 
 void Pasteboard::WritePlainText(const String& text, SmartReplaceOption) {
 // FIXME: add support for smart replace
-#if OS(WIN)
+#if defined(OS_WIN)
   String plain_text(text);
   ReplaceNewlinesWithWindowsStyleNewlines(plain_text);
   Platform::Current()->Clipboard()->WritePlainText(plain_text);
@@ -124,7 +125,7 @@ void Pasteboard::WriteHTML(const String& markup,
                            const String& plain_text,
                            bool can_smart_copy_or_delete) {
   String text = plain_text;
-#if OS(WIN)
+#if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   ReplaceNBSPWithSpace(text);

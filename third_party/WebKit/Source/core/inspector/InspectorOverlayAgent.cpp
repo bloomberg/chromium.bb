@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
+#include "build/build_config.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
@@ -858,11 +859,11 @@ Page* InspectorOverlayAgent::OverlayPage() {
             V8AtomicString(isolate, "InspectorOverlayHost"), overlay_host_obj)
       .ToChecked();
 
-#if OS(WIN)
+#if defined(OS_WIN)
   EvaluateInOverlay("setPlatform", "windows");
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
   EvaluateInOverlay("setPlatform", "mac");
-#elif OS(POSIX)
+#elif defined(OS_POSIX)
   EvaluateInOverlay("setPlatform", "linux");
 #endif
 

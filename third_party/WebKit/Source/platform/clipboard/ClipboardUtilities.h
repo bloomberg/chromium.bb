@@ -31,13 +31,14 @@
 #ifndef ClipboardUtilities_h
 #define ClipboardUtilities_h
 
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/build_config.h"
 
 namespace blink {
 
-#if OS(WIN)
+#if defined(OS_WIN)
 PLATFORM_EXPORT void ReplaceNewlinesWithWindowsStyleNewlines(String&);
 #endif
 PLATFORM_EXPORT void ReplaceNBSPWithSpace(String&);

@@ -4,6 +4,7 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include "build/build_config.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -47,7 +48,7 @@ TEST(FontCache, firstAvailableOrFirst) {
             FontCache::FirstAvailableOrFirst(", not exist, not exist"));
 }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 TEST(FontCache, systemFont) {
   FontCache::SystemFontFamily();
   // Test the function does not crash. Return value varies by system and config.

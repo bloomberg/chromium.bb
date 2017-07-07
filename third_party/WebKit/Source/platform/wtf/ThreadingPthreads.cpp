@@ -30,7 +30,9 @@
 
 #include "platform/wtf/Threading.h"
 
-#if OS(POSIX)
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
 
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
@@ -45,15 +47,15 @@
 #include <sched.h>
 #include <sys/time.h>
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <objc/objc-auto.h>
 #endif
 
-#if OS(LINUX)
+#if defined(OS_LINUX)
 #include <sys/syscall.h>
 #endif
 
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <unistd.h>
 #endif
 
@@ -62,11 +64,11 @@ namespace WTF {
 namespace internal {
 
 ThreadIdentifier CurrentThreadSyscall() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return pthread_mach_thread_np(pthread_self());
-#elif OS(LINUX)
+#elif defined(OS_LINUX)
   return syscall(__NR_gettid);
-#elif OS(ANDROID)
+#elif defined(OS_ANDROID)
   return gettid();
 #else
   return reinterpret_cast<uintptr_t>(pthread_self());
@@ -267,4 +269,4 @@ void WillCreateThread() {
 
 }  // namespace WTF
 
-#endif  // OS(POSIX)
+#endif  // defined(OS_POSIX)

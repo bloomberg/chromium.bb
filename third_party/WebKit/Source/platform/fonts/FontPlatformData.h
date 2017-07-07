@@ -33,6 +33,7 @@
 
 #include "SkPaint.h"
 #include "SkTypeface.h"
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
@@ -47,11 +48,11 @@
 #include "platform/wtf/text/StringImpl.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "platform/fonts/linux/FontRenderStyle.h"
-#endif  // OS(LINUX) || OS(ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 OBJC_CLASS NSFont;
 
 typedef struct CGFont* CGFontRef;
@@ -65,7 +66,7 @@ inline CTFontRef toCTFontRef(NSFont* nsFont) {
 inline NSFont* toNSFont(CTFontRef ctFontRef) {
   return const_cast<NSFont*>(reinterpret_cast<const NSFont*>(ctFontRef));
 }
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)
 
 class SkTypeface;
 typedef uint32_t SkFontID;
@@ -93,7 +94,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    bool synthetic_italic,
                    FontOrientation = FontOrientation::kHorizontal);
   FontPlatformData(const FontPlatformData& src, float text_size);
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   FontPlatformData(NSFont*,
                    float size,
                    bool synthetic_bold,
@@ -109,7 +110,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    FontOrientation = FontOrientation::kHorizontal);
   ~FontPlatformData();
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // These methods return a nullptr for FreeType backed SkTypefaces, compare
   // FontCustomPlatformData, which are used for variable fonts on Mac OS <
   // 10.12. They should not return nullptr otherwise. So they allow
@@ -151,7 +152,7 @@ class PLATFORM_EXPORT FontPlatformData {
   PassRefPtr<OpenTypeVerticalData> VerticalData() const;
   Vector<char> OpenTypeTable(SkFontTableTag) const;
 
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   // The returned styles are all actual styles without
   // FontRenderStyle::NoPreference.
   const FontRenderStyle& GetFontRenderStyle() const { return style_; }
@@ -160,17 +161,17 @@ class PLATFORM_EXPORT FontPlatformData {
                   float device_scale_factor = 1,
                   const Font* = 0) const;
 
-#if OS(WIN)
+#if defined(OS_WIN)
   int PaintTextFlags() const { return paint_text_flags_; }
 #endif
 
  private:
-#if OS(WIN)
+#if defined(OS_WIN)
   void QuerySystemForRenderStyle();
 #endif
 
   sk_sp<SkTypeface> typeface_;
-#if !OS(WIN)
+#if !defined(OS_WIN)
   CString family_;
 #endif
 
@@ -181,13 +182,13 @@ class PLATFORM_EXPORT FontPlatformData {
   FontOrientation orientation_;
 
  private:
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   FontRenderStyle style_;
 #endif
 
   mutable RefPtr<HarfBuzzFace> harf_buzz_face_;
   bool is_hash_table_deleted_value_;
-#if OS(WIN)
+#if defined(OS_WIN)
   int paint_text_flags_;
 #endif
 };

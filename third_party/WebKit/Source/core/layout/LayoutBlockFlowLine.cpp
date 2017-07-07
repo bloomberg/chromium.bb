@@ -21,6 +21,7 @@
  *
  */
 
+#include "build/build_config.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/layout/BidiRunForLine.h"
@@ -549,7 +550,7 @@ static inline void SetLogicalWidthForTextRun(
   bool kerning_is_enabled =
       font.GetFontDescription().GetTypesettingFeatures() & kKerning;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // FIXME: Having any font feature settings enabled can lead to selection gaps
   // on Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
   bool can_use_cached_word_measurements =

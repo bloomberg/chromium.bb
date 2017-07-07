@@ -100,6 +100,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/IconURL.h"
@@ -333,7 +334,7 @@ class ChromePrintContext : public PrintContext {
 
       AffineTransform transform;
       transform.Translate(0, current_height);
-#if OS(WIN) || OS(MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
       // Account for the disabling of scaling in spoolPage. In the context of
       // SpoolAllPagesWithBoundariesForTesting the scale HAS NOT been
       // pre-applied.
@@ -365,7 +366,7 @@ class ChromePrintContext : public PrintContext {
     float scale = printed_page_width_ / page_rect.Width();
 
     AffineTransform transform;
-#if OS(POSIX) && !OS(MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     transform.Scale(scale);
 #endif
     transform.Translate(static_cast<float>(-page_rect.X()),
@@ -1132,7 +1133,7 @@ WebString WebLocalFrameImpl::SelectionAsText() const {
 
   String text = GetFrame()->Selection().SelectedText(
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
-#if OS(WIN)
+#if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   ReplaceNBSPWithSpace(text);

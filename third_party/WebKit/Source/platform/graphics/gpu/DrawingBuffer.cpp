@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "build/build_config.h"
 #include "cc/resources/shared_bitmap.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -381,7 +383,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
         color_buffer_for_mailbox->parameters.target,
         color_buffer_for_mailbox->mailbox.name);
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     gl_->DescheduleUntilFinishedCHROMIUM();
 #endif
     gl_->Flush();
@@ -523,7 +525,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
 
 DrawingBuffer::ColorBufferParameters
 DrawingBuffer::GpuMemoryBufferColorBufferParameters() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // A CHROMIUM_image backed texture requires a specialized set of parameters
   // on OSX.
   ColorBufferParameters parameters;

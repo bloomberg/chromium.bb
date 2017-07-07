@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
@@ -68,7 +69,7 @@ void RunTasksForPeriod(double delay_ms) {
 }
 
 // http://crbug.com/633321
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_DOMTimersFireInExpectedOrder DISABLED_DOMTimersFireInExpectedOrder
 #else
 #define MAYBE_DOMTimersFireInExpectedOrder DOMTimersFireInExpectedOrder
@@ -95,7 +96,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
 }
 
 // http://crbug.com/633321
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_SetInterval DISABLED_SetInterval
 #else
 #define MAYBE_SetInterval SetInterval
@@ -121,7 +122,7 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
 }
 
 // http://crbug.com/633321
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_AllowVirtualTimeToAdvance DISABLED_AllowVirtualTimeToAdvance
 #else
 #define MAYBE_AllowVirtualTimeToAdvance AllowVirtualTimeToAdvance
@@ -151,7 +152,7 @@ TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
 }
 
 // http://crbug.com/633321
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading \
   DISABLED_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
 #else
@@ -200,7 +201,7 @@ TEST_F(VirtualTimeTest,
 }
 
 // http://crbug.com/633321
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 #define MAYBE_DOMTimersSuspended DISABLED_DOMTimersSuspended
 #else
 #define MAYBE_DOMTimersSuspended DOMTimersSuspended

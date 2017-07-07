@@ -26,6 +26,7 @@
 #ifndef Canvas2DLayerBridge_h
 #define Canvas2DLayerBridge_h
 
+#include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/texture_mailbox.h"
 #include "platform/PlatformExport.h"
@@ -61,7 +62,7 @@ class ImageBuffer;
 class WebGraphicsContext3DProvider;
 class SharedContextRateLimiter;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 // Canvas hibernation is currently disabled on MacOS X due to a bug that causes
 // content loss. TODO: Find a better fix for crbug.com/588434
 #define CANVAS2D_HIBERNATION_ENABLED 0

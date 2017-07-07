@@ -27,6 +27,7 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
+#include "build/build_config.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -952,7 +953,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
 // this test intends to ensure that a platform can decode images it has
 // previously written. At format version 9, Android writes RGBA and every
 // other platform writes BGRA.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   RefPtr<SerializedScriptValue> input =
       SerializedValue({0xff, 0x09, 0x3f, 0x00, 0x67, 0x01, 0x01, 0x02, 0x01,
                        0x08, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff});

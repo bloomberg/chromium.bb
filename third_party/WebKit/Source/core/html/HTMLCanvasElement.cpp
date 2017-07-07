@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
@@ -95,7 +96,7 @@ namespace {
 const int kDefaultWidth = 300;
 const int kDefaultHeight = 150;
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 // We estimate that the max limit for android phones is a quarter of that for
 // desktops based on local experimental results on Android One.
 const int kMaxGlobalAcceleratedImageBufferCount = 25;

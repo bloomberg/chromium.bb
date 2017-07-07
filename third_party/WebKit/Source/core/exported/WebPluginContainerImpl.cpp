@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Element.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
@@ -816,7 +817,7 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
     return;
 
   if (web_event.GetType() == WebInputEvent::kKeyDown) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     if ((web_event.GetModifiers() & WebInputEvent::kInputModifiers) ==
             WebInputEvent::kMetaKey
 #else

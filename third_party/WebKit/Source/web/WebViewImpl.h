@@ -32,6 +32,8 @@
 #define WebViewImpl_h
 
 #include <memory>
+
+#include "build/build_config.h"
 #include "core/editing/spellcheck/SpellCheckerClientImpl.h"
 #include "core/exported/WebPagePopupImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -117,7 +119,7 @@ class WEB_EXPORT WebViewImpl final
 
   void UpdateAllLifecyclePhases() override;
   void Paint(WebCanvas*, const WebRect&) override;
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   void PaintIgnoringCompositing(WebCanvas*, const WebRect&) override;
 #endif
   void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;

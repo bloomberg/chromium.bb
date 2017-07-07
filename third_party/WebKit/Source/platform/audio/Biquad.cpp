@@ -28,6 +28,7 @@
 
 #include "platform/audio/Biquad.h"
 
+#include "build/build_config.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/wtf/MathExtras.h"
@@ -35,18 +36,18 @@
 #include <algorithm>
 #include <complex>
 #include <stdio.h>
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
 
 namespace blink {
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 const int kBufferSize = 1024;
 #endif
 
 Biquad::Biquad() : has_sample_accurate_values_(false) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // Allocate two samples more for filter history
   input_buffer_.Allocate(kBufferSize + 2);
   output_buffer_.Allocate(kBufferSize + 2);
@@ -118,7 +119,7 @@ void Biquad::Process(const float* source_p,
     // path.  The structure of the state variable in these cases aren't well
     // documented so it's not clear how to update them anyway.
   } else {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     double* input_p = input_buffer_.Data();
     double* output_p = output_buffer_.Data();
 
@@ -183,7 +184,7 @@ void Biquad::Process(const float* source_p,
   }
 }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 
 // Here we have optimized version using Accelerate.framework
 
@@ -241,10 +242,10 @@ void Biquad::ProcessSliceFast(double* source_p,
   dest_p[1] = dest_p[frames_to_process - 1 + 2];
 }
 
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)
 
 void Biquad::Reset() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // Two extra samples for filter history
   double* input_p = input_buffer_.Data();
   input_p[0] = 0;

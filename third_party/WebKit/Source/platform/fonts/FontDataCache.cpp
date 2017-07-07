@@ -30,11 +30,12 @@
 
 #include "platform/fonts/FontDataCache.h"
 
+#include "build/build_config.h"
 #include "platform/fonts/SimpleFontData.h"
 
 namespace blink {
 
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
 const unsigned kCMaxInactiveFontData = 250;
 const unsigned kCTargetInactiveFontData = 200;
 #else

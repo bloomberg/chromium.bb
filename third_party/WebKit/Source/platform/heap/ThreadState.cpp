@@ -31,8 +31,11 @@
 #include "platform/heap/ThreadState.h"
 
 #include <v8.h>
+
 #include <memory>
+
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -59,7 +62,7 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <stddef.h>
 #include <windows.h>
 #include <winnt.h>
@@ -69,7 +72,7 @@
 #include <sanitizer/msan_interface.h>
 #endif
 
-#if OS(FREEBSD)
+#if defined(OS_FREEBSD)
 #include <pthread_np.h>
 #endif
 

@@ -7,7 +7,7 @@
 #include "platform/wtf/StackUtil.h"
 #include "public/platform/Platform.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <stddef.h>
 #include <windows.h>
 #include <winnt.h>

@@ -24,6 +24,7 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "build/build_config.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetList.h"
 #include "core/exported/WebViewBase.h"
@@ -570,7 +571,7 @@ TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
   ASSERT_TRUE(web_scroll_layer->UserScrollableHorizontal());
   ASSERT_TRUE(web_scroll_layer->UserScrollableVertical());
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   // Now verify we've attached impl-side scrollbars onto the scrollbar layers
   ASSERT_TRUE(composited_layer_mapping->LayerForHorizontalScrollbar());
   ASSERT_TRUE(composited_layer_mapping->LayerForHorizontalScrollbar()
@@ -681,7 +682,7 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   WebLayer* web_scroll_layer = scroll_layer->PlatformLayer();
   ASSERT_TRUE(web_scroll_layer->Scrollable());
 
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   // Now verify we've attached impl-side scrollbars onto the scrollbar layers
   GraphicsLayer* horizontal_scrollbar_layer =
       inner_frame_view->LayoutViewportScrollableArea()
@@ -777,7 +778,7 @@ TEST_P(ScrollingCoordinatorTest,
       scrollbar_graphics_layer->PlatformLayer()->ShouldScrollOnMainThread());
 }
 
-#if OS(MACOSX) || OS(ANDROID)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 TEST_P(ScrollingCoordinatorTest,
        DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
 #else

@@ -5,6 +5,7 @@
 #ifndef DrawingBufferTestHelpers_h
 #define DrawingBufferTestHelpers_h
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CanvasColorParams.h"
@@ -52,7 +53,7 @@ class WebGraphicsContext3DProviderForTests
 
 // The target to use when binding a texture to a Chromium image.
 GLenum ImageCHROMIUMTextureTarget() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   return GC3D_TEXTURE_RECTANGLE_ARB;
 #else
   return GL_TEXTURE_2D;

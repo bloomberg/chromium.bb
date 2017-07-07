@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/Editor.h"
@@ -27,9 +28,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <windows.h>
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
 #import <Carbon/Carbon.h>
 #endif
 
@@ -37,7 +38,7 @@ namespace blink {
 
 namespace {
 
-#if OS(WIN)
+#if defined(OS_WIN)
 static const unsigned short kHIGHBITMASKSHORT = 0x8000;
 #endif
 
@@ -257,7 +258,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   if (!node)
     return WebInputEventResult::kNotHandled;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // According to NSEvents.h, OpenStep reserves the range 0xF700-0xF8FF for
   // function keys. However, some actual private use characters happen to be
   // in this range, e.g. the Apple logo (Option+Shift+K). 0xF7FF is an
@@ -383,7 +384,7 @@ void KeyboardEventManager::DefaultTabEventHandler(KeyboardEvent* event) {
   if (event->ctrlKey() || event->metaKey())
     return;
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   // Option-Tab is a shortcut based on a system-wide preference on Mac but
   // should be ignored on all other platforms.
   if (event->altKey())
@@ -426,10 +427,10 @@ void KeyboardEventManager::SetCurrentCapsLockState(
 bool KeyboardEventManager::CurrentCapsLockState() {
   switch (g_override_caps_lock_state) {
     case OverrideCapsLockState::kDefault:
-#if OS(WIN)
+#if defined(OS_WIN)
       // FIXME: Does this even work inside the sandbox?
       return GetKeyState(VK_CAPITAL) & 1;
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
       return GetCurrentKeyModifiers() & alphaLock;
 #else
       // Caps lock state use is limited to Mac password input
@@ -446,14 +447,14 @@ bool KeyboardEventManager::CurrentCapsLockState() {
 
 WebInputEvent::Modifiers KeyboardEventManager::GetCurrentModifierState() {
   unsigned modifiers = 0;
-#if OS(WIN)
+#if defined(OS_WIN)
   if (GetKeyState(VK_SHIFT) & kHIGHBITMASKSHORT)
     modifiers |= WebInputEvent::kShiftKey;
   if (GetKeyState(VK_CONTROL) & kHIGHBITMASKSHORT)
     modifiers |= WebInputEvent::kControlKey;
   if (GetKeyState(VK_MENU) & kHIGHBITMASKSHORT)
     modifiers |= WebInputEvent::kAltKey;
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
   UInt32 current_modifiers = GetCurrentKeyModifiers();
   if (current_modifiers & ::shiftKey)
     modifiers |= WebInputEvent::kShiftKey;

@@ -32,7 +32,7 @@
 #include "build/build_config.h"
 #include "platform/wtf/build_config.h"
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 #include <strings.h>
 #endif
 

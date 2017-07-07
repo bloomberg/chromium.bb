@@ -31,6 +31,7 @@
 
 #include "platform/scroll/ScrollableArea.h"
 
+#include "build/build_config.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -74,7 +75,7 @@ ScrollableArea::ScrollableArea()
 ScrollableArea::~ScrollableArea() {}
 
 void ScrollableArea::ClearScrollableArea() {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   if (scroll_animator_)
     scroll_animator_->Dispose();
 #endif

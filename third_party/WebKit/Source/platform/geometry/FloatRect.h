@@ -28,6 +28,8 @@
 #define FloatRect_h
 
 #include <iosfwd>
+
+#include "build/build_config.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/IntRect.h"
@@ -36,7 +38,7 @@
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRect.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
 
 #ifdef __OBJC__
@@ -185,7 +187,7 @@ class PLATFORM_EXPORT FloatRect {
 
   float SquaredDistanceTo(const FloatPoint&) const;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   FloatRect(const CGRect&);
   operator CGRect() const;
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)

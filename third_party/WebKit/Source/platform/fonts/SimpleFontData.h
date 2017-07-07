@@ -25,7 +25,10 @@
 #define SimpleFontData_h
 
 #include <SkPaint.h>
+
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/FontBaseline.h"
@@ -38,7 +41,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringHash.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "platform/fonts/GlyphMetricsMap.h"
 #endif
 
@@ -246,14 +249,14 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
 // On Mac we're still using path based glyph metrics, and they seem to be
 // too slow to be able to remove the caching layer we have here.
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> glyph_to_bounds_map_;
   mutable GlyphMetricsMap<float> glyph_to_width_map_;
 #endif
 };
 
 ALWAYS_INLINE FloatRect SimpleFontData::BoundsForGlyph(Glyph glyph) const {
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   return PlatformBoundsForGlyph(glyph);
 #else
   FloatRect bounds_result;
@@ -273,7 +276,7 @@ ALWAYS_INLINE FloatRect SimpleFontData::BoundsForGlyph(Glyph glyph) const {
 }
 
 ALWAYS_INLINE float SimpleFontData::WidthForGlyph(Glyph glyph) const {
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   return PlatformWidthForGlyph(glyph);
 #else
   float width = glyph_to_width_map_.MetricsForGlyph(glyph);

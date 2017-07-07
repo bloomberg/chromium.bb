@@ -30,7 +30,10 @@
 #define Biquad_h
 
 #include <sys/types.h>
+
 #include <complex>
+
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 #include "platform/wtf/Allocator.h"
@@ -107,7 +110,7 @@ class PLATFORM_EXPORT Biquad final {
   AudioDoubleArray a1_;
   AudioDoubleArray a2_;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   void ProcessFast(const float* source_p,
                    float* dest_p,
                    size_t frames_to_process);

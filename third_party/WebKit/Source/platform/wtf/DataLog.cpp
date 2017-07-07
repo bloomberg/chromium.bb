@@ -25,7 +25,9 @@
 
 #include "platform/wtf/DataLog.h"
 
-#if OS(POSIX)
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
 #include <pthread.h>
 #include <unistd.h>
 #endif
@@ -42,7 +44,7 @@
 
 namespace WTF {
 
-#if OS(POSIX)
+#if defined(OS_POSIX)
 static pthread_once_t g_initialize_log_file_once_key = PTHREAD_ONCE_INIT;
 #endif
 
@@ -76,7 +78,7 @@ static void InitializeLogFileOnce() {
 }
 
 static void InitializeLogFile() {
-#if OS(POSIX)
+#if defined(OS_POSIX)
   pthread_once(&g_initialize_log_file_once_key, InitializeLogFileOnce);
 #else
   if (!g_file)

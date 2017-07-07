@@ -25,9 +25,12 @@
 #include "platform/loader/fetch/Resource.h"
 
 #include <stdint.h>
+
 #include <algorithm>
 #include <cassert>
 #include <memory>
+
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -457,7 +460,7 @@ static double CurrentAge(const ResourceResponse& response,
 
 static double FreshnessLifetime(const ResourceResponse& response,
                                 double response_timestamp) {
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
   // On desktop, local files should be reloaded in case they change.
   if (response.Url().IsLocalFile())
     return 0;

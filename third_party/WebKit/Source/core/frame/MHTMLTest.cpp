@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
@@ -264,7 +265,7 @@ TEST_F(MHTMLTest, MHTMLFromScheme) {
   // MHTMLArchives can only be initialized from local schemes, http/https
   // schemes, and content scheme(Android specific).
   EXPECT_NE(nullptr, MHTMLArchive::Create(http_url, data.Get()));
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
   EXPECT_NE(nullptr, MHTMLArchive::Create(content_url, data.Get()));
 #else
   EXPECT_EQ(nullptr, MHTMLArchive::Create(content_url, data.Get()));

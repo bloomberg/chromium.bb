@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutView.h"
@@ -176,7 +177,7 @@ class ScrollbarTestingPlatformSupport : public TestingPlatformSupport {
 // Test both overlay and non-overlay scrollbars.
 INSTANTIATE_TEST_CASE_P(All, ScrollbarAppearanceTest, ::testing::Bool());
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 // Ensure that the minimum length for a scrollbar thumb comes from the
 // WebThemeEngine. Note, Mac scrollbars differ from all other platforms so this
 // test doesn't apply there. https://crbug.com/682209.

@@ -26,6 +26,7 @@
 #ifndef IntRect_h
 #define IntRect_h
 
+#include "build/build_config.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRectOutsets.h"
 #include "platform/wtf/Allocator.h"
@@ -33,7 +34,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/VectorTraits.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
 
 #ifdef __OBJC__
@@ -188,7 +189,7 @@ class PLATFORM_EXPORT IntRect {
     return IntRect(location_.TransposedPoint(), size_.TransposedSize());
   }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   operator CGRect() const;
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
   operator NSRect() const;
@@ -237,7 +238,7 @@ inline bool operator!=(const IntRect& a, const IntRect& b) {
   return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 PLATFORM_EXPORT IntRect EnclosingIntRect(const CGRect&);
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
 PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);

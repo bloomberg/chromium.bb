@@ -24,6 +24,9 @@
 #ifndef StringImpl_h
 #define StringImpl_h
 
+#include <limits.h>
+#include <string.h>
+#include "build/build_config.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
@@ -32,14 +35,12 @@
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/ASCIIFastPath.h"
 #include "platform/wtf/text/Unicode.h"
-#include <limits.h>
-#include <string.h>
 
 #if DCHECK_IS_ON()
 #include "platform/wtf/ThreadRestrictionVerifier.h"
 #endif
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 typedef const struct __CFString* CFStringRef;
 #endif
 
@@ -414,7 +415,7 @@ class WTF_EXPORT StringImpl {
                  unsigned start = 0,
                  unsigned length = UINT_MAX) const;
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   RetainPtr<CFStringRef> CreateCFString();
 #endif
 #ifdef __OBJC__

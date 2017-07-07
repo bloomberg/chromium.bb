@@ -25,6 +25,7 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -52,7 +53,7 @@
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "platform/mac/ScrollAnimatorMac.h"
 #endif
 #include <memory>

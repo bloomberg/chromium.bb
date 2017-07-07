@@ -31,15 +31,17 @@
 // Objective C++.
 
 #include <stdarg.h>
+
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/build_config.h"
 
-#if OS(WIN)
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 

@@ -216,7 +216,7 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
 
   sk_sp<SkData> sk_data = SkData::MakeWithCopy(output.get(), decoded_length);
   SkMemoryStream* stream = new SkMemoryStream(sk_data);
-#if OS(WIN)
+#if defined(OS_WIN)
   sk_sp<SkTypeface> typeface(
       FontCache::GetFontCache()->FontManager()->createFromStream(stream));
 #else

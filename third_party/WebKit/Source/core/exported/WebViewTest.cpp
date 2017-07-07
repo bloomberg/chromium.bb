@@ -35,6 +35,7 @@
 #include <string>
 
 #include "bindings/core/v8/V8Document.h"
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
@@ -114,7 +115,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 #include "public/web/mac/WebSubstringUtil.h"
 #endif
 
@@ -696,7 +697,7 @@ void WebViewTest::TestAutoResize(
   EXPECT_EQ(expected_height, client.GetTestData().Height());
 
 // Android disables main frame scrollbars.
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
   EXPECT_EQ(expected_horizontal_state,
             client.GetTestData().GetHorizontalScrollbarState());
   EXPECT_EQ(expected_vertical_state,
@@ -2353,7 +2354,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible());
 }
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   RegisterMockedHttpURLLoad("longpress_textarea.html");
 
@@ -2984,7 +2985,7 @@ static void OpenDateTimeChooser(WebView* web_view,
 }
 
 // TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
-#if OS(ANDROID)
+#if defined(OS_ANDROID)
 TEST_P(WebViewTest, DISABLED_ChooseValueFromDateTimeChooser) {
 #else
 TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
@@ -3880,7 +3881,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
   EXPECT_FALSE(document->GetFrame()->IsLoading());
 }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 TEST_P(WebViewTest, WebSubstringUtil) {
   RegisterMockedHttpURLLoad("content_editable_populated.html");
   WebViewBase* web_view = web_view_helper_.InitializeAndLoad(

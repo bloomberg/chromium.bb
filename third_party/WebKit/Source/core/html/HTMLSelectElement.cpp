@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/HTMLElementOrLong.h"
 #include "bindings/core/v8/HTMLOptionElementOrHTMLOptGroupElement.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
@@ -1509,7 +1510,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event* event) {
     MouseEvent* mouse_event = ToMouseEvent(event);
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
       if (!option->IsDisabledFormControl()) {
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
         UpdateSelectedState(option, mouse_event->metaKey(),
                             mouse_event->shiftKey());
 #else

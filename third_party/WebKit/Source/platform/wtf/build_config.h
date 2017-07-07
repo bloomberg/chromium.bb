@@ -34,11 +34,6 @@
  * present or not */
 #define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE && HAVE_##WTF_FEATURE)
 
-// OS() - underlying operating system; only to be used for mandated low-level
-// services like virtual memory, not to choose a GUI toolkit
-// This macro is deprecated.  Use defined(OS_FOO).  See crbug.com/737403.
-#define OS(WTF_FEATURE) (defined OS_##WTF_FEATURE && OS_##WTF_FEATURE)
-
 /* ==== Policy decision macros: these define policy choices for a particular
  * port. ==== */
 
@@ -46,7 +41,8 @@
 #define USE(WTF_FEATURE) \
   (defined WTF_USE_##WTF_FEATURE && WTF_USE_##WTF_FEATURE)
 
-// There is an assumption in the project that either OS_WIN or OS_POSIX is set.
+/* There is an assumption in the project that either OS_WIN or OS_POSIX is
+ * set. */
 #if !defined(OS_WIN) && !defined(OS_POSIX)
 #error Either OS_WIN or OS_POSIX needs to be set.
 #endif

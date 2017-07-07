@@ -31,10 +31,14 @@
 
 #include <unicode/unorm.h>
 #include <unicode/utf16.h>
+
 #include <memory>
+
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
+
+#include "build/build_config.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/VDMXParser.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
@@ -51,7 +55,7 @@ namespace blink {
 const float kSmallCapsFontSizeMultiplier = 0.7f;
 const float kEmphasisMarkFontSizeMultiplier = 0.5f;
 
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 // This is the largest VDMX table which we'll try to load and parse.
 static const size_t kMaxVDMXTableSize = 1024 * 1024;  // 1 MB
 #endif
@@ -106,7 +110,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   int vdmx_ascent = 0, vdmx_descent = 0;
   bool is_vdmx_valid = false;
 
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   // Manually digging up VDMX metrics is only applicable when bytecode hinting
   // using FreeType.  With DirectWrite or CoreText, no bytecode hinting is ever
   // done.  This code should be pushed into FreeType (hinted font metrics).
@@ -155,7 +159,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
       visual_overflow_inflation_for_ascent_ = 1;
     if (descent < metrics.fDescent) {
       visual_overflow_inflation_for_descent_ = 1;
-#if OS(LINUX) || OS(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
       // When subpixel positioning is enabled, if the descent is rounded down,
       // the descent part of the glyph may be truncated when displayed in a
       // 'overflow: hidden' container.  To avoid that, borrow 1 unit from the
@@ -172,7 +176,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
     }
   }
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // We are preserving this ascent hack to match Safari's ascent adjustment
   // in their SimpleFontDataMac.mm, for details see crbug.com/445830.
   // We need to adjust Times, Helvetica, and Courier to closely match the
@@ -195,7 +199,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   float x_height;
   if (metrics.fXHeight) {
     x_height = metrics.fXHeight;
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
     // Mac OS CTFontGetXHeight reports the bounding box height of x,
     // including parts extending below the baseline and apparently no x-height
     // value from the OS/2 table. However, the CSS ex unit
@@ -232,7 +236,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
 // In WebKit/WebCore/platform/graphics/SimpleFontData.cpp, m_spaceWidth is
 // calculated for us, but we need to calculate m_maxCharWidth and
 // m_avgCharWidth in order for text entry widgets to be sized correctly.
-#if OS(WIN)
+#if defined(OS_WIN)
   max_char_width_ = SkScalarRoundToInt(metrics.fMaxCharWidth);
 
   // Older version of the DirectWrite API doesn't implement support for max
@@ -240,7 +244,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   // arbitrary but comes pretty close to the expected value in most cases.
   if (max_char_width_ < 1)
     max_char_width_ = ascent * 2;
-#elif OS(MACOSX)
+#elif defined(OS_MACOSX)
   // FIXME: The current avg/max character width calculation is not ideal,
   // it should check either the OS2 table or, better yet, query FontMetrics.
   // Sadly FontMetrics provides incorrect data on Mac at the moment.
@@ -253,7 +257,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
 
 #endif
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   if (metrics.fAvgCharWidth) {
     avg_char_width_ = SkScalarRoundToInt(metrics.fAvgCharWidth);
   } else {
@@ -263,7 +267,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
     if (x_glyph) {
       avg_char_width_ = WidthForGlyph(x_glyph);
     }
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
   }
 #endif
 

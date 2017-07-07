@@ -25,9 +25,10 @@
 
 #include "platform/wtf/text/AtomicString.h"
 
+#include "build/build_config.h"
 #include "platform/wtf/text/AtomicStringTable.h"
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
 
 #include "platform/wtf/text/CString.h"
 #include <CoreFoundation/CoreFoundation.h>
@@ -56,4 +57,4 @@ RefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
 
 }  // namespace WTF
 
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)

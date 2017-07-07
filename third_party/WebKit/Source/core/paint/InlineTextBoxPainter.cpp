@@ -4,6 +4,7 @@
 
 #include "core/paint/InlineTextBoxPainter.h"
 
+#include "build/build_config.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -700,7 +701,7 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
 
 namespace {
 
-#if !OS(MACOSX)
+#if !defined(OS_MACOSX)
 
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 2;
@@ -744,7 +745,7 @@ sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
   return recorder.finishRecordingAsPicture();
 }
 
-#else  // OS(MACOSX)
+#else  // defined(OS_MACOSX)
 
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 3;
@@ -785,7 +786,7 @@ sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
   return recorder.finishRecordingAsPicture();
 }
 
-#endif  // OS(MACOSX)
+#endif  // defined(OS_MACOSX)
 
 void DrawDocumentMarker(GraphicsContext& context,
                         const FloatPoint& pt,
@@ -807,7 +808,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   SkScalar origin_x = WebCoreFloatToSkScalar(pt.X());
   SkScalar origin_y = WebCoreFloatToSkScalar(pt.Y());
 
-#if OS(MACOSX)
+#if defined(OS_MACOSX)
   // Make sure to draw only complete dots, and finish inside the marked text.
   width -= fmodf(width, kMarkerWidth * zoom);
 #else

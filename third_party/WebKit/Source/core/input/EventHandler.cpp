@@ -29,7 +29,9 @@
 #include "core/input/EventHandler.h"
 
 #include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
+#include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataTransfer.h"
@@ -1796,7 +1798,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
   static const int kContextMenuMargin = 1;
 
-#if OS(WIN)
+#if defined(OS_WIN)
   int right_aligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
 #else
   int right_aligned = 0;

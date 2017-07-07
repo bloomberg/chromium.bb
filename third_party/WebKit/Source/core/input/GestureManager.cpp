@@ -4,6 +4,7 @@
 
 #include "core/input/GestureManager.h"
 
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/SelectionController.h"
@@ -340,7 +341,7 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
 
 WebInputEventResult GestureManager::HandleGestureLongTap(
     const GestureEventWithHitTestResults& targeted_event) {
-#if !OS(ANDROID)
+#if !defined(OS_ANDROID)
   if (long_tap_should_invoke_context_menu_) {
     long_tap_should_invoke_context_menu_ = false;
     Node* inner_node = targeted_event.GetHitTestResult().InnerNode();
