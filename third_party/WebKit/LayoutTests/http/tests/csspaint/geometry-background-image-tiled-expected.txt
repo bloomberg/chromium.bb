@@ -1,9 +1,0 @@
-CONSOLE MESSAGE: line 26: The worklet should log: 'width: 50, height: 50'
-CONSOLE MESSAGE: line 6: width: 50, height: 50
-CONSOLE MESSAGE: line 26: The worklet should log: 'width: 50, height: 20'
-CONSOLE MESSAGE: line 6: width: 50, height: 20
-CONSOLE MESSAGE: line 26: The worklet should log: 'width: 60, height: 80'
-CONSOLE MESSAGE: line 6: width: 60, height: 80
-This tests the geometry information in the paint callback.
-
-See the devtools console for test output.
