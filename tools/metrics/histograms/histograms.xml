@@ -68423,6 +68423,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.IcingContextReportingStatus"
+    enum="IcingContextReportingStatus">
+  <owner>joaodasilva@chromium.org</owner>
+  <summary>
+    Records the reason why a context report to Icing failed, every time Chrome
+    attemps to record the current context (tab switching, navigations, etc).
+    Also records reasons why context reporting might be disabled. Recorded on
+    Android only.
+  </summary>
+</histogram>
+
 <histogram name="Search.MigratedPrefToDictionaryValue" enum="BooleanHit">
   <obsolete>
     Deprecated after migrator is deleted in 12/2016.
