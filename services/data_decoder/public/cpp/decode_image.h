@@ -38,7 +38,7 @@ void DecodeImage(service_manager::Connector* connector,
                  bool shrink_to_fit,
                  uint64_t max_size_in_bytes,
                  const gfx::Size& desired_image_frame_size,
-                 const mojom::ImageDecoder::DecodeImageCallback& callback);
+                 mojom::ImageDecoder::DecodeImageCallback callback);
 
 }  // namespace data_decoder
 

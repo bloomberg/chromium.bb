@@ -26,7 +26,7 @@ class ImageDecoderImpl : public mojom::ImageDecoder {
                    bool shrink_to_fit,
                    int64_t max_size_in_bytes,
                    const gfx::Size& desired_image_frame_size,
-                   const DecodeImageCallback& callback) override;
+                   DecodeImageCallback callback) override;
 
  private:
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;

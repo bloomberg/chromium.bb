@@ -40,9 +40,9 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
                                    bool shrink_to_fit,
                                    int64_t max_size_in_bytes,
                                    const gfx::Size& desired_image_frame_size,
-                                   const DecodeImageCallback& callback) {
+                                   DecodeImageCallback callback) {
   if (encoded_data.size() == 0) {
-    callback.Run(SkBitmap());
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
@@ -103,7 +103,7 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
     }
   }
 
-  callback.Run(decoded_image);
+  std::move(callback).Run(decoded_image);
 }
 
 }  // namespace data_decoder
