@@ -40,6 +40,10 @@ enum PreviewsTypes {
   PREVIEWS_STATE_LAST = PREVIEWS_OFF
 };
 
+// Combination of all previews that are guaranteed not to provide partial
+// content.
+const PreviewsState PARTIAL_CONTENT_SAFE_PREVIEWS = SERVER_LOFI_ON;
+
 // Ensure that content::PreviewsState and blink::WebURLRequest::PreviewsState
 // are kept in sync.
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_UNSPECIFIED,

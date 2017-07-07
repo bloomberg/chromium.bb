@@ -87,7 +87,8 @@ class ChromeResourceDispatcherHostDelegate
   // Returns a bitmask of potentially several Previews optimizations.
   content::PreviewsState GetPreviewsState(
       const net::URLRequest& url_request,
-      content::ResourceContext* resource_context) override;
+      content::ResourceContext* resource_context,
+      content::PreviewsState previews_to_allow) override;
   content::NavigationData* GetNavigationData(
       net::URLRequest* request) const override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

@@ -369,6 +369,10 @@ bool NavigatorImpl::NavigateToEntry(
     previews_state = PREVIEWS_NO_TRANSFORM;
   }
 
+  // Give the delegate an opportunity to adjust the previews state.
+  if (delegate_)
+    delegate_->AdjustPreviewsStateForNavigation(&previews_state);
+
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (IsBrowserSideNavigationEnabled()) {
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,

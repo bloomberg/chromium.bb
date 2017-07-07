@@ -30,4 +30,7 @@ std::unique_ptr<NavigationUIData> NavigatorDelegate::GetNavigationUIData(
   return nullptr;
 }
 
+void NavigatorDelegate::AdjustPreviewsStateForNavigation(
+    PreviewsState* previews_state) {}
+
 }  // namespace content

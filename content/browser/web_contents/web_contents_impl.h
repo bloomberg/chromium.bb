@@ -403,6 +403,7 @@ class CONTENT_EXPORT WebContentsImpl
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   bool ShowingInterstitialPage() const override;
+  void AdjustPreviewsStateForNavigation(PreviewsState* previews_state) override;
   InterstitialPage* GetInterstitialPage() const override;
   bool IsSavable() override;
   void OnSavePage() override;
