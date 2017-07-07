@@ -189,7 +189,7 @@ TEST_F(WebRtcEventlogHostTest, TwoPeerConnectionsTest) {
 // maximum allowed number of IPC messages and log files will be opened, but we
 // expect the number of stop IPC messages to be equal to the actual number of
 // PeerConnections.
-TEST_F(WebRtcEventlogHostTest, ExceedMaxPeerConnectionsTest) {
+TEST_F(WebRtcEventlogHostTest, DISABLED_ExceedMaxPeerConnectionsTest) {
 #if defined(OS_ANDROID)
   const int kMaxNumberLogFiles = 3;
 #else
