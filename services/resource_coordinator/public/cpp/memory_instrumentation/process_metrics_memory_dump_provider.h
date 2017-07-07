@@ -13,6 +13,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_export.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace base {
 class ProcessMetrics;
@@ -66,6 +67,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
                          base::trace_event::ProcessMemoryDump* pmd);
   bool DumpProcessMemoryMaps(const base::trace_event::MemoryDumpArgs& args,
                              base::trace_event::ProcessMemoryDump* pmd);
+  uint64_t GetPeakResidentSetBytes();
 
   static uint64_t rss_bytes_for_testing;
   static FactoryFunction factory_for_testing;

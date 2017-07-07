@@ -17,6 +17,7 @@
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
@@ -411,4 +412,5 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
 }
 
 #endif  // defined(OS_MACOSX)
+
 }  // namespace memory_instrumentation
