@@ -100,7 +100,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void SetControllerModel(std::unique_ptr<VrControllerModel> model);
 
-  void UpdateVSyncInterval(int64_t timebase_nanos, double interval_seconds);
+  void UpdateVSyncInterval(base::TimeTicks vsync_timebase,
+                           base::TimeDelta vsync_interval);
 
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
@@ -259,7 +260,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   base::TimeDelta pending_time_;
   bool pending_vsync_ = false;
   GetVSyncCallback callback_;
-  bool received_frame_ = false;
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 

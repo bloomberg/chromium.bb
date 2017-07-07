@@ -70,6 +70,7 @@ import java.lang.reflect.InvocationTargetException;
 public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                                         View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "VrShellDelegate";
+
     // Pseudo-random number to avoid request id collisions.
     public static final int EXIT_VR_RESULT = 721251;
 
@@ -167,6 +168,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private boolean mVrBrowserUsed;
 
     private View mOverlayView;
+
+    private final VSyncEstimator mVSyncEstimator;
 
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
         private final WeakReference<ChromeActivity> mTargetActivity;
@@ -474,6 +477,85 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
     }
 
+    private class VSyncEstimator {
+        private static final long NANOS_PER_SECOND = 1000000000;
+
+        private static final long VSYNC_TIMEBASE_UPDATE_DELTA = 1 * NANOS_PER_SECOND;
+        private static final double VSYNC_DRIFT_THRESHOLD = 1.2;
+
+        // Estimates based on too few frames are unstable, probably anything above 2 is reasonable.
+        // Higher numbers will reduce how frequently we update the native vsync base/interval.
+        private static final int MIN_FRAME_COUNT = 5;
+
+        private final long mReportedVSyncNanos;
+        private final long mMaxVSyncIntervalNanos;
+        private final long mMinVSyncIntervalNanos;
+
+        private long mVSyncTimebaseNanos;
+        private long mVSyncIntervalNanos;
+        private long mVSyncIntervalMicros;
+
+        private final FrameCallback mCallback = new FrameCallback() {
+            @Override
+            public void doFrame(long frameTimeNanos) {
+                if (mNativeVrShellDelegate == 0) return;
+                Choreographer.getInstance().postFrameCallback(this);
+                if (mVSyncTimebaseNanos == 0) {
+                    updateVSyncInterval(frameTimeNanos, mVSyncIntervalNanos);
+                    return;
+                }
+                long elapsed = frameTimeNanos - mVSyncTimebaseNanos;
+                // If you're hitting the assert below, you probably added the callback twice.
+                assert elapsed != 0;
+                long count = Math.round(elapsed / (double) mVSyncIntervalNanos);
+                if (count < MIN_FRAME_COUNT) return;
+                long vSyncIntervalNanos = elapsed / count;
+                if (vSyncIntervalNanos > mMaxVSyncIntervalNanos
+                        || vSyncIntervalNanos < mMinVSyncIntervalNanos) {
+                    // This algorithm for computing VSync becomes unstable if it drifts too far from
+                    // the real VSync, which shouldn't happen in practice. If this assert is getting
+                    // hit, something has gone very wrong, but we should probably do something
+                    // reasonable for release builds.
+                    Log.v(TAG, "Error computing VSync interval. Resetting.");
+                    assert false;
+                    vSyncIntervalNanos = mReportedVSyncNanos;
+                }
+                updateVSyncInterval(frameTimeNanos, vSyncIntervalNanos);
+            }
+        };
+
+        public VSyncEstimator() {
+            Display display = ((WindowManager) mActivity.getSystemService(Context.WINDOW_SERVICE))
+                                      .getDefaultDisplay();
+            mReportedVSyncNanos = (long) ((1.0d / display.getRefreshRate()) * NANOS_PER_SECOND);
+            mVSyncIntervalNanos = mReportedVSyncNanos;
+            mMaxVSyncIntervalNanos = (long) (VSYNC_DRIFT_THRESHOLD * mReportedVSyncNanos);
+            mMinVSyncIntervalNanos = (long) (mReportedVSyncNanos / VSYNC_DRIFT_THRESHOLD);
+        }
+
+        void updateVSyncInterval(long frameTimeNanos, long vSyncIntervalNanos) {
+            mVSyncIntervalNanos = vSyncIntervalNanos;
+            long vSyncIntervalMicros = mVSyncIntervalNanos / 1000;
+            if (vSyncIntervalMicros == mVSyncIntervalMicros
+                    && frameTimeNanos - mVSyncTimebaseNanos < VSYNC_TIMEBASE_UPDATE_DELTA) {
+                return;
+            }
+            mVSyncIntervalMicros = vSyncIntervalMicros;
+            mVSyncTimebaseNanos = frameTimeNanos;
+
+            nativeUpdateVSyncInterval(
+                    mNativeVrShellDelegate, mVSyncTimebaseNanos, mVSyncIntervalMicros);
+        }
+
+        public void pause() {
+            Choreographer.getInstance().removeFrameCallback(mCallback);
+        }
+
+        public void resume() {
+            Choreographer.getInstance().postFrameCallback(mCallback);
+        }
+    }
+
     private VrShellDelegate(ChromeActivity activity, VrClassesWrapper wrapper) {
         mActivity = activity;
         mVrClassesWrapper = wrapper;
@@ -485,17 +567,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         mEnterVrHandler = new Handler();
         mExpectPauseOrDonSucceeded = new Handler();
-        Choreographer.getInstance().postFrameCallback(new FrameCallback() {
-            @Override
-            public void doFrame(long frameTimeNanos) {
-                if (mNativeVrShellDelegate == 0) return;
-                Display display =
-                        ((WindowManager) mActivity.getSystemService(Context.WINDOW_SERVICE))
-                                .getDefaultDisplay();
-                nativeUpdateVSyncInterval(
-                        mNativeVrShellDelegate, frameTimeNanos, 1.0d / display.getRefreshRate());
-            }
-        });
+        mVSyncEstimator = new VSyncEstimator();
         ApplicationStatus.registerStateListenerForAllActivities(this);
         if (!mPaused) onResume();
     }
@@ -688,7 +760,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow works
         // properly.
-        if (!mPaused) mVrShell.resume();
+        if (!mPaused) {
+            mVrShell.resume();
+            mVSyncEstimator.resume();
+        }
 
         maybeSetPresentResult(true, donSuceeded);
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
@@ -872,6 +947,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         if (mInVr) {
             mVrShell.resume();
+            mVSyncEstimator.resume();
         }
 
         if (mDonSucceeded) {
@@ -924,7 +1000,10 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         cancelPendingVrEntry();
         // We defer pausing of VrShell until the app is stopped to keep head tracking working for
         // as long as possible while going to daydream home.
-        if (mInVr) mVrShell.pause();
+        if (mInVr) {
+            mVrShell.pause();
+            mVSyncEstimator.pause();
+        }
         if (mShowingDaydreamDoff || mProbablyInDon) return;
 
         // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
@@ -1053,6 +1132,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         restoreWindowMode();
         mVrShell.pause();
+        mVSyncEstimator.pause();
         removeVrViews();
         destroyVrShell();
         if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
@@ -1349,8 +1429,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private static native void nativeOnLibraryAvailable();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
     private native void nativeDisplayActivate(long nativeVrShellDelegate);
-    private native void nativeUpdateVSyncInterval(long nativeVrShellDelegate, long timebaseNanos,
-            double intervalSeconds);
+    private native void nativeUpdateVSyncInterval(
+            long nativeVrShellDelegate, long timebaseNanos, long intervalMicros);
     private native void nativeOnPause(long nativeVrShellDelegate);
     private native void nativeOnResume(long nativeVrShellDelegate);
     private native void nativeUpdateNonPresentingContext(long nativeVrShellDelegate, long context);
