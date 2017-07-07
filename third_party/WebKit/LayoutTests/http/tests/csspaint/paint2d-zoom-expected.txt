@@ -1,8 +1,0 @@
-CONSOLE MESSAGE: line 31: The worklet should log: 'width: 100, height: 100'
-CONSOLE MESSAGE: line 8: width: 100, height: 100
-layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x348
-  LayoutBlockFlow {HTML} at (0,0) size 800x348
-    LayoutBlockFlow {BODY} at (24,24) size 752x300
-      LayoutBlockFlow {DIV} at (0,0) size 300x300
