@@ -33,6 +33,19 @@ base::char16 DomCodeToUsLayoutCharacter(DomCode dom_code, int flags) {
   return 0;
 }
 
+bool DomCodeToNonPrintableDomKey(DomCode dom_code,
+                                 DomKey* out_dom_key,
+                                 KeyboardCode* out_key_code) {
+  for (const auto& it : kNonPrintableCodeMap) {
+    if (it.dom_code == dom_code) {
+      *out_dom_key = it.dom_key;
+      *out_key_code = NonPrintableDomKeyToKeyboardCode(it.dom_key);
+      return true;
+    }
+  }
+  return false;
+}
+
 bool DomCodeToUsLayoutDomKey(DomCode dom_code,
                              int flags,
                              DomKey* out_dom_key,
@@ -51,14 +64,8 @@ bool DomCodeToUsLayoutDomKey(DomCode dom_code,
       return true;
     }
   }
-  for (const auto& it : kNonPrintableCodeMap) {
-    if (it.dom_code == dom_code) {
-      *out_dom_key = it.dom_key;
-      *out_key_code = NonPrintableDomKeyToKeyboardCode(it.dom_key);
-      return true;
-    }
-  }
-  return false;
+
+  return DomCodeToNonPrintableDomKey(dom_code, out_dom_key, out_key_code);
 }
 
 bool DomCodeToControlCharacter(DomCode dom_code,

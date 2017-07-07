@@ -177,6 +177,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::LANG5, DomKey::ZENKAKU_HANKAKU},
     {DomCode::LAUNCH_APP1, DomKey::LAUNCH_MY_COMPUTER},
     {DomCode::LAUNCH_APP2, DomKey::LAUNCH_CALCULATOR},
+    {DomCode::LAUNCH_ASSISTANT, DomKey::LAUNCH_ASSISTANT},
     {DomCode::LAUNCH_AUDIO_BROWSER, DomKey::LAUNCH_MUSIC_PLAYER},
     {DomCode::LAUNCH_CALENDAR, DomKey::LAUNCH_CALENDAR},
     {DomCode::LAUNCH_CONTACTS, DomKey::LAUNCH_CONTACTS},
@@ -308,6 +309,7 @@ const struct DomKeyToKeyboardCodeEntry {
     // Device Keys
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-device
 #if defined(OS_POSIX)
+    {DomKey::LAUNCH_ASSISTANT, VKEY_ASSISTANT},
     {DomKey::BRIGHTNESS_DOWN, VKEY_BRIGHTNESS_DOWN},
     {DomKey::BRIGHTNESS_UP, VKEY_BRIGHTNESS_UP},
     {DomKey::POWER, VKEY_POWER},
@@ -413,6 +415,10 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::SUSPEND                            0x000014 Suspend
     // DomCode::RESUME                             0x000015 Resume
     // DomCode::TURBO                              0x000016 Turbo
+#if defined(OS_POSIX)
+    {DomCode::LAUNCH_ASSISTANT,
+     VKEY_ASSISTANT},                          // 0x000017 Launch Assistant
+#endif
     {DomCode::SLEEP, VKEY_SLEEP},               // 0x010082 Sleep
     // DomCode::WAKE_UP                            0x010083 WakeUp
     {DomCode::US_A, VKEY_A},                   // 0x070004 KeyA

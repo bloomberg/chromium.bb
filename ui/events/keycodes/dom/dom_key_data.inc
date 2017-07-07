@@ -361,6 +361,10 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("LaunchWebBrowser",     LAUNCH_WEB_BROWSER,       0x0B09),
   DOM_KEY_MAP("LaunchWebCam",         LAUNCH_WEB_CAM,           0x0B0A),
   DOM_KEY_MAP("LaunchWordProcessor",  LAUNCH_WORD_PROCESSOR,    0x0B0B),
+  // Note: Launch Assistant entry is currently Chrome-specific.
+  // It is not included in any web standard because it is not exposed
+  // to the web platform.
+  DOM_KEY_MAP("LaunchAssistant",      LAUNCH_ASSISTANT,         0x0B0E),
 
   // =========================================================
   // Browser Keys
