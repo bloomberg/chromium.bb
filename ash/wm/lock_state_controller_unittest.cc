@@ -22,7 +22,6 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
