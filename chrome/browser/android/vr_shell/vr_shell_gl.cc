@@ -392,7 +392,6 @@ void VrShellGl::ConnectPresentingService(
 
 void VrShellGl::OnContentFrameAvailable() {
   content_surface_texture_->UpdateTexImage();
-  received_frame_ = true;
 }
 
 void VrShellGl::OnWebVRFrameAvailable() {
@@ -1287,25 +1286,23 @@ void VrShellGl::OnVSync() {
     OnWebVRFrameAvailable();
   }
 
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks target;
-
   // Don't send VSyncs until we have a timebase/interval.
   if (vsync_interval_.is_zero())
     return;
 
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks target;
   target = now + vsync_interval_;
   int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
   target = vsync_timebase_ + intervals * vsync_interval_;
   task_runner_->PostDelayedTask(FROM_HERE, vsync_task_.callback(),
                                 target - now);
-
-  base::TimeDelta time = intervals * vsync_interval_;
+  base::TimeDelta current = target - vsync_interval_ - base::TimeTicks();
   if (!callback_.is_null()) {
-    SendVSync(time, base::ResetAndReturn(&callback_));
+    SendVSync(current, base::ResetAndReturn(&callback_));
   } else {
     pending_vsync_ = true;
-    pending_time_ = time;
+    pending_time_ = current;
   }
   if (!ShouldDrawWebVr()) {
     DrawFrame(-1);
@@ -1330,13 +1327,15 @@ void VrShellGl::GetVSync(GetVSyncCallback callback) {
   SendVSync(pending_time_, std::move(callback));
 }
 
-void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
-                                    double interval_seconds) {
-  vsync_timebase_ = base::TimeTicks();
-  vsync_timebase_ += base::TimeDelta::FromMicroseconds(timebase_nanos / 1000);
-  vsync_interval_ = base::TimeDelta::FromSecondsD(interval_seconds);
-  vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
-  OnVSync();
+void VrShellGl::UpdateVSyncInterval(base::TimeTicks vsync_timebase,
+                                    base::TimeDelta vsync_interval) {
+  bool needs_init = vsync_timebase_ == base::TimeTicks();
+  vsync_timebase_ = vsync_timebase;
+  vsync_interval_ = vsync_interval;
+  if (needs_init) {
+    vsync_task_.Reset(base::Bind(&VrShellGl::OnVSync, base::Unretained(this)));
+    OnVSync();
+  }
 }
 
 void VrShellGl::ForceExitVr() {

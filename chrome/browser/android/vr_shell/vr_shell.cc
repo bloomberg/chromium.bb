@@ -595,13 +595,13 @@ void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
                             UiUnsupportedMode::kCount);
 }
 
-void VrShell::UpdateVSyncInterval(int64_t timebase_nanos,
-                                  double interval_seconds) {
+void VrShell::UpdateVSyncInterval(base::TimeTicks vsync_timebase,
+                                  base::TimeDelta vsync_interval) {
   PollMediaAccessFlag();
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::UpdateVSyncInterval,
                                        gl_thread_->GetVrShellGl(),
-                                       timebase_nanos, interval_seconds));
+                                       vsync_timebase, vsync_interval));
 }
 
 void VrShell::PollMediaAccessFlag() {
