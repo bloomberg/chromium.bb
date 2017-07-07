@@ -42,8 +42,8 @@ class AppBannerManagerAndroid
       const;
 
   // Returns true if the banner pipeline is currently running.
-  bool IsActiveForTesting(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& jobj);
+  bool IsRunningForTesting(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& jobj);
 
   // Informs the InstallableManager for the WebContents we are attached to that
   // the add to homescreen menu item has been tapped.

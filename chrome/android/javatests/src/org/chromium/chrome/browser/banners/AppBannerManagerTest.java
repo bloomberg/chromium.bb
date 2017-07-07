@@ -246,7 +246,7 @@ public class AppBannerManagerTest {
                 AppBannerManager manager =
                         mActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
                 return mDetailsDelegate.mNumRetrieved == numExpected
-                        && !manager.isActiveForTesting();
+                        && !manager.isRunningForTesting();
             }
         });
     }
@@ -344,7 +344,7 @@ public class AppBannerManagerTest {
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         mActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
+                return !manager.isRunningForTesting();
             }
         });
         InfoBarUtil.waitUntilNoInfoBarsExist(mActivityTestRule.getInfoBars());
@@ -364,7 +364,7 @@ public class AppBannerManagerTest {
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         mActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
+                return !manager.isRunningForTesting();
             }
         });
         waitUntilAppBannerInfoBarAppears(expectedTitle);
@@ -656,7 +656,7 @@ public class AppBannerManagerTest {
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         mActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
+                return !manager.isRunningForTesting();
             }
         });
         waitUntilAppBannerInfoBarAppears(WEB_APP_TITLE);
@@ -678,7 +678,7 @@ public class AppBannerManagerTest {
             public boolean isSatisfied() {
                 AppBannerManager manager =
                         mActivityTestRule.getActivity().getActivityTab().getAppBannerManager();
-                return !manager.isActiveForTesting();
+                return !manager.isRunningForTesting();
             }
         });
         Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
