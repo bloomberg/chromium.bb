@@ -120,36 +120,36 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
                       ->getMediaVideoFrame();
     video_frame->set_timestamp(elapsed_timestamp);
-    if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
-      video_frame->metadata()->SetRotation(
-          media::VideoFrameMetadata::ROTATION,
-          WebRTCToMediaVideoRotation(incoming_frame.rotation()));
-    }
   } else {
-    buffer = webrtc::I420Buffer::Rotate(*incoming_frame.video_frame_buffer(),
-                                        incoming_frame.rotation());
-
-    gfx::Size size(buffer->width(), buffer->height());
-
+    scoped_refptr<webrtc::PlanarYuvBuffer> yuv_buffer;
+    media::VideoPixelFormat pixel_format;
+    if (buffer->type() == webrtc::VideoFrameBuffer::Type::kI444) {
+      yuv_buffer = buffer->GetI444();
+      pixel_format = media::PIXEL_FORMAT_YV24;
+    } else {
+      yuv_buffer = buffer->ToI420();
+      pixel_format = media::PIXEL_FORMAT_YV12;
+    }
+    gfx::Size size(yuv_buffer->width(), yuv_buffer->height());
     // Make a shallow copy. Both |frame| and |video_frame| will share a single
     // reference counted frame buffer. Const cast and hope no one will overwrite
     // the data.
-    // TODO(magjed): Update media::VideoFrame to support const data so we don't
-    // need to const cast here.
-    rtc::scoped_refptr<const webrtc::I420BufferInterface> i420_buffer =
-        buffer->ToI420();
     video_frame = media::VideoFrame::WrapExternalYuvData(
-        media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
-        i420_buffer->StrideY(), i420_buffer->StrideU(), i420_buffer->StrideV(),
-        const_cast<uint8_t*>(i420_buffer->DataY()),
-        const_cast<uint8_t*>(i420_buffer->DataU()),
-        const_cast<uint8_t*>(i420_buffer->DataV()), elapsed_timestamp);
+        pixel_format, size, gfx::Rect(size), size, yuv_buffer->StrideY(),
+        yuv_buffer->StrideU(), yuv_buffer->StrideV(),
+        const_cast<uint8_t*>(yuv_buffer->DataY()),
+        const_cast<uint8_t*>(yuv_buffer->DataU()),
+        const_cast<uint8_t*>(yuv_buffer->DataV()), elapsed_timestamp);
     if (!video_frame)
       return;
     // The bind ensures that we keep a reference to the underlying buffer.
     video_frame->AddDestructionObserver(base::Bind(&DoNothing, buffer));
   }
-
+  if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
+    video_frame->metadata()->SetRotation(
+        media::VideoFrameMetadata::ROTATION,
+        WebRTCToMediaVideoRotation(incoming_frame.rotation()));
+  }
   video_frame->metadata()->SetTimeTicks(
       media::VideoFrameMetadata::REFERENCE_TIME, render_time);
 
