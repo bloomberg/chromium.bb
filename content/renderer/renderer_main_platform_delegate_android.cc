@@ -14,8 +14,8 @@
 #include "sandbox/sandbox_features.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
-#include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
 #include "content/renderer/seccomp_sandbox_status_android.h"
+#include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
 
@@ -115,7 +115,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
         << "Seccomp sandbox";
   }
 
-  sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
+  sandbox::SandboxBPF sandbox(new sandbox::BaselinePolicyAndroid());
   CHECK(
       sandbox.StartSandbox(sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
 

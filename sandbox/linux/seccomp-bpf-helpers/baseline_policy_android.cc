@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/android/sandbox_bpf_base_policy_android.h"
+#include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -28,7 +28,7 @@ using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::ResultExpr;
 
-namespace content {
+namespace sandbox {
 
 #ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC O_CLOEXEC
@@ -58,13 +58,12 @@ BoolExpr RestrictSocketArguments(const Arg<int>& domain,
 
 }  // namespace
 
-SandboxBPFBasePolicyAndroid::SandboxBPFBasePolicyAndroid()
-    : SandboxBPFBasePolicy(),
-      pid_(getpid()) {}
+BaselinePolicyAndroid::BaselinePolicyAndroid()
+    : BaselinePolicy() {}
 
-SandboxBPFBasePolicyAndroid::~SandboxBPFBasePolicyAndroid() {}
+BaselinePolicyAndroid::~BaselinePolicyAndroid() {}
 
-ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
+ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
   bool override_and_allow = false;
 
   switch (sysno) {
@@ -150,13 +149,13 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
   // https://crbug.com/644759
   if (sysno == __NR_rt_tgsigqueueinfo) {
     const Arg<pid_t> tgid(0);
-    return If(tgid == pid_, Allow())
+    return If(tgid == policy_pid(), Allow())
            .Else(Error(EPERM));
   }
 
   // https://crbug.com/655299
   if (sysno == __NR_clock_getres) {
-    return sandbox::RestrictClockID();
+    return RestrictClockID();
   }
 
 #if defined(__x86_64__)
@@ -196,7 +195,7 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
                           option == SO_RCVTIMEO,
                           option == SO_REUSEADDR)),
               Allow())
-           .Else(SandboxBPFBasePolicy::EvaluateSyscall(sysno));
+           .Else(BaselinePolicy::EvaluateSyscall(sysno));
   }
 #elif defined(__i386__)
   if (sysno == __NR_socketcall) {
@@ -208,14 +207,14 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
                 SYS_SETSOCKOPT,
                 SYS_GETSOCKOPT),
                Allow())
-        .Default(SandboxBPFBasePolicy::EvaluateSyscall(sysno));
+        .Default(BaselinePolicy::EvaluateSyscall(sysno));
   }
 #endif
 
   if (override_and_allow)
     return Allow();
 
-  return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+  return BaselinePolicy::EvaluateSyscall(sysno);
 }
 
-}  // namespace content
+}  // namespace sandbox

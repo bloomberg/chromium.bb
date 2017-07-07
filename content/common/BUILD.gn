@@ -283,8 +283,6 @@ source_set("common") {
     "sandbox_init_mac.cc",
     "sandbox_init_mac.h",
     "sandbox_init_win.cc",
-    "sandbox_linux/android/sandbox_bpf_base_policy_android.cc",
-    "sandbox_linux/android/sandbox_bpf_base_policy_android.h",
     "sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc",
     "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
     "sandbox_linux/bpf_gpu_policy_linux.cc",
@@ -538,12 +536,6 @@ source_set("common") {
         "sandbox_linux/bpf_utility_policy_linux.h",
         "sandbox_linux/sandbox_bpf_base_policy_linux.cc",
         "sandbox_linux/sandbox_bpf_base_policy_linux.h",
-      ]
-    }
-    if (is_android) {
-      sources -= [
-        "sandbox_linux/android/sandbox_bpf_base_policy_android.cc",
-        "sandbox_linux/android/sandbox_bpf_base_policy_android.h",
       ]
     }
   }
