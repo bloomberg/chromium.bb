@@ -31,6 +31,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
@@ -375,6 +376,11 @@ ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
                             : new ShellContentBrowserClient);
 
   return browser_client_.get();
+}
+
+ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
+  gpu_client_.reset(new ShellContentGpuClient);
+  return gpu_client_.get();
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
