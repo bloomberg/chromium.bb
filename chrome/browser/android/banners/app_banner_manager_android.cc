@@ -87,10 +87,10 @@ AppBannerManagerAndroid::GetJavaBannerManager() const {
   return java_banner_manager_;
 }
 
-bool AppBannerManagerAndroid::IsActiveForTesting(
+bool AppBannerManagerAndroid::IsRunningForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return is_active();
+  return IsRunning();
 }
 
 void AppBannerManagerAndroid::RecordMenuOpen(JNIEnv* env,
@@ -225,10 +225,8 @@ void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing()) {
     ReportStatus(web_contents(), NO_ICON_AVAILABLE);
     Stop();
-  }
-
-  if (!is_active())
     return;
+  }
 
   primary_icon_ = bitmap;
   SendBannerPromptRequest();

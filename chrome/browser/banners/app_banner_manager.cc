@@ -62,14 +62,13 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
 
   // The only time we should start the pipeline while it is already running is
   // if it's been triggered from devtools.
-  if (is_active_or_pending()) {
+  if (state_ != State::INACTIVE) {
     DCHECK(is_debug_mode);
     ResetBindings();
   }
 
   UpdateState(State::ACTIVE);
   triggered_by_devtools_ = is_debug_mode;
-  page_requested_prompt_ = false;
 
   // We only need to call ReportStatus if we aren't in debug mode (this avoids
   // skew from testing).
@@ -100,7 +99,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   if (binding_.is_bound())
     binding_.Close();
 
-  UpdateState(State::PENDING_MANIFEST);
+  UpdateState(State::FETCHING_MANIFEST);
   manager_->GetData(
       ParamsToGetManifest(),
       base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
@@ -137,7 +136,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       binding_(this),
       has_sufficient_engagement_(false),
       load_finished_(false),
-      page_requested_prompt_(false),
       triggered_by_devtools_(false),
       need_to_log_status_(false),
       weak_factory_(this) {
@@ -298,12 +296,10 @@ void AppBannerManager::Stop() {
   // Record the status if we are currently waiting for data.
   InstallableStatusCode code = NO_ERROR_DETECTED;
   switch (state_) {
-    case State::PENDING_EVENT:
-      if (!page_requested_prompt_) {
-        TrackBeforeInstallEvent(
-            BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
-        code = RENDERER_CANCELLED;
-      }
+    case State::PENDING_PROMPT:
+      TrackBeforeInstallEvent(
+          BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+      code = RENDERER_CANCELLED;
       break;
     case State::PENDING_ENGAGEMENT:
       if (!has_sufficient_engagement_) {
@@ -311,13 +307,15 @@ void AppBannerManager::Stop() {
         code = INSUFFICIENT_ENGAGEMENT;
       }
       break;
-    case State::PENDING_MANIFEST:
+    case State::FETCHING_MANIFEST:
       code = WAITING_FOR_MANIFEST;
       break;
     case State::PENDING_INSTALLABLE_CHECK:
       code = WAITING_FOR_INSTALLABLE_CHECK;
       break;
     case State::ACTIVE:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
     case State::INACTIVE:
     case State::COMPLETE:
       break;
@@ -328,9 +326,11 @@ void AppBannerManager::Stop() {
 
   // In every non-debug run through the banner pipeline, we should have called
   // ReportStatus() and set need_to_log_status_ to false. The only case where
-  // we don't is if we're still active and waiting for native app data, which is
-  // explicitly not logged.
-  DCHECK(!need_to_log_status_ || is_active());
+  // we don't is if we're still running and aren't blocked on the network. When
+  // running and blocked on the network the state should be logged.
+  // TODO(dominickn): log when the pipeline is fetching native app banner
+  // details.
+  DCHECK(!need_to_log_status_ || (IsRunning() && !IsWaitingForData()));
 
   ResetBindings();
   UpdateState(State::COMPLETE);
@@ -340,6 +340,8 @@ void AppBannerManager::Stop() {
 
 void AppBannerManager::SendBannerPromptRequest() {
   RecordCouldShowBanner();
+
+  UpdateState(State::SENDING_EVENT);
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_CREATED);
 
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
@@ -354,21 +356,17 @@ void AppBannerManager::SendBannerPromptRequest() {
 
 void AppBannerManager::UpdateState(State state) {
   state_ = state;
-
-  // If we are PENDING_EVENT, we must have sufficient engagement.
-  DCHECK(!is_pending_event() || has_sufficient_engagement_);
 }
 
 void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
   if (!handle->IsInMainFrame() || handle->IsSameDocument())
     return;
 
-  if (is_active_or_pending())
+  if (state_ != State::COMPLETE && state_ != State::INACTIVE)
     Stop();
   UpdateState(State::INACTIVE);
   load_finished_ = false;
   has_sufficient_engagement_ = false;
-  page_requested_prompt_ = false;
 }
 
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
@@ -401,7 +399,7 @@ void AppBannerManager::DidFinishLoad(
 
   // Start the pipeline immediately if we pass (or bypass) the engagement check,
   // or if the feature to run the installability check on page load is enabled.
-  if (!is_active_or_pending() &&
+  if (state_ == State::INACTIVE &&
       (has_sufficient_engagement_ ||
        base::FeatureList::IsEnabled(
            features::kCheckInstallabilityForBannerOnLoad))) {
@@ -428,12 +426,6 @@ void AppBannerManager::WebContentsDestroyed() {
 void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
                                              const GURL& url,
                                              double score) {
-  // In the ACTIVE state, we may have triggered the installability check, but
-  // not checked engagement yet. In the INACTIVE or PENDING_ENGAGEMENT states,
-  // we are waiting for an engagement signal to trigger the pipeline.
-  if (is_complete() || is_pending_event())
-    return;
-
   // Only trigger a banner using site engagement if:
   //  1. engagement increased for the web contents which we are attached to; and
   //  2. there are no currently active media players; and
@@ -447,13 +439,35 @@ void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
       // directly to sending the banner prompt request.
       UpdateState(State::ACTIVE);
       SendBannerPromptRequest();
-    } else if (load_finished_ && !is_active_or_pending()) {
+    } else if (load_finished_ && state_ == State::INACTIVE) {
       // This performs some simple tests and starts async checks to test
       // installability. It should be safe to start in response to user input.
       // Don't call if we're already working on processing a banner request.
       RequestAppBanner(url, false /* is_debug_mode */);
     }
   }
+}
+
+bool AppBannerManager::IsRunning() const {
+  switch (state_) {
+    case State::INACTIVE:
+    case State::PENDING_PROMPT:
+    case State::PENDING_ENGAGEMENT:
+    case State::COMPLETE:
+      return false;
+    case State::ACTIVE:
+    case State::FETCHING_MANIFEST:
+    case State::PENDING_INSTALLABLE_CHECK:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+      return true;
+  }
+  return false;
+}
+
+bool AppBannerManager::IsWaitingForData() const {
+  return (state_ == State::FETCHING_MANIFEST ||
+          state_ == State::PENDING_INSTALLABLE_CHECK);
 }
 
 void AppBannerManager::ResetBindings() {
@@ -525,26 +539,28 @@ void AppBannerManager::OnBannerPromptReply(
   // that the cancelation was requested, so Stop() can be called if a redisplay
   // isn't asked for.
   //
-  // We use the additional page_requested_prompt_ variable because the redisplay
-  // request may be received *before* the Cancel prompt reply (e.g. if redisplay
-  // is requested in the beforeinstallprompt event handler).
+  // If the redisplay request has not been received already, we stop here and
+  // wait for the prompt function to be called. If the redisplay request has
+  // already been received before cancel was sent (e.g. if redisplay was
+  // requested in the beforeinstallprompt event handler), we keep going and show
+  // the banner immediately.
   referrer_ = referrer;
   if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
-    UpdateState(State::PENDING_EVENT);
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
-    if (!page_requested_prompt_)
+    if (state_ == State::SENDING_EVENT) {
+      UpdateState(State::PENDING_PROMPT);
       return;
+    }
+    DCHECK_EQ(State::SENDING_EVENT_GOT_EARLY_PROMPT, state_);
   }
 
-  // If we haven't yet returned, but we're in the PENDING_EVENT state or
-  // |page_requested_prompt_| is true, the page has requested a delayed showing
-  // of the prompt. Otherwise, the prompt was never canceled by the page.
-  if (is_pending_event()) {
+  // If we are still in the SENDING_EVENT state, the prompt was never canceled
+  // by the page. Otherwise the page requested a delayed showing of the prompt.
+  if (state_ == State::SENDING_EVENT) {
+    TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
+  } else {
     TrackBeforeInstallEvent(
         BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
-    UpdateState(State::ACTIVE);
-  } else {
-    TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
   }
 
   AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
@@ -561,12 +577,11 @@ void AppBannerManager::OnBannerPromptReply(
 }
 
 void AppBannerManager::DisplayAppBanner(bool user_gesture) {
-  if (is_pending_event()) {
+  if (state_ == State::PENDING_PROMPT) {
     // Simulate a non-canceled OnBannerPromptReply to show the delayed banner.
     OnBannerPromptReply(blink::mojom::AppBannerPromptReply::NONE, referrer_);
-  } else {
-    // Log that the prompt request was made for when we get the prompt reply.
-    page_requested_prompt_ = true;
+  } else if (state_ == State::SENDING_EVENT) {
+    UpdateState(State::SENDING_EVENT_GOT_EARLY_PROMPT);
   }
 }
 

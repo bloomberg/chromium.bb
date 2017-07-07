@@ -101,19 +101,28 @@ class AppBannerManager : public content::WebContentsObserver,
 
     // The banner pipeline is currently waiting for the page manifest to be
     // fetched.
-    PENDING_MANIFEST,
+    FETCHING_MANIFEST,
 
     // The banner pipeline is currently waiting for the installability criteria
-    // to be checked.
+    // to be checked. In this state the pipeline could be paused while waiting
+    // for the site to register a service worker.
     PENDING_INSTALLABLE_CHECK,
 
     // The banner pipeline has finished running, but is waiting for sufficient
     // engagement to trigger the banner.
     PENDING_ENGAGEMENT,
 
-    // The banner pipeline has finished running, but is waiting for an event to
-    // trigger the banner.
-    PENDING_EVENT,
+    // The banner has sent the beforeinstallprompt event and is waiting for the
+    // response to the event.
+    SENDING_EVENT,
+
+    // The banner has sent the beforeinstallprompt, and the web page called
+    // prompt on the event while the event was being handled.
+    SENDING_EVENT_GOT_EARLY_PROMPT,
+
+    // The banner pipeline has finished running, but is waiting for the web page
+    // to call prompt on the event.
+    PENDING_PROMPT,
 
     // The banner pipeline has finished running for this page load and no more
     // processing is to be done.
@@ -215,28 +224,13 @@ class AppBannerManager : public content::WebContentsObserver,
   // Subclass accessors for private fields which should not be changed outside
   // this class.
   InstallableManager* manager() const { return manager_; }
-  bool is_active() const { return state_ == State::ACTIVE; }
-  bool is_active_or_pending() const {
-    switch (state_) {
-      case State::ACTIVE:
-      case State::PENDING_MANIFEST:
-      case State::PENDING_INSTALLABLE_CHECK:
-      case State::PENDING_ENGAGEMENT:
-      case State::PENDING_EVENT:
-        return true;
-      case State::INACTIVE:
-      case State::COMPLETE:
-        return false;
-    }
-    return false;
-  }
+  bool is_inactive() const { return state_ == State::INACTIVE; }
   bool is_complete() const { return state_ == State::COMPLETE; }
   bool is_pending_engagement() const {
     return state_ == State::PENDING_ENGAGEMENT;
   }
-  bool is_pending_event() const {
-    return state_ == State::PENDING_EVENT || page_requested_prompt_;
-  }
+  bool IsRunning() const;
+  bool IsWaitingForData() const;
 
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
@@ -302,9 +296,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // triggering the pipeline until the load is complete.
   bool has_sufficient_engagement_;
   bool load_finished_;
-
-  // Record whether the page requests for a banner to be shown later on.
-  bool page_requested_prompt_;
 
   // Whether the current flow was begun via devtools.
   bool triggered_by_devtools_;

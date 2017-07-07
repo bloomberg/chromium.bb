@@ -54,9 +54,7 @@ class AppBannerManagerTest : public AppBannerManager {
 
   void clear_will_show() { will_show_.reset(); }
 
-  bool is_active_or_pending() {
-    return AppBannerManager::is_active_or_pending();
-  }
+  bool is_inactive() { return AppBannerManager::is_inactive(); }
 
   bool is_complete() { return AppBannerManager::is_complete(); }
 
@@ -180,7 +178,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
         ui_test_utils::NavigateToURL(browser, test_url);
 
         EXPECT_FALSE(manager->will_show());
-        EXPECT_FALSE(manager->is_active_or_pending());
+        EXPECT_TRUE(manager->is_inactive());
 
         histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
         histograms.ExpectTotalCount(banners::kInstallableStatusCodeHistogram,
@@ -201,7 +199,10 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
 
     EXPECT_EQ(expected_to_show, manager->will_show());
-    EXPECT_FALSE(manager->is_active_or_pending());
+
+    // Generally the manager will be in the complete state, however some test
+    // cases navigate the page, causing the state to go back to INACTIVE.
+    EXPECT_TRUE(manager->is_complete() || manager->is_inactive());
 
     // Check the tab title; this allows the test page to send data back out to
     // be inspected by the test case.
@@ -482,7 +483,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   }
 
   EXPECT_TRUE(manager->will_show());
-  EXPECT_FALSE(manager->is_active_or_pending());
   EXPECT_FALSE(manager->need_to_log_status());
   EXPECT_TRUE(manager->is_complete());
 
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   }
 
   EXPECT_FALSE(manager->will_show());
-  EXPECT_FALSE(manager->is_active_or_pending());
+  EXPECT_TRUE(manager->is_inactive());
   EXPECT_FALSE(manager->need_to_log_status());
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
