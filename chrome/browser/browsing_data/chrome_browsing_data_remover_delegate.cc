@@ -960,9 +960,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       base::WaitableEvent* event =
           plugin_data_remover_->StartRemoving(delete_begin_);
 
-      base::WaitableEventWatcher::EventCallback watcher_callback = base::Bind(
-          &ChromeBrowsingDataRemoverDelegate::OnWaitableEventSignaled,
-          weak_ptr_factory_.GetWeakPtr());
+      base::WaitableEventWatcher::EventCallback watcher_callback =
+          base::BindOnce(
+              &ChromeBrowsingDataRemoverDelegate::OnWaitableEventSignaled,
+              weak_ptr_factory_.GetWeakPtr());
       watcher_.StartWatching(event, std::move(watcher_callback));
     } else {
       // TODO(msramek): Store filters from the currently executed task on the
@@ -1059,9 +1060,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     clear_reporting_cache_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearReportingCacheOnIOThread,
-                   base::RetainedRef(std::move(context)), data_type_mask,
-                   filter),
+        base::BindOnce(&ClearReportingCacheOnIOThread,
+                       base::RetainedRef(std::move(context)), data_type_mask,
+                       filter),
         UIThreadTrampoline(clear_reporting_cache_.GetCompletionCallback()));
   }
 

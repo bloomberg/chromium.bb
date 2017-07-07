@@ -122,8 +122,8 @@ class SiteDataCountingHelperTest : public testing::Test {
           url, "name", "A=1", url.host(), url.path(), time, base::Time(), time,
           true, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_DEFAULT,
-          base::Bind(&SiteDataCountingHelperTest::DoneOnIOThread,
-                     base::Unretained(this)));
+          base::BindOnce(&SiteDataCountingHelperTest::DoneOnIOThread,
+                         base::Unretained(this)));
     }
   }
 
