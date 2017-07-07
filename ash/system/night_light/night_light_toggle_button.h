@@ -16,10 +16,13 @@ class NightLightToggleButton : public SystemMenuButton {
   explicit NightLightToggleButton(views::ButtonListener* listener);
   ~NightLightToggleButton() override = default;
 
+  // Toggles the status of NightLight.
+  void Toggle();
+
+ private:
   // Updates the icon and its style based on the status of NightLight.
   void Update();
 
- private:
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
