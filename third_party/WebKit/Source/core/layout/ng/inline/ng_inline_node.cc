@@ -25,6 +25,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
@@ -39,6 +40,11 @@ struct FragmentPosition {
   NGLogicalOffset offset;
   LayoutUnit inline_size;
   NGBorderEdges border_edges;
+
+  void operator+=(const NGBoxStrut& strut) {
+    offset.inline_offset += strut.inline_start;
+    offset.block_offset += strut.block_start;
+  }
 };
 
 // Create BidiRuns from a list of NGPhysicalFragment.
@@ -424,6 +430,9 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
   Vector<unsigned, 32> text_offsets(items.size());
   GetLayoutTextOffsets(&text_offsets);
 
+  NGBoxStrut border_padding = ComputeBorders(constraint_space, Style()) +
+                              ComputePadding(constraint_space, Style());
+
   FontBaseline baseline_type =
       IsHorizontalWritingMode(constraint_space.WritingMode())
           ? FontBaseline::kAlphabeticBaseline
@@ -448,6 +457,16 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     // TODO(kojii): bidi needs to find the logical last run.
     bidi_runs.SetLogicallyLastRun(bidi_runs.LastRun());
 
+    // Add border and padding to all positions.
+    // Line box fragments are relative to this anonymous wrapper box fragment,
+    // and the parent NGBlockLayoutAlgorithm offsets this wrapper by border and
+    // padding, but inline boxes should be placed relative to the
+    // LayoutBlockFlow.
+    for (auto& position : positions_for_bidi_runs)
+      position += border_padding;
+    for (auto& position : positions.Values())
+      position += border_padding;
+
     // Create a RootInlineBox from BidiRunList. InlineBoxes created for the
     // RootInlineBox are set to Bidirun::m_box.
     line_info.SetEmpty(false);
@@ -459,9 +478,10 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     PlaceInlineBoxChildren(root_line_box, positions_for_bidi_runs, positions);
 
     // Copy to RootInlineBox.
-    root_line_box->SetLogicalLeft(line_box.InlineOffset());
+    root_line_box->SetLogicalLeft(line_box.InlineOffset() +
+                                  border_padding.inline_start);
     root_line_box->SetLogicalWidth(line_box.InlineSize());
-    LayoutUnit line_top = line_box.BlockOffset();
+    LayoutUnit line_top = line_box.BlockOffset() + border_padding.block_start;
     NGLineHeightMetrics line_metrics(Style(), baseline_type);
     const NGLineHeightMetrics& max_with_leading = physical_line_box->Metrics();
     LayoutUnit baseline = line_top + max_with_leading.ascent;

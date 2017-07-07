@@ -60,9 +60,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
 
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
-
-  border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
-                        ComputePadding(ConstraintSpace(), Style());
 }
 
 bool NGInlineLayoutAlgorithm::CreateLine(
@@ -410,20 +407,16 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 }
 
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
-  // If we are resuming from a break token our start border and padding is
-  // within a previous fragment.
-  content_size_ = BreakToken() ? LayoutUnit() : border_and_padding_.block_start;
+  // Line boxes should start at (0,0).
+  // The parent NGBlockLayoutAlgorithm places the anonymous wrapper using the
+  // border and padding of the container block.
+  content_size_ = LayoutUnit();
 
   NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
                              BreakToken());
   NGLineInfo line_info;
-  while (line_breaker.NextLine(
-      &line_info, {border_and_padding_.inline_start, content_size_}))
+  while (line_breaker.NextLine(&line_info, {LayoutUnit(), content_size_}))
     CreateLine(&line_info, line_breaker.CreateBreakToken());
-
-  // TODO(crbug.com/716930): Avoid calculating border/padding twice.
-  if (!BreakToken())
-    content_size_ -= border_and_padding_.block_start;
 
   // TODO(kojii): Check if the line box width should be content or available.
   NGLogicalSize size(max_inline_size_, content_size_);
