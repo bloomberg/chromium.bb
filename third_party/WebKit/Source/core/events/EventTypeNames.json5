@@ -106,7 +106,6 @@
     "focusin",
     "focusout",
     "foreignfetch",
-    "frametimingbufferfull",
     "fullscreenchange",
     "fullscreenerror",
     "gamepadconnected",

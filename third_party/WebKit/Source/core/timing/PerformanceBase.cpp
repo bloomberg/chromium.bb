@@ -225,16 +225,6 @@ void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
     DispatchEvent(Event::Create(EventTypeNames::resourcetimingbufferfull));
 }
 
-void PerformanceBase::clearFrameTimings() {
-  frame_timing_buffer_.clear();
-}
-
-void PerformanceBase::setFrameTimingBufferSize(unsigned size) {
-  frame_timing_buffer_size_ = size;
-  if (IsFrameTimingBufferFull())
-    DispatchEvent(Event::Create(EventTypeNames::frametimingbufferfull));
-}
-
 bool PerformanceBase::PassesTimingAllowCheck(
     const ResourceResponse& response,
     const SecurityOrigin& initiator_security_origin,
@@ -386,17 +376,6 @@ void PerformanceBase::AddResourceTimingBuffer(PerformanceEntry& entry) {
 
 bool PerformanceBase::IsResourceTimingBufferFull() {
   return resource_timing_buffer_.size() >= resource_timing_buffer_size_;
-}
-
-void PerformanceBase::AddFrameTimingBuffer(PerformanceEntry& entry) {
-  frame_timing_buffer_.push_back(&entry);
-
-  if (IsFrameTimingBufferFull())
-    DispatchEvent(Event::Create(EventTypeNames::frametimingbufferfull));
-}
-
-bool PerformanceBase::IsFrameTimingBufferFull() {
-  return frame_timing_buffer_.size() >= frame_timing_buffer_size_;
 }
 
 void PerformanceBase::AddLongTaskTiming(double start_time,

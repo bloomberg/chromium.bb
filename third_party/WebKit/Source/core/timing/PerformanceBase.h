@@ -98,11 +98,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
 
-  void clearFrameTimings();
-  void setFrameTimingBufferSize(unsigned);
-
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
-
   void AddLongTaskTiming(double start_time,
                          double end_time,
                          const String& name,
@@ -159,9 +154,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   bool IsResourceTimingBufferFull();
   void AddResourceTimingBuffer(PerformanceEntry&);
-
-  bool IsFrameTimingBufferFull();
-  void AddFrameTimingBuffer(PerformanceEntry&);
 
   void NotifyObserversOfEntry(PerformanceEntry&);
   void NotifyObserversOfEntries(PerformanceEntryVector&);
