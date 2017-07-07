@@ -290,6 +290,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media_log_->AddEvent(media_log_->CreateCreatedEvent(
       url::Origin(frame_->GetSecurityOrigin()).GetURL().spec()));
+  media_log_->SetStringProperty("frame_url",
+                                frame_->GetDocument().Url().GetString().Utf8());
+  media_log_->SetStringProperty("frame_title",
+                                frame_->GetDocument().Title().Utf8());
 
   if (params->initial_cdm())
     SetCdm(params->initial_cdm());
