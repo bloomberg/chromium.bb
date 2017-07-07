@@ -52829,6 +52829,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SyncPasswordHashChange"
+    enum="SyncPasswordHashChange">
+  <owner>dvadym@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    This metric reports a type of a sync password hash change event. Recorded
+    when a sync password hash is saved or cleared.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.TimesGeneratedPasswordUsed">
   <obsolete>
     Deprecated as of 11/11/14. New statistic is

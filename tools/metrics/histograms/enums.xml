@@ -36138,6 +36138,12 @@ from previous Chrome versions.
   <int value="3" label="CUSTOM_PASSPHRASE"/>
 </enum>
 
+<enum name="SyncPasswordHashChange">
+  <int value="0" label="Saved on Chrome sign-in"/>
+  <int value="1" label="Saved in the content area"/>
+  <int value="2" label="Cleared on Chrome sign-out"/>
+</enum>
+
 <enum name="SyncPromoAction">
   <int value="0" label="The promo was shown to the user"/>
   <int value="1" label="The user clicked the promo to sign in"/>
