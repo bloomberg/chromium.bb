@@ -376,6 +376,7 @@ if (enable_java_templates) {
       outputs = [
         invoker.output,
       ]
+      depfile = "$target_gen_dir/$target_name.d"
 
       args = [
         # This is a list of .sources files.
@@ -383,6 +384,8 @@ if (enable_java_templates) {
         "--output",
         rebase_path(invoker.output, root_build_dir),
         "--no_register_java=$_rebase_exception_java_files",
+        "--depfile",
+        rebase_path(depfile, root_build_dir),
       ]
     }
   }
