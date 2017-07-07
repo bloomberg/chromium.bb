@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
@@ -46,11 +47,16 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
 @implementation ToolsPopupController
 @synthesize isCurrentPageBookmarked = _isCurrentPageBookmarked;
 
-- (instancetype)initWithConfiguration:(ToolsMenuConfiguration*)configuration {
+- (instancetype)initWithConfiguration:(ToolsMenuConfiguration*)configuration
+                           dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(configuration.displayView);
   self = [super initWithParentView:configuration.displayView];
   if (self) {
+    // Set superclass dispatcher property.
+    self.dispatcher = dispatcher;
     _toolsMenuViewController = [[ToolsMenuViewController alloc] init];
+    _toolsMenuViewController.dispatcher = self.dispatcher;
+
     _toolsTableViewContainer = [_toolsMenuViewController view];
     [_toolsTableViewContainer layer].cornerRadius = 2;
     [_toolsTableViewContainer layer].masksToBounds = YES;
@@ -184,7 +190,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_OPTIONS:
       base::RecordAction(UserMetricsAction("MobileMenuSettings"));
       break;
-    case IDC_RELOAD:
+    case TOOLS_RELOAD_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuReload"));
       break;
     case IDC_SHARE_PAGE:
@@ -208,7 +214,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_SHOW_OTHER_DEVICES:
       base::RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
       break;
-    case IDC_STOP:
+    case TOOLS_STOP_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuStop"));
       break;
     case IDC_PRINT:

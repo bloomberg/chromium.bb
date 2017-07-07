@@ -67,6 +67,7 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
 @synthesize backgroundButton = backgroundButton_;
 @synthesize popupContainer = popupContainer_;
 @synthesize delegate = delegate_;
+@synthesize dispatcher = dispatcher_;
 
 - (id)initWithParentView:(UIView*)parent {
   return [self initWithParentView:parent

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
 @class ToolsMenuConfiguration;
 
 // TODO(crbug.com/228521): Remove this once the new command/metric handling is
@@ -58,6 +59,9 @@ extern NSString* const kToolsMenuRequestMobileId;
 @property(nonatomic, copy) NSArray* menuItems;
 
 @property(nonatomic, weak) id<ToolsPopupTableDelegate> delegate;
+
+// Dispatcher for browser commands.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 // Initializes the Tools popup menu.
 - (void)initializeMenuWithConfiguration:(ToolsMenuConfiguration*)configuration;

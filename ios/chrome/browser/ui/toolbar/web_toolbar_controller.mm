@@ -508,8 +508,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
     // Assign tags before calling -setUpButton, since only buttons with tags
     // have -chromeExecuteCommand added as a target.
-    [_reloadButton setTag:IDC_RELOAD];
-    [_stopButton setTag:IDC_STOP];
     [_starButton setTag:IDC_BOOKMARK_PAGE];
     [_voiceSearchButton setTag:IDC_VOICE_SEARCH];
 
@@ -538,6 +536,14 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
         hasDisabledImage:YES
            synchronously:NO];
     [_stopButton setHidden:YES];
+
+    // Assign targets for buttons using the dispatcher.
+    [_stopButton addTarget:self.dispatcher
+                    action:@selector(stopLoading)
+          forControlEvents:UIControlEventTouchUpInside];
+    [_reloadButton addTarget:self.dispatcher
+                      action:@selector(reload)
+            forControlEvents:UIControlEventTouchUpInside];
   } else {
     [_forwardButton setAlpha:0.0];
   }

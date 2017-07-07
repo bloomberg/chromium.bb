@@ -117,9 +117,7 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)reload {
-  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_RELOAD]);
-  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   [ChromeEarlGrey waitForPageToFinishLoading];
 }
 

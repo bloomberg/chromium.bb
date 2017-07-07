@@ -159,9 +159,7 @@ class ScopedBlockPopupsPref {
 // Reloads the web view and waits for the loading to complete.
 // TODO(crbug.com/638674): Evaluate if this can move to shared code
 - (void)reloadPage {
-  GenericChromeCommand* reloadCommand =
-      [[GenericChromeCommand alloc] initWithTag:IDC_RELOAD];
-  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
 
   [ChromeEarlGrey waitForPageToFinishLoading];
 }

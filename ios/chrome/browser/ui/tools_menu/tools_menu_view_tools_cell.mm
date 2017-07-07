@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
+#include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 
@@ -64,14 +65,14 @@
 
   int reload[2][3] = TOOLBAR_IDR_TWO_STATE(RELOAD);
   _reloadButton = [self newButtonForImageIds:reload
-                                   commandID:IDC_RELOAD
+                                   commandID:TOOLS_RELOAD_ITEM
                         accessibilityLabelID:IDS_IOS_ACCNAME_RELOAD
                               automationName:@"Reload"
                                reverseForRTL:YES];
 
   int stop[2][3] = TOOLBAR_IDR_TWO_STATE(STOP);
   _stopButton = [self newButtonForImageIds:stop
-                                 commandID:IDC_STOP
+                                 commandID:TOOLS_STOP_ITEM
                       accessibilityLabelID:IDS_IOS_ACCNAME_STOP
                             automationName:@"Stop"];
 
