@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -83,16 +84,14 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
                  download->GetId(),
                  callback);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  PostTaskWithTraits(
       FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::USER_VISIBLE},
       base::Bind(&ShellDownloadManagerDelegate::GenerateFilename,
-                 download->GetURL(),
-                 download->GetContentDisposition(),
-                 download->GetSuggestedFilename(),
-                 download->GetMimeType(),
-                 default_download_path_,
-                 filename_determined_callback));
+                 download->GetURL(), download->GetContentDisposition(),
+                 download->GetSuggestedFilename(), download->GetMimeType(),
+                 default_download_path_, filename_determined_callback));
   return true;
 }
 
@@ -116,7 +115,6 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
     const FilenameDeterminedCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath generated_name = net::GenerateFileName(url,
                                                         content_disposition,
                                                         std::string(),
