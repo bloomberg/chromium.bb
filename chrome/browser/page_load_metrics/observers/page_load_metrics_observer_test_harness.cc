@@ -116,7 +116,7 @@ void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
           ? info.data_reduction_proxy_data->DeepCopy()
           : nullptr,
       info.raw_body_bytes, info.original_network_content_length,
-      base::TimeTicks::Now(), 0);
+      base::TimeTicks::Now(), info.net_error);
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateInputEvent(

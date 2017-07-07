@@ -847,6 +847,8 @@ split_static_library("browser") {
     "page_load_metrics/observers/https_engagement_metrics/https_engagement_service_factory.h",
     "page_load_metrics/observers/loading_predictor_page_load_metrics_observer.cc",
     "page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h",
+    "page_load_metrics/observers/local_network_requests_page_load_metrics_observer.cc",
+    "page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h",
     "page_load_metrics/observers/lofi_page_load_metrics_observer.cc",
     "page_load_metrics/observers/lofi_page_load_metrics_observer.h",
     "page_load_metrics/observers/media_page_load_metrics_observer.cc",

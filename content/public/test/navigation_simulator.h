@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
+#include "net/base/host_port_pair.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -129,9 +130,7 @@ class NavigationSimulator : public WebContentsObserver {
   // --------------------------------------------------------------------------
 
   // The following functions are used to specify the parameters of the
-  // navigation. Changes should be  made before calling |Start|, unless they are
-  // meant to apply to a redirect. In that case, they should be made before
-  // calling |Redirect|.
+  // navigation.
 
   // The following parameters are constant during the navigation and may only be
   // specified before calling |Start|.
@@ -142,6 +141,12 @@ class NavigationSimulator : public WebContentsObserver {
   // the original url. Otherwise, they should be specified before calling
   // |Redirect|.
   virtual void SetReferrer(const Referrer& referrer);
+
+  // The following parameters can change at any point until the page fails or
+  // commits. They should be specified before calling |Fail| or |Commit|.
+  virtual void SetSocketAddress(const net::HostPortPair& socket_address);
+
+  // --------------------------------------------------------------------------
 
   // Gets the last throttle check result computed by the navigation throttles.
   // It is an error to call this before Start() is called.
@@ -201,6 +206,7 @@ class NavigationSimulator : public WebContentsObserver {
   NavigationHandleImpl* handle_;
 
   GURL navigation_url_;
+  net::HostPortPair socket_address_;
   Referrer referrer_;
   ui::PageTransition transition_ = ui::PAGE_TRANSITION_LINK;
 
