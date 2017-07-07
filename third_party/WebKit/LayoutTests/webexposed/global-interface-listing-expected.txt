@@ -4790,10 +4790,8 @@ interface Performance : EventTarget
     attribute @@toStringTag
     getter memory
     getter navigation
-    getter onframetimingbufferfull
     getter onresourcetimingbufferfull
     getter timing
-    method clearFrameTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -4804,10 +4802,8 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
-    method setFrameTimingBufferSize
     method setResourceTimingBufferSize
     method toJSON
-    setter onframetimingbufferfull
     setter onresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag
