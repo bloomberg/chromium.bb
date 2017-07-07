@@ -255,7 +255,7 @@ struct ExtraRequestCompleteInfo {
   // The network error encountered by the request, as defined by
   // net/base/net_error_list.h. If no error was encountered, this value will be
   // 0.
-  int net_error;
+  const int net_error;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are
