@@ -15,11 +15,15 @@ import os
 import re
 import sys
 
+# The -t tools are incompatible with -j and -l
+t_specified = False
 j_specified = False
 output_dir = '.'
 for index, arg in enumerate(sys.argv[1:]):
   if arg == '-j':
     j_specified = True
+  if arg == '-t':
+    t_specified = True
   if arg == '-C':
     # + 1 to get the next argument and +1 because we trimmed off sys.argv[0]
     output_dir = sys.argv[index + 2]
@@ -43,7 +47,7 @@ else:
   args = ['ninja'] + sys.argv[1:]
 
 num_cores = multiprocessing.cpu_count()
-if not j_specified:
+if not j_specified and not t_specified:
   if use_goma:
     args.append('-j')
     core_multiplier = int(os.environ.get("NINJA_CORE_MULTIPLIER", "20"))
@@ -55,11 +59,12 @@ if not j_specified:
       args.append('-j')
       args.append('%d' % (num_cores + core_addition))
 
-# Specify a maximum CPU load so that running builds in two different command
-# prompts won't overload the system too much. This is not reliable enough to
-# be used to auto-adjust between goma/non-goma loads, but it is a nice
-# fallback load balancer.
-args.append('-l')
-args.append('%d' % num_cores)
+if not t_specified:
+  # Specify a maximum CPU load so that running builds in two different command
+  # prompts won't overload the system too much. This is not reliable enough to
+  # be used to auto-adjust between goma/non-goma loads, but it is a nice
+  # fallback load balancer.
+  args.append('-l')
+  args.append('%d' % num_cores)
 
 print ' '.join(args)
