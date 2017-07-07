@@ -31,6 +31,15 @@
 
 namespace content {
 
+class WidgetImpl : public mojom::Widget {
+ public:
+  explicit WidgetImpl(mojo::InterfaceRequest<mojom::Widget> request)
+      : binding_(this, std::move(request)) {}
+
+ private:
+  mojo::Binding<mojom::Widget> binding_;
+};
+
 class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
  public:
   RenderViewHostTestBrowserClient() {}
@@ -79,7 +88,11 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 // Create a full screen popup RenderWidgetHost and View.
 TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   int32_t routing_id = process()->GetNextRoutingID();
-  test_rvh()->CreateNewFullscreenWidget(routing_id);
+
+  mojom::WidgetPtr widget;
+  std::unique_ptr<WidgetImpl> widget_impl =
+      base::MakeUnique<WidgetImpl>(mojo::MakeRequest(&widget));
+  test_rvh()->CreateNewFullscreenWidget(routing_id, std::move(widget));
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -177,10 +178,12 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int32_t route_id, blink::WebPopupType popup_type);
+  void CreateNewWidget(int32_t route_id,
+                       mojom::WidgetPtr widget,
+                       blink::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int32_t route_id);
+  void CreateNewFullscreenWidget(int32_t route_id, mojom::WidgetPtr widget);
 
   // Send RenderViewReady to observers once the process is launched, but not
   // re-entrantly.

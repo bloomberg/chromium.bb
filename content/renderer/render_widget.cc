@@ -340,7 +340,8 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            const ScreenInfo& screen_info,
                            bool swapped_out,
                            bool hidden,
-                           bool never_visible)
+                           bool never_visible,
+                           mojom::WidgetRequest widget_request)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
@@ -381,6 +382,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       time_to_first_active_paint_recorded_(true),
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
+      widget_binding_(this, std::move(widget_request)),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
@@ -431,16 +433,21 @@ RenderWidget* RenderWidget::CreateForPopup(
     CompositorDependencies* compositor_deps,
     blink::WebPopupType popup_type,
     const ScreenInfo& screen_info) {
+  mojom::WidgetPtr widget_channel;
+  mojom::WidgetRequest widget_channel_request =
+      mojo::MakeRequest(&widget_channel);
+
   // Do a synchronous IPC to obtain a routing ID.
   int32_t routing_id = MSG_ROUTING_NONE;
   if (!RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
-          opener->GetRoutingID(), popup_type, &routing_id)) {
+          opener->GetRoutingID(), popup_type, std::move(widget_channel),
+          &routing_id)) {
     return nullptr;
   }
 
   scoped_refptr<RenderWidget> widget(
       new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
-                       false, false, false));
+                       false, false, false, std::move(widget_channel_request)));
   ShowCallback opener_callback =
       base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(opener_callback, RenderWidget::CreateWebWidget(widget.get()));

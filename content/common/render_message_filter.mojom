@@ -5,7 +5,9 @@
 module content.mojom;
 
 import "cc/ipc/shared_bitmap_allocation_notifier.mojom";
+import "content/common/input/input_handler.mojom";
 import "content/common/native_types.mojom";
+import "content/common/widget.mojom";
 
 interface RenderMessageFilter {
   // Synchronously generates a new routing ID for the caller.
@@ -13,11 +15,11 @@ interface RenderMessageFilter {
 
   // Similar to CreateWindow, except used for sub-widgets, like <select>
   // dropdowns.
-  [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type)
+  [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type, Widget widget)
       => (int32 route_id);
 
   // Similar to CreateWidget except the widget is a full screen window.
-  [Sync] CreateFullscreenWidget(int32 opener_id)
+  [Sync] CreateFullscreenWidget(int32 opener_id, Widget widget)
       => (int32 route_id);
 
   GetSharedBitmapAllocationNotifier(

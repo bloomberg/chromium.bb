@@ -2357,18 +2357,23 @@ void WebContentsImpl::CreateNewWindow(
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
+                                      mojom::WidgetPtr widget,
                                       blink::WebPopupType popup_type) {
-  CreateNewWidget(render_process_id, route_id, false, popup_type);
+  CreateNewWidget(render_process_id, route_id, false, std::move(widget),
+                  popup_type);
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t route_id) {
-  CreateNewWidget(render_process_id, route_id, true, blink::kWebPopupTypeNone);
+                                                int32_t route_id,
+                                                mojom::WidgetPtr widget) {
+  CreateNewWidget(render_process_id, route_id, true, std::move(widget),
+                  blink::kWebPopupTypeNone);
 }
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
                                       bool is_fullscreen,
+                                      mojom::WidgetPtr widget,
                                       blink::WebPopupType popup_type) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for

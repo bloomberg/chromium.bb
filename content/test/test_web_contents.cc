@@ -389,10 +389,12 @@ void TestWebContents::CreateNewWindow(
 
 void TestWebContents::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
+                                      mojom::WidgetPtr widget,
                                       blink::WebPopupType popup_type) {}
 
 void TestWebContents::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t route_id) {}
+                                                int32_t route_id,
+                                                mojom::WidgetPtr widget) {}
 
 void TestWebContents::ShowCreatedWindow(int process_id,
                                         int route_id,
