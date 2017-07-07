@@ -58,6 +58,7 @@ PrintPreviewUIBrowserTest.prototype = {
     ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
     'print_preview_tests.js',
     'native_layer_stub.js',
+    'plugin_stub.js',
   ],
 };
 
