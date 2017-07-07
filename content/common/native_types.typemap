@@ -29,6 +29,7 @@ public_headers = [
 traits_headers = [
   "//content/common/frame_messages.h",
   "//content/common/input_messages.h",
+  "//content/common/input/input_event_struct_traits.h",
   "//content/common/view_messages.h",
   "//content/public/common/common_param_traits.h",
 ]
@@ -58,6 +59,7 @@ type_mappings = [
   "content.mojom.Cancelability=blink::WebInputEvent::DispatchType",
   "content.mojom.EffectiveConnectionType=net::EffectiveConnectionType",
   "content.mojom.EditCommand=content::EditCommand",
+  "content.mojom.Event=std::unique_ptr<content::InputEvent>[move_only]",
   "content.mojom.EventType=blink::WebInputEvent::Type",
   "content.mojom.FrameOwnerProperties=content::FrameOwnerProperties",
   "content.mojom.FrameReplicationState=content::FrameReplicationState",

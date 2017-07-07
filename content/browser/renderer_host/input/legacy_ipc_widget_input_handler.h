@@ -41,9 +41,10 @@ class CONTENT_EXPORT LegacyIPCWidgetInputHandler
   void RequestTextInputStateUpdate() override;
   void RequestCompositionUpdates(bool immediate_request,
                                  bool monitor_request) override;
-  void DispatchEvent(content::mojom::EventPtr event,
+  void DispatchEvent(std::unique_ptr<content::InputEvent> event,
                      DispatchEventCallback callback) override;
-  void DispatchNonBlockingEvent(content::mojom::EventPtr) override;
+  void DispatchNonBlockingEvent(
+      std::unique_ptr<content::InputEvent> event) override;
 
  private:
   void SendInput(std::unique_ptr<IPC::Message> message);

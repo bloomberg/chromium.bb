@@ -98,7 +98,7 @@ void LegacyIPCWidgetInputHandler::SendInput(
 }
 
 void LegacyIPCWidgetInputHandler::DispatchEvent(
-    content::mojom::EventPtr event,
+    std::unique_ptr<content::InputEvent> event,
     DispatchEventCallback callback) {
   // We only expect these events to be called with the mojo enabled input
   // channel. The LegacyInputRouterImpl will handle sending the events
@@ -107,7 +107,7 @@ void LegacyIPCWidgetInputHandler::DispatchEvent(
 }
 
 void LegacyIPCWidgetInputHandler::DispatchNonBlockingEvent(
-    content::mojom::EventPtr) {
+    std::unique_ptr<content::InputEvent> event) {
   // We only expect these events to be called with the mojo enabled input
   // channel. The LegacyInputRouterImpl will handle sending the events
   // directly.
