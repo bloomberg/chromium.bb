@@ -1188,40 +1188,71 @@ pre-cq-configs: link-pre-cq
     map_2 = self.sync_stage.GetConfigBuildbucketIdMap(test_output)
     self.assertEqual(map_2, {'test-config': 'test-id'})
 
-  def test_CancelPreCQIfNeeded(self):
-    """Test _CancelPreCQIfNeeded."""
-    db = mock.Mock()
-    stated_content = {'build': {'status': 'STARTED'}}
-    scheduled_content = {'build': {'status': 'SCHEDULED'}}
+  def testCancelPreCQIfNeededSkipsCancellation(self):
+    """Test _CancelPreCQIfNeeded which skips cancellation."""
     completed_content = {'build': {'status': 'COMPLETED'}}
-    cancel_content = {'build': {'status': 'COMPLETED'}}
-    self.PatchObject(cidb.CIDBConnection, 'InsertCLActions')
+    self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
+                     return_value=completed_content)
+    mock_cancel = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'CancelBuildRequest')
+    self.sync_stage._CancelPreCQIfNeeded(self.fake_db, mock.Mock())
+    mock_cancel.assert_not_called()
+
+  def testCancelPreCQIfNeededSucceedsCancellation(self):
+    """Test CancelPreCQIfNeeded which succeeds cancellation."""
+    stated_content = {'build': {'status': 'STARTED'}}
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=stated_content)
+    cancel_content = {'build': {'status': 'COMPLETED'}}
     mock_cancel = self.PatchObject(buildbucket_lib.BuildbucketClient,
                                    'CancelBuildRequest',
                                    return_value=cancel_content)
+    pre_cq_launcher_id = self.fake_db.InsertBuild(
+        'pre-cq-launcher', constants.WATERFALL_INTERNAL, 1,
+        'pre-cq-launcher', 'test_hostname')
+    pre_cq_id = self.fake_db.InsertBuild(
+        'binhost-pre-cq', constants.WATERFALL_INTERNAL, 2,
+        'binhost-pre-cq', 'test_hostname', buildbucket_id='100')
+    c = clactions.GerritPatchTuple(1, 1, True)
     old_build_action = clactions.CLAction(
-        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        'binhost-pre-cq', 'config', 1, 2, 'external',
+        0, pre_cq_launcher_id, constants.CL_ACTION_TRYBOT_LAUNCHING,
+        'binhost-pre-cq', 'config', c.gerrit_number, c.patch_number,
+        'internal' if c.internal else 'external',
         datetime.datetime.now() - datetime.timedelta(hours=1), '100', None)
-    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
+    self.fake_db.InsertCLActions(pre_cq_launcher_id, [old_build_action])
+
+    self.sync_stage._CancelPreCQIfNeeded(self.fake_db, old_build_action)
+    cl_actions = self.fake_db.GetActionsForChanges([c])
+    self.assertEqual(len(cl_actions), 2)
+    expected = [(pre_cq_launcher_id, constants.CL_ACTION_TRYBOT_LAUNCHING),
+                (pre_cq_id, constants.CL_ACTION_TRYBOT_CANCELLED)]
+    result = []
+    for cl_action in cl_actions:
+      result.append((cl_action.build_id, cl_action.action))
+    self.assertItemsEqual(result, expected)
     mock_cancel.assert_called_once_with(
         '100', dryrun=self.sync_stage._run.options.debug)
 
-    mock_cancel.reset_mock()
+  def testCancelPreCQIfNeededFailsCancellation(self):
+    """Test CancelPreCQIfNeeded which fails cancellation."""
+    schedules_content = {'build': {'status': 'SCHEDULED'}}
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
-                     return_value=scheduled_content)
-    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
-    mock_cancel.assert_called_twice_with(
-        '100', dryrun=self.sync_stage._run.options.debug)
-
-    mock_cancel.reset_mock()
-    self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
-                     return_value=completed_content)
-    self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
-    mock_cancel.assert_called_twice_with(
-        '100', dryrun=self.sync_stage._run.options.debug)
+                     return_value=schedules_content)
+    cancel_content = {'error': {'message': 'Cannot cancel a completed build',
+                                'reason': 'BUILD_IS_COMPLETED'}}
+    mock_cancel = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                   'CancelBuildRequest',
+                                   return_value=cancel_content)
+    pre_cq_id = self.fake_db.InsertBuild(
+        'binhost-pre-cq', constants.WATERFALL_INTERNAL, 2,
+        'binhost-pre-cq', 'test_hostname', buildbucket_id='100')
+    old_build_action = mock.Mock()
+    self.sync_stage._CancelPreCQIfNeeded(self.fake_db, old_build_action)
+    build = self.fake_db.GetBuildStatus(pre_cq_id)
+    self.assertEqual(build['status'], constants.BUILDER_STATUS_PASSED)
+    mock_cancel.assert_called_once_with(
+        old_build_action.buildbucket_id,
+        dryrun=self.sync_stage._run.options.debug)
 
   def test_ProcessOldPatchPreCQRuns(self):
     """Test _ProcessOldPatchPreCQRuns."""

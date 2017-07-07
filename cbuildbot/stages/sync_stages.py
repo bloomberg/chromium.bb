@@ -1601,26 +1601,29 @@ class PreCQLauncherStage(SyncStage):
     status = buildbucket_lib.GetBuildStatus(get_content)
     if status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
                   constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
-      logging.info('Cancelling old build %s %s', buildbucket_id, status)
-
-      metrics.Counter(constants.MON_BB_CANCEL_PRE_CQ_BUILD_COUNT).increment()
+      logging.info('Cancelling old build buildbucket_id: %s, '
+                   'current status: %s.', buildbucket_id, status)
 
       cancel_content = self.buildbucket_client.CancelBuildRequest(
           buildbucket_id, dryrun=self._run.options.debug)
       cancel_status = buildbucket_lib.GetBuildStatus(cancel_content)
       if cancel_status:
-        logging.info('Cancelled buildbucket_id: %s status: %s \ncontent: %s',
-                     buildbucket_id, cancel_status, cancel_content)
+        logging.info('Cancelled old build buildbucket_id: %s, '
+                     'current status: %s', buildbucket_id, cancel_status)
+        metrics.Counter(constants.MON_BB_CANCEL_PRE_CQ_BUILD_COUNT).increment()
+
         if db:
-          cancel_action = old_build_action._replace(
-              action=constants.CL_ACTION_TRYBOT_CANCELLED)
-          db.InsertCLActions(cancel_action.build_id, [cancel_action])
+          old_build = db.GetBuildStatusWithBuildbucketId(buildbucket_id)
+          if old_build is not None:
+            cancel_action = old_build_action._replace(
+                action=constants.CL_ACTION_TRYBOT_CANCELLED)
+            db.InsertCLActions(old_build['id'], [cancel_action])
       else:
         # If the old pre-cq build already completed, CANCEL response will
         # give 200 returncode with error reasons.
-        logging.debug('Failed to cancel buildbucket_id: %s reason: %s',
-                      buildbucket_id,
-                      buildbucket_lib.GetErrorReason(cancel_content))
+        logging.info('Failed to cancel build buildbucket_id: %s, reason: %s',
+                     buildbucket_id,
+                     buildbucket_lib.GetErrorReason(cancel_content))
 
   def _ProcessOldPatchPreCQRuns(self, db, change, action_history):
     """Process Pre-cq runs for change with old patch numbers.
@@ -1637,11 +1640,11 @@ class PreCQLauncherStage(SyncStage):
     for old_build_action in old_pre_cq_build_actions:
       try:
         self._CancelPreCQIfNeeded(db, old_build_action)
-      except Exception as e:
-        # Log errors; do not raise exceptions.
-        logging.error('_CancelPreCQIfNeeded failed. '
-                      'change: %s old_build_action: %s error: %r',
-                      change, old_build_action, e)
+      except buildbucket_lib.BuildbucketResponseException as e:
+        # Do not raise if it's buildbucket_lib.BuildbucketResponseException.
+        logging.error('Failed to cancel the old pre cq run through Buildbucket.'
+                      ' change: %s buildbucket_id: %s error: %r',
+                      change, old_build_action.buildbucket_id, e)
 
   def _ProcessVerified(self, change, can_submit, will_submit):
     """Process a change that is fully pre-cq verified.
