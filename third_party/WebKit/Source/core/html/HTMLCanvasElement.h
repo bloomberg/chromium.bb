@@ -44,11 +44,11 @@
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/CanvasSurfaceLayerBridge.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/OffscreenCanvasPlaceholder.h"
+#include "platform/graphics/SurfaceLayerBridge.h"
 #include "platform/heap/Handle.h"
 
 #define CanvasDefaultInterpolationQuality kInterpolationLow
@@ -75,16 +75,15 @@ class
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext
     RenderingContext;
 
-class CORE_EXPORT HTMLCanvasElement final
-    : public HTMLElement,
-      public ContextLifecycleObserver,
-      public PageVisibilityObserver,
-      public CanvasImageSource,
-      public CanvasRenderingContextHost,
-      public CanvasSurfaceLayerBridgeObserver,
-      public ImageBufferClient,
-      public ImageBitmapSource,
-      public OffscreenCanvasPlaceholder {
+class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
+                                            public ContextLifecycleObserver,
+                                            public PageVisibilityObserver,
+                                            public CanvasImageSource,
+                                            public CanvasRenderingContextHost,
+                                            public SurfaceLayerBridgeObserver,
+                                            public ImageBufferClient,
+                                            public ImageBitmapSource,
+                                            public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, Dispose);
@@ -199,7 +198,7 @@ class CORE_EXPORT HTMLCanvasElement final
   int SourceWidth() override { return size_.Width(); }
   int SourceHeight() override { return size_.Height(); }
 
-  // CanvasSurfaceLayerBridgeObserver implementation
+  // SurfaceLayerBridgeObserver implementation
   void OnWebLayerReplaced() override;
 
   // ImageBufferClient implementation
@@ -243,7 +242,7 @@ class CORE_EXPORT HTMLCanvasElement final
   String GetIdFromControl(const Element*);
 
   // For OffscreenCanvas that controls this html canvas element
-  CanvasSurfaceLayerBridge* SurfaceLayerBridge() const {
+  SurfaceLayerBridge* SurfaceLayerBridge() const {
     return surface_layer_bridge_.get();
   }
   void CreateLayer();
@@ -337,7 +336,7 @@ class CORE_EXPORT HTMLCanvasElement final
   mutable RefPtr<Image> copied_image_;
 
   // Used for OffscreenCanvas that controls this HTML canvas element
-  std::unique_ptr<CanvasSurfaceLayerBridge> surface_layer_bridge_;
+  std::unique_ptr<::blink::SurfaceLayerBridge> surface_layer_bridge_;
 
   bool did_notify_listeners_for_current_frame_ = false;
 };

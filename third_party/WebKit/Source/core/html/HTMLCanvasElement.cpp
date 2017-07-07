@@ -1455,7 +1455,7 @@ void HTMLCanvasElement::CreateLayer() {
     layer_tree_view =
         frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
     surface_layer_bridge_ =
-        WTF::MakeUnique<CanvasSurfaceLayerBridge>(this, layer_tree_view);
+        WTF::MakeUnique<::blink::SurfaceLayerBridge>(this, layer_tree_view);
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
   }
