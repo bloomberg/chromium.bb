@@ -115,6 +115,13 @@ class BackgroundDownloader : public CrxDownloader {
   // from the thread pool leaves the object to release the interface pointers.
   void ResetInterfacePointers();
 
+  // Returns the number of jobs in the BITS queue which were created by this
+  // downloader.
+  HRESULT GetBackgroundDownloaderJobCount(size_t* num_jobs);
+
+  // Cleans up incompleted jobs that are too old.
+  void CleanupStaleJobs();
+
   // Ensures that we are running on the same thread we created the object on.
   base::ThreadChecker thread_checker_;
 

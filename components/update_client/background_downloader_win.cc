@@ -7,8 +7,9 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <objbase.h>
-#include <stddef.h>
+#include <winerror.h>
 
+#include <stddef.h>
 #include <stdint.h>
 #include <functional>
 #include <iomanip>
@@ -27,6 +28,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
 
@@ -129,8 +131,11 @@ const int kSetNoProgressTimeoutDays = 1;
 // system restarts, etc. Also, the check to purge stale jobs only happens
 // at most once a day. If the job clean up code is not running, the BITS
 // default policy is to cancel jobs after 90 days of inactivity.
-const int kPurgeStaleJobsAfterDays = 7;
+const int kPurgeStaleJobsAfterDays = 3;
 const int kPurgeStaleJobsIntervalBetweenChecksDays = 1;
+
+// Number of maximum BITS jobs this downloader can create and queue up.
+const int kMaxQueuedJobs = 10;
 
 // Retrieves the singleton instance of GIT for this process.
 HRESULT GetGit(ComPtr<IGlobalInterfaceTable>* git) {
@@ -388,51 +393,6 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
     DeleteFileAndEmptyParentDirectory(path);
 }
 
-// Cleans up incompleted jobs that are too old.
-HRESULT CleanupStaleJobs(const ComPtr<IBackgroundCopyManager>& bits_manager) {
-  if (!bits_manager.Get())
-    return E_FAIL;
-
-  static base::Time last_sweep;
-
-  const base::TimeDelta time_delta(
-      base::TimeDelta::FromDays(kPurgeStaleJobsIntervalBetweenChecksDays));
-  const base::Time current_time(base::Time::Now());
-  if (last_sweep + time_delta > current_time)
-    return S_OK;
-
-  last_sweep = current_time;
-
-  std::vector<ComPtr<IBackgroundCopyJob>> jobs;
-  HRESULT hr = FindBitsJobIf(
-      std::bind2nd(std::ptr_fun(JobCreationOlderThanDaysPredicate),
-                   kPurgeStaleJobsAfterDays),
-      bits_manager, &jobs);
-
-  if (FAILED(hr))
-    return hr;
-
-  for (const auto& job : jobs)
-    CleanupJob(job);
-
-  return S_OK;
-}
-
-// Returns the number of jobs in the BITS queue which were created by this
-// downloader.
-HRESULT GetBackgroundDownloaderJobCount(
-    const ComPtr<IBackgroundCopyManager>& bits_manager,
-    size_t* num_jobs) {
-  std::vector<ComPtr<IBackgroundCopyJob>> jobs;
-  const HRESULT hr =
-      FindBitsJobIf([](const ComPtr<IBackgroundCopyJob>&) { return true; },
-                    bits_manager, &jobs);
-  if (FAILED(hr))
-    return hr;
-  *num_jobs = jobs.size();
-  return S_OK;
-}
-
 }  // namespace
 
 BackgroundDownloader::BackgroundDownloader(
@@ -500,11 +460,11 @@ HRESULT BackgroundDownloader::BeginDownloadHelper(const GURL& url) {
   if (FAILED(hr))
     return hr;
 
-  hr = RegisterInterfaceInGit(git, bits_manager_, &git_cookie_bits_manager_);
+  hr = QueueBitsJob(url, &job_);
   if (FAILED(hr))
     return hr;
 
-  hr = QueueBitsJob(url, &job_);
+  hr = RegisterInterfaceInGit(git, bits_manager_, &git_cookie_bits_manager_);
   if (FAILED(hr))
     return hr;
 
@@ -596,8 +556,6 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 
   if (FAILED(error))
     CleanupJob(job_);
-
-  CleanupStaleJobs(bits_manager_);
 
   ClearGit();
 
@@ -724,8 +682,15 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
 
   size_t num_jobs = 0;
-  GetBackgroundDownloaderJobCount(bits_manager_, &num_jobs);
+  GetBackgroundDownloaderJobCount(&num_jobs);
   UMA_HISTOGRAM_COUNTS_100("UpdateClient.BackgroundDownloaderJobs", num_jobs);
+
+  // Remove some old jobs from the BITS queue before creating new jobs.
+  CleanupStaleJobs();
+
+  if (num_jobs >= kMaxQueuedJobs)
+    return MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF,
+                        CrxDownloaderError::BITS_TOO_MANY_JOBS);
 
   ComPtr<IBackgroundCopyJob> local_job;
   HRESULT hr = CreateOrOpenJob(url, &local_job);
@@ -894,6 +859,45 @@ HRESULT BackgroundDownloader::ClearGit() {
   }
 
   return S_OK;
+}
+
+HRESULT BackgroundDownloader::GetBackgroundDownloaderJobCount(
+    size_t* num_jobs) {
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(bits_manager_);
+
+  std::vector<ComPtr<IBackgroundCopyJob>> jobs;
+  const HRESULT hr =
+      FindBitsJobIf([](const ComPtr<IBackgroundCopyJob>&) { return true; },
+                    bits_manager_, &jobs);
+  if (FAILED(hr))
+    return hr;
+
+  *num_jobs = jobs.size();
+  return S_OK;
+}
+
+void BackgroundDownloader::CleanupStaleJobs() {
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(bits_manager_);
+
+  static base::Time last_sweep;
+
+  const base::TimeDelta time_delta(
+      base::TimeDelta::FromDays(kPurgeStaleJobsIntervalBetweenChecksDays));
+  const base::Time current_time(base::Time::Now());
+  if (last_sweep + time_delta > current_time)
+    return;
+
+  last_sweep = current_time;
+
+  std::vector<ComPtr<IBackgroundCopyJob>> jobs;
+  FindBitsJobIf(std::bind2nd(std::ptr_fun(JobCreationOlderThanDaysPredicate),
+                             kPurgeStaleJobsAfterDays),
+                bits_manager_, &jobs);
+
+  for (const auto& job : jobs)
+    CleanupJob(job);
 }
 
 }  // namespace update_client
