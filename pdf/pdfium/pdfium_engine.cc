@@ -2435,6 +2435,9 @@ bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
 }
 
 void PDFiumEngine::SelectAll() {
+  if (in_form_text_area_)
+    return;
+
   SelectionChangeInvalidator selection_invalidator(this);
 
   selection_.clear();
