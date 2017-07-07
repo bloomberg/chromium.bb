@@ -32,6 +32,7 @@
 #define FetchContext_h
 
 #include "platform/PlatformExport.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -218,6 +219,10 @@ class PLATFORM_EXPORT FetchContext
   }
 
   virtual bool IsDetached() const { return false; }
+
+  // Obtains WebFrameScheduler instance that is used in the attached frame.
+  // May return nullptr if a frame is not attached or detached.
+  virtual WebFrameScheduler* GetFrameScheduler() { return nullptr; }
 
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations

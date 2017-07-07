@@ -149,9 +149,10 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
 }
 
 void ResourceLoader::SetDefersLoading(bool defers) {
-  DCHECK(loader_);
-
-  loader_->SetDefersLoading(defers);
+  // TODO(toyoshim): Might be called before creating |loader_| if the request
+  // is throttled.
+  if (loader_)
+    loader_->SetDefersLoading(defers);
 }
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,

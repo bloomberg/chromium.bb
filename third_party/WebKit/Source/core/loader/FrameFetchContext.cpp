@@ -253,6 +253,12 @@ RefPtr<WebTaskRunner> FrameFetchContext::GetTaskRunner() const {
   return GetFrame()->FrameScheduler()->LoadingTaskRunner();
 }
 
+WebFrameScheduler* FrameFetchContext::GetFrameScheduler() {
+  if (IsDetached())
+    return nullptr;
+  return GetFrame()->FrameScheduler();
+}
+
 KURL FrameFetchContext::GetFirstPartyForCookies() const {
   if (IsDetached())
     return frozen_state_->first_party_for_cookies;
@@ -267,6 +273,7 @@ LocalFrame* FrameFetchContext::GetFrame() const {
   if (!document_loader_)
     return FrameOfImportsController();
 
+  DCHECK(!IsDetached());
   LocalFrame* frame = document_loader_->GetFrame();
   DCHECK(frame);
   return frame;
