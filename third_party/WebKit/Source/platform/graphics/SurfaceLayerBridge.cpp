@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasSurfaceLayerBridge.h"
+#include "platform/graphics/SurfaceLayerBridge.h"
 
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -25,16 +25,14 @@
 namespace blink {
 
 namespace {
-
-class OffscreenCanvasSurfaceReferenceFactory
+class SequenceSurfaceReferenceFactoryImpl
     : public cc::SequenceSurfaceReferenceFactory {
  public:
-  OffscreenCanvasSurfaceReferenceFactory(
-      base::WeakPtr<CanvasSurfaceLayerBridge> bridge)
+  SequenceSurfaceReferenceFactoryImpl(base::WeakPtr<SurfaceLayerBridge> bridge)
       : bridge_(bridge) {}
 
  private:
-  ~OffscreenCanvasSurfaceReferenceFactory() override = default;
+  ~SequenceSurfaceReferenceFactoryImpl() override = default;
 
   // cc::SequenceSurfaceReferenceFactory implementation:
   void RequireSequence(const cc::SurfaceId& id,
@@ -48,16 +46,15 @@ class OffscreenCanvasSurfaceReferenceFactory
       bridge_->SatisfyCallback(sequence);
   }
 
-  base::WeakPtr<CanvasSurfaceLayerBridge> bridge_;
+  base::WeakPtr<SurfaceLayerBridge> bridge_;
 
-  DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceReferenceFactory);
+  DISALLOW_COPY_AND_ASSIGN(SequenceSurfaceReferenceFactoryImpl);
 };
 
 }  // namespace
 
-CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
-    CanvasSurfaceLayerBridgeObserver* observer,
-    WebLayerTreeView* layer_tree_view)
+SurfaceLayerBridge::SurfaceLayerBridge(SurfaceLayerBridgeObserver* observer,
+                                       WebLayerTreeView* layer_tree_view)
     : weak_factory_(this),
       observer_(observer),
       binding_(this),
@@ -65,7 +62,7 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : cc::FrameSinkId()) {
   ref_factory_ =
-      new OffscreenCanvasSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
+      new SequenceSurfaceReferenceFactoryImpl(weak_factory_.GetWeakPtr());
 
   DCHECK(!service_.is_bound());
   mojom::blink::OffscreenCanvasProviderPtr provider;
@@ -81,23 +78,32 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
                                          mojo::MakeRequest(&service_));
 }
 
-CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {
+SurfaceLayerBridge::~SurfaceLayerBridge() {
   observer_ = nullptr;
   if (web_layer_) {
     GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
   }
 }
 
-void CanvasSurfaceLayerBridge::CreateSolidColorLayer() {
+void SurfaceLayerBridge::SatisfyCallback(const cc::SurfaceSequence& sequence) {
+  service_->Satisfy(sequence);
+}
+
+void SurfaceLayerBridge::RequireCallback(const cc::SurfaceId& surface_id,
+                                         const cc::SurfaceSequence& sequence) {
+  service_->Require(surface_id, sequence);
+}
+
+void SurfaceLayerBridge::CreateSolidColorLayer() {
   cc_layer_ = cc::SolidColorLayer::Create();
   cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
+
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
       cc_layer_.get());
   GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
-void CanvasSurfaceLayerBridge::OnSurfaceCreated(
-    const cc::SurfaceInfo& surface_info) {
+void SurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received
     current_surface_id_ = surface_info.id();
@@ -125,19 +131,9 @@ void CanvasSurfaceLayerBridge::OnSurfaceCreated(
     surface_layer->SetFallbackSurfaceInfo(surface_info);
   }
 
-  observer_->OnWebLayerReplaced();
+  if (observer_)
+    observer_->OnWebLayerReplaced();
   cc_layer_->SetBounds(surface_info.size_in_pixels());
-}
-
-void CanvasSurfaceLayerBridge::SatisfyCallback(
-    const cc::SurfaceSequence& sequence) {
-  service_->Satisfy(sequence);
-}
-
-void CanvasSurfaceLayerBridge::RequireCallback(
-    const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& sequence) {
-  service_->Require(surface_id, sequence);
 }
 
 }  // namespace blink

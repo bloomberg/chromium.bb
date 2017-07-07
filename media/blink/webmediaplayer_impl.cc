@@ -60,6 +60,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebSurfaceLayerBridge.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -259,6 +260,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
           params->embedded_media_experience_enabled()),
+      surface_layer_for_video_enabled_(
+          base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()) {
   DVLOG(1) << __func__;
@@ -266,6 +269,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
+
+  if (surface_layer_for_video_enabled_)
+    bridge_ = base::WrapUnique(blink::WebSurfaceLayerBridge::Create());
 
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
@@ -323,8 +329,11 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   // Destruct compositor resources in the proper order.
   client_->SetWebLayer(nullptr);
-  if (video_weblayer_)
+  if (!surface_layer_for_video_enabled_ && video_weblayer_) {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
+  }
+  // TODO(lethalantidote): Handle destruction of compositor for surface layer.
+  // https://crbug/739854.
   compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
 
   media_log_->AddEvent(
@@ -1349,12 +1358,20 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
         surface_manager_->NaturalSizeChanged(pipeline_metadata_.natural_size);
     }
 
-    DCHECK(!video_weblayer_);
-    video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
-        compositor_, pipeline_metadata_.video_rotation)));
-    video_weblayer_->layer()->SetContentsOpaque(opaque_);
-    video_weblayer_->SetContentsOpaqueIsFixed(true);
-    client_->SetWebLayer(video_weblayer_.get());
+    if (!surface_layer_for_video_enabled_) {
+      DCHECK(!video_weblayer_);
+      video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
+          compositor_, pipeline_metadata_.video_rotation)));
+      video_weblayer_->layer()->SetContentsOpaque(opaque_);
+      video_weblayer_->SetContentsOpaqueIsFixed(true);
+      client_->SetWebLayer(video_weblayer_.get());
+    } else if (bridge_->GetWebLayer()) {
+      bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
+      // TODO(lethalantidote): Figure out how to persist opaque setting
+      // without calling WebLayerImpl's SetContentsOpaueIsFixed;
+      // https://crbug/739859.
+      client_->SetWebLayer(bridge_->GetWebLayer());
+    }
   }
 
   if (observer_)
@@ -1548,8 +1565,12 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
   opaque_ = opaque;
   // Modify content opaqueness of cc::Layer directly so that
   // SetContentsOpaqueIsFixed is ignored.
-  if (video_weblayer_)
-    video_weblayer_->layer()->SetContentsOpaque(opaque_);
+  if (!surface_layer_for_video_enabled_) {
+    if (video_weblayer_)
+      video_weblayer_->layer()->SetContentsOpaque(opaque_);
+  } else if (bridge_->GetWebLayer()) {
+    bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
+  }
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
@@ -1723,10 +1744,16 @@ void WebMediaPlayerImpl::SuspendForRemote() {
 }
 
 gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
-  if (!video_weblayer_)
+  if (!surface_layer_for_video_enabled_) {
+    if (!video_weblayer_)
+      return pipeline_metadata_.natural_size;
+
+    return video_weblayer_->Bounds();
+  }
+  if (!bridge_->GetWebLayer())
     return pipeline_metadata_.natural_size;
 
-  return video_weblayer_->Bounds();
+  return bridge_->GetWebLayer()->Bounds();
 }
 
 void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {

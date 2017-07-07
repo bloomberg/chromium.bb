@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasSurfaceLayerBridge_h
-#define CanvasSurfaceLayerBridge_h
+#ifndef SurfaceLayerBridge_h
+#define SurfaceLayerBridge_h
 
 #include <memory>
 #include "base/memory/ref_counted.h"
@@ -12,6 +12,7 @@
 #include "cc/surfaces/surface_reference_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/PlatformExport.h"
+#include "public/platform/WebSurfaceLayerBridge.h"
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 
 namespace cc {
@@ -24,41 +25,45 @@ namespace blink {
 class WebLayer;
 class WebLayerTreeView;
 
-class PLATFORM_EXPORT CanvasSurfaceLayerBridgeObserver {
+class PLATFORM_EXPORT SurfaceLayerBridgeObserver {
  public:
-  CanvasSurfaceLayerBridgeObserver() {}
-  virtual ~CanvasSurfaceLayerBridgeObserver() {}
+  SurfaceLayerBridgeObserver() {}
+  virtual ~SurfaceLayerBridgeObserver() {}
 
   virtual void OnWebLayerReplaced() = 0;
 };
 
-class PLATFORM_EXPORT CanvasSurfaceLayerBridge
-    : NON_EXPORTED_BASE(
-          public blink::mojom::blink::OffscreenCanvasSurfaceClient) {
+class PLATFORM_EXPORT SurfaceLayerBridge
+    : public NON_EXPORTED_BASE(
+          blink::mojom::blink::OffscreenCanvasSurfaceClient),
+      public WebSurfaceLayerBridge {
  public:
-  explicit CanvasSurfaceLayerBridge(CanvasSurfaceLayerBridgeObserver*,
-                                    WebLayerTreeView*);
-  ~CanvasSurfaceLayerBridge();
+  SurfaceLayerBridge(SurfaceLayerBridgeObserver*, WebLayerTreeView*);
+  virtual ~SurfaceLayerBridge();
+
   void CreateSolidColorLayer();
-  WebLayer* GetWebLayer() const { return web_layer_.get(); }
-  const cc::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
 
   // Implementation of blink::mojom::blink::OffscreenCanvasSurfaceClient
   void OnSurfaceCreated(const cc::SurfaceInfo&) override;
-
   void SatisfyCallback(const cc::SurfaceSequence&);
   void RequireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);
 
+  // Implementation of WebSurfaceLayerBridge.
+  WebLayer* GetWebLayer() const override { return web_layer_.get(); }
+
+  const cc::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
+
  private:
+  mojom::blink::OffscreenCanvasSurfacePtr service_;
+
   scoped_refptr<cc::Layer> cc_layer_;
   std::unique_ptr<WebLayer> web_layer_;
 
   scoped_refptr<cc::SurfaceReferenceFactory> ref_factory_;
-  base::WeakPtrFactory<CanvasSurfaceLayerBridge> weak_factory_;
+  base::WeakPtrFactory<SurfaceLayerBridge> weak_factory_;
 
-  CanvasSurfaceLayerBridgeObserver* observer_;
+  SurfaceLayerBridgeObserver* observer_;
 
-  mojom::blink::OffscreenCanvasSurfacePtr service_;
   mojo::Binding<blink::mojom::blink::OffscreenCanvasSurfaceClient> binding_;
 
   const cc::FrameSinkId frame_sink_id_;
@@ -68,4 +73,4 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
 
 }  // namespace blink
 
-#endif  // CanvasSurfaceLayerBridge_h
+#endif  // SurfaceLayerBridge_h
