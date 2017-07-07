@@ -13,8 +13,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +36,6 @@ class WatcherMetricsProviderWinTest : public testing::Test {
 
     ASSERT_NO_FATAL_FAILURE(
         override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
-    test_task_runner_ = new base::TestSimpleTaskRunner();
   }
 
   void AddProcessExitCode(bool use_own_pid, int exit_code) {
@@ -66,9 +65,9 @@ class WatcherMetricsProviderWinTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   registry_util::RegistryOverrideManager override_manager_;
   base::HistogramTester histogram_tester_;
-  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 };
 
 }  // namespace
@@ -81,9 +80,9 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
   // Record a single failure.
   AddProcessExitCode(false, 100);
 
-  WatcherMetricsProviderWin provider(
-      kRegistryPath, base::FilePath(), base::FilePath(),
-      GetExecutableDetailsCallback(), test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(),
+                                     GetExecutableDetailsCallback());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectBucketCount(
@@ -105,9 +104,9 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
   // Record own process as STILL_ACTIVE.
   AddProcessExitCode(true, STILL_ACTIVE);
 
-  WatcherMetricsProviderWin provider(
-      kRegistryPath, base::FilePath(), base::FilePath(),
-      GetExecutableDetailsCallback(), test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(),
+                                     GetExecutableDetailsCallback());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectUniqueSample(
@@ -127,22 +126,19 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesExitcodeKeyWhenNotReporting) {
   // Record a single failure.
   AddProcessExitCode(false, 100);
 
+  // Verify that the key exists prior to deletion.
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_CURRENT_USER, kRegistryPath, KEY_READ));
+
   // Make like the user is opted out of reporting.
-  WatcherMetricsProviderWin provider(
-      kRegistryPath, base::FilePath(), base::FilePath(),
-      GetExecutableDetailsCallback(), test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(),
+                                     GetExecutableDetailsCallback());
   provider.OnRecordingDisabled();
 
-  base::win::RegKey key;
-  {
-    // The deletion should be scheduled to the test_task_runner, and not happen
-    // immediately.
-    ASSERT_EQ(ERROR_SUCCESS,
-              key.Open(HKEY_CURRENT_USER, kRegistryPath, KEY_READ));
-  }
-
   // Flush the task(s).
-  test_task_runner_->RunPendingTasks();
+  scoped_task_environment_.RunUntilIdle();
 
   // Make sure the subkey for the pseudo process has been deleted on reporting.
   ASSERT_EQ(ERROR_FILE_NOT_FOUND,

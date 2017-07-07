@@ -689,8 +689,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   }
   watcher_metrics_provider_ = new browser_watcher::WatcherMetricsProviderWin(
       chrome::GetBrowserExitCodesRegistryPath(), user_data_dir, crash_dir,
-      base::Bind(&GetExecutableVersionDetails),
-      content::BrowserThread::GetBlockingPool());
+      base::Bind(&GetExecutableVersionDetails));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(watcher_metrics_provider_));
 
