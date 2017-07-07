@@ -26,12 +26,18 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif  // defined(USE_ALSA)
+
+#if defined(OS_MACOSX)
+#include "media/audio/mac/audio_manager_mac.h"
+#include "media/base/mac/audio_latency_mac.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -676,5 +682,98 @@ TEST_F(AudioManagerTest, AudioDebugRecording) {
   EXPECT_CALL(*mock_debug_recording_manager, DisableDebugRecording());
   audio_manager_->DisableOutputDebugRecording();
 }
+
+#if defined(OS_MACOSX) || defined(USE_CRAS)
+class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
+ public:
+  TestAudioSourceCallback(int expected_frames_per_buffer,
+                          base::WaitableEvent* event)
+      : expected_frames_per_buffer_(expected_frames_per_buffer),
+        event_(event){};
+  ~TestAudioSourceCallback() override{};
+
+  int OnMoreData(base::TimeDelta,
+                 base::TimeTicks,
+                 int,
+                 AudioBus* dest) override {
+    EXPECT_EQ(dest->frames(), expected_frames_per_buffer_);
+    event_->Signal();
+    return 0;
+  }
+
+  void OnError() override { FAIL(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAudioSourceCallback);
+
+  const int expected_frames_per_buffer_;
+  base::WaitableEvent* event_;
+};
+
+// Test that we can create an AudioOutputStream with kMinAudioBufferSize and
+// kMaxAudioBufferSize and that the callback AudioBus is the expected size.
+TEST_F(AudioManagerTest, CheckMinMaxAudioBufferSizeCallbacks) {
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
+
+#if defined(OS_MACOSX)
+  CreateAudioManagerForTesting<AudioManagerMac>();
+#elif defined(USE_CRAS)
+  CreateAudioManagerForTesting<AudioManagerCras>();
+#endif
+
+  DCHECK(audio_manager_);
+
+  AudioParameters default_params;
+  GetDefaultOutputStreamParameters(&default_params);
+  ASSERT_LT(default_params.frames_per_buffer(),
+            media::limits::kMaxAudioBufferSize);
+
+#if defined(OS_MACOSX)
+  // On OSX the preferred output buffer size is higher than the minimum
+  // but users may request the minimum size explicitly.
+  ASSERT_GT(default_params.frames_per_buffer(),
+            GetMinAudioBufferSizeMacOS(media::limits::kMinAudioBufferSize,
+                                       default_params.sample_rate()));
+#elif defined(USE_CRAS)
+  // On CRAS the preferred output buffer size varies per board and may be as low
+  // as the minimum for some boards.
+  ASSERT_GE(default_params.frames_per_buffer(),
+            media::limits::kMinAudioBufferSize);
+#else
+  NOTREACHED();
+#endif
+
+  AudioOutputStream* stream;
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Create an output stream with the minimum buffer size parameters and ensure
+  // that no errors are returned.
+  AudioParameters min_params = default_params;
+  min_params.set_frames_per_buffer(media::limits::kMinAudioBufferSize);
+  stream = audio_manager_->MakeAudioOutputStreamProxy(min_params, "");
+  ASSERT_TRUE(stream);
+  EXPECT_TRUE(stream->Open());
+  event.Reset();
+  TestAudioSourceCallback min_source(min_params.frames_per_buffer(), &event);
+  stream->Start(&min_source);
+  event.Wait();
+  stream->Stop();
+  stream->Close();
+
+  // Verify the same for the maximum buffer size.
+  AudioParameters max_params = default_params;
+  max_params.set_frames_per_buffer(media::limits::kMaxAudioBufferSize);
+  stream = audio_manager_->MakeAudioOutputStreamProxy(max_params, "");
+  ASSERT_TRUE(stream);
+  EXPECT_TRUE(stream->Open());
+  event.Reset();
+  TestAudioSourceCallback max_source(max_params.frames_per_buffer(), &event);
+  stream->Start(&max_source);
+  event.Wait();
+  stream->Stop();
+  stream->Close();
+}
+#endif
 
 }  // namespace media

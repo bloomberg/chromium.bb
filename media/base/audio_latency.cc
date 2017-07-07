@@ -11,6 +11,11 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/limits.h"
+
+#if defined(OS_MACOSX)
+#include "media/base/mac/audio_latency_mac.h"
+#endif
 
 namespace media {
 
@@ -130,16 +135,32 @@ int AudioLatency::GetInteractiveBufferSize(int hardware_buffer_size) {
 int AudioLatency::GetExactBufferSize(base::TimeDelta duration,
                                      int sample_rate,
                                      int hardware_buffer_size) {
-  const double requested_buffer_size = duration.InSecondsF() * sample_rate;
-
   DCHECK_NE(0, hardware_buffer_size);
+
+// Other platforms do not currently support custom buffer sizes.
+#if !defined(OS_MACOSX) && !defined(USE_CRAS)
+  return hardware_buffer_size;
+#else
+  const double requested_buffer_size = duration.InSecondsF() * sample_rate;
+  int minimum_buffer_size = hardware_buffer_size;
+
+// On OSX and CRAS the preferred buffer size is larger than the minimum,
+// however we allow values down to the minimum if requested explicitly.
+#if defined(OS_MACOSX)
+  minimum_buffer_size =
+      GetMinAudioBufferSizeMacOS(limits::kMinAudioBufferSize, sample_rate);
+#elif defined(USE_CRAS)
+  minimum_buffer_size = limits::kMinAudioBufferSize;
+#endif
 
   // Round the requested size to the nearest multiple of the hardware size
   const int buffer_size =
       std::round(std::max(requested_buffer_size, 1.0) / hardware_buffer_size) *
       hardware_buffer_size;
 
-  return std::max(buffer_size, hardware_buffer_size);
+  return std::min(static_cast<int>(limits::kMaxAudioBufferSize),
+                  std::max(buffer_size, minimum_buffer_size));
+#endif
 }
 
 }  // namespace media
