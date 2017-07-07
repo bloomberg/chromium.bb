@@ -512,7 +512,14 @@ void FakeCryptohomeClient::GetKeyDataEx(
     const cryptohome::GetKeyDataRequest& request,
     const ProtobufMethodCallback& callback) {
   cryptohome::BaseReply reply;
-  reply.MutableExtension(cryptohome::GetKeyDataReply::reply);
+  auto it = key_data_map_.find(cryptohome_id);
+  if (it == key_data_map_.end()) {
+    reply.set_error(cryptohome::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+  } else {
+    cryptohome::GetKeyDataReply* key_data_reply =
+        reply.MutableExtension(cryptohome::GetKeyDataReply::reply);
+    *key_data_reply->add_key_data() = it->second;
+  }
   ReturnProtobufMethodCallback(reply, callback);
 }
 
@@ -547,6 +554,7 @@ void FakeCryptohomeClient::AddKeyEx(
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::AddKeyRequest& request,
     const ProtobufMethodCallback& callback) {
+  key_data_map_.insert(std::make_pair(cryptohome_id, request.key().data()));
   cryptohome::BaseReply reply;
   ReturnProtobufMethodCallback(reply, callback);
 }

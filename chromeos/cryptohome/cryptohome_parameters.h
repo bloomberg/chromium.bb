@@ -189,15 +189,4 @@ void SetGaiaIdMigrationStatusDone(const AccountId& account_id);
 
 }  // namespace cryptohome
 
-namespace BASE_HASH_NAMESPACE {
-
-// Implement hashing of cryptohome::Identification, so it can be used as a key
-// in STL containers.
-template <>
-struct hash<cryptohome::Identification> {
-  std::size_t operator()(const cryptohome::Identification& cryptohome_id) const;
-};
-
-}  // namespace BASE_HASH_NAMESPACE
-
 #endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
