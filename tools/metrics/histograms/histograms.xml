@@ -31325,6 +31325,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.WebView.UnsupportedContainer"
+    enum="UnsupportedContainers">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    Media container extensions seen by WebView that are not supported by the
+    standard HTML5 playback path. This value is recorded every time a
+    WebMediaPlayer is created with one of the unsupported containers.
+  </summary>
+</histogram>
+
 <histogram name="Media.WindowsCoreAudioInput" enum="BooleanSuccess">
   <obsolete>
     Deprecated 01/2017 as Windows Core Audio is now the only audio input

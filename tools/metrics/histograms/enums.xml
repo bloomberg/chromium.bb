@@ -37111,6 +37111,18 @@ from previous Chrome versions.
   <int value="10" label="Can not close extracted file"/>
 </enum>
 
+<enum name="UnsupportedContainers">
+  <int value="0" label="3GP"/>
+  <int value="1" label="TS"/>
+  <int value="2" label="MID"/>
+  <int value="3" label="XMF"/>
+  <int value="4" label="MXMF"/>
+  <int value="5" label="RTTTL"/>
+  <int value="6" label="RTX"/>
+  <int value="7" label="OTA"/>
+  <int value="8" label="IMY"/>
+</enum>
+
 <enum name="UpdateEngineAttemptResult">
   <int value="0" label="Update Succeeded"/>
   <int value="1" label="Internal Error"/>

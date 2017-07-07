@@ -21,6 +21,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
@@ -320,12 +321,35 @@ bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
   //
   // Format list mirrors:
   // http://developer.android.com/guide/appendix/media-formats.html
+  //
+  // Enum and extension list are parallel arrays and must stay in sync. These
+  // enum values are written to logs. New enum values can be added, but existing
+  // enums must never be renumbered or deleted and reused.
+  enum MediaPlayerContainers {
+    CONTAINER_3GP = 0,
+    CONTAINER_TS = 1,
+    CONTAINER_MID = 2,
+    CONTAINER_XMF = 3,
+    CONTAINER_MXMF = 4,
+    CONTAINER_RTTTL = 5,
+    CONTAINER_RTX = 6,
+    CONTAINER_OTA = 7,
+    CONTAINER_IMY = 8,
+    MEDIA_PLAYER_CONTAINERS_COUNT,
+  };
   static const char* kMediaPlayerExtensions[] = {
-      ".3gp",  ".ts",    ".flac", ".mid", ".xmf",
-      ".mxmf", ".rtttl", ".rtx",  ".ota", ".imy"};
-  for (auto* extension : kMediaPlayerExtensions) {
-    if (base::EndsWith(url.path(), extension,
+      ".3gp", ".ts", ".mid", ".xmf", ".mxmf", ".rtttl", ".rtx", ".ota", ".imy"};
+  static_assert(arraysize(kMediaPlayerExtensions) ==
+                    MediaPlayerContainers::MEDIA_PLAYER_CONTAINERS_COUNT,
+                "Invalid enum or extension change.");
+
+  for (size_t i = 0; i < arraysize(kMediaPlayerExtensions); ++i) {
+    if (base::EndsWith(url.path(), kMediaPlayerExtensions[i],
                        base::CompareCase::INSENSITIVE_ASCII)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.WebView.UnsupportedContainer",
+          static_cast<MediaPlayerContainers>(i),
+          MediaPlayerContainers::MEDIA_PLAYER_CONTAINERS_COUNT);
       return true;
     }
   }
