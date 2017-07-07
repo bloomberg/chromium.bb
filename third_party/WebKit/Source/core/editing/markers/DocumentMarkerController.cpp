@@ -402,14 +402,16 @@ DocumentMarkerVector DocumentMarkerController::MarkersFor(
     Node* node,
     DocumentMarker::MarkerTypes marker_types) {
   DocumentMarkerVector result;
+  if (!PossiblyHasMarkers(marker_types))
+    return result;
 
   MarkerLists* markers = markers_.at(node);
   if (!markers)
     return result;
 
-  for (DocumentMarker::MarkerType type : DocumentMarker::AllMarkers()) {
+  for (DocumentMarker::MarkerType type : marker_types) {
     DocumentMarkerList* const list = ListForType(markers, type);
-    if (!list || list->IsEmpty() || !marker_types.Contains(type))
+    if (!list || list->IsEmpty())
       continue;
 
     result.AppendVector(list->GetMarkers());
