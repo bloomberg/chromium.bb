@@ -174,6 +174,13 @@ public class JourneyLogger {
         }
     }
 
+    /**
+     * Records the fact that the user had an initial form of payment.
+     */
+    public void setUserHadInitialFormOfPayment() {
+        nativeSetUserHadInitialFormOfPayment(mJourneyLoggerAndroid);
+    }
+
     private native long nativeInitJourneyLoggerAndroid(boolean isIncognito, String url);
     private native void nativeDestroy(long nativeJourneyLoggerAndroid);
     private native void nativeSetNumberOfSuggestionsShown(
@@ -194,4 +201,5 @@ public class JourneyLogger {
     private native void nativeSetCompleted(long nativeJourneyLoggerAndroid);
     private native void nativeSetAborted(long nativeJourneyLoggerAndroid, int reason);
     private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);
+    private native void nativeSetUserHadInitialFormOfPayment(long nativeJourneyLoggerAndroid);
 }

@@ -1558,6 +1558,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mJourneyLogger.setNumberOfSuggestionsShown(
                 Section.CREDIT_CARDS, numberOfAutofillInstruments);
 
+        // Record whether the user had a form of payment initially.
+        if (!mPendingInstruments.isEmpty()) mJourneyLogger.setUserHadInitialFormOfPayment();
+
         // Possibly pre-select the first instrument on the list.
         int selection = !mPendingInstruments.isEmpty() && mPendingInstruments.get(0).canPreselect()
                 ? 0

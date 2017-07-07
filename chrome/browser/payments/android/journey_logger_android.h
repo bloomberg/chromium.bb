@@ -71,6 +71,9 @@ class JourneyLoggerAndroid {
   void SetNotShown(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jcaller,
                    jint jreason);
+  void SetUserHadInitialFormOfPayment(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   JourneyLogger journey_logger_;

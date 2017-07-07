@@ -145,6 +145,12 @@ void JourneyLoggerAndroid::SetNotShown(
       static_cast<JourneyLogger::NotShownReason>(jreason));
 }
 
+void JourneyLoggerAndroid::SetUserHadInitialFormOfPayment(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  journey_logger_.SetUserHadInitialFormOfPayment();
+}
+
 static jlong InitJourneyLoggerAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,

@@ -106,6 +106,29 @@ void JourneyLogger::SetShowCalled() {
   was_show_called_ = true;
 }
 
+void JourneyLogger::SetEventOccurred(Event event) {
+  events_ |= event;
+}
+
+void JourneyLogger::SetSelectedPaymentMethod(
+    SelectedPaymentMethod payment_method) {
+  payment_method_ = payment_method;
+}
+
+void JourneyLogger::SetRequestedInformation(bool requested_shipping,
+                                            bool requested_email,
+                                            bool requested_phone,
+                                            bool requested_name) {
+  // This method should only be called once per Payment Request.
+  DCHECK(requested_information_ == REQUESTED_INFORMATION_MAX);
+
+  requested_information_ =
+      (requested_shipping ? REQUESTED_INFORMATION_SHIPPING : 0) |
+      (requested_email ? REQUESTED_INFORMATION_EMAIL : 0) |
+      (requested_phone ? REQUESTED_INFORMATION_PHONE : 0) |
+      (requested_name ? REQUESTED_INFORMATION_NAME : 0);
+}
+
 void JourneyLogger::SetCompleted() {
   UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Completed", true);
 
@@ -135,27 +158,8 @@ void JourneyLogger::SetNotShown(NotShownReason reason) {
   UMA_HISTOGRAM_BOOLEAN("PaymentRequest.CheckoutFunnel.Initiated", true);
 }
 
-void JourneyLogger::SetEventOccurred(Event event) {
-  events_ |= event;
-}
-
-void JourneyLogger::SetSelectedPaymentMethod(
-    SelectedPaymentMethod payment_method) {
-  payment_method_ = payment_method;
-}
-
-void JourneyLogger::SetRequestedInformation(bool requested_shipping,
-                                            bool requested_email,
-                                            bool requested_phone,
-                                            bool requested_name) {
-  // This method should only be called once per Payment Request.
-  DCHECK(requested_information_ == REQUESTED_INFORMATION_MAX);
-
-  requested_information_ =
-      (requested_shipping ? REQUESTED_INFORMATION_SHIPPING : 0) |
-      (requested_email ? REQUESTED_INFORMATION_EMAIL : 0) |
-      (requested_phone ? REQUESTED_INFORMATION_PHONE : 0) |
-      (requested_name ? REQUESTED_INFORMATION_NAME : 0);
+void JourneyLogger::SetUserHadInitialFormOfPayment() {
+  user_had_initial_form_of_payment_ = true;
 }
 
 void JourneyLogger::RecordJourneyStatsHistograms(
@@ -246,6 +250,20 @@ void JourneyLogger::RecordSectionSpecificStats(
   } else {
     base::UmaHistogramEnumeration(
         "PaymentRequest.UserDidNotHaveSuggestionsForEverything."
+        "EffectOnCompletion",
+        completion_status, COMPLETION_STATUS_MAX);
+  }
+
+  // Recond the metric about completion status based on whether the user
+  // initally had a form of payment on file.
+  if (user_had_initial_form_of_payment_) {
+    base::UmaHistogramEnumeration(
+        "PaymentRequest.UserHadInitialFormOfPayment."
+        "EffectOnCompletion",
+        completion_status, COMPLETION_STATUS_MAX);
+  } else {
+    base::UmaHistogramEnumeration(
+        "PaymentRequest.UserDidNotHaveInitialFormOfPayment."
         "EffectOnCompletion",
         completion_status, COMPLETION_STATUS_MAX);
   }

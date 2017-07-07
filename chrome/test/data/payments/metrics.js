@@ -188,6 +188,47 @@ function noSupported() { // eslint-disable-line no-unused-vars
 }
 
 /**
+ * Launches the PaymentRequest UI which accepts credit cards and Bob Pay.
+ */
+function cardsAndBobPayBuy() { // eslint-disable-line no-unused-vars
+  try {
+    request = new PaymentRequest(
+      [{
+        supportedMethods: ['visa', 'https://bobpay.com'],
+      }], {
+        total: {
+          label: 'Total',
+          amount: {
+            currency: 'USD',
+            value: '5.00',
+          },
+        },
+        shippingOptions: [{
+          id: 'freeShippingOption',
+          label: 'Free global shipping',
+          amount: {
+            currency: 'USD',
+            value: '0',
+          },
+          selected: true,
+        }],
+      }, {
+        requestShipping: true,
+      });
+    request.show()
+      .then(function(resp) {
+        return resp.complete('success');
+      }).then(function() {
+        print(JSON.stringify(resp, undefined, 2));
+      }).catch(function(error) {
+        print(error);
+      });
+  } catch (error) {
+    print(error.message);
+  }
+}
+
+/**
  * Aborts the current PaymentRequest.
  */
 function abort() { // eslint-disable-line no-unused-vars

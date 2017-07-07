@@ -186,6 +186,10 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
+  // Records the fact that the user had a Payment Method on file at the start of
+  // the Payment Request.
+  void SetUserHadInitialFormOfPayment();
+
  private:
   static const int NUMBER_OF_SECTIONS = 3;
 
@@ -254,6 +258,7 @@ class JourneyLogger {
   bool was_can_make_payments_used_ = false;
   bool could_make_payment_ = false;
   bool was_show_called_ = false;
+  bool user_had_initial_form_of_payment_ = false;
   bool is_incognito_;
 
   // Accumulates the many events that have happened during the Payment Request.
