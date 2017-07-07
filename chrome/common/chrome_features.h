@@ -137,6 +137,8 @@ extern const base::Feature kMultidevice;
 extern const base::Feature kNativeNotifications;
 #endif
 
+extern const base::Feature kNetworkPrediction;
+
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
 #if !defined(OS_ANDROID)
