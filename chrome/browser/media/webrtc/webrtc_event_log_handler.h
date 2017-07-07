@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
@@ -64,6 +65,8 @@ class WebRtcEventLogHandler
                                 const RecordingDoneCallback& callback,
                                 const RecordingErrorCallback& error_callback,
                                 const base::FilePath& log_directory);
+
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The ID of our render process.
   int render_process_id_;

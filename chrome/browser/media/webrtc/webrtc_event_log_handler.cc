@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,7 +35,10 @@ base::FilePath GetWebRtcEventLogPrefixPath(const base::FilePath& directory,
 
 WebRtcEventLogHandler::WebRtcEventLogHandler(int render_process_id,
                                              Profile* profile)
-    : render_process_id_(render_process_id),
+    : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::BACKGROUND})),
+      render_process_id_(render_process_id),
       profile_(profile),
       current_rtc_event_log_id_(0) {
   DCHECK(profile_);
@@ -48,8 +52,8 @@ void WebRtcEventLogHandler::StartWebRtcEventLogging(
     const RecordingErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
       base::Bind(&WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists, this),
       base::Bind(&WebRtcEventLogHandler::DoStartWebRtcEventLogging, this,
                  duration, callback, error_callback));
@@ -61,8 +65,8 @@ void WebRtcEventLogHandler::StopWebRtcEventLogging(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool is_manual_stop = true;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
       base::Bind(&WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists, this),
       base::Bind(&WebRtcEventLogHandler::DoStopWebRtcEventLogging, this,
                  is_manual_stop, current_rtc_event_log_id_, callback,
@@ -70,7 +74,7 @@ void WebRtcEventLogHandler::StopWebRtcEventLogging(
 }
 
 base::FilePath WebRtcEventLogHandler::GetLogDirectoryAndEnsureExists() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   base::FilePath log_dir_path =
       WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath());
   base::File::Error error;
