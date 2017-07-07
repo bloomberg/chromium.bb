@@ -1144,6 +1144,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::NONE:
+      new_policy.compositor_queue_policy.priority =
+          main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
+                                          : TaskQueue::NORMAL_PRIORITY;
       // It's only safe to block tasks that if we are expecting a compositor
       // driven gesture.
       if (touchstart_expected_soon &&
