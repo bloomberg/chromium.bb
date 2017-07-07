@@ -48,6 +48,16 @@ EVENTS_BASE_EXPORT bool DomCodeToUsLayoutDomKey(DomCode dom_code,
                                                 KeyboardCode* key_code)
     WARN_UNUSED_RESULT;
 
+// Helper function to map a physical key (dom_code) to a meaning (dom_key
+// and character, together corresponding to the DOM keyboard event |key|
+// value), along with a corresponding non-located Windows-based key_code.
+// Unlike |DomCodeToUsLayoutDomKey| this function only maps non-printable,
+// or action, keys.
+EVENTS_BASE_EXPORT bool DomCodeToNonPrintableDomKey(DomCode dom_code,
+                                                    DomKey* dom_key,
+                                                    KeyboardCode* key_code)
+    WARN_UNUSED_RESULT;
+
 // Obtains the control character corresponding to a physical key;
 // that is, the meaning of the physical key state (dom_code, and flags
 // containing EF_CONTROL_DOWN) under the base US English layout.

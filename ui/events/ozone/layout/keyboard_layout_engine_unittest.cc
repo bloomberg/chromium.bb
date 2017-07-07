@@ -191,6 +191,8 @@ void TestLookup(const char* name, KeyboardLayoutEngine* engine) {
        'A'},
       {DomCode::US_A, EF_CONTROL_DOWN, DomKey::Constant<'a'>::Character,
        VKEY_A, 1},
+      {DomCode::LAUNCH_ASSISTANT, EF_NONE, DomKey::LAUNCH_ASSISTANT,
+       VKEY_ASSISTANT, 0},
   };
 
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
