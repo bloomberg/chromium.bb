@@ -19,8 +19,7 @@ static const int kDelayUntilReadyToShowResultMs = 1000;
 }
 
 BrowsingDataCounter::BrowsingDataCounter()
-    : initialized_(false),
-      state_(State::IDLE) {}
+    : initialized_(false), use_delay_(true), state_(State::IDLE) {}
 
 BrowsingDataCounter::~BrowsingDataCounter() {}
 
@@ -43,6 +42,7 @@ void BrowsingDataCounter::Init(PrefService* pref_service,
 void BrowsingDataCounter::InitWithoutPref(base::Time begin_time,
                                           const Callback& callback) {
   DCHECK(!initialized_);
+  use_delay_ = false;
   callback_ = callback;
   clear_browsing_data_tab_ = ClearBrowsingDataTab::ADVANCED;
   begin_time_ = begin_time;
@@ -71,9 +71,14 @@ void BrowsingDataCounter::Restart() {
   state_transitions_.clear();
   state_transitions_.push_back(state_);
 
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kDelayUntilShowCalculatingMs),
-               this, &BrowsingDataCounter::TransitionToShowCalculating);
+  if (use_delay_) {
+    timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kDelayUntilShowCalculatingMs), this,
+        &BrowsingDataCounter::TransitionToShowCalculating);
+  } else {
+    state_ = State::READY_TO_REPORT_RESULT;
+  }
   Count();
 }
 

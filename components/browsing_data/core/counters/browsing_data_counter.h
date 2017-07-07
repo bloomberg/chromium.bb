@@ -109,6 +109,7 @@ class BrowsingDataCounter {
 
   // Can be called instead of |Init()|, to create a counter that doesn't
   // observe pref changes and counts data that was changed since |begin_time|.
+  // This mode doesn't use delayed responses.
   void InitWithoutPref(base::Time begin_time, const Callback& callback);
 
   // Name of the preference associated with this counter.
@@ -177,6 +178,9 @@ class BrowsingDataCounter {
 
   // Whether this class was properly initialized by calling |Init|.
   bool initialized_;
+
+  // Whether to introduce a delayed response to avoid flickering.
+  bool use_delay_;
 
   // State of the counter.
   State state_;
