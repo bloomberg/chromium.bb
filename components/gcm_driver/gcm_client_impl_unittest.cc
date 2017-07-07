@@ -65,7 +65,6 @@ const char kExtensionAppId[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kSubtypeAppId[] = "app_id";
 const char kSender[] = "project_id";
 const char kSender2[] = "project_id2";
-const char kSender3[] = "project_id3";
 const char kRegistrationResponsePrefix[] = "token=";
 const char kUnregistrationResponsePrefix[] = "deleted=";
 const char kRawData[] = "example raw data";
@@ -926,18 +925,6 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessage) {
   EXPECT_EQ(expected_data.size(), last_message().data.size());
   EXPECT_EQ(expected_data, last_message().data);
   EXPECT_EQ(kSender2, last_message().sender_id);
-
-  reset_last_event();
-
-  // Message from kSender3 will be dropped.
-  MCSMessage message3(BuildDownstreamMessage(
-      kSender3, kExtensionAppId, std::string() /* subtype */, expected_data,
-      std::string() /* raw_data */));
-  EXPECT_TRUE(message3.IsValid());
-  ReceiveMessageFromMCS(message3);
-
-  EXPECT_NE(MESSAGE_RECEIVED, last_event());
-  EXPECT_NE(kExtensionAppId, last_app_id());
 }
 
 TEST_F(GCMClientImplTest, DispatchDownstreamMessageRawData) {
@@ -1775,122 +1762,40 @@ TEST_F(GCMClientInstanceIDTest, DispatchDownstreamMessageWithoutSubtype) {
   AddInstanceID(kExtensionAppId, kInstanceID);
   GetToken(kExtensionAppId, kSender, kScope);
   ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token1"));
-  GetToken(kExtensionAppId, kSender2, kScope);
-  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token2"));
 
   std::map<std::string, std::string> expected_data;
 
-  // Message for kSender with a subtype will be dropped.
-  MCSMessage message0(BuildDownstreamMessage(
-      kSender, kProductCategoryForSubtypes, kExtensionAppId /* subtype */,
-      expected_data, std::string() /* raw_data */));
-  EXPECT_TRUE(message0.IsValid());
-  ReceiveMessageFromMCS(message0);
-
-  EXPECT_NE(MESSAGE_RECEIVED, last_event());
-
-  reset_last_event();
-
-  // Message for kSender will be received.
-  MCSMessage message1(BuildDownstreamMessage(
+  MCSMessage message(BuildDownstreamMessage(
       kSender, kExtensionAppId, std::string() /* subtype */, expected_data,
       std::string() /* raw_data */));
-  EXPECT_TRUE(message1.IsValid());
-  ReceiveMessageFromMCS(message1);
+  EXPECT_TRUE(message.IsValid());
+  ReceiveMessageFromMCS(message);
 
   EXPECT_EQ(MESSAGE_RECEIVED, last_event());
   EXPECT_EQ(kExtensionAppId, last_app_id());
   EXPECT_EQ(expected_data.size(), last_message().data.size());
   EXPECT_EQ(expected_data, last_message().data);
   EXPECT_EQ(kSender, last_message().sender_id);
-
-  reset_last_event();
-
-  // Message for kSender2 will be received.
-  MCSMessage message2(BuildDownstreamMessage(
-      kSender2, kExtensionAppId, std::string() /* subtype */, expected_data,
-      std::string() /* raw_data */));
-  EXPECT_TRUE(message2.IsValid());
-  ReceiveMessageFromMCS(message2);
-
-  EXPECT_EQ(MESSAGE_RECEIVED, last_event());
-  EXPECT_EQ(kExtensionAppId, last_app_id());
-  EXPECT_EQ(expected_data.size(), last_message().data.size());
-  EXPECT_EQ(expected_data, last_message().data);
-  EXPECT_EQ(kSender2, last_message().sender_id);
-
-  reset_last_event();
-
-  // Message from kSender3 will be dropped.
-  MCSMessage message3(BuildDownstreamMessage(
-      kSender3, kExtensionAppId, std::string() /* subtype */, expected_data,
-      std::string() /* raw_data */));
-  EXPECT_TRUE(message3.IsValid());
-  ReceiveMessageFromMCS(message3);
-
-  EXPECT_NE(MESSAGE_RECEIVED, last_event());
-  EXPECT_NE(kExtensionAppId, last_app_id());
 }
 
 TEST_F(GCMClientInstanceIDTest, DispatchDownstreamMessageWithSubtype) {
   AddInstanceID(kSubtypeAppId, kInstanceID);
   GetToken(kSubtypeAppId, kSender, kScope);
   ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token1"));
-  GetToken(kSubtypeAppId, kSender2, kScope);
-  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token2"));
 
   std::map<std::string, std::string> expected_data;
 
-  // Message for kSender without a subtype will be dropped.
-  MCSMessage message0(BuildDownstreamMessage(
-      kSender, kSubtypeAppId, std::string() /* subtype */, expected_data,
-      std::string() /* raw_data */));
-  EXPECT_TRUE(message0.IsValid());
-  ReceiveMessageFromMCS(message0);
-
-  EXPECT_NE(MESSAGE_RECEIVED, last_event());
-
-  reset_last_event();
-
-  // Message for kSender will be received.
-  MCSMessage message1(BuildDownstreamMessage(
+  MCSMessage message(BuildDownstreamMessage(
       kSender, kProductCategoryForSubtypes, kSubtypeAppId /* subtype */,
       expected_data, std::string() /* raw_data */));
-  EXPECT_TRUE(message1.IsValid());
-  ReceiveMessageFromMCS(message1);
+  EXPECT_TRUE(message.IsValid());
+  ReceiveMessageFromMCS(message);
 
   EXPECT_EQ(MESSAGE_RECEIVED, last_event());
   EXPECT_EQ(kSubtypeAppId, last_app_id());
   EXPECT_EQ(expected_data.size(), last_message().data.size());
   EXPECT_EQ(expected_data, last_message().data);
   EXPECT_EQ(kSender, last_message().sender_id);
-
-  reset_last_event();
-
-  // Message for kSender2 will be received.
-  MCSMessage message2(BuildDownstreamMessage(
-      kSender2, kProductCategoryForSubtypes, kSubtypeAppId /* subtype */,
-      expected_data, std::string() /* raw_data */));
-  EXPECT_TRUE(message2.IsValid());
-  ReceiveMessageFromMCS(message2);
-
-  EXPECT_EQ(MESSAGE_RECEIVED, last_event());
-  EXPECT_EQ(kSubtypeAppId, last_app_id());
-  EXPECT_EQ(expected_data.size(), last_message().data.size());
-  EXPECT_EQ(expected_data, last_message().data);
-  EXPECT_EQ(kSender2, last_message().sender_id);
-
-  reset_last_event();
-
-  // Message from kSender3 will be dropped.
-  MCSMessage message3(BuildDownstreamMessage(
-      kSender3, kProductCategoryForSubtypes, kSubtypeAppId /* subtype */,
-      expected_data, std::string() /* raw_data */));
-  EXPECT_TRUE(message3.IsValid());
-  ReceiveMessageFromMCS(message3);
-
-  EXPECT_NE(MESSAGE_RECEIVED, last_event());
-  EXPECT_NE(kSubtypeAppId, last_app_id());
 }
 
 TEST_F(GCMClientInstanceIDTest, DispatchDownstreamMessageWithFakeSubtype) {

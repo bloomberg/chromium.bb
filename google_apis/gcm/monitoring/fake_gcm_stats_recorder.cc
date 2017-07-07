@@ -56,6 +56,12 @@ void FakeGCMStatsRecorder::RecordRegistrationRetryDelayed(
     int64_t delay_msec,
     int retries_left) {}
 
+void FakeGCMStatsRecorder::RecordDataMessageReceived(
+    const std::string& app_id,
+    const std::string& from,
+    int message_byte_size,
+    ReceivedMessageType message_type) {}
+
 void FakeGCMStatsRecorder::RecordUnregistrationSent(
     const std::string& app_id, const std::string& source) {
 }
@@ -71,14 +77,6 @@ void FakeGCMStatsRecorder::RecordUnregistrationRetryDelayed(
     const std::string& source,
     int64_t delay_msec,
     int retries_left) {}
-
-void FakeGCMStatsRecorder::RecordDataMessageReceived(
-    const std::string& app_id,
-    const std::string& from,
-    int message_byte_size,
-    bool to_registered_app,
-    ReceivedMessageType message_type) {
-}
 
 void FakeGCMStatsRecorder::RecordDataSentToWire(
     const std::string& app_id,

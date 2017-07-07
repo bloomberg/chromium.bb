@@ -78,7 +78,6 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   void RecordDataMessageReceived(const std::string& app_id,
                                  const std::string& from,
                                  int message_byte_size,
-                                 bool to_registered_app,
                                  ReceivedMessageType message_type) override;
   void RecordDataSentToWire(const std::string& app_id,
                             const std::string& receiver_id,
