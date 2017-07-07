@@ -250,6 +250,7 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
         gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']
         gperf_args.extend(['-m', '50'])  # Pick best of 50 attempts.
         gperf_args.append('-D')  # Allow duplicate hashes -> More compact code.
+        gperf_args.extend(['-Q', 'CSSPropStringPool'])  # Unique var names.
 
         # If gperf isn't in the path we get an OSError. We don't want to use
         # the normal solution of shell=True (as this has to run on many
