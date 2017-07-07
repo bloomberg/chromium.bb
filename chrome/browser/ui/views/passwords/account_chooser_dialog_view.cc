@@ -176,10 +176,6 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(message_id);
 }
 
-gfx::Size AccountChooserDialogView::CalculatePreferredSize() const {
-  return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
-}
-
 void AccountChooserDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       const gfx::Range& range,
                                                       int event_flags) {
