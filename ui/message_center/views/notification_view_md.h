@@ -64,13 +64,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, CreateOrUpdateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
-
-  friend class NotificationViewMDTest;
-
   void CreateOrUpdateViews(const Notification& notification);
 
   void CreateOrUpdateContextTitleView(const Notification& notification);
