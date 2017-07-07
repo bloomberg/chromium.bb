@@ -78,6 +78,8 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // The widget of the window that triggered this popup. Weak reference.
   views::Widget* parent_widget_;
 
+  views::ScrollView* scroll_view_;
+
   // The time when the popup was shown.
   base::Time show_time_;
 
