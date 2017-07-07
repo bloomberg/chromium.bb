@@ -1,37 +1,27 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <body>
 <img id="img" src="../media/content/greenbox.png"/>
 </body>
 <script>
-async_test(function(t) {
+promise_test(async function() {
   var img = document.getElementById("img");
-  var theMock = null;
-  mockFaceDetectionProviderReady
-    .then(mock => {
-      theMock = mock;
-      return new FaceDetector();
-    })
-    .catch(error => {
-      assert_unreached("Error creating MockShapeDetection: " + error);
-    })
-    .then(detectorWithDefault => detectorWithDefault.detect(img))
-    .then(t.step_func(faceDetectionResult => {
-        assert_equals(theMock.getMaxDetectedFaces(), 10, "default maxDetectedFaces");
-        assert_equals(theMock.getFastMode(), false, "default maxDetectedFaces");
-        return new FaceDetector({maxDetectedFaces: 7, fastMode: true});
-    }))
-    .then(detectorWithOptions => detectorWithOptions.detect(img))
-    .then(t.step_func(faceDetectionResult => {
-        assert_equals(theMock.getMaxDetectedFaces(), 7, "maxDetectedFaces");
-        assert_equals(theMock.getFastMode(), true, "maxDetectedFaces");
-        t.done();
-    }))
-    .catch(error => {
-      assert_unreached("Error creating detectors: " + error);
-    });
+  var mock = mockFaceDetectionProvider;
+
+  var detectorWithDefault = new FaceDetector();
+  var faceDetectionResult = await detectorWithDefault.detect(img);
+  assert_equals(mock.getMaxDetectedFaces(), 10, "default maxDetectedFaces");
+  assert_equals(mock.getFastMode(), false, "default maxDetectedFaces");
+
+  var detectorWithOptions =
+      new FaceDetector({maxDetectedFaces: 7, fastMode: true});
+  faceDetectionResult = await detectorWithOptions.detect(img);
+  assert_equals(mock.getMaxDetectedFaces(), 7, "maxDetectedFaces");
+  assert_equals(mock.getFastMode(), true, "maxDetectedFaces");
 }, "Test that FaceDetectionOptions are correctly propagated");
 </script>

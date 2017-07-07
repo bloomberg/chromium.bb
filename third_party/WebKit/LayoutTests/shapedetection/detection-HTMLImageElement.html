@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/textdetection.mojom.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <script src="resources/mock-textdetection.js"></script>
@@ -10,32 +14,18 @@
 </body>
 <script>
 
-var createTestForImageElement = function(createDetector, mockReady,
+var createTestForImageElement = function(createDetector, mock,
                                          detectionResultTest) {
-  async_test(function(t) {
+  promise_test(async function() {
     var img = document.getElementById("img");
 
-    var theMock = null;
-    mockReady()
-      .then(mock => {
-        theMock = mock;
-        var detector = createDetector();
-        return detector;
-      })
-      .catch(error => {
-        assert_unreached("Error creating Mock Detector: " + error);
-      })
-      .then(detector => {
-        return detector.detect(img);
-      })
-      .then(detectionResult => {
-        detectionResultTest(detectionResult, theMock);
-        t.done();
-      })
-      .catch(error => {
-        assert_unreached("Error during detect(img): " + error);
-      });
-
+    var detector = createDetector();
+    try {
+      var detectionResult = await detector.detect(img);
+      detectionResultTest(detectionResult, mock);
+    } catch(error) {
+      assert_unreached("Error during detect(img): " + error);
+    }
   });
 };
 
@@ -69,19 +59,19 @@ generate_tests(createTestForImageElement, [
   [
     "Face - detect(HTMLImageElement)",
     () => { return new FaceDetector(); },
-    () => { return mockFaceDetectionProviderReady; },
+    mockFaceDetectionProvider,
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode - detect(HTMLImageElement)",
     () => { return new BarcodeDetector(); },
-    () => { return mockBarcodeDetectionReady; },
+    mockBarcodeDetection,
     BarcodeDetectorDetectionResultTest
   ],
   [
     "Text - detect(HTMLImageElement)",
     () => { return new TextDetector(); },
-    () => { return mockTextDetectionReady; },
+    mockTextDetection,
     TextDetectorDetectionResultTest
   ]
 ]);

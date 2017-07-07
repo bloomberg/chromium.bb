@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/textdetection.mojom.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <script src="resources/mock-textdetection.js"></script>
 <script>
 
-var createTestForVideoElement = function(createDetector, mockReady,
+var createTestForVideoElement = function(createDetector, mock,
                                          detectionResultTest) {
   async_test(function(t) {
     var video = document.createElement("video");
@@ -15,27 +19,15 @@ var createTestForVideoElement = function(createDetector, mockReady,
     video.loop = true;
     video.autoplay = true;
     video.onerror = this.unreached_func("<video> error");
-    video.onplay = this.step_func(function() {
-      var theMock = null;
-      mockReady()
-        .then(mock => {
-          theMock = mock;
-          var detector = createDetector();
-          return detector;
-        })
-        .catch(error => {
-          assert_unreached("Error creating Mock Detector: " + error);
-        })
-        .then(detector => {
-          return detector.detect(video);
-        })
-        .then(detectionResult => {
-          detectionResultTest(detectionResult, theMock);
-          t.done();
-        })
-        .catch(error => {
-          assert_unreached("Error during detect(video): " + error);
-        });
+    video.onplay = this.step_func(async function() {
+      var detector = createDetector();
+      try {
+        var detectionResult = await detector.detect(video);
+        detectionResultTest(detectionResult, mock);
+        t.done();
+      } catch (error) {
+        assert_unreached("Error during detect(video): " + error);
+      }
     });
 
     video.load();
@@ -69,19 +61,19 @@ generate_tests(createTestForVideoElement, [
   [
     "Face - detect(HTMLVideoElement)",
     () => { return new FaceDetector(); },
-    () => { return mockFaceDetectionProviderReady; },
+    mockFaceDetectionProvider,
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode - detect(HTMLVideoElement)",
     () => { return new BarcodeDetector(); },
-    () => { return mockBarcodeDetectionReady; },
+    mockBarcodeDetection,
     BarcodeDetectorDetectionResultTest
   ],
   [
     "Text - detect(HTMLVideoElement)",
     () => { return new TextDetector(); },
-    () => { return mockTextDetectionReady; },
+    mockTextDetection,
     TextDetectorDetectionResultTest
   ]
 ]);

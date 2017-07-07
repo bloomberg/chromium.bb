@@ -1,47 +1,32 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/barcodedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/facedetection_provider.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/interfaces/textdetection.mojom.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
 <script src="resources/mock-textdetection.js"></script>
 <script>
 
-var createTestForImageBitmap = function(createDetector, mockReady,
+var createTestForImageBitmap = function(createDetector, mock,
                                         detectionResultTest) {
   async_test(function(t) {
     var img = new Image();
 
-    img.onload = function() {
-      var theImageBitmap = null;
-      var theMock = null;
+    img.onload = async function() {
+      var imageBitmap = await createImageBitmap(img);
+      var detector = createDetector();
 
-      createImageBitmap(img)
-          .then(imageBitmap => {
-            theImageBitmap = imageBitmap;
-            return mockReady();
-          })
-          .catch(error => {
-            assert_unreached("createImageBitmap() error: " + error);
-          })
-          .then(mock => {
-            theMock = mock;
-            var detector = createDetector();
-            return detector;
-          })
-          .catch(error => {
-            assert_unreached("Error creating Mock Detector: " + error);
-          })
-          .then(detector => {
-            return detector.detect(theImageBitmap);
-          })
-          .then(detectionResult => {
-            detectionResultTest(detectionResult, theMock);
-            t.done();
-          })
-          .catch(error => {
-            assert_unreached("Error during detect(img): " + error);
-          });
+      try {
+        var detectionResult = await detector.detect(imageBitmap);
+        detectionResultTest(detectionResult, mock);
+        t.done();
+      } catch (error) {
+        assert_unreached("Error during detect(img): " + error);
+      }
     }
     img.src = "../media/content/greenbox.png";
   });
@@ -73,19 +58,19 @@ generate_tests(createTestForImageBitmap, [
   [
     "Face - detect(ImageBitmap)",
     () => { return new FaceDetector(); },
-    () => { return mockFaceDetectionProviderReady; },
+    mockFaceDetectionProvider,
     FaceDetectorDetectionResultTest
   ],
   [
     "Barcode - detect(ImageBitmap)",
     () => { return new BarcodeDetector(); },
-    () => { return mockBarcodeDetectionReady; },
+    mockBarcodeDetection,
     BarcodeDetectorDetectionResultTest
   ],
   [
     "Text - detect(ImageBitmap)",
     () => { return new TextDetector(); },
-    () => { return mockTextDetectionReady; },
+    mockTextDetection,
     TextDetectorDetectionResultTest
   ]
 ]);
