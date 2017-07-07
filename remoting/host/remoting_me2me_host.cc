@@ -744,7 +744,7 @@ void HostProcess::CreateAuthenticatorFactory() {
           context_->file_task_runner()));
       cert_watcher_->Start();
     }
-    cert_watcher_->SetMonitor(host_->AsWeakPtr());
+    cert_watcher_->SetMonitor(host_->status_monitor());
 #endif
 
     scoped_refptr<protocol::TokenValidatorFactory> token_validator_factory =
@@ -1503,22 +1503,21 @@ void HostProcess::StartHost() {
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
-  host_status_logger_.reset(new HostStatusLogger(
-      host_->AsWeakPtr(), ServerLogEntry::ME2ME,
-      signal_strategy_.get(), directory_bot_jid_));
+  host_status_logger_.reset(
+      new HostStatusLogger(host_->status_monitor(), ServerLogEntry::ME2ME,
+                           signal_strategy_.get(), directory_bot_jid_));
 
   power_save_blocker_.reset(new HostPowerSaveBlocker(
-      host_->AsWeakPtr(),
-      context_->ui_task_runner(),
+      host_->status_monitor(), context_->ui_task_runner(),
       context_->file_task_runner()));
 
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
   host_event_logger_.reset(
-      new IpcHostEventLogger(host_->AsWeakPtr(), daemon_channel_.get()));
+      new IpcHostEventLogger(host_->status_monitor(), daemon_channel_.get()));
 #else  // !defined(REMOTING_MULTI_PROCESS)
   host_event_logger_ =
-      HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
+      HostEventLogger::Create(host_->status_monitor(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   host_->Start(host_owner_email_);

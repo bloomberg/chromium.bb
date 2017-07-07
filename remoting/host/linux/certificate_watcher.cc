@@ -210,7 +210,7 @@ void CertificateWatcher::Start() {
   VLOG(1) << "Started watching certificate changes.";
 }
 
-void CertificateWatcher::SetMonitor(base::WeakPtr<HostStatusMonitor> monitor) {
+void CertificateWatcher::SetMonitor(scoped_refptr<HostStatusMonitor> monitor) {
   DCHECK(is_started());
   if (monitor_) {
     monitor_->RemoveStatusObserver(this);

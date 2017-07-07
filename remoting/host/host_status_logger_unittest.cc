@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "remoting/host/fake_host_status_monitor.h"
+#include "remoting/host/host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -124,14 +124,14 @@ MATCHER(IsClientDisconnected, "") {
 
 class HostStatusLoggerTest : public testing::Test {
  public:
-  HostStatusLoggerTest() : signal_strategy_(SignalingAddress(kHostJid)) {}
+  HostStatusLoggerTest()
+      : signal_strategy_(SignalingAddress(kHostJid)),
+        host_status_monitor_(new HostStatusMonitor()) {}
   void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     host_status_logger_.reset(
-        new HostStatusLogger(host_status_monitor_.AsWeakPtr(),
-                             ServerLogEntry::ME2ME,
-                             &signal_strategy_,
-                             kTestBotJid));
+        new HostStatusLogger(host_status_monitor_, ServerLogEntry::ME2ME,
+                             &signal_strategy_, kTestBotJid));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
   }
 
@@ -139,7 +139,7 @@ class HostStatusLoggerTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   std::unique_ptr<HostStatusLogger> host_status_logger_;
-  FakeHostStatusMonitor host_status_monitor_;
+  scoped_refptr<HostStatusMonitor> host_status_monitor_;
 };
 
 TEST_F(HostStatusLoggerTest, SendNow) {

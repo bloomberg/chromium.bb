@@ -13,7 +13,7 @@
 
 namespace remoting {
 
-HostStatusLogger::HostStatusLogger(base::WeakPtr<HostStatusMonitor> monitor,
+HostStatusLogger::HostStatusLogger(scoped_refptr<HostStatusMonitor> monitor,
                                    ServerLogEntry::Mode mode,
                                    SignalStrategy* signal_strategy,
                                    const std::string& directory_bot_jid)
@@ -24,8 +24,7 @@ HostStatusLogger::HostStatusLogger(base::WeakPtr<HostStatusMonitor> monitor,
 
 HostStatusLogger::~HostStatusLogger() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (monitor_.get())
-    monitor_->RemoveStatusObserver(this);
+  monitor_->RemoveStatusObserver(this);
 }
 
 void HostStatusLogger::LogSessionStateChange(const std::string& jid,

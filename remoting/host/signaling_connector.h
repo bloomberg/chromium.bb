@@ -24,8 +24,7 @@ class DnsBlackholeChecker;
 // backoff. It also monitors network state and reconnects signalling
 // whenever connection type changes or IP address changes.
 class SignalingConnector
-    : public base::SupportsWeakPtr<SignalingConnector>,
-      public SignalStrategy::Listener,
+    : public SignalStrategy::Listener,
       public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
@@ -71,6 +70,8 @@ class SignalingConnector
   base::OneShotTimer timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SignalingConnector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignalingConnector);
 };

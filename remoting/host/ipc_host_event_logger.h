@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_status_observer.h"
@@ -26,7 +26,7 @@ class HostStatusMonitor;
 class IpcHostEventLogger : public HostEventLogger, public HostStatusObserver {
  public:
   // Initializes the logger. |daemon_channel| must outlive this object.
-  IpcHostEventLogger(base::WeakPtr<HostStatusMonitor> monitor,
+  IpcHostEventLogger(scoped_refptr<HostStatusMonitor> monitor,
                      IPC::Sender* daemon_channel);
   ~IpcHostEventLogger() override;
 
@@ -45,7 +45,7 @@ class IpcHostEventLogger : public HostEventLogger, public HostStatusObserver {
   // Used to report host status events to the daemon.
   IPC::Sender* daemon_channel_;
 
-  base::WeakPtr<HostStatusMonitor> monitor_;
+  scoped_refptr<HostStatusMonitor> monitor_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

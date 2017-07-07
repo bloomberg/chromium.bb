@@ -23,7 +23,7 @@ class HostEventLogger {
   // Creates an event-logger that monitors host status changes and logs
   // corresponding events to the OS-specific log (syslog/EventLog).
   static std::unique_ptr<HostEventLogger> Create(
-      base::WeakPtr<HostStatusMonitor> monitor,
+      scoped_refptr<HostStatusMonitor> monitor,
       const std::string& application_name);
 
  protected:

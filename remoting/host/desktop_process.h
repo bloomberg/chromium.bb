@@ -30,8 +30,7 @@ class DesktopEnvironmentFactory;
 class DesktopSessionAgent;
 
 class DesktopProcess : public DesktopSessionAgent::Delegate,
-                       public IPC::Listener,
-                       public base::SupportsWeakPtr<DesktopProcess> {
+                       public IPC::Listener {
  public:
   DesktopProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
                  scoped_refptr<AutoThreadTaskRunner> input_task_runner,
@@ -52,7 +51,7 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   void InjectSas();
 
   // Locks the workstation for the current session.
-  void LockWorkStation();
+  void LockWorkstation();
 
   // Creates the desktop agent and required threads and IPC channels. Returns
   // true on success.
@@ -89,6 +88,8 @@ class DesktopProcess : public DesktopSessionAgent::Delegate,
   // Provides screen/audio capturing and input injection services for
   // the network process.
   scoped_refptr<DesktopSessionAgent> desktop_agent_;
+
+  base::WeakPtrFactory<DesktopProcess> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopProcess);
 };

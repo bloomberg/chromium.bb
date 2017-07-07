@@ -23,10 +23,10 @@ class HostStatusMonitor;
 // They do not contain any personally identifiable information.
 class HostStatusLogger : public HostStatusObserver {
  public:
-  HostStatusLogger(base::WeakPtr<HostStatusMonitor> monitor,
-                  ServerLogEntry::Mode mode,
-                  SignalStrategy* signal_strategy,
-                  const std::string& directory_bot_jid);
+  HostStatusLogger(scoped_refptr<HostStatusMonitor> monitor,
+                   ServerLogEntry::Mode mode,
+                   SignalStrategy* signal_strategy,
+                   const std::string& directory_bot_jid);
   ~HostStatusLogger() override;
 
   // Logs a session state change. Currently, this is either
@@ -46,7 +46,7 @@ class HostStatusLogger : public HostStatusObserver {
  private:
   LogToServer log_to_server_;
 
-  base::WeakPtr<HostStatusMonitor> monitor_;
+  scoped_refptr<HostStatusMonitor> monitor_;
 
   // A map from client JID to the route type of that client's connection to
   // this host.

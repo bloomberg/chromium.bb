@@ -13,18 +13,16 @@
 
 namespace remoting {
 
-IpcHostEventLogger::IpcHostEventLogger(base::WeakPtr<HostStatusMonitor> monitor,
+IpcHostEventLogger::IpcHostEventLogger(scoped_refptr<HostStatusMonitor> monitor,
                                        IPC::Sender* daemon_channel)
-    : daemon_channel_(daemon_channel),
-      monitor_(monitor) {
+    : daemon_channel_(daemon_channel), monitor_(monitor) {
   monitor_->AddStatusObserver(this);
 }
 
 IpcHostEventLogger::~IpcHostEventLogger() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (monitor_.get())
-    monitor_->RemoveStatusObserver(this);
+  monitor_->RemoveStatusObserver(this);
 }
 
 void IpcHostEventLogger::OnAccessDenied(const std::string& jid) {

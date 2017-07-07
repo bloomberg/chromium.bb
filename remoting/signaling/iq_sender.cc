@@ -130,12 +130,13 @@ bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
   return true;
 }
 
-IqRequest::IqRequest(IqSender* sender, const IqSender::ReplyCallback& callback,
+IqRequest::IqRequest(IqSender* sender,
+                     const IqSender::ReplyCallback& callback,
                      const std::string& addressee)
     : sender_(sender),
       callback_(callback),
-      addressee_(addressee) {
-}
+      addressee_(addressee),
+      weak_factory_(this) {}
 
 IqRequest::~IqRequest() {
   sender_->RemoveRequest(this);
@@ -143,7 +144,8 @@ IqRequest::~IqRequest() {
 
 void IqRequest::SetTimeout(base::TimeDelta timeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IqRequest::OnTimeout, AsWeakPtr()), timeout);
+      FROM_HERE, base::Bind(&IqRequest::OnTimeout, weak_factory_.GetWeakPtr()),
+      timeout);
 }
 
 void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
@@ -160,8 +162,9 @@ void IqRequest::OnResponse(const buzz::XmlElement* stanza) {
   // want to do that, so we post task to invoke the callback later.
   std::unique_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&IqRequest::DeliverResponse, AsWeakPtr(),
-                            base::Passed(&stanza_copy)));
+      FROM_HERE,
+      base::Bind(&IqRequest::DeliverResponse, weak_factory_.GetWeakPtr(),
+                 base::Passed(&stanza_copy)));
 }
 
 void IqRequest::DeliverResponse(std::unique_ptr<buzz::XmlElement> stanza) {

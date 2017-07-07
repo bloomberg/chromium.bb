@@ -21,8 +21,7 @@
 
 namespace remoting {
 
-class FakeInputInjector : public InputInjector,
-                          public base::SupportsWeakPtr<FakeInputInjector> {
+class FakeInputInjector : public InputInjector {
  public:
   FakeInputInjector();
   ~FakeInputInjector() override;
@@ -53,11 +52,17 @@ class FakeInputInjector : public InputInjector,
   }
 
  private:
+  friend class FakeDesktopEnvironment;
+
   std::vector<protocol::KeyEvent>* key_events_ = nullptr;
   std::vector<protocol::TextEvent>* text_events_ = nullptr;
   std::vector<protocol::MouseEvent>* mouse_events_ = nullptr;
   std::vector<protocol::TouchEvent>* touch_events_ = nullptr;
   std::vector<protocol::ClipboardEvent>* clipboard_events_ = nullptr;
+
+  base::WeakPtrFactory<FakeInputInjector> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeInputInjector);
 };
 
 class FakeScreenControls : public ScreenControls {
@@ -69,9 +74,7 @@ class FakeScreenControls : public ScreenControls {
   void SetScreenResolution(const ScreenResolution& resolution) override;
 };
 
-class FakeDesktopEnvironment
-    : public DesktopEnvironment,
-      public base::SupportsWeakPtr<FakeDesktopEnvironment> {
+class FakeDesktopEnvironment : public DesktopEnvironment {
  public:
   explicit FakeDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> capture_thread,
@@ -103,12 +106,16 @@ class FakeDesktopEnvironment
   }
 
  private:
+  friend class FakeDesktopEnvironmentFactory;
+
   scoped_refptr<base::SingleThreadTaskRunner> capture_thread_;
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   base::WeakPtr<FakeInputInjector> last_input_injector_;
 
   const DesktopEnvironmentOptions options_;
+
+  base::WeakPtrFactory<FakeDesktopEnvironment> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironment);
 };

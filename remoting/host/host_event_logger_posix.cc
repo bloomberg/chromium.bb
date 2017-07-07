@@ -26,7 +26,7 @@ namespace {
 
 class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  public:
-  HostEventLoggerPosix(base::WeakPtr<HostStatusMonitor> monitor,
+  HostEventLoggerPosix(scoped_refptr<HostStatusMonitor> monitor,
                        const std::string& application_name);
 
   ~HostEventLoggerPosix() override;
@@ -45,7 +45,7 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  private:
   void Log(const std::string& message);
 
-  base::WeakPtr<HostStatusMonitor> monitor_;
+  scoped_refptr<HostStatusMonitor> monitor_;
   std::string application_name_;
 
   DISALLOW_COPY_AND_ASSIGN(HostEventLoggerPosix);
@@ -54,17 +54,15 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
 } //namespace
 
 HostEventLoggerPosix::HostEventLoggerPosix(
-    base::WeakPtr<HostStatusMonitor> monitor,
+    scoped_refptr<HostStatusMonitor> monitor,
     const std::string& application_name)
-    : monitor_(monitor),
-      application_name_(application_name) {
+    : monitor_(monitor), application_name_(application_name) {
   openlog(application_name_.c_str(), 0, LOG_USER);
   monitor_->AddStatusObserver(this);
 }
 
 HostEventLoggerPosix::~HostEventLoggerPosix() {
-  if (monitor_.get())
-    monitor_->RemoveStatusObserver(this);
+  monitor_->RemoveStatusObserver(this);
   closelog();
 }
 
@@ -106,7 +104,7 @@ void HostEventLoggerPosix::Log(const std::string& message) {
 
 // static
 std::unique_ptr<HostEventLogger> HostEventLogger::Create(
-    base::WeakPtr<HostStatusMonitor> monitor,
+    scoped_refptr<HostStatusMonitor> monitor,
     const std::string& application_name) {
   return base::WrapUnique(new HostEventLoggerPosix(monitor, application_name));
 }

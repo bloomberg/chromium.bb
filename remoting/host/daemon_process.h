@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
@@ -46,7 +45,6 @@ class ScreenResolution;
 // sessions.
 class DaemonProcess
     : public ConfigWatcher::Delegate,
-      public HostStatusMonitor,
       public WorkerProcessIpcDelegate,
       public protocol::ProcessStatsStub {
  public:
@@ -67,9 +65,7 @@ class DaemonProcess
   void OnConfigUpdated(const std::string& serialized_config) override;
   void OnConfigWatcherError() override;
 
-  // HostStatusMonitor interface.
-  void AddStatusObserver(HostStatusObserver* observer) override;
-  void RemoveStatusObserver(HostStatusObserver* observer) override;
+  scoped_refptr<HostStatusMonitor> status_monitor() { return status_monitor_; }
 
   // WorkerProcessIpcDelegate implementation.
   void OnChannelConnected(int32_t peer_pid) override;
@@ -201,6 +197,8 @@ class DaemonProcess
   // Writes host status updates to the system event log.
   std::unique_ptr<HostEventLogger> host_event_logger_;
 
+  scoped_refptr<HostStatusMonitor> status_monitor_;
+
   // Reports process statistic data to network process.
   std::unique_ptr<ProcessStatsSender> stats_sender_;
 
@@ -214,8 +212,6 @@ class DaemonProcess
   int process_stats_request_count_ = 0;
 
   CurrentProcessStatsAgent current_process_stats_;
-
-  base::WeakPtrFactory<DaemonProcess> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonProcess);
 };

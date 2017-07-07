@@ -75,7 +75,7 @@ ChromotingHost::ChromotingHost(
       transport_context_(transport_context),
       audio_task_runner_(audio_task_runner),
       video_encode_task_runner_(video_encode_task_runner),
-      started_(false),
+      status_monitor_(new HostStatusMonitor()),
       login_backoff_(&kDefaultBackoffPolicy),
       desktop_environment_options_(options),
       weak_factory_(this) {
@@ -96,7 +96,7 @@ ChromotingHost::~ChromotingHost() {
 
   // Notify observers.
   if (started_) {
-    for (auto& observer : status_observers_)
+    for (auto& observer : status_monitor_->observers())
       observer.OnShutdown();
   }
 }
@@ -107,21 +107,11 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
 
   HOST_LOG << "Starting host";
   started_ = true;
-  for (auto& observer : status_observers_)
+  for (auto& observer : status_monitor_->observers())
     observer.OnStart(host_owner_email);
 
   session_manager_->AcceptIncoming(
       base::Bind(&ChromotingHost::OnIncomingSession, base::Unretained(this)));
-}
-
-void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  status_observers_.AddObserver(observer);
-}
-
-void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  status_observers_.RemoveObserver(observer);
 }
 
 void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {
@@ -176,7 +166,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(clients_.front().get() == client);
 
   // Notify observers that there is at least one authenticated client.
-  for (auto& observer : status_observers_)
+  for (auto& observer : status_monitor_->observers())
     observer.OnClientAuthenticated(client->client_jid());
 }
 
@@ -184,7 +174,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify observers.
-  for (auto& observer : status_observers_)
+  for (auto& observer : status_monitor_->observers())
     observer.OnClientConnected(client->client_jid());
 }
 
@@ -192,7 +182,7 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify observers.
-  for (auto& observer : status_observers_)
+  for (auto& observer : status_monitor_->observers())
     observer.OnAccessDenied(client->client_jid());
 }
 
@@ -211,7 +201,7 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
   clients_.erase(it);
 
   if (was_authenticated) {
-    for (auto& observer : status_observers_)
+    for (auto& observer : status_monitor_->observers())
       observer.OnClientDisconnected(jid);
   }
 }
@@ -221,7 +211,7 @@ void ChromotingHost::OnSessionRouteChange(
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : status_observers_)
+  for (auto& observer : status_monitor_->observers())
     observer.OnClientRouteChange(session->client_jid(), channel_name, route);
 }
 
