@@ -395,24 +395,6 @@ void LayoutEmbeddedContent::UpdateGeometryInternal(
   embedded_content_view.SetFrameRect(frame_rect);
 }
 
-void LayoutEmbeddedContent::DeprecatedInvalidatePaintOfSubtrees(
-    const PaintInvalidationState& paint_invalidation_state) {
-  LocalFrameView* frame_view = ChildFrameView();
-  if (frame_view && !IsThrottledFrameView()) {
-    // |childFrameView| is in another document, which could be
-    // missing its LayoutView. TODO(jchaffraix): Ideally we should
-    // not need this code.
-    if (LayoutView* child_layout_view = ToLayoutView(
-            LayoutAPIShim::LayoutObjectFrom(frame_view->GetLayoutViewItem()))) {
-      PaintInvalidationState child_view_paint_invalidation_state(
-          paint_invalidation_state, *child_layout_view);
-      frame_view->DeprecatedInvalidateTree(child_view_paint_invalidation_state);
-    }
-  }
-
-  LayoutReplaced::DeprecatedInvalidatePaintOfSubtrees(paint_invalidation_state);
-}
-
 bool LayoutEmbeddedContent::IsThrottledFrameView() const {
   if (LocalFrameView* frame_view = ChildFrameView())
     return frame_view->ShouldThrottleRendering();

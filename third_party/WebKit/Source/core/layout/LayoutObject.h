@@ -71,7 +71,6 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class PropertyTreeState;
 class ObjectPaintProperties;
-class PaintInvalidationState;
 class PaintLayer;
 class PseudoStyleRequest;
 
@@ -398,12 +397,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Sets the parent of this object but doesn't add it as a child of the parent.
   void SetDangerousOneWayParent(LayoutObject*);
 
-  // For SlimmingPaintInvalidation/SPv2 only.
   // The ObjectPaintProperties structure holds references to the property tree
   // nodes that are created by the layout object. The property nodes should only
   // be updated during InPrePaint phase of the document lifecycle.
   const ObjectPaintProperties* PaintProperties() const {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     return rare_paint_data_ ? rare_paint_data_->PaintProperties() : nullptr;
   }
 
@@ -416,7 +413,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // to paint this LayoutObject. See also the comment for
   // RarePaintData::local_border_box_properties_.
   const PropertyTreeState* LocalBorderBoxProperties() const {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     if (rare_paint_data_)
       return rare_paint_data_->LocalBorderBoxProperties();
     return nullptr;
@@ -1406,11 +1402,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutRect InvalidatePaintRectangle(const LayoutRect&,
                                       DisplayItemClient* = nullptr) const;
 
-  // Walk the tree after layout issuing paint invalidations for layoutObjects
-  // that have changed or moved, updating bounds that have changed, and clearing
-  // paint invalidation state.
-  virtual void DeprecatedInvalidateTree(const PaintInvalidationState&);
-
   void SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
   // Returns the rect that should have paint invalidated whenever this object
@@ -1712,9 +1703,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetShouldInvalidateSelection();
 
-  bool ShouldCheckForPaintInvalidationWithPaintInvalidationState(
-      const PaintInvalidationState&) const;
-
   bool ShouldCheckForPaintInvalidation() const {
     return MayNeedPaintInvalidation() || ShouldDoFullPaintInvalidation();
   }
@@ -1778,7 +1766,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
     void SetVisualRect(const LayoutRect& r) { layout_object_.SetVisualRect(r); }
     void SetPaintOffset(const LayoutPoint& p) {
-      DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
       DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
                 DocumentLifecycle::kInPrePaint);
       layout_object_.paint_offset_ = p;
@@ -2090,23 +2077,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Called before paint invalidation.
   virtual void EnsureIsReadyForPaintInvalidation() { DCHECK(!NeedsLayout()); }
-
-  // This function walks the descendants of |this|, following a
-  // layout ordering.
-  //
-  // The ordering is important for PaintInvalidationState, as it requires to be
-  // called following a descendant/container relationship.
-  //
-  // The function is overridden to handle special children (e.g. percentage
-  // height descendants or reflections).
-  virtual void DeprecatedInvalidatePaintOfSubtrees(
-      const PaintInvalidationState& child_paint_invalidation_state);
-
-  // This function generates the invalidation for this object only.
-  // It doesn't recurse into other object, as this is handled by
-  // DeprecatedInvalidatePaintOfSubtrees.
-  virtual PaintInvalidationReason DeprecatedInvalidatePaint(
-      const PaintInvalidationState&);
 
   void SetIsBackgroundAttachmentFixedObject(bool);
 
@@ -2638,7 +2608,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // building. It is relative to the containing transform space. It is the same
   // offset that will be used to paint the object on SPv2. It's used to detect
   // paint offset change for paint invalidation on SPv2, and partial paint
-  // property tree update for SlimmingPaintInvalidation on SPv1 and SPv2.
+  // property tree update on SPv1 and SPv2.
   LayoutPoint paint_offset_;
 
   std::unique_ptr<RarePaintData> rare_paint_data_;

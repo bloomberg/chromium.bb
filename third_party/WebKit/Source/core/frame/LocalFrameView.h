@@ -90,7 +90,6 @@ class LayoutScrollbarPart;
 class LayoutView;
 class PaintArtifactCompositor;
 class PaintController;
-class PaintInvalidationState;
 class Page;
 class PluginView;
 class PrintContext;
@@ -289,10 +288,10 @@ class CORE_EXPORT LocalFrameView final
   Color DocumentBackgroundColor() const;
 
   // Run all needed lifecycle stages. After calling this method, all frames will
-  // be in the lifecycle state PaintInvalidationClean.  If lifecycle throttling
-  // is allowed (see DocumentLifecycle::AllowThrottlingScope), some frames may
-  // skip the lifecycle update (e.g., based on visibility) and will not end up
-  // being PaintInvalidationClean.
+  // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
+  // (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the
+  // lifecycle update (e.g., based on visibility) and will not end up being
+  // PaintClean.
   void UpdateAllLifecyclePhases();
 
   // Everything except paint (the last phase).
@@ -777,10 +776,6 @@ class CORE_EXPORT LocalFrameView final
   void EnqueueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
 
-  // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into
-  // PaintInvalidator.
-  void InvalidatePaint(const PaintInvalidationState&);
-
   // Only for SPv2.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
@@ -877,10 +872,6 @@ class CORE_EXPORT LocalFrameView final
     AutoReset<bool> scope_;
   };
 
-  // Only for LayoutEmbeddedContent to traverse into sub frames during paint
-  // invalidation.
-  void DeprecatedInvalidateTree(const PaintInvalidationState&);
-
  private:
   explicit LocalFrameView(LocalFrame&, IntRect);
   class ScrollbarManager : public blink::ScrollbarManager {
@@ -916,7 +907,6 @@ class CORE_EXPORT LocalFrameView final
   void UpdateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState target_state);
 
-  void DeprecatedInvalidateTreeRecursive();
   void ScrollContentsIfNeededRecursive();
   void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
@@ -924,7 +914,6 @@ class CORE_EXPORT LocalFrameView final
   void PaintGraphicsLayerRecursively(GraphicsLayer*);
 
   void UpdateStyleAndLayoutIfNeededRecursiveInternal();
-  void DeprecatedInvalidateTreeRecursiveInternal();
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);

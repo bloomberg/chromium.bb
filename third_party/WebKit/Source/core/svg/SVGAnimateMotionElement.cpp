@@ -302,10 +302,8 @@ void SVGAnimateMotionElement::UpdateAnimationMode() {
 void SVGAnimateMotionElement::InvalidateForAnimateMotionTransformChange(
     LayoutObject& object) {
   object.SetNeedsTransformUpdate();
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-    // The transform paint property relies on the SVG transform value.
-    object.SetNeedsPaintPropertyUpdate();
-  }
+  // The transform paint property relies on the SVG transform value.
+  object.SetNeedsPaintPropertyUpdate();
   MarkForLayoutAndParentResourceInvalidation(&object);
 }
 

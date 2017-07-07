@@ -76,10 +76,6 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 
-  // Overridden to invalidate the child frame if any.
-  void DeprecatedInvalidatePaintOfSubtrees(
-      const PaintInvalidationState&) override;
-
  private:
   void UpdateGeometryInternal(EmbeddedContentView&);
   CompositingReasons AdditionalCompositingReasons() const override;

@@ -1493,16 +1493,6 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   }
 }
 
-PaintInvalidationReason LayoutTable::DeprecatedInvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  if (HasCollapsedBorders()) {
-    paint_invalidation_state.PaintingLayer()
-        .SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
-
-  return LayoutBlock::DeprecatedInvalidatePaint(paint_invalidation_state);
-}
-
 PaintInvalidationReason LayoutTable::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   return TablePaintInvalidator(*this, context).InvalidatePaint();

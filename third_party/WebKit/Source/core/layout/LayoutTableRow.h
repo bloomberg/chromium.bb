@@ -58,8 +58,8 @@ static const unsigned kMaxRowIndex = 0x7FFFFFFE;  // 2,147,483,646
 // for its children. LayoutTableCells are positioned with respect to the
 // enclosing LayoutTableSection (this object's parent()). This particularity is
 // why functions accumulating offset while walking the tree have to special case
-// LayoutTableRow (see e.g. PaintInvalidationState or
-// LayoutBox::positionFromPoint()).
+// LayoutTableRow (see e.g. PaintInvalidatorContext or
+// LayoutBox::PositionFromPoint()).
 //
 // LayoutTableRow is also positioned with respect to the enclosing
 // LayoutTableSection. See LayoutTableSection::layoutRows() for the placement

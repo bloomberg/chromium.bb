@@ -27,14 +27,10 @@ struct CORE_EXPORT PaintInvalidatorContext {
             parent_context.paint_invalidation_container_for_stacked_contents),
         painting_layer(parent_context.painting_layer) {}
 
-  // This method is virtual temporarily to adapt PaintInvalidatorContext and the
-  // legacy PaintInvalidationState for code shared by old code and new code.
-  virtual void MapLocalRectToVisualRectInBacking(const LayoutObject&,
-                                                 LayoutRect&) const;
+  void MapLocalRectToVisualRectInBacking(const LayoutObject&,
+                                         LayoutRect&) const;
 
   bool NeedsVisualRectUpdate(const LayoutObject& object) const {
-    if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-      return true;
 #if DCHECK_IS_ON()
     if (force_visual_rect_update_for_checking_)
       return true;

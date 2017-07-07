@@ -127,8 +127,7 @@ void LayoutMenuList::AdjustInnerStyle() {
   }
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    SetNeedsPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
@@ -144,8 +143,7 @@ void LayoutMenuList::AddChild(LayoutObject* new_child,
     cache->ChildrenChanged(this);
 
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    SetNeedsPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 void LayoutMenuList::RemoveChild(LayoutObject* old_child) {

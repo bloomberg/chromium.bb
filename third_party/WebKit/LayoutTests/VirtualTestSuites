@@ -113,16 +113,6 @@
     "args": ["--stable-release-mode"]
   },
   {
-    "prefix": "disable-spinvalidation",
-    "base": "compositing",
-    "args": ["--disable-slimming-paint-invalidation"]
-  },
-  {
-    "prefix": "disable-spinvalidation",
-    "base": "paint",
-    "args": ["--disable-slimming-paint-invalidation"]
-  },
-  {
     "prefix": "off-main-thread-fetch",
     "base": "external/wpt/html/browsers/offline/appcache/workers",
     "args": ["--enable-features=OffMainThreadFetch"]

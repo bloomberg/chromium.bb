@@ -104,7 +104,6 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   Persistent<PaintLayerScrollableArea> scrollable_area;
   struct {
     IntSize size;
-    void* pointer;
     LayoutRect rect;
   } previous_paint_status;
 };
@@ -657,9 +656,7 @@ void PaintLayer::MarkAncestorChainForDescendantDependentFlagsUpdate() {
     if (layer->needs_descendant_dependent_flags_update_)
       break;
     layer->needs_descendant_dependent_flags_update_ = true;
-
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-      layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 
@@ -715,9 +712,8 @@ void PaintLayer::UpdateDescendantDependentFlags() {
                                         child->GetLayoutObject().HasClipPath();
     }
 
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled() &&
-        old_has_non_isolated_descendant_with_blend_mode !=
-            static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
+    if (old_has_non_isolated_descendant_with_blend_mode !=
+        static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
     needs_descendant_dependent_flags_update_ = false;
   }
@@ -2778,14 +2774,7 @@ bool PaintLayer::HasCompositedClippingMask() const {
 
 bool PaintLayer::PaintsWithTransform(
     GlobalPaintFlags global_paint_flags) const {
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-    return Transform() &&
-           ((global_paint_flags & kGlobalPaintFlattenCompositingLayers) ||
-            GetCompositingState() != kPaintsIntoOwnBacking);
-  }
-
-  return (Transform() ||
-          GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) &&
+  return Transform() &&
          ((global_paint_flags & kGlobalPaintFlattenCompositingLayers) ||
           GetCompositingState() != kPaintsIntoOwnBacking);
 }
@@ -3101,11 +3090,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
 PaintLayerClipper PaintLayer::Clipper(
     GeometryMapperOption geometry_mapper_option) const {
-  if (geometry_mapper_option == kUseGeometryMapper) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-    return PaintLayerClipper(*this, true);
-  }
-  return PaintLayerClipper(*this, false);
+  return PaintLayerClipper(*this, geometry_mapper_option == kUseGeometryMapper);
 }
 
 bool PaintLayer::ScrollsOverflow() const {

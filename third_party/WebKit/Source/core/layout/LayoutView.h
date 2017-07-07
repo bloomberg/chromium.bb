@@ -27,7 +27,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutState.h"
-#include "core/layout/PaintInvalidationState.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"

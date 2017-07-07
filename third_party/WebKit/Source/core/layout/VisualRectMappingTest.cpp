@@ -4,7 +4,6 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInvalidationState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"

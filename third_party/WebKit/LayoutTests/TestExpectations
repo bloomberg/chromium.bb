@@ -49,10 +49,8 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
-crbug.com/504613 crbug.com/524248 [ Mac ] virtual/disable-spinvalidation/paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure Pass ]
-crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure Pass ]
 
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Failure ]
 
@@ -60,7 +58,6 @@ crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
-crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
@@ -68,9 +65,6 @@ crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-
 crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-crbug.com/653722 virtual/disable-spinvalidation/compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-crbug.com/653722 virtual/disable-spinvalidation/compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-crbug.com/653722 virtual/disable-spinvalidation/compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
@@ -83,7 +77,6 @@ crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pas
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/309675 virtual/disable-spinvalidation/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 # The failure in the next line is due to virtual/gpu bots using osmesa
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
@@ -1684,9 +1677,7 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 
 crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 crbug.com/487344 [ Linux Mac Win7 ] paint/invalidation/video-paint-invalidation.html [ Failure ]
-crbug.com/487344 [ Linux Mac Win7 ] virtual/disable-spinvalidation/paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
-crbug.com/487344 [ Win ] virtual/disable-spinvalidation/compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
@@ -1709,9 +1700,6 @@ crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-current
 crbug.com/638621 [ Win7 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
 crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
-
-# This test is irrelevant because we're about to delete the virtual test suite anyway.
-Bug(none) virtual/disable-spinvalidation/paint/invalidation/percentage-transform-paint-offset.html [ Crash ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
@@ -2896,7 +2884,6 @@ crbug.com/736177 [ Mac ] tables/mozilla_expected_failures/bugs/bug1128.html [ Fa
 crbug.com/736177 [ Mac ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] tables/mozilla_expected_failures/bugs/bug91057.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] transforms/svg-vs-css.xhtml [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/disable-spinvalidation/paint/spellmarkers/document-markers-zoom-150.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/layout_ng/fast/block/basic/001.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/mojo-loading/http/tests/misc/acid2-pixel.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/off-main-thread-fetch/http/tests/misc/acid2-pixel.html [ Failure Pass ]

@@ -361,18 +361,15 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled()) {
-    if ((old_style && old_style->GetPosition() != StyleRef().GetPosition()) ||
-        had_layer != HasLayer()) {
-      // This may affect paint properties of the current object, and descendants
-      // even if paint properties of the current object won't change. E.g. the
-      // stacking context and/or containing block of descendants may change.
-      SetSubtreeNeedsPaintPropertyUpdate();
-    } else if (had_transform_related_property !=
-               HasTransformRelatedProperty()) {
-      // This affects whether to create transform node.
-      SetNeedsPaintPropertyUpdate();
-    }
+  if ((old_style && old_style->GetPosition() != StyleRef().GetPosition()) ||
+      had_layer != HasLayer()) {
+    // This may affect paint properties of the current object, and descendants
+    // even if paint properties of the current object won't change. E.g. the
+    // stacking context and/or containing block of descendants may change.
+    SetSubtreeNeedsPaintPropertyUpdate();
+  } else if (had_transform_related_property != HasTransformRelatedProperty()) {
+    // This affects whether to create transform node.
+    SetNeedsPaintPropertyUpdate();
   }
 
   if (Layer()) {
@@ -552,51 +549,6 @@ void LayoutBoxModelObject::AddLayerHitTestRects(
     LayoutObject::AddLayerHitTestRects(rects, current_layer, layer_offset,
                                        container_rect);
   }
-}
-
-DISABLE_CFI_PERF
-void LayoutBoxModelObject::DeprecatedInvalidateTree(
-    const PaintInvalidationState& paint_invalidation_state) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-  EnsureIsReadyForPaintInvalidation();
-
-  PaintInvalidationState new_paint_invalidation_state(paint_invalidation_state,
-                                                      *this);
-  if (!ShouldCheckForPaintInvalidationWithPaintInvalidationState(
-          new_paint_invalidation_state))
-    return;
-
-  if (MayNeedPaintInvalidationSubtree())
-    new_paint_invalidation_state
-        .SetForceSubtreeInvalidationCheckingWithinContainer();
-
-  ObjectPaintInvalidator paint_invalidator(*this);
-  LayoutRect previous_visual_rect = VisualRect();
-  LayoutPoint previous_location = paint_invalidator.LocationInBacking();
-  PaintInvalidationReason reason =
-      DeprecatedInvalidatePaint(new_paint_invalidation_state);
-
-  if (previous_location != paint_invalidator.LocationInBacking()) {
-    new_paint_invalidation_state
-        .SetForceSubtreeInvalidationCheckingWithinContainer();
-  }
-
-  // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have
-  // enough saved information to do accurate check of clipping change. Will
-  // remove when we remove rect-based paint invalidation.
-  if (previous_visual_rect != VisualRect() &&
-      !UsesCompositedScrolling()
-      // Note that isLayoutView() below becomes unnecessary after the launch of
-      // root layer scrolling.
-      && (HasOverflowClip() || IsLayoutView())) {
-    new_paint_invalidation_state
-        .SetForceSubtreeInvalidationRectUpdateWithinContainer();
-  }
-
-  new_paint_invalidation_state.UpdateForChildren(reason);
-  DeprecatedInvalidatePaintOfSubtrees(new_paint_invalidation_state);
-
-  ClearPaintInvalidationFlags();
 }
 
 void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(

@@ -26,7 +26,6 @@ template <typename PropertyTreeNode>
 class PropertyTreePrinter {
  public:
   String TreeAsString(const LocalFrameView& frame_view) {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
     CollectPropertyNodes(frame_view);
 
     const PropertyTreeNode* root_node = LookupRootNode();

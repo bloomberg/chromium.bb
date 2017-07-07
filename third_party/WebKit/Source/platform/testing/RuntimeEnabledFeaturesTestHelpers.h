@@ -49,10 +49,6 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SetSlimmingPaintV2Enabled>
     ScopedSlimmingPaintV2ForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled,
-    RuntimeEnabledFeatures::SetSlimmingPaintInvalidationEnabled>
-    ScopedSlimmingPaintInvalidationForTest;
-typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled,
     RuntimeEnabledFeatures::SetPaintUnderInvalidationCheckingEnabled>
     ScopedPaintUnderInvalidationCheckingForTest;

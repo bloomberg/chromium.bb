@@ -1128,9 +1128,6 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
 }
 
 TEST_P(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    return;
-
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 

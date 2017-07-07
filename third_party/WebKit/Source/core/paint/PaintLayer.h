@@ -565,8 +565,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Adjusts the given rect (in the coordinate space of the LayoutObject) to the
   // coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-  // Should use PaintInvalidationState::mapRectToPaintInvalidationBacking()
-  // instead if PaintInvalidationState is available.
+  // Should use PaintInvalidatorContext::MapRectToPaintInvalidationBacking()
+  // instead if PaintInvalidatorContext.
   static void MapRectToPaintInvalidationBacking(
       const LayoutObject&,
       const LayoutBoxModelObject& paint_invalidation_container,
@@ -851,7 +851,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void UpdateSelfPaintingLayer();
   // This is O(depth) so avoid calling this in loops. Instead use optimizations
-  // like those in PaintInvalidationState.
+  // like those in PaintInvalidatorContext.
   PaintLayer* EnclosingSelfPaintingLayer();
 
   PaintLayer* EnclosingTransformedAncestor() const;
@@ -929,15 +929,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetPreviousScrollOffsetAccumulationForPainting(const IntSize& s) {
     previous_scroll_offset_accumulation_for_painting_ = s;
   }
-
-  ClipRects* PreviousClipRects() const {
-    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled());
-    return previous_clip_rects_.Get();
-  }
-  void SetPreviousClipRects(ClipRects& clip_rects) {
-    previous_clip_rects_ = &clip_rects;
-  }
-  void ClearPreviousClipRects() { previous_clip_rects_.Clear(); }
 
   LayoutRect PreviousPaintDirtyRect() const {
     return previous_paint_dirty_rect_;
@@ -1271,7 +1262,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
   IntSize previous_scroll_offset_accumulation_for_painting_;
-  RefPtr<ClipRects> previous_clip_rects_;
   LayoutRect previous_paint_dirty_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;

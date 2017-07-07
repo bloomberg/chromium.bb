@@ -85,8 +85,6 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void RemoveChild(LayoutObject*) override;
   void WillBeDestroyed() override;
 
-  void DeprecatedInvalidateTree(const PaintInvalidationState&) override;
-
   RootInlineBox* CreateRootInlineBox() override;
 
   void InvalidatePositioningValues(LayoutInvalidationReasonForTracing);

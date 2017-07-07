@@ -60,16 +60,14 @@ class ObjectPainter {
   void PaintAllPhasesAtomically(const PaintInfo&,
                                 const LayoutPoint& paint_offset);
 
-  // When SlimmingPaintInvalidation is enabled, we compute paint offsets during
-  // the pre-paint tree walk (PrePaintTreeWalk). This check verifies that the
-  // paint offset computed during pre-paint matches the actual paint offset
-  // during paint.
+  // We compute paint offsets during the pre-paint tree walk (PrePaintTreeWalk).
+  // This check verifies that the paint offset computed during pre-paint matches
+  // the actual paint offset during paint.
   void CheckPaintOffset(const PaintInfo& paint_info,
                         const LayoutPoint& paint_offset) {
 #if DCHECK_IS_ON()
-    // For now this works for SPv2 (implying SlimmingPaintInvalidation) only,
-    // but not SlimmingPaintInvalidation on SPv1 because of complexities of
-    // paint invalidation containers in SPv1.
+    // For now this works for SPv2 only because of complexities of paint
+    // invalidation containers in SPv1.
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       DoCheckPaintOffset(paint_info, paint_offset);
 #endif

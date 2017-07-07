@@ -4743,14 +4743,6 @@ void LayoutBlockFlow::AddOutlineRects(
         include_block_overflows);
 }
 
-PaintInvalidationReason LayoutBlockFlow::DeprecatedInvalidatePaint(
-    const PaintInvalidationState& paint_invalidation_state) {
-  if (ContainsFloats())
-    paint_invalidation_state.PaintingLayer().SetNeedsPaintPhaseFloat();
-
-  return LayoutBlock::DeprecatedInvalidatePaint(paint_invalidation_state);
-}
-
 void LayoutBlockFlow::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   BlockFlowPaintInvalidator(*this).InvalidateDisplayItemClients(

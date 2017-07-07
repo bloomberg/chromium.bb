@@ -185,8 +185,7 @@ void LayoutSVGRoot::UpdateLayout() {
   if (transform_change != SVGTransformChange::kNone ||
       viewport_may_have_changed) {
     SetMayNeedPaintInvalidationSubtree();
-    if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-      SetNeedsPaintPropertyUpdate();
+    SetNeedsPaintPropertyUpdate();
   }
 
   SVGSVGElement* svg = toSVGSVGElement(GetNode());
@@ -313,8 +312,7 @@ void LayoutSVGRoot::DescendantIsolationRequirementsChanged(
       has_non_isolated_blending_descendants_dirty_ = true;
       break;
   }
-  if (RuntimeEnabledFeatures::SlimmingPaintInvalidationEnabled())
-    SetNeedsPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 void LayoutSVGRoot::InsertedIntoTree() {
