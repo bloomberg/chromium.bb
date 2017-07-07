@@ -75,51 +75,6 @@ void ClassicPendingScript::StreamingFinished() {
   AdvanceReadyState(error_occurred ? kErrorOccurred : kReady);
 }
 
-// Returns true if SRI check passed.
-static bool CheckScriptResourceIntegrity(Resource* resource,
-                                         ScriptElementBase* element) {
-  DCHECK_EQ(resource->GetType(), Resource::kScript);
-  ScriptResource* script_resource = ToScriptResource(resource);
-  String integrity_attr = element->IntegrityAttributeValue();
-
-  // It is possible to get back a script resource with integrity metadata
-  // for a request with an empty integrity attribute. In that case, the
-  // integrity check should be skipped, so this check ensures that the
-  // integrity attribute isn't empty in addition to checking if the
-  // resource has empty integrity metadata.
-  if (integrity_attr.IsEmpty() ||
-      script_resource->IntegrityMetadata().IsEmpty())
-    return true;
-
-  switch (script_resource->IntegrityDisposition()) {
-    case ResourceIntegrityDisposition::kPassed:
-      return true;
-
-    case ResourceIntegrityDisposition::kFailed:
-      // TODO(jww): This should probably also generate a console
-      // message identical to the one produced by
-      // CheckSubresourceIntegrity below. See https://crbug.com/585267.
-      return false;
-
-    case ResourceIntegrityDisposition::kNotChecked: {
-      if (!resource->ResourceBuffer())
-        return true;
-
-      bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
-          script_resource->IntegrityMetadata(), element->GetDocument(),
-          resource->ResourceBuffer()->Data(),
-          resource->ResourceBuffer()->size(), resource->Url(), *resource);
-      script_resource->SetIntegrityDisposition(
-          passed ? ResourceIntegrityDisposition::kPassed
-                 : ResourceIntegrityDisposition::kFailed);
-      return passed;
-    }
-  }
-
-  NOTREACHED();
-  return true;
-}
-
 void ClassicPendingScript::NotifyFinished(Resource* resource) {
   // The following SRI checks need to be here because, unfortunately, fetches
   // are not done purely according to the Fetch spec. In particular,
@@ -144,8 +99,19 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   //
   // See https://crbug.com/500701 for more information.
   CheckState();
-  if (GetElement()) {
-    integrity_failure_ = !CheckScriptResourceIntegrity(resource, GetElement());
+  ScriptElementBase* element = GetElement();
+  if (element) {
+    GetResource()->CheckResourceIntegrity(element->GetDocument());
+
+    // It is possible to get back a script resource with integrity metadata
+    // for a request with an empty integrity attribute. In that case, the
+    // integrity check should be skipped, so this check ensures that the
+    // integrity attribute isn't empty in addition to checking if the
+    // resource has empty integrity metadata.
+    if (!element->IntegrityAttributeValue().IsEmpty()) {
+      integrity_failure_ = GetResource()->IntegrityDisposition() !=
+                           ResourceIntegrityDisposition::kPassed;
+    }
   }
 
   // We are now waiting for script streaming to finish.

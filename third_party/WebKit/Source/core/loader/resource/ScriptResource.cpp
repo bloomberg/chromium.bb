@@ -26,6 +26,7 @@
 
 #include "core/loader/resource/ScriptResource.h"
 
+#include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
@@ -115,6 +116,34 @@ AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
     return kSharableCrossOrigin;
 
   return kNotSharableCrossOrigin;
+}
+
+void ScriptResource::CheckResourceIntegrity(Document& document) {
+  // Already checked? Retain existing result.
+  //
+  // TODO(vogelheim): If IntegrityDisposition() is kFailed, this should
+  // probably also generate a console message identical to the one produced
+  // by the CheckSubresourceIntegrity call below. See crbug.com/585267.
+  if (IntegrityDisposition() != ResourceIntegrityDisposition::kNotChecked)
+    return;
+
+  // Loading error occurred? Then result is uncheckable.
+  if (ErrorOccurred())
+    return;
+
+  // No integrity attributes to check? Then we're passing.
+  if (IntegrityMetadata().IsEmpty()) {
+    SetIntegrityDisposition(ResourceIntegrityDisposition::kPassed);
+    return;
+  }
+
+  CHECK(!!ResourceBuffer());
+  bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
+      IntegrityMetadata(), document, ResourceBuffer()->Data(),
+      ResourceBuffer()->size(), Url(), *this);
+  SetIntegrityDisposition(passed ? ResourceIntegrityDisposition::kPassed
+                                 : ResourceIntegrityDisposition::kFailed);
+  DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);
 }
 
 }  // namespace blink
