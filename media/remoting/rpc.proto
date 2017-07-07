@@ -254,6 +254,7 @@ message PipelineStatistics {
   optional uint32 video_frames_dropped = 4;
   optional int64 audio_memory_usage = 5;
   optional int64 video_memory_usage = 6;
+  optional int64 video_frame_duration_average_usec = 7;
 };
 
 message CdmKeyInformation {

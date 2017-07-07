@@ -142,6 +142,7 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   original.audio_memory_usage = 32;
   original.video_memory_usage = 43;
   original.video_keyframe_distance_average = base::TimeDelta::Max();
+  original.video_frame_duration_average = base::TimeDelta::Max();
 
   // There is no convert-to-proto function, so just do that here.
   pb::PipelineStatistics pb_stats;
@@ -151,6 +152,8 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   pb_stats.set_video_frames_dropped(original.video_frames_dropped);
   pb_stats.set_audio_memory_usage(original.audio_memory_usage);
   pb_stats.set_video_memory_usage(original.video_memory_usage);
+  pb_stats.set_video_frame_duration_average_usec(
+      original.video_frame_duration_average.InMicroseconds());
 
   PipelineStatistics converted;
   memset(&converted, ~0xcd, sizeof(converted));  // See note above.
