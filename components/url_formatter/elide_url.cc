@@ -174,8 +174,12 @@ base::string16 ElideUrl(const GURL& url,
   // Get the path substring, including query and reference.
   const size_t path_start_index = parsed.path.begin;
   const size_t path_len = parsed.path.len;
-  base::string16 url_path_query_etc = url_string.substr(path_start_index);
-  base::string16 url_path = url_string.substr(path_start_index, path_len);
+  base::string16 url_path_query_etc;
+  base::string16 url_path;
+  if (parsed.path.is_valid()) {
+    url_path_query_etc = url_string.substr(path_start_index);
+    url_path = url_string.substr(path_start_index, path_len);
+  }
 
   // Return general elided text if url minus the query fits.
   const base::string16 url_minus_query =
@@ -255,6 +259,8 @@ base::string16 ElideUrl(const GURL& url,
   }
 
   const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
+  // TODO(mgiuca): If there is no path, this means the end of the domain gets
+  // elided, not the start (inconsistent). https://crbug.com/739636.
   if (url_path_number_of_elements <= 1 ||
       url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
     // No path to elide, or too long of a path (could overflow in loop below)
