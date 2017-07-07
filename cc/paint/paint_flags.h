@@ -224,6 +224,9 @@ class CC_PAINT_EXPORT PaintFlags {
   bool SupportsFoldingAlpha() const;
 
  private:
+  friend class PaintOpReader;
+  friend class PaintOpWriter;
+
   friend const SkPaint& ToSkPaint(const PaintFlags& flags);
   friend const SkPaint* ToSkPaint(const PaintFlags* flags);
 
