@@ -13,6 +13,7 @@ goog.require('AutomationTreeWalker');
 goog.require('AutomationUtil');
 goog.require('Output');
 goog.require('Output.EventType');
+goog.require('TreePathRecoveryStrategy');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cvox.BrailleBackground');
@@ -655,6 +656,8 @@ editing.EditableLine = function(
   this.lineEndContainer_;
   /** @private {number} */
   this.localLineEndContainerOffset_ = 0;
+  /** @type {RecoveryStrategy} */
+  this.lineStartContainerRecovery_;
 
   this.computeLineData_(opt_baseLineOnStart);
 };
@@ -759,6 +762,11 @@ editing.EditableLine.prototype = {
       textCountBeforeLineStart += finder.name.length;
     }
     this.localLineStartContainerOffset_ = textCountBeforeLineStart;
+
+    if (this.lineStartContainer_) {
+      this.lineStartContainerRecovery_ =
+          new TreePathRecoveryStrategy(this.lineStartContainer_);
+    }
 
     finder = this.lineEnd_;
     while (finder.nextSibling) {
@@ -902,7 +910,11 @@ editing.EditableLine.prototype = {
                 this.localLineStartContainerOffset_) ||
         (otherLine.lineEndContainer_ == this.lineEndContainer_ &&
          otherLine.localLineEndContainerOffset_ ==
-             this.localLineEndContainerOffset_);
+             this.localLineEndContainerOffset_) ||
+        (otherLine.lineStartContainerRecovery_.node ==
+             this.lineStartContainerRecovery_.node &&
+         otherLine.localLineStartContainerOffset_ ==
+             this.localLineStartContainerOffset_);
   },
 
   /**

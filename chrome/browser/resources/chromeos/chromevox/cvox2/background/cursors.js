@@ -12,8 +12,10 @@ goog.provide('cursors.Movement');
 goog.provide('cursors.Range');
 goog.provide('cursors.Unit');
 
+goog.require('AncestryRecoveryStrategy');
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
+goog.require('RecoveryStrategy');
 goog.require('StringUtil');
 goog.require('constants');
 
@@ -84,7 +86,7 @@ cursors.Cursor = function(node, index) {
 
     // The exception is when a user types at the end of a line. In that case,
     // staying on the current node is appropriate.
-    if (node && node.nextOnLine && nextNode) {
+    if (node && node.nextOnLine && node.nextOnLine.role && nextNode) {
       node = nextNode;
       index = 0;
     }
@@ -99,15 +101,8 @@ cursors.Cursor = function(node, index) {
 
   /** @type {number} @private */
   this.index_ = index;
-  /** @type {Array<AutomationNode>} @private */
-  this.ancestry_ = [];
-  var nodeWalker = node;
-  while (nodeWalker) {
-    this.ancestry_.push(nodeWalker);
-    nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW)
-      break;
-  }
+  /** @type {RecoveryStrategy} */
+  this.recovery_ = new AncestryRecoveryStrategy(node);
 };
 
 /**
@@ -177,16 +172,11 @@ cursors.Cursor.prototype = {
    * @return {AutomationNode}
    */
   get node() {
-    for (var i = 0; i < this.ancestry_.length; i++) {
-      var firstValidNode = this.ancestry_[i];
-      if (firstValidNode != null && firstValidNode.role !== undefined &&
-          firstValidNode.root != undefined) {
-        return firstValidNode;
-      }
-      // If we have to walk up to an ancestor, reset the index to NODE_INDEX.
+    if (this.recovery_.requiresRecovery()) {
+      // If we need to recover, the index is no longer valid.
       this.index_ = cursors.NODE_INDEX;
     }
-    return null;
+    return this.recovery_.node;
   },
 
   /**
