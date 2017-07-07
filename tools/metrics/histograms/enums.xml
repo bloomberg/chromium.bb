@@ -19052,7 +19052,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Create tables"/>
   <int value="4"
       label="Version check and migration (check
-             History.MigrateFailureToVersion)"/>
+             History.MigrateFailureFromVersion)"/>
   <int value="5" label="Commit"/>
 </enum>
 
