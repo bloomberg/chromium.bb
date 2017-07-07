@@ -32,7 +32,7 @@ namespace cc {
 
 namespace {
 
-const ResourceFormat kRGBResourceFormat = RGBA_8888;
+const viz::ResourceFormat kRGBResourceFormat = viz::RGBA_8888;
 
 VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     media::VideoFrame* video_frame,
@@ -144,7 +144,7 @@ gpu::SyncToken GenerateCompositorSyncToken(gpu::gles2::GLES2Interface* gl) {
 VideoResourceUpdater::PlaneResource::PlaneResource(
     unsigned int resource_id,
     const gfx::Size& resource_size,
-    ResourceFormat resource_format,
+    viz::ResourceFormat resource_format,
     gpu::Mailbox mailbox)
     : resource_id_(resource_id),
       resource_size_(resource_size),
@@ -196,7 +196,7 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::RecycleOrAllocateResource(
     const gfx::Size& resource_size,
-    ResourceFormat resource_format,
+    viz::ResourceFormat resource_format,
     const gfx::ColorSpace& color_space,
     bool software_resource,
     bool immutable_hint,
@@ -245,7 +245,7 @@ VideoResourceUpdater::RecycleOrAllocateResource(
 
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
-                                       ResourceFormat format,
+                                       viz::ResourceFormat format,
                                        const gfx::ColorSpace& color_space,
                                        bool has_mailbox,
                                        bool immutable_hint) {
@@ -323,12 +323,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   const bool software_compositor = context_provider_ == NULL;
 
-  ResourceFormat output_resource_format;
+  viz::ResourceFormat output_resource_format;
   gfx::ColorSpace output_color_space = video_frame->ColorSpace();
   if (input_frame_format == media::PIXEL_FORMAT_Y16) {
     // Unable to display directly as yuv planes so convert it to RGBA for
     // compositing.
-    output_resource_format = RGBA_8888;
+    output_resource_format = viz::RGBA_8888;
     output_color_space = output_color_space.GetAsFullRangeRGB();
   } else {
     // Can be composited directly from yuv planes.
@@ -337,12 +337,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   }
 
   // If GPU compositing is enabled, but the output resource format
-  // returned by the resource provider is RGBA_8888, then a GPU driver
+  // returned by the resource provider is viz::RGBA_8888, then a GPU driver
   // bug workaround requires that YUV frames must be converted to RGB
   // before texture upload.
   bool texture_needs_rgb_conversion =
       !software_compositor &&
-      output_resource_format == ResourceFormat::RGBA_8888;
+      output_resource_format == viz::ResourceFormat::RGBA_8888;
   size_t output_plane_count = media::VideoFrame::NumPlanes(input_frame_format);
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
@@ -411,7 +411,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         video_renderer_->Copy(video_frame, &canvas, media::Context3D());
       } else {
         size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
-            video_frame->coded_size().width(), ResourceFormat::RGBA_8888);
+            video_frame->coded_size().width(), viz::ResourceFormat::RGBA_8888);
         size_t needed_size = bytes_per_row * video_frame->coded_size().height();
         if (upload_pixels_.size() < needed_size)
           upload_pixels_.resize(needed_size);
@@ -454,7 +454,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   std::unique_ptr<media::HalfFloatMaker> half_float_maker;
   if (resource_provider_->YuvResourceFormat(bits_per_channel) ==
-      LUMINANCE_F16) {
+      viz::LUMINANCE_F16) {
     half_float_maker =
         media::HalfFloatMaker::NewHalfFloatMaker(bits_per_channel);
     external_resources.offset = half_float_maker->Offset();
@@ -489,12 +489,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       bool needs_conversion = false;
       int shift = 0;
 
-      // LUMINANCE_F16 uses half-floats, so we always need a conversion step.
-      if (plane_resource.resource_format() == LUMINANCE_F16) {
+      // viz::LUMINANCE_F16 uses half-floats, so we always need a conversion
+      // step.
+      if (plane_resource.resource_format() == viz::LUMINANCE_F16) {
         needs_conversion = true;
       } else if (bits_per_channel > 8) {
-        // If bits_per_channel > 8 and we can't use LUMINANCE_F16, we need to
-        // shift the data down and create an 8-bit texture.
+        // If bits_per_channel > 8 and we can't use viz::LUMINANCE_F16, we need
+        // to shift the data down and create an 8-bit texture.
         needs_conversion = true;
         shift = bits_per_channel - 8;
       }
@@ -510,7 +511,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           upload_pixels_.resize(needed_size);
 
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
-          if (plane_resource.resource_format() == LUMINANCE_F16) {
+          if (plane_resource.resource_format() == viz::LUMINANCE_F16) {
             uint16_t* dst = reinterpret_cast<uint16_t*>(
                 &upload_pixels_[upload_image_stride * row]);
             const uint16_t* src = reinterpret_cast<uint16_t*>(
@@ -596,7 +597,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
   const gfx::Size output_plane_resource_size = video_frame->coded_size();
   // The copy needs to be a direct transfer of pixel data, so we use an RGBA8
   // target to avoid loss of precision or dropping any alpha component.
-  const ResourceFormat copy_target_format = ResourceFormat::RGBA_8888;
+  const viz::ResourceFormat copy_target_format = viz::ResourceFormat::RGBA_8888;
 
   const bool is_immutable = false;
   const int no_unique_id = 0;

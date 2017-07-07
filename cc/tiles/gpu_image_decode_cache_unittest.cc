@@ -28,7 +28,7 @@ size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
 class TestGpuImageDecodeCache : public GpuImageDecodeCache {
  public:
   explicit TestGpuImageDecodeCache(ContextProvider* context,
-                                   ResourceFormat format)
+                                   viz::ResourceFormat format)
       : GpuImageDecodeCache(context,
                             format,
                             kGpuMemoryLimitBytes,
@@ -74,7 +74,7 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
   return matrix;
 }
 
-using GpuImageDecodeCacheTest = ::testing::TestWithParam<ResourceFormat>;
+using GpuImageDecodeCacheTest = ::testing::TestWithParam<viz::ResourceFormat>;
 
 TEST_P(GpuImageDecodeCacheTest, GetTaskForImageSameImage) {
   auto context_provider = TestContextProvider::Create();
@@ -1503,7 +1503,8 @@ TEST_P(GpuImageDecodeCacheTest, ZeroCacheNormalWorkingSet) {
   // Setup - Image cache has a normal working set, but zero cache size.
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeCache cache(context_provider.get(), ResourceFormat::RGBA_8888,
+  GpuImageDecodeCache cache(context_provider.get(),
+                            viz::ResourceFormat::RGBA_8888,
                             kGpuMemoryLimitBytes, 0);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -1560,7 +1561,8 @@ TEST_P(GpuImageDecodeCacheTest, SmallCacheNormalWorkingSet) {
 
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeCache cache(context_provider.get(), ResourceFormat::RGBA_8888,
+  GpuImageDecodeCache cache(context_provider.get(),
+                            viz::ResourceFormat::RGBA_8888,
                             kGpuMemoryLimitBytes, cache_size);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -1813,8 +1815,8 @@ TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
 
 INSTANTIATE_TEST_CASE_P(GpuImageDecodeCacheTests,
                         GpuImageDecodeCacheTest,
-                        ::testing::Values(ResourceFormat::RGBA_8888,
-                                          ResourceFormat::RGBA_4444));
+                        ::testing::Values(viz::ResourceFormat::RGBA_8888,
+                                          viz::ResourceFormat::RGBA_4444));
 
 }  // namespace
 }  // namespace cc

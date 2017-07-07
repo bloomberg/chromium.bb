@@ -559,7 +559,7 @@ TEST_F(SurfaceSynchronizationTest, ResourcesOnlyReturnedOnce) {
   // its resource list.
   TransferableResource resource;
   resource.id = 1337;
-  resource.format = ALPHA_8;
+  resource.format = viz::ALPHA_8;
   resource.filter = 1234;
   resource.size = gfx::Size(1234, 5678);
   std::vector<TransferableResource> resource_list = {resource};
@@ -1337,7 +1337,7 @@ TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
   // for display.
   TransferableResource resource;
   resource.id = 1337;
-  resource.format = ALPHA_8;
+  resource.format = viz::ALPHA_8;
   resource.filter = 1234;
   resource.size = gfx::Size(1234, 5678);
   std::vector<ReturnedResource> returned_resources =
@@ -1367,7 +1367,7 @@ TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
   // closed.
   TransferableResource resource2;
   resource2.id = 1246;
-  resource2.format = ALPHA_8;
+  resource2.format = viz::ALPHA_8;
   resource2.filter = 1357;
   resource2.size = gfx::Size(8765, 4321);
   std::vector<ReturnedResource> returned_resources2 =

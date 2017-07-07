@@ -146,7 +146,7 @@ class CC_EXPORT DirectRenderer {
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
-  virtual ResourceFormat BackbufferFormat() const = 0;
+  virtual viz::ResourceFormat BackbufferFormat() const = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
   virtual bool BindFramebufferToTexture(const ScopedResource* resource) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;

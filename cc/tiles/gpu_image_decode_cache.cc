@@ -20,8 +20,8 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/tile_task.h"
-#include "cc/resources/resource_format_utils.h"
 #include "cc/tiles/mipmap_util.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu_image_decode_cache.h"
@@ -393,7 +393,7 @@ GpuImageDecodeCache::ImageData::~ImageData() {
 }
 
 GpuImageDecodeCache::GpuImageDecodeCache(ContextProvider* context,
-                                         ResourceFormat decode_format,
+                                         viz::ResourceFormat decode_format,
                                          size_t max_working_set_bytes,
                                          size_t max_cache_bytes)
     : format_(decode_format),
@@ -1180,7 +1180,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         if (!draw_image.image()->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
                 backing_memory->data(), nullptr,
-                ResourceFormatToClosestSkColorType(format_))) {
+                viz::ResourceFormatToClosestSkColorType(format_))) {
           DLOG(ERROR) << "getDeferredTextureImageData failed despite params "
                       << "having validated.";
           backing_memory->Unlock();
@@ -1282,7 +1282,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
       upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
-      ResourceFormatToClosestSkColorType(format_));
+      viz::ResourceFormatToClosestSkColorType(format_));
 
   if (data_size == 0) {
     // Can't upload image, too large or other failure. Try to use SW fallback.
@@ -1310,7 +1310,7 @@ SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
   gfx::Size mip_size =
       CalculateSizeForMipLevel(draw_image, upload_scale_mip_level);
   return SkImageInfo::Make(mip_size.width(), mip_size.height(),
-                           ResourceFormatToClosestSkColorType(format_),
+                           viz::ResourceFormatToClosestSkColorType(format_),
                            kPremul_SkAlphaType,
                            draw_image.target_color_space().ToSkColorSpace());
 }

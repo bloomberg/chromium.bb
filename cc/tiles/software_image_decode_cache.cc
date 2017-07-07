@@ -21,8 +21,8 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/raster/tile_task.h"
-#include "cc/resources/resource_format_utils.h"
 #include "cc/tiles/mipmap_util.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -159,9 +159,9 @@ SkFilterQuality GetDecodedFilterQuality(const ImageDecodeCacheKey& key) {
 
 SkImageInfo CreateImageInfo(size_t width,
                             size_t height,
-                            ResourceFormat format) {
+                            viz::ResourceFormat format) {
   return SkImageInfo::Make(width, height,
-                           ResourceFormatToClosestSkColorType(format),
+                           viz::ResourceFormatToClosestSkColorType(format),
                            kPremul_SkAlphaType);
 }
 
@@ -194,7 +194,7 @@ gfx::Rect GetSrcRect(const DrawImage& image) {
 }  // namespace
 
 SoftwareImageDecodeCache::SoftwareImageDecodeCache(
-    ResourceFormat format,
+    viz::ResourceFormat format,
     size_t locked_memory_limit_bytes)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
@@ -919,8 +919,9 @@ void SoftwareImageDecodeCache::DumpImageMemoryForCache(
 }
 
 // SoftwareImageDecodeCacheKey
-ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
-                                                       ResourceFormat format) {
+ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
+    const DrawImage& image,
+    viz::ResourceFormat format) {
   const SkSize& scale = image.scale();
   // If the src_rect falls outside of the image, we need to clip it since
   // otherwise we might end up with uninitialized memory in the decode process.
@@ -949,8 +950,9 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
     quality = kMedium_SkFilterQuality;
   }
 
-  // Skia doesn't scale an RGBA_4444 format, so always use the original decode.
-  if (format == RGBA_4444)
+  // Skia doesn't scale an viz::RGBA_4444 format, so always use the original
+  // decode.
+  if (format == viz::RGBA_4444)
     quality = std::min(quality, kLow_SkFilterQuality);
 
   // Drop from high to medium if the the matrix we applied wasn't decomposable,

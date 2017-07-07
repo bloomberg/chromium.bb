@@ -22,7 +22,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                           ResourceProvider* resource_provider,
                           bool use_distance_field_text,
                           int gpu_rasterization_msaa_sample_count,
-                          ResourceFormat preferred_tile_format,
+                          viz::ResourceFormat preferred_tile_format,
                           bool async_worker_context_enabled);
   ~GpuRasterBufferProvider() override;
 
@@ -34,7 +34,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override;
   void OrderingBarrier() override;
   void Flush() override;
-  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(ResourceId id) const override;
@@ -93,7 +93,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   ResourceProvider* const resource_provider_;
   const bool use_distance_field_text_;
   const int msaa_sample_count_;
-  const ResourceFormat preferred_tile_format_;
+  const viz::ResourceFormat preferred_tile_format_;
   const bool async_worker_context_enabled_;
 
   std::set<RasterBufferImpl*> pending_raster_buffers_;

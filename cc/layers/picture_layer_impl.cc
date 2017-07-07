@@ -256,7 +256,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
     quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
                  visible_geometry_rect, texture_rect, texture_size,
-                 nearest_neighbor_, RGBA_8888, quad_content_rect,
+                 nearest_neighbor_, viz::RGBA_8888, quad_content_rect,
                  max_contents_scale, raster_source_);
     ValidateQuadResources(quad);
     return;

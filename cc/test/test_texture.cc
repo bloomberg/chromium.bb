@@ -12,14 +12,14 @@
 
 namespace cc {
 
-size_t TextureSizeBytes(const gfx::Size& size, ResourceFormat format) {
+size_t TextureSizeBytes(const gfx::Size& size, viz::ResourceFormat format) {
   unsigned int components_per_pixel = 4;
   unsigned int bytes_per_component = 1;
   return size.width() * size.height() * components_per_pixel *
          bytes_per_component;
 }
 
-TestTexture::TestTexture() : format(RGBA_8888) {
+TestTexture::TestTexture() : format(viz::RGBA_8888) {
   // Initialize default parameter values.
   params[GL_TEXTURE_MAG_FILTER] = GL_LINEAR;
   params[GL_TEXTURE_MIN_FILTER] = GL_NEAREST_MIPMAP_LINEAR;
@@ -30,7 +30,8 @@ TestTexture::TestTexture() : format(RGBA_8888) {
 
 TestTexture::~TestTexture() {}
 
-void TestTexture::Reallocate(const gfx::Size& size, ResourceFormat format) {
+void TestTexture::Reallocate(const gfx::Size& size,
+                             viz::ResourceFormat format) {
   this->size = size;
   this->format = format;
   this->data.reset(new uint8_t[TextureSizeBytes(size, format)]);

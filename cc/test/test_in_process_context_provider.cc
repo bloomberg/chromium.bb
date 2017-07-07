@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/context_cache_controller.h"
-#include "cc/resources/platform_color.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -110,11 +110,11 @@ gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
   gpu::Capabilities capabilities;
   capabilities.texture_rectangle = true;
   capabilities.sync_query = true;
-  switch (PlatformColor::Format()) {
-    case PlatformColor::SOURCE_FORMAT_RGBA8:
+  switch (viz::PlatformColor::Format()) {
+    case viz::PlatformColor::SOURCE_FORMAT_RGBA8:
       capabilities.texture_format_bgra8888 = false;
       break;
-    case PlatformColor::SOURCE_FORMAT_BGRA8:
+    case viz::PlatformColor::SOURCE_FORMAT_BGRA8:
       capabilities.texture_format_bgra8888 = true;
       break;
   }

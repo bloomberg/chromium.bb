@@ -120,7 +120,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count,
-    ResourceFormat preferred_tile_format,
+    viz::ResourceFormat preferred_tile_format,
     bool async_worker_context_enabled)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
@@ -185,7 +185,7 @@ void GpuRasterBufferProvider::Flush() {
   }
 }
 
-ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
+viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   if (resource_provider_->IsRenderBufferFormatSupported(
           preferred_tile_format_) &&

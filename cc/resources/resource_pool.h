@@ -18,8 +18,8 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
-#include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_resource.h"
+#include "components/viz/common/quads/resource_format.h"
 
 namespace cc {
 
@@ -55,7 +55,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Tries to reuse a resource. If none are available, makes a new one.
   Resource* AcquireResource(const gfx::Size& size,
-                            ResourceFormat format,
+                            viz::ResourceFormat format,
                             const gfx::ColorSpace& color_space);
 
   // Tries to acquire the resource with |previous_content_id| for us in partial
@@ -150,12 +150,12 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Tries to reuse a resource. Returns |nullptr| if none are available.
   Resource* ReuseResource(const gfx::Size& size,
-                          ResourceFormat format,
+                          viz::ResourceFormat format,
                           const gfx::ColorSpace& color_space);
 
   // Creates a new resource without trying to reuse an old one.
   Resource* CreateResource(const gfx::Size& size,
-                           ResourceFormat format,
+                           viz::ResourceFormat format,
                            const gfx::ColorSpace& color_space);
 
   void DidFinishUsingResource(std::unique_ptr<PoolResource> resource);

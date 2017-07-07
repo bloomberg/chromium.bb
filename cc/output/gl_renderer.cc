@@ -428,10 +428,10 @@ bool GLRenderer::CanPartialSwap() {
   return context_provider->ContextCapabilities().post_sub_buffer;
 }
 
-ResourceFormat GLRenderer::BackbufferFormat() const {
+viz::ResourceFormat GLRenderer::BackbufferFormat() const {
   if (current_frame()->current_render_pass->color_space.IsHDR() &&
-      resource_provider_->IsRenderBufferFormatSupported(RGBA_F16)) {
-    return RGBA_F16;
+      resource_provider_->IsRenderBufferFormatSupported(viz::RGBA_F16)) {
+    return viz::RGBA_F16;
   }
   return resource_provider_->best_texture_format();
 }
@@ -1057,7 +1057,7 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 and the gfx::ColorSpace() here are arbitrary and unused.
     Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
-                           ResourceFormat::RGBA_8888, gfx::ColorSpace());
+                           viz::ResourceFormat::RGBA_8888, gfx::ColorSpace());
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
@@ -3406,7 +3406,8 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
       static_cast<uint32_t>(updated_dst_rect.height()), iosurface_multiple);
 
   *resource = overlay_resource_pool_->AcquireResource(
-      gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,
+      gfx::Size(iosurface_width, iosurface_height),
+      viz::ResourceFormat::RGBA_8888,
       current_frame()->current_render_pass->color_space);
   *new_bounds =
       gfx::RectF(updated_dst_rect.x(), updated_dst_rect.y(),

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/platform_color.h"
+#include "components/viz/common/resources/platform_color.h"
 
 #include <stddef.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 // Verify SameComponentOrder on this platform.
@@ -39,4 +39,4 @@ TEST(PlatformColorTest, SameComponentOrder) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

@@ -86,7 +86,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool blend_enabled() const { return blend_shadow_; }
 
   bool CanPartialSwap() override;
-  ResourceFormat BackbufferFormat() const override;
+  viz::ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface() override;
   bool BindFramebufferToTexture(const ScopedResource* resource) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
@@ -329,7 +329,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unique_ptr<ResourceProvider::ScopedWriteLockGL>
       current_framebuffer_lock_;
   // This is valid when current_framebuffer_lock_ is not null.
-  ResourceFormat current_framebuffer_format_;
+  viz::ResourceFormat current_framebuffer_format_;
 
   class SyncQuery;
   std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;

@@ -1445,7 +1445,8 @@ void TileManager::NeedsInvalidationForCheckerImagedTiles() {
   client_->RequestImplSideInvalidation();
 }
 
-ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
+viz::ResourceFormat TileManager::DetermineResourceFormat(
+    const Tile* tile) const {
   return raster_buffer_provider_->GetResourceFormat(!tile->is_opaque());
 }
 
@@ -1636,7 +1637,7 @@ TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
 // static
 TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
     const gfx::Size& size,
-    ResourceFormat format) {
+    viz::ResourceFormat format) {
   // We can use UncheckedSizeInBytes here since this is used with a tile
   // size which is determined by the compositor (it's at most max texture
   // size).

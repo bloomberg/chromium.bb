@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_PLATFORM_COLOR_H_
-#define CC_RESOURCES_PLATFORM_COLOR_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_PLATFORM_COLOR_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_PLATFORM_COLOR_H_
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/resources/resource_format.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
-namespace cc {
+namespace viz {
 
 class PlatformColor {
  public:
-  enum SourceDataFormat {
-    SOURCE_FORMAT_RGBA8,
-    SOURCE_FORMAT_BGRA8
-  };
+  enum SourceDataFormat { SOURCE_FORMAT_RGBA8, SOURCE_FORMAT_BGRA8 };
 
   static SourceDataFormat Format() {
     return SK_B32_SHIFT ? SOURCE_FORMAT_RGBA8 : SOURCE_FORMAT_BGRA8;
@@ -75,6 +72,6 @@ class PlatformColor {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformColor);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_PLATFORM_COLOR_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_PLATFORM_COLOR_H_

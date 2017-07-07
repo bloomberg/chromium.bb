@@ -18,7 +18,6 @@
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
@@ -29,6 +28,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -245,7 +245,7 @@ class RasterBufferProviderPerfTestBase {
       auto resource =
           base::MakeUnique<ScopedResource>(resource_provider_.get());
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-                         RGBA_8888, gfx::ColorSpace());
+                         viz::RGBA_8888, gfx::ColorSpace());
 
       // No tile ids are given to support partial updates.
       std::unique_ptr<RasterBuffer> raster_buffer;
@@ -326,7 +326,7 @@ class RasterBufferProviderPerfTest
       case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
         Create3dResourceProvider();
         raster_buffer_provider_ = ZeroCopyRasterBufferProvider::Create(
-            resource_provider_.get(), PlatformColor::BestTextureFormat());
+            resource_provider_.get(), viz::PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -334,15 +334,15 @@ class RasterBufferProviderPerfTest
             task_runner_.get(), compositor_context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false,
-            std::numeric_limits<int>::max(), PlatformColor::BestTextureFormat(),
-            false);
+            std::numeric_limits<int>::max(),
+            viz::PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
-            PlatformColor::BestTextureFormat(), false);
+            viz::PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();

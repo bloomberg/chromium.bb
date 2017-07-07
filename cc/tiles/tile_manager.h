@@ -279,7 +279,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     MemoryUsage();
     MemoryUsage(size_t memory_bytes, size_t resource_count);
 
-    static MemoryUsage FromConfig(const gfx::Size& size, ResourceFormat format);
+    static MemoryUsage FromConfig(const gfx::Size& size,
+                                  viz::ResourceFormat format);
     static MemoryUsage FromTile(const Tile* tile);
 
     MemoryUsage& operator+=(const MemoryUsage& other);
@@ -342,7 +343,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void MarkTilesOutOfMemory(
       std::unique_ptr<RasterTilePriorityQueue> queue) const;
 
-  ResourceFormat DetermineResourceFormat(const Tile* tile) const;
+  viz::ResourceFormat DetermineResourceFormat(const Tile* tile) const;
   bool DetermineResourceRequiresSwizzle(const Tile* tile) const;
 
   void DidFinishRunningTileTasksRequiredForActivation();

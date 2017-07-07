@@ -37,7 +37,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
  protected:
   bool CanPartialSwap() override;
-  ResourceFormat BackbufferFormat() const override;
+  viz::ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface() override;
   bool BindFramebufferToTexture(const ScopedResource* texture) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;

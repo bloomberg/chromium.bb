@@ -35,7 +35,6 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/swap_promise.h"
-#include "cc/resources/resource_format.h"
 #include "cc/surfaces/surface_reference_owner.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/compositor_mode.h"
@@ -45,6 +44,7 @@
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/target_property.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 

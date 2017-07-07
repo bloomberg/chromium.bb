@@ -2,6 +2,7 @@ include_rules = [
   "+ash",
   "+cc",
   "+chromeos/audio/chromeos_sounds.h",
+  "+components/viz/common/quads",
   "+device/gamepad",
   "+gpu",
   "+mojo/public/cpp",

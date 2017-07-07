@@ -22,9 +22,9 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/paint/draw_image.h"
-#include "cc/resources/resource_format.h"
 #include "cc/tiles/decoded_draw_image.h"
 #include "cc/tiles/image_decode_cache.h"
+#include "components/viz/common/quads/resource_format.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -37,7 +37,7 @@ namespace cc {
 class CC_EXPORT ImageDecodeCacheKey {
  public:
   static ImageDecodeCacheKey FromDrawImage(const DrawImage& image,
-                                           ResourceFormat format);
+                                           viz::ResourceFormat format);
 
   ImageDecodeCacheKey(const ImageDecodeCacheKey& other);
 
@@ -121,7 +121,7 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   enum class DecodeTaskType { USE_IN_RASTER_TASKS, USE_OUT_OF_RASTER_TASKS };
 
-  SoftwareImageDecodeCache(ResourceFormat format,
+  SoftwareImageDecodeCache(viz::ResourceFormat format,
                            size_t locked_memory_limit_bytes);
   ~SoftwareImageDecodeCache() override;
 
@@ -324,7 +324,7 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   MemoryBudget locked_images_budget_;
 
-  ResourceFormat format_;
+  viz::ResourceFormat format_;
   size_t max_items_in_cache_;
 
   // Used to uniquely identify DecodedImages for memory traces.

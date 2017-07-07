@@ -14,8 +14,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/traced_value.h"
-#include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
+#include "components/viz/common/resources/platform_color.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -68,7 +68,7 @@ class RasterBufferImpl : public RasterBuffer {
 // static
 std::unique_ptr<RasterBufferProvider> ZeroCopyRasterBufferProvider::Create(
     ResourceProvider* resource_provider,
-    ResourceFormat preferred_tile_format) {
+    viz::ResourceFormat preferred_tile_format) {
   return base::WrapUnique<RasterBufferProvider>(
       new ZeroCopyRasterBufferProvider(resource_provider,
                                        preferred_tile_format));
@@ -76,7 +76,7 @@ std::unique_ptr<RasterBufferProvider> ZeroCopyRasterBufferProvider::Create(
 
 ZeroCopyRasterBufferProvider::ZeroCopyRasterBufferProvider(
     ResourceProvider* resource_provider,
-    ResourceFormat preferred_tile_format)
+    viz::ResourceFormat preferred_tile_format)
     : resource_provider_(resource_provider),
       preferred_tile_format_(preferred_tile_format) {}
 
@@ -102,7 +102,7 @@ void ZeroCopyRasterBufferProvider::OrderingBarrier() {
 
 void ZeroCopyRasterBufferProvider::Flush() {}
 
-ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(
+viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(
     bool must_support_alpha) const {
   if (resource_provider_->IsTextureFormatSupported(preferred_tile_format_) &&
       (DoesResourceFormatSupportAlpha(preferred_tile_format_) ||
