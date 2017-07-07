@@ -37,6 +37,10 @@
 
 namespace blink {
 
+namespace {
+Locale* g_default_locale;
+}
+
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
   WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);
 
@@ -176,9 +180,17 @@ String DateTimeStringBuilder::ToString() {
 }
 
 Locale& Locale::DefaultLocale() {
-  static Locale* locale = Locale::Create(DefaultLanguage()).release();
   DCHECK(IsMainThread());
-  return *locale;
+  if (!g_default_locale)
+    g_default_locale = Locale::Create(DefaultLanguage()).release();
+  return *g_default_locale;
+}
+
+void Locale::ResetDefautlLocale() {
+  // This is safe because no one owns a Locale object returned by
+  // DefaultLocale().
+  delete g_default_locale;
+  g_default_locale = nullptr;
 }
 
 Locale::~Locale() {}
