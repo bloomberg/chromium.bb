@@ -68,8 +68,9 @@ void BrowsingDataCookieHelper::FetchCookiesOnIOThread(
     const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
-  request_context_getter_->GetURLRequestContext()->cookie_store()->
-      GetAllCookiesAsync(base::Bind(&OnFetchComplete, callback));
+  request_context_getter_->GetURLRequestContext()
+      ->cookie_store()
+      ->GetAllCookiesAsync(base::BindOnce(&OnFetchComplete, callback));
 }
 
 void BrowsingDataCookieHelper::DeleteCookieOnIOThread(

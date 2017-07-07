@@ -169,7 +169,7 @@ class TestWebappRegistry : public WebappRegistry {
 void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, chromeos::DBUS_METHOD_CALL_SUCCESS, true));
+      base::BindOnce(callback, chromeos::DBUS_METHOD_CALL_SUCCESS, true));
 }
 #endif
 
@@ -185,8 +185,8 @@ class RemoveCookieTester {
     get_cookie_success_ = false;
     cookie_store_->GetCookiesWithOptionsAsync(
         kOrigin1, net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::GetCookieCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoveCookieTester::GetCookieCallback,
+                       base::Unretained(this)));
     message_loop_runner->Run();
     return get_cookie_success_;
   }
@@ -197,8 +197,8 @@ class RemoveCookieTester {
     quit_closure_ = message_loop_runner->QuitClosure();
     cookie_store_->SetCookieWithOptionsAsync(
         kOrigin1, "A=1", net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::SetCookieCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoveCookieTester::SetCookieCallback,
+                       base::Unretained(this)));
     message_loop_runner->Run();
   }
 
@@ -253,7 +253,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
     net::URLRequestContext* request_context =
         sb_service->url_request_context()->GetURLRequestContext();
     request_context->cookie_store()->DeleteAllAsync(
-        base::Bind(&RunClosureAfterCookiesCleared, run_loop.QuitClosure()));
+        base::BindOnce(&RunClosureAfterCookiesCleared, run_loop.QuitClosure()));
     run_loop.Run();
 
     SetCookieStore(request_context->cookie_store());

@@ -137,7 +137,7 @@ void SiteDataCountingHelper::GetCookiesOnIOThread(
       rq_context->GetURLRequestContext()->cookie_store();
 
   if (cookie_store) {
-    cookie_store->GetAllCookiesAsync(base::Bind(
+    cookie_store->GetAllCookiesAsync(base::BindOnce(
         &SiteDataCountingHelper::GetCookiesCallback, base::Unretained(this)));
   } else {
     BrowserThread::PostTask(
