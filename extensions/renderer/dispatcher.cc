@@ -727,7 +727,6 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"guestViewEvents", IDR_GUEST_VIEW_EVENTS_JS},
       {"imageUtil", IDR_IMAGE_UTIL_JS},
       {"json_schema", IDR_JSON_SCHEMA_JS},
-      {"lastError", IDR_LAST_ERROR_JS},
       {"messaging", IDR_MESSAGING_JS},
       {"messaging_utils", IDR_MESSAGING_UTILS_JS},
       {kSchemaUtils, IDR_SCHEMA_UTILS_JS},
@@ -801,6 +800,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
   if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     resources.emplace_back("binding", IDR_BINDING_JS);
     resources.emplace_back(kEventBindings, IDR_EVENT_BINDINGS_JS);
+    resources.emplace_back("lastError", IDR_LAST_ERROR_JS);
     resources.emplace_back("sendRequest", IDR_SEND_REQUEST_JS);
 
     // Custom types sources.

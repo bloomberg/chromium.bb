@@ -11,7 +11,12 @@ var getExtensionViews = requireNative('runtime').GetExtensionViews;
 var sendRequest = bindingUtil ?
     $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
-var lastError = require('lastError');
+
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function hasLastError() {
+  return bindingUtil ?
+      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
+}
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -30,7 +35,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (!callback)
       return;
 
-    if (lastError.hasError(chrome)) {
+    if (hasLastError()) {
       callback();
     } else {
       var views = getExtensionViews(-1, -1, 'POPUP');

@@ -7,7 +7,6 @@
 
   // TODO(kalman): factor requiring chrome out of here.
   var chrome = requireNative('chrome').GetChrome();
-  var lastError = require('lastError');
   var logActivity = requireNative('activityLogger');
   var logging = requireNative('logging');
   var messagingNatives = requireNative('messaging_natives');
@@ -44,6 +43,28 @@
       bindingUtil.invalidateEvent(event);
     else
       privates(event).impl.destroy_();
+  }
+
+  var jsLastError = bindingUtil ? undefined : require('lastError');
+  function setLastError(name, error) {
+    if (bindingUtil)
+      bindingUtil.setLastError(error);
+    else
+      jsLastError.set(name, error, null, chrome);
+  }
+
+  function clearLastError() {
+    if (bindingUtil)
+      bindingUtil.clearLastError();
+    else
+      jsLastError.clear(chrome);
+  }
+
+  function hasLastError() {
+    if (bindingUtil)
+      return bindingUtil.hasLastError();
+    else
+      return jsLastError.hasError(chrome);
   }
 
   // Map of port IDs to port object.
@@ -152,7 +173,7 @@
     if (sourceUrl)
       errorMsg += ' for URL ' + sourceUrl;
     errorMsg += ').';
-    lastError.set(eventName, errorMsg, null, chrome);
+    setLastError(eventName, errorMsg);
   }
 
   // Helper function for dispatchOnConnect
@@ -348,12 +369,12 @@
     if (port) {
       delete ports[portId];
       if (errorMessage)
-        lastError.set('Port', errorMessage, null, chrome);
+        setLastError('Port', errorMessage);
       try {
         port.onDisconnect.dispatch(port);
       } finally {
         privates(port).impl.destroy_();
-        lastError.clear(chrome);
+        clearLastError();
       }
     }
   };
@@ -406,17 +427,16 @@
       if (!responseCallback)
         return;
 
-      if (lastError.hasError(chrome)) {
+      if (hasLastError()) {
         sendResponseAndClearCallback();
       } else {
-        lastError.set(
+        setLastError(
             port.name,
-            'The message port closed before a response was received.', null,
-            chrome);
+            'The message port closed before a response was received.');
         try {
           sendResponseAndClearCallback();
         } finally {
-          lastError.clear(chrome);
+          clearLastError();
         }
       }
     }
