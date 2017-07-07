@@ -258,7 +258,7 @@ bool ModuleRegistry::Load(Isolate* isolate,
 bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
                                    std::unique_ptr<PendingModule> pending) {
   if (!CheckDependencies(pending.get())) {
-    pending_modules_.push_back(pending.release());
+    pending_modules_.push_back(std::move(pending));
     return false;
   }
   return Load(isolate, std::move(pending));
@@ -279,7 +279,7 @@ void ModuleRegistry::AttemptToLoadMoreModules(Isolate* isolate) {
     PendingModuleVector pending_modules;
     pending_modules.swap(pending_modules_);
     for (size_t i = 0; i < pending_modules.size(); ++i) {
-      std::unique_ptr<PendingModule> pending(pending_modules[i]);
+      std::unique_ptr<PendingModule> pending(std::move(pending_modules[i]));
       pending_modules[i] = NULL;
       if (AttemptToLoad(isolate, std::move(pending)))
         keep_trying = true;
