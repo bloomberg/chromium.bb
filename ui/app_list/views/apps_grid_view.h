@@ -276,6 +276,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void MoveSelected(int page_delta, int slot_x_delta, int slot_y_delta);
 
+  // Calculates the offset for |page_of_view| based on current page and
+  // transition target page.
+  const gfx::Vector2d CalculateTransitionOffset(int page_of_view) const;
+
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
 
