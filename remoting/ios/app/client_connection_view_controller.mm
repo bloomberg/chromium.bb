@@ -12,9 +12,11 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/pin_entry_view.h"
 #import "remoting/ios/app/remoting_theme.h"
+#import "remoting/ios/app/session_reconnect_view.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/facade/remoting_authentication.h"
@@ -31,7 +33,10 @@ static const CGFloat kActivityIndicatorRadius = 33.f;
 static const CGFloat kPinEntryViewWidth = 240.f;
 static const CGFloat kPinEntryViewHeight = 90.f;
 
-static const CGFloat kCenterShift = -80.f;
+static const CGFloat kReconnectViewWidth = 120.f;
+static const CGFloat kReconnectViewHeight = 90.f;
+
+static const CGFloat kTopPadding = 240.f;
 static const CGFloat kPadding = 20.f;
 static const CGFloat kMargin = 20.f;
 
@@ -39,14 +44,20 @@ static const CGFloat kBarHeight = 58.f;
 
 static const CGFloat kKeyboardAnimationTime = 0.3;
 
-@interface ClientConnectionViewController ()<PinEntryDelegate> {
+@interface ClientConnectionViewController ()<PinEntryDelegate,
+                                             SessionReconnectViewDelegate> {
   UIImageView* _iconView;
   MDCActivityIndicator* _activityIndicator;
+  NSLayoutConstraint* _activityIndicatorTopConstraintFull;
+  NSLayoutConstraint* _activityIndicatorTopConstraintKeyboard;
   UILabel* _statusLabel;
   MDCNavigationBar* _navBar;
   PinEntryView* _pinEntryView;
+  SessionReconnectView* _reconnectView;
   NSString* _remoteHostName;
   RemotingClient* _client;
+  SessionErrorCode _lastError;
+  HostInfo* _hostInfo;
 }
 @end
 
@@ -57,17 +68,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (instancetype)initWithHostInfo:(HostInfo*)hostInfo {
   self = [super init];
   if (self) {
-    _client = [[RemotingClient alloc] init];
-
-    __weak RemotingClient* weakClient = _client;
-    [RemotingService.instance.authentication
-        callbackWithAccessToken:^(RemotingAuthenticationStatus status,
-                                  NSString* userEmail, NSString* accessToken) {
-          [weakClient connectToHost:hostInfo
-                           username:userEmail
-                        accessToken:accessToken];
-        }];
-
+    _hostInfo = hostInfo;
     _remoteHostName = hostInfo.hostName;
 
     // TODO(yuweih): This logic may be reused by other views.
@@ -102,73 +103,161 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
           constraintEqualToAnchor:[self.view trailingAnchor]],
       [[_navBar heightAnchor] constraintEqualToConstant:kBarHeight],
     ]];
+
+    [self attemptConnectionToHost];
   }
   return self;
 }
 
 #pragma mark - UIViewController
 
-- (void)loadView {
-  [super loadView];
-
+- (void)viewDidLoad {
+  [super viewDidLoad];
   self.view.backgroundColor = RemotingTheme.connectionViewBackgroundColor;
 
   _activityIndicator = [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
+  _activityIndicator.radius = kActivityIndicatorRadius;
+  _activityIndicator.trackEnabled = YES;
+  _activityIndicator.strokeWidth = kActivityIndicatorStrokeWidth;
+  _activityIndicator.cycleColors = @[ UIColor.whiteColor ];
+  _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_activityIndicator];
 
   _statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _statusLabel.numberOfLines = 1;
+  _statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+  _statusLabel.textColor = [UIColor whiteColor];
+  _statusLabel.textAlignment = NSTextAlignmentCenter;
+  _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_statusLabel];
 
   _iconView = [[UIImageView alloc] initWithFrame:CGRectZero];
-  [self.view addSubview:_iconView];
-
-  _pinEntryView = [[PinEntryView alloc] init];
-  [self.view addSubview:_pinEntryView];
-  _pinEntryView.delegate = self;
-}
-
-- (void)viewDidLoad {
-  [super viewDidLoad];
-
   _iconView.contentMode = UIViewContentModeCenter;
   _iconView.alpha = 0.87f;
   _iconView.backgroundColor = RemotingTheme.onlineHostColor;
   _iconView.layer.cornerRadius = kIconRadius;
   _iconView.layer.masksToBounds = YES;
   _iconView.image = RemotingTheme.desktopIcon;
+  _iconView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_iconView];
 
-  _activityIndicator.radius = kActivityIndicatorRadius;
-  _activityIndicator.trackEnabled = YES;
-  _activityIndicator.strokeWidth = kActivityIndicatorStrokeWidth;
-  _activityIndicator.cycleColors = @[ UIColor.whiteColor ];
+  _reconnectView = [[SessionReconnectView alloc] initWithFrame:CGRectZero];
+  _reconnectView.hidden = YES;
+  _reconnectView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_reconnectView];
+  _reconnectView.delegate = self;
 
-  _statusLabel.numberOfLines = 1;
-  _statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-  _statusLabel.textColor = [UIColor whiteColor];
-  _statusLabel.textAlignment = NSTextAlignmentCenter;
-
+  _pinEntryView = [[PinEntryView alloc] init];
   _pinEntryView.hidden = YES;
+  _pinEntryView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_pinEntryView];
+  _pinEntryView.delegate = self;
+
+  [self
+      initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
+                                               _activityIndicator, _statusLabel,
+                                               _iconView, _reconnectView,
+                                               _pinEntryView)];
 }
 
-- (void)viewWillLayoutSubviews {
-  [super viewWillLayoutSubviews];
-
-  _iconView.frame = CGRectMake(0, 0, kIconRadius * 2, kIconRadius * 2.f);
-  _iconView.center =
-      CGPointMake(self.view.center.x, self.view.center.y + kCenterShift);
-
+- (void)initializeLayoutConstraintsWithViews:(NSDictionary*)views {
+  // Metrics to use in visual format strings.
+  NSDictionary* layoutMetrics = @{
+    @"padding" : @(kPadding),
+    @"margin" : @(kMargin),
+    @"topPadding" : @(kTopPadding),
+    @"iconDiameter" : @(kIconRadius * 2),
+    @"pinEntryViewWidth" : @(kPinEntryViewWidth),
+    @"pinEntryViewHeight" : @(kPinEntryViewHeight),
+    @"reconnectViewWidth" : @(kReconnectViewWidth),
+    @"reconnectViewHeight" : @(kReconnectViewHeight),
+  };
   [_activityIndicator sizeToFit];
-  _activityIndicator.center = _iconView.center;
+  NSString* f;
 
-  _statusLabel.frame =
-      CGRectMake(kMargin, _activityIndicator.center.y + kIconRadius + kPadding,
-                 self.view.frame.size.width - kMargin * 2.f,
-                 _statusLabel.font.pointSize * _statusLabel.numberOfLines);
+  // Horizontal constraints:
 
-  _pinEntryView.frame = CGRectMake(
-      (self.view.frame.size.width - kPinEntryViewWidth) / 2.f,
-      _statusLabel.frame.origin.y + _statusLabel.frame.size.height + kPadding,
-      kPinEntryViewWidth, kPinEntryViewHeight);
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:@"H:[_iconView(iconDiameter)]"
+                                         options:0
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  [self.view addConstraints:[NSLayoutConstraint
+                                constraintsWithVisualFormat:
+                                    @"H:|-margin-[_statusLabel]-margin-|"
+                                                    options:0
+                                                    metrics:layoutMetrics
+                                                      views:views]];
+
+  [self.view addConstraints:[NSLayoutConstraint
+                                constraintsWithVisualFormat:
+                                    @"H:[_pinEntryView(pinEntryViewWidth)]"
+                                                    options:0
+                                                    metrics:layoutMetrics
+                                                      views:views]];
+
+  [self.view addConstraints:[NSLayoutConstraint
+                                constraintsWithVisualFormat:
+                                    @"H:[_reconnectView(reconnectViewWidth)]"
+                                                    options:0
+                                                    metrics:layoutMetrics
+                                                      views:views]];
+
+  // Anchors:
+
+  _activityIndicatorTopConstraintFull =
+      [_activityIndicator.topAnchor constraintEqualToAnchor:self.view.topAnchor
+                                                   constant:kTopPadding];
+  _activityIndicatorTopConstraintFull.active = YES;
+
+  [_iconView.centerYAnchor
+      constraintEqualToAnchor:_activityIndicator.centerYAnchor]
+      .active = YES;
+
+  // Vertical constraints:
+
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:@"V:[_iconView(iconDiameter)]"
+                                         options:0
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:
+                         @"V:[_activityIndicator]-(padding)-[_statusLabel]"
+                                         options:NSLayoutFormatAlignAllCenterX
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:
+                         @"V:[_iconView]-(padding)-[_statusLabel]"
+                                         options:NSLayoutFormatAlignAllCenterX
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  f = @"V:[_statusLabel]-(padding)-[_pinEntryView(pinEntryViewHeight)]";
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:f
+                                         options:NSLayoutFormatAlignAllCenterX
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  f = @"V:[_statusLabel]-padding-[_reconnectView(reconnectViewHeight)]";
+  [self.view addConstraints:
+                 [NSLayoutConstraint
+                     constraintsWithVisualFormat:f
+                                         options:NSLayoutFormatAlignAllCenterX
+                                         metrics:layoutMetrics
+                                           views:views]];
+
+  [self.view setNeedsUpdateConstraints];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -217,29 +306,30 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
           CGRectValue]
           .size;
 
-  [UIView
-      animateWithDuration:kKeyboardAnimationTime
-               animations:^{
-                 CGRect f = self.view.frame;
-                 CGFloat newHeight =
-                     self.view.frame.size.height - keyboardSize.height;
-                 CGFloat overlap =
-                     newHeight - (_pinEntryView.frame.origin.y +
-                                  _pinEntryView.frame.size.height + kPadding);
-                 if (overlap < 0) {
-                   f.origin.y = overlap;
-                   // TODO(yuweih): This may push the navigation bar off screen.
-                   self.view.frame = f;
-                 }
-               }];
+  CGFloat newHeight = self.view.frame.size.height - keyboardSize.height;
+  CGFloat overlap = newHeight - (_pinEntryView.frame.origin.y +
+                                 _pinEntryView.frame.size.height + kPadding);
+  if (overlap > 0) {
+    overlap = 0;
+  }
+  _activityIndicatorTopConstraintKeyboard.active = NO;
+  _activityIndicatorTopConstraintKeyboard = [_activityIndicator.topAnchor
+      constraintEqualToAnchor:self.view.topAnchor
+                     constant:kTopPadding + overlap];
+  _activityIndicatorTopConstraintFull.active = NO;
+  _activityIndicatorTopConstraintKeyboard.active = YES;
+  [UIView animateWithDuration:kKeyboardAnimationTime
+                   animations:^{
+                     [self.view layoutIfNeeded];
+                   }];
 }
 
 - (void)keyboardWillHide:(NSNotification*)notification {
+  _activityIndicatorTopConstraintKeyboard.active = NO;
+  _activityIndicatorTopConstraintFull.active = YES;
   [UIView animateWithDuration:kKeyboardAnimationTime
                    animations:^{
-                     CGRect f = self.view.frame;
-                     f.origin.y = 0.f;
-                     self.view.frame = f;
+                     [self.view layoutIfNeeded];
                    }];
 }
 
@@ -258,12 +348,35 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       [self showConnectedState];
       break;
     case ClientViewClosed:
-      [self dismissViewControllerAnimated:YES completion:nil];
+      [self.navigationController popToRootViewControllerAnimated:YES];
+      break;
+    case ClientViewError:
+      [self showError];
       break;
   }
 }
 
+#pragma mark - SessionReconnectViewDelegate
+
+- (void)didTapReconnect {
+  [self attemptConnectionToHost];
+}
+
 #pragma mark - Private
+
+- (void)attemptConnectionToHost {
+  _client = [[RemotingClient alloc] init];
+  __weak RemotingClient* weakClient = _client;
+  __weak HostInfo* weakHostInfo = _hostInfo;
+  [RemotingService.instance.authentication
+      callbackWithAccessToken:^(RemotingAuthenticationStatus status,
+                                NSString* userEmail, NSString* accessToken) {
+        [weakClient connectToHost:weakHostInfo
+                         username:userEmail
+                      accessToken:accessToken];
+      }];
+  [self setState:ClientViewConnecting];
+}
 
 - (void)showConnectingState {
   [_pinEntryView endEditing:YES];
@@ -274,6 +387,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeIndeterminate;
   _activityIndicator.hidden = NO;
   _pinEntryView.hidden = YES;
+  _reconnectView.hidden = YES;
   [_activityIndicator startAnimating];
 }
 
@@ -282,6 +396,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_activityIndicator stopAnimating];
   _activityIndicator.hidden = YES;
   _pinEntryView.hidden = NO;
+  _reconnectView.hidden = YES;
 
   // TODO(yuweih): This may be called before viewDidAppear and miss the keyboard
   // callback.
@@ -299,6 +414,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.cycleColors = @[ [UIColor greenColor] ];
   [_activityIndicator startAnimating];
   _activityIndicator.progress = 1.0;
+  _reconnectView.hidden = YES;
 
   HostViewController* hostViewController =
       [[HostViewController alloc] initWithClient:_client];
@@ -310,6 +426,77 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [controllers removeLastObject];
   [controllers addObject:hostViewController];
   [self.navigationController setViewControllers:controllers animated:NO];
+}
+
+- (void)showError {
+  _statusLabel.text =
+      [NSString stringWithFormat:@"Error connecting to %@", _remoteHostName];
+  _activityIndicator.progress = 0.0;
+  _pinEntryView.hidden = YES;
+  _activityIndicator.hidden = NO;
+  _activityIndicator.indicatorMode = MDCActivityIndicatorModeDeterminate;
+  _activityIndicator.cycleColors = @[ [UIColor redColor] ];
+  [_activityIndicator startAnimating];
+  _activityIndicator.progress = 1.0;
+  _reconnectView.hidden = NO;
+
+  MDCSnackbarMessage* message = nil;
+  switch (_lastError) {
+    case SessionErrorOk:
+      // Do nothing.
+      break;
+    case SessionErrorPeerIsOffline:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorPeerIsOffline."];
+      break;
+    case SessionErrorSessionRejected:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorSessionRejected."];
+      break;
+    case SessionErrorIncompatibleProtocol:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorIncompatibleProtocol."];
+      break;
+    case SessionErrorAuthenticationFailed:
+      message = [MDCSnackbarMessage messageWithText:@"Error: Invalid Pin."];
+      [_pinEntryView clearPinEntry];
+      break;
+    case SessionErrorInvalidAccount:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorInvalidAccount."];
+      break;
+    case SessionErrorChannelConnectionError:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorChannelConnectionError."];
+      break;
+    case SessionErrorSignalingError:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorSignalingError."];
+      break;
+    case SessionErrorSignalingTimeout:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorSignalingTimeout."];
+      break;
+    case SessionErrorHostOverload:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorHostOverload."];
+      break;
+    case SessionErrorMaxSessionLength:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorMaxSessionLength."];
+      break;
+    case SessionErrorHostConfigurationError:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorHostConfigurationError."];
+      break;
+    case SessionErrorUnknownError:
+      message = [MDCSnackbarMessage
+          messageWithText:@"Error: SessionErrorUnknownError."];
+      break;
+  }
+  if (message.text) {
+    [MDCSnackbarManager showMessage:message];
+  }
 }
 
 - (void)didProvidePin:(NSString*)pin createPairing:(BOOL)createPairing {
@@ -347,7 +534,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       state = ClientViewConnected;
       break;
     case SessionFailed:
-    // TODO(nicholss): Implement an error screen.
+      state = ClientViewError;
+      break;
     case SessionClosed:
       state = ClientViewClosed;
       break;
@@ -355,6 +543,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       LOG(ERROR) << "Unknown State for Session, " << sessionDetails.state;
       return;
   }
+  _lastError = sessionDetails.error;
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
     [self setState:state];
   }];

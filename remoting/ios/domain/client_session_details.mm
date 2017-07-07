@@ -14,6 +14,7 @@
 
 @synthesize hostInfo = _hostInfo;
 @synthesize state = _state;
+@synthesize error = _error;
 
 - (NSString*)description {
   return

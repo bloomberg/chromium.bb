@@ -46,6 +46,8 @@ source_set("common_source_set") {
     "remoting_theme.mm",
     "remoting_view_controller.h",
     "remoting_view_controller.mm",
+    "session_reconnect_view.h",
+    "session_reconnect_view.mm",
   ]
 
   deps = [

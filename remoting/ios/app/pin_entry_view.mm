@@ -12,10 +12,12 @@
 #import "remoting/ios/app/remoting_theme.h"
 
 static const CGFloat kMargin = 5.f;
-static const CGFloat kPadding = 6.f;
+static const CGFloat kPadding = 8.f;
 static const CGFloat kLineSpace = 12.f;
 
-@interface PinEntryView () {
+static const int kMinPinLength = 6;
+
+@interface PinEntryView ()<UITextFieldDelegate> {
   UISwitch* _pairingSwitch;
   UILabel* _pairingLabel;
   MDCFloatingButton* _pinButton;
@@ -36,6 +38,7 @@ static const CGFloat kLineSpace = 12.f;
     _pairingSwitch.tintColor =
         [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5];
     _pairingSwitch.transform = CGAffineTransformMakeScale(0.5, 0.5);
+    _pairingSwitch.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingSwitch];
 
     _pairingLabel = [[UILabel alloc] init];
@@ -43,6 +46,7 @@ static const CGFloat kLineSpace = 12.f;
         [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5];
     _pairingLabel.font = [UIFont systemFontOfSize:12.f];
     _pairingLabel.text = @"Remember my PIN on this device.";
+    _pairingLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingLabel];
 
     _pinButton =
@@ -51,6 +55,8 @@ static const CGFloat kLineSpace = 12.f;
     [_pinButton addTarget:self
                    action:@selector(didTapPinEntry:)
          forControlEvents:UIControlEventTouchUpInside];
+    _pinButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _pinButton.enabled = NO;
     _pinButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pinButton];
 
@@ -65,9 +71,49 @@ static const CGFloat kLineSpace = 12.f;
               NSForegroundColorAttributeName :
                   [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5]
             }];
+    _pinEntry.translatesAutoresizingMaskIntoConstraints = NO;
+    _pinEntry.delegate = self;
     [self addSubview:_pinEntry];
+
+    [self
+        initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
+                                                 _pairingSwitch, _pairingLabel,
+                                                 _pinButton, _pinEntry)];
   }
   return self;
+}
+
+- (void)initializeLayoutConstraintsWithViews:(NSDictionary*)views {
+  // Metrics to use in visual format strings.
+  NSDictionary* layoutMetrics = @{
+    @"margin" : @(kMargin),
+    @"padding" : @(kPadding),
+    @"lineSpace" : @(kLineSpace),
+  };
+
+  [self addConstraints:
+            [NSLayoutConstraint
+                constraintsWithVisualFormat:
+                    @"H:|-[_pinEntry]-(padding)-[_pinButton]-|"
+                                    options:NSLayoutFormatAlignAllCenterY
+                                    metrics:layoutMetrics
+                                      views:views]];
+
+  [self addConstraints:
+            [NSLayoutConstraint
+                constraintsWithVisualFormat:
+                    @"H:|-[_pairingSwitch]-(padding)-[_pairingLabel]-|"
+                                    options:NSLayoutFormatAlignAllCenterY
+                                    metrics:layoutMetrics
+                                      views:views]];
+
+  [self addConstraints:[NSLayoutConstraint
+                           constraintsWithVisualFormat:
+                               @"V:|-[_pinButton]-(lineSpace)-[_pairingSwitch]"
+                                               options:0
+                                               metrics:layoutMetrics
+                                                 views:views]];
+  [self setNeedsUpdateConstraints];
 }
 
 #pragma mark - UIView
@@ -84,31 +130,32 @@ static const CGFloat kLineSpace = 12.f;
   return [_pinEntry endEditing:force];
 }
 
-- (void)layoutSubviews {
-  [super layoutSubviews];
+#pragma mark - UITextFieldDelegate
 
-  [_pinButton sizeToFit];
-  CGFloat buttonSize = _pinButton.frame.size.width;  // Assume circle.
+- (BOOL)textField:(UITextField*)textField
+    shouldChangeCharactersInRange:(NSRange)range
+                replacementString:(NSString*)string {
+  if (textField == _pinEntry) {
+    NSUInteger length = _pinEntry.text.length - range.length + string.length;
+    _pinButton.enabled = length >= kMinPinLength;
+  }
+  return YES;
+}
 
-  _pinEntry.frame =
-      CGRectMake(kMargin, 0.f,
-                 self.frame.size.width - kPadding - kMargin * 2.f - buttonSize,
-                 buttonSize);
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  NSLog(@"textFieldShouldReturn");
+  if ([_pinButton isEnabled]) {
+    [self didTapPinEntry:textField];
+    return YES;
+  }
+  return NO;
+}
 
-  [_pinButton sizeToFit];
-  _pinButton.frame =
-      CGRectMake(self.frame.size.width - kPadding - kMargin - buttonSize, 0.f,
-                 buttonSize, buttonSize);
+#pragma mark - Public
 
-  [_pairingSwitch sizeToFit];
-  _pairingSwitch.center = CGPointMake(
-      kMargin + _pairingSwitch.frame.size.width / 2.f,
-      buttonSize + _pairingSwitch.frame.size.height / 2.f + kLineSpace);
-
-  _pairingLabel.frame =
-      CGRectMake(kMargin + _pairingSwitch.frame.size.width + kPadding,
-                 buttonSize + kLineSpace, 0.f, 0.f);
-  [_pairingLabel sizeToFit];
+- (void)clearPinEntry {
+  _pinEntry.text = @"";
+  _pinButton.enabled = NO;
 }
 
 #pragma mark - Private
