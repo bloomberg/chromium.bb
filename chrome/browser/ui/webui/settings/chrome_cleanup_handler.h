@@ -36,6 +36,7 @@ class ChromeCleanupHandler
   void OnInfected(const std::set<base::FilePath>& files) override;
   void OnCleaning(const std::set<base::FilePath>& files) override;
   void OnRebootRequired() override;
+  void OnLogsEnabledChanged(bool logs_enabled) override;
 
  private:
   // Callback for the "dismissCleanupPage" message to hide the Cleanup page
@@ -50,6 +51,10 @@ class ChromeCleanupHandler
   // Callback for the "restartComputer" message to finalize the cleanup with a
   // system restart.
   void HandleRestartComputer(const base::ListValue* args);
+
+  // Callback for the "setLogsUploadPermission" message to keep track of
+  // whether the user opted-out of logs upload or not.
+  void HandleSetLogsUploadPermission(const base::ListValue* args);
 
   // Callback for the "startCleanup" message to start removing unwanted
   // software from the user's computer.

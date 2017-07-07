@@ -788,6 +788,7 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
       {"chromeCleanupDoneButtonLabel",
        IDS_CHROME_CLEANUP_WEBUI_DONE_BUTTON_LABEL},
       {"chromeCleanupLinkShowFiles", IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES},
+      {"chromeCleanupLogsUploadPermission", IDS_CHROME_CLEANUP_LOGS_PERMISSION},
       {"chromeCleanupRemoveButtonLabel",
        IDS_CHROME_CLEANUP_WEBUI_REMOVE_BUTTON_LABEL},
       {"chromeCleanupRestartButtonLabel",
@@ -801,6 +802,12 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+  const std::string cleanup_learn_more_url =
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kChromeCleanerLearnMoreURL),
+          g_browser_process->GetApplicationLocale())
+          .spec();
+  html_source->AddString("chromeCleanupLearnMoreUrl", cleanup_learn_more_url);
 }
 #endif  // defined(OS_WIN)
 

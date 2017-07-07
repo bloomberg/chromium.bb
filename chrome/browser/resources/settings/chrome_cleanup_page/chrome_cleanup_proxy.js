@@ -13,8 +13,9 @@ cr.define('settings', function() {
 
     /**
      * Starts a cleanup on the user's computer.
+     * @param {boolean} logsUploadEnabled
      */
-    startCleanup() {}
+    startCleanup(logsUploadEnabled) {}
 
     /**
      * Restarts the user's computer.
@@ -25,6 +26,12 @@ cr.define('settings', function() {
      * Hides the Cleanup page from the settings menu.
      */
     dismissCleanupPage() {}
+
+    /**
+     * Updates the cleanup logs upload permission status.
+     * @param {boolean} enabled
+     */
+    setLogsUploadPermission(enabled) {}
   }
 
   /**
@@ -37,8 +44,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    startCleanup() {
-      chrome.send('startCleanup');
+    startCleanup(logsUploadEnabled) {
+      chrome.send('startCleanup', [logsUploadEnabled]);
     }
 
     /** @override */
@@ -49,6 +56,11 @@ cr.define('settings', function() {
     /** @override */
     dismissCleanupPage() {
       chrome.send('dismissCleanupPage');
+    }
+
+    /** @override */
+    setLogsUploadPermission(enabled) {
+      chrome.send('setLogsUploadPermission', [enabled]);
     }
   }
 
