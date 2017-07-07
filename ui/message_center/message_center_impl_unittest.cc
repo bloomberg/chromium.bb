@@ -351,7 +351,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   // Fast forward the |task_runner| by one second less than the auto-close timer
   // frequency for Web Notifications. (As set by the |notifier_id|.)
   task_runner->FastForwardBy(
-      base::TimeDelta::FromSeconds(kAutocloseWebPageDelaySeconds - 1));
+      base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds - 1));
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Trigger a replacement of the notification in the timer controller.
@@ -360,7 +360,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   // Fast forward the |task_runner| by one second less than the auto-close timer
   // frequency for Web Notifications again. It should have been reset.
   task_runner->FastForwardBy(
-      base::TimeDelta::FromSeconds(kAutocloseWebPageDelaySeconds - 1));
+      base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds - 1));
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Now fast forward the |task_runner| by two seconds (to avoid flakiness),
