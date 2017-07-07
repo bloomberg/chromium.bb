@@ -8,18 +8,19 @@
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 class AccountTrackerService;
-class SigninManagerBase;
 
 namespace identity {
 
 class IdentityManager : public mojom::IdentityManager,
-                        public OAuth2TokenService::Observer {
+                        public OAuth2TokenService::Observer,
+                        public SigninManagerBase::Observer {
  public:
   static void Create(mojom::IdentityManagerRequest request,
                      AccountTrackerService* account_tracker,
@@ -81,6 +82,14 @@ class IdentityManager : public mojom::IdentityManager,
 
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  // SigninManagerBase::Observer:
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username) override;
+
+  // Notified when there is a change in the state of the account
+  // corresponding to |account_id|.
+  void OnAccountStateChange(const std::string& account_id);
 
   // Deletes |request|.
   void AccessTokenRequestCompleted(AccessTokenRequest* request);

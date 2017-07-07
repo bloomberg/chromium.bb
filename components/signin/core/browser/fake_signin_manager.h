@@ -13,9 +13,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
-// SigninManager to use for testing. Tests should use the type
-// SigninManagerForTesting to ensure that the right type for their platform is
-// used.
+// SigninManager to use for testing.
 
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
@@ -44,7 +42,7 @@ class FakeSigninManager : public SigninManager {
 
   void set_password(const std::string& password) { password_ = password; }
 
-  void SignIn(const std::string& account_id,
+  void SignIn(const std::string& gaia_id,
               const std::string& username,
               const std::string& password);
 
