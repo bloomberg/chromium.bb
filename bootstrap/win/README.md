@@ -3,6 +3,14 @@
 This directory has the 'magic' for the `depot_tools` windows binary update
 mechanisms.
 
+A previous Python may actually be in use when it is run, preventing us
+from replacing it outright without breaking running code. To
+ommodate this, and Python cleanup, we handle Python in two stages:
+
+1. Use CIPD to install both Git and Python at once.
+2. Use "win_tools.py" as a post-processor to install generated files and
+   fix-ups.
+
 ## Software bootstrapped
   * Python (https://www.python.org/)
   * Git for Windows (https://git-for-windows.github.io/)
@@ -18,31 +26,28 @@ work.
 package is present, and if so, if it's the expected version. If either of those
 cases is not true, it will download and unpack the respective binary.
 
-Downloading is done with [get_file.js](./get_file.js), which is a windows script
-host javascript utility to vaguely impersonate `wget`.
+Installation of Git and Python is done by the [win_tools.bat](./win_tools.bat)
+script, which uses CIPD (via the [cipd](/cipd.bat) bootstrap) to acquire and
+install each package into the root of the `depot_tools` repository. Afterwards,
+the [win_tools.py](./win_tools.py) Python script is invoked to install stubs,
+wrappers, and support scripts into `depot_tools` for end-users.
 
-Through a comedy of history, each binary is stored and retrieved differently.
+### Manifest
 
-### Git
+The Git and Python versions are specified in [manifest.txt](./manifest.txt).
 
-Git installs are mirrored versions of the official Git-for-Windows Portable
-releases.
-  * Original: `https://github.com/git-for-windows/git/releases`
-  * Mirror: `gs://chrome-infra/PortableGit*.7z.exe`
+There is an associated file,
+[manifest_bleeding_edge.txt](./manifest_bleeding_edge.txt), that can be used
+to canary new versions on select bots. Any bots with a `.bleeding_edge` file
+in their `depot_tools` root will automatically use the bleeding edge manifest.
+This allows opt-in systems to test against new versions of Python or Git. Once
+those versions have been verified correct, `manifest.txt` can be updated to the
+same specification, which will cause the remainder of systems to update.
 
-#### Updating git version
-  1. Download the new `PortableGit-X.Y.Z-{32,64}.7z.exe` from the
-     git-for-windows release page.
-  1. From either console.developers.google.com or the CLI, do:
-    1. Upload those to the gs://chrome-infra Google Storage bucket.
-    1. Set the `allUsers Reader` permission (click the "Public link" checkbox
-       next to the binaries).
-  1. Edit the `git_version.txt` or `git_version_bleeding_edge.txt` file to
-     be the new version.
-    1. You can use the bleeding edge version to get early feedback/stage a
-       rollout/etc. Users can select this version by 'touch'ing the
-       `.git_bleeding_edge` file in the root depot_tools directory.
-  1. Commit the CL.
+### Bundles
+
+Git and Python bundle construction is documented in
+[infra packaging](https://chromium.googlesource.com/infra/infra/+/master/doc/packaging/).
 
 Note that in order for the update to take effect, `gclient` currently needs to
 run twice. The first time it will update the `depot_tools` repo, and the second
@@ -50,9 +55,79 @@ time it will see the new git version and update to it. This is a bug that should
 be fixed, in case you're reading this and this paragraph infuriates you more
 than the rest of this README.
 
-### Python
+## Testing
 
-Python installs are sourced from gs://chrome-infra/python276_bin.zip .
+After any modification to this script set, a test sequence should be run on a
+Windows bot.
 
-The process to create them is sort-of-documented in the README of the python
-zip file.
+The post-processing will regenerate "python.bat" to point to the current
+Python instance. Any previous Python installations will stick around, but
+new invocations will use the new instance. Old installations will die
+off either due to processes terminating or systems restarting. When this
+happens, they will be cleaned up by the post-processing script.
+
+Testing
+=======
+
+For each of the following test scenarios, run these commands and verify that
+they are working:
+
+```bash
+# Assert that `gclient` invocation will update (and do the update).
+gclient version
+
+# Assert that Python fundamentally works.
+python -c "import psutil; dir(psutil)"
+
+# Assert that Python scripts work from `cmd.exe`.
+git map-branches
+
+# Assert that `git bash` works.
+git bash
+
+## (Within `git bash`) assert that Python fundamentally works.
+python -c "import psutil; dir(psutil)"
+## (Within `git bash`) assert that Python scripts work.
+git map-branches
+```
+
+Run this sequence through the following upgrade/downgrade procedures:
+
+* Cold default installation.
+  - Clean `depot_tools` via: `git clean -x -f -d .`
+  - Run through test steps.
+  - Test upgrade to bleeding edge (if it differs).
+    - Run `python.bat` in another shell, keep it open
+    - Add `.bleeding_edge` to `depot_tools` root.
+    - Run through test steps.
+    - In the old `python.bat` shell, run `import psutil`, confirm that it
+      works.
+    - Close the Python shell, run `gclient version`, ensure that old directory
+      is cleaned.
+* Cold bleeding edge installation.
+  - Clean `depot_tools` via: `git clean -x -f -d .`
+  - Add `.bleeding_edge` to `depot_tools` root.
+  - Run through test steps.
+  - Test downgrade to default (if it differs).
+    - Run `python.bat` in another shell, keep it open
+    - Delete `.bleeding_edge` from `depot_tools` root.
+    - Run through test steps.
+    - In the old `python.bat` shell, run `import psutil`, confirm that it
+      works.
+    - Close the Python shell, run `gclient version`, ensure that old directory
+      is cleaned.
+* Warm bleeding edge upgrade.
+  - Clean `depot_tools` via: `git clean -x -f -d .`
+  - Run `gclient version` to load defaults.
+  - Run `python.bat` in another shell, keep it open
+  - Add `.bleeding_edge` to `depot_tools` root.
+  - Run through test steps.
+  - In the old `python.bat` shell, run `import psutil`, confirm that it
+    works.
+  - Close the Python shell, run `gclient version`, ensure that old directory is
+    cleaned.
+
+This will take some time, but will ensure that all affected bots and users
+should not encounter any problems due to the change. As systems and users are
+migrated off of this implicit bootstrap, the testing procedure will become less
+critical.

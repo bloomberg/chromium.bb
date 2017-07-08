@@ -14,6 +14,7 @@
 /git.bat
 /gitk.bat
 /pylint.bat
+/.bleeding_edge
 /.pylint.d/
 /python
 /python.bat
@@ -22,7 +23,7 @@
 /svn
 /svn.bat
 /svnversion.bat
-/.bleeding_edge
+/python_bin_reldir.txt
 /.codereview_upload_cookies
 /.gitconfig
 /.git_bleeding_edge
@@ -33,6 +34,7 @@
 
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python*_bin
+/win_tools*_bin
 /git_bin
 /git-*_bin
 /svn_bin
