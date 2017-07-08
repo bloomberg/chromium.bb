@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
@@ -28,7 +29,8 @@ namespace viz {
 // Note that |CreateGpuMemoryBuffer()| can be called on any thread. All the rest
 // of the functions must be called on the thread this object is created on.
 class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
-    : public gpu::GpuMemoryBufferManager {
+    : public gpu::GpuMemoryBufferManager,
+      public base::trace_event::MemoryDumpProvider {
  public:
   ServerGpuMemoryBufferManager(ui::mojom::GpuService* gpu_service,
                                int client_id);
@@ -58,9 +60,15 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                const gpu::SyncToken& sync_token) override;
 
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
+  uint64_t ClientIdToTracingId(int client_id) const;
   void OnGpuMemoryBufferAllocated(
       int client_id,
+      size_t buffer_size_in_bytes,
       base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback,
       const gfx::GpuMemoryBufferHandle& handle);
 
@@ -68,10 +76,19 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
   const int client_id_;
   int next_gpu_memory_id_ = 1;
 
-  using NativeBuffers =
-      std::unordered_set<gfx::GpuMemoryBufferId,
+  struct BufferInfo {
+    BufferInfo();
+    ~BufferInfo();
+    gfx::GpuMemoryBufferType type = gfx::EMPTY_BUFFER;
+    size_t buffer_size_in_bytes = 0;
+    base::UnguessableToken shared_memory_guid;
+  };
+
+  using AllocatedBuffers =
+      std::unordered_map<gfx::GpuMemoryBufferId,
+                         BufferInfo,
                          BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
-  std::unordered_map<int, NativeBuffers> native_buffers_;
+  std::unordered_map<int, AllocatedBuffers> allocated_buffers_;
   std::unordered_set<int> pending_buffers_;
 
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
