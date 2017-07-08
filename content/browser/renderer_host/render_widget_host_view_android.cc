@@ -55,6 +55,7 @@
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
+#include "content/browser/renderer_host/input/touch_selection_controller_client_manager_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -491,6 +492,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   }
 
   host_->SetView(this);
+  touch_selection_controller_client_manager_ =
+      base::MakeUnique<TouchSelectionControllerClientManagerAndroid>(this);
   SetContentViewCore(content_view_core);
 
   CreateOverscrollControllerIfPossible();
@@ -1369,6 +1372,19 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
       event, GetSelectionRect(*touch_selection_controller_));
 }
 
+ui::TouchSelectionControllerClient*
+RenderWidgetHostViewAndroid::GetSelectionControllerClientManagerForTesting() {
+  return touch_selection_controller_client_manager_.get();
+}
+
+void RenderWidgetHostViewAndroid::SetSelectionControllerClientForTesting(
+    std::unique_ptr<ui::TouchSelectionControllerClient> client) {
+  touch_selection_controller_client_for_test_.swap(client);
+
+  touch_selection_controller_ = CreateSelectionController(
+      touch_selection_controller_client_for_test_.get(), content_view_core_);
+}
+
 std::unique_ptr<ui::TouchHandleDrawable>
 RenderWidgetHostViewAndroid::CreateDrawable() {
   DCHECK(content_view_core_);
@@ -1457,8 +1473,12 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
 
   if (touch_selection_controller_) {
-    touch_selection_controller_->OnSelectionBoundsChanged(
-        frame_metadata.selection.start, frame_metadata.selection.end);
+    DCHECK(touch_selection_controller_client_manager_);
+    touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
+        frame_metadata.selection.start, frame_metadata.selection.end, this,
+        nullptr);
+    touch_selection_controller_client_manager_->SetPageScaleFactor(
+        frame_metadata.page_scale_factor);
 
     // Set parameters for adaptive handle orientation.
     gfx::SizeF viewport_size(frame_metadata.scrollable_viewport_size);
@@ -1667,6 +1687,8 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
     needs_animate |= overscroll_controller_->Animate(
         frame_time, content_view_core_->GetViewAndroid()->GetLayer());
   }
+  // TODO(wjmaclean): Investigate how animation here does or doesn't affect
+  // an OOPIF client.
   if (touch_selection_controller_)
     needs_animate |= touch_selection_controller_->Animate(frame_time);
   return needs_animate;
@@ -1713,33 +1735,6 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (touch_selection_controller_ &&
-      blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
-    const blink::WebGestureEvent& gesture_event =
-        static_cast<const blink::WebGestureEvent&>(input_event);
-    switch (gesture_event.GetType()) {
-      case blink::WebInputEvent::kGestureLongPress:
-        touch_selection_controller_->HandleLongPressEvent(
-            base::TimeTicks() +
-                base::TimeDelta::FromSecondsD(input_event.TimeStampSeconds()),
-            gfx::PointF(gesture_event.x, gesture_event.y));
-        break;
-
-      case blink::WebInputEvent::kGestureTap:
-        touch_selection_controller_->HandleTapEvent(
-            gfx::PointF(gesture_event.x, gesture_event.y),
-            gesture_event.data.tap.tap_count);
-        break;
-
-      case blink::WebInputEvent::kGestureScrollBegin:
-        touch_selection_controller_->OnScrollBeginEvent();
-        break;
-
-      default:
-        break;
-    }
-  }
-
   if (overscroll_controller_ &&
       blink::WebInputEvent::IsGestureEventType(input_event.GetType()) &&
       overscroll_controller_->WillHandleGestureEvent(
@@ -1899,6 +1894,33 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   if (!host_ || !host_->delegate())
     return;
 
+  // We let the touch selection controller see gesture events here, since they
+  // may be routed and not make it to FilterInputEvent().
+  if (touch_selection_controller_ &&
+      event.source_device ==
+          blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+    switch (event.GetType()) {
+      case blink::WebInputEvent::kGestureLongPress:
+        touch_selection_controller_->HandleLongPressEvent(
+            base::TimeTicks() +
+                base::TimeDelta::FromSecondsD(event.TimeStampSeconds()),
+            gfx::PointF(event.x, event.y));
+        break;
+
+      case blink::WebInputEvent::kGestureTap:
+        touch_selection_controller_->HandleTapEvent(
+            gfx::PointF(event.x, event.y), event.data.tap.tap_count);
+        break;
+
+      case blink::WebInputEvent::kGestureScrollBegin:
+        touch_selection_controller_->OnScrollBeginEvent();
+        break;
+
+      default:
+        break;
+    }
+  }
+
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
   if (wheel_scroll_latching_enabled()) {
@@ -2055,9 +2077,15 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (resize)
     WasResized();
 
-  if (!touch_selection_controller_)
+  if (!touch_selection_controller_) {
+    ui::TouchSelectionControllerClient* client =
+        touch_selection_controller_client_manager_.get();
+    if (touch_selection_controller_client_for_test_)
+      client = touch_selection_controller_client_for_test_.get();
+
     touch_selection_controller_ =
-        CreateSelectionController(this, content_view_core_);
+        CreateSelectionController(client, content_view_core_);
+  }
 
   if (content_view_core_)
     CreateOverscrollControllerIfPossible();
@@ -2068,6 +2096,11 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
     ack_callbacks_.front().Run();
     ack_callbacks_.pop();
   }
+}
+
+TouchSelectionControllerClientManager*
+RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
+  return touch_selection_controller_client_manager_.get();
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(
