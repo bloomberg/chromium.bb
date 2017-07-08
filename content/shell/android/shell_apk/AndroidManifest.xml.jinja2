@@ -67,5 +67,20 @@
 
         <service android:name="org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService"
             android:process=":ChildProcessLauncherHelper" />
+
+        <!-- The following entries are for ChildProcessLauncherTest. They should eventually be moved
+             to base. -->
+        {% set num_test_services = 2 %}
+        <meta-data android:name="org.chromium.content.browser.NUM_TEST_SERVICES"
+                   android:value="{{ num_test_services }}"/>
+        <meta-data android:name="org.chromium.content.browser.TEST_SERVICES_NAME"
+                   android:value="org.chromium.content_shell_apk.TestChildProcessService"/>
+        {% for i in range(num_test_services) %}
+        <service android:name="org.chromium.content_shell_apk.TestChildProcessService{{ i }}"
+                 android:process=":test_child_service_process{{ i }}"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        {% endfor %}
+
     </application>
 </manifest>

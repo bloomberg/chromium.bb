@@ -114,6 +114,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/BrowserStartupController.java",
     "java/src/org/chromium/content/browser/ChildConnectionAllocator.java",
     "java/src/org/chromium/content/browser/ChildProcessConnection.java",
+    "java/src/org/chromium/content/browser/ChildProcessLauncher.java",
     "java/src/org/chromium/content/browser/ChildProcessLauncherHelper.java",
     "java/src/org/chromium/content/browser/ContentChildProcessConstants.java",
     "java/src/org/chromium/content/browser/ContentClassFactory.java",
@@ -373,6 +374,9 @@ group("jni") {
 
 android_library("content_javatests") {
   testonly = true
+
+  srcjar_deps = [ "//content/shell/android:content_javatests_aidl" ]
+
   deps = [
     ":content_java",
     "//base:base_java",
@@ -396,6 +400,7 @@ android_library("content_javatests") {
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
@@ -405,6 +410,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/BrowserStartupControllerTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherIntegrationTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherTest.java",
+    "javatests/src/org/chromium/content/browser/ChildProcessLauncherHelperTest.java",
     "javatests/src/org/chromium/content/browser/ClipboardTest.java",
     "javatests/src/org/chromium/content/browser/ContentCommandLineTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewCoreSelectionTest.java",
