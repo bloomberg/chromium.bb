@@ -187,19 +187,24 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
   static const char* kAttrib1Name;
   static const char* kAttrib2Name;
   static const char* kAttrib3Name;
+  static const char* kAttrib4Name;
   static const GLint kAttrib1Size = 1;
   static const GLint kAttrib2Size = 1;
   static const GLint kAttrib3Size = 1;
+  static const GLint kAttrib4Size = 1;
   static const GLenum kAttrib1Precision = GL_MEDIUM_FLOAT;
   static const GLenum kAttrib2Precision = GL_HIGH_FLOAT;
-  static const GLenum kAttrib3Precision = GL_LOW_FLOAT;
+  static const GLenum kAttrib3Precision = GL_LOW_INT;
+  static const GLenum kAttrib4Precision = GL_HIGH_FLOAT;
   static const bool kAttribStaticUse = true;
   static const GLint kAttrib1Location = 0;
   static const GLint kAttrib2Location = 1;
   static const GLint kAttrib3Location = 2;
+  static const GLint kAttrib4Location = 3;
   static const GLenum kAttrib1Type = GL_FLOAT_VEC4;
   static const GLenum kAttrib2Type = GL_FLOAT_VEC2;
-  static const GLenum kAttrib3Type = GL_FLOAT_VEC3;
+  static const GLenum kAttrib3Type = GL_INT_VEC3;
+  static const GLenum kAttrib4Type = GL_FLOAT_MAT3x2;
   static const GLint kInvalidAttribLocation = 30;
   static const GLint kBadAttribIndex = kNumVertexAttribs;
 
@@ -459,9 +464,18 @@ class ProgramManagerWithShaderTest : public ProgramManagerTestBase {
 
 ProgramManagerWithShaderTest::AttribInfo
     ProgramManagerWithShaderTest::kAttribs[] = {
-  { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
-  { kAttrib2Name, kAttrib2Size, kAttrib2Type, kAttrib2Location, },
-  { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
+        {
+            kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location,
+        },
+        {
+            kAttrib2Name, kAttrib2Size, kAttrib2Type, kAttrib2Location,
+        },
+        {
+            kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location,
+        },
+        {
+            kAttrib4Name, kAttrib4Size, kAttrib4Type, kAttrib4Location,
+        },
 };
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -476,12 +490,15 @@ const GLuint ProgramManagerWithShaderTest::kFragmentShaderServiceId;
 const GLint ProgramManagerWithShaderTest::kAttrib1Size;
 const GLint ProgramManagerWithShaderTest::kAttrib2Size;
 const GLint ProgramManagerWithShaderTest::kAttrib3Size;
+const GLint ProgramManagerWithShaderTest::kAttrib4Size;
 const GLint ProgramManagerWithShaderTest::kAttrib1Location;
 const GLint ProgramManagerWithShaderTest::kAttrib2Location;
 const GLint ProgramManagerWithShaderTest::kAttrib3Location;
+const GLint ProgramManagerWithShaderTest::kAttrib4Location;
 const GLenum ProgramManagerWithShaderTest::kAttrib1Type;
 const GLenum ProgramManagerWithShaderTest::kAttrib2Type;
 const GLenum ProgramManagerWithShaderTest::kAttrib3Type;
+const GLenum ProgramManagerWithShaderTest::kAttrib4Type;
 const GLint ProgramManagerWithShaderTest::kInvalidAttribLocation;
 const GLint ProgramManagerWithShaderTest::kBadAttribIndex;
 const GLint ProgramManagerWithShaderTest::kUniform1Size;
@@ -540,6 +557,7 @@ const size_t ProgramManagerWithShaderTest::kNumUniforms =
 const char* ProgramManagerWithShaderTest::kAttrib1Name = "attrib1";
 const char* ProgramManagerWithShaderTest::kAttrib2Name = "attrib2";
 const char* ProgramManagerWithShaderTest::kAttrib3Name = "attrib3";
+const char* ProgramManagerWithShaderTest::kAttrib4Name = "attrib4";
 const char* ProgramManagerWithShaderTest::kUniform1Name = "uniform1";
 const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2";
 const char* ProgramManagerWithShaderTest::kUniform2NameWithArrayIndex =
@@ -580,12 +598,58 @@ TEST_F(ProgramManagerWithShaderTest, GetAttribInfo) {
   EXPECT_TRUE(program->GetAttribInfo(kInvalidIndex) == NULL);
 }
 
+TEST_F(ProgramManagerWithShaderTest, GetAttribInfoByLocation) {
+  const GLint kInvalidLocation = 1000;
+  const Program* program = SetupDefaultProgram();
+  ASSERT_TRUE(program != NULL);
+
+  // attrib2 is a vec2, takes 1 location
+  const Program::VertexAttrib* expected_info = program->GetAttribInfo(1);
+  EXPECT_EQ(1u, expected_info->location_count);
+  const Program::VertexAttrib* info =
+      program->GetAttribInfoByLocation(kAttrib2Location);
+  EXPECT_EQ(expected_info, info);
+
+  // attrib4 is a mat3x2, takes 3 locations (1 per column)
+  expected_info = program->GetAttribInfo(3);
+  EXPECT_EQ(3u, expected_info->location_count);
+  info = program->GetAttribInfoByLocation(kAttrib4Location);
+  EXPECT_EQ(expected_info, info);
+  info = program->GetAttribInfoByLocation(kAttrib4Location + 1);
+  EXPECT_EQ(expected_info, info);
+  info = program->GetAttribInfoByLocation(kAttrib4Location + 2);
+  EXPECT_EQ(expected_info, info);
+
+  EXPECT_TRUE(program->GetAttribInfoByLocation(kInvalidLocation) == NULL);
+}
+
 TEST_F(ProgramManagerWithShaderTest, GetAttribLocation) {
   const char* kInvalidName = "foo";
   const Program* program = SetupDefaultProgram();
   ASSERT_TRUE(program != NULL);
   EXPECT_EQ(kAttrib2Location, program->GetAttribLocation(kAttrib2Name));
   EXPECT_EQ(-1, program->GetAttribLocation(kInvalidName));
+}
+
+TEST_F(ProgramManagerWithShaderTest, VertexArrayMasks) {
+  const Program* program = SetupDefaultProgram();
+  ASSERT_TRUE(program != NULL);
+
+  std::vector<uint32_t> active_mask = program->vertex_input_active_mask();
+  ASSERT_EQ(1u, active_mask.size());
+  uint32_t expected = 0x3 << 0 |              // attrib1
+                      0x3 << 2 |              // attrib2
+                      0x3 << 4 |              // attrib3
+                      (0x3 * 0b010101) << 6;  // attrib4
+  EXPECT_EQ(expected, active_mask[0]);
+
+  std::vector<uint32_t> base_type_mask = program->vertex_input_base_type_mask();
+  ASSERT_EQ(1u, base_type_mask.size());
+  expected = SHADER_VARIABLE_FLOAT << 0 |              // attrib1
+             SHADER_VARIABLE_FLOAT << 2 |              // attrib2
+             SHADER_VARIABLE_INT << 4 |                // attrib3
+             (SHADER_VARIABLE_FLOAT * 0b010101) << 6;  // attrib4
+  EXPECT_EQ(expected, base_type_mask[0]);
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
@@ -770,7 +834,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   program->Link(NULL, Program::kCountOnlyStaticallyUsed, this);
   GLint value = 0;
   program->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &value);
-  EXPECT_EQ(3, value);
+  EXPECT_EQ(4, value);
   // Check that we didn't skip the "gl_" uniform.
   program->GetProgramiv(GL_ACTIVE_UNIFORMS, &value);
   EXPECT_EQ(3, value);

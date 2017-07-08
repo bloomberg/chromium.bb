@@ -133,16 +133,20 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     std::vector<GLuint> texture_units;
   };
   struct VertexAttrib {
-    VertexAttrib(GLsizei _size, GLenum _type, const std::string& _name,
-                 GLint _location)
-        : size(_size),
-          type(_type),
-          location(_location),
-          name(_name) {
-    }
+    VertexAttrib(GLsizei size,
+                 GLenum type,
+                 const std::string& name,
+                 GLint location,
+                 size_t location_count)
+        : size(size),
+          type(type),
+          location(location),
+          location_count(location_count),
+          name(name) {}
     GLsizei size;
     GLenum type;
     GLint location;
+    size_t location_count;
     std::string name;
   };
   struct UniformBlockSizeInfo {
