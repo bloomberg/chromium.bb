@@ -20,6 +20,7 @@ namespace media {
 
 class AudioDecoder;
 class GpuVideoAcceleratorFactories;
+class MediaLog;
 class VideoDecoder;
 
 // A factory class for creating audio and video decoders.
@@ -39,6 +40,7 @@ class MEDIA_EXPORT DecoderFactory {
   virtual void CreateVideoDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
+      MediaLog* media_log,
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders);
 
  private:

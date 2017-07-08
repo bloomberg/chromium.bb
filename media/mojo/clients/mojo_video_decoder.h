@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
+#include "media/mojo/clients/mojo_media_log_service.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -19,6 +20,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class GpuVideoAcceleratorFactories;
+class MediaLog;
 class MojoDecoderBufferWriter;
 
 // A VideoDecoder, for use in the renderer process, that proxies to a
@@ -30,6 +32,7 @@ class MojoVideoDecoder final : public VideoDecoder,
  public:
   MojoVideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    GpuVideoAcceleratorFactories* gpu_factories,
+                   MediaLog* media_log,
                    mojom::VideoDecoderPtr remote_decoder);
   ~MojoVideoDecoder() final;
 
@@ -87,7 +90,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
   bool remote_decoder_bound_ = false;
   bool has_connection_error_ = false;
-  mojo::AssociatedBinding<VideoDecoderClient> client_binding_;
+  mojo::AssociatedBinding<mojom::VideoDecoderClient> client_binding_;
+  MojoMediaLogService media_log_service_;
+  mojo::AssociatedBinding<mojom::MediaLog> media_log_binding_;
 
   bool initialized_ = false;
   bool needs_bitstream_conversion_ = false;

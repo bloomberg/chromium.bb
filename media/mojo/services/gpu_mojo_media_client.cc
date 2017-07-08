@@ -68,6 +68,7 @@ std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
 
 std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
     OutputWithReleaseMailboxCB output_cb) {
   static_cast<void>(media_gpu_channel_manager_);

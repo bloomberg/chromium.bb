@@ -38,13 +38,14 @@ void MojoDecoderFactory::CreateAudioDecoders(
 void MojoDecoderFactory::CreateVideoDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
+    MediaLog* media_log,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   mojom::VideoDecoderPtr remote_decoder;
   service_manager::GetInterface<mojom::VideoDecoder>(interface_provider_,
                                                      &remote_decoder);
   video_decoders->push_back(base::MakeUnique<MojoVideoDecoder>(
-      task_runner, gpu_factories, std::move(remote_decoder)));
+      task_runner, gpu_factories, media_log, std::move(remote_decoder)));
 #endif
 }
 

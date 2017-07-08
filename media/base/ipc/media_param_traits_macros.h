@@ -18,6 +18,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/media_log_event.h"
 #include "media/base/output_device_info.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
@@ -41,6 +42,15 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmKeyInformation::KeyStatus,
                           media::CdmKeyInformation::KEY_STATUS_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
+                          media::CdmMessageType::MESSAGE_TYPE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
+                          media::CdmPromise::EXCEPTION_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
+                          media::CdmSessionType::SESSION_TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 
@@ -66,14 +76,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
                           media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
-                          media::CdmPromise::EXCEPTION_MAX)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
-                          media::CdmMessageType::MESSAGE_TYPE_MAX)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
-                          media::CdmSessionType::SESSION_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
+                          media::MediaLogEvent::TYPE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_MAX)
@@ -112,6 +116,13 @@ IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
   IPC_STRUCT_TRAITS_MEMBER(key_id)
   IPC_STRUCT_TRAITS_MEMBER(status)
   IPC_STRUCT_TRAITS_MEMBER(system_code)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(params)
+  IPC_STRUCT_TRAITS_MEMBER(time)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)

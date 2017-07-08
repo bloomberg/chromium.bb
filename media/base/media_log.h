@@ -101,6 +101,10 @@ class MEDIA_EXPORT MediaLog {
   void SetDoubleProperty(const std::string& key, double value);
   void SetBooleanProperty(const std::string& key, bool value);
 
+  // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogEvents
+  // to log into this MediaLog.
+  int32_t id() const { return id_; }
+
  private:
   // A unique (to this process) id for this MediaLog.
   int32_t id_;

@@ -63,6 +63,7 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // See https://crbug.com/733828.
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       OutputWithReleaseMailboxCB output_cb);
 

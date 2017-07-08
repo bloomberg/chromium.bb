@@ -26,11 +26,14 @@ namespace media {
 MojoVideoDecoder::MojoVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
+    MediaLog* media_log,
     mojom::VideoDecoderPtr remote_decoder)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       gpu_factories_(gpu_factories),
       client_binding_(this),
+      media_log_service_(media_log),
+      media_log_binding_(&media_log_service_),
       weak_factory_(this) {
   DVLOG(1) << __func__;
 }
@@ -198,9 +201,11 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_.set_connection_error_handler(
       base::Bind(&MojoVideoDecoder::Stop, base::Unretained(this)));
 
-  // TODO(sandersd): Does this need its own error handler?
   mojom::VideoDecoderClientAssociatedPtrInfo client_ptr_info;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
+
+  mojom::MediaLogAssociatedPtrInfo media_log_ptr_info;
+  media_log_binding_.Bind(mojo::MakeRequest(&media_log_ptr_info));
 
   // TODO(sandersd): Better buffer sizing.
   mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
@@ -217,9 +222,9 @@ void MojoVideoDecoder::BindRemoteDecoder() {
     }
   }
 
-  remote_decoder_->Construct(std::move(client_ptr_info),
-                             std::move(remote_consumer_handle),
-                             std::move(command_buffer_id));
+  remote_decoder_->Construct(
+      std::move(client_ptr_info), std::move(media_log_ptr_info),
+      std::move(remote_consumer_handle), std::move(command_buffer_id));
 }
 
 void MojoVideoDecoder::Stop() {

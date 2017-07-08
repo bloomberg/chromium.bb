@@ -8,21 +8,29 @@ import "gpu/ipc/common/mailbox_holder.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
+// See media/base/audio_codecs.h for descriptions.
+[Native]
+enum AudioCodec;
+
 // See media/base/buffering_state.h for descriptions.
 [Native]
 enum BufferingState;
+
+// See media/base/channel_layout.h for descriptions.
+[Native]
+enum ChannelLayout;
+
+// See media/base/video_types.h for descriptions.
+[Native]
+enum ColorSpace;
 
 // See media/base/decode_status.h for descriptions.
 [Native]
 enum DecodeStatus;
 
-// See media/base/audio_codecs.h for descriptions.
+// See media/base/media_log_event.h for description.
 [Native]
-enum AudioCodec;
-
-// See media/base/channel_layout.h for descriptions.
-[Native]
-enum ChannelLayout;
+struct MediaLogEvent;
 
 // See media/base/output_device_info.h for descriptions.
 [Native]
@@ -32,14 +40,6 @@ enum OutputDeviceStatus;
 [Native]
 enum SampleFormat;
 
-// See media/base/video_types.h for descriptions.
-[Native]
-enum VideoPixelFormat;
-
-// See media/base/video_types.h for descriptions.
-[Native]
-enum ColorSpace;
-
 // See media/base/video_codecs.h for descriptions.
 [Native]
 enum VideoCodec;
@@ -47,6 +47,10 @@ enum VideoCodec;
 // See media/base/video_codecs.h for descriptions.
 [Native]
 enum VideoCodecProfile;
+
+// See media/base/video_types.h for descriptions.
+[Native]
+enum VideoPixelFormat;
 
 // This defines a mojo transport format for media::EncryptionScheme::Pattern
 // See media/base/encryption_scheme.h for description.

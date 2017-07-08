@@ -16,6 +16,7 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "media/mojo/services/mojo_media_client.h"
+#include "media/mojo/services/mojo_media_log.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -32,6 +33,7 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {}
 
 void MojoVideoDecoderService::Construct(
     mojom::VideoDecoderClientAssociatedPtrInfo client,
+    mojom::MediaLogAssociatedPtrInfo media_log,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
     mojom::CommandBufferIdPtr command_buffer_id) {
   DVLOG(1) << __func__;
@@ -41,14 +43,19 @@ void MojoVideoDecoderService::Construct(
     return;
   }
 
-  decoder_ = mojo_media_client_->CreateVideoDecoder(
-      base::ThreadTaskRunnerHandle::Get(), std::move(command_buffer_id),
-      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_));
-
   client_.Bind(std::move(client));
+
+  mojom::MediaLogAssociatedPtr media_log_ptr;
+  media_log_ptr.Bind(std::move(media_log));
+  media_log_ = base::MakeUnique<MojoMediaLog>(std::move(media_log_ptr));
 
   mojo_decoder_buffer_reader_.reset(
       new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));
+
+  decoder_ = mojo_media_client_->CreateVideoDecoder(
+      base::ThreadTaskRunnerHandle::Get(), media_log_.get(),
+      std::move(command_buffer_id),
+      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_));
 }
 
 void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
