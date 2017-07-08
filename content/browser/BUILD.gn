@@ -47,6 +47,8 @@ source_set("browser") {
     "//components/metrics:single_sample_metrics",
     "//components/mime_util",
     "//components/network_session_configurator/browser",
+    "//components/offline_pages/core/request_header",
+    "//components/offline_pages/features:features",
     "//components/rappor",
     "//components/tracing",
     "//components/tracing:startup_tracing",
