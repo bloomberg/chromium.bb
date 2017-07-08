@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 
+#include <stdint.h>
+
 #include <set>
 #include <string>
 #include <utility>
@@ -193,8 +195,8 @@ void ClearCookiesOnIOThread(base::Time delete_begin,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(delete_begin, delete_end,
-                                             IgnoreArgument<int>(callback));
+  cookie_store->DeleteAllCreatedBetweenAsync(
+      delete_begin, delete_end, IgnoreArgument<uint32_t>(callback));
 }
 
 void ClearCookiesWithPredicateOnIOThread(
@@ -207,7 +209,7 @@ void ClearCookiesWithPredicateOnIOThread(
   net::CookieStore* cookie_store =
       rq_context->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
-      delete_begin, delete_end, predicate, IgnoreArgument<int>(callback));
+      delete_begin, delete_end, predicate, IgnoreArgument<uint32_t>(callback));
 }
 
 void ClearNetworkPredictorOnIOThread(chrome_browser_net::Predictor* predictor) {

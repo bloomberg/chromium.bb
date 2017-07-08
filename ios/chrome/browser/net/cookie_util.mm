@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 
 #include "base/logging.h"
@@ -34,7 +35,7 @@ namespace {
 NSString* const kLastCookieDeletionDate = @"LastCookieDeletionDate";
 
 // Empty callback.
-void DoNothing(int n) {}
+void DoNothing(uint32_t n) {}
 
 // Creates a SQLitePersistentCookieStore running on a background thread.
 scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(

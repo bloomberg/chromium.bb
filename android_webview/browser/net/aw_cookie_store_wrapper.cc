@@ -294,7 +294,7 @@ void AwCookieStoreWrapper::DeleteCanonicalCookieAsync(
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(
       base::BindOnce(&DeleteCanonicalCookieAsyncOnCookieThread, cookie,
-                     CreateWrappedCallback<int>(std::move(callback))));
+                     CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteAllCreatedBetweenAsync(
@@ -304,7 +304,7 @@ void AwCookieStoreWrapper::DeleteAllCreatedBetweenAsync(
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
       &DeleteAllCreatedBetweenAsyncOnCookieThread, delete_begin, delete_end,
-      CreateWrappedCallback<int>(std::move(callback))));
+      CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteAllCreatedBetweenWithPredicateAsync(
@@ -313,16 +313,17 @@ void AwCookieStoreWrapper::DeleteAllCreatedBetweenWithPredicateAsync(
     const CookiePredicate& predicate,
     DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(base::BindOnce(
-      &DeleteAllCreatedBetweenWithPredicateAsyncOnCookieThread, delete_begin,
-      delete_end, predicate, CreateWrappedCallback<int>(std::move(callback))));
+  PostTaskToCookieStoreTaskRunner(
+      base::BindOnce(&DeleteAllCreatedBetweenWithPredicateAsyncOnCookieThread,
+                     delete_begin, delete_end, predicate,
+                     CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteSessionCookiesAsync(DeleteCallback callback) {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(
       base::BindOnce(&DeleteSessionCookiesAsyncOnCookieThread,
-                     CreateWrappedCallback<int>(std::move(callback))));
+                     CreateWrappedCallback<uint32_t>(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::FlushStore(base::OnceClosure callback) {

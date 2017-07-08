@@ -5,6 +5,7 @@
 #include "content/browser/storage_partition_impl.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <set>
 #include <vector>
@@ -64,7 +65,7 @@ bool DoesCookieMatchHost(const std::string& host,
   return cookie.IsHostCookie() && cookie.IsDomainMatch(host);
 }
 
-void OnClearedCookies(const base::Closure& callback, int num_deleted) {
+void OnClearedCookies(const base::Closure& callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(

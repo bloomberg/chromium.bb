@@ -447,7 +447,7 @@ void IOSChromeBrowsingDataRemover::OnClearedPasswords() {
   NotifyAndDeleteIfDone();
 }
 
-void IOSChromeBrowsingDataRemover::OnClearedCookies(int num_deleted) {
+void IOSChromeBrowsingDataRemover::OnClearedCookies(uint32_t num_deleted) {
   if (!WebThread::CurrentlyOn(WebThread::UI)) {
     WebThread::PostTask(
         WebThread::UI, FROM_HERE,

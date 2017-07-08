@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
 #define IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <set>
 
@@ -189,7 +191,7 @@ class IOSChromeBrowsingDataRemover {
   void OnClearedPasswords();
 
   // Callback for when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
-  void OnClearedCookies(int num_deleted);
+  void OnClearedCookies(uint32_t num_deleted);
 
   // Invoked on the IO thread to delete cookies.
   void ClearCookiesOnIOThread(

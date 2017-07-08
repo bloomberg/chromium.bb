@@ -5,6 +5,8 @@
 #ifndef IOS_NET_COOKIES_COOKIE_STORE_IOS_H_
 #define IOS_NET_COOKIES_COOKIE_STORE_IOS_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -253,7 +255,7 @@ class CookieStoreIOS : public net::CookieStore,
   // calling the provided callback.
 
   void UpdateCachesAfterSet(SetCookiesCallback callback, bool success);
-  void UpdateCachesAfterDelete(DeleteCallback callback, int num_deleted);
+  void UpdateCachesAfterDelete(DeleteCallback callback, uint32_t num_deleted);
   void UpdateCachesAfterClosure(base::OnceClosure callback);
 
   // Takes an NSArray of NSHTTPCookies as returns a net::CookieList.

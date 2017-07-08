@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/network_handler.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/barrier_closure.h"
 #include "base/base64.h"
@@ -190,7 +191,7 @@ class CookieRetriever : public base::RefCountedThreadSafe<CookieRetriever> {
 };
 
 void ClearedCookiesOnIO(std::unique_ptr<ClearBrowserCookiesCallback> callback,
-                        int num_deleted) {
+                        uint32_t num_deleted) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&ClearBrowserCookiesCallback::sendSuccess,
