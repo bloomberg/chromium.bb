@@ -4,12 +4,9 @@
 
 #include "components/net_log/chrome_net_log.h"
 
-#include <stdio.h>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/files/scoped_file.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -18,9 +15,9 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/version_info/version_info.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
 #include "net/log/trace_net_log_observer.h"
-#include "net/log/write_to_file_net_log_observer.h"
 
 namespace net_log {
 
@@ -31,48 +28,22 @@ ChromeNetLog::ChromeNetLog() {
 
 ChromeNetLog::~ChromeNetLog() {
   net_export_file_writer_.reset();
-  // Remove the observers we own before we're destroyed.
-  if (write_to_file_observer_)
-    write_to_file_observer_->StopObserving(nullptr);
-  if (trace_net_log_observer_)
-    trace_net_log_observer_->StopWatchForTraceStart();
+  ClearFileNetLogObserver();
+  trace_net_log_observer_->StopWatchForTraceStart();
 }
 
 void ChromeNetLog::StartWritingToFile(
-    const base::FilePath& log_file,
-    net::NetLogCaptureMode log_file_mode,
+    const base::FilePath& path,
+    net::NetLogCaptureMode capture_mode,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string) {
-  DCHECK(!log_file.empty());
+  DCHECK(!path.empty());
 
-  // TODO(716570): Use common code to write NetLog to file.
+  // TODO(739485): The log file does not contain about:flags data.
+  file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
+      path, GetConstants(command_line_string, channel_string));
 
-  // Much like logging.h, bypass threading restrictions by using fopen
-  // directly.  Have to write on a thread that's shutdown to handle events on
-  // shutdown properly, and posting events to another thread as they occur
-  // would result in an unbounded buffer size, so not much can be gained by
-  // doing this on another thread.  It's only used when debugging Chrome, so
-  // performance is not a big concern.
-  base::ScopedFILE file;
-#if defined(OS_WIN)
-  file.reset(_wfopen(log_file.value().c_str(), L"w"));
-#elif defined(OS_POSIX)
-  file.reset(fopen(log_file.value().c_str(), "w"));
-#endif
-
-  if (!file) {
-    LOG(ERROR) << "Could not open file " << log_file.value()
-               << " for net logging";
-  } else {
-    std::unique_ptr<base::Value> constants(
-        GetConstants(command_line_string, channel_string));
-    write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-
-    write_to_file_observer_->set_capture_mode(log_file_mode);
-
-    write_to_file_observer_->StartObserving(this, std::move(file),
-                                            constants.get(), nullptr);
-  }
+  file_net_log_observer_->StartObserving(this, capture_mode);
 }
 
 NetExportFileWriter* ChromeNetLog::net_export_file_writer() {
@@ -113,6 +84,31 @@ std::unique_ptr<base::Value> ChromeNetLog::GetConstants(
       constants_dict.get());
 
   return std::move(constants_dict);
+}
+
+void ChromeNetLog::ShutDownBeforeTaskScheduler() {
+  // TODO(eroman): Stop in-progress net_export_file_writer_ or delete its files?
+
+  ClearFileNetLogObserver();
+}
+
+void ChromeNetLog::ClearFileNetLogObserver() {
+  if (!file_net_log_observer_)
+    return;
+
+  // TODO(739487): The log file does not contain any polled data.
+  //
+  // TODO(eroman): FileNetLogObserver::StopObserving() posts to the file task
+  // runner to finish writing the log file. Despite that sequenced task runner
+  // being marked BLOCK_SHUTDOWN, those tasks are not actually running.
+  //
+  // This isn't a big deal when using the unbounded logger since the log
+  // loading code can handle such truncated logs. But this will need fixing
+  // if switching to log formats that are not so versatile (also if adding
+  // polled data).
+  file_net_log_observer_->StopObserving(nullptr /*polled_data*/,
+                                        base::Closure());
+  file_net_log_observer_.reset();
 }
 
 }  // namespace net_log

@@ -120,7 +120,7 @@ NetExportFileWriter::NetExportFileWriter(ChromeNetLog* chrome_net_log)
 
 NetExportFileWriter::~NetExportFileWriter() {
   if (file_net_log_observer_)
-    file_net_log_observer_->StopObserving(nullptr, base::Bind([] {}));
+    file_net_log_observer_->StopObserving(nullptr, base::Closure());
 }
 
 void NetExportFileWriter::AddObserver(StateObserver* observer) {

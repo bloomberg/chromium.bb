@@ -295,15 +295,22 @@ void FileNetLogObserver::StartObserving(NetLog* net_log,
 }
 
 void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
-                                       const base::Closure& callback) {
+                                       base::OnceClosure optional_callback) {
   net_log()->DeprecatedRemoveObserver(this);
 
-  file_task_runner_->PostTaskAndReply(
-      FROM_HERE,
+  base::OnceClosure bound_flush_then_stop =
       base::Bind(&FileNetLogObserver::FileWriter::FlushThenStop,
                  base::Unretained(file_writer_.get()), write_queue_,
-                 base::Passed(&polled_data)),
-      callback);
+                 base::Passed(&polled_data));
+
+  // Note that PostTaskAndReply() requires a non-null closure.
+  if (!optional_callback.is_null()) {
+    file_task_runner_->PostTaskAndReply(FROM_HERE,
+                                        std::move(bound_flush_then_stop),
+                                        std::move(optional_callback));
+  } else {
+    file_task_runner_->PostTask(FROM_HERE, std::move(bound_flush_then_stop));
+  }
 }
 
 void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
