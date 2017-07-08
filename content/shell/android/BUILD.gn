@@ -99,6 +99,9 @@ android_resources("content_shell_apk_resources") {
 
 android_library("content_shell_apk_java") {
   testonly = true
+
+  srcjar_deps = [ ":content_javatests_aidl" ]
+
   deps = [
     ":content_shell_apk_resources",
     ":content_shell_java",
@@ -107,6 +110,7 @@ android_library("content_shell_apk_java") {
     "//content/public/android:content_java",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
+    "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
   ]
 
@@ -118,6 +122,16 @@ android_library("content_shell_apk_java") {
     "shell_apk/src/org/chromium/content_shell_apk/ChildProcessLauncherTestUtils.java",
     "shell_apk/src/org/chromium/content_shell_apk/ContentShellActivity.java",
     "shell_apk/src/org/chromium/content_shell_apk/ContentShellApplication.java",
+    "shell_apk/src/org/chromium/content_shell_apk/TestChildProcessService.java",
+    "shell_apk/src/org/chromium/content_shell_apk/TestChildProcessService0.java",
+    "shell_apk/src/org/chromium/content_shell_apk/TestChildProcessService1.java",
+  ]
+}
+
+android_aidl("content_javatests_aidl") {
+  import_include = [ "shell_apk/src" ]
+  sources = [
+    "shell_apk/src/org/chromium/content_shell_apk/IChildProcessTest.aidl",
   ]
 }
 

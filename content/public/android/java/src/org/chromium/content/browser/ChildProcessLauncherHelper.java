@@ -15,7 +15,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -51,18 +50,15 @@ public class ChildProcessLauncherHelper {
     private static final String PRIVILEGED_SERVICES_NAME_KEY =
             "org.chromium.content.browser.PRIVILEGED_SERVICES_NAME";
 
-    // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
-    private static final int NULL_PROCESS_HANDLE = 0;
-
-    // Delay between the call to freeConnection and the connection actually beeing freed.
-    private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
-
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
     // Map from package name to ChildConnectionAllocator.
     private static final Map<String, ChildConnectionAllocator>
             sSandboxedChildConnectionAllocatorMap = new HashMap<>();
+
+    // Map from PID to ChildProcessLauncherHelper.
+    private static final Map<Integer, ChildProcessLauncherHelper> sLauncherByPid = new HashMap<>();
 
     // Allocator used for non-sandboxed services.
     private static ChildConnectionAllocator sPrivilegedChildConnectionAllocator;
@@ -72,39 +68,74 @@ public class ChildProcessLauncherHelper {
     private static int sSandboxedServicesCountForTesting = -1;
     private static String sSandboxedServicesNameForTesting;
 
-    // Map from PID to ChildService connection.
-    private static Map<Integer, ChildProcessLauncherHelper> sLauncherByPid = new HashMap<>();
-
     // Manages OOM bindings used to bind chind services. Lazily initialized by getBindingManager().
     private static BindingManager sBindingManager;
 
     // Whether the main application is currently brought to the foreground.
     private static boolean sApplicationInForeground = true;
 
-    // The IBinder provided to the created service.
-    private final IBinder mIBinderCallback;
-
-    // Whether the connection should be setup once connected. Tests can set this to false to
-    // simulate a connected but not yet setup connection.
-    private final boolean mDoSetupConnection;
+    // Whether the connection is managed by the BindingManager.
+    private final boolean mUseBindingManager;
 
     private final ChildProcessCreationParams mCreationParams;
-
-    private final String[] mCommandLine;
-
-    private final FileDescriptorInfo[] mFilesToBeMapped;
-
-    // The allocator used to create the connection.
-    private final ChildConnectionAllocator mConnectionAllocator;
 
     // Whether the created process should be sandboxed.
     private final boolean mSandboxed;
 
+    private final ChildProcessLauncher.Delegate mLauncherDelegate =
+            new ChildProcessLauncher.Delegate() {
+                @Override
+                public void onBeforeConnectionAllocated(Bundle bundle) {
+                    populateServiceBundle(bundle, mCreationParams);
+                }
+
+                @Override
+                public void onBeforeConnectionSetup(Bundle connectionBundle) {
+                    // Populate the bundle passed to the service setup call with content specific
+                    // parameters.
+                    connectionBundle.putInt(
+                            ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
+                    connectionBundle.putLong(
+                            ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
+                    connectionBundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
+                            Linker.getInstance().getSharedRelros());
+                }
+
+                @Override
+                public void onConnectionEstablished(ChildProcessConnection connection) {
+                    int pid = connection.getPid();
+                    assert pid > 0;
+
+                    sLauncherByPid.put(pid, ChildProcessLauncherHelper.this);
+
+                    if (mUseBindingManager) {
+                        getBindingManager().addNewConnection(pid, connection);
+                    }
+
+                    // If the connection fails and pid == 0, the Java-side cleanup was already
+                    // handled by DeathCallback. We still have to call back to native for cleanup
+                    // there.
+                    if (mNativeChildProcessLauncherHelper != 0) {
+                        nativeOnChildProcessStarted(
+                                mNativeChildProcessLauncherHelper, connection.getPid());
+                    }
+                    mNativeChildProcessLauncherHelper = 0;
+                }
+
+                @Override
+                public void onConnectionLost(ChildProcessConnection connection) {
+                    assert connection.getPid() > 0;
+                    sLauncherByPid.remove(connection.getPid());
+                    if (mUseBindingManager) {
+                        getBindingManager().removeConnection(connection.getPid());
+                    }
+                }
+            };
+
+    private final ChildProcessLauncher mLauncher;
+
     // Note native pointer is only guaranteed live until nativeOnChildProcessStarted.
     private long mNativeChildProcessLauncherHelper;
-
-    // The actual service connection. Set once we have connected to the service.
-    private ChildProcessConnection mConnection;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -152,11 +183,11 @@ public class ChildProcessLauncherHelper {
                 ? new GpuProcessCallback()
                 : null;
 
-        ChildProcessLauncherHelper process_launcher =
-                new ChildProcessLauncherHelper(nativePointer, creationParams, commandLine,
-                        filesToBeMapped, sandboxed, binderCallback, true /* doSetupConnection */);
-        process_launcher.start();
-        return process_launcher;
+        ChildProcessLauncherHelper processLauncher = new ChildProcessLauncherHelper(nativePointer,
+                creationParams, commandLine, filesToBeMapped, sandboxed, binderCallback);
+        processLauncher.mLauncher.start(
+                true /* doSetupConnection */, true /* queueIfNoFreeConnection */);
+        return processLauncher;
     }
 
     /**
@@ -169,21 +200,21 @@ public class ChildProcessLauncherHelper {
         LauncherThread.post(new Runnable() {
             @Override
             public void run() {
-                if (sSpareSandboxedConnection != null && !sSpareSandboxedConnection.isEmpty()) {
-                    return;
-                }
-
-                ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
-                boolean bindToCallerCheck =
-                        creationParams == null ? false : creationParams.getBindToCallerCheck();
-                Bundle serviceBundle =
-                        ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck);
-                ChildConnectionAllocator allocator =
-                        getConnectionAllocator(context, creationParams, true /* sandboxed */);
-                sSpareSandboxedConnection =
-                        new SpareChildConnection(context, allocator, serviceBundle);
+                warmUpOnLauncherThread(context);
             }
         });
+    }
+
+    private static void warmUpOnLauncherThread(Context context) {
+        if (sSpareSandboxedConnection != null && !sSpareSandboxedConnection.isEmpty()) {
+            return;
+        }
+
+        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
+        Bundle serviceBundle = populateServiceBundle(new Bundle(), creationParams);
+        ChildConnectionAllocator allocator =
+                getConnectionAllocator(context, creationParams, true /* sandboxed */);
+        sSpareSandboxedConnection = new SpareChildConnection(context, allocator, serviceBundle);
     }
 
     public static String getPackageNameFromCreationParams(
@@ -314,6 +345,7 @@ public class ChildProcessLauncherHelper {
                         sSandboxedServiceFactoryForTesting);
             }
             sSandboxedChildConnectionAllocatorMap.put(packageName, connectionAllocator);
+
             final ChildConnectionAllocator finalConnectionAllocator = connectionAllocator;
             // Tracks connections removal so the allocator can be freed when no longer used.
             connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
@@ -321,6 +353,7 @@ public class ChildProcessLauncherHelper {
                 public void onConnectionAllocated(
                         ChildConnectionAllocator allocator, ChildProcessConnection connection) {
                     assert connection != null;
+                    assert allocator == finalConnectionAllocator;
                     if (!allocator.isFreeConnectionAvailable()) {
                         // Proactively releases all the moderate bindings once all the sandboxed
                         // services are allocated, which will be very likely to have some of them
@@ -349,195 +382,61 @@ public class ChildProcessLauncherHelper {
 
     private ChildProcessLauncherHelper(long nativePointer,
             ChildProcessCreationParams creationParams, String[] commandLine,
-            FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback,
-            boolean doSetupConnection) {
+            FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback) {
         assert LauncherThread.runningOnLauncherThread();
 
-        mCreationParams = creationParams;
-        mCommandLine = commandLine;
-        mFilesToBeMapped = filesToBeMapped;
         mNativeChildProcessLauncherHelper = nativePointer;
-        mIBinderCallback = binderCallback;
-        mDoSetupConnection = doSetupConnection;
+        mCreationParams = creationParams;
+        mUseBindingManager = sandboxed;
         mSandboxed = sandboxed;
 
-        mConnectionAllocator = getConnectionAllocator(
+        final ChildConnectionAllocator connectionAllocator = getConnectionAllocator(
                 ContextUtils.getApplicationContext(), mCreationParams, sandboxed);
-
-        initLinker();
-    }
-
-    private void start() {
-        assert LauncherThread.runningOnLauncherThread();
-        assert mConnection == null;
-        try {
-            TraceEvent.begin("ChildProcessLauncher.start");
-
-            ChildProcessConnection.ServiceCallback serviceCallback =
-                    new ChildProcessConnection.ServiceCallback() {
+        if (sSpareSandboxedConnection != null && !sSpareSandboxedConnection.isEmpty()
+                && sSpareSandboxedConnection.isForAllocator(connectionAllocator)) {
+            // Use the warmed-up connection.
+            ChildProcessLauncher.BoundConnectionProvider connectionProvider =
+                    new ChildProcessLauncher.BoundConnectionProvider() {
                         @Override
-                        public void onChildStarted() {}
-
-                        @Override
-                        public void onChildStartFailed() {
-                            assert LauncherThread.runningOnLauncherThread();
-                            Log.e(TAG, "ChildProcessConnection.start failed, trying again");
-                            LauncherThread.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    // The child process may already be bound to another client
-                                    // (this can happen if multi-process WebView is used in more
-                                    // than one process), so try starting the process again.
-                                    // This connection that failed to start has not been freed,
-                                    // so a new bound connection will be allocated.
-                                    mConnection = null;
-                                    start();
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onChildProcessDied(ChildProcessConnection connection) {
-                            assert LauncherThread.runningOnLauncherThread();
-                            assert mConnection == connection;
-                            ChildProcessLauncherHelper.this.onChildProcessDied();
+                        public ChildProcessConnection getConnection(
+                                ChildProcessConnection.ServiceCallback serviceCallback) {
+                            return sSpareSandboxedConnection.getConnection(
+                                    connectionAllocator, serviceCallback);
                         }
                     };
-
-            // Try to use the spare connection if there's one.
-            if (sSpareSandboxedConnection != null) {
-                mConnection = sSpareSandboxedConnection.getConnection(
-                        mConnectionAllocator, serviceCallback);
-                if (mConnection != null) {
-                    Log.d(TAG, "Using warmed-up connection for service %s.",
-                            mConnection.getServiceName());
-                    // Clear the spare connection now that it's been used.
-                    sSpareSandboxedConnection = null;
-                }
-            }
-
-            allocateAndSetupConnection(serviceCallback);
-        } finally {
-            TraceEvent.end("ChildProcessLauncher.start");
-        }
-    }
-
-    // Allocates a new connection and calls setUp on it.
-    // If there are no available connections, it will retry when one becomes available.
-    private boolean allocateAndSetupConnection(
-            final ChildProcessConnection.ServiceCallback serviceCallback) {
-        if (mConnection == null) {
-            final Context context = ContextUtils.getApplicationContext();
-            boolean bindToCallerCheck =
-                    mCreationParams == null ? false : mCreationParams.getBindToCallerCheck();
-            Bundle serviceBundle = createServiceBundle(bindToCallerCheck);
-            onBeforeConnectionAllocated(serviceBundle);
-
-            boolean useBindingManager = mSandboxed;
-            mConnection = mConnectionAllocator.allocate(context, serviceBundle, serviceCallback);
-            if (mConnection == null) {
-                // No connection is available at this time. Add a listener so when one becomes
-                // available we can create the service.
-                mConnectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
-                    @Override
-                    public void onConnectionAllocated(ChildConnectionAllocator allocator,
-                            ChildProcessConnection connection) {}
-
-                    @Override
-                    public void onConnectionFreed(
-                            ChildConnectionAllocator allocator, ChildProcessConnection connection) {
-                        assert allocator == mConnectionAllocator;
-                        if (!allocator.isFreeConnectionAvailable()) return;
-                        allocator.removeListener(this);
-                        boolean success = allocateAndSetupConnection(serviceCallback);
-                        assert success;
-                    }
-                });
-                return false;
-            }
-        }
-
-        assert mConnection != null;
-        Bundle connectionBundle = createConnectionBundle();
-        onConnectionBound(mConnection, mConnectionAllocator, connectionBundle);
-
-        if (mDoSetupConnection) {
-            setupConnection(connectionBundle);
-        }
-        return true;
-    }
-
-    private void setupConnection(Bundle connectionBundle) {
-        ChildProcessConnection.ConnectionCallback connectionCallback =
-                new ChildProcessConnection.ConnectionCallback() {
-                    @Override
-                    public void onConnected(ChildProcessConnection connection) {
-                        assert mConnection == connection;
-                        onChildProcessStarted();
-                    }
-                };
-        mConnection.setupConnection(connectionBundle, getIBinderCallback(), connectionCallback);
-    }
-
-    private void onChildProcessStarted() {
-        assert LauncherThread.runningOnLauncherThread();
-
-        int pid = mConnection.getPid();
-        Log.d(TAG, "on connect callback, pid=%d", pid);
-
-        onConnectionEstablished(mConnection);
-
-        sLauncherByPid.put(pid, this);
-
-        // Proactively close the FDs rather than waiting for the GC to do it.
-        try {
-            for (FileDescriptorInfo fileInfo : mFilesToBeMapped) {
-                fileInfo.fd.close();
-            }
-        } catch (IOException ioe) {
-            Log.w(TAG, "Failed to close FD.", ioe);
-        }
-
-        // If the connection fails and pid == 0, the Java-side cleanup was already handled by
-        // ServiceCallback.onChildStopped. We still have to call back to native for cleanup there.
-        if (mNativeChildProcessLauncherHelper != 0) {
-            nativeOnChildProcessStarted(mNativeChildProcessLauncherHelper, getPid());
-        }
-        mNativeChildProcessLauncherHelper = 0;
-    }
-
-    private void onChildProcessDied() {
-        assert LauncherThread.runningOnLauncherThread();
-        if (getPid() != 0) {
-            onConnectionLost(mConnection, getPid());
-            sLauncherByPid.remove(getPid());
+            mLauncher = ChildProcessLauncher.createWithBoundConnectionProvider(mLauncherDelegate,
+                    commandLine, filesToBeMapped, connectionProvider, binderCallback);
+        } else {
+            mLauncher = ChildProcessLauncher.createWithConnectionAllocator(mLauncherDelegate,
+                    commandLine, filesToBeMapped, connectionAllocator, binderCallback);
         }
     }
 
     public int getPid() {
         assert LauncherThread.runningOnLauncherThread();
-        return mConnection == null ? NULL_PROCESS_HANDLE : mConnection.getPid();
+        return mLauncher.getPid();
     }
 
     // Called on client (UI or IO) thread.
     @CalledByNative
     private boolean isOomProtected() {
-        // mConnection is set on a different thread but does not change once it's been set. So it is
-        // safe to test whether it's null from a different thread.
-        if (mConnection == null) {
+        ChildProcessConnection connection = mLauncher.getConnection();
+        // Here we are accessing the connection from a thread other than the launcher thread, but it
+        // does not change once it's been set. So it is safe to test whether it's null here and
+        // access it afterwards.
+        if (connection == null) {
             return false;
         }
 
         // We consider the process to be child protected if it has a strong or moderate binding and
         // the app is in the foreground.
-        return sApplicationInForeground && !mConnection.isWaivedBoundOnlyOrWasWhenDied();
+        return sApplicationInForeground && !connection.isWaivedBoundOnlyOrWasWhenDied();
     }
 
     @CalledByNative
     private void setInForeground(int pid, boolean foreground, boolean boostForPendingViews) {
         assert LauncherThread.runningOnLauncherThread();
-        assert mConnection != null;
-        assert getPid() == pid;
+        assert mLauncher.getPid() == pid;
         getBindingManager().setPriority(pid, foreground, boostForPendingViews);
     }
 
@@ -545,10 +444,11 @@ public class ChildProcessLauncherHelper {
     static void stop(int pid) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "stopping child connection: pid=%d", pid);
-        ChildProcessLauncherHelper launcher = sLauncherByPid.get(pid);
-        // Launcher can be null for single process.
+        ChildProcessLauncherHelper launcher = getByPid(pid);
+        // launcher can be null for single process.
         if (launcher != null) {
-            launcher.mConnection.stop();
+            // Can happen for single process.
+            launcher.mLauncher.stop();
         }
     }
 
@@ -579,8 +479,7 @@ public class ChildProcessLauncherHelper {
 
     private static boolean sLinkerInitialized;
     private static long sLinkerLoadAddress;
-    @VisibleForTesting
-    static void initLinker() {
+    private static void initLinker() {
         assert LauncherThread.runningOnLauncherThread();
         if (sLinkerInitialized) return;
         if (Linker.isUsed()) {
@@ -594,8 +493,9 @@ public class ChildProcessLauncherHelper {
 
     private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
         assert LauncherThread.runningOnLauncherThread();
-        assert sLinkerInitialized;
 
+        initLinker();
+        assert sLinkerInitialized;
         if (sLinkerLoadAddress == 0) return null;
 
         // Always wait for the shared RELROs in service processes.
@@ -610,70 +510,18 @@ public class ChildProcessLauncherHelper {
         }
     }
 
-    /**
-     * Creates the common bundle to be passed to child processes through the service binding intent.
-     * If the service gets recreated by the framework the intent will be reused, so these parameters
-     * should be common to all processes of that type.
-     *
-     * @param commandLine Command line params to be passed to the service.
-     * @param linkerParams Linker params to start the service.
-     */
-    private static Bundle createServiceBundle(boolean bindToCallerCheck) {
-        initLinker();
-        Bundle bundle = new Bundle();
+    private static Bundle populateServiceBundle(
+            Bundle bundle, ChildProcessCreationParams creationParams) {
+        boolean bindToCallerCheck =
+                creationParams == null ? false : creationParams.getBindToCallerCheck();
         bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
         bundle.putParcelable(ContentChildProcessConstants.EXTRA_LINKER_PARAMS,
                 getLinkerParamsForNewConnection());
         return bundle;
     }
 
-    public Bundle createConnectionBundle() {
-        Bundle bundle = new Bundle();
-        bundle.putStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE, mCommandLine);
-        bundle.putParcelableArray(ChildProcessConstants.EXTRA_FILES, mFilesToBeMapped);
-        return bundle;
-    }
-
-    // Below are methods that will eventually be moved to a content delegate class.
-
-    private void onBeforeConnectionAllocated(Bundle commonParameters) {
-        // TODO(jcivelli): move createServiceBundle in there.
-    }
-
-    // Called once a connection has been allocated.
-    private void onConnectionBound(ChildProcessConnection connection,
-            ChildConnectionAllocator connectionAllocator, Bundle connectionBundle) {
-        if (mSandboxed && !connectionAllocator.isFreeConnectionAvailable()) {
-            // Proactively releases all the moderate bindings once all the sandboxed services are
-            // allocated, which will be very likely to have some of them killed by OOM killer.
-            getBindingManager().releaseAllModerateBindings();
-        }
-
-        // Popuplate the bundle passed to the service setup call with content specific parameters.
-        connectionBundle.putInt(
-                ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
-        connectionBundle.putLong(
-                ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-        connectionBundle.putBundle(
-                Linker.EXTRA_LINKER_SHARED_RELROS, Linker.getInstance().getSharedRelros());
-    }
-
-    private void onConnectionEstablished(ChildProcessConnection connection) {
-        if (mSandboxed) {
-            getBindingManager().addNewConnection(connection.getPid(), connection);
-        }
-    }
-
-    // Called when a connection has been disconnected. Only invoked if onConnectionEstablished was
-    // called, meaning the connection was already established.
-    private void onConnectionLost(ChildProcessConnection connection, int pid) {
-        if (mSandboxed) {
-            getBindingManager().removeConnection(pid);
-        }
-    }
-
-    private IBinder getIBinderCallback() {
-        return mIBinderCallback;
+    public static ChildProcessLauncherHelper getByPid(int pid) {
+        return sLauncherByPid.get(pid);
     }
 
     // Testing only related methods.
@@ -682,16 +530,10 @@ public class ChildProcessLauncherHelper {
             ChildProcessCreationParams creationParams, String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback,
             boolean doSetupConnection) {
-        ChildProcessLauncherHelper launcherHelper =
-                new ChildProcessLauncherHelper(0L, creationParams, commandLine, filesToBeMapped,
-                        sandboxed, binderCallback, doSetupConnection);
-        launcherHelper.start();
+        ChildProcessLauncherHelper launcherHelper = new ChildProcessLauncherHelper(
+                0L, creationParams, commandLine, filesToBeMapped, sandboxed, binderCallback);
+        launcherHelper.mLauncher.start(doSetupConnection, true /* queueIfNoFreeConnection */);
         return launcherHelper;
-    }
-
-    @VisibleForTesting
-    public static ChildProcessLauncherHelper getLauncherForPid(int pid) {
-        return sLauncherByPid.get(pid);
     }
 
     /** @return the count of services set-up and working. */
@@ -720,18 +562,13 @@ public class ChildProcessLauncherHelper {
     }
 
     @VisibleForTesting
-    ChildProcessConnection getConnection() {
-        return mConnection;
-    }
-
-    @VisibleForTesting
     public ChildProcessConnection getChildProcessConnection() {
-        return mConnection;
+        return mLauncher.getConnection();
     }
 
     @VisibleForTesting
     public ChildConnectionAllocator getChildConnectionAllocatorForTesting() {
-        return mConnectionAllocator;
+        return mLauncher.getConnectionAllocator();
     }
 
     @VisibleForTesting
@@ -743,9 +580,8 @@ public class ChildProcessLauncherHelper {
     public static boolean crashProcessForTesting(int pid) {
         if (sLauncherByPid.get(pid) == null) return false;
 
-        ChildProcessConnection connection = sLauncherByPid.get(pid).mConnection;
+        ChildProcessConnection connection = sLauncherByPid.get(pid).mLauncher.getConnection();
         if (connection == null) return false;
-
         try {
             connection.crashServiceForTesting();
             return true;

@@ -27,14 +27,14 @@ public class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
     /** Listener that clients can use to get notified when connections get allocated/freed. */
-    public interface Listener {
+    public abstract static class Listener {
         /** Called when a connection has been allocated, before it gets bound. */
-        void onConnectionAllocated(
-                ChildConnectionAllocator allocator, ChildProcessConnection connection);
+        public void onConnectionAllocated(
+                ChildConnectionAllocator allocator, ChildProcessConnection connection) {}
 
         /** Called when a connection has been freed. */
-        void onConnectionFreed(
-                ChildConnectionAllocator allocator, ChildProcessConnection connection);
+        public void onConnectionFreed(
+                ChildConnectionAllocator allocator, ChildProcessConnection connection) {}
     }
 
     /** Factory interface. Used by tests to specialize created connections. */
@@ -103,8 +103,7 @@ public class ChildConnectionAllocator {
 
         // Check that the service exists.
         try {
-            // PackageManager#getServiceInfo() throws an exception if the service does not
-            // exist.
+            // PackageManager#getServiceInfo() throws an exception if the service does not exist.
             packageManager.getServiceInfo(
                     new ComponentName(packageName, serviceClassName + "0"), 0);
         } catch (PackageManager.NameNotFoundException e) {
