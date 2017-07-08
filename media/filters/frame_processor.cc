@@ -18,6 +18,7 @@ namespace media {
 const int kMaxDroppedPrerollWarnings = 10;
 const int kMaxDtsBeyondPtsWarnings = 10;
 const int kMaxMuxedSequenceModeWarnings = 1;
+const int kMaxNumNonkeyframePrecedesGopStartWarnings = 1;
 
 // Helper class to capture per-track details needed by a frame processor. Some
 // of this information may be duplicated in the short-term in the associated
@@ -26,7 +27,7 @@ const int kMaxMuxedSequenceModeWarnings = 1;
 // http://www.w3.org/TR/media-source/#track-buffers.
 class MseTrackBuffer {
  public:
-  explicit MseTrackBuffer(ChunkDemuxerStream* stream);
+  MseTrackBuffer(ChunkDemuxerStream* stream, MediaLog* media_log);
   ~MseTrackBuffer();
 
   // Get/set |last_decode_timestamp_|.
@@ -104,6 +105,14 @@ class MseTrackBuffer {
   // also FrameProcessor::ProcessFrame().
   DecodeTimestamp last_processed_decode_timestamp_;
 
+  // This is used to understand if the stream parser is producing random access
+  // points that are not SAP Type 1, whose support is likely going to be
+  // deprecated from MSE API pending real-world usage data. This is kNoTimestamp
+  // if no frames have been enqueued ever or since the last
+  // NotifyStartOfCodedFrameGroup() or Reset(). Otherwise, this is the most
+  // recently enqueued keyframe's presentation timestamp.
+  base::TimeDelta last_keyframe_presentation_timestamp_;
+
   // The coded frame duration of the last coded frame appended in the current
   // coded frame group. Initially kNoTimestamp, meaning "unset".
   base::TimeDelta last_frame_duration_;
@@ -128,16 +137,24 @@ class MseTrackBuffer {
   // clears it.
   StreamParser::BufferQueue processed_frames_;
 
+  // MediaLog for reporting messages and properties to debug content and engine.
+  MediaLog* media_log_;
+
+  // Counter that limits spam to |media_log_| for MseTrackBuffer warnings.
+  int num_nonkeyframe_precedes_gop_start_warnings_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(MseTrackBuffer);
 };
 
-MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream)
+MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream, MediaLog* media_log)
     : last_decode_timestamp_(kNoDecodeTimestamp()),
       last_processed_decode_timestamp_(DecodeTimestamp()),
+      last_keyframe_presentation_timestamp_(kNoTimestamp),
       last_frame_duration_(kNoTimestamp),
       highest_presentation_timestamp_(kNoTimestamp),
       needs_random_access_point_(true),
-      stream_(stream) {
+      stream_(stream),
+      media_log_(media_log) {
   DCHECK(stream_);
 }
 
@@ -152,6 +169,7 @@ void MseTrackBuffer::Reset() {
   last_frame_duration_ = kNoTimestamp;
   highest_presentation_timestamp_ = kNoTimestamp;
   needs_random_access_point_ = true;
+  last_keyframe_presentation_timestamp_ = kNoTimestamp;
 }
 
 void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
@@ -164,6 +182,28 @@ void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
 
 void MseTrackBuffer::EnqueueProcessedFrame(
     const scoped_refptr<StreamParserBuffer>& frame) {
+  if (frame->is_key_frame()) {
+    last_keyframe_presentation_timestamp_ = frame->timestamp();
+  } else {
+    DCHECK(last_keyframe_presentation_timestamp_ != kNoTimestamp);
+    // This is just one case of potentially problematic GOP structures, though
+    // others are more clearly disallowed in at least some of the MSE bytestream
+    // specs, especially ISOBMFF.
+    if (frame->timestamp() < last_keyframe_presentation_timestamp_) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_,
+                        num_nonkeyframe_precedes_gop_start_warnings_,
+                        kMaxNumNonkeyframePrecedesGopStartWarnings)
+          << "Warning: presentation time of most recently processed random "
+             "access point ("
+          << last_keyframe_presentation_timestamp_
+          << ") is later than the presentation time of a non-keyframe ("
+          << frame->timestamp()
+          << ") that depends on it. This type of random access point is not "
+             "well supported by MSE; buffered range reporting may be less "
+             "precise.";
+    }
+  }
+
   last_processed_decode_timestamp_ = frame->GetDecodeTimestamp();
   processed_frames_.push_back(frame);
 }
@@ -182,6 +222,7 @@ bool MseTrackBuffer::FlushProcessedFrames() {
 }
 
 void MseTrackBuffer::NotifyStartOfCodedFrameGroup(DecodeTimestamp start_time) {
+  last_keyframe_presentation_timestamp_ = kNoTimestamp;
   last_processed_decode_timestamp_ = start_time;
   stream_->OnStartOfCodedFrameGroup(start_time);
 }
@@ -294,7 +335,7 @@ bool FrameProcessor::AddTrack(StreamParser::TrackId id,
     return false;
   }
 
-  track_buffers_[id] = base::MakeUnique<MseTrackBuffer>(stream);
+  track_buffers_[id] = base::MakeUnique<MseTrackBuffer>(stream, media_log_);
   return true;
 }
 

@@ -171,8 +171,34 @@ MATCHER(MuxedSequenceModeWarning, "") {
                          "SourceBuffer with multiple tracks");
 }
 
+MATCHER_P2(NonkeyframePrecedesGopStartWarning,
+           keyframe_time_string,
+           nonkeyframe_time_string,
+           "") {
+  return CONTAINS_STRING(
+      arg,
+      "Warning: presentation time of most recently processed random access "
+      "point (" +
+          std::string(keyframe_time_string) +
+          " s) is later than the presentation time of a non-keyframe (" +
+          nonkeyframe_time_string +
+          " s) that depends on it. This type of random access point is not "
+          "well supported by MSE; buffered range reporting may be less "
+          "precise.");
+}
+
 MATCHER(StreamParsingFailed, "") {
   return CONTAINS_STRING(arg, "Append: stream parsing failed.");
+}
+
+MATCHER(ParsedBuffersNotInDTSSequence, "") {
+  return CONTAINS_STRING(arg, "Parsed buffers not in DTS sequence");
+}
+
+MATCHER(ParsedDTSGreaterThanPTS, "") {
+  return CONTAINS_STRING(arg, "Parsed ") &&
+         CONTAINS_STRING(arg, "frame has DTS ") &&
+         CONTAINS_STRING(arg, ", which is after the frame's PTS");
 }
 
 MATCHER_P(FoundStream, stream_type_string, "") {
@@ -201,6 +227,12 @@ MATCHER_P(InitSegmentMissesExpectedTrack, missing_codec, "") {
 MATCHER_P2(UnexpectedTrack, track_type, id, "") {
   return CONTAINS_STRING(arg, std::string("Got unexpected ") + track_type +
                                   " track track_id=" + id);
+}
+
+MATCHER_P2(FrameTypeMismatchesTrackType, frame_type, track_type, "") {
+  return CONTAINS_STRING(arg, std::string("Frame type ") + frame_type +
+                                  " doesn't match track buffer type " +
+                                  track_type);
 }
 
 MATCHER_P2(SkippingSpliceAtOrBefore,
