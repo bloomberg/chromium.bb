@@ -1,23 +1,21 @@
 <div id="hotword-confirm-overlay" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="hotwordConfirmOverlay"></h1>
+  <h1>$i18n{hotwordConfirmOverlay}</h1>
   <div class="content-area">
-    <span id="hotword-confirm-text" i18n-content="hotwordConfirmMessage">
-    </span>
+    <span id="hotword-confirm-text">$i18n{hotwordConfirmMessage}</span>
   </div>
   <div class="action-area">
     <div class="hbox stretch">
-      <a target="_blank" i18n-content="learnMore"
-          i18n-values="href:hotwordLearnMoreURL">
-      </a>
+      <a target="_blank"
+          href="$i18nRaw{hotwordLearnMoreURL}">$i18n{learnMore}</a>
     </div>
     <div class="action-area-right">
       <div class="button-strip">
-        <button id="hotword-confirm-cancel"
-            i18n-content="hotwordConfirmDisable">
+        <button id="hotword-confirm-cancel">
+          $i18n{hotwordConfirmDisable}
         </button>
-        <button id="hotword-confirm-ok" class="default-button"
-            i18n-content="hotwordConfirmEnable">
+        <button id="hotword-confirm-ok" class="default-button">
+          $i18n{hotwordConfirmEnable}
         </button>
       </div>
     </div>
@@ -28,7 +26,7 @@
           pref="hotword.audio_logging_enabled"
           metric="Options_Hotword_AudioLogging_Checkbox"
           type="checkbox" dialog-pref checked>
-      <span i18n-content="hotwordAudioLoggingEnable"></span>
+      <span>$i18n{hotwordAudioLoggingEnable}</span>
     </label>
   </div>
 </div>

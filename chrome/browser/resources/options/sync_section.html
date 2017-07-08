@@ -1,23 +1,22 @@
 <if expr="not chromeos">
 <section id="sync-section">
-  <h3 i18n-content="sectionTitleSync"></h3>
+  <h3>$i18n{sectionTitleSync}</h3>
 </if>
 <if expr="chromeos">
 <div id="sync-section">
 </if>
 
   <div id="sync-overview" class="settings-row" hidden>
-    <p i18n-content="syncOverview"></p>
-    <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
-        target="_blank"></a>
+    <p>$i18n{syncOverview}</p>
+    <a href="$i18nRaw{syncLearnMoreURL}" target="_blank">$i18n{learnMore}</a>
   </div>
 
 <if expr="chromeos">
   <div id="account-picture-wrapper">
     <div id="account-picture-control">
-      <input type="image" id="account-picture" tabindex="0"
-          alt="" i18n-values="aria-label:changePicture">
-      <div id="change-picture-caption" i18n-content="changePicture"></div>
+      <input type="image" id="account-picture" tabindex="0" alt=""
+          aria-label="$i18n{changePicture}">
+      <div id="change-picture-caption">$i18n{changePicture}</div>
     </div>
     <span id="account-picture-indicator" class="controlled-setting-indicator">
     </span>
@@ -39,14 +38,14 @@
             metric="Options_ScreenLock"
             pref="settings.enable_screen_lock">
        <span>
-         <span i18n-content="enableScreenlock"></span>
+         <span>$i18n{enableScreenlock}</span>
          <span class="controlled-setting-indicator"
-            i18n-values="textshared:screenLockShared"
-            pref="settings.enable_screen_lock"></span>
+             textshared="$i18n{screenLockShared}"
+             pref="settings.enable_screen_lock"></span>
        </span>
       </label>
-      <a is="action-link" id="manage-screenlock"
-        i18n-content="manageScreenlock" hidden>
+      <a is="action-link" id="manage-screenlock" hidden>
+        $i18n{manageScreenlock}
       </a>
     </div>
   </div>
@@ -57,13 +56,12 @@
     <span id="start-stop-sync-indicator"
         class="controlled-setting-indicator" hidden>
     </span>
-    <button id="customize-sync" i18n-content="customizeSync"
-        pref="sync.managed" hidden>
+    <button id="customize-sync" pref="sync.managed" hidden>
+      $i18n{customizeSync}
     </button>
 <if expr="chromeos">
-    <button id="manage-accounts-button"
-        public-account-visibility="hidden"
-        i18n-content="manageAccountsButtonTitle">
+    <button id="manage-accounts-button" public-account-visibility="hidden">
+      $i18n{manageAccountsButtonTitle}
     </button>
 </if>  <!-- chromeos -->
   </div>

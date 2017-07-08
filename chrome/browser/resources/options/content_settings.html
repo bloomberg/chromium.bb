@@ -1,16 +1,16 @@
 <div id="content-settings-page" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="contentSettingsPage"></h1>
+  <h1>$i18n{contentSettingsPage}</h1>
   <div class="content-area">
     <!-- Cookie filter tab contents -->
     <section>
-      <h3 i18n-content="cookiesTabLabel"></h3>
+      <h3>$i18n{cookiesTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="cookies" value="allow">
             <span>
-              <span i18n-content="cookiesAllow"></span>
+              <span>$i18n{cookiesAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="cookies" value="allow"></span>
             </span>
@@ -20,7 +20,7 @@
           <label>
             <input type="radio" name="cookies" value="session_only">
             <span>
-              <span i18n-content="cookiesSessionOnly"></span>
+              <span>$i18n{cookiesSessionOnly}</span>
               <span class="controlled-setting-indicator"
                   content-setting="cookies" value="session_only"></span>
             </span>
@@ -30,7 +30,7 @@
           <label>
             <input type="radio" name="cookies" value="block">
             <span>
-              <span i18n-content="cookiesBlock"></span>
+              <span>$i18n{cookiesBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="cookies" value="block"></span>
             </span>
@@ -40,28 +40,28 @@
           <label>
             <input pref="profile.block_third_party_cookies" type="checkbox">
             <span>
-              <span i18n-content="cookiesBlock3rdParty"></span>
+              <span>$i18n{cookiesBlock3rdParty}</span>
               <span class="controlled-setting-indicator"
                   pref="profile.block_third_party_cookies"></span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="cookies"
-              i18n-content="manageExceptions"></button>
-          <button id="show-cookies-button"
-              i18n-content="cookiesShowCookies"></button>
+          <button class="exceptions-list-button" contentType="cookies">
+            $i18n{manageExceptions}
+          </button>
+          <button id="show-cookies-button">$i18n{cookiesShowCookies}</button>
         </div>
      </div>
     </section>
     <!-- Image filter -->
     <section>
-      <h3 i18n-content="imagesTabLabel"></h3>
+      <h3>$i18n{imagesTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="images" value="allow">
             <span>
-              <span i18n-content="imagesAllow"></span>
+              <span>$i18n{imagesAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="images" value="allow"></span>
             </span>
@@ -71,27 +71,28 @@
           <label>
             <input type="radio" name="images" value="block">
             <span>
-              <span i18n-content="imagesBlock"></span>
+              <span>$i18n{imagesBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="images" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="images"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="images">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- JavaScript filter -->
     <section>
-      <h3 i18n-content="javascriptTabLabel"></h3>
+      <h3>$i18n{javascriptTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="javascript" value="allow">
             <span>
-              <span i18n-content="javascriptAllow"></span>
+              <span>$i18n{javascriptAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="javascript" value="allow"></span>
             </span>
@@ -101,52 +102,54 @@
           <label>
             <input type="radio" name="javascript" value="block">
             <span>
-              <span i18n-content="javascriptBlock"></span>
+              <span>$i18n{javascriptBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="javascript" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="javascript"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="javascript">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Handlers settings -->
     <section id="handlers-section">
-      <h3 i18n-content="handlersTabLabel"></h3>
+      <h3>$i18n{handlersTabLabel}</h3>
       <div>
         <div class="radio">
           <label>
             <input type="radio" name="handlers" value="allow"
                 class="handler-radio">
-            <span i18n-content="handlersAllow"></span>
+            <span>$i18n{handlersAllow}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="handlers" value="block"
                 class="handler-radio">
-            <span i18n-content="handlersBlock"></span>
+            <span>$i18n{handlersBlock}</span>
           </label>
         </div>
         <div class="settings-row">
-          <button id="manage-handlers-button" contentType="handlers"
-              i18n-content="manageHandlers"></button>
+          <button id="manage-handlers-button" contentType="handlers">
+            $i18n{manageHandlers}
+          </button>
         </div>
       </div>
     </section>
     <!-- Plugins filter -->
     <section>
-      <h3 i18n-content="pluginsTabLabel"></h3>
+      <h3>$i18n{pluginsTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input id="plugins-allow-radio" type="radio" name="plugins"
                    value="allow">
             <span>
-              <span i18n-content="pluginsAllow"></span>
+              <span>$i18n{pluginsAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="plugins" value="allow"></span>
             </span>
@@ -156,9 +159,10 @@
           <label>
             <input type="radio" name="plugins" value="detect_important_content">
             <span>
-              <span i18n-content="pluginsDetectImportantContent"></span>
+              <span>$i18n{pluginsDetectImportantContent}</span>
               <span class="controlled-setting-indicator"
-                  content-setting="plugins" value="detect_important_content"></span>
+                  content-setting="plugins" value="detect_important_content">
+              </span>
             </span>
           </label>
         </div>
@@ -166,27 +170,28 @@
           <label>
             <input type="radio" name="plugins" value="block">
             <span>
-              <span i18n-content="pluginsBlock"></span>
+              <span>$i18n{pluginsBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="plugins" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="plugins"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="plugins">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Pop-ups filter -->
     <section>
-      <h3 i18n-content="popupsTabLabel" class="content-settings-header"></h3>
+      <h3 class="content-settings-header">$i18n{popupsTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="popups" value="allow">
             <span>
-              <span i18n-content="popupsAllow"></span>
+              <span>$i18n{popupsAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="popups" value="allow"></span>
             </span>
@@ -196,27 +201,28 @@
           <label>
             <input type="radio" name="popups" value="block">
             <span>
-              <span i18n-content="popupsBlock"></span>
+              <span>$i18n{popupsBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="popups" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="popups"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="popups">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Location filter -->
     <section>
-      <h3 i18n-content="locationTabLabel"></h3>
+      <h3>$i18n{locationTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="location" value="allow">
             <span>
-              <span i18n-content="locationAllow"></span>
+              <span>$i18n{locationAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="location" value="allow"></span>
             </span>
@@ -226,7 +232,7 @@
           <label>
             <input type="radio" name="location" value="ask">
             <span>
-              <span i18n-content="locationAsk"></span>
+              <span>$i18n{locationAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="location" value="ask"></span>
             </span>
@@ -237,7 +243,7 @@
             <input type="radio" name="location"
                 value="block">
             <span>
-              <span i18n-content="locationBlock"></span>
+              <span>$i18n{locationBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="location" value="block"></span>
             </span>
@@ -251,7 +257,7 @@
                 metric="Options_GoogleGeolocationAccessCheckbox"
                 type="checkbox">
             <span>
-              <span i18n-content="googleGeolocationAccessEnable"></span>
+              <span>$i18n{googleGeolocationAccessEnable}</span>
               <span class="controlled-setting-indicator"
                   pref="googlegeolocationaccess.enabled"></span>
             </span>
@@ -259,20 +265,21 @@
         </div>
 </if>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="location"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="location">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Notifications filter tab contents -->
     <section id="notifications-section">
-      <h3 i18n-content="notificationsTabLabel"></h3>
+      <h3>$i18n{notificationsTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="notifications" value="allow">
             <span>
-              <span i18n-content="notificationsAllow"></span>
+              <span>$i18n{notificationsAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="notifications" value="allow"></span>
             </span>
@@ -282,7 +289,7 @@
           <label>
             <input type="radio" name="notifications" value="ask">
             <span>
-              <span i18n-content="notificationsAsk"></span>
+              <span>$i18n{notificationsAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="notifications" value="ask"></span>
             </span>
@@ -292,64 +299,65 @@
           <label>
             <input type="radio" name="notifications" value="block">
             <span>
-              <span i18n-content="notificationsBlock"></span>
+              <span>$i18n{notificationsBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="notifications" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="notifications"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="notifications">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Protected Content filter -->
     <section guest-visibility="disabled">
-      <h3 i18n-content="protectedContentTabLabel"
-          class="content-settings-header"></h3>
+      <h3 class="content-settings-header">$i18n{protectedContentTabLabel}</h3>
       <div>
         <div class="checkbox">
           <label>
             <input pref="webkit.webprefs.encrypted_media_enabled"
                 type="checkbox">
-            <span i18n-content="protectedContentEnableCheckbox"></span>
+            <span>$i18n{protectedContentEnableCheckbox}</span>
           </label>
         </div>
 <if expr="chromeos or is_win">
         <div class="settings-row">
-          <p i18n-content="protectedContentInfo"></p>
+          <p>$i18n{protectedContentInfo}</p>
         </div>
         <div class="checkbox">
           <label>
             <input pref="settings.privacy.drm_enabled" type="checkbox">
-            <span i18n-content="protectedContentEnableIdentifiersCheckbox">
-            </span>
+            <span>$i18n{protectedContentEnableIdentifiersCheckbox}</span>
           </label>
         </div>
 </if>
 <if expr="chromeos">
         <div class="settings-row">
           <button id="protected-content-exceptions"
-              class="exceptions-list-button" contentType="protectedContent"
-              i18n-content="manageExceptions"></button>
+              class="exceptions-list-button" contentType="protectedContent">
+            $i18n{manageExceptions}
+          </button>
         </div>
 </if>
       </div>
     </section>
     <!-- Microphone filter -->
     <section id="media-stream-mic">
-      <h3 i18n-content="mediaStreamMicTabLabel"></h3>
+      <h3>$i18n{mediaStreamMicTabLabel}</h3>
       <div>
-        <span id="media-select-mic-label"
-            i18n-content="mediaSelectMicLabel" hidden></span>
+        <span id="media-select-mic-label" hidden>
+          $i18n{mediaSelectMicLabel}
+        </span>
         <select id="media-select-mic" class="weakrtl media-device-control"
             aria-labelledby="media-select-mic-label"></select>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="media-stream-mic" value="ask">
             <span>
-              <span i18n-content="mediaStreamMicAsk"></span>
+              <span>$i18n{mediaStreamMicAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream-mic" value="ask"></span>
             </span>
@@ -359,36 +367,39 @@
           <label>
             <input type="radio" name="media-stream-mic" value="block">
             <span>
-              <span i18n-content="mediaStreamMicBlock"></span>
+              <span>$i18n{mediaStreamMicBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream-mic" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="media-stream-mic"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="media-stream-mic">
+            $i18n{manageExceptions}
+          </button>
         </div>
         <div id="media-pepper-flash-default-mic" class="pepper-flash-settings">
-          <span i18n-content="mediaPepperFlashMicDefaultDivergedLabel"></span>
-          <a target="_blank" i18n-content="mediaPepperFlashChangeLink"
-              i18n-values="href:mediaPepperFlashGlobalPrivacyURL"></a>
+          <span>$i18n{mediaPepperFlashMicDefaultDivergedLabel}</span>
+          <a target="_blank" href="$i18nRaw{mediaPepperFlashGlobalPrivacyURL}">
+            $i18n{mediaPepperFlashChangeLink}
+          </a>
         </div>
       </div>
     </section>
     <!-- Camera filter -->
     <section id="media-stream-camera">
-      <h3 i18n-content="mediaStreamCameraTabLabel"></h3>
+      <h3>$i18n{mediaStreamCameraTabLabel}</h3>
       <div>
-        <span id="media-select-camera-label"
-            i18n-content="mediaSelectCameraLabel" hidden></span>
+        <span id="media-select-camera-label" hidden>
+          $i18n{mediaSelectCameraLabel}
+        </span>
         <select id="media-select-camera" class="weakrtl media-device-control"
             aria-labelledby="media-select-camera-label"></select>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="media-stream-camera" value="ask">
             <span>
-              <span i18n-content="mediaStreamCameraAsk"></span>
+              <span>$i18n{mediaStreamCameraAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream-camera" value="ask"></span>
             </span>
@@ -398,7 +409,7 @@
           <label>
             <input type="radio" name="media-stream-camera" value="block">
             <span>
-              <span i18n-content="mediaStreamCameraBlock"></span>
+              <span>$i18n{mediaStreamCameraBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="media-stream-camera" value="block"></span>
             </span>
@@ -406,27 +417,28 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button"
-              contentType="media-stream-camera" i18n-content="manageExceptions">
+              contentType="media-stream-camera">
+            $i18n{manageExceptions}
           </button>
         </div>
         <div id="media-pepper-flash-default-camera"
             class="pepper-flash-settings">
-          <span i18n-content="mediaPepperFlashCameraDefaultDivergedLabel">
-          </span>
-          <a target="_blank" i18n-content="mediaPepperFlashChangeLink"
-              i18n-values="href:mediaPepperFlashGlobalPrivacyURL"></a>
+          <span>$i18n{mediaPepperFlashCameraDefaultDivergedLabel}</span>
+          <a target="_blank" href="$i18nRaw{mediaPepperFlashGlobalPrivacyURL}">
+            $i18n{mediaPepperFlashChangeLink}
+          </a>
         </div>
       </div>
     </section>
     <!-- PPAPI broker -->
     <section>
-      <h3 i18n-content="ppapiBrokerTabLabel"></h3>
+      <h3>$i18n{ppapiBrokerTabLabel}</h3>
       <div>
         <div class="radio">
           <label>
             <input type="radio" name="ppapi-broker" value="allow">
             <span>
-              <span i18n-content="ppapiBrokerAllow"></span>
+              <span>$i18n{ppapiBrokerAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="ppapi-broker" value="allow"></span>
             </span>
@@ -436,7 +448,7 @@
           <label>
             <input type="radio" name="ppapi-broker" value="ask">
             <span>
-              <span i18n-content="ppapiBrokerAsk"></span>
+              <span>$i18n{ppapiBrokerAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="ppapi-broker" value="ask"></span>
             </span>
@@ -446,28 +458,29 @@
           <label>
             <input type="radio" name="ppapi-broker" value="block">
             <span>
-              <span i18n-content="ppapiBrokerBlock"></span>
+              <span>$i18n{ppapiBrokerBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="ppapi-broker" value="block"></span>
             </span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="ppapi-broker"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="ppapi-broker">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Automatic Downloads filter -->
     <section>
-      <h3 i18n-content="multipleAutomaticDownloadsTabLabel"></h3>
+      <h3>$i18n{multipleAutomaticDownloadsTabLabel}</h3>
       <div>
         <div class="radio controlled-setting-with-label">
           <label>
             <input type="radio" name="multiple-automatic-downloads"
                 value="allow">
             <span>
-              <span i18n-content="multipleAutomaticDownloadsAllow"></span>
+              <span>$i18n{multipleAutomaticDownloadsAllow}</span>
               <span class="controlled-setting-indicator"
                   content-setting="multiple-automatic-downloads" value="allow">
               </span>
@@ -478,7 +491,7 @@
           <label>
             <input type="radio" name="multiple-automatic-downloads" value="ask">
             <span>
-              <span i18n-content="multipleAutomaticDownloadsAsk"></span>
+              <span>$i18n{multipleAutomaticDownloadsAsk}</span>
               <span class="controlled-setting-indicator"
                   content-setting="multiple-automatic-downloads" value="ask">
               </span>
@@ -490,7 +503,7 @@
             <input type="radio" name="multiple-automatic-downloads"
                 value="block">
             <span>
-              <span i18n-content="multipleAutomaticDownloadsBlock"></span>
+              <span>$i18n{multipleAutomaticDownloadsBlock}</span>
               <span class="controlled-setting-indicator"
                   content-setting="multiple-automatic-downloads" value="block">
               </span>
@@ -499,118 +512,124 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button"
-              contentType="multiple-automatic-downloads"
-              i18n-content="manageExceptions"></button>
+              contentType="multiple-automatic-downloads">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- MIDI system exclusive messages filter -->
     <section>
-      <h3 i18n-content="midiSysexHeader"></h3>
+      <h3>$i18n{midiSysexHeader}</h3>
       <div>
         <div class="radio">
           <label>
             <input type="radio" name="midi-sysex" value="allow">
-            <span i18n-content="midiSysExAllow"></span>
+            <span>$i18n{midiSysExAllow}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="midi-sysex" value="ask">
-            <span i18n-content="midiSysExAsk"></span>
+            <span>$i18n{midiSysExAsk}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="midi-sysex" value="block">
-            <span i18n-content="midiSysExBlock"></span>
+            <span>$i18n{midiSysExBlock}</span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="midi-sysex"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="midi-sysex">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Push messaging filter -->
     <section id="experimental-push-messaging-settings" hidden="true">
-      <h3 i18n-content="pushMessagingHeader"></h3>
+      <h3>$i18n{pushMessagingHeader}</h3>
       <div>
         <div class="radio">
           <label>
             <input type="radio" name="push-messaging" value="allow">
-            <span i18n-content="pushMessagingAllow"></span>
+            <span>$i18n{pushMessagingAllow}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="push-messaging" value="ask">
-            <span i18n-content="pushMessagingAsk"></span>
+            <span>$i18n{pushMessagingAsk}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="push-messaging" value="block">
-            <span i18n-content="pushMessagingBlock"></span>
+            <span>$i18n{pushMessagingBlock}</span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="push-messaging"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="push-messaging">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- USB devices -->
     <section>
-      <h3 i18n-content="usbDevicesHeader"></h3>
+      <h3>$i18n{usbDevicesHeader}</h3>
       <div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="usb-devices"
-              i18n-content="usbDevicesManage"></button>
+          <button class="exceptions-list-button" contentType="usb-devices">
+            $i18n{usbDevicesManage}
+          </button>
         </div>
       </div>
     </section>
     <!-- Background sync -->
     <section>
-      <h3 i18n-content="backgroundSyncHeader"></h3>
+      <h3>$i18n{backgroundSyncHeader}</h3>
       <div>
         <div class="radio">
           <label>
             <input type="radio" name="background-sync" value="allow">
-            <span i18n-content="backgroundSyncAllow"></span>
+            <span>$i18n{backgroundSyncAllow}</span>
           </label>
         </div>
         <div class="radio">
           <label>
             <input type="radio" name="background-sync" value="block">
-            <span i18n-content="backgroundSyncBlock"></span>
+            <span>$i18n{backgroundSyncBlock}</span>
           </label>
         </div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="background-sync"
-              i18n-content="manageExceptions"></button>
+          <button class="exceptions-list-button" contentType="background-sync">
+            $i18n{manageExceptions}
+          </button>
         </div>
       </div>
     </section>
     <!-- Page zoom levels -->
     <section id="page-zoom-levels">
-      <h3 i18n-content="zoomlevelsHeader"></h3>
+      <h3>$i18n{zoomlevelsHeader}</h3>
       <div>
         <div class="settings-row">
-          <button class="exceptions-list-button" contentType="zoomlevels"
-              i18n-content="zoomLevelsManage"></button>
+          <button class="exceptions-list-button" contentType="zoomlevels">
+            $i18n{zoomLevelsManage}
+          </button>
         </div>
       </div>
     </section>
     <!-- PDF Plugin filter -->
     <section id="pdf-section">
-      <h3 i18n-content="pdfTabLabel" class="content-settings-header"></h3>
+      <h3 class="content-settings-header">$i18n{pdfTabLabel}</h3>
       <div>
         <div class="checkbox">
           <label>
             <input pref="plugins.always_open_pdf_externally" type="checkbox">
             <span>
-              <span i18n-content="pdfEnable"></span>
+              <span>$i18n{pdfEnable}</span>
               <span class="controlled-setting-indicator"
                   pref="plugins.always_open_pdf_externally">
               </span>
@@ -622,8 +641,8 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <button id="content-settings-overlay-confirm" class="default-button"
-          i18n-content="done">
+      <button id="content-settings-overlay-confirm" class="default-button">
+        $i18n{done}
       </button>
     </div>
   </div>

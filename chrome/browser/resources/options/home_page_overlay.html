@@ -1,6 +1,6 @@
 <div id="home-page-overlay" class="page" role="dialog" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="homePageOverlay"></h1>
+  <h1>$i18n{homePageOverlay}</h1>
   <div class="content-area">
     <div class="radio controlled-setting-with-label">
       <label>
@@ -8,7 +8,7 @@
             pref="homepage_is_newtabpage" value="true"
             metric="Options_Homepage_IsNewTabPage" dialog-pref>
         <span>
-          <span i18n-content="homePageUseNewTab"></span>
+          <span>$i18n{homePageUseNewTab}</span>
           <span class="controlled-setting-indicator"
               pref="homepage_is_newtabpage" value="true" dialog-pref></span>
         </span>
@@ -20,8 +20,7 @@
             pref="homepage_is_newtabpage" value="false"
             metric="Options_Homepage_IsNewTabPage" dialog-pref>
         <span>
-          <span id="homepage-use-url-label" i18n-content="homePageUseURL">
-          </span>
+          <span id="homepage-use-url-label">$i18n{homePageUseURL}</span>
           <span class="controlled-setting-indicator"
               pref="homepage_is_newtabpage" value="false" dialog-pref></span>
         </span>
@@ -39,11 +38,8 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <button id="home-page-cancel" type="reset" i18n-content="cancel">
-      </button>
-      <button id="home-page-confirm" class="default-button"
-          i18n-content="ok">
-      </button>
+      <button id="home-page-cancel" type="reset">$i18n{cancel}</button>
+      <button id="home-page-confirm" class="default-button">$i18n{ok}</button>
     </div>
   </div>
 </div>

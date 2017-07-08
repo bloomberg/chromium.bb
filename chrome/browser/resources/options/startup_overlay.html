@@ -1,6 +1,6 @@
 <div id="startup-overlay" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="startupPagesOverlay"></h1>
+  <h1>$i18n{startupPagesOverlay}</h1>
   <!-- This <input> element is always hidden. It needs to be here so that
        its 'controlled-by' attribute will get set when the urls preference is
        managed by a policy, so that the managed prefs bar will show up.
@@ -11,13 +11,12 @@
   </div>
   <div class="action-area">
     <span class="hbox stretch">
-      <button id="startupUseCurrentButton"
-          i18n-content="startupUseCurrent"></button>
+      <button id="startupUseCurrentButton">$i18n{startupUseCurrent}</button>
     </span>
     <div class="button-strip">
-      <button id="startup-overlay-cancel" i18n-content="cancel"></button>
-      <button id="startup-overlay-confirm" class="default-button"
-          i18n-content="ok">
+      <button id="startup-overlay-cancel">$i18n{cancel}</button>
+      <button id="startup-overlay-confirm" class="default-button">
+        $i18n{ok}
       </button>
     </div>
   </div>

@@ -1,9 +1,9 @@
 <div id="font-settings" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="fontSettingsPage"></h1>
+  <h1>$i18n{fontSettingsPage}</h1>
   <div class="content-area">
     <section>
-      <h3 i18n-content="fontSettingsStandard"></h3>
+      <h3>$i18n{fontSettingsStandard}</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <div>
@@ -16,9 +16,9 @@
             <input id="standard-font-size" type="range" min="0" max="24"
                 pref="webkit.webprefs.default_font_size">
             <div>
-              <span i18n-content="fontSettingsSizeTiny"></span>
-              <span i18n-content="fontSettingsSizeHuge"
-                  class="font-settings-huge">
+              <span>$i18n{fontSettingsSizeTiny}</span>
+              <span class="font-settings-huge">
+                $i18n{fontSettingsSizeHuge}
               </span>
             </div>
           </div>
@@ -27,7 +27,7 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="fontSettingsSerif"></h3>
+      <h3>$i18n{fontSettingsSerif}</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <div>
@@ -41,7 +41,7 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="fontSettingsSansSerif"></h3>
+      <h3>$i18n{fontSettingsSansSerif}</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <div>
@@ -55,7 +55,7 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="fontSettingsFixedWidth"></h3>
+      <h3>$i18n{fontSettingsFixedWidth}</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <div>
@@ -69,16 +69,16 @@
       </div>
     </section>
     <section>
-      <h3 i18n-content="fontSettingsMinimumSize"></h3>
+      <h3>$i18n{fontSettingsMinimumSize}</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <div>
             <input id="minimum-font-size" type="range" min="0" max="15"
                 pref="webkit.webprefs.minimum_font_size">
             <div>
-              <span i18n-content="fontSettingsSizeTiny"></span>
-              <span i18n-content="fontSettingsSizeHuge"
-                  class="font-settings-huge">
+              <span>$i18n{fontSettingsSizeTiny}</span>
+              <span class="font-settings-huge">
+                $i18n{fontSettingsSizeHuge}
               </span>
             </div>
           </div>
@@ -89,13 +89,15 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <span id="advanced-font-settings-install" hidden
-          i18n-values=".innerHTML:advancedFontSettingsInstall"></span>
-      <a is="action-link" id="advanced-font-settings-options"
-          i18n-content="advancedFontSettingsOptions" hidden></a>
+      <span id="advanced-font-settings-install" hidden>
+        $i18nRaw{advancedFontSettingsInstall}
+      </span>
+      <a is="action-link" id="advanced-font-settings-options" hidden>
+        $i18n{advancedFontSettingsOptions}
+      </a>
       <span class="spacer"></span>
-      <button id="font-settings-confirm" class="default-button"
-          i18n-content="done">
+      <button id="font-settings-confirm" class="default-button">
+        $i18n{done}
       </button>
     </div>
   </div>

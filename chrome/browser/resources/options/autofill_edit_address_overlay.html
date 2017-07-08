@@ -7,7 +7,7 @@
 
     <div class="settings-row">
       <label>
-        <div i18n-content="autofillCountryLabel"></div>
+        <div>$i18n{autofillCountryLabel}</div>
         <select class="country" field="country"></select>
       </label>
     </div>
@@ -15,14 +15,14 @@
     <div class="input-group settings-row">
       <div>
         <label>
-          <div i18n-content="autofillPhoneLabel"></div>
+          <div>$i18n{autofillPhoneLabel}</div>
           <input class="short" field="phone"></input>
         </label>
       </div>
 
       <div>
         <label>
-          <div i18n-content="autofillEmailLabel"></div>
+          <div>$i18n{autofillEmailLabel}</div>
           <input class="short" field="email"></input>
         </label>
       </div>
@@ -31,9 +31,12 @@
   </div>
 
   <div class="action-area button-strip">
-    <button id="autofill-edit-address-cancel-button" type="reset"
-        i18n-content="cancel"></button>
+    <button id="autofill-edit-address-cancel-button" type="reset">
+      $i18n{cancel}
+    </button>
     <button id="autofill-edit-address-apply-button" type="submit"
-        class="default-button" i18n-content="ok" disabled></button>
+        class="default-button" disabled>
+      $i18n{ok}
+    </button>
   </div>
 </div>
