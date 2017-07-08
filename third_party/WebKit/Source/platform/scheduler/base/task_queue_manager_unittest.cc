@@ -31,6 +31,7 @@
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
+#include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::AnyNumber;
@@ -89,6 +90,19 @@ class TaskQueueManagerTest : public ::testing::Test {
   void DeleteTaskQueueManager() { manager_.reset(); }
 
  protected:
+  scoped_refptr<TestTaskQueue> CreateTaskQueueWithSpec(TaskQueue::Spec spec) {
+    return manager_->CreateTaskQueue<TestTaskQueue>(spec);
+  }
+
+  scoped_refptr<TestTaskQueue> CreateTaskQueue() {
+    return CreateTaskQueueWithSpec(TaskQueue::Spec("test"));
+  }
+
+  scoped_refptr<TestTaskQueue> CreateTaskQueueWithMonitoredQuiescence() {
+    return CreateTaskQueueWithSpec(
+        TaskQueue::Spec("test").SetShouldMonitorQuiescence(true));
+  }
+
   void InitializeWithClock(size_t num_queues,
                            std::unique_ptr<base::TickClock> test_time_source) {
     test_task_runner_ = make_scoped_refptr(
@@ -100,8 +114,7 @@ class TaskQueueManagerTest : public ::testing::Test {
     manager_ = base::MakeUnique<TaskQueueManagerForTest>(main_task_runner_);
 
     for (size_t i = 0; i < num_queues; i++)
-      runners_.push_back(
-          manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+      runners_.push_back(CreateTaskQueue());
   }
 
   void Initialize(size_t num_queues) {
@@ -121,8 +134,7 @@ class TaskQueueManagerTest : public ::testing::Test {
             base::WrapUnique(new TestTimeSource(now_src_.get()))));
 
     for (size_t i = 0; i < num_queues; i++)
-      runners_.push_back(
-          manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+      runners_.push_back(CreateTaskQueue());
   }
 
   void WakeUpReadyDelayedQueues(LazyNow lazy_now) {
@@ -187,7 +199,7 @@ class TaskQueueManagerTest : public ::testing::Test {
   scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TaskQueueManagerForTest> manager_;
-  std::vector<scoped_refptr<internal::TaskQueueImpl>> runners_;
+  std::vector<scoped_refptr<TestTaskQueue>> runners_;
   TestTaskTimeObserver test_task_time_observer_;
 };
 
@@ -222,8 +234,7 @@ TEST_F(TaskQueueManagerTest,
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   for (size_t i = 0; i < 3; i++)
-    runners_.push_back(
-        manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+    runners_.push_back(CreateTaskQueue());
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
@@ -252,8 +263,7 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
           base::WrapUnique(test_count_uses_time_source)));
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
-  runners_.push_back(
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  runners_.push_back(CreateTaskQueue());
 
   std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
   for (int i = 0; i <= 6; ++i) {
@@ -365,12 +375,13 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_ImmediateTask) {
   EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Move the task into the |immediate_work_queue|.
-  EXPECT_TRUE(runners_[0]->immediate_work_queue()->Empty());
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->immediate_work_queue()->Empty());
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
   test_task_runner_->RunUntilIdle();
-  EXPECT_FALSE(runners_[0]->immediate_work_queue()->Empty());
+  EXPECT_FALSE(
+      runners_[0]->GetTaskQueueImpl()->immediate_work_queue()->Empty());
   EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
@@ -392,7 +403,7 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTask) {
 
   // Move the task into the |delayed_work_queue|.
   WakeUpReadyDelayedQueues(LazyNow(now_src_.get()));
-  EXPECT_FALSE(runners_[0]->delayed_work_queue()->Empty());
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->delayed_work_queue()->Empty());
   EXPECT_TRUE(runners_[0]->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
@@ -1099,15 +1110,9 @@ TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
 TEST_F(TaskQueueManagerTest, GetAndClearSystemIsQuiescentBit) {
   Initialize(3u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue0 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
-                                 .SetShouldMonitorQuiescence(true));
-  scoped_refptr<internal::TaskQueueImpl> queue1 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
-                                 .SetShouldMonitorQuiescence(true));
-  scoped_refptr<internal::TaskQueueImpl> queue2 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
-                                 .SetShouldMonitorQuiescence(false));
+  scoped_refptr<TaskQueue> queue0 = CreateTaskQueueWithMonitoredQuiescence();
+  scoped_refptr<TaskQueue> queue1 = CreateTaskQueueWithMonitoredQuiescence();
+  scoped_refptr<TaskQueue> queue2 = CreateTaskQueue();
 
   EXPECT_TRUE(manager_->GetAndClearSystemIsQuiescentBit());
 
@@ -1329,12 +1334,9 @@ TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
 TEST_F(TaskQueueManagerTest, NewTaskQueues) {
   Initialize(1u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue1 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
-  scoped_refptr<internal::TaskQueueImpl> queue2 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
-  scoped_refptr<internal::TaskQueueImpl> queue3 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+  scoped_refptr<TaskQueue> queue1 = CreateTaskQueue();
+  scoped_refptr<TaskQueue> queue2 = CreateTaskQueue();
+  scoped_refptr<TaskQueue> queue3 = CreateTaskQueue();
 
   ASSERT_NE(queue1, queue2);
   ASSERT_NE(queue1, queue3);
@@ -1352,12 +1354,9 @@ TEST_F(TaskQueueManagerTest, NewTaskQueues) {
 TEST_F(TaskQueueManagerTest, UnregisterTaskQueue) {
   Initialize(1u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue1 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
-  scoped_refptr<internal::TaskQueueImpl> queue2 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
-  scoped_refptr<internal::TaskQueueImpl> queue3 =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+  scoped_refptr<TaskQueue> queue1 = CreateTaskQueue();
+  scoped_refptr<TaskQueue> queue2 = CreateTaskQueue();
+  scoped_refptr<TaskQueue> queue3 = CreateTaskQueue();
 
   ASSERT_NE(queue1, queue2);
   ASSERT_NE(queue1, queue3);
@@ -1394,7 +1393,7 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
 }
 
 namespace {
-void UnregisterQueue(scoped_refptr<internal::TaskQueueImpl> queue) {
+void UnregisterQueue(scoped_refptr<TaskQueue> queue) {
   queue->UnregisterTaskQueue();
 }
 }
@@ -1417,28 +1416,10 @@ namespace {
 
 class MockObserver : public TaskQueueManager::Observer {
  public:
-  MOCK_METHOD1(OnUnregisterTaskQueue,
-               void(const scoped_refptr<TaskQueue>& queue));
-  MOCK_METHOD2(OnTriedToExecuteBlockedTask,
-               void(const TaskQueue& queue, const base::PendingTask& task));
+  MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
 };
 
 }  // namespace
-
-TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
-  Initialize(0u);
-
-  MockObserver observer;
-  manager_->SetObserver(&observer);
-
-  scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
-
-  EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
-  task_queue->UnregisterTaskQueue();
-
-  manager_->SetObserver(nullptr);
-}
 
 TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
   Initialize(0u);
@@ -1446,9 +1427,8 @@ TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
   MockObserver observer;
   manager_->SetObserver(&observer);
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
-                                 .SetShouldReportWhenExecutionBlocked(true));
+  scoped_refptr<TaskQueue> task_queue = CreateTaskQueueWithSpec(
+      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       task_queue->CreateQueueEnabledVoter();
 
@@ -1460,7 +1440,7 @@ TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
   voter->SetQueueEnabled(true);
   voter->SetQueueEnabled(false);
 
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
+  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(1);
   test_task_runner_->RunPendingTasks();
 
   manager_->SetObserver(nullptr);
@@ -1472,19 +1452,14 @@ TEST_F(TaskQueueManagerTest, ExecutedNonBlockedTask) {
   MockObserver observer;
   manager_->SetObserver(&observer);
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
-                                 .SetShouldReportWhenExecutionBlocked(true));
+  scoped_refptr<TaskQueue> task_queue = CreateTaskQueueWithSpec(
+      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(0);
+  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(0);
   test_task_runner_->RunPendingTasks();
 
   manager_->SetObserver(nullptr);
-}
-
-void HasOneRefTask(std::vector<bool>* log, internal::TaskQueueImpl* tq) {
-  log->push_back(tq->HasOneRef());
 }
 
 TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
@@ -1492,8 +1467,7 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
 
   // We retain a reference to the task queue even when the manager has deleted
   // its reference.
-  scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+  scoped_refptr<TaskQueue> task_queue = CreateTaskQueue();
 
   std::vector<bool> log;
   std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
@@ -1503,31 +1477,20 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
   // reference until the nested run loop exits.
   // NB: This first HasOneRefTask is a sanity check.
   tasks_to_post_from_nested_loop.push_back(
-      std::make_pair(base::Bind(&HasOneRefTask, base::Unretained(&log),
+      std::make_pair(base::Bind(&NopTask), true));
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(base::Bind(&TaskQueue::UnregisterTaskQueue,
                                 base::Unretained(task_queue.get())),
                      true));
   tasks_to_post_from_nested_loop.push_back(
-      std::make_pair(base::Bind(&internal::TaskQueueImpl::UnregisterTaskQueue,
-                                base::Unretained(task_queue.get())),
-                     true));
-  tasks_to_post_from_nested_loop.push_back(
-      std::make_pair(base::Bind(&HasOneRefTask, base::Unretained(&log),
-                                base::Unretained(task_queue.get())),
-                     true));
+      std::make_pair(base::Bind(&NopTask), true));
   runners_[0]->PostTask(
       FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
                             base::RetainedRef(runners_[0]),
                             base::Unretained(&tasks_to_post_from_nested_loop)));
   base::RunLoop().RunUntilIdle();
 
-  // Add a final call to HasOneRefTask.  This gives the manager a chance to
-  // release its reference, and checks that it has.
-  runners_[0]->PostTask(FROM_HERE,
-                        base::Bind(&HasOneRefTask, base::Unretained(&log),
-                                   base::Unretained(task_queue.get())));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(log, ElementsAre(false, false, true));
+  // Just make sure that we don't crash.
 }
 
 TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
@@ -1708,7 +1671,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_ImmediateTask) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Unless the immediate work queue is emptied.
-  runners_[0]->ReloadImmediateWorkQueueIfEmpty();
+  runners_[0]->GetTaskQueueImpl()->ReloadImmediateWorkQueueIfEmpty();
   EXPECT_CALL(observer,
               OnQueueNextWakeUpChanged(runners_[0].get(), base::TimeTicks()));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
@@ -1930,7 +1893,7 @@ namespace {
 
 class QuadraticTask {
  public:
-  QuadraticTask(scoped_refptr<internal::TaskQueueImpl> task_queue,
+  QuadraticTask(scoped_refptr<TaskQueue> task_queue,
                 base::TimeDelta delay,
                 base::SimpleTestTickClock* now_src)
       : count_(0), task_queue_(task_queue), delay_(delay), now_src_(now_src) {}
@@ -1956,7 +1919,7 @@ class QuadraticTask {
 
  private:
   int count_;
-  scoped_refptr<internal::TaskQueueImpl> task_queue_;
+  scoped_refptr<TaskQueue> task_queue_;
   base::TimeDelta delay_;
   base::Callback<bool()> should_exit_;
   base::SimpleTestTickClock* now_src_;
@@ -1964,7 +1927,7 @@ class QuadraticTask {
 
 class LinearTask {
  public:
-  LinearTask(scoped_refptr<internal::TaskQueueImpl> task_queue,
+  LinearTask(scoped_refptr<TaskQueue> task_queue,
              base::TimeDelta delay,
              base::SimpleTestTickClock* now_src)
       : count_(0), task_queue_(task_queue), delay_(delay), now_src_(now_src) {}
@@ -1987,7 +1950,7 @@ class LinearTask {
 
  private:
   int count_;
-  scoped_refptr<internal::TaskQueueImpl> task_queue_;
+  scoped_refptr<TaskQueue> task_queue_;
   base::TimeDelta delay_;
   base::Callback<bool()> should_exit_;
   base::SimpleTestTickClock* now_src_;
@@ -2117,7 +2080,7 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NoTaskRunning) {
 namespace {
 void CurrentlyExecutingTaskQueueTestTask(
     TaskQueueManager* task_queue_manager,
-    std::vector<TaskQueue*>* task_sources) {
+    std::vector<internal::TaskQueueImpl*>* task_sources) {
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 }
 }
@@ -2125,17 +2088,18 @@ void CurrentlyExecutingTaskQueueTestTask(
 TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_TaskRunning) {
   Initialize(2u);
 
-  internal::TaskQueueImpl* queue0 = runners_[0].get();
-  internal::TaskQueueImpl* queue1 = runners_[1].get();
+  TestTaskQueue* queue0 = runners_[0].get();
+  TestTaskQueue* queue1 = runners_[1].get();
 
-  std::vector<TaskQueue*> task_sources;
+  std::vector<internal::TaskQueueImpl*> task_sources;
   queue0->PostTask(FROM_HERE, base::Bind(&CurrentlyExecutingTaskQueueTestTask,
                                          manager_.get(), &task_sources));
   queue1->PostTask(FROM_HERE, base::Bind(&CurrentlyExecutingTaskQueueTestTask,
                                          manager_.get(), &task_sources));
   test_task_runner_->RunUntilIdle();
 
-  EXPECT_THAT(task_sources, ElementsAre(queue0, queue1));
+  EXPECT_THAT(task_sources, ElementsAre(queue0->GetTaskQueueImpl(),
+                                        queue1->GetTaskQueueImpl()));
   EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
 }
 
@@ -2143,12 +2107,12 @@ namespace {
 void RunloopCurrentlyExecutingTaskQueueTestTask(
     base::MessageLoop* message_loop,
     TaskQueueManager* task_queue_manager,
-    std::vector<TaskQueue*>* task_sources,
-    std::vector<std::pair<base::Closure, TaskQueue*>>* tasks) {
+    std::vector<internal::TaskQueueImpl*>* task_sources,
+    std::vector<std::pair<base::Closure, TestTaskQueue*>>* tasks) {
   base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 
-  for (std::pair<base::Closure, TaskQueue*>& pair : *tasks) {
+  for (std::pair<base::Closure, TestTaskQueue*>& pair : *tasks) {
     pair.second->PostTask(FROM_HERE, pair.first);
   }
 
@@ -2160,12 +2124,12 @@ void RunloopCurrentlyExecutingTaskQueueTestTask(
 TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
   InitializeWithRealMessageLoop(3u);
 
-  TaskQueue* queue0 = runners_[0].get();
-  TaskQueue* queue1 = runners_[1].get();
-  TaskQueue* queue2 = runners_[2].get();
+  TestTaskQueue* queue0 = runners_[0].get();
+  TestTaskQueue* queue1 = runners_[1].get();
+  TestTaskQueue* queue2 = runners_[2].get();
 
-  std::vector<TaskQueue*> task_sources;
-  std::vector<std::pair<base::Closure, TaskQueue*>>
+  std::vector<internal::TaskQueueImpl*> task_sources;
+  std::vector<std::pair<base::Closure, TestTaskQueue*>>
       tasks_to_post_from_nested_loop;
   tasks_to_post_from_nested_loop.push_back(
       std::make_pair(base::Bind(&CurrentlyExecutingTaskQueueTestTask,
@@ -2182,7 +2146,10 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
                             &tasks_to_post_from_nested_loop));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(task_sources, ElementsAre(queue0, queue1, queue2, queue0));
+  EXPECT_THAT(
+      task_sources,
+      ElementsAre(queue0->GetTaskQueueImpl(), queue1->GetTaskQueueImpl(),
+                  queue2->GetTaskQueueImpl(), queue0->GetTaskQueueImpl()));
   EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
 }
 
@@ -2233,7 +2200,7 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
   using trace_analyzer::Query;
 
   InitializeWithRealMessageLoop(1u);
-  TaskQueue* queue = runners_[0].get();
+  TestTaskQueue* queue = runners_[0].get();
 
   StartTracing();
   {
@@ -2459,8 +2426,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueVoters) {
 TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeEnabledVoterDeleted) {
   Initialize(1u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+  scoped_refptr<TaskQueue> queue = CreateTaskQueue();
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
@@ -2475,8 +2441,7 @@ TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeEnabledVoterDeleted) {
 TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeDisabledVoterDeleted) {
   Initialize(1u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue =
-      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+  scoped_refptr<TaskQueue> queue = CreateTaskQueue();
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       queue->CreateQueueEnabledVoter();
@@ -2736,10 +2701,9 @@ TEST_F(TaskQueueManagerTest,
 }
 
 namespace {
-void MessageLoopTaskWithDelayedQuit(
-    base::MessageLoop* message_loop,
-    base::SimpleTestTickClock* now_src,
-    scoped_refptr<internal::TaskQueueImpl> task_queue) {
+void MessageLoopTaskWithDelayedQuit(base::MessageLoop* message_loop,
+                                    base::SimpleTestTickClock* now_src,
+                                    scoped_refptr<TaskQueue> task_queue) {
   base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
   base::RunLoop run_loop;
   task_queue->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
@@ -2760,10 +2724,9 @@ TEST_F(TaskQueueManagerTest, DelayedTaskRunsInNestedMessageLoop) {
 }
 
 namespace {
-void MessageLoopTaskWithImmediateQuit(
-    base::MessageLoop* message_loop,
-    base::Closure non_nested_quit_closure,
-    scoped_refptr<internal::TaskQueueImpl> task_queue) {
+void MessageLoopTaskWithImmediateQuit(base::MessageLoop* message_loop,
+                                      base::Closure non_nested_quit_closure,
+                                      scoped_refptr<TaskQueue> task_queue) {
   base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
 
   base::RunLoop run_loop;
@@ -2794,31 +2757,31 @@ TEST_F(TaskQueueManagerTest, CouldTaskRun_DisableAndReenable) {
   Initialize(1u);
 
   EnqueueOrder enqueue_order = GetNextSequenceNumber();
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
-  EXPECT_FALSE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   voter->SetQueueEnabled(true);
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 }
 
 TEST_F(TaskQueueManagerTest, CouldTaskRun_Fence) {
   Initialize(1u);
 
   EnqueueOrder enqueue_order = GetNextSequenceNumber();
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
-  EXPECT_FALSE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   runners_[0]->RemoveFence();
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 }
 
 TEST_F(TaskQueueManagerTest, CouldTaskRun_FenceBeforeThenAfter) {
@@ -2827,10 +2790,10 @@ TEST_F(TaskQueueManagerTest, CouldTaskRun_FenceBeforeThenAfter) {
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
 
   EnqueueOrder enqueue_order = GetNextSequenceNumber();
-  EXPECT_FALSE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
-  EXPECT_TRUE(runners_[0]->CouldTaskRun(enqueue_order));
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 }
 
 TEST_F(TaskQueueManagerTest, DelayedDoWorkNotPostedForDisabledQueue) {

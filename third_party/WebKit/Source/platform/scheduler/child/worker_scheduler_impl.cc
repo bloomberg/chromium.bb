@@ -12,6 +12,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/time_converter.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
+#include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -38,11 +39,12 @@ void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(main_task_runner)),
+    : WorkerScheduler(WTF::MakeUnique<WorkerSchedulerHelper>(main_task_runner)),
       idle_helper_(helper_.get(),
                    this,
                    "WorkerSchedulerIdlePeriod",
-                   base::TimeDelta::FromMilliseconds(300)),
+                   base::TimeDelta::FromMilliseconds(300),
+                   helper_->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
       idle_canceled_delayed_task_sweeper_(helper_.get(),
                                           idle_helper_.IdleTaskRunner()),
       load_tracker_(helper_->scheduler_tqm_delegate()->NowTicks(),
@@ -71,12 +73,12 @@ void WorkerSchedulerImpl::Init() {
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerSchedulerImpl::DefaultTaskRunner() {
   DCHECK(initialized_);
-  return helper_->DefaultTaskQueue();
+  return helper_->DefaultWorkerTaskQueue();
 }
 
-scoped_refptr<TaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
+scoped_refptr<WorkerTaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
   DCHECK(initialized_);
-  return helper_->DefaultTaskQueue();
+  return helper_->DefaultWorkerTaskQueue();
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -135,12 +137,9 @@ base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
   return idle_helper_.CurrentIdleTaskDeadline();
 }
 
-void WorkerSchedulerImpl::WillProcessTask(TaskQueue* task_queue,
-                                          double start_time) {}
+void WorkerSchedulerImpl::WillProcessTask(double start_time) {}
 
-void WorkerSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
-                                         double start_time,
-                                         double end_time) {
+void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, task_time_counter,
                                   ("WorkerThread.Task.Time", 0, 10000000, 50));
   task_time_counter.Count((end_time - start_time) *

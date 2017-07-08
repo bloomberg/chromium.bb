@@ -68,14 +68,13 @@ class TimeDomainTest : public ::testing::Test {
  public:
   void SetUp() final {
     time_domain_ = base::WrapUnique(CreateMockTimeDomain());
-    task_queue_ = make_scoped_refptr(new internal::TaskQueueImpl(
-        nullptr, time_domain_.get(),
-        TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+    task_queue_ = base::MakeUnique<internal::TaskQueueImpl>(
+        nullptr, time_domain_.get(), TaskQueue::Spec("test"));
   }
 
   void TearDown() final {
     if (task_queue_)
-      task_queue_->UnregisterTaskQueue();
+      task_queue_->UnregisterTaskQueue(nullptr);
   }
 
   virtual MockTimeDomain* CreateMockTimeDomain() {
@@ -83,7 +82,7 @@ class TimeDomainTest : public ::testing::Test {
   }
 
   std::unique_ptr<MockTimeDomain> time_domain_;
-  scoped_refptr<internal::TaskQueueImpl> task_queue_;
+  std::unique_ptr<internal::TaskQueueImpl> task_queue_;
 };
 
 TEST_F(TimeDomainTest, ScheduleDelayedWork) {
@@ -97,7 +96,7 @@ TEST_F(TimeDomainTest, ScheduleDelayedWork) {
   EXPECT_TRUE(time_domain_->NextScheduledRunTime(&next_scheduled_runtime));
   EXPECT_EQ(delayed_runtime, next_scheduled_runtime);
 
-  TaskQueue* next_task_queue;
+  internal::TaskQueueImpl* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue_.get(), next_task_queue);
   Mock::VerifyAndClearExpectations(time_domain_.get());
@@ -135,17 +134,17 @@ TEST_F(TimeDomainTest, ScheduleDelayedWorkSupersedesPreviousWakeUp) {
 }
 
 TEST_F(TimeDomainTest, RequestWakeUpAt_OnlyCalledForEarlierTasks) {
-  scoped_refptr<internal::TaskQueueImpl> task_queue2 = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue2 =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue3 = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue3 =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue4 = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue4 =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
   base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
   base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(20);
@@ -173,15 +172,15 @@ TEST_F(TimeDomainTest, RequestWakeUpAt_OnlyCalledForEarlierTasks) {
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, _));
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(_)).Times(2);
-  task_queue2->UnregisterTaskQueue();
-  task_queue3->UnregisterTaskQueue();
-  task_queue4->UnregisterTaskQueue();
+  task_queue2->UnregisterTaskQueue(nullptr);
+  task_queue3->UnregisterTaskQueue(nullptr);
+  task_queue4->UnregisterTaskQueue(nullptr);
 }
 
 TEST_F(TimeDomainTest, UnregisterQueue) {
-  scoped_refptr<internal::TaskQueueImpl> task_queue2_ = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue2_ =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks wake_up1 = now + base::TimeDelta::FromMilliseconds(10);
@@ -190,7 +189,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   base::TimeTicks wake_up2 = now + base::TimeDelta::FromMilliseconds(100);
   time_domain_->ScheduleDelayedWork(task_queue2_.get(), {wake_up2, 0}, now);
 
-  TaskQueue* next_task_queue;
+  internal::TaskQueueImpl* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 
@@ -200,7 +199,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, wake_up2)).Times(1);
 
   time_domain_->UnregisterQueue(task_queue_.get());
-  task_queue_ = scoped_refptr<internal::TaskQueueImpl>();
+  task_queue_ = std::unique_ptr<internal::TaskQueueImpl>();
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue2_.get(), next_task_queue);
 
@@ -243,9 +242,9 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, delayed_runtime));
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(delayed_runtime));
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue2 = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue2 =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
   time_domain_->ScheduleDelayedWork(task_queue2.get(),
                                     {delayed_runtime, ++sequence_num}, now);
@@ -257,11 +256,11 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
 
   // The second task queue should wake up first since it has a lower sequence
   // number.
-  TaskQueue* next_task_queue;
+  internal::TaskQueueImpl* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue2.get(), next_task_queue);
 
-  task_queue2->UnregisterTaskQueue();
+  task_queue2->UnregisterTaskQueue(nullptr);
 }
 
 TEST_F(TimeDomainTest, CancelDelayedWork) {
@@ -271,7 +270,7 @@ TEST_F(TimeDomainTest, CancelDelayedWork) {
   EXPECT_CALL(*time_domain_.get(), RequestWakeUpAt(_, run_time));
   time_domain_->ScheduleDelayedWork(task_queue_.get(), {run_time, 0}, now);
 
-  TaskQueue* next_task_queue;
+  internal::TaskQueueImpl* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 
@@ -281,9 +280,9 @@ TEST_F(TimeDomainTest, CancelDelayedWork) {
 }
 
 TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
-  scoped_refptr<internal::TaskQueueImpl> task_queue2 = make_scoped_refptr(
-      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
-                                  TaskQueue::Spec(TaskQueue::QueueType::TEST)));
+  std::unique_ptr<internal::TaskQueueImpl> task_queue2 =
+      base::MakeUnique<internal::TaskQueueImpl>(nullptr, time_domain_.get(),
+                                                TaskQueue::Spec("test"));
 
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks run_time1 = now + base::TimeDelta::FromMilliseconds(20);
@@ -296,7 +295,7 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
   time_domain_->ScheduleDelayedWork(task_queue2.get(), {run_time2, 0}, now);
   Mock::VerifyAndClearExpectations(time_domain_.get());
 
-  TaskQueue* next_task_queue;
+  internal::TaskQueueImpl* next_task_queue;
   EXPECT_TRUE(time_domain_->NextScheduledTaskQueue(&next_task_queue));
   EXPECT_EQ(task_queue_.get(), next_task_queue);
 
@@ -318,7 +317,7 @@ TEST_F(TimeDomainTest, CancelDelayedWork_TwoQueues) {
   EXPECT_CALL(*time_domain_.get(), CancelWakeUpAt(_)).Times(AnyNumber());
 
   // Tidy up.
-  task_queue2->UnregisterTaskQueue();
+  task_queue2->UnregisterTaskQueue(nullptr);
 }
 
 }  // namespace scheduler

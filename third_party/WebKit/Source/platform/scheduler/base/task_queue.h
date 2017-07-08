@@ -9,6 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 
@@ -21,12 +23,14 @@ class BlameContext;
 namespace blink {
 namespace scheduler {
 
+namespace internal {
+class TaskQueueImpl;
+}
+
 class TimeDomain;
 
 class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
-  TaskQueue() {}
-
   class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
@@ -46,7 +50,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // Unregisters the task queue after which no tasks posted to it will run and
   // the TaskQueueManager's reference to it will be released soon.
-  virtual void UnregisterTaskQueue() = 0;
+  virtual void UnregisterTaskQueue();
 
   enum QueuePriority {
     // Queues with control priority will run before any other queue, and will
@@ -74,33 +78,10 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Can be called on any thread.
   static const char* PriorityToString(QueuePriority priority);
 
-  enum class QueueType {
-    // Keep TaskQueue::NameForQueueType in sync.
-    // This enum is used for a histogram and it should not be re-numbered.
-    CONTROL = 0,
-    DEFAULT = 1,
-    DEFAULT_LOADING = 2,
-    DEFAULT_TIMER = 3,
-    UNTHROTTLED = 4,
-    FRAME_LOADING = 5,
-    FRAME_TIMER = 6,
-    FRAME_UNTHROTTLED = 7,
-    COMPOSITOR = 8,
-    IDLE = 9,
-    TEST = 10,
-
-    COUNT = 11
-  };
-
-  // Returns name of the given queue type. Returned string has application
-  // lifetime.
-  static const char* NameForQueueType(QueueType queue_type);
-
-  // Options for constructing a TaskQueue. Once set the |name| and
-  // |should_monitor_quiescence| are immutable.
+  // Options for constructing a TaskQueue.
   struct Spec {
-    explicit Spec(QueueType type)
-        : type(type),
+    explicit Spec(const char* name)
+        : name(name),
           should_monitor_quiescence(false),
           time_domain(nullptr),
           should_notify_observers(true),
@@ -127,7 +108,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
-    QueueType type;
+    const char* name;
     bool should_monitor_quiescence;
     TimeDomain* time_domain;
     bool should_notify_observers;
@@ -156,59 +137,53 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // TaskQueue is enabled. The TaskQueue will be enabled if there are no voters
   // or if all agree it should be enabled.
   // NOTE this must be called on the thread this TaskQueue was created by.
-  virtual std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() = 0;
+  std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter();
 
   // NOTE this must be called on the thread this TaskQueue was created by.
-  virtual bool IsQueueEnabled() const = 0;
+  bool IsQueueEnabled() const;
 
   // Returns true if the queue is completely empty.
-  virtual bool IsEmpty() const = 0;
+  bool IsEmpty() const;
 
   // Returns the number of pending tasks in the queue.
-  virtual size_t GetNumberOfPendingTasks() const = 0;
+  size_t GetNumberOfPendingTasks() const;
 
   // Returns true if the queue has work that's ready to execute now.
   // NOTE: this must be called on the thread this TaskQueue was created by.
-  virtual bool HasTaskToRunImmediately() const = 0;
+  bool HasTaskToRunImmediately() const;
 
   // Returns requested run time of next scheduled wake-up for a delayed task
   // which is not ready to run. If there are no such tasks or the queue is
   // disabled (by a QueueEnabledVoter) it returns base::nullopt.
   // NOTE: this must be called on the thread this TaskQueue was created by.
-  virtual base::Optional<base::TimeTicks> GetNextScheduledWakeUp() = 0;
+  base::Optional<base::TimeTicks> GetNextScheduledWakeUp();
 
   // Can be called on any thread.
-  virtual QueueType GetQueueType() const = 0;
-
-  // Can be called on any thread.
-  virtual const char* GetName() const = 0;
+  virtual const char* GetName() const;
 
   // Set the priority of the queue to |priority|. NOTE this must be called on
   // the thread this TaskQueue was created by.
-  virtual void SetQueuePriority(QueuePriority priority) = 0;
+  void SetQueuePriority(QueuePriority priority);
 
   // Returns the current queue priority.
-  virtual QueuePriority GetQueuePriority() const = 0;
+  QueuePriority GetQueuePriority() const;
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
-  virtual void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
 
   // Set the blame context which is entered and left while executing tasks from
   // this task queue. |blame_context| must be null or outlive this task queue.
   // Must be called on the thread this TaskQueue was created by.
-  virtual void SetBlameContext(
-      base::trace_event::BlameContext* blame_context) = 0;
+  void SetBlameContext(base::trace_event::BlameContext* blame_context);
 
   // Removes the task queue from the previous TimeDomain and adds it to
   // |domain|.  This is a moderately expensive operation.
-  virtual void SetTimeDomain(TimeDomain* domain) = 0;
+  void SetTimeDomain(TimeDomain* domain);
 
   // Returns the queue's current TimeDomain.  Can be called from any thread.
-  virtual TimeDomain* GetTimeDomain() const = 0;
+  TimeDomain* GetTimeDomain() const;
 
   enum class InsertFencePosition {
     NOW,  // Tasks posted on the queue up till this point further may run.
@@ -221,21 +196,41 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // removed or a subsequent fence has unblocked some tasks within the queue.
   // Note: delayed tasks get their enqueue order set once their delay has
   // expired, and non-delayed tasks get their enqueue order set when posted.
-  virtual void InsertFence(InsertFencePosition position) = 0;
+  void InsertFence(InsertFencePosition position);
 
   // Removes any previously added fence and unblocks execution of any tasks
   // blocked by it.
-  virtual void RemoveFence() = 0;
+  void RemoveFence();
 
-  virtual bool HasFence() const = 0;
+  bool HasFence() const;
 
   // Returns true if the queue has a fence which is blocking execution of tasks.
-  virtual bool BlockedByFence() const = 0;
+  bool BlockedByFence() const;
 
-  virtual void SetObserver(Observer* observer) = 0;
+  void SetObserver(Observer* observer);
+
+  // base::SingleThreadTaskRunner implementation
+  bool RunsTasksInCurrentSequence() const override;
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override;
 
  protected:
-  ~TaskQueue() override {}
+  explicit TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl);
+  ~TaskQueue() override;
+
+  internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
+
+ private:
+  friend class internal::TaskQueueImpl;
+  friend class TaskQueueManager;
+
+  friend class TaskQueueThrottlerTest;
+
+  const std::unique_ptr<internal::TaskQueueImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };

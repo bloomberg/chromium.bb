@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/renderer/main_thread_task_queue.h"
 
 namespace base {
 class HistogramBase;
@@ -27,7 +27,7 @@ class PLATFORM_EXPORT TaskDurationMetricReporter {
   explicit TaskDurationMetricReporter(const char* metric_name);
   ~TaskDurationMetricReporter();
 
-  void RecordTask(TaskQueue::QueueType queue_type,
+  void RecordTask(MainThreadTaskQueue::QueueType queue_type,
                   base::TimeDelta time_duration);
 
  private:
@@ -35,7 +35,8 @@ class PLATFORM_EXPORT TaskDurationMetricReporter {
 
   TaskDurationMetricReporter(base::HistogramBase* histogram);
 
-  std::array<base::TimeDelta, static_cast<size_t>(TaskQueue::QueueType::COUNT)>
+  std::array<base::TimeDelta,
+             static_cast<size_t>(MainThreadTaskQueue::QueueType::COUNT)>
       unreported_task_duration_;
   base::HistogramBase* task_duration_per_queue_type_histogram_;
 

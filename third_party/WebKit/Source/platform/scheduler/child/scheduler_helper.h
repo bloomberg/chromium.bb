@@ -23,9 +23,6 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
  public:
   explicit SchedulerHelper(
       scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate);
-  explicit SchedulerHelper(
-      scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
-      TaskQueue::Spec default_task_queue_spec);
   ~SchedulerHelper() override;
 
   // There is a small overhead to recording task delay histograms, we may not
@@ -33,17 +30,15 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SetRecordTaskDelayHistograms(bool record_task_delay_histograms);
 
   // TaskQueueManager::Observer implementation:
-  void OnUnregisterTaskQueue(const scoped_refptr<TaskQueue>& queue) override;
-  void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
-                                   const base::PendingTask& task) override;
+  void OnTriedToExecuteBlockedTask() override;
 
   // Returns the default task queue.
-  scoped_refptr<TaskQueue> DefaultTaskQueue();
+  virtual scoped_refptr<TaskQueue> DefaultTaskQueue() = 0;
 
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
-  scoped_refptr<TaskQueue> ControlTaskQueue();
+  virtual scoped_refptr<TaskQueue> ControlTaskQueue() = 0;
 
   // Adds or removes a task observer from the scheduler. The observer will be
   // notified before and after every executed task. These functions can only be
@@ -66,21 +61,13 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
-  // Creates a new TaskQueue with the given |spec|.
-  scoped_refptr<TaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);
-
   class PLATFORM_EXPORT Observer {
    public:
     virtual ~Observer() {}
 
-    // Called when |queue| is unregistered.
-    virtual void OnUnregisterTaskQueue(
-        const scoped_refptr<TaskQueue>& queue) = 0;
-
     // Called when the scheduler tried to execute a task from a disabled
     // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked.
-    virtual void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
-                                             const base::PendingTask& task) = 0;
+    virtual void OnTriedToExecuteBlockedTask() = 0;
   };
 
   // Called once to set the Observer. This function is called on the main
@@ -97,7 +84,6 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void UnregisterTimeDomain(TimeDomain* time_domain);
   const scoped_refptr<SchedulerTqmDelegate>& scheduler_tqm_delegate() const;
   bool GetAndClearSystemIsQuiescentBit();
-  TaskQueue* CurrentlyExecutingTaskQueue() const;
 
   size_t GetNumberOfPendingTasks() const;
 
@@ -105,14 +91,16 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   TaskQueueManager* GetTaskQueueManagerForTesting();
 
- private:
-  friend class SchedulerHelperTest;
+ protected:
+  void InitDefaultQueues(scoped_refptr<TaskQueue> default_task_queue,
+                         scoped_refptr<TaskQueue> control_task_queue);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate_;
   std::unique_ptr<TaskQueueManager> task_queue_manager_;
-  scoped_refptr<TaskQueue> control_task_queue_;
-  scoped_refptr<TaskQueue> default_task_queue_;
+
+ private:
+  friend class SchedulerHelperTest;
 
   Observer* observer_;  // NOT OWNED
 

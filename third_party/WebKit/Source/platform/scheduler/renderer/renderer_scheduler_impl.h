@@ -20,9 +20,10 @@
 #include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
-#include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/renderer/deadline_task_runner.h"
 #include "platform/scheduler/renderer/idle_time_estimator.h"
+#include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
+#include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
 #include "platform/scheduler/renderer/task_duration_metric_reporter.h"
@@ -46,7 +47,7 @@ class TaskQueueThrottler;
 class PLATFORM_EXPORT RendererSchedulerImpl
     : public RendererScheduler,
       public IdleHelper::Delegate,
-      public SchedulerHelper::Observer,
+      public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
       public TaskTimeObserver,
       public QueueingTimeEstimator::Client,
@@ -134,15 +135,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       bool has_visible_render_widget_with_touch_handler) override;
 
   // SchedulerHelper::Observer implementation:
-  void OnUnregisterTaskQueue(const scoped_refptr<TaskQueue>& queue) override;
-  void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
-                                   const base::PendingTask& task) override;
+  void OnTriedToExecuteBlockedTask() override;
 
   // TaskTimeObserver implementation:
-  void WillProcessTask(TaskQueue* task_queue, double start_time) override;
-  void DidProcessTask(TaskQueue* task_queue,
-                      double start_time,
-                      double end_time) override;
+  void WillProcessTask(double start_time) override;
+  void DidProcessTask(double start_time, double end_time) override;
   void OnBeginNestedRunLoop() override;
 
   // QueueingTimeEstimator::Client implementation:
@@ -150,28 +147,30 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       base::TimeDelta queueing_time,
       base::TimeTicks window_start_time) override;
 
-  scoped_refptr<TaskQueue> DefaultTaskQueue();
-  scoped_refptr<TaskQueue> CompositorTaskQueue();
-  scoped_refptr<TaskQueue> LoadingTaskQueue();
-  scoped_refptr<TaskQueue> TimerTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> TimerTaskQueue();
 
   // Returns a new loading task queue. This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
-  scoped_refptr<TaskQueue> NewLoadingTaskQueue(TaskQueue::QueueType queue_type);
+  scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue(
+      MainThreadTaskQueue::QueueType queue_type);
 
   // Returns a new timer task queue. This queue is intended for DOM Timers.
-  scoped_refptr<TaskQueue> NewTimerTaskQueue(TaskQueue::QueueType queue_type);
+  scoped_refptr<MainThreadTaskQueue> NewTimerTaskQueue(
+      MainThreadTaskQueue::QueueType queue_type);
 
   // Returns a task queue for tasks which should never get throttled.
-  scoped_refptr<TaskQueue> NewUnthrottledTaskQueue(
-      TaskQueue::QueueType queue_type);
+  scoped_refptr<MainThreadTaskQueue> NewUnthrottledTaskQueue(
+      MainThreadTaskQueue::QueueType queue_type);
 
   // Returns a task queue where tasks run at the highest possible priority.
-  scoped_refptr<TaskQueue> ControlTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
 
   // A control task queue which also respects virtual time. Only available if
   // virtual time has been enabled.
-  scoped_refptr<TaskQueue> VirtualTimeControlTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
 
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
@@ -207,7 +206,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
                                 bool is_main_frame);
 
   // Test helpers.
-  SchedulerHelper* GetSchedulerHelperForTesting();
+  MainThreadSchedulerHelper* GetSchedulerHelperForTesting();
   TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
   TaskCostEstimator* GetTimerTaskCostEstimatorForTesting();
   IdleTimeEstimator* GetIdleTimeEstimatorForTesting();
@@ -233,6 +232,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   }
 
   void OnFirstMeaningfulPaint();
+
+  void OnUnregisterTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
+
+  void OnTaskCompleted(MainThreadTaskQueue* queue,
+                       base::TimeTicks start,
+                       base::TimeTicks end);
 
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
@@ -416,7 +421,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void BroadcastIntervention(const std::string& message);
 
   void ApplyTaskQueuePolicy(
-      TaskQueue* task_queue,
+      MainThreadTaskQueue* task_queue,
       TaskQueue::QueueEnabledVoter* task_queue_enabled_voter,
       const TaskQueuePolicy& old_task_queue_policy,
       const TaskQueuePolicy& new_task_queue_policy) const;
@@ -426,33 +431,33 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   bool ShouldDisableThrottlingBecauseOfAudio(base::TimeTicks now);
 
-  void AddQueueToWakeUpBudgetPool(TaskQueue* queue);
+  void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* queue);
 
-  void RecordTaskMetrics(TaskQueue::QueueType queue_type,
+  void RecordTaskMetrics(MainThreadTaskQueue::QueueType queue_type,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time);
 
-  SchedulerHelper helper_;
+  MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
-  const scoped_refptr<TaskQueue> control_task_queue_;
-  const scoped_refptr<TaskQueue> compositor_task_queue_;
-  scoped_refptr<TaskQueue> virtual_time_control_task_queue_;
+  const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
+  const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> virtual_time_control_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
       compositor_task_queue_enabled_voter_;
 
   using TaskQueueVoterMap =
-      std::map<scoped_refptr<TaskQueue>,
+      std::map<scoped_refptr<MainThreadTaskQueue>,
                std::unique_ptr<TaskQueue::QueueEnabledVoter>>;
 
   TaskQueueVoterMap loading_task_runners_;
   TaskQueueVoterMap timer_task_runners_;
-  std::set<scoped_refptr<TaskQueue>> unthrottled_task_runners_;
-  scoped_refptr<TaskQueue> default_loading_task_queue_;
-  scoped_refptr<TaskQueue> default_timer_task_queue_;
+  std::set<scoped_refptr<MainThreadTaskQueue>> unthrottled_task_runners_;
+  scoped_refptr<MainThreadTaskQueue> default_loading_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> default_timer_task_queue_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
@@ -471,10 +476,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // (the accessors) for the following data members.
 
   struct MainThreadOnly {
-    MainThreadOnly(RendererSchedulerImpl* renderer_scheduler_impl,
-                   const scoped_refptr<TaskQueue>& compositor_task_runner,
-                   base::TickClock* time_source,
-                   base::TimeTicks now);
+    MainThreadOnly(
+        RendererSchedulerImpl* renderer_scheduler_impl,
+        const scoped_refptr<MainThreadTaskQueue>& compositor_task_runner,
+        base::TickClock* time_source,
+        base::TimeTicks now);
     ~MainThreadOnly();
 
     TaskCostEstimator loading_task_cost_estimator;

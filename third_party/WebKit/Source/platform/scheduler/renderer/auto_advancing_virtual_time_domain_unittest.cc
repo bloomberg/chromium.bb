@@ -11,6 +11,7 @@
 #include "platform/scheduler/base/test_task_time_observer.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +36,7 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
     manager_ = base::MakeUnique<TaskQueueManager>(main_task_runner_);
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ =
-        manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+        manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("test"));
     initial_time_ = clock_->NowTicks();
     auto_advancing_time_domain_.reset(
         new AutoAdvancingVirtualTimeDomain(initial_time_));

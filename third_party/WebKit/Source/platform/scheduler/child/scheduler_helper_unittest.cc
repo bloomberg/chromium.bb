@@ -15,6 +15,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,8 +56,8 @@ class SchedulerHelperTest : public ::testing::Test {
         main_task_runner_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new SchedulerHelper(main_task_runner_)),
-        default_task_runner_(scheduler_helper_->DefaultTaskQueue()) {
+        scheduler_helper_(new WorkerSchedulerHelper(main_task_runner_)),
+        default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -86,7 +87,7 @@ class SchedulerHelperTest : public ::testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   scoped_refptr<SchedulerTqmDelegateForTest> main_task_runner_;
-  std::unique_ptr<SchedulerHelper> scheduler_helper_;
+  std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelperTest);
@@ -130,18 +131,18 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 
 TEST_F(SchedulerHelperTest, DefaultTaskRunnerRegistration) {
   EXPECT_EQ(main_task_runner_->default_task_runner(),
-            scheduler_helper_->DefaultTaskQueue());
+            scheduler_helper_->DefaultWorkerTaskQueue());
   scheduler_helper_->Shutdown();
   EXPECT_EQ(nullptr, main_task_runner_->default_task_runner());
 }
 
 TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
   std::vector<std::string> run_order;
-  scheduler_helper_->DefaultTaskQueue()->PostTask(
+  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D1"));
-  scheduler_helper_->DefaultTaskQueue()->PostTask(
+  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D2"));
-  scheduler_helper_->ControlTaskQueue()->PostTask(
+  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(
       FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "C1"));
   EXPECT_EQ(3U, scheduler_helper_->GetNumberOfPendingTasks());
   RunUntilIdle();
@@ -162,8 +163,8 @@ TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->DefaultTaskQueue()->PostTask(FROM_HERE,
-                                                  base::Bind(&NopTask));
+  scheduler_helper_->DefaultWorkerTaskQueue()->PostTask(FROM_HERE,
+                                                        base::Bind(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
@@ -174,8 +175,8 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   MockTaskObserver observer;
   scheduler_helper_->AddTaskObserver(&observer);
 
-  scheduler_helper_->ControlTaskQueue()->PostTask(FROM_HERE,
-                                                  base::Bind(&NopTask));
+  scheduler_helper_->ControlWorkerTaskQueue()->PostTask(FROM_HERE,
+                                                        base::Bind(&NopTask));
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
@@ -186,34 +187,17 @@ namespace {
 
 class MockObserver : public SchedulerHelper::Observer {
  public:
-  MOCK_METHOD1(OnUnregisterTaskQueue,
-               void(const scoped_refptr<TaskQueue>& queue));
-  MOCK_METHOD2(OnTriedToExecuteBlockedTask,
-               void(const TaskQueue& queue, const base::PendingTask& task));
+  MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
 };
 
 }  // namespace
-
-TEST_F(SchedulerHelperTest, OnUnregisterTaskQueue) {
-  MockObserver observer;
-  scheduler_helper_->SetObserver(&observer);
-
-  scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
-      TaskQueue::Spec(TaskQueue::QueueType::TEST));
-
-  EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
-  task_queue->UnregisterTaskQueue();
-
-  scheduler_helper_->SetObserver(nullptr);
-}
 
 TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
   MockObserver observer;
   scheduler_helper_->SetObserver(&observer);
 
   scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
-      TaskQueue::Spec(TaskQueue::QueueType::TEST)
-          .SetShouldReportWhenExecutionBlocked(true));
+      TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       task_queue->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
@@ -224,7 +208,7 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
   voter->SetQueueEnabled(true);
   voter->SetQueueEnabled(false);
 
-  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
+  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask()).Times(1);
   RunUntilIdle();
 
   scheduler_helper_->SetObserver(nullptr);

@@ -226,8 +226,7 @@ void PerformanceMonitor::DocumentWriteFetchScript(Document* document) {
   InnerReportGenericViolation(document, kBlockedParser, text, 0, nullptr);
 }
 
-void PerformanceMonitor::WillProcessTask(scheduler::TaskQueue*,
-                                         double start_time) {
+void PerformanceMonitor::WillProcessTask(double start_time) {
   // Reset m_taskExecutionContext. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   task_execution_context_ = nullptr;
@@ -243,9 +242,7 @@ void PerformanceMonitor::WillProcessTask(scheduler::TaskQueue*,
   user_callback_ = nullptr;
 }
 
-void PerformanceMonitor::DidProcessTask(scheduler::TaskQueue*,
-                                        double start_time,
-                                        double end_time) {
+void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
   if (!enabled_)
     return;
   double layout_threshold = thresholds_[kLongLayout];

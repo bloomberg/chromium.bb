@@ -11,9 +11,7 @@ namespace scheduler {
 
 WorkerGlobalScopeScheduler::WorkerGlobalScopeScheduler(
     WorkerScheduler* worker_scheduler) {
-  scoped_refptr<TaskQueue> task_queue =
-      worker_scheduler->CreateUnthrottledTaskRunner(
-          TaskQueue::QueueType::UNTHROTTLED);
+  scoped_refptr<TaskQueue> task_queue = worker_scheduler->CreateTaskRunner();
   unthrottled_task_runner_ = WebTaskRunnerImpl::Create(std::move(task_queue));
 }
 
