@@ -1,31 +1,32 @@
 <div id="storageManagerPage" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="storageManagerPage"></h1>
+  <h1>$i18n{storageManagerPage}</h1>
 
   <div id="storage-manager-message-low-space"
        class="storage-manager-message-area">
     <div class="storage-manager-message-title">
       <img src="space_low.svg"></img>
-      <span i18n-content="storageLowMessageTitle"></span>
+      <span>$i18n{storageLowMessageTitle}</span>
     </div>
-    <p i18n-content="storageLowMessageLine1"></p>
-    <p i18n-content="storageLowMessageLine2"></p>
+    <p>$i18n{storageLowMessageLine1}</p>
+    <p>$i18n{storageLowMessageLine2}</p>
   </div>
   <div id="storage-manager-message-critically-low-space"
        class="storage-manager-message-area">
     <div class="storage-manager-message-title">
       <img src="space_critically_low.svg"></img>
-      <span i18n-content="storageCriticallyLowMessageTitle"></span>
+      <span>$i18n{storageCriticallyLowMessageTitle}</span>
     </div>
-    <p i18n-content="storageCriticallyLowMessageLine1"></p>
-    <p i18n-content="storageCriticallyLowMessageLine2"></p>
+    <p>$i18n{storageCriticallyLowMessageLine1}</p>
+    <p>$i18n{storageCriticallyLowMessageLine2}</p>
   </div>
 
   <div class="content-area">
     <div id="storage-manager-section-capacity" class="storage-manager-section">
       <div class="storage-manager-item">
-        <span i18n-content="storageItemLabelCapacity"
-              class="storage-manager-item-label"></span>
+        <span class="storage-manager-item-label">
+          $i18n{storageItemLabelCapacity}
+        </span>
         <span id="storage-manager-size-capacity"
               class="storage-manager-item-size"></span>
       </div>
@@ -33,58 +34,64 @@
     </div>
     <div id="storage-manager-section-in-use" class="storage-manager-section">
       <div class="storage-manager-item">
-        <span i18n-content="storageItemLabelInUse"
-              class="storage-manager-item-label"></span>
+        <span class="storage-manager-item-label">
+          $i18n{storageItemLabelInUse}
+        </span>
         <span id="storage-manager-size-in-use"
               class="storage-manager-item-size"></span>
       </div>
       <div class="storage-manager-subitem">
-        <a is="action-link"
-           id="storage-manager-label-downloads"
-           i18n-content="storageSubitemLabelDownloads"></a>
+        <a is="action-link" id="storage-manager-label-downloads">
+          $i18n{storageSubitemLabelDownloads}
+        </a>
         <span id="storage-manager-size-downloads"
-              class="storage-manager-item-size"
-              i18n-content="storageSizeCalculating"></span>
+            class="storage-manager-item-size">
+          $i18n{storageSizeCalculating}
+        </span>
       </div>
       <div id="storage-manager-item-drive-cache"
            class="storage-manager-subitem" hidden>
-        <a is="action-link"
-           id="storage-manager-label-drive-cache"
-           i18n-content="storageSubitemLabelDriveCache"></a>
+        <a is="action-link" id="storage-manager-label-drive-cache">
+          $i18n{storageSubitemLabelDriveCache}
+        </a>
         <span id="storage-manager-size-drive-cache"
-              class="storage-manager-item-size"
-              i18n-content="storageSizeCalculating"></span>
+            class="storage-manager-item-size">
+          $i18n{storageSizeCalculating}
+        </span>
       </div>
       <div class="storage-manager-subitem">
-        <a is="action-link"
-           id="storage-manager-label-browsing-data"
-           i18n-content="storageSubitemLabelBrowsingData"></a>
+        <a is="action-link" id="storage-manager-label-browsing-data">
+          $i18n{storageSubitemLabelBrowsingData}
+        </a>
         <span id="storage-manager-size-browsing-data"
-              class="storage-manager-item-size"
-              i18n-content="storageSizeCalculating"></span>
+            class="storage-manager-item-size">
+          $i18n{storageSizeCalculating}
+        </span>
       </div>
       <div id="storage-manager-item-arc"
            class="storage-manager-subitem" hidden>
-        <a is="action-link"
-           id="storage-manager-label-arc"
-           i18n-content="storageSubitemLabelArc"></a>
-        <span id="storage-manager-size-arc"
-              class="storage-manager-item-size"
-              i18n-content="storageSizeCalculating"></span>
+        <a is="action-link" id="storage-manager-label-arc">
+          $i18n{storageSubitemLabelArc}
+        </a>
+        <span id="storage-manager-size-arc" class="storage-manager-item-size">
+          $i18n{storageSizeCalculating}
+        </span>
       </div>
       <div class="storage-manager-subitem">
-        <a is="action-link"
-           id="storage-manager-label-other-users"
-           i18n-content="storageSubitemLabelOtherUsers"></a>
+        <a is="action-link" id="storage-manager-label-other-users">
+          $i18n{storageSubitemLabelOtherUsers}
+        </a>
         <span id="storage-manager-size-other-users"
-              class="storage-manager-item-size"
-              i18n-content="storageSizeCalculating"></span>
+            class="storage-manager-item-size">
+          $i18n{storageSizeCalculating}
+        </span>
       </div>
     </div>
     <div id="storage-manager-section-available" class="storage-manager-section">
       <div class="storage-manager-item">
-        <span i18n-content="storageItemLabelAvailable"
-              class="storage-manager-item-label"></span>
+        <span class="storage-manager-item-label">
+          $i18n{storageItemLabelAvailable}
+        </span>
         <span id="storage-manager-size-available"
               class="storage-manager-item-size"></span>
       </div>
@@ -93,9 +100,7 @@
 
   <div class="action-area">
     <div class="button-strip">
-      <button id="storage-confirm" class="default-button"
-          i18n-content="done">
-      </button>
+      <button id="storage-confirm" class="default-button">$i18n{done}</button>
     </div>
   </div>
 </div>
