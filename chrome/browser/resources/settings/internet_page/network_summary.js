@@ -312,7 +312,7 @@ Polymer({
       if (!device)
         continue;  // The technology for this device type is unavailable.
 
-      // If both 'Tether' and 'Cellular' technoligies exist, merge the network
+      // If both 'Tether' and 'Cellular' technologies exist, merge the network
       // lists and do not add an active network for 'Tether' so that there is
       // only one 'Mobile data' section / subpage.
       if (type == CrOnc.Type.TETHER && newDeviceStates[CrOnc.Type.CELLULAR]) {

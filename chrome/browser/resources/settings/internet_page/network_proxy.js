@@ -199,7 +199,7 @@ Polymer({
       proxy.PAC = /** @type {string|undefined} */ (
           CrOnc.getActiveValue(proxySettings.PAC));
     }
-    // Use saved ExcludeDomanains and Manual if not defined.
+    // Use saved ExcludeDomains and Manual if not defined.
     proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_;
     proxy.Manual = proxy.Manual || this.savedManual_;
 

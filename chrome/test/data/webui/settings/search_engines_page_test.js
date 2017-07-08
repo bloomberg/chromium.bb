@@ -104,7 +104,7 @@ cr.define('settings_search_engines_page', function() {
           browserProxy.resetResolver('validateSearchEngineInput');
           inputElement.fire('input');
           return inputElement.value != '' ?
-              // Expeting validation only on non-empty values.
+              // Expecting validation only on non-empty values.
               browserProxy.whenCalled('validateSearchEngineInput') :
               Promise.resolve();
         };

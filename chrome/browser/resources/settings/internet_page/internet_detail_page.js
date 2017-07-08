@@ -143,7 +143,7 @@ Polymer({
    * network properties have been fetched in networkPropertiesChanged_().
    * @private {boolean}
    */
-  shoudlShowConfigureWhenNetworkLoaded_: false,
+  shouldShowConfigureWhenNetworkLoaded_: false,
 
   /**
    * Whether the previous route was also the network detail page.
@@ -182,7 +182,7 @@ Polymer({
     var type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
                    queryParams.get('type')) ||
         CrOnc.Type.WI_FI;
-    this.shoudlShowConfigureWhenNetworkLoaded_ =
+    this.shouldShowConfigureWhenNetworkLoaded_ =
         queryParams.get('showConfigure') == 'true';
     this.wasPreviousRouteNetworkDetailPage_ =
         oldRoute == settings.Route.NETWORK_DETAIL;
@@ -242,7 +242,7 @@ Polymer({
       button.focus();
     }
 
-    if (this.shoudlShowConfigureWhenNetworkLoaded_ &&
+    if (this.shouldShowConfigureWhenNetworkLoaded_ &&
         this.networkProperties.Tether) {
       this.showTetherDialog_();
     }
