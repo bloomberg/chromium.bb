@@ -33,13 +33,13 @@ bool MediaControlFullscreenButtonElement::WillRespondToMouseClickEvents() {
 }
 
 WebLocalizedString::Name
-MediaControlFullscreenButtonElement::GetOverflowStringName() {
+MediaControlFullscreenButtonElement::GetOverflowStringName() const {
   if (MediaElement().IsFullscreen())
     return WebLocalizedString::kOverflowMenuExitFullscreen;
   return WebLocalizedString::kOverflowMenuEnterFullscreen;
 }
 
-bool MediaControlFullscreenButtonElement::HasOverflowButton() {
+bool MediaControlFullscreenButtonElement::HasOverflowButton() const {
   return true;
 }
 

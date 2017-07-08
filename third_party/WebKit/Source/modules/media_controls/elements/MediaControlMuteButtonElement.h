@@ -5,7 +5,7 @@
 #ifndef MediaControlMuteButtonElement_h
 #define MediaControlMuteButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -19,8 +19,8 @@ class MediaControlMuteButtonElement final : public MediaControlInputElement {
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
   void UpdateDisplayType() override;
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
 
  private:
   void DefaultEventHandler(Event*) override;

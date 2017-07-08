@@ -5,7 +5,7 @@
 #ifndef MediaControlToggleClosedCaptionsButtonElement_h
 #define MediaControlToggleClosedCaptionsButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -20,8 +20,8 @@ class MediaControlToggleClosedCaptionsButtonElement final
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
   void UpdateDisplayType() override;
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
 
  private:
   void DefaultEventHandler(Event*) override;

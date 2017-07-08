@@ -18,7 +18,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"

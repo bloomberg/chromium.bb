@@ -77,16 +77,16 @@ bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
 }
 
 WebLocalizedString::Name
-MediaControlDownloadButtonElement::GetOverflowStringName() {
+MediaControlDownloadButtonElement::GetOverflowStringName() const {
   return WebLocalizedString::kOverflowMenuDownload;
 }
 
-bool MediaControlDownloadButtonElement::HasOverflowButton() {
+bool MediaControlDownloadButtonElement::HasOverflowButton() const {
   return true;
 }
 
 void MediaControlDownloadButtonElement::SetIsWanted(bool wanted) {
-  MediaControlElement::SetIsWanted(wanted);
+  MediaControlInputElement::SetIsWanted(wanted);
 
   if (!IsWanted())
     return;

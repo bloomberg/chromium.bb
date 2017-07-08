@@ -5,8 +5,11 @@
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 
 #include "core/events/Event.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/api/LayoutSliderItem.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -45,6 +48,29 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
          type == EventTypeNames::pointerover ||
          type == EventTypeNames::pointerout ||
          type == EventTypeNames::pointermove;
+}
+
+// static
+MediaControlElementType MediaControlElementsHelper::GetMediaControlElementType(
+    const Node* node) {
+  SECURITY_DCHECK(node->IsMediaControlElement());
+  const HTMLElement* element = ToHTMLElement(node);
+  if (isHTMLInputElement(*element))
+    return static_cast<const MediaControlInputElement*>(element)->DisplayType();
+  return static_cast<const MediaControlDivElement*>(element)->DisplayType();
+}
+
+// static
+const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
+    const Node* node) {
+  if (!node)
+    return nullptr;
+  const Node* shadow_host = node->OwnerShadowHost();
+  if (!shadow_host)
+    return nullptr;
+
+  return IsHTMLMediaElement(shadow_host) ? ToHTMLMediaElement(shadow_host)
+                                         : nullptr;
 }
 
 }  // namespace blink

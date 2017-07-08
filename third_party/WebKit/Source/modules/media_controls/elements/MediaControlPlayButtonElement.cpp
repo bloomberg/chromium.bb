@@ -31,14 +31,14 @@ void MediaControlPlayButtonElement::UpdateDisplayType() {
   UpdateOverflowString();
 }
 
-WebLocalizedString::Name
-MediaControlPlayButtonElement::GetOverflowStringName() {
+WebLocalizedString::Name MediaControlPlayButtonElement::GetOverflowStringName()
+    const {
   if (MediaElement().paused())
     return WebLocalizedString::kOverflowMenuPlay;
   return WebLocalizedString::kOverflowMenuPause;
 }
 
-bool MediaControlPlayButtonElement::HasOverflowButton() {
+bool MediaControlPlayButtonElement::HasOverflowButton() const {
   return true;
 }
 

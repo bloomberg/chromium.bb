@@ -562,8 +562,6 @@ blink_core_sources("html") {
     "parser/XSSAuditorDelegate.h",
     "shadow/DetailsMarkerControl.cpp",
     "shadow/DetailsMarkerControl.h",
-    "shadow/MediaControlElementTypes.cpp",
-    "shadow/MediaControlElementTypes.h",
     "shadow/MediaRemotingElements.cpp",
     "shadow/MediaRemotingElements.h",
     "shadow/MediaRemotingInterstitial.cpp",

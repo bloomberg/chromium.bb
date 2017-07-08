@@ -5,7 +5,7 @@
 #ifndef MediaControlOverlayPlayButtonElement_h
 #define MediaControlOverlayPlayButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 

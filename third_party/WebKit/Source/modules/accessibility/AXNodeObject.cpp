@@ -63,11 +63,11 @@
 #include "core/html/TextControlElement.h"
 #include "core/html/forms/RadioInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -1076,7 +1076,8 @@ bool AXNodeObject::IsControllingVideoElement() const {
   if (!node)
     return true;
 
-  return isHTMLVideoElement(ToParentMediaElement(node));
+  return isHTMLVideoElement(
+      MediaControlElementsHelper::ToParentMediaElement(node));
 }
 
 bool AXNodeObject::IsEmbeddedObject() const {

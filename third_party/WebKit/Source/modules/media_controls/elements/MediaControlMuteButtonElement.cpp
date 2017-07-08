@@ -34,14 +34,14 @@ void MediaControlMuteButtonElement::UpdateDisplayType() {
   UpdateOverflowString();
 }
 
-WebLocalizedString::Name
-MediaControlMuteButtonElement::GetOverflowStringName() {
+WebLocalizedString::Name MediaControlMuteButtonElement::GetOverflowStringName()
+    const {
   if (MediaElement().muted())
     return WebLocalizedString::kOverflowMenuUnmute;
   return WebLocalizedString::kOverflowMenuMute;
 }
 
-bool MediaControlMuteButtonElement::HasOverflowButton() {
+bool MediaControlMuteButtonElement::HasOverflowButton() const {
   return true;
 }
 

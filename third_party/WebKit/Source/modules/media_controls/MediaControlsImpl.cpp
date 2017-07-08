@@ -1062,7 +1062,7 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // won't benefit from that anwyay, we just do it here like JS will.
 
   // Controls that we'll hide / show, in order of decreasing priority.
-  MediaControlElement* elements[] = {
+  MediaControlElementBase* elements[] = {
       // Exclude m_overflowMenu; we handle it specially.
       play_button_.Get(),
       fullscreen_button_.Get(),
@@ -1085,7 +1085,7 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
     // This prevents the wrong controls from being shown briefly
     // immediately after the first layout and paint, but before we have
     // a chance to revise them.
-    for (MediaControlElement* element : elements) {
+    for (MediaControlElementBase* element : elements) {
       if (element)
         element->SetDoesFit(false);
     }
@@ -1115,10 +1115,10 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   overflow_menu_->SetIsWanted(true);
   int used_width = minimum_width;
 
-  std::list<MediaControlElement*> overflow_elements;
-  MediaControlElement* first_displaced_element = nullptr;
+  std::list<MediaControlElementBase*> overflow_elements;
+  MediaControlElementBase* first_displaced_element = nullptr;
   // For each control that fits, enable it in order of decreasing priority.
-  for (MediaControlElement* element : elements) {
+  for (MediaControlElementBase* element : elements) {
     if (!element)
       continue;
     int width = minimum_width;
