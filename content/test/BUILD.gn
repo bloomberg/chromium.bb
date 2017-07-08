@@ -1504,6 +1504,7 @@ test("content_unittests") {
     "//cc/surfaces",
     "//components/leveldb/public/cpp",
     "//components/metrics/proto",
+    "//components/offline_pages/features:features",
     "//components/rappor:test_support",
     "//components/ukm:test_support",
     "//components/viz/common",

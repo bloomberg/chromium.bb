@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/trace_event/trace_event.h"
+#include "components/offline_pages/features/features.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -30,6 +31,10 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/page_transition_types.h"
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "components/offline_pages/core/request_header/offline_page_header.h"
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
 namespace content {
 
 namespace {
@@ -49,6 +54,26 @@ bool MaybeForwardToServiceWorker(ServiceWorkerURLJobWrapper* job,
   job->FallbackToNetworkOrRenderer();
   return false;
 }
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+// A web page, regardless of whether the service worker is used or not, could
+// be downloaded with the offline snapshot captured. The user can then open
+// the downloaded page which is identified by the presence of a specific
+// offline header in the network request. In this case, we want to fall back
+// in order for the subsequent offline page interceptor to bring up the
+// offline snapshot of the page.
+bool ShouldFallbackToLoadOfflinePage(
+    const net::HttpRequestHeaders& extra_request_headers) {
+  std::string offline_header_value;
+  if (!extra_request_headers.GetHeader(offline_pages::kOfflinePageHeader,
+                                       &offline_header_value)) {
+    return false;
+  }
+  offline_pages::OfflinePageHeader offline_header(offline_header_value);
+  return offline_header.reason ==
+         offline_pages::OfflinePageHeader::Reason::DOWNLOAD;
+}
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 }  // namespace
 
@@ -124,6 +149,13 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     return NULL;
   }
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  // Fall back for the subsequent offline page interceptor to load the offline
+  // snapshot of the page if required.
+  if (ShouldFallbackToLoadOfflinePage(request->extra_request_headers()))
+    return nullptr;
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
   // It's for original request (A) or redirect case (B-a or B-b).
   std::unique_ptr<ServiceWorkerURLRequestJob> job(
       new ServiceWorkerURLRequestJob(
@@ -175,6 +207,17 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   // In fallback cases we basically 'forward' the request, so we should
   // never see use_network_ gets true.
   DCHECK(!use_network_);
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  // Fall back for the subsequent offline page interceptor to load the offline
+  // snapshot of the page if required.
+  net::HttpRequestHeaders extra_request_headers;
+  extra_request_headers.AddHeadersFromString(resource_request.headers);
+  if (ShouldFallbackToLoadOfflinePage(extra_request_headers)) {
+    std::move(callback).Run(StartLoaderCallback());
+    return;
+  }
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   url_job_ = base::MakeUnique<ServiceWorkerURLJobWrapper>(
       base::MakeUnique<ServiceWorkerURLLoaderJob>(
