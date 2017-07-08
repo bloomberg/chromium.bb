@@ -18,6 +18,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
@@ -183,6 +185,28 @@ TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   EXPECT_TRUE(session_controller->IsScreenLocked());
   UnblockUserSession();
   EXPECT_FALSE(session_controller->IsScreenLocked());
+}
+
+TEST_F(AcceleratorFilterTest, ToggleAppListInterruptedByMouseEvent) {
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
+
+  // The AppList should toggle if no mouse event occurs between key press and
+  // key release.
+  generator.PressKey(ui::VKEY_LWIN, ui::EF_NONE);
+  generator.ReleaseKey(ui::VKEY_LWIN, ui::EF_NONE);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
+
+  // When pressed key is interrupted by mouse, the AppList should not toggle.
+  generator.PressKey(ui::VKEY_LWIN, ui::EF_NONE);
+  generator.ClickLeftButton();
+  generator.ReleaseKey(ui::VKEY_LWIN, ui::EF_NONE);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
 }
 
 }  // namespace test

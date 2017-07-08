@@ -31,4 +31,11 @@ void AcceleratorHistory::StoreCurrentAccelerator(
   }
 }
 
+void AcceleratorHistory::InterruptCurrentAccelerator() {
+  if (current_accelerator_.key_state() == Accelerator::KeyState::PRESSED) {
+    // Only interrupts pressed keys.
+    current_accelerator_.set_interrupted_by_mouse_event(true);
+  }
+}
+
 } // namespace ui

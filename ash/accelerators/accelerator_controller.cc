@@ -378,7 +378,8 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // Search key.
     if (previous_accelerator.key_state() !=
             ui::Accelerator::KeyState::PRESSED ||
-        previous_accelerator.key_code() != ui::VKEY_LWIN) {
+        previous_accelerator.key_code() != ui::VKEY_LWIN ||
+        previous_accelerator.interrupted_by_mouse_event()) {
       return false;
     }
 
