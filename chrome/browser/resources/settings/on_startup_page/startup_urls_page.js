@@ -13,7 +13,10 @@ Polymer({
   behaviors: [CrScrollableBehavior, WebUIListenerBehavior],
 
   properties: {
-    prefs: Object,
+    prefs: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * Pages to load upon browser startup.
@@ -29,6 +32,23 @@ Polymer({
 
     /** @private {Object}*/
     lastFocused_: Object,
+
+    /** @private {?NtpExtension} */
+    ntpExtension_: Object,
+
+    /**
+     * Enum values for the 'session.restore_on_startup' preference.
+     * @private {!Object<string, number>}
+     */
+    prefValues_: {
+      readOnly: true,
+      type: Object,
+      value: {
+        CONTINUE: 1,
+        OPEN_NEW_TAB: 5,
+        OPEN_SPECIFIC: 4,
+      },
+    },
   },
 
   /** @private {?settings.StartupUrlsPageBrowserProxy} */
@@ -42,6 +62,11 @@ Polymer({
 
   /** @override */
   attached: function() {
+    settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
+        function(ntpExtension) {
+          this.ntpExtension_ = ntpExtension;
+        }.bind(this));
+
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
     this.addWebUIListener('update-startup-pages', function(startupPages) {
       // If an "edit" URL dialog was open, close it, because the underlying page
@@ -95,5 +120,25 @@ Polymer({
   shouldAllowUrlsEdit_: function() {
     return this.get('prefs.session.startup_urls.enforcement') !=
         chrome.settingsPrivate.Enforcement.ENFORCED;
+  },
+
+  /**
+   * @param {?NtpExtension} ntpExtension
+   * @param {number} restoreOnStartup Value of prefs.session.restore_on_startup.
+   * @return {boolean}
+   * @private
+   */
+  showIndicator_: function(ntpExtension, restoreOnStartup) {
+    return !!ntpExtension && restoreOnStartup == this.prefValues_.OPEN_NEW_TAB;
+  },
+
+  /**
+   * Determine whether to show the user defined startup pages.
+   * @param {number} restoreOnStartup Enum value from prefValues_.
+   * @return {boolean} Whether the open specific pages is selected.
+   * @private
+   */
+  showStartupUrls_: function(restoreOnStartup) {
+    return restoreOnStartup == this.prefValues_.OPEN_SPECIFIC;
   },
 });

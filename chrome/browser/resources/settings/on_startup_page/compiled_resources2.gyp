@@ -14,7 +14,7 @@
     {
       'target_name': 'on_startup_page',
       'dependencies': [
-        'on_startup_browser_proxy',
+        '../compiled_resources2.gyp:route',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -27,6 +27,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
         '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:cr_scrollable_behavior',
         '<(EXTERNS_GYP):settings_private',
+        'on_startup_browser_proxy',
         'startup_urls_page_browser_proxy',
         'startup_url_entry',
       ],
