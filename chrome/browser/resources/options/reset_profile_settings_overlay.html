@@ -8,17 +8,15 @@
   </div>
   <div class="action-area">
     <div class="hbox stretch">
-      <a target="_blank" i18n-content="learnMore"
-          i18n-values="href:resetProfileSettingsLearnMoreUrl">
-      </a>
+      <a target="_blank"
+          href="$i18nRaw{resetProfileSettingsLearnMoreUrl}">$i18n{learnMore}</a>
     </div>
     <div class="action-area-right">
       <div id="reset-profile-settings-throbber" class="throbber"></div>
       <div class="button-strip">
-        <button id="reset-profile-settings-dismiss" i18n-content="cancel">
-        </button>
-        <button id="reset-profile-settings-commit"
-            i18n-content="resetProfileSettingsCommit">
+        <button id="reset-profile-settings-dismiss">$i18n{cancel}</button>
+        <button id="reset-profile-settings-commit">
+          $i18n{resetProfileSettingsCommit}
         </button>
       </div>
     </div>
@@ -28,7 +26,7 @@
     <label>
       <input id="send-settings" type="checkbox" checked>
       <span>
-        <span i18n-content="resetProfileSettingsFeedback"></span>
+        <span>$i18n{resetProfileSettingsFeedback}</span>
         <span id="expand-feedback"></span>
       </span>
     </label>
