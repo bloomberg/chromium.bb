@@ -5374,12 +5374,12 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_CFL
-static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
-                          const int y_averages_q3[MAX_NUM_TXB],
-                          const uint8_t *src, int src_stride, int width,
-                          int height, TX_SIZE tx_size, int dc_pred,
-                          int alpha_q3, int *dist_neg_out) {
-  int dist = 0;
+static int64_t cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
+                              const int y_averages_q3[MAX_NUM_TXB],
+                              const uint8_t *src, int src_stride, int width,
+                              int height, TX_SIZE tx_size, int dc_pred,
+                              int alpha_q3, int64_t *dist_neg_out) {
+  int64_t dist = 0;
   int diff;
 
   if (alpha_q3 == 0) {
@@ -5396,7 +5396,7 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
     return dist;
   }
 
-  int dist_neg = 0;
+  int64_t dist_neg = 0;
   const int tx_height = tx_size_high[tx_size];
   const int tx_width = tx_size_wide[tx_size];
   const int y_block_row_off = y_stride * tx_height;
@@ -5481,7 +5481,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
 
   cfl_update_costs(cfl, ec_ctx);
 
-  int sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
+  int64_t sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
       cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages_q3, src_u, src_stride_u,
                      width, height, tx_size, dc_pred_u, 0, NULL);
@@ -5499,7 +5499,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
         tx_size, dc_pred_v, cfl_alpha_mags_q3[m], &sse[CFL_PRED_V][m + 1]);
   }
 
-  int dist;
+  int64_t dist;
   int64_t cost;
   int64_t best_cost;
 
