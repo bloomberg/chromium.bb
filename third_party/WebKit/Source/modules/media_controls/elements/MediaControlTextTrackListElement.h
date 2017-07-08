@@ -5,7 +5,7 @@
 #ifndef MediaControlTextTrackListElement_h
 #define MediaControlTextTrackListElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef MediaControlDownloadButtonElement_h
 #define MediaControlDownloadButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -23,8 +23,8 @@ class MediaControlDownloadButtonElement final
 
   // MediaControlInputElement overrides.
   // TODO(mlamouri): add WillRespondToMouseClickEvents
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
   void SetIsWanted(bool) override;
 
   DECLARE_VIRTUAL_TRACE();

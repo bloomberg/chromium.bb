@@ -5,7 +5,7 @@
 #ifndef MediaControlCastButtonElement_h
 #define MediaControlCastButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -26,8 +26,8 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
 
  private:
   // This is used for UMA histogram (Cast.Sender.Overlay). New values should

@@ -34,11 +34,11 @@ void MediaControlToggleClosedCaptionsButtonElement::UpdateDisplayType() {
 }
 
 WebLocalizedString::Name
-MediaControlToggleClosedCaptionsButtonElement::GetOverflowStringName() {
+MediaControlToggleClosedCaptionsButtonElement::GetOverflowStringName() const {
   return WebLocalizedString::kOverflowMenuCaptions;
 }
 
-bool MediaControlToggleClosedCaptionsButtonElement::HasOverflowButton() {
+bool MediaControlToggleClosedCaptionsButtonElement::HasOverflowButton() const {
   return true;
 }
 

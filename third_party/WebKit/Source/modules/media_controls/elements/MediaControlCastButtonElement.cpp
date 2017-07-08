@@ -84,14 +84,14 @@ bool MediaControlCastButtonElement::WillRespondToMouseClickEvents() {
   return true;
 }
 
-WebLocalizedString::Name
-MediaControlCastButtonElement::GetOverflowStringName() {
+WebLocalizedString::Name MediaControlCastButtonElement::GetOverflowStringName()
+    const {
   if (IsPlayingRemotely())
     return WebLocalizedString::kOverflowMenuStopCast;
   return WebLocalizedString::kOverflowMenuCast;
 }
 
-bool MediaControlCastButtonElement::HasOverflowButton() {
+bool MediaControlCastButtonElement::HasOverflowButton() const {
   return true;
 }
 

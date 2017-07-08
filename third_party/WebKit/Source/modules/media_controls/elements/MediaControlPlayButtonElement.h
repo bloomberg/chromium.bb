@@ -5,7 +5,7 @@
 #ifndef MediaControlPlayButtonElement_h
 #define MediaControlPlayButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -19,8 +19,8 @@ class MediaControlPlayButtonElement final : public MediaControlInputElement {
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
   void UpdateDisplayType() override;
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
 
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
 

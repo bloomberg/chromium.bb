@@ -5,7 +5,7 @@
 #ifndef MediaControlPanelEnclosureElement_h
 #define MediaControlPanelEnclosureElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 

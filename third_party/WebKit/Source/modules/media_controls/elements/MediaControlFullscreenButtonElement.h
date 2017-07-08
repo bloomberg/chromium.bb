@@ -5,7 +5,7 @@
 #ifndef MediaControlFullscreenButtonElement_h
 #define MediaControlFullscreenButtonElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 
 namespace blink {
 
@@ -22,8 +22,8 @@ class MediaControlFullscreenButtonElement final
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() override;
-  WebLocalizedString::Name GetOverflowStringName() override;
-  bool HasOverflowButton() override;
+  WebLocalizedString::Name GetOverflowStringName() const override;
+  bool HasOverflowButton() const override;
 
  private:
   void DefaultEventHandler(Event*) override;

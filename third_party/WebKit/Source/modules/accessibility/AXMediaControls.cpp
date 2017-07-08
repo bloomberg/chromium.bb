@@ -28,8 +28,10 @@
 
 #include "modules/accessibility/AXMediaControls.h"
 
+#include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "modules/media_controls/elements/MediaControlTimeDisplayElement.h"
 #include "platform/text/PlatformLocale.h"
 
@@ -52,7 +54,8 @@ AXObject* AccessibilityMediaControl::Create(
     AXObjectCacheImpl& ax_object_cache) {
   DCHECK(layout_object->GetNode());
 
-  switch (GetMediaControlElementType(layout_object->GetNode())) {
+  switch (MediaControlElementsHelper::GetMediaControlElementType(
+      layout_object->GetNode())) {
     case kMediaSlider:
       return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
@@ -98,7 +101,8 @@ MediaControlElementType AccessibilityMediaControl::ControlType() const {
   if (!GetLayoutObject() || !GetLayoutObject()->GetNode())
     return kMediaTimelineContainer;  // Timeline container is not accessible.
 
-  return GetMediaControlElementType(GetLayoutObject()->GetNode());
+  return MediaControlElementsHelper::GetMediaControlElementType(
+      GetLayoutObject()->GetNode());
 }
 
 String AccessibilityMediaControl::TextAlternative(

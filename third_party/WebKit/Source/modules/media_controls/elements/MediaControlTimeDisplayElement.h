@@ -5,8 +5,8 @@
 #ifndef MediaControlTimeDisplayElement_h
 #define MediaControlTimeDisplayElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
 #include "modules/ModulesExport.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 

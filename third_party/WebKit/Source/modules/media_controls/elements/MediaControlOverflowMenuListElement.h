@@ -5,7 +5,7 @@
 #ifndef MediaControlOverflowMenuListElement_h
 #define MediaControlOverflowMenuListElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 

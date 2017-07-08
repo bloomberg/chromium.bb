@@ -5,7 +5,7 @@
 #ifndef MediaControlTimelineElement_h
 #define MediaControlTimelineElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlInputElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineMetrics.h"
 
 namespace blink {

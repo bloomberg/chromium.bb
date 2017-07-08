@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class Document;
 class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
@@ -66,7 +65,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // implementation and could be removed when the full implementation has moved
   // to modules.
   virtual HTMLDivElement* PanelElement() = 0;
-  virtual Document& OwnerDocument() = 0;
   virtual void OnMediaControlsEnabledChange() = 0;
 
   DECLARE_VIRTUAL_TRACE();

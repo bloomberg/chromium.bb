@@ -5,7 +5,7 @@
 #ifndef MediaControlPanelElement_h
 #define MediaControlPanelElement_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
+#include "modules/media_controls/elements/MediaControlDivElement.h"
 #include "platform/Timer.h"
 
 namespace blink {

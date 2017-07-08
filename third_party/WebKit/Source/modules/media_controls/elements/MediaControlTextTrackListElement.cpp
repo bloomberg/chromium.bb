@@ -6,6 +6,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/events/Event.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLSpanElement.h"

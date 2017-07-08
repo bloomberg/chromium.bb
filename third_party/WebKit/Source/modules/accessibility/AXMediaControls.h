@@ -29,8 +29,8 @@
 #ifndef AXMediaControls_h
 #define AXMediaControls_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
 #include "modules/accessibility/AXSlider.h"
+#include "modules/media_controls/elements/MediaControlElementType.h"
 
 namespace blink {
 
