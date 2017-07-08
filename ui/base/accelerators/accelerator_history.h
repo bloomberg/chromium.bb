@@ -35,6 +35,8 @@ class UI_BASE_EXPORT AcceleratorHistory {
   // stored one.
   void StoreCurrentAccelerator(const Accelerator& accelerator);
 
+  void InterruptCurrentAccelerator();
+
  private:
   Accelerator current_accelerator_;
   Accelerator previous_accelerator_;

@@ -46,4 +46,11 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
+void AcceleratorFilter::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    accelerator_history_->InterruptCurrentAccelerator();
+  }
+}
+
 }  // namespace wm

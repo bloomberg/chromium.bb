@@ -89,6 +89,14 @@ class UI_BASE_EXPORT Accelerator {
     return platform_accelerator_.get();
   }
 
+  void set_interrupted_by_mouse_event(bool interrupted_by_mouse_event) {
+    interrupted_by_mouse_event_ = interrupted_by_mouse_event;
+  }
+
+  bool interrupted_by_mouse_event() const {
+    return interrupted_by_mouse_event_;
+  }
+
  private:
   // The keycode (VK_...).
   KeyboardCode key_code_;
@@ -102,6 +110,13 @@ class UI_BASE_EXPORT Accelerator {
   // TODO: this is only used in Mac code and should be removed from here.
   // http://crbug.com/702823.
   std::unique_ptr<PlatformAccelerator> platform_accelerator_;
+
+  // Whether the accelerator is interrupted by a mouse press/release. This is
+  // optionally used by AcceleratorController. Even this is set to true, the
+  // accelerator may still be handled successfully. (Currently only
+  // TOGGLE_APP_LIST is disabled when mouse press/release occurs between
+  // search key down and up. See crbug.com/665897)
+  bool interrupted_by_mouse_event_;
 };
 
 // An interface that classes that want to register for keyboard accelerators

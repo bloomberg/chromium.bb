@@ -862,6 +862,15 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
       CreateReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   RunAllPendingInMessageLoop();
   EXPECT_EQ(3u, test_app_list_presenter.toggle_count());
+
+  // When pressed key is interrupted by mouse, the AppList should not toggle.
+  EXPECT_FALSE(
+      ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
+  GetController()->accelerator_history()->InterruptCurrentAccelerator();
+  EXPECT_FALSE(ProcessInController(
+      CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(3u, test_app_list_presenter.toggle_count());
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
