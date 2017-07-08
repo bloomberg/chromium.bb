@@ -5,13 +5,21 @@
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/gpu_memory_buffer_tracing.h"
 
 namespace viz {
+
+ServerGpuMemoryBufferManager::BufferInfo::BufferInfo() = default;
+ServerGpuMemoryBufferManager::BufferInfo::~BufferInfo() = default;
 
 ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
     ui::mojom::GpuService* gpu_service,
@@ -42,6 +50,7 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
           id, size, format, usage, client_id, surface_handle,
           base::Bind(&ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated,
                      weak_factory_.GetWeakPtr(), client_id,
+                     gfx::BufferSizeForBufferFormat(size, format),
                      base::Passed(std::move(callback))));
       return;
     }
@@ -55,6 +64,14 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
                                                                  format)) {
     buffer_handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
         id, size, format);
+    BufferInfo buffer_info;
+    DCHECK_EQ(gfx::SHARED_MEMORY_BUFFER, buffer_handle.type);
+    buffer_info.type = gfx::SHARED_MEMORY_BUFFER;
+    buffer_info.buffer_size_in_bytes =
+        gfx::BufferSizeForBufferFormat(size, format);
+    buffer_info.shared_memory_guid = buffer_handle.handle.GetGUID();
+    allocated_buffers_[client_id].insert(
+        std::make_pair(buffer_handle.id, buffer_info));
   }
 
   task_runner_->PostTask(FROM_HERE,
@@ -104,26 +121,92 @@ void ServerGpuMemoryBufferManager::SetDestructionSyncToken(
       sync_token);
 }
 
+bool ServerGpuMemoryBufferManager::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  for (const auto& pair : allocated_buffers_) {
+    int client_id = pair.first;
+    for (const auto& buffer_pair : pair.second) {
+      gfx::GpuMemoryBufferId buffer_id = buffer_pair.first;
+      const BufferInfo& buffer_info = buffer_pair.second;
+      base::trace_event::MemoryAllocatorDump* dump =
+          pmd->CreateAllocatorDump(base::StringPrintf(
+              "gpumemorybuffer/client_%d/buffer_%d", client_id, buffer_id.id));
+      if (!dump)
+        return false;
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      buffer_info.buffer_size_in_bytes);
+
+      // Create the cross-process ownership edge. If the client creates a
+      // corresponding dump for the same buffer, this will avoid to
+      // double-count them in tracing. If, instead, no other process will emit a
+      // dump with the same guid, the segment will be accounted to the browser.
+      uint64_t client_tracing_process_id = ClientIdToTracingId(client_id);
+
+      if (buffer_info.type == gfx::SHARED_MEMORY_BUFFER) {
+        auto shared_buffer_guid = gfx::GetSharedMemoryGUIDForTracing(
+            client_tracing_process_id, buffer_id);
+        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_buffer_guid,
+                                             buffer_info.shared_memory_guid,
+                                             0 /* importance */);
+      } else {
+        auto shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
+            client_tracing_process_id, buffer_id);
+        pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+        pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid);
+      }
+    }
+  }
+  return true;
+}
+
 void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id,
     const gpu::SyncToken& sync_token) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (native_buffers_[client_id].erase(id))
+  auto iter = allocated_buffers_[client_id].find(id);
+  if (iter == allocated_buffers_[client_id].end())
+    return;
+  DCHECK_NE(gfx::EMPTY_BUFFER, iter->second.type);
+  allocated_buffers_[client_id].erase(id);
+  if (iter->second.type != gfx::SHARED_MEMORY_BUFFER)
     gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
 void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
     int client_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  for (gfx::GpuMemoryBufferId id : native_buffers_[client_id])
-    gpu_service_->DestroyGpuMemoryBuffer(id, client_id, gpu::SyncToken());
-  native_buffers_.erase(client_id);
+  for (auto pair : allocated_buffers_[client_id]) {
+    DCHECK_NE(gfx::EMPTY_BUFFER, pair.second.type);
+    if (pair.second.type != gfx::SHARED_MEMORY_BUFFER) {
+      gpu_service_->DestroyGpuMemoryBuffer(pair.first, client_id,
+                                           gpu::SyncToken());
+    }
+  }
+  allocated_buffers_.erase(client_id);
   pending_buffers_.erase(client_id);
+}
+
+uint64_t ServerGpuMemoryBufferManager::ClientIdToTracingId(
+    int client_id) const {
+  if (client_id == client_id_) {
+    return base::trace_event::MemoryDumpManager::GetInstance()
+        ->GetTracingProcessId();
+  }
+  // TODO(sad|ssid): Find a better way once crbug.com/661257 is resolved.
+  // The hash value is incremented so that the tracing id is never equal to
+  // MemoryDumpManager::kInvalidTracingProcessId.
+  return static_cast<uint64_t>(base::Hash(
+             reinterpret_cast<const char*>(&client_id), sizeof(client_id))) +
+         1;
 }
 
 void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     int client_id,
+    size_t buffer_size_in_bytes,
     base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback,
     const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -136,8 +219,13 @@ void ServerGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     std::move(callback).Run(gfx::GpuMemoryBufferHandle());
     return;
   }
-  if (!handle.is_null())
-    native_buffers_[client_id].insert(handle.id);
+  if (!handle.is_null()) {
+    BufferInfo buffer_info;
+    buffer_info.type = handle.type;
+    buffer_info.buffer_size_in_bytes = buffer_size_in_bytes;
+    allocated_buffers_[client_id].insert(
+        std::make_pair(handle.id, buffer_info));
+  }
   std::move(callback).Run(handle);
 }
 

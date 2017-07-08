@@ -8,10 +8,5 @@ include_rules = [
   "+gpu/ipc/host",
   "+mojo/public/cpp/bindings",
   "+services/ui/gpu/interfaces",
+  "+ui/gfx",
 ]
-
-specific_include_rules = {
-  "server_gpu_memory_buffer_manager_unittest\.cc": [
-    "+ui/gfx",
-  ]
-}
