@@ -1639,46 +1639,39 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
   const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
-  FilterMasks row_masks_array[MAX_MIB_SIZE];
-  unsigned int mask_4x4_int[MAX_MIB_SIZE] = { 0 };
   uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
+
   int idx_r;
   for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
        idx_r += row_step) {
+    unsigned int mask_4x4_int;
+    FilterMasks row_masks;
     const int r = idx_r >> mi_height_log2_lookup[BLOCK_8X8];
     get_filter_level_and_masks_non420(cm, plane, pl, mib, mi_row, mi_col, idx_r,
-                                      &lfl[r][0], mask_4x4_int + r, NULL,
-                                      row_masks_array + r, NULL);
-  }
-  for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
-       idx_r += row_step) {
-    const int r = idx_r >> mi_width_log2_lookup[BLOCK_8X8];
-    FilterMasks row_masks;
+                                      &lfl[r][0], &mask_4x4_int, NULL,
+                                      &row_masks, NULL);
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
     // Disable filtering on the abovemost row or tile boundary
     const MODE_INFO *mi = cm->mi + (mi_row + idx_r) * cm->mi_stride + mi_col;
     if ((av1_disable_loopfilter_on_tile_boundary(cm) &&
          (mi->mbmi.boundary_info & TILE_ABOVE_BOUNDARY)) ||
-        (mi_row + idx_r == 0)) {
+        (mi_row + idx_r == 0))
       memset(&row_masks, 0, sizeof(row_masks));
 #else
-    if (mi_row + idx_r == 0) {
-      memset(&row_masks, 0, sizeof(row_masks));
+    if (mi_row + idx_r == 0) memset(&row_masks, 0, sizeof(row_masks));
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-    } else {
-      memcpy(&row_masks, row_masks_array + r, sizeof(row_masks));
-    }
+
 #if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, row_masks.m16x16,
-          row_masks.m8x8, row_masks.m4x4, mask_4x4_int[r], &cm->lf_info,
+          row_masks.m8x8, row_masks.m4x4, mask_4x4_int, &cm->lf_info,
           &lfl[r][0], (int)cm->bit_depth);
     else
 #endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, row_masks.m16x16,
-                               row_masks.m8x8, row_masks.m4x4, mask_4x4_int[r],
+                               row_masks.m8x8, row_masks.m4x4, mask_4x4_int,
                                &cm->lf_info, &lfl[r][0]);
     dst->buf += 8 * dst->stride;
   }
