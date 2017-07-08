@@ -56,13 +56,6 @@
 
 namespace blink {
 
-void DOMPatchSupport::PatchDocument(Document& document, const String& markup) {
-  InspectorHistory history;
-  DOMEditor dom_editor(&history);
-  DOMPatchSupport patch_support(&dom_editor, document);
-  patch_support.PatchDocument(markup);
-}
-
 DOMPatchSupport::DOMPatchSupport(DOMEditor* dom_editor, Document& document)
     : dom_editor_(dom_editor), document_(document) {}
 

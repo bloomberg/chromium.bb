@@ -49,8 +49,6 @@ class DOMPatchSupport final {
   WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 
  public:
-  static void PatchDocument(Document&, const String& markup);
-
   DOMPatchSupport(DOMEditor*, Document&);
 
   void PatchDocument(const String& markup);

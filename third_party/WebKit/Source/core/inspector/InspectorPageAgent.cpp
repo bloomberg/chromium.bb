@@ -49,7 +49,6 @@
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
@@ -655,7 +654,7 @@ Response InspectorPageAgent::setDocumentContent(const String& frame_id,
   Document* document = frame->GetDocument();
   if (!document)
     return Response::Error("No Document instance to set HTML for");
-  DOMPatchSupport::PatchDocument(*document, html);
+  document->SetContent(html);
   return Response::OK();
 }
 
