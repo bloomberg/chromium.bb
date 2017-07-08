@@ -19,6 +19,8 @@
 
 ## Owners: paint-dev@chromium.org
 # external/wpt/2dcontext [ Pass ]
+## Owners: garykac@chromium.org
+# external/wpt/clipboard-apis [Pass]
 ## Owners: jsbell@chromium.org
 # external/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org

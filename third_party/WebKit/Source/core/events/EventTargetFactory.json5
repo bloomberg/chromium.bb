@@ -6,6 +6,7 @@
 
   data: [
     "core/animation/AnimationPlayer",
+    "core/clipboard/Clipboard",
     "core/css/FontFaceSet",
     "core/css/MediaQueryList",
     "core/dom/BroadcastChannel",

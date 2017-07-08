@@ -80,6 +80,10 @@
       status: "stable",
     },
     {
+      name: "AsyncClipboard",
+      status: "experimental",
+    },
+    {
       name: "AudioOutputDevices",
       status: "stable",
     },
