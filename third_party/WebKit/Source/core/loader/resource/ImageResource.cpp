@@ -48,11 +48,22 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
 namespace {
+
 // The amount of time to wait before informing the clients that the image has
 // been updated (in seconds). This effectively throttles invalidations that
 // result from new data arriving for this image.
 constexpr double kFlushDelaySeconds = 1.;
+
+bool HasServerLoFiResponseHeaders(const ResourceResponse& response) {
+  return response.HttpHeaderField("chrome-proxy-content-transform")
+             .Contains("empty-image") ||
+         // Check for the legacy Server Lo-Fi response headers, since it's
+         // possible that an old Lo-Fi image could be served from the cache.
+         response.HttpHeaderField("chrome-proxy").Contains("q=low");
+}
+
 }  // namespace
 
 class ImageResource::ImageResourceInfoImpl final
@@ -429,10 +440,17 @@ void ImageResource::ResponseReceived(
     multipart_parser_ = new MultipartImageResourceParser(
         response, response.MultipartBoundary(), this);
   }
+
+  // Notify the base class that a response has been received. Note that after
+  // this call, |GetResponse()| will represent the full effective
+  // ResourceResponse, while |response| might just be a revalidation response
+  // (e.g. a 304) with a partial set of updated headers that were folded into
+  // the cached response.
   Resource::ResponseReceived(response, std::move(handle));
+
   if (RuntimeEnabledFeatures::ClientHintsEnabled()) {
     device_pixel_ratio_header_value_ =
-        this->GetResponse()
+        GetResponse()
             .HttpHeaderField(HTTPNames::Content_DPR)
             .ToFloat(&has_device_pixel_ratio_header_value_);
     if (!has_device_pixel_ratio_header_value_ ||
@@ -444,9 +462,9 @@ void ImageResource::ResponseReceived(
 
   if (placeholder_option_ ==
           PlaceholderOption::kShowAndReloadPlaceholderAlways &&
-      IsEntireResource(this->GetResponse())) {
-    if (this->GetResponse().HttpStatusCode() < 400 ||
-        this->GetResponse().HttpStatusCode() >= 600) {
+      IsEntireResource(GetResponse())) {
+    if (GetResponse().HttpStatusCode() < 400 ||
+        GetResponse().HttpStatusCode() >= 600) {
       // Don't treat a complete and broken image as a placeholder if the
       // response code is something other than a 4xx or 5xx error.
       // This is done to prevent reissuing the request in cases like
@@ -457,9 +475,44 @@ void ImageResource::ResponseReceived(
       placeholder_option_ = PlaceholderOption::kReloadPlaceholderOnDecodeError;
     }
   }
+
+  if (HasServerLoFiResponseHeaders(GetResponse())) {
+    // Ensure that the PreviewsState bit for Server Lo-Fi is set iff Chrome
+    // received the appropriate Server Lo-Fi response headers for this image.
+    //
+    // Normally, the |kServerLoFiOn| bit should already be set if Server Lo-Fi
+    // response headers are coming back, but it's possible for legacy Lo-Fi
+    // images to be served from the cache even if Chrome isn't in Lo-Fi mode.
+    // This also serves as a nice last line of defence to ensure that Server
+    // Lo-Fi images can be reloaded to show the original even if e.g. a server
+    // bug causes Lo-Fi images to be sent when they aren't expected.
+    SetPreviewsState(GetResourceRequest().GetPreviewsState() |
+                     WebURLRequest::kServerLoFiOn);
+  } else if (GetResourceRequest().GetPreviewsState() &
+             WebURLRequest::kServerLoFiOn) {
+    // If Chrome expects a Lo-Fi response, but the server decided to send the
+    // full image, then clear the Server Lo-Fi Previews state bit.
+    WebURLRequest::PreviewsState new_previews_state =
+        GetResourceRequest().GetPreviewsState();
+
+    new_previews_state &= ~WebURLRequest::kServerLoFiOn;
+    if (new_previews_state == WebURLRequest::kPreviewsUnspecified)
+      new_previews_state = WebURLRequest::kPreviewsOff;
+
+    SetPreviewsState(new_previews_state);
+  }
 }
 
 bool ImageResource::ShouldShowPlaceholder() const {
+  if (RuntimeEnabledFeatures::ClientPlaceholdersForServerLoFiEnabled() &&
+      (GetResourceRequest().GetPreviewsState() &
+       WebURLRequest::kServerLoFiOn)) {
+    // If the runtime feature is enabled, show Client Lo-Fi placeholder images
+    // in place of Server Lo-Fi responses. This is done so that all Lo-Fi images
+    // have a consistent appearance.
+    return true;
+  }
+
   switch (placeholder_option_) {
     case PlaceholderOption::kShowAndReloadPlaceholderAlways:
     case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
@@ -486,27 +539,21 @@ bool ImageResource::ShouldReloadBrokenPlaceholder() const {
   return false;
 }
 
-static bool IsLoFiImage(const ImageResource& resource) {
-  if (resource.IsLoaded()) {
-    return resource.GetResponse()
-               .HttpHeaderField("chrome-proxy-content-transform")
-               .Contains("empty-image") ||
-           resource.GetResponse()
-               .HttpHeaderField("chrome-proxy")
-               .Contains("q=low");
-  }
-  return resource.GetResourceRequest().GetPreviewsState() &
-         WebURLRequest::kServerLoFiOn;
-}
-
 void ImageResource::ReloadIfLoFiOrPlaceholderImage(
     ResourceFetcher* fetcher,
     ReloadLoFiOrPlaceholderPolicy policy) {
   if (policy == kReloadIfNeeded && !ShouldReloadBrokenPlaceholder())
     return;
 
+  // If the image is loaded, then the |PreviewsState::kServerLoFiOn| bit should
+  // be set iff the image has Server Lo-Fi response headers.
+  DCHECK(!IsLoaded() ||
+         HasServerLoFiResponseHeaders(GetResponse()) ==
+             static_cast<bool>(GetResourceRequest().GetPreviewsState() &
+                               WebURLRequest::kServerLoFiOn));
+
   if (placeholder_option_ == PlaceholderOption::kDoNotReloadPlaceholder &&
-      !IsLoFiImage(*this))
+      !(GetResourceRequest().GetPreviewsState() & WebURLRequest::kServerLoFiOn))
     return;
 
   // Prevent clients and observers from being notified of completion while the

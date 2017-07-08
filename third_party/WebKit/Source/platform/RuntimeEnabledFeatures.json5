@@ -160,6 +160,9 @@
       status: "stable",
     },
     {
+      name: "ClientPlaceholdersForServerLoFi",
+    },
+    {
       name: "CoalescedEvents",
       status: "stable",
     },

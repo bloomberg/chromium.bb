@@ -184,6 +184,9 @@ extern const char kEnableBrotliDescription[];
 extern const char kEnableClearBrowsingDataCountersName[];
 extern const char kEnableClearBrowsingDataCountersDescription[];
 
+extern const char kEnableClientLoFiName[];
+extern const char kEnableClientLoFiDescription[];
+
 extern const char kEnableDataReductionProxyLitePageName[];
 extern const char kEnableDataReductionProxyLitePageDescription[];
 
@@ -894,9 +897,6 @@ extern const char kEnableAndroidPayIntegrationV2Description[];
 
 extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableAndroidSpellcheckerName[];
-
-extern const char kEnableClientLoFiName[];
-extern const char kEnableClientLoFiDescription[];
 
 extern const char kEnableConsistentOmniboxGeolocationName[];
 extern const char kEnableConsistentOmniboxGeolocationDescription[];

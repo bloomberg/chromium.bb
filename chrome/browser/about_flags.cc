@@ -1081,6 +1081,15 @@ const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
     {"14px vertical margin", kOmniboxUIVerticalMargin14px,
      arraysize(kOmniboxUIVerticalMargin14px), nullptr}};
 
+const FeatureEntry::FeatureParam kClientPlaceholdersForServerLoFiEnabled[] = {
+    {"replace_server_placeholders", "true"}};
+
+const FeatureEntry::FeatureVariation
+    kClientPlaceholdersForServerLoFiFeatureVariations[] = {
+        {"(replace Server Lo-Fi placeholders)",
+         kClientPlaceholdersForServerLoFiEnabled,
+         arraysize(kClientPlaceholdersForServerLoFiEnabled), nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -1994,10 +2003,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
-    {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
-     flag_descriptions::kEnableClientLoFiDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(previews::features::kClientLoFi)},
 #endif  // OS_ANDROID
+    {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
+     flag_descriptions::kEnableClientLoFiDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         previews::features::kClientLoFi,
+         kClientPlaceholdersForServerLoFiFeatureVariations,
+         "PreviewsClientLoFi")},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},

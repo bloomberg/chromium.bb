@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -389,6 +390,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableModuleScripts(
       base::FeatureList::IsEnabled(features::kModuleScripts));
+
+  WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
+      base::GetFieldTrialParamValue("PreviewsClientLoFi",
+                                    "replace_server_placeholders") == "true");
 
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.

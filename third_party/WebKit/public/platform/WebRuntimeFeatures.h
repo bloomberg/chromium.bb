@@ -162,6 +162,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMediaControlsOverlayPlayButton(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackBackend(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaCastOverlayButton(bool);
+  BLINK_PLATFORM_EXPORT static void EnableClientPlaceholdersForServerLoFi(bool);
 
  private:
   WebRuntimeFeatures();
