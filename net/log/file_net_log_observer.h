@@ -42,9 +42,7 @@ class NetLogCaptureMode;
 // large this file can grow; all events added will be written to the file.
 //
 // The consumer must call StartObserving before calling StopObserving, and must
-// call each method exactly once in the lifetime of the observer. StartObserving
-// and StopObserving must be called on the same thread, but there is no
-// restriction on which thread is used.
+// call each method exactly once in the lifetime of the observer.
 class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
   // Creates a FileNetLogObserver in bounded mode.
@@ -90,11 +88,11 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   // |polled_data| is an optional argument used to add additional network stack
   // state to the log.
   //
-  // |callback| will be run on whichever thread StopObserving() was called on
-  // once all file writing is complete and the netlog files can be accessed
-  // safely.
+  // If non-null, |optional_callback| will be run on whichever thread
+  // StopObserving() was called on once all file writing is complete and the
+  // netlog files can be accessed safely.
   void StopObserving(std::unique_ptr<base::Value> polled_data,
-                     const base::Closure& callback);
+                     base::OnceClosure optional_callback);
 
   // NetLog::ThreadSafeObserver
   void OnAddEntry(const NetLogEntry& entry) override;

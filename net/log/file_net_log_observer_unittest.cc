@@ -287,6 +287,24 @@ TEST_P(FileNetLogObserverTest, ObserverDestroyedWithoutStopObserving) {
   ASSERT_FALSE(LogFilesExist());
 }
 
+// Tests calling StopObserving() with a null closure.
+TEST_P(FileNetLogObserverTest, StopObservingNullClosure) {
+  CreateAndStartObserving(nullptr);
+
+  // Send dummy event
+  AddEntries(logger_.get(), 1, kDummyEventSize);
+
+  // The log files should have been started.
+  ASSERT_TRUE(LogFilesExist());
+
+  logger_->StopObserving(nullptr, base::OnceClosure());
+
+  logger_.reset();
+
+  // Since the logger was explicitly stopped, its files should still exist.
+  ASSERT_TRUE(LogFilesExist());
+}
+
 TEST_P(FileNetLogObserverTest, GeneratesValidJSONWithNoEvents) {
   TestClosure closure;
 
