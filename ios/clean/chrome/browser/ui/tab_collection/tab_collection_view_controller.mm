@@ -28,6 +28,7 @@
 @synthesize tabs = _tabs;
 @synthesize items = _items;
 @synthesize selectedIndex = _selectedIndex;
+@synthesize snapshotCache = _snapshotCache;
 
 #pragma mark - UIViewController
 
@@ -118,8 +119,7 @@
   [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
   DCHECK_LE(indexPath.item, INT_MAX);
   int index = static_cast<int>(indexPath.item);
-  // PLACEHOLDER: SnapshotCache will be passed into the cell.
-  [cell configureCell:self.items[index] snapshotCache:nil];
+  [cell configureCell:self.items[index] snapshotCache:self.snapshotCache];
   return cell;
 }
 
@@ -194,8 +194,7 @@
   TabCollectionTabCell* cell = base::mac::ObjCCastStrict<TabCollectionTabCell>(
       [self.tabs cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index
                                                             inSection:0]]);
-  // PLACEHOLDER: SnapshotCache will be passed into the cell.
-  [cell configureCell:self.items[index] snapshotCache:nil];
+  [cell configureCell:self.items[index] snapshotCache:self.snapshotCache];
 }
 
 - (void)populateItems:(NSArray<TabCollectionItem*>*)items

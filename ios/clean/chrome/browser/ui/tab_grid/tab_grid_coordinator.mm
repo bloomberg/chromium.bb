@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
@@ -43,6 +44,7 @@
 @property(nonatomic, weak) TabCoordinator* activeTabCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
+@property(nonatomic, readonly) SnapshotCache* snapshotCache;
 @end
 
 @implementation TabGridCoordinator
@@ -58,6 +60,11 @@
   return self.browser->web_state_list();
 }
 
+- (SnapshotCache*)snapshotCache {
+  return SnapshotCacheFactory::GetForBrowserState(
+      self.browser->browser_state());
+}
+
 #pragma mark - BrowserCoordinator
 
 - (void)start {
@@ -71,6 +78,7 @@
 
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  self.viewController.snapshotCache = self.snapshotCache;
 
   self.mediator.consumer = self.viewController;
 

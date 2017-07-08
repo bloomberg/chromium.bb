@@ -16,6 +16,7 @@ source_set("tab_grid") {
     ":tab_grid_ui",
     "//base",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/commands",
