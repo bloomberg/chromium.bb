@@ -228,9 +228,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.device_static_dir = os.path.join(self.device.work_dir, 'static')
     self.device_restore_dir = os.path.join(self.device.work_dir, 'old')
     self.stateful_update_bin = None
-    # Auto-update by specifying exact payload filename you staged
+    # autoupdate_EndToEndTest uses exact payload filename for update
     self.payload_filename = payload_filename
-
+    self.is_au_endtoendtest = self.payload_filename is not None
 
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
@@ -531,9 +531,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.device.CopyToDevice(payload, device_payload_dir, mode='scp',
                              log_output=True, **self._cmd_kwargs)
 
-    # If Rootfs was staged by Google Storage URI rather than build_name we
-    # need to strip partial paths and rename it.
-    if self.payload_filename:
+    if self.is_au_endtoendtest:
+      # If rootfs was staged by Google Storage URI rather than build_name we
+      # need to strip partial paths and rename it.
       expected_path = os.path.join(device_payload_dir,
                                    ds_wrapper.ROOTFS_FILENAME)
 
@@ -554,6 +554,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
                   'transferred to device...')
     need_transfer, stateful_update_bin = self._GetStatefulUpdateScript()
     if need_transfer:
+      logging.info('Copying stateful_update_bin to device...')
       # stateful_update is a tiny uncompressed text file, so use rsync.
       self.device.CopyToWorkDir(stateful_update_bin, mode='rsync',
                                 log_output=True, **self._cmd_kwargs)
@@ -596,9 +597,27 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   def ResetStatefulPartition(self):
     """Clear any pending stateful update request."""
     logging.debug('Resetting stateful partition...')
-    self.device.RunCommand(['sh', self.stateful_update_bin,
-                            '--stateful_change=reset'],
-                           **self._cmd_kwargs)
+    try:
+      self.device.RunCommand(['sh', self.stateful_update_bin,
+                              '--stateful_change=reset'],
+                             **self._cmd_kwargs)
+    except cros_build_lib.RunCommandError as e:
+      if self.is_au_endtoendtest and not self.device.HasRsync():
+        # If we have updated backwards from a build with ext4 crytpo to a
+        # build without ext4 crypto the DUT gets powerwashed. So the stateful
+        # bin, payloads, and devserver files are no longer accessible.
+        # See crbug.com/689105. Rsync will no longer be available either so we
+        # will need to use scp for the rest of the update.
+        logging.warning('Exception while resetting stateful: %s', e)
+        if self.CheckRestoreStateful():
+          logging.info('Stateful files and devserver code now back on '
+                       'the device. Trying to reset stateful again.')
+          self.device.RunCommand(['sh', self.stateful_update_bin,
+                                  '--stateful_change=reset'],
+                                 **self._cmd_kwargs)
+
+      else:
+        raise
 
   def RevertBootPartition(self):
     """Revert the boot partition."""
@@ -1177,6 +1196,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                                    self.REMOTE_DEVSERVER_FILENAME)
       if not self.device.IfFileExists(
           devserver_bin, **self._cmd_kwargs_omit_error):
+        logging.info('Devserver files not found on device. Resending them...')
         self.TransferDevServerPackage()
         self.TransferStatefulUpdate()
 
@@ -1249,7 +1269,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                           self.update_version,
                           self._GetReleaseVersion()))
 
-    if self.payload_filename and not self._clobber_stateful:
+    if self.is_au_endtoendtest and not self._clobber_stateful:
       logging.debug('Doing one final update check to get post update hostlog.')
       self.PostRebootUpdateCheck()
 

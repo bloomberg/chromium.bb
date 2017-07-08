@@ -661,10 +661,6 @@ class RemoteDevice(object):
 
     return self._work_dir
 
-  # Since this object is instantiated once per device, we can safely cache the
-  # result of the rsync test.  We assume the remote side doesn't go and delete
-  # or break rsync on us, but that's fine.
-  @cros_build_lib.MemoizedSingleCall
   def HasRsync(self):
     """Checks if rsync exists on the device."""
     result = self.GetAgent().RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
