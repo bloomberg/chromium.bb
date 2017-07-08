@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "gpu/ipc/common/sync_token.mojom";
+import "media/mojo/interfaces/media_log.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/unguessable_token.mojom";
 
@@ -28,6 +29,7 @@ interface VideoDecoder {
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
   Construct(associated VideoDecoderClient client,
+            associated MediaLog media_log,
             handle<data_pipe_consumer> decoder_buffer_pipe,
             CommandBufferId? command_buffer_id);
 

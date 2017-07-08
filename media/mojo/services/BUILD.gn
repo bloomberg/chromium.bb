@@ -55,6 +55,8 @@ source_set("lib") {
     "mojo_demuxer_stream_adapter.h",
     "mojo_media_client.cc",
     "mojo_media_client.h",
+    "mojo_media_log.cc",
+    "mojo_media_log.h",
     "mojo_provision_fetcher.cc",
     "mojo_provision_fetcher.h",
     "mojo_renderer_service.cc",

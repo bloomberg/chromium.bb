@@ -24,6 +24,7 @@ namespace media {
 class DecoderBuffer;
 class MojoDecoderBufferReader;
 class MojoMediaClient;
+class MojoMediaLog;
 class VideoDecoder;
 class VideoFrame;
 
@@ -36,6 +37,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
 
   // mojom::VideoDecoder implementation
   void Construct(mojom::VideoDecoderClientAssociatedPtrInfo client,
+                 mojom::MediaLogAssociatedPtrInfo media_log,
                  mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
                  mojom::CommandBufferIdPtr command_buffer_id) final;
   void Initialize(mojom::VideoDecoderConfigPtr config,
@@ -62,6 +64,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
                        const scoped_refptr<VideoFrame>& frame);
 
   mojom::VideoDecoderClientAssociatedPtr client_;
+  std::unique_ptr<MojoMediaLog> media_log_;
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   MojoMediaClient* mojo_media_client_;

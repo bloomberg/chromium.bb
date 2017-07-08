@@ -79,7 +79,7 @@ DefaultRendererFactory::CreateVideoDecoders(
 
     if (decoder_factory_) {
       decoder_factory_->CreateVideoDecoders(media_task_runner, gpu_factories,
-                                            &video_decoders);
+                                            media_log_, &video_decoders);
     }
     video_decoders.push_back(base::MakeUnique<GpuVideoDecoder>(
         gpu_factories, request_overlay_info_cb, media_log_));

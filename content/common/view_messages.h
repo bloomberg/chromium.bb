@@ -38,7 +38,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/ipc/media_param_traits.h"
-#include "media/base/media_log_event.h"
 #include "media/capture/ipc/capture_param_traits.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/features/features.h"
@@ -109,8 +108,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
                           content::TAP_MULTIPLE_TARGETS_STRATEGY_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
                           content::THREE_D_API_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
-                          media::MediaLogEvent::TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
@@ -256,13 +253,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_width_horizontal_scroll_bar_in_dips)
 #endif
   IPC_STRUCT_TRAITS_MEMBER(default_font_size)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(params)
-  IPC_STRUCT_TRAITS_MEMBER(time)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
