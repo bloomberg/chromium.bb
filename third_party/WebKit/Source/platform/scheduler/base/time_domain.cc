@@ -113,7 +113,8 @@ bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   return true;
 }
 
-bool TimeDomain::NextScheduledTaskQueue(TaskQueue** out_task_queue) const {
+bool TimeDomain::NextScheduledTaskQueue(
+    internal::TaskQueueImpl** out_task_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (delayed_wake_up_queue_.empty())
     return false;

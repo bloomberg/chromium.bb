@@ -21,6 +21,7 @@
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
+#include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -158,11 +159,13 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
  public:
   explicit IdleHelperForTest(
       SchedulerHelper* scheduler_helper,
-      base::TimeDelta required_quiescence_duration_before_long_idle_period)
+      base::TimeDelta required_quiescence_duration_before_long_idle_period,
+      scoped_refptr<TaskQueue> idle_task_runner)
       : IdleHelper(scheduler_helper,
                    this,
                    "TestSchedulerIdlePeriod",
-                   required_quiescence_duration_before_long_idle_period) {}
+                   required_quiescence_duration_before_long_idle_period,
+                   idle_task_runner) {}
 
   ~IdleHelperForTest() override {}
 
@@ -192,11 +195,12 @@ class BaseIdleHelperTest : public ::testing::Test {
             message_loop,
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new SchedulerHelper(main_task_runner_)),
+        scheduler_helper_(new WorkerSchedulerHelper(main_task_runner_)),
         idle_helper_(new IdleHelperForTest(
             scheduler_helper_.get(),
-            required_quiescence_duration_before_long_idle_period)),
-        default_task_runner_(scheduler_helper_->DefaultTaskQueue()),
+            required_quiescence_duration_before_long_idle_period,
+            scheduler_helper_->NewTaskQueue(TaskQueue::Spec("idle_test")))),
+        default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()),
         idle_task_runner_(idle_helper_->IdleTaskRunner()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
@@ -292,7 +296,7 @@ class BaseIdleHelperTest : public ::testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   scoped_refptr<SchedulerTqmDelegate> main_task_runner_;
-  std::unique_ptr<SchedulerHelper> scheduler_helper_;
+  std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
   std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;

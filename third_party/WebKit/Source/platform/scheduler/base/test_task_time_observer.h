@@ -13,10 +13,8 @@ namespace scheduler {
 
 class TestTaskTimeObserver : public TaskTimeObserver {
  public:
-  void WillProcessTask(TaskQueue* task_queue, double start_time) override {}
-  void DidProcessTask(TaskQueue* task_queue,
-                      double start_time,
-                      double end_time) override {}
+  void WillProcessTask(double start_time) override {}
+  void DidProcessTask(double start_time, double end_time) override {}
   void OnBeginNestedRunLoop() override {}
 };
 

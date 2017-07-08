@@ -13,6 +13,7 @@
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -36,15 +37,18 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
         delegate_(SchedulerTqmDelegateForTest::Create(
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
-        scheduler_helper_(new SchedulerHelper(delegate_)),
+        scheduler_helper_(new MainThreadSchedulerHelper(delegate_, nullptr)),
         idle_helper_(new IdleHelper(scheduler_helper_.get(),
                                     this,
                                     "test",
-                                    base::TimeDelta::FromSeconds(30))),
+                                    base::TimeDelta::FromSeconds(30),
+                                    scheduler_helper_->NewTaskQueue(
+                                        MainThreadTaskQueue::QueueType::TEST,
+                                        TaskQueue::Spec("test_idle_tq")))),
         idle_canceled_delayed_taks_sweeper_(
             new IdleCanceledDelayedTaskSweeper(scheduler_helper_.get(),
                                                idle_helper_->IdleTaskRunner())),
-        default_task_queue_(scheduler_helper_->DefaultTaskQueue()) {
+        default_task_queue_(scheduler_helper_->DefaultMainThreadTaskQueue()) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -73,7 +77,7 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   scoped_refptr<SchedulerTqmDelegateForTest> delegate_;
-  std::unique_ptr<SchedulerHelper> scheduler_helper_;
+  std::unique_ptr<MainThreadSchedulerHelper> scheduler_helper_;
   std::unique_ptr<IdleHelper> idle_helper_;
   std::unique_ptr<IdleCanceledDelayedTaskSweeper>
       idle_canceled_delayed_taks_sweeper_;

@@ -147,7 +147,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_web_task_runner_) {
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
-        TaskQueue::QueueType::FRAME_LOADING);
+        MainThreadTaskQueue::QueueType::FRAME_LOADING);
     loading_task_queue_->SetBlameContext(blame_context_);
     loading_queue_enabled_voter_ =
         loading_task_queue_->CreateQueueEnabledVoter();
@@ -161,7 +161,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::TimerTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!timer_web_task_runner_) {
     timer_task_queue_ = renderer_scheduler_->NewTimerTaskQueue(
-        TaskQueue::QueueType::FRAME_TIMER);
+        MainThreadTaskQueue::QueueType::FRAME_TIMER);
     timer_task_queue_->SetBlameContext(blame_context_);
     timer_queue_enabled_voter_ = timer_task_queue_->CreateQueueEnabledVoter();
     timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
@@ -188,7 +188,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::SuspendableTaskRunner() {
     // TODO(altimin): Split FRAME_UNTHROTTLED into FRAME_UNTHROTTLED and
     // FRAME_UNSUSPENDED.
     suspendable_task_queue_ = renderer_scheduler_->NewTimerTaskQueue(
-        TaskQueue::QueueType::FRAME_UNTHROTTLED);
+        MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
     suspendable_task_queue_->SetBlameContext(blame_context_);
     suspendable_web_task_runner_ =
         WebTaskRunnerImpl::Create(suspendable_task_queue_);
@@ -203,7 +203,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::UnthrottledTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_web_task_runner_) {
     unthrottled_task_queue_ = renderer_scheduler_->NewUnthrottledTaskQueue(
-        TaskQueue::QueueType::FRAME_UNTHROTTLED);
+        MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
     unthrottled_task_queue_->SetBlameContext(blame_context_);
     unthrottled_web_task_runner_ =
         WebTaskRunnerImpl::Create(unthrottled_task_queue_);
@@ -217,7 +217,7 @@ WebFrameSchedulerImpl::UnthrottledButBlockableTaskRunner() {
   if (!unthrottled_but_blockable_web_task_runner_) {
     unthrottled_but_blockable_task_queue_ =
         renderer_scheduler_->NewTimerTaskQueue(
-            TaskQueue::QueueType::FRAME_UNTHROTTLED);
+            MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
     unthrottled_but_blockable_task_queue_->SetBlameContext(blame_context_);
     unthrottled_but_blockable_web_task_runner_ =
         WebTaskRunnerImpl::Create(unthrottled_but_blockable_task_queue_);

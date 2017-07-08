@@ -13,8 +13,8 @@ TaskDurationMetricReporter::TaskDurationMetricReporter(const char* metric_name)
     : TaskDurationMetricReporter(base::Histogram::FactoryGet(
           metric_name,
           1,
-          static_cast<int>(TaskQueue::QueueType::COUNT),
-          static_cast<int>(TaskQueue::QueueType::COUNT) + 1,
+          static_cast<int>(MainThreadTaskQueue::QueueType::COUNT),
+          static_cast<int>(MainThreadTaskQueue::QueueType::COUNT) + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag)) {}
 
 TaskDurationMetricReporter::TaskDurationMetricReporter(
@@ -23,8 +23,9 @@ TaskDurationMetricReporter::TaskDurationMetricReporter(
 
 TaskDurationMetricReporter::~TaskDurationMetricReporter() {}
 
-void TaskDurationMetricReporter::RecordTask(TaskQueue::QueueType queue_type,
-                                            base::TimeDelta duration) {
+void TaskDurationMetricReporter::RecordTask(
+    MainThreadTaskQueue::QueueType queue_type,
+    base::TimeDelta duration) {
   // Report only whole milliseconds to avoid overflow.
   base::TimeDelta& unreported_duration =
       unreported_task_duration_[static_cast<int>(queue_type)];

@@ -32,7 +32,7 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
 
   // WorkerScheduler:
   void Init() override;
-  scoped_refptr<TaskQueue> DefaultTaskQueue() override;
+  scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
 
   // ChildScheduler:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;

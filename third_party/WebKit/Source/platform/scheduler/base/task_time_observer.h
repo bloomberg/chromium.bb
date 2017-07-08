@@ -11,8 +11,6 @@
 namespace blink {
 namespace scheduler {
 
-class TaskQueue;
-
 // TaskTimeObserver provides an API for observing completion of renderer tasks.
 class PLATFORM_EXPORT TaskTimeObserver {
  public:
@@ -20,17 +18,13 @@ class PLATFORM_EXPORT TaskTimeObserver {
   virtual ~TaskTimeObserver() {}
 
   // Callback to be called when task is about to start.
-  // |task_queue| - TaskQueue on which this task will run,
   // |start_time| - time in seconds when task started to run,
-  virtual void WillProcessTask(TaskQueue* task_queue, double start_time) = 0;
+  virtual void WillProcessTask(double start_time) = 0;
 
   // Callback to be called when task is completed.
-  // |task_queue| - TaskQueue on which this task was run,
   // |start_time| - time in seconds when task started to run,
   // |end_time| - time in seconds when task was completed.
-  virtual void DidProcessTask(TaskQueue* task_queue,
-                              double start_time,
-                              double end_time) = 0;
+  virtual void DidProcessTask(double start_time, double end_time) = 0;
 
   // Callback to be called when we enter a nested run loop.
   virtual void OnBeginNestedRunLoop() = 0;

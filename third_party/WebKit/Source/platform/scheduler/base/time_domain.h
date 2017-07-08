@@ -69,7 +69,7 @@ class PLATFORM_EXPORT TimeDomain {
 
   // If there is a scheduled delayed task, |out_task_queue| is set to the queue
   // the next task was posted to and it returns true.  Returns false otherwise.
-  bool NextScheduledTaskQueue(TaskQueue** out_task_queue) const;
+  bool NextScheduledTaskQueue(internal::TaskQueueImpl** out_task_queue) const;
 
   // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
   // TimeDomain reaches |delayed_run_time|.  This supersedes any previously

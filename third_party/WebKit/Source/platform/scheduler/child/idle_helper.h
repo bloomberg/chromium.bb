@@ -91,7 +91,8 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
       SchedulerHelper* helper,
       Delegate* delegate,
       const char* idle_period_tracing_name,
-      base::TimeDelta required_quiescence_duration_before_long_idle_period);
+      base::TimeDelta required_quiescence_duration_before_long_idle_period,
+      scoped_refptr<TaskQueue> idle_queue);
   ~IdleHelper() override;
 
   // Prevents any further idle tasks from running.

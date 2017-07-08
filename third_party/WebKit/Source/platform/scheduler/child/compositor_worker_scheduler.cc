@@ -20,15 +20,15 @@ namespace scheduler {
 CompositorWorkerScheduler::CompositorWorkerScheduler(
     base::Thread* thread,
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<SchedulerHelper>(main_task_runner)),
+    : WorkerScheduler(WTF::MakeUnique<WorkerSchedulerHelper>(main_task_runner)),
       thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
 
 void CompositorWorkerScheduler::Init() {}
 
-scoped_refptr<TaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
-  return helper_->DefaultTaskQueue();
+scoped_refptr<WorkerTaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
+  return helper_->DefaultWorkerTaskQueue();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

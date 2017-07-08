@@ -20,14 +20,12 @@ IdleHelper::IdleHelper(
     SchedulerHelper* helper,
     Delegate* delegate,
     const char* idle_period_tracing_name,
-    base::TimeDelta required_quiescence_duration_before_long_idle_period)
+    base::TimeDelta required_quiescence_duration_before_long_idle_period,
+    scoped_refptr<TaskQueue> idle_queue)
     : helper_(helper),
       delegate_(delegate),
-      idle_queue_(
-          helper_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::IDLE))),
-      state_(helper,
-             delegate,
-             idle_period_tracing_name),
+      idle_queue_(std::move(idle_queue)),
+      state_(helper, delegate, idle_period_tracing_name),
       required_quiescence_duration_before_long_idle_period_(
           required_quiescence_duration_before_long_idle_period),
       is_shutdown_(false),
