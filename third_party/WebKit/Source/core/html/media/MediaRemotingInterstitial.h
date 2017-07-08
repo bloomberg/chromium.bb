@@ -60,6 +60,6 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
   Member<MediaRemotingCastMessageElement> cast_text_message_;
 };
 
-}  // namespace
+}  // namespace blink
 
 #endif  // MediaRemotingInterstitial_h

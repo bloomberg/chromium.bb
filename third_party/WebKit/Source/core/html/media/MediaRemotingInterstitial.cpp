@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/shadow/MediaRemotingInterstitial.h"
+#include "core/html/media/MediaRemotingInterstitial.h"
 
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/html/shadow/MediaRemotingElements.h"
+#include "core/html/media/MediaRemotingElements.h"
 
 namespace {
 
