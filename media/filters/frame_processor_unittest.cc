@@ -20,6 +20,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
@@ -263,7 +264,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   }
 
   base::MessageLoop message_loop_;
-  MediaLog media_log_;
+  StrictMock<MockMediaLog> media_log_;
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
@@ -336,6 +337,7 @@ TEST_F(FrameProcessorTest, WrongTypeInAppendedBuffer) {
   const auto& audio_buffers =
       StringToBufferQueue("0K", audio_id_, DemuxerStream::VIDEO);
   buffer_queue_map.insert(std::make_pair(audio_id_, audio_buffers));
+  EXPECT_MEDIA_LOG(FrameTypeMismatchesTrackType("video", "1"));
   ASSERT_FALSE(
       frame_processor_->ProcessFrames(buffer_queue_map, append_window_start_,
                                       append_window_end_, &timestamp_offset_));
@@ -352,6 +354,7 @@ TEST_F(FrameProcessorTest, NonMonotonicallyIncreasingTimestampInOneCall) {
   const auto& audio_buffers =
       StringToBufferQueue("10K 0K", audio_id_, DemuxerStream::AUDIO);
   buffer_queue_map.insert(std::make_pair(audio_id_, audio_buffers));
+  EXPECT_MEDIA_LOG(ParsedBuffersNotInDTSSequence());
   ASSERT_FALSE(
       frame_processor_->ProcessFrames(buffer_queue_map, append_window_start_,
                                       append_window_end_, &timestamp_offset_));
@@ -536,8 +539,10 @@ TEST_P(FrameProcessorTest, AudioVideo_SequentialProcessFrames) {
   //   (a0,a10,a20,a30,a40);(v0,v10,v20,v30)
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  if (GetParam())
+  if (GetParam()) {
     frame_processor_->SetSequenceMode(true);
+    EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
+  }
 
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 3));
   ProcessFrames("0K 10K", "0K 10 20");
@@ -568,6 +573,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
   bool using_sequence_mode = GetParam();
   if (using_sequence_mode) {
     frame_processor_->SetSequenceMode(true);
+    EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
   } else {
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 6));
@@ -603,6 +609,8 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
   bool using_sequence_mode = GetParam();
   frame_processor_->SetSequenceMode(using_sequence_mode);
+  if (using_sequence_mode)
+    EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
 
   // Start a coded frame group at time 100ms. Note the jagged start still uses
   // the coded frame group's start time as the range start for both streams.
@@ -722,6 +730,7 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
     // applied to frames beginning at the first frame after the discontinuity
     // caused by the video append at 160K, below.
     SetTimestampOffset(frame_duration_ * 10);
+    EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
   }
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 14));
   ProcessFrames("100K 110K 120K", "110K 120K 130K");
@@ -906,6 +915,8 @@ TEST_P(FrameProcessorTest,
   InSequence s;
   AddTestTracks(HAS_AUDIO);
   bool using_sequence_mode = GetParam();
+
+  EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS()).Times(2);
   if (using_sequence_mode) {
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(
@@ -941,9 +952,12 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
   // partial front trim, to prevent incorrect introduction of a discontinuity
   // and potentially a non-keyframe video frame to be processed next after the
   // discontinuity.
+  bool using_sequence_mode = GetParam();
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
-  frame_processor_->SetSequenceMode(GetParam());
+  frame_processor_->SetSequenceMode(using_sequence_mode);
+  if (using_sequence_mode)
+    EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
   ProcessFrames("", "0K");
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
@@ -1025,6 +1039,45 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
       static_cast<StreamParserBuffer*>(last_read_buffer_.get());
   ASSERT_EQ(base::TimeDelta::FromMilliseconds(0),
             last_read_parser_buffer->preroll_buffer()->duration());
+}
+
+TEST_P(FrameProcessorTest,
+       OOOKeyframePrecededByDependantNonKeyframeShouldWarn) {
+  bool is_sequence_mode = GetParam();
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(is_sequence_mode);
+
+  if (is_sequence_mode) {
+    // Allow room in the timeline for the last video append (40|70, below) in
+    // this test to remain within default append window [0, +Infinity]. Moving
+    // the sequence mode appends to begin at time 50ms, the same time as the
+    // first append, below, also results in identical expectation checks for
+    // buffered ranges and buffer reads for both segments and sequence modes.
+    SetTimestampOffset(frame_duration_ * 5);
+  }
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
+  ProcessFrames("", "50K 60");
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [50,70) }");
+
+  EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
+  EXPECT_MEDIA_LOG(NonkeyframePrecedesGopStartWarning("0.05", "0.04"));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
+  ProcessFrames("", "40|70");  // PTS=40, DTS=70
+
+  // Verify DTS-based range is increased.
+  // TODO(wolenetz): Update this expectation to be { [50,70] } when switching to
+  // managing and reporting buffered ranges by PTS intervals instead of DTS
+  // intervals. This reflects the expectation that PTS start is not "pulled
+  // backward" for the new frame at PTS=40 because current spec text doesn't
+  // support SAP Type 2; it has no steps in the coded frame processing algorithm
+  // that would do that "pulling backward". See https://crbug.com/718641 and
+  // https://github.com/w3c/media-source/issues/187.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [50,80) }");
+  seek(video_.get(), base::TimeDelta());
+  CheckReadsThenReadStalls(video_.get(), "50 60 40");
 }
 
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));
