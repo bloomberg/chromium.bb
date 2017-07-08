@@ -15,8 +15,6 @@ import android.content.res.Resources;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ObserverList;
@@ -24,7 +22,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Layout that displays infobars in a stack. Handles all the animations when adding or removing
@@ -115,15 +112,6 @@ public class InfoBarContainerLayout extends FrameLayout {
         Resources res = context.getResources();
         mBackInfobarHeight = res.getDimensionPixelSize(R.dimen.infobar_peeking_height);
         mFloatingBehavior = new FloatingBehavior(this);
-        mBackgroundPeekSize = getResources().getDimensionPixelSize(R.dimen.infobar_compact_size);
-        mInfoBarShadowHeight = getResources().getDimensionPixelSize(R.dimen.infobar_shadow_height);
-    }
-
-    @Override
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
-
-        mBottomContainer = (ViewGroup) getRootView().findViewById(R.id.bottom_container);
     }
 
     /**
@@ -187,19 +175,9 @@ public class InfoBarContainerLayout extends FrameLayout {
 
     // Animation durations.
     private static final int DURATION_SLIDE_UP_MS = 250;
-    private static final int DURATION_PEEK_MS = 500;
     private static final int DURATION_SLIDE_DOWN_MS = 250;
     private static final int DURATION_FADE_MS = 100;
     private static final int DURATION_FADE_OUT_MS = 200;
-
-    /** The height that an infobar will peek when being added behind another one. */
-    private final int mBackgroundPeekSize;
-
-    /** The height of the shadow that sits above the infobar. */
-    private final int mInfoBarShadowHeight;
-
-    /** The bottom container that the infobar container sits inside of. */
-    private ViewGroup mBottomContainer;
 
     /**
      * Base class for animations inside the InfoBarContainerLayout.
@@ -237,10 +215,11 @@ public class InfoBarContainerLayout extends FrameLayout {
          * value to endValue and updates the side shadow positions on each frame.
          */
         ValueAnimator createTranslationYAnimator(final InfoBarWrapper wrapper, float endValue) {
-            ValueAnimator animator = ObjectAnimator.ofFloat(wrapper, View.TRANSLATION_Y, endValue);
+            ValueAnimator animator = ValueAnimator.ofFloat(wrapper.getTranslationY(), endValue);
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
+                    wrapper.setTranslationY((float) animation.getAnimatedValue());
                     mFloatingBehavior.updateShadowPosition();
                 }
             });
@@ -428,56 +407,20 @@ public class InfoBarContainerLayout extends FrameLayout {
 
         @Override
         Animator createAnimator() {
-            AnimatorSet set = new AnimatorSet();
-            List<Animator> animators = new ArrayList<>();
-
             mAppearingWrapper.setTranslationY(mAppearingWrapper.getHeight());
-            mAppearingWrapper.setRestrictHeightForAnimation(true);
-            mAppearingWrapper.setHeightForAnimation(mInfoBarShadowHeight + mBackgroundPeekSize);
-            mAppearingWrapper.addView(mAppearingWrapper.getItem().getView());
-            ValueAnimator animator = createTranslationYAnimator(
-                    mAppearingWrapper, mBackInfobarHeight - mBackgroundPeekSize);
-            animators.add(animator);
-
-            animators.add(createTranslationYAnimator(mAppearingWrapper, 0));
-
-            // When the infobar container is running this specific animation, do not clip the
-            // children so the infobars can animate outside their container.
-            set.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    setHierarchyClipsChildren(false);
-                }
-            });
-
-            set.playSequentially(animators);
-            set.setDuration(DURATION_PEEK_MS);
-
-            return set;
+            return createTranslationYAnimator(mAppearingWrapper, 0f)
+                    .setDuration(DURATION_SLIDE_UP_MS);
         }
 
         @Override
         public void onAnimationEnd() {
-            mAppearingWrapper.setRestrictHeightForAnimation(false);
             mAppearingWrapper.removeView(mAppearingWrapper.getItem().getView());
-            setHierarchyClipsChildren(true);
         }
 
         @Override
         int getAnimationType() {
             return InfoBarAnimationListener.ANIMATION_TYPE_SHOW;
         }
-    }
-
-    /**
-     * Used to set the relevant view hierarchy to not clip its children. This is used during
-     * animation so views can draw outside the normal bounds.
-     * @param clip Whether or not to clip child views.
-     */
-    private void setHierarchyClipsChildren(boolean clip) {
-        setClipChildren(clip);
-        ((ViewGroup) getParent()).setClipChildren(clip);
-        mBottomContainer.setClipChildren(clip);
     }
 
     /**
@@ -899,10 +842,7 @@ public class InfoBarContainerLayout extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         widthMeasureSpec = mFloatingBehavior.beforeOnMeasure(widthMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        // Make sure the shadow is tall enough to compensate for the peek animation of other
-        // infboars.
-        mFloatingBehavior.afterOnMeasure(getMeasuredHeight() + mBackgroundPeekSize);
+        mFloatingBehavior.afterOnMeasure(getMeasuredHeight());
     }
 
     @Override
