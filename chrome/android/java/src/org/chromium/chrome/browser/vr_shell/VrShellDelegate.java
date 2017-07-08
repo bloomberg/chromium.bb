@@ -980,6 +980,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         unregisterDaydreamIntent(mVrDaydreamApi);
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
 
+        if (mInVr) mVSyncEstimator.pause();
+
         cancelPendingVrEntry();
 
         // When the active web page has a vrdisplayactivate event handler,
@@ -1000,10 +1002,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         cancelPendingVrEntry();
         // We defer pausing of VrShell until the app is stopped to keep head tracking working for
         // as long as possible while going to daydream home.
-        if (mInVr) {
-            mVrShell.pause();
-            mVSyncEstimator.pause();
-        }
+        if (mInVr) mVrShell.pause();
         if (mShowingDaydreamDoff || mProbablyInDon) return;
 
         // TODO(mthiesse): When the user resumes Chrome in a 2D context, we don't want to tear down
