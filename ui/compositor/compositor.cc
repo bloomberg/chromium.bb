@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -84,6 +85,15 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.use_occlusion_for_tile_prioritization = true;
   refresh_rate_ = context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
+
+  if (command_line->HasSwitch(switches::kLimitFps)) {
+    std::string fps_str =
+        command_line->GetSwitchValueASCII(switches::kLimitFps);
+    double fps;
+    if (base::StringToDouble(fps_str, &fps) && fps > 0) {
+      forced_refresh_rate_ = fps;
+    }
+  }
 
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(
@@ -373,6 +383,10 @@ void Compositor::SetAuthoritativeVSyncInterval(
 
 void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
                                            base::TimeDelta interval) {
+  if (forced_refresh_rate_) {
+    timebase = base::TimeTicks();
+    interval = base::TimeDelta::FromSeconds(1) / forced_refresh_rate_;
+  }
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = cc::BeginFrameArgs::DefaultInterval();
