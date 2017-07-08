@@ -615,6 +615,13 @@ interface ClientRectList
     method @@iterator
     method constructor
     method item
+interface Clipboard : EventTarget
+    attribute @@toStringTag
+    method constructor
+    method read
+    method readText
+    method write
+    method writeText
 interface ClipboardEvent : Event
     attribute @@toStringTag
     getter clipboardData

@@ -1,0 +1,14 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/clipboard-apis/#clipboard-interface
+
+[SecureContext]
+interface Clipboard : EventTarget {
+  [CallWith=ScriptState] Promise<DataTransfer> read();
+  [CallWith=ScriptState] Promise<DOMString> readText();
+
+  [CallWith=ScriptState] Promise<void> write(DataTransfer data);
+  [CallWith=ScriptState] Promise<void> writeText(DOMString data);
+};

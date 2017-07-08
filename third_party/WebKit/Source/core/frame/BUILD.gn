@@ -68,6 +68,8 @@ blink_core_sources("frame") {
     "Location.h",
     "Navigator.cpp",
     "Navigator.h",
+    "NavigatorClipboard.cpp",
+    "NavigatorClipboard.h",
     "NavigatorConcurrentHardware.cpp",
     "NavigatorConcurrentHardware.h",
     "NavigatorID.cpp",
