@@ -1478,7 +1478,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TwoTransformsClipBetween) {
     rects_with_color.push_back(
         RectWithColor(FloatRect(0, 0, 100, 100), Color::kWhite));
     rects_with_color.push_back(
-        RectWithColor(FloatRect(40, 50, 50, 60), Color(Color::kBlack)));
+        RectWithColor(FloatRect(40, 50, 10, 10), Color(Color::kBlack)));
     rects_with_color.push_back(
         RectWithColor(FloatRect(0, 0, 200, 300), Color::kGray));
     const cc::Layer* layer = ContentLayerAt(0);

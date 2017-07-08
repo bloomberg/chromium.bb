@@ -17,11 +17,6 @@ namespace blink {
 
 namespace {
 
-struct QuadWithColor {
-  FloatQuad quad;
-  Color color;
-};
-
 class DrawsRectangleCanvas : public SkCanvas {
  public:
   DrawsRectangleCanvas()
@@ -29,26 +24,27 @@ class DrawsRectangleCanvas : public SkCanvas {
         save_count_(0),
         alpha_(255),
         alpha_save_layer_count_(-1) {}
-  const Vector<QuadWithColor>& QuadsWithColor() const { return quads_; }
+  const Vector<RectWithColor>& RectsWithColor() const { return rects_; }
 
   void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
-    SkRect clipped_rect(rect);
-    for (Vector<ClipAndIndex>::const_reverse_iterator clip = clips_.rbegin();
-         clip != clips_.rend(); clip++) {
-      if (SkRect::Intersects(rect, clip->rect))
-        CHECK(clipped_rect.intersect(clip->rect));
-    }
     SkPoint quad[4];
-    getTotalMatrix().mapRectToQuad(quad, clipped_rect);
-    QuadWithColor quad_with_color;
-    quad_with_color.quad = FloatQuad(quad);
+    getTotalMatrix().mapRectToQuad(quad, rect);
+
+    SkRect device_rect;
+    device_rect.set(quad, 4);
+    SkIRect device_clip_bounds;
+    FloatRect clipped_rect;
+    if (getDeviceClipBounds(&device_clip_bounds) &&
+        device_rect.intersect(SkRect::Make(device_clip_bounds)))
+      clipped_rect = device_rect;
 
     unsigned paint_alpha = static_cast<unsigned>(paint.getAlpha());
     SkPaint paint_with_alpha(paint);
     paint_with_alpha.setAlpha(static_cast<U8CPU>(alpha_ * paint_alpha / 255));
-    quad_with_color.color = Color(paint_with_alpha.getColor());
-    quads_.push_back(quad_with_color);
-    SkCanvas::onDrawRect(clipped_rect, paint);
+    Color color = Color(paint_with_alpha.getColor());
+
+    rects_.emplace_back(clipped_rect, color);
+    SkCanvas::onDrawRect(rect, paint);
   }
 
   SkCanvas::SaveLayerStrategy getSaveLayerStrategy(
@@ -70,8 +66,6 @@ class DrawsRectangleCanvas : public SkCanvas {
 
   void willRestore() override {
     DCHECK_GT(save_count_, 0);
-    if (clips_.size() && save_count_ == clips_.back().save_count)
-      clips_.pop_back();
     if (alpha_save_layer_count_ == save_count_) {
       alpha_ = 255;
       alpha_save_layer_count_ = -1;
@@ -80,24 +74,8 @@ class DrawsRectangleCanvas : public SkCanvas {
     SkCanvas::willRestore();
   }
 
-  void onClipRect(const SkRect& rect,
-                  SkClipOp op,
-                  ClipEdgeStyle style) override {
-    ClipAndIndex clip_struct;
-    clip_struct.rect = rect;
-    clip_struct.save_count = save_count_;
-    clips_.push_back(clip_struct);
-    SkCanvas::onClipRect(rect, op, style);
-  }
-
-  struct ClipAndIndex {
-    SkRect rect;
-    int save_count;
-  };
-
  private:
-  Vector<QuadWithColor> quads_;
-  Vector<ClipAndIndex> clips_;
+  Vector<RectWithColor> rects_;
   int save_count_;
   unsigned alpha_;
   int alpha_save_layer_count_;
@@ -114,24 +92,24 @@ class DrawsRectanglesMatcher
       ::testing::MatchResultListener* listener) const override {
     DrawsRectangleCanvas canvas;
     picture.playback(&canvas);
-    const auto& quads = canvas.QuadsWithColor();
-    if (quads.size() != rects_with_color_.size()) {
-      *listener << "which draws " << quads.size() << " quads";
+    const auto& actual_rects = canvas.RectsWithColor();
+    if (actual_rects.size() != rects_with_color_.size()) {
+      *listener << "which draws " << actual_rects.size() << " rects";
       return false;
     }
 
-    for (unsigned index = 0; index < quads.size(); index++) {
-      const auto& quad_with_color = quads[index];
-      const auto& rect_with_color = rects_with_color_[index];
+    for (unsigned index = 0; index < actual_rects.size(); index++) {
+      const auto& actual_rect_with_color = actual_rects[index];
+      const auto& expect_rect_with_color = rects_with_color_[index];
 
-      const FloatRect& rect = quad_with_color.quad.BoundingBox();
-      if (EnclosingIntRect(rect) != EnclosingIntRect(rect_with_color.rect) ||
-          quad_with_color.color != rect_with_color.color) {
+      if (EnclosingIntRect(actual_rect_with_color.rect) !=
+              EnclosingIntRect(expect_rect_with_color.rect) ||
+          actual_rect_with_color.color != expect_rect_with_color.color) {
         if (listener->IsInterested()) {
           *listener << "at index " << index << " which draws ";
-          PrintTo(rect, listener->stream());
+          PrintTo(actual_rect_with_color.rect, listener->stream());
           *listener << " with color "
-                    << quad_with_color.color.Serialized().Ascii().data()
+                    << actual_rect_with_color.color.Serialized().Ascii().data()
                     << "\n";
         }
         return false;
