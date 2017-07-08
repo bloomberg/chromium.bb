@@ -538,14 +538,15 @@ enum aome_enc_control_id {
   */
   AV1E_SET_DELTAQ_MODE,
 
-  /*!\brief Codec control function to set the tile encoding mode to 0 or 1.
+  /*!\brief Codec control function to set the single tile decoding mode to 0 or
+   * 1.
    *
-   * 0 means that the tile encoding mode is TILE_NORMAL, and 1 means that the
-   * tile encoding mode is TILE_VR.
+   * 0 means that the single tile decoding is off, and 1 means that the single
+   * tile decoding is on.
    *
    * Experiment: EXT_TILE
    */
-  AV1E_SET_TILE_ENCODING_MODE,
+  AV1E_SET_SINGLE_TILE_DECODING,
 
   /*!\brief Codec control function to enable the extreme motion vector unit test
    * in AV1. Please note that this is only used in motion vector unit test.
@@ -766,8 +767,8 @@ AOM_CTRL_USE_TYPE(AV1E_GET_LEVEL, int *)
 AOM_CTRL_USE_TYPE(AV1E_SET_ANS_WINDOW_SIZE_LOG2, unsigned int)
 #define AOM_CTRL_AV1E_SET_ANS_WINDOW_SIZE_LOG2
 
-AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ENCODING_MODE, unsigned int)
-#define AOM_CTRL_AV1E_SET_TILE_ENCODING_MODE
+AOM_CTRL_USE_TYPE(AV1E_SET_SINGLE_TILE_DECODING, unsigned int)
+#define AOM_CTRL_AV1E_SET_SINGLE_TILE_DECODING
 
 AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 #define AOM_CTRL_AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST

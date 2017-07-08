@@ -3521,52 +3521,53 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
 static void write_tile_info(const AV1_COMMON *const cm,
                             struct aom_write_bit_buffer *wb) {
 #if CONFIG_EXT_TILE
-  const int tile_width =
-      ALIGN_POWER_OF_TWO(cm->tile_width, cm->mib_size_log2) >>
-      cm->mib_size_log2;
-  const int tile_height =
-      ALIGN_POWER_OF_TWO(cm->tile_height, cm->mib_size_log2) >>
-      cm->mib_size_log2;
+  aom_wb_write_literal(wb, cm->large_scale_tile, 1);
+  if (cm->large_scale_tile) {
+    const int tile_width =
+        ALIGN_POWER_OF_TWO(cm->tile_width, cm->mib_size_log2) >>
+        cm->mib_size_log2;
+    const int tile_height =
+        ALIGN_POWER_OF_TWO(cm->tile_height, cm->mib_size_log2) >>
+        cm->mib_size_log2;
 
-  assert(tile_width > 0);
-  assert(tile_height > 0);
-
-  aom_wb_write_literal(wb, cm->tile_encoding_mode, 1);
+    assert(tile_width > 0);
+    assert(tile_height > 0);
 
 // Write the tile sizes
 #if CONFIG_EXT_PARTITION
-  if (cm->sb_size == BLOCK_128X128) {
-    assert(tile_width <= 32);
-    assert(tile_height <= 32);
-    aom_wb_write_literal(wb, tile_width - 1, 5);
-    aom_wb_write_literal(wb, tile_height - 1, 5);
-  } else
+    if (cm->sb_size == BLOCK_128X128) {
+      assert(tile_width <= 32);
+      assert(tile_height <= 32);
+      aom_wb_write_literal(wb, tile_width - 1, 5);
+      aom_wb_write_literal(wb, tile_height - 1, 5);
+    } else {
 #endif  // CONFIG_EXT_PARTITION
-  {
-    assert(tile_width <= 64);
-    assert(tile_height <= 64);
-    aom_wb_write_literal(wb, tile_width - 1, 6);
-    aom_wb_write_literal(wb, tile_height - 1, 6);
+      assert(tile_width <= 64);
+      assert(tile_height <= 64);
+      aom_wb_write_literal(wb, tile_width - 1, 6);
+      aom_wb_write_literal(wb, tile_height - 1, 6);
+#if CONFIG_EXT_PARTITION
+    }
+#endif  // CONFIG_EXT_PARTITION
+  } else {
+#endif  // CONFIG_EXT_TILE
+    int min_log2_tile_cols, max_log2_tile_cols, ones;
+    av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
+
+    // columns
+    ones = cm->log2_tile_cols - min_log2_tile_cols;
+    while (ones--) aom_wb_write_bit(wb, 1);
+
+    if (cm->log2_tile_cols < max_log2_tile_cols) aom_wb_write_bit(wb, 0);
+
+    // rows
+    aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
+    if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
+#if CONFIG_DEPENDENT_HORZTILES
+    if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
+#endif
+#if CONFIG_EXT_TILE
   }
-#if CONFIG_DEPENDENT_HORZTILES
-  if (tile_height > 1) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
-#endif
-#else
-  int min_log2_tile_cols, max_log2_tile_cols, ones;
-  av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
-
-  // columns
-  ones = cm->log2_tile_cols - min_log2_tile_cols;
-  while (ones--) aom_wb_write_bit(wb, 1);
-
-  if (cm->log2_tile_cols < max_log2_tile_cols) aom_wb_write_bit(wb, 0);
-
-  // rows
-  aom_wb_write_bit(wb, cm->log2_tile_rows != 0);
-  if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->log2_tile_rows != 1);
-#if CONFIG_DEPENDENT_HORZTILES
-  if (cm->log2_tile_rows != 0) aom_wb_write_bit(wb, cm->dependent_horz_tiles);
-#endif
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -3679,16 +3680,9 @@ static INLINE int find_identical_tile(
 }
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_TILE_GROUPS
-static uint32_t write_tiles(AV1_COMP *const cpi,
-                            struct aom_write_bit_buffer *wb,
-                            unsigned int *max_tile_size,
-                            unsigned int *max_tile_col_size) {
-#else
 static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
                             unsigned int *max_tile_size,
                             unsigned int *max_tile_col_size) {
-#endif
   const AV1_COMMON *const cm = &cpi->common;
 #if CONFIG_ANS
   struct BufAnsCoder *buf_ans = &cpi->buf_ans;
@@ -3702,19 +3696,25 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
   unsigned int tile_size = 0;
+  const int have_tiles = tile_cols * tile_rows > 1;
 #if CONFIG_TILE_GROUPS
+  struct aom_write_bit_buffer wb = { dst, 0 };
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
-  const int have_tiles = n_log2_tiles > 0;
   uint32_t comp_hdr_size;
   // Fixed size tile groups for the moment
   const int num_tg_hdrs = cm->num_tg;
-  const int tg_size = (tile_rows * tile_cols + num_tg_hdrs - 1) / num_tg_hdrs;
+  const int tg_size =
+#if CONFIG_EXT_TILE
+      (cm->large_scale_tile)
+          ? 1
+          :
+#endif  // CONFIG_EXT_TILE
+          (tile_rows * tile_cols + num_tg_hdrs - 1) / num_tg_hdrs;
   int tile_count = 0;
   int tg_count = 1;
   int tile_size_bytes = 4;
   int tile_col_size_bytes;
   uint32_t uncompressed_hdr_size = 0;
-  uint8_t *dst = NULL;
   struct aom_write_bit_buffer comp_hdr_len_wb;
   struct aom_write_bit_buffer tg_params_wb;
   struct aom_write_bit_buffer tile_size_bytes_wb;
@@ -3723,9 +3723,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   int curr_tg_data_size = 0;
   int hdr_size;
 #endif
-#if CONFIG_EXT_TILE
-  const int have_tiles = tile_cols * tile_rows > 1;
-#endif  // CONFIG_EXT_TILE
 
   *max_tile_size = 0;
   *max_tile_col_size = 0;
@@ -3734,142 +3731,146 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 // later compact the data if smaller headers are adequate.
 
 #if CONFIG_EXT_TILE
-  for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-    TileInfo tile_info;
-    const int is_last_col = (tile_col == tile_cols - 1);
-    const uint32_t col_offset = total_size;
+  if (cm->large_scale_tile) {
+    for (tile_col = 0; tile_col < tile_cols; tile_col++) {
+      TileInfo tile_info;
+      const int is_last_col = (tile_col == tile_cols - 1);
+      const uint32_t col_offset = total_size;
 
-    av1_tile_set_col(&tile_info, cm, tile_col);
+      av1_tile_set_col(&tile_info, cm, tile_col);
 
-    // The last column does not have a column header
-    if (!is_last_col) total_size += 4;
+      // The last column does not have a column header
+      if (!is_last_col) total_size += 4;
 
-    for (tile_row = 0; tile_row < tile_rows; tile_row++) {
-      TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-      const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-      const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
-      const int data_offset = have_tiles ? 4 : 0;
-      const int tile_idx = tile_row * tile_cols + tile_col;
-      TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-      av1_tile_set_row(&tile_info, cm, tile_row);
+      for (tile_row = 0; tile_row < tile_rows; tile_row++) {
+        TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
+        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
+        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
+        const int data_offset = have_tiles ? 4 : 0;
+        const int tile_idx = tile_row * tile_cols + tile_col;
+        TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
+        av1_tile_set_row(&tile_info, cm, tile_row);
 
-      buf->data = dst + total_size;
+        buf->data = dst + total_size;
 
-      // Is CONFIG_EXT_TILE = 1, every tile in the row has a header,
-      // even for the last one, unless no tiling is used at all.
-      total_size += data_offset;
-      // Initialise tile context from the frame context
-      this_tile->tctx = *cm->fc;
-      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+        // Is CONFIG_EXT_TILE = 1, every tile in the row has a header,
+        // even for the last one, unless no tiling is used at all.
+        total_size += data_offset;
+        // Initialise tile context from the frame context
+        this_tile->tctx = *cm->fc;
+        cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
 #if CONFIG_PVQ
-      cpi->td.mb.pvq_q = &this_tile->pvq_q;
-      cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
+        cpi->td.mb.pvq_q = &this_tile->pvq_q;
+        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
 #endif  // CONFIG_PVQ
 #if !CONFIG_ANS
-      aom_start_encode(&mode_bc, buf->data + data_offset);
-      write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-      assert(tok == tok_end);
-      aom_stop_encode(&mode_bc);
-      tile_size = mode_bc.pos;
+        aom_start_encode(&mode_bc, buf->data + data_offset);
+        write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
+        assert(tok == tok_end);
+        aom_stop_encode(&mode_bc);
+        tile_size = mode_bc.pos;
 #else
-      buf_ans_write_init(buf_ans, buf->data + data_offset);
-      write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
-      assert(tok == tok_end);
-      aom_buf_ans_flush(buf_ans);
-      tile_size = buf_ans_write_end(buf_ans);
+        buf_ans_write_init(buf_ans, buf->data + data_offset);
+        write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
+        assert(tok == tok_end);
+        aom_buf_ans_flush(buf_ans);
+        tile_size = buf_ans_write_end(buf_ans);
 #endif  // !CONFIG_ANS
 #if CONFIG_PVQ
-      cpi->td.mb.pvq_q = NULL;
+        cpi->td.mb.pvq_q = NULL;
 #endif
-      buf->size = tile_size;
+        buf->size = tile_size;
 
-      // Record the maximum tile size we see, so we can compact headers later.
-      *max_tile_size = AOMMAX(*max_tile_size, tile_size);
+        // Record the maximum tile size we see, so we can compact headers later.
+        *max_tile_size = AOMMAX(*max_tile_size, tile_size);
 
-      if (have_tiles) {
-        // tile header: size of this tile, or copy offset
-        uint32_t tile_header = tile_size;
+        if (have_tiles) {
+          // tile header: size of this tile, or copy offset
+          uint32_t tile_header = tile_size;
+          const int tile_copy_mode =
+              ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256)
+                  ? 1
+                  : 0;
 
-        // If the tile_encoding_mode is 1 (i.e. TILE_VR), check if this tile is
-        // a copy tile.
-        // Very low chances to have copy tiles on the key frames, so don't
-        // search on key frames to reduce unnecessary search.
-        if (cm->frame_type != KEY_FRAME && cm->tile_encoding_mode) {
-          const int idendical_tile_offset =
-              find_identical_tile(tile_row, tile_col, tile_buffers);
+          // If tile_copy_mode = 1, check if this tile is a copy tile.
+          // Very low chances to have copy tiles on the key frames, so don't
+          // search on key frames to reduce unnecessary search.
+          if (cm->frame_type != KEY_FRAME && tile_copy_mode) {
+            const int idendical_tile_offset =
+                find_identical_tile(tile_row, tile_col, tile_buffers);
 
-          if (idendical_tile_offset > 0) {
-            tile_size = 0;
-            tile_header = idendical_tile_offset | 0x80;
-            tile_header <<= 24;
+            if (idendical_tile_offset > 0) {
+              tile_size = 0;
+              tile_header = idendical_tile_offset | 0x80;
+              tile_header <<= 24;
+            }
           }
+
+          mem_put_le32(buf->data, tile_header);
         }
 
-        mem_put_le32(buf->data, tile_header);
+        total_size += tile_size;
       }
 
-      total_size += tile_size;
-    }
+      if (!is_last_col) {
+        uint32_t col_size = total_size - col_offset - 4;
+        mem_put_le32(dst + col_offset, col_size);
 
-    if (!is_last_col) {
-      uint32_t col_size = total_size - col_offset - 4;
-      mem_put_le32(dst + col_offset, col_size);
-
-      // If it is not final packing, record the maximum tile column size we see,
-      // otherwise, check if the tile size is out of the range.
-      *max_tile_col_size = AOMMAX(*max_tile_col_size, col_size);
+        // If it is not final packing, record the maximum tile column size we
+        // see, otherwise, check if the tile size is out of the range.
+        *max_tile_col_size = AOMMAX(*max_tile_col_size, col_size);
+      }
     }
-  }
-#else  // !CONFIG_EXT_TILE
+  } else {
+#endif  // CONFIG_EXT_TILE
 #if CONFIG_TILE_GROUPS
-  write_uncompressed_header(cpi, wb);
+    write_uncompressed_header(cpi, &wb);
 
 #if CONFIG_EXT_REFS
-  if (cm->show_existing_frame) {
-    total_size = aom_wb_bytes_written(wb);
-    return (uint32_t)total_size;
-  }
+    if (cm->show_existing_frame) {
+      total_size = aom_wb_bytes_written(&wb);
+      return (uint32_t)total_size;
+    }
 #endif  // CONFIG_EXT_REFS
 
-  // Write the tile length code
-  tile_size_bytes_wb = *wb;
-  aom_wb_write_literal(wb, 3, 2);
+    // Write the tile length code
+    tile_size_bytes_wb = wb;
+    aom_wb_write_literal(&wb, 3, 2);
 
-  /* Write a placeholder for the number of tiles in each tile group */
-  tg_params_wb = *wb;
-  saved_offset = wb->bit_offset;
-  if (have_tiles) {
-    aom_wb_overwrite_literal(wb, 3, n_log2_tiles);
-    aom_wb_overwrite_literal(wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
-  }
+    /* Write a placeholder for the number of tiles in each tile group */
+    tg_params_wb = wb;
+    saved_offset = wb.bit_offset;
+    if (have_tiles) {
+      aom_wb_overwrite_literal(&wb, 3, n_log2_tiles);
+      aom_wb_overwrite_literal(&wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
+    }
 
-  /* Write a placeholder for the compressed header length */
-  comp_hdr_len_wb = *wb;
-  aom_wb_write_literal(wb, 0, 16);
+    /* Write a placeholder for the compressed header length */
+    comp_hdr_len_wb = wb;
+    aom_wb_write_literal(&wb, 0, 16);
 
-  uncompressed_hdr_size = aom_wb_bytes_written(wb);
-  dst = wb->bit_buffer;
-  comp_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
-  aom_wb_overwrite_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
-  hdr_size = uncompressed_hdr_size + comp_hdr_size;
-  total_size += hdr_size;
+    uncompressed_hdr_size = aom_wb_bytes_written(&wb);
+    comp_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
+    aom_wb_overwrite_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
+    hdr_size = uncompressed_hdr_size + comp_hdr_size;
+    total_size += hdr_size;
 #endif
 
-  for (tile_row = 0; tile_row < tile_rows; tile_row++) {
-    TileInfo tile_info;
-    const int is_last_row = (tile_row == tile_rows - 1);
-    av1_tile_set_row(&tile_info, cm, tile_row);
+    for (tile_row = 0; tile_row < tile_rows; tile_row++) {
+      TileInfo tile_info;
+      const int is_last_row = (tile_row == tile_rows - 1);
+      av1_tile_set_row(&tile_info, cm, tile_row);
 
-    for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-      const int tile_idx = tile_row * tile_cols + tile_col;
-      TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-      TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-      const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-      const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
-      const int is_last_col = (tile_col == tile_cols - 1);
-      const int is_last_tile = is_last_col && is_last_row;
+      for (tile_col = 0; tile_col < tile_cols; tile_col++) {
+        const int tile_idx = tile_row * tile_cols + tile_col;
+        TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
+        TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
+        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
+        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
+        const int is_last_col = (tile_col == tile_cols - 1);
+        const int is_last_tile = is_last_col && is_last_row;
 #if !CONFIG_TILE_GROUPS
-      (void)tile_idx;
+        (void)tile_idx;
 #else
 
       if ((!mtu_size && tile_count > tg_size) ||
@@ -3923,29 +3924,29 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       }
       tile_count++;
 #endif
-      av1_tile_set_col(&tile_info, cm, tile_col);
+        av1_tile_set_col(&tile_info, cm, tile_col);
 
 #if CONFIG_DEPENDENT_HORZTILES && CONFIG_TILE_GROUPS
-      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
+        av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
 #endif
-      buf->data = dst + total_size;
+        buf->data = dst + total_size;
 
-      // The last tile does not have a header.
-      if (!is_last_tile) total_size += 4;
+        // The last tile does not have a header.
+        if (!is_last_tile) total_size += 4;
 
-      // Initialise tile context from the frame context
-      this_tile->tctx = *cm->fc;
-      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+        // Initialise tile context from the frame context
+        this_tile->tctx = *cm->fc;
+        cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
 #if CONFIG_PVQ
-      cpi->td.mb.pvq_q = &this_tile->pvq_q;
-      cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
+        cpi->td.mb.pvq_q = &this_tile->pvq_q;
+        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
 #endif  // CONFIG_PVQ
 #if CONFIG_ANS
-      buf_ans_write_init(buf_ans, dst + total_size);
-      write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
-      assert(tok == tok_end);
-      aom_buf_ans_flush(buf_ans);
-      tile_size = buf_ans_write_end(buf_ans);
+        buf_ans_write_init(buf_ans, dst + total_size);
+        write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
+        assert(tok == tok_end);
+        aom_buf_ans_flush(buf_ans);
+        tile_size = buf_ans_write_end(buf_ans);
 #else
       aom_start_encode(&mode_bc, dst + total_size);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
@@ -3958,44 +3959,46 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       tile_size = mode_bc.pos;
 #endif  // CONFIG_ANS
 #if CONFIG_PVQ
-      cpi->td.mb.pvq_q = NULL;
+        cpi->td.mb.pvq_q = NULL;
 #endif
 
-      assert(tile_size > 0);
+        assert(tile_size > 0);
 
 #if CONFIG_TILE_GROUPS
-      curr_tg_data_size += tile_size + 4;
+        curr_tg_data_size += tile_size + 4;
 #endif
-      buf->size = tile_size;
+        buf->size = tile_size;
 
-      if (!is_last_tile) {
-        *max_tile_size = AOMMAX(*max_tile_size, tile_size);
-        // size of this tile
-        mem_put_le32(buf->data, tile_size);
+        if (!is_last_tile) {
+          *max_tile_size = AOMMAX(*max_tile_size, tile_size);
+          // size of this tile
+          mem_put_le32(buf->data, tile_size);
+        }
+
+        total_size += tile_size;
       }
-
-      total_size += tile_size;
     }
-  }
 #if CONFIG_TILE_GROUPS
-  // Write the final tile group size
-  if (n_log2_tiles) {
-    aom_wb_overwrite_literal(&tg_params_wb, (1 << n_log2_tiles) - tile_count,
-                             n_log2_tiles);
-    aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
-  }
-  // Remux if possible. TODO (Thomas Davies): do this for more than one tile
-  // group
-  if (have_tiles && tg_count == 1) {
-    int data_size = total_size - (uncompressed_hdr_size + comp_hdr_size);
-    data_size = remux_tiles(cm, dst + uncompressed_hdr_size + comp_hdr_size,
-                            data_size, *max_tile_size, *max_tile_col_size,
-                            &tile_size_bytes, &tile_col_size_bytes);
-    total_size = data_size + uncompressed_hdr_size + comp_hdr_size;
-    aom_wb_overwrite_literal(&tile_size_bytes_wb, tile_size_bytes - 1, 2);
-  }
+    // Write the final tile group size
+    if (n_log2_tiles) {
+      aom_wb_overwrite_literal(&tg_params_wb, (1 << n_log2_tiles) - tile_count,
+                               n_log2_tiles);
+      aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
+    }
+    // Remux if possible. TODO (Thomas Davies): do this for more than one tile
+    // group
+    if (have_tiles && tg_count == 1) {
+      int data_size = total_size - (uncompressed_hdr_size + comp_hdr_size);
+      data_size = remux_tiles(cm, dst + uncompressed_hdr_size + comp_hdr_size,
+                              data_size, *max_tile_size, *max_tile_col_size,
+                              &tile_size_bytes, &tile_col_size_bytes);
+      total_size = data_size + uncompressed_hdr_size + comp_hdr_size;
+      aom_wb_overwrite_literal(&tile_size_bytes_wb, tile_size_bytes - 1, 2);
+    }
 
 #endif
+#if CONFIG_EXT_TILE
+  }
 #endif  // CONFIG_EXT_TILE
   return (uint32_t)total_size;
 }
@@ -4725,16 +4728,23 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        const uint32_t max_tile_col_size,
                        int *const tile_size_bytes,
                        int *const tile_col_size_bytes) {
-// Choose the tile size bytes (tsb) and tile column size bytes (tcsb)
+  // Choose the tile size bytes (tsb) and tile column size bytes (tcsb)
+  int tsb;
+  int tcsb;
+
 #if CONFIG_EXT_TILE
-  // The top bit in the tile size field indicates tile copy mode, so we
-  // have 1 less bit to code the tile size
-  const int tsb = choose_size_bytes(max_tile_size, 1);
-  const int tcsb = choose_size_bytes(max_tile_col_size, 0);
-#else
-  const int tsb = choose_size_bytes(max_tile_size, 0);
-  const int tcsb = 4;  // This is ignored
-  (void)max_tile_col_size;
+  if (cm->large_scale_tile) {
+    // The top bit in the tile size field indicates tile copy mode, so we
+    // have 1 less bit to code the tile size
+    tsb = choose_size_bytes(max_tile_size, 1);
+    tcsb = choose_size_bytes(max_tile_col_size, 0);
+  } else {
+#endif  // CONFIG_EXT_TILE
+    tsb = choose_size_bytes(max_tile_size, 0);
+    tcsb = 4;  // This is ignored
+    (void)max_tile_col_size;
+#if CONFIG_EXT_TILE
+  }
 #endif  // CONFIG_EXT_TILE
 
   assert(tsb > 0);
@@ -4750,64 +4760,68 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
     uint32_t rpos = 0;
 
 #if CONFIG_EXT_TILE
-    int tile_row;
-    int tile_col;
+    if (cm->large_scale_tile) {
+      int tile_row;
+      int tile_col;
 
-    for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
-      // All but the last column has a column header
-      if (tile_col < cm->tile_cols - 1) {
-        uint32_t tile_col_size = mem_get_le32(dst + rpos);
-        rpos += 4;
+      for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
+        // All but the last column has a column header
+        if (tile_col < cm->tile_cols - 1) {
+          uint32_t tile_col_size = mem_get_le32(dst + rpos);
+          rpos += 4;
 
-        // Adjust the tile column size by the number of bytes removed
-        // from the tile size fields.
-        tile_col_size -= (4 - tsb) * cm->tile_rows;
+          // Adjust the tile column size by the number of bytes removed
+          // from the tile size fields.
+          tile_col_size -= (4 - tsb) * cm->tile_rows;
 
-        mem_put_varsize(dst + wpos, tcsb, tile_col_size);
-        wpos += tcsb;
-      }
+          mem_put_varsize(dst + wpos, tcsb, tile_col_size);
+          wpos += tcsb;
+        }
 
-      for (tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
-        // All, including the last row has a header
-        uint32_t tile_header = mem_get_le32(dst + rpos);
-        rpos += 4;
+        for (tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
+          // All, including the last row has a header
+          uint32_t tile_header = mem_get_le32(dst + rpos);
+          rpos += 4;
 
-        // If this is a copy tile, we need to shift the MSB to the
-        // top bit of the new width, and there is no data to copy.
-        if (tile_header >> 31 != 0) {
-          if (tsb < 4) tile_header >>= 32 - 8 * tsb;
-          mem_put_varsize(dst + wpos, tsb, tile_header);
-          wpos += tsb;
-        } else {
-          mem_put_varsize(dst + wpos, tsb, tile_header);
-          wpos += tsb;
+          // If this is a copy tile, we need to shift the MSB to the
+          // top bit of the new width, and there is no data to copy.
+          if (tile_header >> 31 != 0) {
+            if (tsb < 4) tile_header >>= 32 - 8 * tsb;
+            mem_put_varsize(dst + wpos, tsb, tile_header);
+            wpos += tsb;
+          } else {
+            mem_put_varsize(dst + wpos, tsb, tile_header);
+            wpos += tsb;
 
-          memmove(dst + wpos, dst + rpos, tile_header);
-          rpos += tile_header;
-          wpos += tile_header;
+            memmove(dst + wpos, dst + rpos, tile_header);
+            rpos += tile_header;
+            wpos += tile_header;
+          }
         }
       }
-    }
-#else
-    const int n_tiles = cm->tile_cols * cm->tile_rows;
-    int n;
+    } else {
+#endif  // CONFIG_EXT_TILE
+      const int n_tiles = cm->tile_cols * cm->tile_rows;
+      int n;
 
-    for (n = 0; n < n_tiles; n++) {
-      int tile_size;
+      for (n = 0; n < n_tiles; n++) {
+        int tile_size;
 
-      if (n == n_tiles - 1) {
-        tile_size = data_size - rpos;
-      } else {
-        tile_size = mem_get_le32(dst + rpos);
-        rpos += 4;
-        mem_put_varsize(dst + wpos, tsb, tile_size);
-        wpos += tsb;
+        if (n == n_tiles - 1) {
+          tile_size = data_size - rpos;
+        } else {
+          tile_size = mem_get_le32(dst + rpos);
+          rpos += 4;
+          mem_put_varsize(dst + wpos, tsb, tile_size);
+          wpos += tsb;
+        }
+
+        memmove(dst + wpos, dst + rpos, tile_size);
+
+        rpos += tile_size;
+        wpos += tile_size;
       }
-
-      memmove(dst + wpos, dst + rpos, tile_size);
-
-      rpos += tile_size;
-      wpos += tile_size;
+#if CONFIG_EXT_TILE
     }
 #endif  // CONFIG_EXT_TILE
 
@@ -4820,14 +4834,17 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
 
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint8_t *data = dst;
-#if !CONFIG_TILE_GROUPS
-  uint32_t compressed_header_size;
+  uint32_t data_size;
+#if (!CONFIG_TILE_GROUPS) || (CONFIG_TILE_GROUPS && CONFIG_EXT_TILE)
+  AV1_COMMON *const cm = &cpi->common;
+  uint32_t compressed_header_size = 0;
   uint32_t uncompressed_header_size;
   struct aom_write_bit_buffer saved_wb;
-#endif
-  uint32_t data_size;
   struct aom_write_bit_buffer wb = { data, 0 };
-
+  const int have_tiles = cm->tile_cols * cm->tile_rows > 1;
+  int tile_size_bytes;
+  int tile_col_size_bytes;
+#endif  // (!CONFIG_TILE_GROUPS) || (CONFIG_TILE_GROUPS && CONFIG_EXT_TILE)
   unsigned int max_tile_size;
   unsigned int max_tile_col_size;
 
@@ -4836,11 +4853,6 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif
 
 #if !CONFIG_TILE_GROUPS
-  int tile_size_bytes;
-  int tile_col_size_bytes;
-  AV1_COMMON *const cm = &cpi->common;
-  const int have_tiles = cm->tile_cols * cm->tile_rows > 1;
-
   // Write the uncompressed header
   write_uncompressed_header(cpi, &wb);
 
@@ -4858,8 +4870,10 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 // Note that the last item in the uncompressed header is the data
 // describing tile configuration.
 #if CONFIG_EXT_TILE
-    // Number of bytes in tile column size - 1
-    aom_wb_write_literal(&wb, 0, 2);
+    if (cm->large_scale_tile) {
+      // Number of bytes in tile column size - 1
+      aom_wb_write_literal(&wb, 0, 2);
+    }
 #endif  // CONFIG_EXT_TILE
     // Number of bytes in tile size - 1
     aom_wb_write_literal(&wb, 0, 2);
@@ -4879,7 +4893,50 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   // Write the encoded tile data
   data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
 #else
-  data_size = write_tiles(cpi, &wb, &max_tile_size, &max_tile_col_size);
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile) {
+    // Write the uncompressed header
+    write_uncompressed_header(cpi, &wb);
+
+#if CONFIG_EXT_REFS
+    if (cm->show_existing_frame) {
+      *size = aom_wb_bytes_written(&wb);
+      return;
+    }
+#endif  // CONFIG_EXT_REFS
+
+    // We do not know these in advance. Output placeholder bit.
+    saved_wb = wb;
+    // Write tile size magnitudes
+    if (have_tiles) {
+      // Note that the last item in the uncompressed header is the data
+      // describing tile configuration.
+      // Number of bytes in tile column size - 1
+      aom_wb_write_literal(&wb, 0, 2);
+
+      // Number of bytes in tile size - 1
+      aom_wb_write_literal(&wb, 0, 2);
+    }
+    // Size of compressed header
+    aom_wb_write_literal(&wb, 0, 16);
+
+    uncompressed_header_size = (uint32_t)aom_wb_bytes_written(&wb);
+    data += uncompressed_header_size;
+
+    aom_clear_system_state();
+
+    // Write the compressed header
+    compressed_header_size = write_compressed_header(cpi, data);
+    data += compressed_header_size;
+
+    // Write the encoded tile data
+    data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
+  } else {
+#endif  // CONFIG_EXT_TILE
+    data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
 #endif
 #if !CONFIG_TILE_GROUPS
   if (have_tiles) {
@@ -4893,8 +4950,10 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   // Now fill in the gaps in the uncompressed header.
   if (have_tiles) {
 #if CONFIG_EXT_TILE
-    assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
-    aom_wb_write_literal(&saved_wb, tile_col_size_bytes - 1, 2);
+    if (cm->large_scale_tile) {
+      assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
+      aom_wb_write_literal(&saved_wb, tile_col_size_bytes - 1, 2);
+    }
 #endif  // CONFIG_EXT_TILE
     assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
     aom_wb_write_literal(&saved_wb, tile_size_bytes - 1, 2);
@@ -4903,7 +4962,33 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   assert(compressed_header_size <= 0xffff);
   aom_wb_write_literal(&saved_wb, compressed_header_size, 16);
 #else
-  data += data_size;
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile) {
+    if (have_tiles) {
+      data_size =
+          remux_tiles(cm, data, data_size, max_tile_size, max_tile_col_size,
+                      &tile_size_bytes, &tile_col_size_bytes);
+    }
+
+    data += data_size;
+
+    // Now fill in the gaps in the uncompressed header.
+    if (have_tiles) {
+      assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
+      aom_wb_write_literal(&saved_wb, tile_col_size_bytes - 1, 2);
+
+      assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
+      aom_wb_write_literal(&saved_wb, tile_size_bytes - 1, 2);
+    }
+    // TODO(jbb): Figure out what to do if compressed_header_size > 16 bits.
+    assert(compressed_header_size <= 0xffff);
+    aom_wb_write_literal(&saved_wb, compressed_header_size, 16);
+  } else {
+#endif  // CONFIG_EXT_TILE
+    data += data_size;
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
 #endif
 #if CONFIG_ANS && ANS_REVERSE
   // Avoid aliasing the superframe index

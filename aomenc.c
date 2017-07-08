@@ -255,19 +255,36 @@ static const arg_def_t error_resilient =
     ARG_DEF(NULL, "error-resilient", 1, "Enable error resiliency features");
 static const arg_def_t lag_in_frames =
     ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
+#if CONFIG_EXT_TILE
+static const arg_def_t large_scale_tile =
+    ARG_DEF(NULL, "large-scale-tile", 1,
+            "Large scale tile coding (0: off (default), 1: on)");
+#endif  // CONFIG_EXT_TILE
 
-static const arg_def_t *global_args[] = {
-  &use_yv12,      &use_i420,  &use_i422,        &use_i444, &use_i440,
-  &usage,         &threads,   &profile,         &width,    &height,
+static const arg_def_t *global_args[] = { &use_yv12,
+                                          &use_i420,
+                                          &use_i422,
+                                          &use_i444,
+                                          &use_i440,
+                                          &usage,
+                                          &threads,
+                                          &profile,
+                                          &width,
+                                          &height,
 #if CONFIG_WEBM_IO
-  &stereo_mode,
+                                          &stereo_mode,
 #endif
-  &timebase,      &framerate, &error_resilient,
+                                          &timebase,
+                                          &framerate,
+                                          &error_resilient,
 #if CONFIG_HIGHBITDEPTH
-  &bitdeptharg,
+                                          &bitdeptharg,
 #endif
-  &lag_in_frames, NULL
-};
+                                          &lag_in_frames,
+#if CONFIG_EXT_TILE
+                                          &large_scale_tile,
+#endif  // CONFIG_EXT_TILE
+                                          NULL };
 
 static const arg_def_t dropframe_thresh =
     ARG_DEF(NULL, "drop-frame", 1, "Temporal resampling threshold (buf %)");
@@ -372,17 +389,16 @@ static const arg_def_t max_intra_rate_pct =
 #if CONFIG_AV1_ENCODER
 static const arg_def_t cpu_used_av1 =
     ARG_DEF(NULL, "cpu-used", 1, "CPU Used (0..8)");
+#if CONFIG_EXT_TILE
+static const arg_def_t single_tile_decoding =
+    ARG_DEF(NULL, "single-tile-decoding", 1,
+            "Single tile decoding (0: off (default), 1: on)");
+#endif  // CONFIG_EXT_TILE
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1,
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
-#if CONFIG_EXT_TILE
-static const arg_def_t tile_encoding_mode =
-    ARG_DEF(NULL, "tile-encoding-mode", 1,
-            "Tile encoding mode (0: normal"
-            " (default), 1: vr)");
-#endif
 #if CONFIG_DEPENDENT_HORZTILES
 static const arg_def_t tile_dependent_rows =
     ARG_DEF(NULL, "tile-dependent-rows", 1, "Enable dependent Tile rows");
@@ -523,11 +539,11 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &auto_altref,
                                        &sharpness,
                                        &static_thresh,
+#if CONFIG_EXT_TILE
+                                       &single_tile_decoding,
+#endif  // CONFIG_EXT_TILE
                                        &tile_cols,
                                        &tile_rows,
-#if CONFIG_EXT_TILE
-                                       &tile_encoding_mode,
-#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                        &tile_dependent_rows,
 #endif
@@ -581,11 +597,11 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_ENABLEAUTOALTREF,
                                         AOME_SET_SHARPNESS,
                                         AOME_SET_STATIC_THRESHOLD,
+#if CONFIG_EXT_TILE
+                                        AV1E_SET_SINGLE_TILE_DECODING,
+#endif  // CONFIG_EXT_TILE
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
-#if CONFIG_EXT_TILE
-                                        AV1E_SET_TILE_ENCODING_MODE,
-#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                         AV1E_SET_TILE_DEPENDENT_ROWS,
 #endif
@@ -1017,6 +1033,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
+#if CONFIG_EXT_TILE
+    } else if (arg_match(&arg, &large_scale_tile, argi)) {
+      config->cfg.large_scale_tile = arg_parse_uint(&arg);
+#endif  // CONFIG_EXT_TILE
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_mode, argi)) {
@@ -1233,6 +1253,9 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(g_error_resilient);
   SHOW(g_pass);
   SHOW(g_lag_in_frames);
+#if CONFIG_EXT_TILE
+  SHOW(large_scale_tile);
+#endif  // CONFIG_EXT_TILE
   SHOW(rc_dropframe_thresh);
   SHOW(rc_resize_mode);
   SHOW(rc_resize_numerator);
@@ -1390,7 +1413,7 @@ static void initialize_encoder(struct stream_state *stream,
       aom_codec_control(&stream->decoder, AV1_SET_DECODE_TILE_COL, -1);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_col");
     }
-#endif
+#endif  // CONFIG_EXT_TILE
   }
 #endif
 }

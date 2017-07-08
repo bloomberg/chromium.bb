@@ -83,7 +83,7 @@ struct av1_extracfg {
   int ans_window_size_log2;
 #endif
 #if CONFIG_EXT_TILE
-  unsigned int tile_encoding_mode;
+  unsigned int single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
 
   unsigned int motion_vector_unit_test;
@@ -98,13 +98,8 @@ static struct av1_extracfg default_extra_cfg = {
   0,    // noise_sensitivity
   0,    // sharpness
   0,    // static_thresh
-#if CONFIG_EXT_TILE
-  UINT_MAX,  // tile_columns
-  UINT_MAX,  // tile_rows
-#else
-  0,  // tile_columns
-  0,  // tile_rows
-#endif  // CONFIG_EXT_TILE
+  0,    // tile_columns
+  0,    // tile_rows
 #if CONFIG_DEPENDENT_HORZTILES
   0,  // Dependent Horizontal tiles
 #endif
@@ -154,7 +149,7 @@ static struct av1_extracfg default_extra_cfg = {
   23,  // ans_window_size_log2
 #endif
 #if CONFIG_EXT_TILE
-  0,    // Tile encoding mode is TILE_NORMAL by default.
+  0,    // Single tile decoding is off by default.
 #endif  // CONFIG_EXT_TILE
 
   0,  // motion_vector_unit_test
@@ -286,28 +281,34 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, superblock_size, AOM_SUPERBLOCK_SIZE_64X64,
               AOM_SUPERBLOCK_SIZE_DYNAMIC);
 #if CONFIG_EXT_TILE
+  RANGE_CHECK_HI(cfg, large_scale_tile, 1);
+  RANGE_CHECK_HI(extra_cfg, single_tile_decoding, 1);
+
+  if (cfg->large_scale_tile) {
 // TODO(any): Waring. If CONFIG_EXT_TILE is true, tile_columns really
 // means tile_width, and tile_rows really means tile_hight. The interface
 // should be sanitized.
 #if CONFIG_EXT_PARTITION
-  if (extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_64X64) {
-    if (extra_cfg->tile_columns != UINT_MAX)
-      RANGE_CHECK(extra_cfg, tile_columns, 1, 32);
-    if (extra_cfg->tile_rows != UINT_MAX)
-      RANGE_CHECK(extra_cfg, tile_rows, 1, 32);
-  } else
+    if (extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_64X64) {
+      if (extra_cfg->tile_columns != 0)
+        RANGE_CHECK(extra_cfg, tile_columns, 1, 32);
+      if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 32);
+    } else {
 #endif  // CONFIG_EXT_PARTITION
-  {
-    if (extra_cfg->tile_columns != UINT_MAX)
-      RANGE_CHECK(extra_cfg, tile_columns, 1, 64);
-    if (extra_cfg->tile_rows != UINT_MAX)
-      RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
-  }
-  RANGE_CHECK_HI(extra_cfg, tile_encoding_mode, 1);
-#else
-  RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
-  RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
+      if (extra_cfg->tile_columns != 0)
+        RANGE_CHECK(extra_cfg, tile_columns, 1, 64);
+      if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
+#if CONFIG_EXT_PARTITION
+    }
+#endif  // CONFIG_EXT_PARTITION
+  } else {
 #endif  // CONFIG_EXT_TILE
+    RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
+    RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
+
 #if CONFIG_DEPENDENT_HORZTILES
   RANGE_CHECK_HI(extra_cfg, dependent_horz_tiles, 1);
 #endif
@@ -483,6 +484,10 @@ static aom_codec_err_t set_encoder_config(
 
 #if CONFIG_TILE_GROUPS
   oxcf->num_tile_groups = extra_cfg->num_tg;
+#if CONFIG_EXT_TILE
+  // In large-scale tile encoding mode, num_tile_groups is always 1.
+  if (cfg->large_scale_tile) oxcf->num_tile_groups = 1;
+#endif  // CONFIG_EXT_TILE
   oxcf->mtu = extra_cfg->mtu_size;
 #endif
 
@@ -563,23 +568,38 @@ static aom_codec_err_t set_encoder_config(
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 
 #if CONFIG_EXT_TILE
-  {
+  oxcf->large_scale_tile = cfg->large_scale_tile;
+  oxcf->single_tile_decoding =
+      (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
+  if (oxcf->large_scale_tile) {
 #if CONFIG_EXT_PARTITION
     const unsigned int max =
         extra_cfg->superblock_size == AOM_SUPERBLOCK_SIZE_64X64 ? 64 : 32;
 #else
     const unsigned int max = 64;
 #endif  // CONFIG_EXT_PARTITION
-    oxcf->tile_columns = AOMMIN(extra_cfg->tile_columns, max);
-    oxcf->tile_rows = AOMMIN(extra_cfg->tile_rows, max);
-    oxcf->tile_encoding_mode = extra_cfg->tile_encoding_mode;
-  }
-#else
-  oxcf->tile_columns = extra_cfg->tile_columns;
-  oxcf->tile_rows = extra_cfg->tile_rows;
+    // If tile size is not set, set it to the default value.
+    const unsigned int tc =
+        (!extra_cfg->tile_columns) ? UINT_MAX : extra_cfg->tile_columns;
+    const unsigned int tr =
+        (!extra_cfg->tile_rows) ? UINT_MAX : extra_cfg->tile_rows;
+
+    oxcf->tile_columns = AOMMIN(tc, max);
+    oxcf->tile_rows = AOMMIN(tr, max);
+  } else {
 #endif  // CONFIG_EXT_TILE
+    oxcf->tile_columns = extra_cfg->tile_columns;
+    oxcf->tile_rows = extra_cfg->tile_rows;
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
+
 #if CONFIG_DEPENDENT_HORZTILES
-  oxcf->dependent_horz_tiles = extra_cfg->dependent_horz_tiles;
+  oxcf->dependent_horz_tiles =
+#if CONFIG_EXT_TILE
+      (cfg->large_scale_tile) ? 0 :
+#endif  // CONFIG_EXT_TILE
+                              extra_cfg->dependent_horz_tiles;
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   oxcf->loop_filter_across_tiles_enabled =
@@ -880,10 +900,10 @@ static aom_codec_err_t ctrl_set_frame_parallel_decoding_mode(
 }
 
 #if CONFIG_EXT_TILE
-static aom_codec_err_t ctrl_set_tile_encoding_mode(aom_codec_alg_priv_t *ctx,
-                                                   va_list args) {
+static aom_codec_err_t ctrl_set_single_tile_decoding(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.tile_encoding_mode = CAST(AV1E_SET_TILE_ENCODING_MODE, args);
+  extra_cfg.single_tile_decoding = CAST(AV1E_SET_SINGLE_TILE_DECODING, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 #endif  // CONFIG_EXT_TILE
@@ -1554,7 +1574,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ANS_WINDOW_SIZE_LOG2, ctrl_set_ans_window_size_log2 },
 #endif
 #if CONFIG_EXT_TILE
-  { AV1E_SET_TILE_ENCODING_MODE, ctrl_set_tile_encoding_mode },
+  { AV1E_SET_SINGLE_TILE_DECODING, ctrl_set_single_tile_decoding },
 #endif  // CONFIG_EXT_TILE
   { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
 
@@ -1619,6 +1639,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         AOM_KF_AUTO,  // g_kfmode
         0,            // kf_min_dist
         9999,         // kf_max_dist
+        0,            // large_scale_tile
     } },
 };
 

@@ -127,8 +127,8 @@ typedef struct AV1Decoder {
   int tile_size_bytes;
 #if CONFIG_EXT_TILE
   int tile_col_size_bytes;
-  int dec_tile_row, dec_tile_col;
-#endif  // CONFIG_EXT_TILE
+  int dec_tile_row, dec_tile_col;  // always -1 for non-VR tile encoding
+#endif                             // CONFIG_EXT_TILE
 #if CONFIG_ACCOUNTING
   int acct_enabled;
   Accounting accounting;

@@ -355,13 +355,12 @@ typedef struct AV1Common {
 
   int error_resilient_mode;
 
-#if !CONFIG_EXT_TILE
-  int log2_tile_cols, log2_tile_rows;
-#endif  // !CONFIG_EXT_TILE
+  int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_cols, tile_rows;
   int tile_width, tile_height;  // In MI units
 #if CONFIG_EXT_TILE
-  unsigned int tile_encoding_mode;
+  unsigned int large_scale_tile;
+  unsigned int single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_DEPENDENT_HORZTILES

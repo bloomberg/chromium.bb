@@ -3241,91 +3241,98 @@ static void read_tile_info(AV1Decoder *const pbi,
                            struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
 #if CONFIG_EXT_TILE
-  cm->tile_encoding_mode = aom_rb_read_literal(rb, 1);
+  cm->large_scale_tile = aom_rb_read_literal(rb, 1);
+  cm->single_tile_decoding = 0;
+  if (cm->large_scale_tile) {
+    struct loopfilter *lf = &cm->lf;
+
+    // Figure out single_tile_decoding by loopfilter_level.
+    cm->single_tile_decoding = (!lf->filter_level) ? 1 : 0;
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
-  if (cm->sb_size == BLOCK_128X128) {
-    cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
-    cm->tile_height = aom_rb_read_literal(rb, 5) + 1;
-  } else
+    if (cm->sb_size == BLOCK_128X128) {
+      cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
+      cm->tile_height = aom_rb_read_literal(rb, 5) + 1;
+    } else {
 #endif  // CONFIG_EXT_PARTITION
-  {
-    cm->tile_width = aom_rb_read_literal(rb, 6) + 1;
-    cm->tile_height = aom_rb_read_literal(rb, 6) + 1;
-  }
+      cm->tile_width = aom_rb_read_literal(rb, 6) + 1;
+      cm->tile_height = aom_rb_read_literal(rb, 6) + 1;
+#if CONFIG_EXT_PARTITION
+    }
+#endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
-  cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+    cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-  cm->tile_width <<= cm->mib_size_log2;
-  cm->tile_height <<= cm->mib_size_log2;
+    cm->tile_width <<= cm->mib_size_log2;
+    cm->tile_height <<= cm->mib_size_log2;
 
-  cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
-  cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
+    cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
+    cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
 
-  // Get the number of tiles
-  cm->tile_cols = 1;
-  while (cm->tile_cols * cm->tile_width < cm->mi_cols) ++cm->tile_cols;
+    // Get the number of tiles
+    cm->tile_cols = 1;
+    while (cm->tile_cols * cm->tile_width < cm->mi_cols) ++cm->tile_cols;
 
-  cm->tile_rows = 1;
-  while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
+    cm->tile_rows = 1;
+    while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
 
-  if (cm->tile_cols * cm->tile_rows > 1) {
-    // Read the number of bytes used to store tile size
-    pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
-    pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
-  }
+    if (cm->tile_cols * cm->tile_rows > 1) {
+      // Read the number of bytes used to store tile size
+      pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+      pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+    }
 
 #if CONFIG_DEPENDENT_HORZTILES
-  if (cm->tile_rows <= 1)
-    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
-  else
     cm->dependent_horz_tiles = 0;
 #endif
-#else
-  int min_log2_tile_cols, max_log2_tile_cols, max_ones;
-  av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
+  } else {
+#endif  // CONFIG_EXT_TILE
+    int min_log2_tile_cols, max_log2_tile_cols, max_ones;
+    av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
 
-  // columns
-  max_ones = max_log2_tile_cols - min_log2_tile_cols;
-  cm->log2_tile_cols = min_log2_tile_cols;
-  while (max_ones-- && aom_rb_read_bit(rb)) cm->log2_tile_cols++;
+    // columns
+    max_ones = max_log2_tile_cols - min_log2_tile_cols;
+    cm->log2_tile_cols = min_log2_tile_cols;
+    while (max_ones-- && aom_rb_read_bit(rb)) cm->log2_tile_cols++;
 
-  if (cm->log2_tile_cols > 6)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Invalid number of tile columns");
+    if (cm->log2_tile_cols > 6)
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid number of tile columns");
 
-  // rows
-  cm->log2_tile_rows = aom_rb_read_bit(rb);
-  if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
+    // rows
+    cm->log2_tile_rows = aom_rb_read_bit(rb);
+    if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
 #if CONFIG_DEPENDENT_HORZTILES
-  if (cm->log2_tile_rows != 0)
-    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
-  else
-    cm->dependent_horz_tiles = 0;
+    if (cm->log2_tile_rows != 0)
+      cm->dependent_horz_tiles = aom_rb_read_bit(rb);
+    else
+      cm->dependent_horz_tiles = 0;
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
-  cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+    cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-  cm->tile_cols = 1 << cm->log2_tile_cols;
-  cm->tile_rows = 1 << cm->log2_tile_rows;
+    cm->tile_cols = 1 << cm->log2_tile_cols;
+    cm->tile_rows = 1 << cm->log2_tile_rows;
 
-  cm->tile_width = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-  cm->tile_width >>= cm->log2_tile_cols;
-  cm->tile_height = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  cm->tile_height >>= cm->log2_tile_rows;
+    cm->tile_width = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+    cm->tile_width >>= cm->log2_tile_cols;
+    cm->tile_height = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+    cm->tile_height >>= cm->log2_tile_rows;
 
-  // round to integer multiples of superblock size
-  cm->tile_width = ALIGN_POWER_OF_TWO(cm->tile_width, MAX_MIB_SIZE_LOG2);
-  cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
+    // round to integer multiples of superblock size
+    cm->tile_width = ALIGN_POWER_OF_TWO(cm->tile_width, MAX_MIB_SIZE_LOG2);
+    cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
 
 // tile size magnitude
 #if !CONFIG_TILE_GROUPS
-  if (cm->tile_rows > 1 || cm->tile_cols > 1)
+    if (cm->tile_rows > 1 || cm->tile_cols > 1)
 #endif
-    pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+      pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
+#if CONFIG_EXT_TILE
+  }
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_TILE_GROUPS
@@ -3354,13 +3361,11 @@ static int mem_get_varsize(const uint8_t *src, int sz) {
 #if CONFIG_EXT_TILE
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
-static void get_tile_buffer(const uint8_t *const data_end,
-                            struct aom_internal_error_info *error_info,
-                            const uint8_t **data, aom_decrypt_cb decrypt_cb,
-                            void *decrypt_state,
-                            TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
-                            int tile_size_bytes, int col, int row,
-                            unsigned int tile_encoding_mode) {
+static void get_ls_tile_buffer(
+    const uint8_t *const data_end, struct aom_internal_error_info *error_info,
+    const uint8_t **data, aom_decrypt_cb decrypt_cb, void *decrypt_state,
+    TileBufferDec (*const tile_buffers)[MAX_TILE_COLS], int tile_size_bytes,
+    int col, int row, int tile_copy_mode) {
   size_t size;
 
   size_t copy_size = 0;
@@ -3379,9 +3384,9 @@ static void get_tile_buffer(const uint8_t *const data_end,
     size = mem_get_varsize(*data, tile_size_bytes);
   }
 
-  // If cm->tile_encoding_mode = 1 (i.e. TILE_VR), then the top bit of the tile
-  // header indicates copy mode.
-  if (tile_encoding_mode && (size >> (tile_size_bytes * 8 - 1)) == 1) {
+  // If tile_copy_mode = 1, then the top bit of the tile header indicates copy
+  // mode.
+  if (tile_copy_mode && (size >> (tile_size_bytes * 8 - 1)) == 1) {
     // The remaining bits in the top byte signal the row offset
     int offset = (size >> (tile_size_bytes - 1) * 8) & 0x7f;
 
@@ -3410,7 +3415,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
   tile_buffers[row][col].raw_data_end = *data;
 }
 
-static void get_tile_buffers(
+static void get_ls_tile_buffers(
     AV1Decoder *pbi, const uint8_t *data, const uint8_t *data_end,
     TileBufferDec (*const tile_buffers)[MAX_TILE_COLS]) {
   AV1_COMMON *const cm = &pbi->common;
@@ -3443,7 +3448,9 @@ static void get_tile_buffers(
 
     const int tile_col_size_bytes = pbi->tile_col_size_bytes;
     const int tile_size_bytes = pbi->tile_size_bytes;
-
+    const int tile_copy_mode =
+        ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256) ? 1
+                                                                           : 0;
     size_t tile_col_size;
     int r, c;
 
@@ -3475,9 +3482,9 @@ static void get_tile_buffers(
       for (r = 0; r < (is_last ? tile_rows : tile_rows_end); ++r) {
         tile_buffers[r][c].col = c;
 
-        get_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
-                        pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                        tile_size_bytes, c, r, cm->tile_encoding_mode);
+        get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
+                           pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
+                           tile_size_bytes, c, r, tile_copy_mode);
       }
     }
 
@@ -3490,14 +3497,15 @@ static void get_tile_buffers(
       for (r = 0; r < tile_rows; ++r) {
         tile_buffers[r][c].col = c;
 
-        get_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
-                        pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
-                        tile_size_bytes, c, r, cm->tile_encoding_mode);
+        get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
+                           pbi->decrypt_cb, pbi->decrypt_state, tile_buffers,
+                           tile_size_bytes, c, r, tile_copy_mode);
       }
     }
   }
 }
-#else
+#endif  // CONFIG_EXT_TILE
+
 // Reads the next tile returning its size and adjusting '*data' accordingly
 // based on 'is_last'.
 static void get_tile_buffer(const uint8_t *const data_end,
@@ -3601,7 +3609,6 @@ static void get_tile_buffers(
   }
 #endif
 }
-#endif  // CONFIG_EXT_TILE
 
 #if CONFIG_PVQ
 static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
@@ -3664,23 +3671,36 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_TILE
   const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);
   const int single_row = pbi->dec_tile_row >= 0;
-  const int tile_rows_start = single_row ? dec_tile_row : 0;
-  const int tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
   const int dec_tile_col = AOMMIN(pbi->dec_tile_col, tile_cols);
   const int single_col = pbi->dec_tile_col >= 0;
-  const int tile_cols_start = single_col ? dec_tile_col : 0;
-  const int tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
-  const int inv_col_order = pbi->inv_tile_order && !single_col;
-  const int inv_row_order = pbi->inv_tile_order && !single_row;
-#else
-  const int tile_rows_start = 0;
-  const int tile_rows_end = tile_rows;
-  const int tile_cols_start = 0;
-  const int tile_cols_end = tile_cols;
-  const int inv_col_order = pbi->inv_tile_order;
-  const int inv_row_order = pbi->inv_tile_order;
 #endif  // CONFIG_EXT_TILE
+  int tile_rows_start;
+  int tile_rows_end;
+  int tile_cols_start;
+  int tile_cols_end;
+  int inv_col_order;
+  int inv_row_order;
   int tile_row, tile_col;
+
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile) {
+    tile_rows_start = single_row ? dec_tile_row : 0;
+    tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
+    tile_cols_start = single_col ? dec_tile_col : 0;
+    tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
+    inv_col_order = pbi->inv_tile_order && !single_col;
+    inv_row_order = pbi->inv_tile_order && !single_row;
+  } else {
+#endif  // CONFIG_EXT_TILE
+    tile_rows_start = 0;
+    tile_rows_end = tile_rows;
+    tile_cols_start = 0;
+    tile_cols_end = tile_cols;
+    inv_col_order = pbi->inv_tile_order;
+    inv_row_order = pbi->inv_tile_order;
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
 
   if (cm->lf.filter_level && !cm->skip_loop_filter &&
       pbi->lf_worker.data1 == NULL) {
@@ -3704,7 +3724,12 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
 
-  get_tile_buffers(pbi, data, data_end, tile_buffers);
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile)
+    get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
+  else
+#endif  // CONFIG_EXT_TILE
+    get_tile_buffers(pbi, data, data_end, tile_buffers);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
     aom_free(pbi->tile_data);
@@ -3901,20 +3926,22 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
 
 #if CONFIG_EXT_TILE
-  if (n_tiles == 1) {
+  if (cm->large_scale_tile) {
+    if (n_tiles == 1) {
+#if CONFIG_ANS
+      return data_end;
+#else
+      // Find the end of the single tile buffer
+      return aom_reader_find_end(&pbi->tile_data->bit_reader);
+#endif  // CONFIG_ANS
+    } else {
+      // Return the end of the last tile buffer
+      return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
+    }
+  } else {
+#endif  // CONFIG_EXT_TILE
 #if CONFIG_ANS
     return data_end;
-#else
-    // Find the end of the single tile buffer
-    return aom_reader_find_end(&pbi->tile_data->bit_reader);
-#endif  // CONFIG_ANS
-  } else {
-    // Return the end of the last tile buffer
-    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
-  }
-#else
-#if CONFIG_ANS
-  return data_end;
 #else
   {
     // Get last tile data.
@@ -3922,6 +3949,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     return aom_reader_find_end(&td->bit_reader);
   }
 #endif  // CONFIG_ANS
+#if CONFIG_EXT_TILE
+  }
 #endif  // CONFIG_EXT_TILE
 }
 
@@ -3990,24 +4019,35 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_TILE
   const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);
   const int single_row = pbi->dec_tile_row >= 0;
-  const int tile_rows_start = single_row ? dec_tile_row : 0;
-  const int tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
   const int dec_tile_col = AOMMIN(pbi->dec_tile_col, tile_cols);
   const int single_col = pbi->dec_tile_col >= 0;
-  const int tile_cols_start = single_col ? dec_tile_col : 0;
-  const int tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
-#else
-  const int tile_rows_start = 0;
-  const int tile_rows_end = tile_rows;
-  const int tile_cols_start = 0;
-  const int tile_cols_end = tile_cols;
 #endif  // CONFIG_EXT_TILE
+  int tile_rows_start;
+  int tile_rows_end;
+  int tile_cols_start;
+  int tile_cols_end;
   int tile_row, tile_col;
   int i;
 
-#if !(CONFIG_ANS || CONFIG_EXT_TILE)
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile) {
+    tile_rows_start = single_row ? dec_tile_row : 0;
+    tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
+    tile_cols_start = single_col ? dec_tile_col : 0;
+    tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
+  } else {
+#endif  // CONFIG_EXT_TILE
+    tile_rows_start = 0;
+    tile_rows_end = tile_rows;
+    tile_cols_start = 0;
+    tile_cols_end = tile_cols;
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
+
+#if !CONFIG_ANS
   int final_worker = -1;
-#endif  // !(CONFIG_ANS || CONFIG_EXT_TILE)
+#endif  // !CONFIG_ANS
 
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
@@ -4057,8 +4097,13 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     }
   }
 
-  // Load tile data into tile_buffers
-  get_tile_buffers(pbi, data, data_end, tile_buffers);
+// Load tile data into tile_buffers
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile)
+    get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
+  else
+#endif  // CONFIG_EXT_TILE
+    get_tile_buffers(pbi, data, data_end, tile_buffers);
 
   for (tile_row = tile_rows_start; tile_row < tile_rows_end; ++tile_row) {
     // Sort the buffers in this tile row based on size in descending order.
@@ -4135,11 +4180,11 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
           winterface->launch(worker);
         }
 
-#if !(CONFIG_ANS || CONFIG_EXT_TILE)
+#if !CONFIG_ANS
         if (tile_row == tile_rows - 1 && buf->col == tile_cols - 1) {
           final_worker = i;
         }
-#endif  // !(CONFIG_ANS || CONFIG_EXT_TILE)
+#endif  // !CONFIG_ANS
       }
 
       // Sync all workers
@@ -4163,11 +4208,13 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_EXT_TILE
-  // Return the end of the last tile buffer
-  return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
-#else
+  if (cm->large_scale_tile) {
+    // Return the end of the last tile buffer
+    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
+  } else {
+#endif  // CONFIG_EXT_TILE
 #if CONFIG_ANS
-  return data_end;
+    return data_end;
 #else
   assert(final_worker != -1);
   {
@@ -4176,6 +4223,8 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     return aom_reader_find_end(&twd->bit_reader);
   }
 #endif  // CONFIG_ANS
+#if CONFIG_EXT_TILE
+  }
 #endif  // CONFIG_EXT_TILE
 }
 
@@ -5144,9 +5193,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
       pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
 
 #if CONFIG_EXT_TILE
-  // If cm->tile_encoding_mode == TILE_NORMAL, the independent decoding of a
-  // single tile or a section of a frame is not allowed.
-  if (!cm->tile_encoding_mode &&
+  // If cm->single_tile_decoding = 0, the independent decoding of a single tile
+  // or a section of a frame is not allowed.
+  if (!cm->single_tile_decoding &&
       (pbi->dec_tile_row >= 0 || pbi->dec_tile_col >= 0)) {
     pbi->dec_tile_row = -1;
     pbi->dec_tile_col = -1;

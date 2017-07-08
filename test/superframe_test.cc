@@ -103,7 +103,9 @@ class SuperframeTest
 TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {
   sf_count_max_ = 0;  // early exit on successful test.
   cfg_.g_lag_in_frames = 25;
-
+#if CONFIG_EXT_TILE
+  cfg_.large_scale_tile = 1;
+#endif  // CONFIG_EXT_TILE
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 40);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));

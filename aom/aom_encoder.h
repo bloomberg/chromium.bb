@@ -593,6 +593,14 @@ typedef struct aom_codec_enc_cfg {
    * equal to kf_max_dist for a fixed interval.
    */
   unsigned int kf_max_dist;
+
+  /*!\brief Tile coding mode
+   *
+   * This value indicates the tile coding mode.
+   * A value of 0 implies a normal non-large-scale tile coding. A value of 1
+   * implies a large-scale tile coding.
+   */
+  unsigned int large_scale_tile;
 } aom_codec_enc_cfg_t; /**< alias for struct aom_codec_enc_cfg */
 
 /*!\brief Initialize an encoder instance

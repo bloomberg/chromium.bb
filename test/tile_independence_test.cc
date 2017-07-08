@@ -38,7 +38,7 @@ class TileIndependenceTest
     inv_dec_ = codec_->CreateDecoder(cfg, 0);
     inv_dec_->Control(AV1_INVERT_TILE_DECODE_ORDER, 1);
 
-#if CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_AV1
     if (fw_dec_->IsAV1() && inv_dec_->IsAV1()) {
       fw_dec_->Control(AV1_SET_DECODE_TILE_ROW, -1);
       fw_dec_->Control(AV1_SET_DECODE_TILE_COL, -1);
@@ -63,9 +63,6 @@ class TileIndependenceTest
     if (video->frame() == 1) {
       encoder->Control(AV1E_SET_TILE_COLUMNS, n_tile_cols_);
       encoder->Control(AV1E_SET_TILE_ROWS, n_tile_rows_);
-#if CONFIG_EXT_TILE
-      encoder->Control(AV1E_SET_TILE_ENCODING_MODE, 0);  // TILE_NORMAL
-#endif                                                   // CONFIG_EXT_TILE
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
       encoder->Control(AV1E_SET_TILE_LOOPFILTER, 0);
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
@@ -122,7 +119,12 @@ class TileIndependenceTest
 // run an encode with 2 or 4 tiles, and do the decode both in normal and
 // inverted tile ordering. Ensure that the MD5 of the output in both cases
 // is identical. If so, tiles are considered independent and the test passes.
-TEST_P(TileIndependenceTest, MD5Match) { DoTest(); }
+TEST_P(TileIndependenceTest, MD5Match) {
+#if CONFIG_EXT_TILE
+  cfg_.large_scale_tile = 0;
+#endif  // CONFIG_EXT_TILE
+  DoTest();
+}
 
 class TileIndependenceTestLarge : public TileIndependenceTest {
   virtual void SetCpuUsed(libaom_test::Encoder *encoder) {
@@ -131,18 +133,37 @@ class TileIndependenceTestLarge : public TileIndependenceTest {
   }
 };
 
-TEST_P(TileIndependenceTestLarge, MD5Match) { DoTest(); }
-
+TEST_P(TileIndependenceTestLarge, MD5Match) {
 #if CONFIG_EXT_TILE
-AV1_INSTANTIATE_TEST_CASE(TileIndependenceTest, ::testing::Values(1, 2, 32),
-                          ::testing::Values(1, 2, 32));
-AV1_INSTANTIATE_TEST_CASE(TileIndependenceTestLarge,
-                          ::testing::Values(1, 2, 32),
-                          ::testing::Values(1, 2, 32));
-#else
+  cfg_.large_scale_tile = 0;
+#endif  // CONFIG_EXT_TILE
+  DoTest();
+}
+
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTest, ::testing::Values(0, 1),
                           ::testing::Values(0, 1));
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTestLarge, ::testing::Values(0, 1),
                           ::testing::Values(0, 1));
+
+#if CONFIG_EXT_TILE
+class TileIndependenceLSTest : public TileIndependenceTest {};
+
+TEST_P(TileIndependenceLSTest, MD5Match) {
+  cfg_.large_scale_tile = 1;
+  DoTest();
+}
+
+class TileIndependenceLSTestLarge : public TileIndependenceTestLarge {};
+
+TEST_P(TileIndependenceLSTestLarge, MD5Match) {
+  cfg_.large_scale_tile = 1;
+  DoTest();
+}
+
+AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTest, ::testing::Values(1, 2, 32),
+                          ::testing::Values(1, 2, 32));
+AV1_INSTANTIATE_TEST_CASE(TileIndependenceLSTestLarge,
+                          ::testing::Values(1, 2, 32),
+                          ::testing::Values(1, 2, 32));
 #endif  // CONFIG_EXT_TILE
 }  // namespace

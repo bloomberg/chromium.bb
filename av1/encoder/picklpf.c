@@ -200,11 +200,4 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level = av1_search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
   }
-
-#if CONFIG_EXT_TILE
-  // TODO(any): 0 loopfilter level is only necessary if individual tile
-  // decoding is required. We need to communicate this requirement to this
-  // code and force loop filter level 0 only if required.
-  if (cm->tile_encoding_mode) lf->filter_level = 0;
-#endif  // CONFIG_EXT_TILE
 }

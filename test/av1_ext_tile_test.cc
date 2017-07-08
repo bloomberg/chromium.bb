@@ -30,8 +30,8 @@ const int kTIleSizeInPixels = (kTileSize << 6);
 const int kImgWidth = 704;
 const int kImgHeight = 576;
 
-// This test tests "tile_encoding_mode = TILE_VR" case. The TILE_NORMAL case is
-// tested by the tile_independence test.
+// This test tests large scale tile coding case. Non-large-scale tile coding
+// is tested by the tile_independence test.
 class AV1ExtTileTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
@@ -84,7 +84,8 @@ class AV1ExtTileTest
       // The tile size is 64x64.
       encoder->Control(AV1E_SET_TILE_COLUMNS, kTileSize);
       encoder->Control(AV1E_SET_TILE_ROWS, kTileSize);
-      encoder->Control(AV1E_SET_TILE_ENCODING_MODE, 1);  // TILE_VR
+      // TODO(yunqingwang): test single_tile_decoding = 0.
+      encoder->Control(AV1E_SET_SINGLE_TILE_DECODING, 1);
 #if CONFIG_EXT_PARTITION
       // Always use 64x64 max partition.
       encoder->Control(AV1E_SET_SUPERBLOCK_SIZE, AOM_SUPERBLOCK_SIZE_64X64);
@@ -186,6 +187,7 @@ TEST_P(AV1ExtTileTest, DecoderResultTest) {
                                        kImgHeight, 30, 1, 0, kLimit);
   cfg_.rc_target_bitrate = 500;
   cfg_.g_error_resilient = AOM_ERROR_RESILIENT_DEFAULT;
+  cfg_.large_scale_tile = 1;
   cfg_.g_lag_in_frames = 0;
   cfg_.g_threads = 1;
 
