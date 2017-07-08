@@ -16,6 +16,7 @@ proto_library("proto") {
     "omnibox_input_type.proto",
     "perf_data.proto",
     "perf_stat.proto",
+    "printer_event.proto",
     "profiler_event.proto",
     "sampled_profile.proto",
     "system_profile.proto",
