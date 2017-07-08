@@ -80492,6 +80492,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UMA.FileMetricsProvider.EmbeddedProfile.DroppedFileAge"
     units="minutes">
+  <obsolete>
+    Deprecated 07/2017. Was only for short-term analysis. About 95% of dropped
+    files were less than 1 day old.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
   <summary>
