@@ -265,6 +265,11 @@ const char kEnableClearBrowsingDataCountersName[] =
 const char kEnableClearBrowsingDataCountersDescription[] =
     "Shows data volume counters in the Clear browsing data dialog.";
 
+const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
+
+const char kEnableClientLoFiDescription[] =
+    "Enable showing low fidelity images on some pages on slow networks.";
+
 const char kEnableDataReductionProxyLitePageName[] =
     "Lite pages for Data Saver Lo-Fi mode";
 const char kEnableDataReductionProxyLitePageDescription[] =
@@ -1396,11 +1401,6 @@ const char kEnableOfflinePreviewsName[] = "Offline Page Previews";
 
 const char kEnableOfflinePreviewsDescription[] =
     "Enable showing offline page previews on slow networks.";
-
-const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
-
-const char kEnableClientLoFiDescription[] =
-    "Enable showing low fidelity images on some pages on slow networks.";
 
 #endif  // defined(OS_ANDROID)
 
