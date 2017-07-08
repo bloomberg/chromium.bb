@@ -101,6 +101,13 @@ class TestVideoConfig {
   DISALLOW_COPY_AND_ASSIGN(TestVideoConfig);
 };
 
+// Provides pre-canned AudioDecoderConfig. These types are used for tests that
+// don't care about detailed parameters of the config.
+class TestAudioConfig {
+ public:
+  static AudioDecoderConfig Normal();
+};
+
 // Provides pre-canned AudioParameters objects.
 class TestAudioParameters {
  public:

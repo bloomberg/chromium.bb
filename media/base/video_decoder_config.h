@@ -89,14 +89,14 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   // Width and height of video frame immediately post-decode. Not all pixels
   // in this region are valid.
-  gfx::Size coded_size() const { return coded_size_; }
+  const gfx::Size& coded_size() const { return coded_size_; }
 
   // Region of |coded_size_| that is visible.
-  gfx::Rect visible_rect() const { return visible_rect_; }
+  const gfx::Rect& visible_rect() const { return visible_rect_; }
 
   // Final visible width and height of a video frame with aspect ratio taken
   // into account.
-  gfx::Size natural_size() const { return natural_size_; }
+  const gfx::Size& natural_size() const { return natural_size_; }
 
   // Optional byte data required to initialize video decoders, such as H.264
   // AVCC data.
@@ -114,10 +114,10 @@ class MEDIA_EXPORT VideoDecoderConfig {
   }
 
   void set_color_space_info(const VideoColorSpace& color_space_info);
-  VideoColorSpace color_space_info() const;
+  const VideoColorSpace& color_space_info() const;
 
   void set_hdr_metadata(const HDRMetadata& hdr_metadata);
-  base::Optional<HDRMetadata> hdr_metadata() const;
+  const base::Optional<HDRMetadata>& hdr_metadata() const;
 
   // Sets the config to be encrypted or not encrypted manually. This can be
   // useful for decryptors that decrypts an encrypted stream to a clear stream.

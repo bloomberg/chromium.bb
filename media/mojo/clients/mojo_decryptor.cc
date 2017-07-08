@@ -102,8 +102,7 @@ void MojoDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  remote_decryptor_->InitializeAudioDecoder(
-      mojom::AudioDecoderConfig::From(config), init_cb);
+  remote_decryptor_->InitializeAudioDecoder(config, init_cb);
 }
 
 void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
@@ -111,8 +110,7 @@ void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  remote_decryptor_->InitializeVideoDecoder(
-      mojom::VideoDecoderConfig::From(config), init_cb);
+  remote_decryptor_->InitializeVideoDecoder(config, init_cb);
 }
 
 void MojoDecryptor::DecryptAndDecodeAudio(

@@ -105,6 +105,7 @@ class MojoRendererTest : public ::testing::Test {
 
   void CreateAudioStream() {
     audio_stream_ = CreateStream(DemuxerStream::AUDIO);
+    audio_stream_->set_audio_decoder_config(TestAudioConfig::Normal());
     streams_.push_back(audio_stream_.get());
     EXPECT_CALL(demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
   }

@@ -49,10 +49,10 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService
                const DecryptCallback& callback) final;
   void CancelDecrypt(StreamType stream_type) final;
   void InitializeAudioDecoder(
-      mojom::AudioDecoderConfigPtr config,
+      const AudioDecoderConfig& config,
       const InitializeAudioDecoderCallback& callback) final;
   void InitializeVideoDecoder(
-      mojom::VideoDecoderConfigPtr config,
+      const VideoDecoderConfig& config,
       const InitializeVideoDecoderCallback& callback) final;
   void DecryptAndDecodeAudio(
       mojom::DecoderBufferPtr encrypted,

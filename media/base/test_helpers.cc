@@ -180,6 +180,12 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
   return kLargeSize;
 }
 
+AudioDecoderConfig TestAudioConfig::Normal() {
+  return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
+                            Unencrypted());
+}
+
 // static
 AudioParameters TestAudioParameters::Normal() {
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,

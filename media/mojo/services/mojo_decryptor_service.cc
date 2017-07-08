@@ -84,23 +84,21 @@ void MojoDecryptorService::CancelDecrypt(StreamType stream_type) {
 }
 
 void MojoDecryptorService::InitializeAudioDecoder(
-    mojom::AudioDecoderConfigPtr config,
+    const AudioDecoderConfig& config,
     const InitializeAudioDecoderCallback& callback) {
   DVLOG(1) << __func__;
   decryptor_->InitializeAudioDecoder(
-      config.To<AudioDecoderConfig>(),
-      base::Bind(&MojoDecryptorService::OnAudioDecoderInitialized, weak_this_,
-                 callback));
+      config, base::Bind(&MojoDecryptorService::OnAudioDecoderInitialized,
+                         weak_this_, callback));
 }
 
 void MojoDecryptorService::InitializeVideoDecoder(
-    mojom::VideoDecoderConfigPtr config,
+    const VideoDecoderConfig& config,
     const InitializeVideoDecoderCallback& callback) {
   DVLOG(1) << __func__;
   decryptor_->InitializeVideoDecoder(
-      config.To<VideoDecoderConfig>(),
-      base::Bind(&MojoDecryptorService::OnVideoDecoderInitialized, weak_this_,
-                 callback));
+      config, base::Bind(&MojoDecryptorService::OnVideoDecoderInitialized,
+                         weak_this_, callback));
 }
 
 void MojoDecryptorService::DecryptAndDecodeAudio(
