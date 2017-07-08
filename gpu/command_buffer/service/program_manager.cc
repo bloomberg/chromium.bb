@@ -225,6 +225,26 @@ GLsizeiptr VertexShaderOutputTypeToSize(const sh::Varying& varying) {
   return total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
 }
 
+size_t LocationCountForAttribType(GLenum type) {
+  switch (type) {
+    case GL_FLOAT_MAT2:
+    case GL_FLOAT_MAT2x3:
+    case GL_FLOAT_MAT2x4:
+      return 2;
+    case GL_FLOAT_MAT3x2:
+    case GL_FLOAT_MAT3:
+    case GL_FLOAT_MAT3x4:
+      return 3;
+      break;
+    case GL_FLOAT_MAT4x2:
+    case GL_FLOAT_MAT4x3:
+    case GL_FLOAT_MAT4:
+      return 4;
+    default:
+      return 1;
+  }
+}
+
 }  // anonymous namespace.
 
 Program::UniformInfo::UniformInfo()
@@ -457,16 +477,21 @@ void Program::UpdateFragmentOutputBaseTypes() {
 
 void Program::UpdateVertexInputBaseTypes() {
   ClearVertexInputMasks();
-  DCHECK_LE(attrib_infos_.size(), manager_->max_vertex_attribs());
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& input = attrib_infos_[ii];
     if (ProgramManager::HasBuiltInPrefix(input.name)) {
       continue;
     }
-    int shift_bits = (input.location % 16) * 2;
-    vertex_input_active_mask_[ii / 16] |= 0x3 << shift_bits;
-    vertex_input_base_type_mask_[ii / 16] |=
-        InputOutputTypeToBaseType(true, input.type) << shift_bits;
+
+    DCHECK_LE(input.location + input.location_count,
+              manager_->max_vertex_attribs());
+    for (size_t location = input.location;
+         location < input.location + input.location_count; ++location) {
+      int shift_bits = (location % 16) * 2;
+      vertex_input_active_mask_[location / 16] |= 0x3 << shift_bits;
+      vertex_input_base_type_mask_[location / 16] |=
+          InputOutputTypeToBaseType(true, input.type) << shift_bits;
+    }
   }
 }
 
@@ -706,7 +731,7 @@ void Program::Update() {
   uniforms_cleared_ = false;
   GLint num_attribs = 0;
   GLint max_len = 0;
-  GLint max_location = -1;
+  size_t num_locations = 0;
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
   glGetProgramiv(service_id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
@@ -721,26 +746,25 @@ void Program::Update() {
     DCHECK(length == 0 || name_buffer[length] == '\0');
     std::string original_name;
     GetVertexAttribData(name_buffer.get(), &original_name, &type);
+    size_t location_count = size * LocationCountForAttribType(type);
     // TODO(gman): Should we check for error?
     GLint location = glGetAttribLocation(service_id_, name_buffer.get());
-    if (location > max_location) {
-      max_location = location;
-    }
-    attrib_infos_.push_back(VertexAttrib(1, type, original_name, location));
+    num_locations = std::max(num_locations, location + location_count);
+    attrib_infos_.push_back(
+        VertexAttrib(1, type, original_name, location, location_count));
     max_attrib_name_length_ = std::max(
         max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
   }
 
   // Create attrib location to index map.
-  attrib_location_to_index_map_.resize(max_location + 1);
-  for (GLint ii = 0; ii <= max_location; ++ii) {
-    attrib_location_to_index_map_[ii] = -1;
-  }
+  attrib_location_to_index_map_.resize(num_locations, -1);
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
-    if (info.location >= 0 && info.location <= max_location) {
-      attrib_location_to_index_map_[info.location] = ii;
-    }
+    if (info.location < 0)
+      continue;
+    DCHECK_LE(info.location + info.location_count, num_locations);
+    for (size_t j = 0; j < info.location_count; ++j)
+      attrib_location_to_index_map_[info.location + j] = ii;
   }
 
   if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
@@ -1864,20 +1888,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
       }
     }
     if (attrib) {
-      size_t num_of_locations = 1;
-      switch (attrib->type) {
-        case GL_FLOAT_MAT2:
-          num_of_locations = 2;
-          break;
-        case GL_FLOAT_MAT3:
-          num_of_locations = 3;
-          break;
-        case GL_FLOAT_MAT4:
-          num_of_locations = 4;
-          break;
-        default:
-          break;
-      }
+      size_t num_of_locations = LocationCountForAttribType(attrib->type);
       for (size_t ii = 0; ii < num_of_locations; ++ii) {
         GLint loc = key_value.second + ii;
         auto result = location_binding_used.insert(loc);
