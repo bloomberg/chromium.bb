@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
@@ -101,8 +102,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
+#if defined(OS_LINUX)
+#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
+  DISABLED_VerifyCanvasCaptureOffscreenCanvasCommitFrames
+#else
+#define MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames \
+  VerifyCanvasCaptureOffscreenCanvasCommitFrames
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
+                       MAYBE_VerifyCanvasCaptureOffscreenCanvasCommitFrames) {
   MakeTypicalCall("testCanvasCapture(drawOffscreenCanvasCommit);",
                   kCanvasCaptureTestHtmlFile);
 }
