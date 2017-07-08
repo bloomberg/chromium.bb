@@ -428,7 +428,7 @@ Polymer({
    * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} provider
    * @return {string}
    */
-  getAddThirdParrtyVpnLabel_: function(provider) {
+  getAddThirdPartyVpnLabel_: function(provider) {
     return this.i18n('internetAddThirdPartyVPN', provider.ProviderName);
   },
 

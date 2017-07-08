@@ -98,7 +98,7 @@ suite('AndroidAppsPageTests', function() {
       assertTrue(!subpage.$$('settings-android-settings-element'));
     });
 
-    test('ManageAppsOpenReqest', function() {
+    test('ManageAppsOpenRequest', function() {
       setAndroidAppsState(true, true);
       var button = subpage.$$('settings-android-settings-element').
           $$('#manageApps');
@@ -178,7 +178,7 @@ suite('AndroidAppsPageTests', function() {
           $$("#manageApps"));
     });
 
-    test('ManageAppsOpenReqest', function() {
+    test('ManageAppsOpenRequest', function() {
       var button = androidAppsPage.$$('settings-android-settings-element').
           $$('#manageApps');
       assertTrue(!!button);
