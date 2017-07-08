@@ -59,17 +59,22 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 	 */
 	for (i = 0; i < drv->backend->combos.size; i++) {
 		combo = &drv->backend->combos.data[i];
-		if (combo->format == item->format) {
-			if ((combo->metadata.tiling == I915_TILING_Y &&
-			     item->modifier == I915_FORMAT_MOD_Y_TILED) ||
-			    (combo->metadata.tiling == I915_TILING_X &&
-			     item->modifier == I915_FORMAT_MOD_X_TILED)) {
-				combo->metadata.modifier = item->modifier;
-				combo->usage |= item->usage;
-			} else if (combo->metadata.tiling != I915_TILING_Y) {
-				combo->usage |= item->usage;
-			}
+		if (combo->format != item->format)
+			continue;
+
+		if (item->modifier == DRM_FORMAT_MOD_NONE &&
+		    combo->metadata.tiling == I915_TILING_X) {
+			/*
+			 * FIXME: drv_query_kms() does not report the available modifiers
+			 * yet, but we know that all hardware can scanout from X-tiled
+			 * buffers, so let's add this to our combinations, except for
+			 * cursor, which must not be tiled.
+			 */
+			combo->usage |= item->usage & ~BO_USE_CURSOR;
 		}
+
+		if (combo->metadata.modifier == item->modifier)
+			combo->usage |= item->usage;
 	}
 
 	return 0;
@@ -119,6 +124,7 @@ static int i915_add_combinations(struct driver *drv)
 
 	metadata.tiling = I915_TILING_X;
 	metadata.priority = 2;
+	metadata.modifier = I915_FORMAT_MOD_X_TILED;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, render_flags);
@@ -133,6 +139,7 @@ static int i915_add_combinations(struct driver *drv)
 
 	metadata.tiling = I915_TILING_Y;
 	metadata.priority = 3;
+	metadata.modifier = I915_FORMAT_MOD_Y_TILED;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 				   &metadata, render_flags);
