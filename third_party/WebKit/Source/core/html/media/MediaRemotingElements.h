@@ -5,7 +5,7 @@
 #ifndef MediaRemotingElements_h
 #define MediaRemotingElements_h
 
-#include "core/html/shadow/MediaRemotingInterstitial.h"
+#include "core/html/media/MediaRemotingInterstitial.h"
 
 namespace blink {
 
