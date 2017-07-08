@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/cookie_manager.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
@@ -206,7 +208,7 @@ class CookieManager {
 
   void RemoveSessionCookiesHelper(BoolCallback callback);
   void RemoveAllCookiesHelper(BoolCallback callback);
-  void RemoveCookiesCompleted(BoolCallback callback, int num_deleted);
+  void RemoveCookiesCompleted(BoolCallback callback, uint32_t num_deleted);
 
   void FlushCookieStoreAsyncHelper(base::Closure complete);
 
@@ -448,8 +450,8 @@ void CookieManager::RemoveSessionCookiesHelper(BoolCallback callback) {
 }
 
 void CookieManager::RemoveCookiesCompleted(BoolCallback callback,
-                                           int num_deleted) {
-  callback.Run(num_deleted > 0);
+                                           uint32_t num_deleted) {
+  callback.Run(num_deleted > 0u);
 }
 
 void CookieManager::RemoveAllCookies(

@@ -6,6 +6,8 @@
 
 #import <WebKit/WebKit.h>
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/bind.h"
@@ -39,7 +41,7 @@
 
 namespace {
 // Empty callback used by DeleteAllCreatedBetweenAsync below.
-void DoNothing(int n) {}
+void DoNothing(uint32_t n) {}
 }
 
 @interface BrowsingDataRemovalController ()

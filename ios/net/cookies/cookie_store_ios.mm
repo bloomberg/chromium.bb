@@ -861,7 +861,7 @@ void CookieStoreIOS::UpdateCachesAfterSet(SetCookiesCallback callback,
 }
 
 void CookieStoreIOS::UpdateCachesAfterDelete(DeleteCallback callback,
-                                             int num_deleted) {
+                                             uint32_t num_deleted) {
   DCHECK(thread_checker_.CalledOnValidThread());
   UpdateCachesFromCookieMonster();
   if (!callback.is_null())

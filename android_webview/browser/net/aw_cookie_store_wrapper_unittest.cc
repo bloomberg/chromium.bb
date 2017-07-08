@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "net/cookies/cookie_store.h"
@@ -20,9 +22,9 @@ struct AwCookieStoreWrapperTestTraits {
     // Android Webview can run multiple tests without restarting the binary,
     // so have to delete any cookies the global store may have from an earlier
     // test.
-    net::ResultSavingCookieCallback<int> callback;
+    net::ResultSavingCookieCallback<uint32_t> callback;
     cookie_store->DeleteAllAsync(
-        base::Bind(&net::ResultSavingCookieCallback<int>::Run,
+        base::Bind(&net::ResultSavingCookieCallback<uint32_t>::Run,
                    base::Unretained(&callback)));
     callback.WaitUntilDone();
 

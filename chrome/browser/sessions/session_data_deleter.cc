@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,8 +27,8 @@
 
 namespace {
 
-void CookieDeleted(int num_cookies_deleted) {
-  DCHECK_EQ(1, num_cookies_deleted);
+void CookieDeleted(uint32_t num_cookies_deleted) {
+  DCHECK_EQ(1u, num_cookies_deleted);
 }
 
 class SessionDataDeleter
@@ -59,7 +60,7 @@ class SessionDataDeleter
 
   // Called when all session-only cookies have been deleted.
   void DeleteSessionCookiesDone(net::CookieStore* cookie_store,
-                                int num_deleted);
+                                uint32_t num_deleted);
 
   // Deletes the cookies in |cookies| that are for origins which are
   // session-only.
@@ -134,7 +135,7 @@ void SessionDataDeleter::DeleteSessionCookiesOnIOThread(
 
 void SessionDataDeleter::DeleteSessionCookiesDone(
     net::CookieStore* cookie_store,
-    int num_deleted) {
+    uint32_t num_deleted) {
   // If these callbacks are invoked, |cookie_store| is gauranteed to still
   // exist, since deleting the CookieStore will cancel pending callbacks.
   cookie_store->GetAllCookiesAsync(

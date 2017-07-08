@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 
+#include <stdint.h>
+
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -233,7 +235,7 @@ class RemoveCookieTester {
 };
 
 void RunClosureAfterCookiesCleared(const base::Closure& task,
-                                   int cookies_deleted) {
+                                   uint32_t cookies_deleted) {
   task.Run();
 }
 

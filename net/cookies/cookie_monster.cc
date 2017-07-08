@@ -610,18 +610,18 @@ void CookieMonster::DeleteTask<Result>::Run() {
 }
 
 // Task class for DeleteAllCreatedBetween call.
-class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
+class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<uint32_t> {
  public:
   DeleteAllCreatedBetweenTask(CookieMonster* cookie_monster,
                               const Time& delete_begin,
                               const Time& delete_end,
                               DeleteCallback callback)
-      : DeleteTask<int>(cookie_monster, std::move(callback)),
+      : DeleteTask<uint32_t>(cookie_monster, std::move(callback)),
         delete_begin_(delete_begin),
         delete_end_(delete_end) {}
 
   // DeleteTask:
-  int RunDeleteTask() override;
+  uint32_t RunDeleteTask() override;
 
  protected:
   ~DeleteAllCreatedBetweenTask() override {}
@@ -633,14 +633,14 @@ class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
   DISALLOW_COPY_AND_ASSIGN(DeleteAllCreatedBetweenTask);
 };
 
-int CookieMonster::DeleteAllCreatedBetweenTask::RunDeleteTask() {
+uint32_t CookieMonster::DeleteAllCreatedBetweenTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteAllCreatedBetween(delete_begin_,
                                                          delete_end_);
 }
 
 // Task class for DeleteAllCreatedBetweenWithPredicate call.
 class CookieMonster::DeleteAllCreatedBetweenWithPredicateTask
-    : public DeleteTask<int> {
+    : public DeleteTask<uint32_t> {
  public:
   DeleteAllCreatedBetweenWithPredicateTask(
       CookieMonster* cookie_monster,
@@ -648,13 +648,13 @@ class CookieMonster::DeleteAllCreatedBetweenWithPredicateTask
       Time delete_end,
       base::Callback<bool(const CanonicalCookie&)> predicate,
       DeleteCallback callback)
-      : DeleteTask<int>(cookie_monster, std::move(callback)),
+      : DeleteTask<uint32_t>(cookie_monster, std::move(callback)),
         delete_begin_(delete_begin),
         delete_end_(delete_end),
         predicate_(predicate) {}
 
   // DeleteTask:
-  int RunDeleteTask() override;
+  uint32_t RunDeleteTask() override;
 
  protected:
   ~DeleteAllCreatedBetweenWithPredicateTask() override {}
@@ -667,21 +667,23 @@ class CookieMonster::DeleteAllCreatedBetweenWithPredicateTask
   DISALLOW_COPY_AND_ASSIGN(DeleteAllCreatedBetweenWithPredicateTask);
 };
 
-int CookieMonster::DeleteAllCreatedBetweenWithPredicateTask::RunDeleteTask() {
+uint32_t
+CookieMonster::DeleteAllCreatedBetweenWithPredicateTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteAllCreatedBetweenWithPredicate(
       delete_begin_, delete_end_, predicate_);
 }
 
 // Task class for DeleteCanonicalCookie call.
-class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<int> {
+class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<uint32_t> {
  public:
   DeleteCanonicalCookieTask(CookieMonster* cookie_monster,
                             const CanonicalCookie& cookie,
                             DeleteCallback callback)
-      : DeleteTask<int>(cookie_monster, std::move(callback)), cookie_(cookie) {}
+      : DeleteTask<uint32_t>(cookie_monster, std::move(callback)),
+        cookie_(cookie) {}
 
   // DeleteTask:
-  int RunDeleteTask() override;
+  uint32_t RunDeleteTask() override;
 
  protected:
   ~DeleteCanonicalCookieTask() override {}
@@ -692,7 +694,7 @@ class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<int> {
   DISALLOW_COPY_AND_ASSIGN(DeleteCanonicalCookieTask);
 };
 
-int CookieMonster::DeleteCanonicalCookieTask::RunDeleteTask() {
+uint32_t CookieMonster::DeleteCanonicalCookieTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteCanonicalCookie(cookie_);
 }
 
@@ -873,14 +875,14 @@ void CookieMonster::DeleteCookieTask::RunDeleteTask() {
 }
 
 // Task class for DeleteSessionCookies call.
-class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<int> {
+class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<uint32_t> {
  public:
   DeleteSessionCookiesTask(CookieMonster* cookie_monster,
                            DeleteCallback callback)
-      : DeleteTask<int>(cookie_monster, std::move(callback)) {}
+      : DeleteTask<uint32_t>(cookie_monster, std::move(callback)) {}
 
   // DeleteTask:
-  int RunDeleteTask() override;
+  uint32_t RunDeleteTask() override;
 
  protected:
   ~DeleteSessionCookiesTask() override {}
@@ -889,7 +891,7 @@ class CookieMonster::DeleteSessionCookiesTask : public DeleteTask<int> {
   DISALLOW_COPY_AND_ASSIGN(DeleteSessionCookiesTask);
 };
 
-int CookieMonster::DeleteSessionCookiesTask::RunDeleteTask() {
+uint32_t CookieMonster::DeleteSessionCookiesTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteSessionCookies();
 }
 
@@ -1207,11 +1209,11 @@ CookieList CookieMonster::GetCookieListWithOptions(
   return cookies;
 }
 
-int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
-                                           const Time& delete_end) {
+uint32_t CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
+                                                const Time& delete_end) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int num_deleted = 0;
+  uint32_t num_deleted = 0;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     CanonicalCookie* cc = curit->second.get();
@@ -1228,11 +1230,11 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
   return num_deleted;
 }
 
-int CookieMonster::DeleteAllCreatedBetweenWithPredicate(
+uint32_t CookieMonster::DeleteAllCreatedBetweenWithPredicate(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     const base::Callback<bool(const CanonicalCookie&)>& predicate) {
-  int num_deleted = 0;
+  uint32_t num_deleted = 0;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     CanonicalCookie* cc = curit->second.get();
@@ -1315,7 +1317,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
   }
 }
 
-int CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
+uint32_t CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
@@ -1323,10 +1325,10 @@ int CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
     // The creation date acts as the unique index...
     if (its.first->second->CreationDate() == cookie.CreationDate()) {
       InternalDeleteCookie(its.first, true, DELETE_COOKIE_CANONICAL);
-      return 1;
+      return 1u;
     }
   }
-  return 0;
+  return 0u;
 }
 
 bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
@@ -1347,10 +1349,10 @@ bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
                                              CookieOptions());
 }
 
-int CookieMonster::DeleteSessionCookies() {
+uint32_t CookieMonster::DeleteSessionCookies() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int num_deleted = 0;
+  uint32_t num_deleted = 0;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
     CookieMap::iterator curit = it;
     CanonicalCookie* cc = curit->second.get();

@@ -444,11 +444,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   CookieList GetCookieListWithOptions(const GURL& url,
                                       const CookieOptions& options);
 
-  int DeleteAllCreatedBetween(const base::Time& delete_begin,
-                              const base::Time& delete_end);
+  uint32_t DeleteAllCreatedBetween(const base::Time& delete_begin,
+                                   const base::Time& delete_end);
 
   // Predicate will be called with the calling thread.
-  int DeleteAllCreatedBetweenWithPredicate(
+  uint32_t DeleteAllCreatedBetweenWithPredicate(
       const base::Time& delete_begin,
       const base::Time& delete_end,
       const base::Callback<bool(const CanonicalCookie&)>& predicate);
@@ -462,13 +462,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
-  int DeleteCanonicalCookie(const CanonicalCookie& cookie);
+  uint32_t DeleteCanonicalCookie(const CanonicalCookie& cookie);
 
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
                                  const base::Time& creation_time);
 
-  int DeleteSessionCookies();
+  uint32_t DeleteSessionCookies();
 
   // The first access to the cookie store initializes it. This method should be
   // called before any access to the cookie store.

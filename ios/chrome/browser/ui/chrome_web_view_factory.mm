@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 
+#include <stdint.h>
+
 #include "base/base64.h"
 #include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -52,7 +54,7 @@ ios::ChromeBrowserState* g_external_browser_state = nullptr;
 scoped_refptr<web::RequestTrackerImpl> g_request_tracker;
 
 // Empty callback used by ClearCookiesOnIOThread below.
-void DoNothing(int n) {}
+void DoNothing(uint32_t n) {}
 
 // Clears the cookies.
 void ClearCookiesOnIOThread(net::URLRequestContextGetter* context_getter,
