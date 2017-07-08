@@ -1,19 +1,19 @@
 <div id="arc-opt-out-confirm-overlay" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="arcOptOutDialogHeader"></h1>
+  <h1>$i18n{arcOptOutDialogHeader}</h1>
   <div class="content-area">
-    <span id="arc-opt-out-confirm-text"
-          i18n-values=".innerHTML:arcOptOutDialogDescription">
+    <span id="arc-opt-out-confirm-text">
+      $i18nRaw{arcOptOutDialogDescription}
     </span>
   </div>
   <div class="action-area">
     <div class="action-area-right">
       <div class="button-strip">
-        <button id="arc-opt-out-confirm-cancel"
-            i18n-content="arcOptOutDialogButtonCancel">
+        <button id="arc-opt-out-confirm-cancel">
+          $i18n{arcOptOutDialogButtonCancel}
         </button>
-        <button id="arc-opt-out-confirm-ok"
-            i18n-content="arcOptOutDialogButtonConfirmDisable">
+        <button id="arc-opt-out-confirm-ok">
+          $i18n{arcOptOutDialogButtonConfirmDisable}
         </button>
       </div>
     </div>

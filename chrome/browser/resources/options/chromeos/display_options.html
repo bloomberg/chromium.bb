@@ -1,6 +1,6 @@
 <div id="display-options-page" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="displayOptionsPage"></h1>
+  <h1>$i18n{displayOptionsPage}</h1>
   <div class="content-area" id="display-options-content-area">
     <div id="display-options-displays-view-host">
     </div>
@@ -8,16 +8,17 @@
       <div id="selected-display-data-container">
         <div id="selected-display-name"></div>
         <div class="selected-display-option-row">
-          <div class="selected-display-option-title"
-              i18n-content="selectedDisplayTitleOptions">
+          <div class="selected-display-option-title">
+            $i18n{selectedDisplayTitleOptions}
           </div>
           <select id="display-options-select-mirroring"
               class="display-options-button">
-            <option value="extended" i18n-content="extendedMode"></option>
-            <option value="mirroring" i18n-content="mirroringMode"></option>
+            <option value="extended">$i18n{extendedMode}</option>
+            <option value="mirroring">$i18n{mirroringMode}</option>
           </select>
           <button id="display-options-set-primary"
-              class="display-options-button2" i18n-content="setPrimary">
+              class="display-options-button2">
+            $i18n{setPrimary}
           </button>
         </div>
         <div id="display-options-unified-desktop"
@@ -27,43 +28,44 @@
           </div>
           <label>
             <input id="display-options-toggle-unified-desktop" type="checkbox">
-            <span class="controlled-setting-with-label"
-                i18n-content="enableUnifiedDesktop"></span>
+            <span class="controlled-setting-with-label">
+              $i18n{enableUnifiedDesktop}
+            </span>
           </label>
         </div>
         <div class="selected-display-option-row">
-          <div class="selected-display-option-title"
-              i18n-content="selectedDisplayTitleResolution">
+          <div class="selected-display-option-title">
+            $i18n{selectedDisplayTitleResolution}
           </div>
           <select id="display-options-resolution-selection"
               class="display-options-button">
           </select>
         </div>
         <div class="selected-display-option-row">
-          <div class="selected-display-option-title"
-              i18n-content="selectedDisplayTitleOrientation">
+          <div class="selected-display-option-title">
+            $i18n{selectedDisplayTitleOrientation}
           </div>
           <select id="display-options-orientation-selection"
               class="display-options-button">
-            <option value="0" i18n-content="orientation0"></option>
-            <option value="90" i18n-content="orientation90"></option>
-            <option value="180" i18n-content="orientation180"></option>
-            <option value="270" i18n-content="orientation270"></option>
+            <option value="0">$i18n{orientation0}</option>
+            <option value="90">$i18n{orientation90}</option>
+            <option value="180">$i18n{orientation180}</option>
+            <option value="270">$i18n{orientation270}</option>
           </select>
         </div>
         <div class="selected-display-option-row">
-          <div class="selected-display-option-title"
-              i18n-content="selectedDisplayTitleOverscan">
+          <div class="selected-display-option-title">
+            $i18n{selectedDisplayTitleOverscan}
           </div>
           <button id="selected-display-start-calibrating-overscan"
-              class="display-options-button"
-              i18n-content="startCalibratingOverscan">
+              class="display-options-button">
+            $i18n{startCalibratingOverscan}
           </button>
         </div>
         <div class="selected-display-option-row"
             id="selected-display-color-profile-row" hidden>
-          <div class="selected-display-option-title"
-              i18n-content="selectedDisplayColorProfile">
+          <div class="selected-display-option-title">
+            $i18n{selectedDisplayColorProfile}
           </div>
           <select id="display-options-color-profile-selection"
               class="display-options-button">
@@ -78,8 +80,9 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <button id="display-options-done" i18n-content="done"
-          class="default-button"></button>
+      <button id="display-options-done" class="default-button">
+        $i18n{done}
+      </button>
     </div>
   </div>
 </div>

@@ -1,11 +1,11 @@
 <div id="keyboard-overlay" class="page" hidden>
   <div class="close-button"></div>
-  <h1 i18n-content="keyboardOverlay"></h1>
+  <h1>$i18n{keyboardOverlay}</h1>
   <div class="content-area">
     <table class="option-control-table">
        <tr>
-         <td class="option-name" id="remap-search-key-to-label"
-             i18n-content="remapSearchKeyToContent">
+         <td class="option-name" id="remap-search-key-to-label">
+           $i18n{remapSearchKeyToContent}
          </td>
          <td class="option-value">
            <select class="control"
@@ -17,8 +17,8 @@
          </td>
        </tr>
        <tr>
-         <td class="option-name" id="remap-control-key-to-label"
-             i18n-content="remapControlKeyToContent">
+         <td class="option-name" id="remap-control-key-to-label">
+           $i18n{remapControlKeyToContent}
          </td>
          <td class="option-value">
            <select class="control"
@@ -30,8 +30,8 @@
          </td>
        </tr>
        <tr>
-         <td class="option-name" id="remap-alt-key-to-label"
-             i18n-content="remapAltKeyToContent">
+         <td class="option-name" id="remap-alt-key-to-label">
+           $i18n{remapAltKeyToContent}
          </td>
          <td class="option-value">
            <select class="control" data-type="number"
@@ -44,8 +44,8 @@
        <!-- The caps lock section is hidden by default. This is only visible
             when --has-chromeos-keyboard flag is not passed. -->
        <tr id="caps-lock-remapping-section" hidden>
-         <td class="option-name" id="remap-caps-lock-key-to-label"
-               i18n-content="remapCapsLockKeyToContent">
+         <td class="option-name" id="remap-caps-lock-key-to-label">
+           $i18n{remapCapsLockKeyToContent}
          </td>
          <td class="option-value">
            <select class="control"
@@ -60,8 +60,8 @@
        <!-- The diamond key section is hidden by default. This is only visible
             when --has-chromeos-diamond-key flag is passed. -->
        <tr id="diamond-key-remapping-section" hidden>
-         <td class="option-name" id="remap-diamond-key-to-label"
-             i18n-content="remapDiamondKeyToContent">
+         <td class="option-name" id="remap-diamond-key-to-label">
+           $i18n{remapDiamondKeyToContent}
          </td>
          <td class="option-value">
            <select class="control"
@@ -74,8 +74,8 @@
          </td>
        </tr>
        <tr>
-         <td class="option-name" id="remap-backspace-key-to-label"
-             i18n-content="remapBackspaceKeyToContent">
+         <td class="option-name" id="remap-backspace-key-to-label">
+           $i18n{remapBackspaceKeyToContent}
          </td>
          <td class="option-value">
            <select class="control" data-type="number"
@@ -87,8 +87,8 @@
          </td>
        </tr>
        <tr>
-         <td class="option-name" id="remap-escape-key-to-label"
-             i18n-content="remapEscapeKeyToContent">
+         <td class="option-name" id="remap-escape-key-to-label">
+           $i18n{remapEscapeKeyToContent}
          </td>
          <td class="option-value">
            <select class="control" data-type="number"
@@ -106,14 +106,15 @@
               pref="settings.language.send_function_keys"
               aria-describedby="send-function-keys-description" dialog-pref>
           <span>
-            <span i18n-content="sendFunctionKeys"></span>
+            <span>$i18n{sendFunctionKeys}</span>
             <span class="bubble-button controlled-setting-indicator"
                 pref="settings.language.send_function_keys"></span>
           </span>
         </label>
       </div>
-      <span id="send-function-keys-description"
-          i18n-content="sendFunctionKeysDescription"></span>
+      <span id="send-function-keys-description">
+        $i18n{sendFunctionKeysDescription}
+      </span>
     </div>
     <div class="settings-row">
       <div class="checkbox">
@@ -121,39 +122,41 @@
           <input id="enable-auto-repeat" type="checkbox"
               pref="settings.language.xkb_auto_repeat_enabled_r2"
               metric="Options_KeyboardAutoRepeat" dialog-pref>
-          <span i18n-content="enableAutoRepeat"></span>
+          <span>$i18n{enableAutoRepeat}</span>
         </label>
       </div>
       <div id="auto-repeat-settings-section">
         <div class="row">
-          <span class="option-name" i18n-content="autoRepeatDelay"></span>
-            <span i18n-content="autoRepeatDelayLong"></span>
+          <span class="option-name">$i18n{autoRepeatDelay}</span>
+            <span>$i18n{autoRepeatDelayLong}</span>
             <input id="auto-repeat-delay-range" type="range"
                 class="touch-slider" metric="Options_KeyboardAutoRepeat_Delay"
                 pref="settings.language.xkb_auto_repeat_delay_r2" dialog-pref>
-            <span i18n-content="autoRepeatDelayShort"></span>
+            <span>$i18n{autoRepeatDelayShort}</span>
           </div>
           <div class="row">
-            <span class="option-name" i18n-content="autoRepeatRate"></span>
-            <span i18n-content="autoRepeatRateSlow"></span>
+            <span class="option-name">$i18n{autoRepeatRate}</span>
+            <span>$i18n{autoRepeatRateSlow}</span>
             <input id="auto-repeat-interval-range" type="range"
                 class="touch-slider"
                 pref="settings.language.xkb_auto_repeat_interval_r2"
                 metric="Options_KeyboardAutoRepeat_Interval" dialog-pref>
-            <span i18n-content="autoRepeatRateFast"></span>
+            <span>$i18n{autoRepeatRateFast}</span>
           </div>
       </div>
     </div>
-    <a is="action-link" id="keyboard-shortcuts" class="settings-row"
-        i18n-content="showKeyboardShortcuts"></a>
-    <a is="action-link" id="languages-and-input-settings" class="settings-row"
-        i18n-content="changeLanguageAndInputSettings"></a>
+    <a is="action-link" id="keyboard-shortcuts" class="settings-row">
+      $i18n{showKeyboardShortcuts}
+    </a>
+    <a is="action-link" id="languages-and-input-settings" class="settings-row">
+      $i18n{changeLanguageAndInputSettings}
+    </a>
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <button id="keyboard-cancel" type="reset" i18n-content="cancel"></button>
-      <button id="keyboard-confirm" class="default-button" type="submit"
-          i18n-content="ok">
+      <button id="keyboard-cancel" type="reset">$i18n{cancel}</button>
+      <button id="keyboard-confirm" class="default-button" type="submit">
+        $i18n{ok}
       </button>
     </div>
   </div>
