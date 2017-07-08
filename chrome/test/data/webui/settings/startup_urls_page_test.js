@@ -148,7 +148,7 @@ cr.define('settings_startup_urls_page', function() {
     });
 
     /**
-     * Tests that the appropritae browser proxy method is called when the action
+     * Tests that the appropriate browser proxy method is called when the action
      * button is tapped.
      * @param {string} proxyMethodName
      */
@@ -202,6 +202,16 @@ cr.define('settings_startup_urls_page', function() {
   });
 
   suite('StartupUrlsPage', function() {
+    /**
+     * Radio button enum values for restore on startup.
+     * @enum
+     */
+    var RestoreOnStartupEnum = {
+      CONTINUE: 1,
+      OPEN_NEW_TAB: 5,
+      OPEN_SPECIFIC: 4,
+    };
+
     /** @type {?SettingsStartupUrlsPageElement} */
     var page = null;
 
@@ -231,7 +241,39 @@ cr.define('settings_startup_urls_page', function() {
       return browserProxy.whenCalled('loadStartupPages');
     });
 
+    function restoreOnStartupLabel() {
+      return page.$$('#onStartupRadioGroup')
+          .querySelector('.iron-selected')
+          .label;
+    }
+
+    test('open-continue', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.CONTINUE);
+      assertEquals('Continue where you left off', restoreOnStartupLabel());
+    });
+
+    test('open-ntp', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_NEW_TAB);
+      assertEquals('Open the New Tab page', restoreOnStartupLabel());
+    });
+
+    test('open-specific', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_SPECIFIC);
+      assertEquals(
+          'Open a specific page or set of pages', restoreOnStartupLabel());
+    });
+
     test('UseCurrentPages', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_SPECIFIC);
+      Polymer.dom.flush();
       var useCurrentPagesButton = page.$$('#useCurrentPages > a');
       assertTrue(!!useCurrentPagesButton);
       MockInteractions.tap(useCurrentPagesButton);
@@ -239,6 +281,10 @@ cr.define('settings_startup_urls_page', function() {
     });
 
     test('AddPage_OpensDialog', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_SPECIFIC);
+      Polymer.dom.flush();
       var addPageButton = page.$$('#addPage > a');
       assertTrue(!!addPageButton);
       assertFalse(!!page.$$('settings-startup-url-dialog'));
@@ -284,7 +330,11 @@ cr.define('settings_startup_urls_page', function() {
       assertFalse(!!page.$$('settings-startup-url-dialog'));
     });
 
-    test('StarupPages_WhenExtensionControlled', function() {
+    test('StartupPages_WhenExtensionControlled', function() {
+      page.set(
+          'prefs.session.restore_on_startup.value',
+          RestoreOnStartupEnum.OPEN_SPECIFIC);
+      Polymer.dom.flush();
       assertFalse(!!page.get('prefs.session.startup_urls.controlledBy'));
       assertFalse(!!page.$$('extension-controlled-indicator'));
       assertTrue(!!page.$$('#addPage'));

@@ -138,6 +138,7 @@ cr.define('settings', function() {
   // </if>
 
   r.ON_STARTUP = r.BASIC.createSection('/onStartup', 'onStartup');
+  r.STARTUP_URLS = r.ON_STARTUP.createChild('/startupUrls');
 
   r.PEOPLE = r.BASIC.createSection('/people', 'people');
   r.SYNC = r.PEOPLE.createChild('/syncSetup');
