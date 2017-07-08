@@ -24,10 +24,6 @@ namespace media {
 
 namespace {
 
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(320, 240);
-
 void CompareBytes(uint8_t* original_data, uint8_t* result_data, size_t length) {
   EXPECT_GT(length, 0u);
   EXPECT_EQ(memcmp(original_data, result_data, length), 0);
@@ -167,112 +163,6 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   EXPECT_TRUE(buffer->decrypt_config()->iv().empty());
 }
 
-// TODO(tim): Check other properties.
-
-TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
-  const uint8_t kExtraData[] = "config extra data";
-  const std::vector<uint8_t> kExtraDataVector(
-      &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
-
-  AudioDecoderConfig config;
-  config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    kExtraDataVector, Unencrypted(), base::TimeDelta(), 0);
-  mojom::AudioDecoderConfigPtr ptr(mojom::AudioDecoderConfig::From(config));
-  EXPECT_FALSE(ptr->extra_data.empty());
-  AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
-  AudioDecoderConfig config;
-  config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    EmptyExtraData(), Unencrypted(), base::TimeDelta(), 0);
-  mojom::AudioDecoderConfigPtr ptr(mojom::AudioDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->extra_data.empty());
-  AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
-  AudioDecoderConfig config;
-  config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    EmptyExtraData(), AesCtrEncryptionScheme(),
-                    base::TimeDelta(), 0);
-  mojom::AudioDecoderConfigPtr ptr(mojom::AudioDecoderConfig::From(config));
-  AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Normal) {
-  const uint8_t kExtraData[] = "config extra data";
-  const std::vector<uint8_t> kExtraDataVector(
-      &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
-
-  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
-                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, kExtraDataVector, Unencrypted());
-  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  EXPECT_FALSE(ptr->extra_data.empty());
-  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_EmptyExtraData) {
-  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
-                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, EmptyExtraData(), Unencrypted());
-  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  EXPECT_TRUE(ptr->extra_data.empty());
-  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Encrypted) {
-  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
-                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, EmptyExtraData(),
-                            AesCtrEncryptionScheme());
-  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_ColorSpaceInfo) {
-  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
-                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, EmptyExtraData(), Unencrypted());
-  config.set_color_space_info(VideoColorSpace(
-      VideoColorSpace::PrimaryID::BT2020,
-      VideoColorSpace::TransferID::SMPTEST2084,
-      VideoColorSpace::MatrixID::BT2020_CL, gfx::ColorSpace::RangeID::LIMITED));
-  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
-TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_HDRMetadata) {
-  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
-                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
-                            kNaturalSize, EmptyExtraData(), Unencrypted());
-  HDRMetadata hdr_metadata;
-  hdr_metadata.max_frame_average_light_level = 123;
-  hdr_metadata.max_content_light_level = 456;
-  hdr_metadata.mastering_metadata.primary_r.set_x(0.1f);
-  hdr_metadata.mastering_metadata.primary_r.set_y(0.2f);
-  hdr_metadata.mastering_metadata.primary_g.set_x(0.3f);
-  hdr_metadata.mastering_metadata.primary_g.set_y(0.4f);
-  hdr_metadata.mastering_metadata.primary_b.set_x(0.5f);
-  hdr_metadata.mastering_metadata.primary_b.set_y(0.6f);
-  hdr_metadata.mastering_metadata.white_point.set_x(0.7f);
-  hdr_metadata.mastering_metadata.white_point.set_y(0.8f);
-  hdr_metadata.mastering_metadata.luminance_max = 1000;
-  hdr_metadata.mastering_metadata.luminance_min = 0;
-  config.set_hdr_metadata(hdr_metadata);
-  mojom::VideoDecoderConfigPtr ptr(mojom::VideoDecoderConfig::From(config));
-  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
-  EXPECT_TRUE(result.Matches(config));
-}
-
 TEST(MediaTypeConvertersTest, ConvertCdmConfig) {
   CdmConfig config;
   config.allow_distinctive_identifier = true;
@@ -332,22 +222,6 @@ TEST(MediaTypeConvertersTest, ConvertAudioBuffer_FLOAT) {
 
   // Compare.
   CompareAudioBuffers(kSampleFormatPlanarF32, buffer, result);
-}
-
-TEST(MediaTypeConvertersTest, ConvertEncryptionSchemeAesCbcWithPattern) {
-  // Original.
-  EncryptionScheme scheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
-                          EncryptionScheme::Pattern(1, 9));
-
-  // Convert to and back.
-  mojom::EncryptionSchemePtr ptr(mojom::EncryptionScheme::From(scheme));
-  EncryptionScheme result(ptr.To<EncryptionScheme>());
-
-  EXPECT_TRUE(result.Matches(scheme));
-
-  // Verify a couple of negative cases.
-  EXPECT_FALSE(result.Matches(Unencrypted()));
-  EXPECT_FALSE(result.Matches(AesCtrEncryptionScheme()));
 }
 
 }  // namespace media

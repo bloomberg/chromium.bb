@@ -70,7 +70,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   init_cb_ = init_cb;
   output_cb_ = output_cb;
   remote_decoder_->Initialize(
-      mojom::VideoDecoderConfig::From(config), low_delay,
+      config, low_delay,
       base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
 }
 

@@ -32,7 +32,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
 
   // mojom::AudioDecoder implementation
   void Construct(mojom::AudioDecoderClientAssociatedPtrInfo client) final;
-  void Initialize(mojom::AudioDecoderConfigPtr config,
+  void Initialize(const AudioDecoderConfig& config,
                   int32_t cdm_id,
                   const InitializeCallback& callback) final;
 

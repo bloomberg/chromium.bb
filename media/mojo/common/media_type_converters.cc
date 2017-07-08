@@ -17,7 +17,6 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
-#include "media/base/video_decoder_config.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace mojo {
@@ -34,44 +33,6 @@ struct TypeConverter<media::EncryptionScheme::Pattern,
   static media::EncryptionScheme::Pattern Convert(
       const media::mojom::PatternPtr& input);
 };
-
-// static
-media::mojom::PatternPtr
-TypeConverter<media::mojom::PatternPtr, media::EncryptionScheme::Pattern>::
-    Convert(const media::EncryptionScheme::Pattern& input) {
-  media::mojom::PatternPtr mojo_pattern(media::mojom::Pattern::New());
-  mojo_pattern->encrypt_blocks = input.encrypt_blocks();
-  mojo_pattern->skip_blocks = input.skip_blocks();
-  return mojo_pattern;
-}
-
-// static
-media::EncryptionScheme::Pattern TypeConverter<
-    media::EncryptionScheme::Pattern,
-    media::mojom::PatternPtr>::Convert(const media::mojom::PatternPtr& input) {
-  return media::EncryptionScheme::Pattern(input->encrypt_blocks,
-                                          input->skip_blocks);
-}
-
-// static
-media::mojom::EncryptionSchemePtr TypeConverter<
-    media::mojom::EncryptionSchemePtr,
-    media::EncryptionScheme>::Convert(const media::EncryptionScheme& input) {
-  media::mojom::EncryptionSchemePtr mojo_encryption_scheme(
-      media::mojom::EncryptionScheme::New());
-  mojo_encryption_scheme->mode = input.mode();
-  mojo_encryption_scheme->pattern =
-      media::mojom::Pattern::From(input.pattern());
-  return mojo_encryption_scheme;
-}
-
-// static
-media::EncryptionScheme
-TypeConverter<media::EncryptionScheme, media::mojom::EncryptionSchemePtr>::
-    Convert(const media::mojom::EncryptionSchemePtr& input) {
-  return media::EncryptionScheme(
-      input->mode, input->pattern.To<media::EncryptionScheme::Pattern>());
-}
 
 // static
 media::mojom::DecryptConfigPtr
@@ -183,8 +144,7 @@ TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
   config->extra_data = input.extra_data();
   config->seek_preroll = input.seek_preroll();
   config->codec_delay = input.codec_delay();
-  config->encryption_scheme =
-      media::mojom::EncryptionScheme::From(input.encryption_scheme());
+  config->encryption_scheme = input.encryption_scheme();
   return config;
 }
 
@@ -195,45 +155,8 @@ TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
   media::AudioDecoderConfig config;
   config.Initialize(input->codec, input->sample_format, input->channel_layout,
                     input->samples_per_second, input->extra_data,
-                    input->encryption_scheme.To<media::EncryptionScheme>(),
-                    input->seek_preroll, input->codec_delay);
-  return config;
-}
-
-// static
-media::mojom::VideoDecoderConfigPtr
-TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
-    Convert(const media::VideoDecoderConfig& input) {
-  media::mojom::VideoDecoderConfigPtr config(
-      media::mojom::VideoDecoderConfig::New());
-  config->codec = input.codec();
-  config->profile = input.profile();
-  config->format = input.format();
-  config->color_space = input.color_space();
-  config->coded_size = input.coded_size();
-  config->visible_rect = input.visible_rect();
-  config->natural_size = input.natural_size();
-  config->extra_data = input.extra_data();
-  config->encryption_scheme =
-      media::mojom::EncryptionScheme::From(input.encryption_scheme());
-  config->color_space_info = input.color_space_info();
-  if (input.hdr_metadata())
-    config->hdr_metadata = *input.hdr_metadata();
-  return config;
-}
-
-// static
-media::VideoDecoderConfig
-TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
-    Convert(const media::mojom::VideoDecoderConfigPtr& input) {
-  media::VideoDecoderConfig config;
-  config.Initialize(input->codec, input->profile, input->format,
-                    input->color_space, input->coded_size, input->visible_rect,
-                    input->natural_size, input->extra_data,
-                    input->encryption_scheme.To<media::EncryptionScheme>());
-  config.set_color_space_info(input->color_space_info);
-  if (input->hdr_metadata)
-    config.set_hdr_metadata(*input->hdr_metadata);
+                    input->encryption_scheme, input->seek_preroll,
+                    input->codec_delay);
   return config;
 }
 

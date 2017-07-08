@@ -32,17 +32,15 @@ void MojoAudioDecoderService::Construct(
   client_.Bind(std::move(client));
 }
 
-void MojoAudioDecoderService::Initialize(
-    mojom::AudioDecoderConfigPtr config,
-    int32_t cdm_id,
-    const InitializeCallback& callback) {
-  DVLOG(1) << __func__ << " "
-           << config.To<media::AudioDecoderConfig>().AsHumanReadableString();
+void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
+                                         int32_t cdm_id,
+                                         const InitializeCallback& callback) {
+  DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
 
   // Get CdmContext from cdm_id if the stream is encrypted.
   CdmContext* cdm_context = nullptr;
   scoped_refptr<ContentDecryptionModule> cdm;
-  if (config.To<media::AudioDecoderConfig>().is_encrypted()) {
+  if (config.is_encrypted()) {
     if (!mojo_cdm_service_context_) {
       DVLOG(1) << "CDM service context not available.";
       callback.Run(false, false);
@@ -65,7 +63,7 @@ void MojoAudioDecoderService::Initialize(
   }
 
   decoder_->Initialize(
-      config.To<media::AudioDecoderConfig>(), cdm_context,
+      config, cdm_context,
       base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_, callback,
                  cdm),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_));

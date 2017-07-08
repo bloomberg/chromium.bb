@@ -53,7 +53,8 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
 VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
-      format_(PIXEL_FORMAT_UNKNOWN) {}
+      format_(PIXEL_FORMAT_UNKNOWN),
+      color_space_(COLOR_SPACE_UNSPECIFIED) {}
 
 VideoDecoderConfig::VideoDecoderConfig(
     VideoCodec codec,
@@ -79,7 +80,7 @@ void VideoDecoderConfig::set_color_space_info(
   color_space_info_ = color_space_info;
 }
 
-VideoColorSpace VideoDecoderConfig::color_space_info() const {
+const VideoColorSpace& VideoDecoderConfig::color_space_info() const {
   return color_space_info_;
 }
 
@@ -87,7 +88,7 @@ void VideoDecoderConfig::set_hdr_metadata(const HDRMetadata& hdr_metadata) {
   hdr_metadata_ = hdr_metadata;
 }
 
-base::Optional<HDRMetadata> VideoDecoderConfig::hdr_metadata() const {
+const base::Optional<HDRMetadata>& VideoDecoderConfig::hdr_metadata() const {
   return hdr_metadata_;
 }
 

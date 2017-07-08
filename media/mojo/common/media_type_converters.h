@@ -17,8 +17,6 @@ class AudioBuffer;
 class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
-class EncryptionScheme;
-class VideoDecoderConfig;
 struct CdmConfig;
 struct CdmKeyInformation;
 }
@@ -26,19 +24,6 @@ struct CdmKeyInformation;
 // These are specializations of mojo::TypeConverter and have to be in the mojo
 // namespace.
 namespace mojo {
-
-template <>
-struct TypeConverter<media::mojom::EncryptionSchemePtr,
-                     media::EncryptionScheme> {
-  static media::mojom::EncryptionSchemePtr Convert(
-      const media::EncryptionScheme& input);
-};
-template <>
-struct TypeConverter<media::EncryptionScheme,
-                     media::mojom::EncryptionSchemePtr> {
-  static media::EncryptionScheme Convert(
-      const media::mojom::EncryptionSchemePtr& input);
-};
 
 template <>
 struct TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig> {
@@ -76,19 +61,6 @@ struct TypeConverter<media::AudioDecoderConfig,
                      media::mojom::AudioDecoderConfigPtr> {
   static media::AudioDecoderConfig Convert(
       const media::mojom::AudioDecoderConfigPtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::VideoDecoderConfigPtr,
-                     media::VideoDecoderConfig> {
-  static media::mojom::VideoDecoderConfigPtr Convert(
-      const media::VideoDecoderConfig& input);
-};
-template <>
-struct TypeConverter<media::VideoDecoderConfig,
-                     media::mojom::VideoDecoderConfigPtr> {
-  static media::VideoDecoderConfig Convert(
-      const media::mojom::VideoDecoderConfigPtr& input);
 };
 
 template <>
