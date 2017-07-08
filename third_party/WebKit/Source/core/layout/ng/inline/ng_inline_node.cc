@@ -8,6 +8,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/LineInfo.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/ng/inline/ng_bidi_paragraph.h"
@@ -148,6 +149,10 @@ unsigned PlaceInlineBoxChildren(
       if (inline_box->GetLineLayoutItem().IsBox()) {
         LineLayoutBox box(inline_box->GetLineLayoutItem());
         box.SetLocation(inline_box->Location());
+
+        LayoutObject* layout_object = LineLayoutAPIShim::LayoutObjectFrom(box);
+        if (layout_object->IsAtomicInlineLevel())
+          ToLayoutBox(layout_object)->SetInlineBoxWrapper(inline_box);
       }
     }
 
