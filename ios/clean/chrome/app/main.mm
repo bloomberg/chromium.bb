@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/crash_report/crash_keys.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/clean/chrome/app/app_delegate.h"
+#include "ios/testing/perf/startupLoggers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,6 +37,7 @@ int main(int argc, char* argv[]) {
   base::AtExitManager at_exit;
 
   IOSChromeMain::InitStartTime();
+  startup_loggers::RegisterAppStartTime();
 
   // Pre-launch actions are in their own autorelease pool so they get cleaned
   // up before the main app starts.
