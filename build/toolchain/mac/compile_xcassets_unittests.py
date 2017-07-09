@@ -64,6 +64,63 @@ class TestFilterCompilerOutput(unittest.TestCase):
             '/* com.apple.actool.compilation-results */\n',
             self.relative_paths))
 
+  def testComplexError(self):
+    self.assertEquals(
+        '/* com.apple.actool.errors */\n'
+        ': error: Failed to find a suitable device for the type SimDeviceType '
+            ': com.apple.dt.Xcode.IBSimDeviceType.iPad-2x with runtime SimRunt'
+            'ime : 10.3.1 (14E8301) - com.apple.CoreSimulator.SimRuntime.iOS-1'
+            '0-3\n'
+        '    Failure Reason: Failed to create SimDeviceSet at path /Users/jane'
+            'doe/Library/Developer/Xcode/UserData/IB Support/Simulator Devices'
+            '. You\'ll want to check the logs in ~/Library/Logs/CoreSimulator '
+            'to see why creating the SimDeviceSet failed.\n'
+        '    Underlying Errors:\n'
+        '        Description: Failed to initialize simulator device set.\n'
+        '        Failure Reason: Failed to subscribe to notifications from Cor'
+            'eSimulatorService.\n'
+        '        Underlying Errors:\n'
+        '            Description: Error returned in reply to notification requ'
+            'est: Connection invalid\n'
+        '            Failure Reason: Software caused connection abort\n',
+        compile_xcassets.FilterCompilerOutput(
+            '2017-07-07 10:37:27.367 ibtoold[88538:12553239] CoreSimulator det'
+                'ected Xcode.app relocation or CoreSimulatorService version ch'
+                'ange.  Framework path (/Applications/Xcode.app/Contents/Devel'
+                'oper/Library/PrivateFrameworks/CoreSimulator.framework) and v'
+                'ersion (375.21) does not match existing job path (/Library/De'
+                'veloper/PrivateFrameworks/CoreSimulator.framework/Versions/A/'
+                'XPCServices/com.apple.CoreSimulator.CoreSimulatorService.xpc)'
+                ' and version (459.13).  Attempting to remove the stale servic'
+                'e in order to add the expected version.\n'
+            '2017-07-07 10:37:27.625 ibtoold[88538:12553256] CoreSimulatorServ'
+                'ice connection interrupted.  Resubscribing to notifications.\n'
+            '2017-07-07 10:37:27.632 ibtoold[88538:12553264] CoreSimulatorServ'
+                'ice connection became invalid.  Simulator services will no lo'
+                'nger be available.\n'
+            '2017-07-07 10:37:27.642 ibtoold[88538:12553274] CoreSimulatorServ'
+                'ice connection became invalid.  Simulator services will no lo'
+                'nger be available.\n'
+            '/* com.apple.actool.errors */\n'
+            ': error: Failed to find a suitable device for the type SimDeviceT'
+                'ype : com.apple.dt.Xcode.IBSimDeviceType.iPad-2x with runtime'
+                ' SimRuntime : 10.3.1 (14E8301) - com.apple.CoreSimulator.SimR'
+                'untime.iOS-10-3\n'
+            '    Failure Reason: Failed to create SimDeviceSet at path /Users/'
+                'janedoe/Library/Developer/Xcode/UserData/IB Support/Simulator'
+                ' Devices. You\'ll want to check the logs in ~/Library/Logs/Co'
+                'reSimulator to see why creating the SimDeviceSet failed.\n'
+            '    Underlying Errors:\n'
+            '        Description: Failed to initialize simulator device set.\n'
+            '        Failure Reason: Failed to subscribe to notifications from'
+                ' CoreSimulatorService.\n'
+            '        Underlying Errors:\n'
+            '            Description: Error returned in reply to notification '
+                'request: Connection invalid\n'
+            '            Failure Reason: Software caused connection abort\n'
+            '/* com.apple.actool.compilation-results */\n',
+            self.relative_paths))
+
 
 if __name__ == '__main__':
   unittest.main()
