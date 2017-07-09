@@ -90,7 +90,8 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
     HRESULT hr = ::CoCreateInstance(CLSID_TaskbarList, NULL,
                                     CLSCTX_INPROC_SERVER,
                                     IID_PPV_ARGS(&task_bar_list_));
-    CHECK(SUCCEEDED(hr));
+    if (SUCCEEDED(hr) && FAILED(task_bar_list_->HrInit()))
+      task_bar_list_ = nullptr;
   }
 
   // As per MSDN marking the window as fullscreen should ensure that the
@@ -98,7 +99,8 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
   // is activated. If the window is not fullscreen, the Shell falls back to
   // heuristics to determine how the window should be treated, which means
   // that it could still consider the window as fullscreen. :(
-  task_bar_list_->MarkFullscreenWindow(hwnd_, !!fullscreen);
+  if (task_bar_list_)
+    task_bar_list_->MarkFullscreenWindow(hwnd_, !!fullscreen);
 }
 
 }  // namespace views
