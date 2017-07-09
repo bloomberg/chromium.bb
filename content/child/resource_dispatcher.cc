@@ -662,6 +662,30 @@ int ResourceDispatcher::StartAsync(
     return request_id;
   }
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
+      semantics {
+        sender: "Blink Resource Loader"
+        description:
+          "Blink initiated request, which includes all resources for "
+          "normal page loads, chrome URLs, resources for installed "
+          "extensions, as well as downloads."
+        trigger:
+          "Navigating to a URL or downloading a file. A webpage, "
+          "ServiceWorker, chrome:// page, or extension may also initiate "
+          "requests in the background."
+        data: "Anything the initiator wants to send."
+        destination: OTHER
+      }
+      policy {
+        cookies_allowed: true
+        cookies_store: "user"
+        setting: "These requests cannot be disabled in settings."
+        policy_exception_justification:
+          "Not implemented. Without these requests, Chrome will be unable "
+          "to load any webpage."
+      })");
+
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         loading_task_runner ? loading_task_runner : thread_task_runner_;
@@ -671,12 +695,13 @@ int ResourceDispatcher::StartAsync(
         ThrottlingURLLoader::CreateLoaderAndStart(
             url_loader_factory, std::move(throttles), routing_id, request_id,
             mojom::kURLLoadOptionNone, *request, client.get(),
-            NO_TRAFFIC_ANNOTATION_YET, std::move(task_runner));
+            traffic_annotation, std::move(task_runner));
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {
-    message_sender_->Send(
-        new ResourceHostMsg_RequestResource(routing_id, request_id, *request));
+    message_sender_->Send(new ResourceHostMsg_RequestResource(
+        routing_id, request_id, *request,
+        net::MutableNetworkTrafficAnnotationTag(traffic_annotation)));
   }
 
   return request_id;

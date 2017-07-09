@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/resource_request.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
@@ -135,7 +136,8 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
     ResourceRequest request;
     request.download_to_file = true;
     return throttler_->Send(new ResourceHostMsg_RequestResource(
-        kRoutingId, ++last_request_id_, request));
+        kRoutingId, ++last_request_id_, request,
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS)));
   }
 
   bool RequestResourceSync() {

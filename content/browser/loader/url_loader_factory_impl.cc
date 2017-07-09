@@ -10,6 +10,7 @@
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 
@@ -85,7 +86,7 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   rdh->OnRequestResourceWithMojo(requester_info, routing_id, request_id,
                                  url_request, std::move(request),
-                                 std::move(client));
+                                 std::move(client), traffic_annotation);
 }
 
 // static
