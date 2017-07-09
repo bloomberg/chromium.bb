@@ -23,10 +23,7 @@ an option to fail with non-zero error code when there are warnings.
 """
 
 # Pattern matching a section header in the output of actool.
-SECTION_HEADER = re.compile('^/\\* ([a-z.]*) \\*/$')
-
-# Pattern matching an interesting message in the output of actool.
-MESSAGE_PATTERN = re.compile('^([^:]*\.xcassets):.* (error|warning): .*$')
+SECTION_HEADER = re.compile('^/\\* ([^ ]*) \\*/$')
 
 # Name of the section containing informational messages that can be ignored.
 NOTICE_SECTION = 'com.apple.actool.compilation-results'
@@ -41,9 +38,8 @@ def FilterCompilerOutput(compiler_output, relative_paths):
   section.
 
   The function filter any lines that are not in com.apple.actool.errors or
-  com.apple.actool.document.warnings sections. For each messages, in those
-  sections, they are also filtered if they do not follow MESSAGE_PATTERN
-  pattern.
+  com.apple.actool.document.warnings sections (as spurious messages comes
+  before any section of the output).
 
   See crbug.com/730054 and crbug.com/739163 for some example messages that
   pollute the output of actool and cause flaky builds.
@@ -70,15 +66,11 @@ def FilterCompilerOutput(compiler_output, relative_paths):
       if current_section != NOTICE_SECTION:
         filtered_output.append(line + '\n')
       continue
-    match = MESSAGE_PATTERN.search(line)
-    if match is not None:
-      if current_section == NOTICE_SECTION:
-        continue
-
-      absolute_path = match.group(1)
+    if current_section and current_section != NOTICE_SECTION:
+      absolute_path = line.split(':')[0]
       relative_path = relative_paths.get(absolute_path, absolute_path)
       if absolute_path != relative_path:
-        line = line[:match.span(1)[0]] + relative_path + line[match.span(1)[1]:]
+        line = relative_path + line[len(absolute_path):]
       filtered_output.append(line + '\n')
 
   return ''.join(filtered_output)
