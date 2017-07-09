@@ -123,11 +123,15 @@ class WPTGitHub(object):
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
             number,
-            label,
+            urllib2.quote(label),
         )
+
         _, status_code = self.request(path, method='DELETE')
-        if status_code != 204:
-            raise GitHubError('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
+        # The GitHub API documentation claims that this endpoint returns a 204
+        # on success. However in reality it returns a 200.
+        # https://developer.github.com/v3/issues/labels/#remove-a-label-from-an-issue
+        if status_code not in (200, 204):
+            raise GitHubError('Received non-200 status code attempting to delete label: {}'.format(status_code))
 
     def in_flight_pull_requests(self):
         path = '/search/issues?q=repo:{}/{}%20is:open%20type:pr%20label:{}'.format(
@@ -142,11 +146,13 @@ class WPTGitHub(object):
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
     def make_pr_from_item(self, item):
+        labels = [label['name'] for label in item['labels']]
         return PullRequest(
             title=item['title'],
             number=item['number'],
             body=item['body'],
-            state=item['state'])
+            state=item['state'],
+            labels=labels)
 
     @memoized
     def all_pull_requests(self):
@@ -267,4 +273,4 @@ class GitHubError(Exception):
     pass
 
 
-PullRequest = namedtuple('PullRequest', ['title', 'number', 'body', 'state'])
+PullRequest = namedtuple('PullRequest', ['title', 'number', 'body', 'state', 'labels'])

@@ -83,16 +83,16 @@ class CommonTest(unittest.TestCase):
     def test_commit_that_has_open_pr_is_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='Change-Id: I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed'),
-            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open'),
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open', []),
         ])
         self.assertTrue(is_exportable(commit, MockLocalWPT(), github))
 
     def test_commit_that_has_closed_pr_is_not_exportable(self):
         commit = MockChromiumCommit(MockHost(), change_id='Change-Id: I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed'),
-            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed'),
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed', []),
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed', []),
         ])
         self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
 

@@ -28,7 +28,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=True)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
-            PullRequest(title='title1', number=1234, body='', state='open'),
+            PullRequest(title='title1', number=1234, body='', state='open', labels=[]),
         ])
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.get_exportable_commits = lambda: [
@@ -115,19 +115,22 @@ class TestExporterTest(unittest.TestCase):
                 title='Open PR',
                 number=1234,
                 body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458475}',
-                state='open'
+                state='open',
+                labels=['do not merge yet']
             ),
             PullRequest(
                 title='Merged PR',
                 number=2345,
                 body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458477}',
-                state='closed'
+                state='closed',
+                labels=[]
             ),
             PullRequest(
                 title='Open PR',
                 number=3456,
                 body='rutabaga\nCr-Commit-Position: refs/heads/master@{#458478}',
-                state='open'
+                state='open',
+                labels=[]  # It's important that this is empty.
             ),
         ], unsuccessful_merge_index=0)
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
@@ -148,7 +151,9 @@ class TestExporterTest(unittest.TestCase):
             'add_label "chromium-export"',
             'pr_with_position',
             'pr_with_position',
-            'remove_label "do not merge yet"',
+            # Testing the lack of remove_label here. The exporter should not
+            # try to remove the provisional label from PRs it has already
+            # removed it from.
             'get_pr_branch',
             'merge_pull_request',
             'delete_remote_branch',
@@ -199,7 +204,8 @@ class TestExporterTest(unittest.TestCase):
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(title='title1', number=1234,
-                        body='description\nWPT-Export-Revision: 1', state='open'),
+                        body='description\nWPT-Export-Revision: 1',
+                        state='open', labels=[]),
         ])
         test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
@@ -228,7 +234,8 @@ class TestExporterTest(unittest.TestCase):
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(title='title1', number=1234,
-                        body='description\nWPT-Export-Revision: 1', state='open'),
+                        body='description\nWPT-Export-Revision: 1',
+                        state='open', labels=[]),
         ])
         test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
@@ -277,7 +284,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(title='title1', number=1234,
                         body='description\nWPT-Export-Revision: 9\nChange-Id: decafbad',
-                        state='open'),
+                        state='open', labels=['do not merge yet']),
         ])
         test_exporter.get_exportable_commits = lambda: [
             ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240'),

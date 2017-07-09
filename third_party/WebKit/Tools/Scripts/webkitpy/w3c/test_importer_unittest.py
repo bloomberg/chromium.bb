@@ -20,7 +20,7 @@ class TestImporterTest(LoggingTestCase):
     def test_main_abort_on_exportable_commit_if_open_pr_found(self):
         host = MockHost()
         wpt_github = MockWPTGitHub(pull_requests=[
-            PullRequest('Title', 5, 'Commit body\nChange-Id: Iba5eba11', 'open'),
+            PullRequest('Title', 5, 'Commit body\nChange-Id: Iba5eba11', 'open', []),
         ])
         importer = TestImporter(host, wpt_github=wpt_github)
         importer.exportable_but_not_exported_commits = lambda _: [
