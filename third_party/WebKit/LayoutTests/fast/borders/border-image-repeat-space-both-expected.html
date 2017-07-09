@@ -1,0 +1,129 @@
+<!-- Based on FF test originally written by Ethan Lin.
+Changed it to force repeating the border image twice.
+Original can be found in:
+https://hg.mozilla.org/mozilla-central/raw-file/tip/layout/reftests/w3c-css/submitted/background/
+-->
+<style type="text/css">
+   .outer {
+      width: 108px;
+      height: 108px;
+   }
+   .inner1 {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+   }
+   .inner2 {
+      position: absolute;
+      top: 0px;
+      left: 27px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -27px 0px;
+   }
+   .inner22 {
+      position: absolute;
+      top: 0px;
+      left: 54px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -27px 0px;
+   }
+   .inner3 {
+      position: absolute;
+      top: 0px;
+      left: 81px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+   }
+   .inner4 {
+      position: absolute;
+      top: 27px;
+      left: 0px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: 0px -27px;
+   }
+   .inner44 {
+      position: absolute;
+      top: 54px;
+      left: 0px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: 0px -27px;
+   }
+   .inner5 {
+      position: absolute;
+      top: 27px;
+      left: 81px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -54px -27px;
+   }
+   .inner55 {
+      position: absolute;
+      top: 54px;
+      left: 81px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -54px -27px;
+   }
+   .inner6 {
+      position: absolute;
+      top: 81px;
+      left: 0px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+   }
+   .inner7 {
+      position: absolute;
+      top: 81px;
+      left: 27px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -27px -54px;
+   }
+   .inner77 {
+      position: absolute;
+      top: 81px;
+      left: 54px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+      background-position: -27px -54px;
+   }
+   .inner8 {
+      position: absolute;
+      top: 81px;
+      left: 81px;
+      width: 27px;
+      height: 27px;
+      background-image: url("border.png");
+   }
+</style>
+<div class="outer">
+   <div class="inner1"></div>
+   <div class="inner2"></div>
+   <div class="inner22"></div>
+   <div class="inner3"></div>
+   <div class="inner4"></div>
+   <div class="inner5"></div>
+   <div class="inner44"></div>
+   <div class="inner55"></div>
+   <div class="inner6"></div>
+   <div class="inner7"></div>
+   <div class="inner77"></div>
+   <div class="inner8"></div>
+</div>
