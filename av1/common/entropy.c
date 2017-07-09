@@ -5711,9 +5711,10 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 // FIXME: cdfs not defined for super_tx
 #if CONFIG_EXT_INTER
   AVERAGE_TILE_CDFS(inter_compound_mode_cdf)
-#endif
 
+#if CONFIG_EC_ADAPT
   AVERAGE_TILE_CDFS(compound_type_cdf)
+#endif  // CONFIG_EC_ADAPT
 
 #if CONFIG_INTERINTRA
 #if CONFIG_NEW_MULTISYMBOL
@@ -5722,6 +5723,7 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 #endif
   AVERAGE_TILE_CDFS(interintra_mode_cdf)
 #endif
+#endif  // CONFIG_EXT_INTER
 
   AVERAGE_TILE_CDFS(y_mode_cdf)
 
