@@ -31,7 +31,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override {
     if (window != surface_tree_host_->host_window())
-      return false;
+      return aura::WindowTargeter::EventLocationInsideBounds(window, event);
 
     Surface* surface = surface_tree_host_->root_surface();
     if (!surface)
@@ -49,7 +49,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                       ui::Event* event) override {
     aura::Window* window = static_cast<aura::Window*>(root);
-    DCHECK_EQ(window, surface_tree_host_->host_window());
+    if (window != surface_tree_host_->host_window())
+      return aura::WindowTargeter::FindTargetForEvent(root, event);
     ui::EventTarget* target =
         aura::WindowTargeter::FindTargetForEvent(root, event);
     // Do not accept events in SurfaceTreeHost window.
