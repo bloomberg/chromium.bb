@@ -27,6 +27,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_info.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
@@ -236,6 +237,10 @@ IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
   IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(net::MutableNetworkTrafficAnnotationTag)
+  IPC_STRUCT_TRAITS_MEMBER(unique_id_hash_code)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(net::SignedCertificateTimestampAndStatus)
   IPC_STRUCT_TRAITS_MEMBER(sct)
   IPC_STRUCT_TRAITS_MEMBER(status)
@@ -369,10 +374,12 @@ IPC_MESSAGE_CONTROL2(ResourceMsg_RequestComplete,
 // Resource messages sent from the renderer to the browser.
 
 // Makes a resource request via the browser.
-IPC_MESSAGE_CONTROL3(ResourceHostMsg_RequestResource,
-                     int /* routing_id */,
-                     int /* request_id */,
-                     content::ResourceRequest)
+IPC_MESSAGE_CONTROL4(
+    ResourceHostMsg_RequestResource,
+    int /* routing_id */,
+    int /* request_id */,
+    content::ResourceRequest,
+    net::MutableNetworkTrafficAnnotationTag /* network_traffic_annotation */)
 
 // Cancels a resource request with the ID given as the parameter.
 IPC_MESSAGE_CONTROL1(ResourceHostMsg_CancelRequest,
