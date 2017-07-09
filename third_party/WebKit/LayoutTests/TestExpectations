@@ -2822,10 +2822,6 @@ crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]
 
-# SK_SUPPORT_LEGACY_BILERP_IGNORING_HACK
-crbug.com/740350 external/wpt/css-paint-api/background-image-tiled.html [ Pass Failure ]
-crbug.com/740350 external/wpt/css-paint-api/geometry-background-image-tiled-001.html [ Pass Failure ]
-
 # Sheriff failures 2017-06-23
 crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 
