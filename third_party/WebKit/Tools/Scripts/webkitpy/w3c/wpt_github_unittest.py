@@ -34,9 +34,9 @@ class WPTGitHubTest(unittest.TestCase):
         with self.assertRaises(MergeError):
             self.wpt_github.merge_pull_request(5678)
 
-    def test_remove_label_throws_github_error_on_non_204(self):
+    def test_remove_label_throws_github_error_on_non_200_or_204(self):
         self.wpt_github.host.web.responses = [
-            {'status_code': 200},
+            {'status_code': 201},
         ]
 
         with self.assertRaises(GitHubError):

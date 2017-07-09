@@ -89,8 +89,9 @@ class TestExporter(object):
             _log.info('[dry_run] Would have attempted to merge PR')
             return
 
-        _log.info('Removing provisional label...')
-        self.wpt_github.remove_label(pull_request.number, PROVISIONAL_PR_LABEL)
+        if PROVISIONAL_PR_LABEL in pull_request.labels:
+            _log.info('Removing provisional label "%s"...', PROVISIONAL_PR_LABEL)
+            self.wpt_github.remove_label(pull_request.number, PROVISIONAL_PR_LABEL)
 
         _log.info('Attempting to merge...')
 
