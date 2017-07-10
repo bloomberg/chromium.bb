@@ -614,7 +614,7 @@ TEST_F(ResourceFetcherTest, RepetitiveLinkPreloadShouldBeMerged) {
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  // The second preload fetch returnes the first preload.
+  // The second preload fetch returns the first preload.
   Resource* resource2 = MockResource::Fetch(fetch_params_for_preload, fetcher);
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
   EXPECT_TRUE(resource1->IsPreloaded());
@@ -645,7 +645,7 @@ TEST_F(ResourceFetcherTest, RepetitiveSpeculativePreloadShouldBeMerged) {
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  // The second preload fetch returnes the first preload.
+  // The second preload fetch returns the first preload.
   Resource* resource2 = MockResource::Fetch(fetch_params_for_preload, fetcher);
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
   EXPECT_TRUE(resource1->IsPreloaded());
@@ -681,7 +681,7 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  // The second preload fetch returnes the first preload.
+  // The second preload fetch returns the first preload.
   Resource* resource2 =
       MockResource::Fetch(fetch_params_for_link_preload, fetcher);
   EXPECT_TRUE(fetcher->ContainsAsPreload(resource1));
