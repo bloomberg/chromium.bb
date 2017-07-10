@@ -94,6 +94,7 @@
     attribute EventHandler ontoggle;
     attribute EventHandler onvolumechange;
     attribute EventHandler onwaiting;
+    attribute EventHandler onwheel;
 
     // auxclick
     // https://wicg.github.io/auxclick/

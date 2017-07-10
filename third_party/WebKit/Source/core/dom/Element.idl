@@ -142,7 +142,6 @@ interface Element : Node {
     attribute EventHandler onpaste;
     attribute EventHandler onsearch;
     attribute EventHandler onselectstart;
-    attribute EventHandler onwheel;
 };
 
 Element implements ParentNode;

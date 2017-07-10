@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 300 tests; 291 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 300 tests; 292 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS onabort: must be on the appropriate locations for GlobalEventHandlers 
 PASS onabort: the default value must be null 
 PASS onabort: the content attribute must be compiled into a function as the corresponding property 
@@ -205,7 +205,7 @@ PASS onmouseup: the default value must be null
 PASS onmouseup: the content attribute must be compiled into a function as the corresponding property 
 PASS onmouseup: the content attribute must execute when an event is dispatched 
 PASS onmouseup: dispatching an Event at a <meta> element must trigger element.onmouseup 
-FAIL onwheel: must be on the appropriate locations for GlobalEventHandlers assert_true: HTMLElement has an own property named "onwheel" expected true got false
+PASS onwheel: must be on the appropriate locations for GlobalEventHandlers 
 PASS onwheel: the default value must be null 
 PASS onwheel: the content attribute must be compiled into a function as the corresponding property 
 PASS onwheel: the content attribute must execute when an event is dispatched 
