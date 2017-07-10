@@ -247,7 +247,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
   DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart,
                                          webkitAnimationStart);

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5193 tests; 4986 PASS, 207 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5193 tests; 4987 PASS, 206 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Document interface: attribute domain 
 PASS Document interface: attribute referrer 
@@ -592,7 +592,7 @@ PASS HTMLElement interface: attribute onmousemove
 PASS HTMLElement interface: attribute onmouseout 
 PASS HTMLElement interface: attribute onmouseover 
 PASS HTMLElement interface: attribute onmouseup 
-FAIL HTMLElement interface: attribute onwheel assert_own_property: expected property "onwheel" missing
+PASS HTMLElement interface: attribute onwheel 
 PASS HTMLElement interface: attribute onpause 
 PASS HTMLElement interface: attribute onplay 
 PASS HTMLElement interface: attribute onplaying 

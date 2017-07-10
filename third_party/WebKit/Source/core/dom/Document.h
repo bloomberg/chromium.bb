@@ -302,7 +302,6 @@ class CORE_EXPORT Document : public ContainerNode,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectionchange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
   bool ShouldMergeWithLegacyDescription(ViewportDescription::Type) const;
   bool ShouldOverrideLegacyDescription(ViewportDescription::Type) const;

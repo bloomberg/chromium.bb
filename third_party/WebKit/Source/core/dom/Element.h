@@ -140,7 +140,6 @@ class CORE_EXPORT Element : public ContainerNode {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(paste);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
