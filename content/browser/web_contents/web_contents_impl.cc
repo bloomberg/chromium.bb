@@ -3241,11 +3241,31 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
     if (entry)
       post_id = entry->GetPostID();
   }
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("download_web_contents_frame", R"(
+        semantics {
+          sender: "Save Page Action"
+          description:
+            "Saves the given frame's URL to the local file system."
+          trigger:
+            "The user has triggered a save operation on the frame through a "
+            "context menu or other mechanism."
+          data: "None."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled by settings, but it's is only "
+            "triggered by user request."
+          policy_exception_justification: "Not implemented."
+        })");
   auto params = base::MakeUnique<DownloadUrlParameters>(
       url, frame_host->GetProcess()->GetID(),
       frame_host->GetRenderViewHost()->GetRoutingID(),
       frame_host->GetRoutingID(), storage_partition->GetURLRequestContext(),
-      NO_TRAFFIC_ANNOTATION_YET);
+      traffic_annotation);
   params->set_referrer(referrer);
   params->set_post_id(post_id);
   if (post_id >= 0)
