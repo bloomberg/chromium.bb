@@ -5,7 +5,9 @@
 #include "tools/ipc_fuzzer/message_replay/replay_process.h"
 
 #include <limits.h>
+
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -129,11 +131,10 @@ void ReplayProcess::SendNextMessage() {
     return;
   }
 
-  // Take next message and release it from vector.
-  IPC::Message* message = messages_[message_index_];
-  messages_[message_index_++] = NULL;
+  std::unique_ptr<IPC::Message> message =
+      std::move(messages_[message_index_++]);
 
-  if (!channel_->Send(message)) {
+  if (!channel_->Send(message.release())) {
     LOG(ERROR) << "ChannelProxy::Send() failed after "
                << message_index_ << " messages";
     base::MessageLoop::current()->QuitWhenIdle();
