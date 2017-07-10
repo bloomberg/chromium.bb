@@ -724,6 +724,7 @@ mojom("mojo_bindings") {
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/broadcastchannel/broadcast_channel.mojom",
     "platform/modules/budget_service/budget_service.mojom",
+    "platform/modules/credentialmanager/credential_manager.mojom",
     "platform/modules/fetch/fetch_api_request.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/keyboard_lock/keyboard_lock.mojom",

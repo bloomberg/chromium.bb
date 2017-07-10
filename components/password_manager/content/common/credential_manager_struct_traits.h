@@ -6,9 +6,9 @@
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
 
 #include "base/strings/string16.h"
-#include "components/password_manager/content/common/credential_manager.mojom.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/WebKit/public/platform/modules/credentialmanager/credential_manager.mojom.h"
 
 namespace mojo {
 
