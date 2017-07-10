@@ -26,12 +26,19 @@
 
 namespace blink {
 
+const double kMillimetersPerCentimeter = 10;
+const double kCentimetersPerInch = 2.54;
+const double kMillimetersPerInch = 25.4;
+const double kPointsPerInch = 72;
+const double kPicasPerInch = 6;
+
 // These conversions are defined in css-values
 const double kCssPixelsPerInch = 96;
-const double kCssPixelsPerCentimeter = kCssPixelsPerInch / 2.54;  // 2.54 cm/in
-const double kCssPixelsPerMillimeter = kCssPixelsPerCentimeter / 10;
-const double kCssPixelsPerPoint = kCssPixelsPerInch / 72;
-const double kCssPixelsPerPica = kCssPixelsPerInch / 6;
+const double kCssPixelsPerCentimeter = kCssPixelsPerInch / kCentimetersPerInch;
+const double kCssPixelsPerMillimeter =
+    kCssPixelsPerCentimeter / kMillimetersPerCentimeter;
+const double kCssPixelsPerPoint = kCssPixelsPerInch / kPointsPerInch;
+const double kCssPixelsPerPica = kCssPixelsPerInch / kPicasPerInch;
 
 }  // namespace blink
 
