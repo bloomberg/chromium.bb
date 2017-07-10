@@ -3782,6 +3782,8 @@
     {
       name: "margin",
       longhands: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "marker",

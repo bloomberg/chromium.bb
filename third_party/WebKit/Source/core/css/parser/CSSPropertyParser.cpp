@@ -2377,8 +2377,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
     case CSSPropertyTextDecoration:
       DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return ConsumeShorthandGreedily(textDecorationShorthand(), important);
-    case CSSPropertyMargin:
-      return Consume4Values(marginShorthand(), important);
     case CSSPropertyPadding:
       return Consume4Values(paddingShorthand(), important);
     case CSSPropertyWebkitTextEmphasis:
