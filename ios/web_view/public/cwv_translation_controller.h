@@ -52,6 +52,10 @@ CWV_EXPORT
 @property(nonatomic, readonly)
     NSSet<CWVTranslationLanguage*>* supportedLanguages;
 
+// Resets all translation policies to default (CWVTranslationPolicyAsk).
+// Only resets non-incognito settings.
++ (void)resetTranslationPolicies;
+
 // Begins translation on the current page from |sourceLanguage| to
 // |targetLanguage|. These language parameters must be chosen from
 // |supportedLanguages|. Set |userInitiated| to YES if translation
@@ -70,6 +74,7 @@ CWV_EXPORT
 
 // Sets or retrieves translation policies associated with a specified language.
 // |pageLanguage| should be the language code of the language.
+// Not supported in incognito mode.
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
              forPageLanguage:(CWVTranslationLanguage*)pageLanguage;
 - (CWVTranslationPolicy*)translationPolicyForPageLanguage:
@@ -77,6 +82,7 @@ CWV_EXPORT
 
 // Sets or retrieves translation policies associated with a specified page.
 // |pageHost| should be the hostname of the website. Must not be empty.
+// Not supported in incognito mode.
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
                  forPageHost:(NSString*)pageHost;
 - (CWVTranslationPolicy*)translationPolicyForPageHost:(NSString*)pageHost;
