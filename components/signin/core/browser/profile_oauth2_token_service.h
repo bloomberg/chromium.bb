@@ -45,7 +45,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // The primary account is specified with the |primary_account_id| argument.
   // For a regular profile, the primary account id comes from SigninManager.
   // For a supervised user, the id comes from SupervisedUserService.
-  virtual void LoadCredentials(const std::string& primary_account_id);
+  void LoadCredentials(const std::string& primary_account_id);
+
+  // Returns true iff all credentials have been loaded from disk.
+  bool AreAllCredentialsLoaded();
 
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
   // and available through |LoadCredentials| after service is restarted.
@@ -61,6 +64,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
  private:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokensLoaded() override;
+
+  // Whether all credentials have been loaded.
+  bool all_credentials_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };
