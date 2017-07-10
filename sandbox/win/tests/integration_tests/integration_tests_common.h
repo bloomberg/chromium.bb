@@ -7,37 +7,25 @@
 
 #include <windows.h>
 
-// Use the same header file for DLL and importers.
-#ifdef _DLL_EXPORTING
-#define DECLSPEC extern "C" __declspec(dllexport)
-#else
-#define DECLSPEC extern "C" __declspec(dllimport)
-#endif
+namespace sandbox {
 
 //------------------------------------------------------------------------------
-// Tests
+// Common - for sharing between source files.
 //------------------------------------------------------------------------------
-const wchar_t* g_extension_point_test_mutex = L"ChromeExtensionTestMutex";
+enum TestPolicy {
+  TESTPOLICY_DEP = 1,
+  TESTPOLICY_ASLR,
+  TESTPOLICY_STRICTHANDLE,
+  TESTPOLICY_WIN32K,
+  TESTPOLICY_EXTENSIONPOINT,
+  TESTPOLICY_NONSYSFONT,
+  TESTPOLICY_LOADNOREMOTE,
+  TESTPOLICY_LOADNOLOW,
+};
 
-//------------------------------------------------------------------------------
-// Hooking WinProc exe.
-//------------------------------------------------------------------------------
-const wchar_t* g_winproc_file = L"sbox_integration_test_win_proc.exe ";
-const wchar_t* g_winproc_class_name = L"myWindowClass";
-const wchar_t* g_winproc_window_name = L"ChromeMitigationTests";
-const wchar_t* g_winproc_event = L"ChromeExtensionTestEvent";
+// Timeout for ::WaitForSingleObject synchronization.
+DWORD SboxTestEventTimeout();
 
-//------------------------------------------------------------------------------
-// Hooking dll.
-//------------------------------------------------------------------------------
-const wchar_t* g_hook_dll_file = L"sbox_integration_test_hook_dll.dll";
-const wchar_t* g_hook_event = L"ChromeExtensionTestHookEvent";
-const char* g_hook_handler_func = "HookProc";
-const char* g_was_hook_called_func = "WasHookCalled";
-const char* g_set_hook_func = "SetHook";
-
-DECLSPEC LRESULT HookProc(int code, WPARAM wParam, LPARAM lParam);
-DECLSPEC bool WasHookCalled();
-DECLSPEC void SetHook(HHOOK hook_handle);
+}  // namespace sandbox
 
 #endif  // SANDBOX_TESTS_INTEGRATION_TESTS_COMMON_H_

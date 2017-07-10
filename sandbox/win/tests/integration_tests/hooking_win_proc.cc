@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "integration_tests_common.h"
-
 #include <windows.h>
+
+#include "hooking_win_proc.h"
 
 LRESULT CALLBACK WndProc(HWND window,
                          UINT message,
@@ -33,8 +33,12 @@ int WINAPI WinMain(HINSTANCE instance,
                    HINSTANCE prev_instance,
                    LPSTR cmd_line,
                    int cmd_show) {
+  constexpr wchar_t winproc_class_name[] = L"myWindowClass";
+  constexpr wchar_t winproc_window_name[] = L"ChromeMitigationTests";
+
   // The parent process should have set up this named event already.
-  HANDLE event = ::OpenEventW(EVENT_MODIFY_STATE, FALSE, g_winproc_event);
+  HANDLE event = ::OpenEventW(EVENT_MODIFY_STATE, FALSE,
+                              hooking_win_proc::g_winproc_event);
   if (event == NULL || event == INVALID_HANDLE_VALUE)
     return 1;
 
@@ -50,17 +54,17 @@ int WINAPI WinMain(HINSTANCE instance,
   window_class.hCursor = ::LoadCursor(NULL, IDC_ARROW);
   window_class.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOWFRAME);
   window_class.lpszMenuName = NULL;
-  window_class.lpszClassName = g_winproc_class_name;
+  window_class.lpszClassName = winproc_class_name;
   window_class.hIconSm = ::LoadIcon(NULL, IDI_APPLICATION);
 
   if (!::RegisterClassEx(&window_class))
     return 1;
 
   // Step 2: Create the Window.
-  HWND window = ::CreateWindowExW(WS_EX_CLIENTEDGE, g_winproc_class_name,
-                                  g_winproc_window_name, WS_OVERLAPPEDWINDOW,
-                                  CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL,
-                                  NULL, instance, NULL);
+  HWND window =
+      ::CreateWindowExW(WS_EX_CLIENTEDGE, winproc_class_name,
+                        winproc_window_name, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+                        CW_USEDEFAULT, 240, 120, NULL, NULL, instance, NULL);
 
   if (window == NULL)
     return 1;
