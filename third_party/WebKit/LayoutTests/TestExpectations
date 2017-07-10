@@ -3066,6 +3066,15 @@ crbug.com/v8/6529 inspector/console/console-format.html [ NeedsManualRebaseline 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 crbug.com/737959 virtual/off-main-thread-fetch/http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
+# Awaiting rebaseline after skia roll.
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/color-profile-svg.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Failure Pass ]
+crbug.com/739559 virtual/gpu-rasterization/images/cross-fade-tiled.html [ Failure Pass ]
+
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] css2.1/t1202-counters-04-b.html [ Failure Pass ]
