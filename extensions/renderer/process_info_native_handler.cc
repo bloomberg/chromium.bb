@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/script_context.h"
+#include "gin/converter.h"
 
 namespace extensions {
 
@@ -48,6 +50,9 @@ ProcessInfoNativeHandler::ProcessInfoNativeHandler(
   RouteFunction(
       "HasSwitch",
       base::Bind(&ProcessInfoNativeHandler::HasSwitch, base::Unretained(this)));
+  RouteFunction("GetPlatform",
+                base::Bind(&ProcessInfoNativeHandler::GetPlatform,
+                           base::Unretained(this)));
 }
 
 void ProcessInfoNativeHandler::GetExtensionId(
@@ -93,6 +98,13 @@ void ProcessInfoNativeHandler::HasSwitch(
   bool has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
       *v8::String::Utf8Value(args[0]));
   args.GetReturnValue().Set(v8::Boolean::New(args.GetIsolate(), has_switch));
+}
+
+void ProcessInfoNativeHandler::GetPlatform(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(0, args.Length());
+  args.GetReturnValue().Set(
+      gin::StringToSymbol(args.GetIsolate(), binding::GetPlatformString()));
 }
 
 }  // namespace extensions

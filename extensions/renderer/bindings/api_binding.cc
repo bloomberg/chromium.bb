@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
@@ -29,21 +30,6 @@
 namespace extensions {
 
 namespace {
-
-std::string GetPlatformString() {
-#if defined(OS_CHROMEOS)
-  return "chromeos";
-#elif defined(OS_LINUX)
-  return "linux";
-#elif defined(OS_MACOSX)
-  return "mac";
-#elif defined(OS_WIN)
-  return "win";
-#else
-  NOTREACHED();
-  return std::string();
-#endif
-}
 
 // Returns the name of the enum value for use in JavaScript; JS enum entries use
 // SCREAMING_STYLE.
@@ -452,7 +438,7 @@ void APIBinding::DecorateTemplateWithProperties(
     // this check here. If this becomes more common, we should really find a
     // way of moving these checks to the features files.
     if (dict->GetList("platforms", &platforms)) {
-      std::string this_platform = GetPlatformString();
+      std::string this_platform = binding::GetPlatformString();
       auto is_this_platform = [&this_platform](const base::Value& platform) {
         return platform.is_string() && platform.GetString() == this_platform;
       };
