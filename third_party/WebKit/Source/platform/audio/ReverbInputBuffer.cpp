@@ -35,19 +35,17 @@ ReverbInputBuffer::ReverbInputBuffer(size_t length)
 
 void ReverbInputBuffer::Write(const float* source_p, size_t number_of_frames) {
   size_t buffer_length = buffer_.size();
-  bool is_copy_safe = write_index_ + number_of_frames <= buffer_length;
-  DCHECK(is_copy_safe);
-  if (!is_copy_safe)
-    return;
+  size_t index = WriteIndex();
+  size_t new_index = index + number_of_frames;
 
-  memcpy(buffer_.Data() + write_index_, source_p,
-         sizeof(float) * number_of_frames);
+  CHECK_LE(new_index, buffer_length);
 
-  write_index_ += number_of_frames;
-  DCHECK_LE(write_index_, buffer_length);
+  memcpy(buffer_.Data() + index, source_p, sizeof(float) * number_of_frames);
 
-  if (write_index_ >= buffer_length)
-    write_index_ = 0;
+  if (new_index >= buffer_length)
+    new_index = 0;
+
+  SetWriteIndex(new_index);
 }
 
 float* ReverbInputBuffer::DirectReadFrom(int* read_index,
