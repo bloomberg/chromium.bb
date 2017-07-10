@@ -188,6 +188,8 @@ public class ToolbarPhone extends ToolbarLayout
     protected boolean mLayoutLocationBarInFocusedMode;
     protected int mUnfocusedLocationBarLayoutWidth;
     protected int mUnfocusedLocationBarLayoutLeft;
+    protected int mUnfocusedLocationBarLayoutRight;
+    protected boolean mHasVisibleViewPriorToUrlBar;
     private boolean mUnfocusedLocationBarUsesTransparentBg;
 
     private int mLocationBarBackgroundAlpha = 255;
@@ -260,7 +262,7 @@ public class ToolbarPhone extends ToolbarLayout
         NEW_TAB_NORMAL
     }
 
-    private VisualState mVisualState = VisualState.NORMAL;
+    protected VisualState mVisualState = VisualState.NORMAL;
     private VisualState mOverlayDrawablesVisualState;
     protected boolean mUseLightToolbarDrawables;
 
@@ -529,12 +531,12 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUnfocusedLocationBarLayoutParams() {
-        boolean hasVisibleViewPriorToUrlBar = false;
+        mHasVisibleViewPriorToUrlBar = false;
         for (int i = 0; i < mLocationBar.getChildCount(); i++) {
             View child = mLocationBar.getChildAt(i);
             if (child == mUrlBar) break;
             if (child.getVisibility() != GONE) {
-                hasVisibleViewPriorToUrlBar = true;
+                mHasVisibleViewPriorToUrlBar = true;
                 break;
             }
         }
@@ -542,7 +544,7 @@ public class ToolbarPhone extends ToolbarLayout
         int leftViewBounds = getViewBoundsLeftOfLocationBar(mVisualState);
         int rightViewBounds = getViewBoundsRightOfLocationBar(mVisualState);
 
-        if (!hasVisibleViewPriorToUrlBar) {
+        if (!mHasVisibleViewPriorToUrlBar) {
             if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
                 rightViewBounds -= mToolbarSidePadding;
             } else {
@@ -561,6 +563,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
         mUnfocusedLocationBarLayoutLeft = leftViewBounds;
+        mUnfocusedLocationBarLayoutRight = rightViewBounds;
     }
 
     /**
