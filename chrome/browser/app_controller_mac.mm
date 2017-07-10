@@ -1557,13 +1557,15 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 }
 
 - (BOOL)application:(NSApplication*)application
-    willContinueUserActivityWithType:(NSString*)userActivityType {
+    willContinueUserActivityWithType:(NSString*)userActivityType
+    __attribute__((availability(macos, introduced = 10.10))) {
   return [userActivityType isEqualToString:NSUserActivityTypeBrowsingWeb];
 }
 
 - (BOOL)application:(NSApplication*)application
     continueUserActivity:(NSUserActivity*)userActivity
-      restorationHandler:(void (^)(NSArray*))restorationHandler {
+      restorationHandler:(void (^)(NSArray*))restorationHandler
+    __attribute__((availability(macos, introduced = 10.10))) {
   if (![userActivity.activityType
           isEqualToString:NSUserActivityTypeBrowsingWeb]) {
     return NO;
@@ -1599,7 +1601,14 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 }
 
 - (void)passURLToHandoffManager:(const GURL&)handoffURL {
-  [handoffManager_ updateActiveURL:handoffURL];
+  if (@available(macOS 10.10, *)) {
+    [handoffManager_ updateActiveURL:handoffURL];
+  } else {
+    // Only ends up being called in 10.10+, i.e. if shouldUseHandoff returns
+    // true. Some tests override shouldUseHandoff to always return true, but
+    // then they also override this function to do something else.
+    NOTREACHED();
+  }
 }
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {
