@@ -199,6 +199,7 @@ in the editor that appears when you create your output directory
 (`gn args out/Default`) or on the gn gen command line
 (`gn gen out/Default --args="is_component_build = true is_debug = true"`).
 Some helpful settings to consider using include:
+* `use_jumbo_builds = true` - *Experimental* [Jumbo/unity](jumbo.md) builds.
 * `is_component_build = true` - this uses more, smaller DLLs, and incremental
 linking.
 * `use_nacl = false` - this disables Native Client which is usually not needed for
