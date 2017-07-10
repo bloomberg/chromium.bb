@@ -675,8 +675,6 @@ bool BackgroundDownloader::OnStateTransferring() {
   return false;
 }
 
-// Creates or opens a job for the given url and queues it up. Tries to
-// install a job observer but continues on if an observer can't be set up.
 HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
                                            ComPtr<IBackgroundCopyJob>* job) {
   DCHECK(task_runner()->RunsTasksInCurrentSequence());
@@ -699,6 +697,9 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
     return hr;
   }
 
+  const bool is_new_job = hr == S_OK;
+  UMA_HISTOGRAM_BOOLEAN("UpdateClient.BackgroundDownloaderNewJob", is_new_job);
+
   hr = local_job->Resume();
   if (FAILED(hr)) {
     CleanupJob(local_job);
@@ -717,7 +718,7 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
                     bits_manager_, &jobs);
   if (SUCCEEDED(hr) && !jobs.empty()) {
     *job = jobs.front();
-    return hr;
+    return S_FALSE;
   }
 
   ComPtr<IBackgroundCopyJob> local_job;
