@@ -8,6 +8,17 @@
 
 namespace blink {
 
+namespace {
+
+bool TrackEquals(const MediaStreamTrack* track,
+                 const WebMediaStreamTrack* web_track) {
+  if (track)
+    return web_track && web_track->Id() == WebString(track->id());
+  return !web_track;
+}
+
+}  // namespace
+
 RTCRtpSender::RTCRtpSender(std::unique_ptr<WebRTCRtpSender> sender,
                            MediaStreamTrack* track)
     : sender_(std::move(sender)), track_(track) {
@@ -16,10 +27,17 @@ RTCRtpSender::RTCRtpSender(std::unique_ptr<WebRTCRtpSender> sender,
 }
 
 MediaStreamTrack* RTCRtpSender::track() {
-  DCHECK((track_ && sender_->Track() &&
-          sender_->Track()->Id() == static_cast<WebString>(track_->id())) ||
-         (!track_ && !sender_->Track()));
+  DCHECK(TrackEquals(track_, sender_->Track()));
   return track_;
+}
+
+WebRTCRtpSender* RTCRtpSender::web_rtp_sender() {
+  return sender_.get();
+}
+
+void RTCRtpSender::SetTrack(MediaStreamTrack* track) {
+  DCHECK(TrackEquals(track, sender_->Track()));
+  track_ = track;
 }
 
 DEFINE_TRACE(RTCRtpSender) {

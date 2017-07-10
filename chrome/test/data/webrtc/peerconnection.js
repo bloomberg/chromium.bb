@@ -46,6 +46,9 @@ var gDefaultVideoCodec = null;
  */
 var gOpusDtx = false;
 
+/** @private */
+var gNegotiationNeededCount = 0;
+
 // Public interface to tests. These are expected to be called with
 // ExecuteJavascript invocations from the browser tests and will return answers
 // through the DOM automation controller.
@@ -454,6 +457,17 @@ function getLastGatheringState() {
   returnToTest(gIceGatheringState);
 }
 
+/**
+ * Returns "ok-negotiation-count-is-" followed by the number of times
+ * onnegotiationneeded has fired. This will include any currently queued
+ * negotiationneeded events.
+ */
+function getNegotiationNeededCount() {
+  window.setTimeout(function() {
+    returnToTest('ok-negotiation-count-is-' + gNegotiationNeededCount);
+  }, 0);
+}
+
 // Internals.
 
 /** @private */
@@ -467,6 +481,7 @@ function createPeerConnection_(rtcConfig) {
   peerConnection.onremovestream = removeStreamCallback_;
   peerConnection.onicecandidate = iceCallback_;
   peerConnection.onicegatheringstatechange = iceGatheringCallback_;
+  peerConnection.onnegotiationneeded = negotiationNeededCallback_;
   return peerConnection;
 }
 
@@ -488,6 +503,10 @@ function iceGatheringCallback_() {
   gIceGatheringState = peerConnection.iceGatheringState;
 }
 
+/** @private */
+function negotiationNeededCallback_() {
+  ++gNegotiationNeededCount;
+}
 
 /** @private */
 function setLocalDescription(peerConnection, sessionDescription) {

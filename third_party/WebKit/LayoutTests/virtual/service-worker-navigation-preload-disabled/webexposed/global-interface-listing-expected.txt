@@ -5158,6 +5158,7 @@ interface RTCPeerConnection : EventTarget
     getter signalingState
     method addIceCandidate
     method addStream
+    method addTrack
     method close
     method constructor
     method createAnswer
@@ -5171,6 +5172,7 @@ interface RTCPeerConnection : EventTarget
     method getStats
     method getStreamById
     method removeStream
+    method removeTrack
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -8810,6 +8812,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter signalingState
     method addIceCandidate
     method addStream
+    method addTrack
     method close
     method constructor
     method createAnswer
@@ -8823,6 +8826,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getStats
     method getStreamById
     method removeStream
+    method removeTrack
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription

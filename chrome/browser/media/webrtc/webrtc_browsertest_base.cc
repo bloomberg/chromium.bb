@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -64,6 +65,7 @@ const char WebRtcTestBase::kAudioVideoCallConstraints720p[] =
 const char WebRtcTestBase::kUseDefaultCertKeygen[] = "null";
 const char WebRtcTestBase::kUseDefaultAudioCodec[] = "";
 const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
+const char WebRtcTestBase::kUndefined[] = "undefined";
 
 namespace {
 
@@ -594,4 +596,98 @@ void WebRtcTestBase::VerifyRtpReceivers(
                                 base::SizeTToString(*expected_num_tracks) + ")"
                           : "verifyRtpReceivers()";
   EXPECT_EQ("ok-receivers-verified", ExecuteJavascript(javascript, tab));
+}
+
+std::vector<std::string> WebRtcTestBase::CreateAndAddAudioAndVideoTrack(
+    content::WebContents* tab,
+    StreamArgumentType stream_argument_type) const {
+  const char* string_argument_type_str = nullptr;
+  switch (stream_argument_type) {
+    case StreamArgumentType::NO_STREAM:
+      string_argument_type_str = "'no-stream'";
+      break;
+    case StreamArgumentType::SHARED_STREAM:
+      string_argument_type_str = "'shared-stream'";
+      break;
+    case StreamArgumentType::INDIVIDUAL_STREAMS:
+      string_argument_type_str = "'individual-streams'";
+      break;
+  }
+  std::string result =
+      ExecuteJavascript(base::StringPrintf("createAndAddAudioAndVideoTrack(%s)",
+                                           string_argument_type_str),
+                        tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  std::vector<std::string> ids = base::SplitString(
+      result.substr(3), " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  EXPECT_EQ(4u, ids.size());
+  return ids;
+}
+
+void WebRtcTestBase::RemoveTrack(content::WebContents* tab,
+                                 const std::string& track_id) const {
+  EXPECT_EQ(
+      "ok-sender-removed",
+      ExecuteJavascript(
+          base::StringPrintf("removeTrack('%s')", track_id.c_str()), tab));
+}
+
+bool WebRtcTestBase::HasLocalStreamWithTrack(
+    content::WebContents* tab,
+    const std::string& stream_id,
+    const std::string& track_id) const {
+  return HasStreamWithTrack(tab, "hasLocalStreamWithTrack", stream_id,
+                            track_id);
+}
+
+bool WebRtcTestBase::HasRemoteStreamWithTrack(
+    content::WebContents* tab,
+    const std::string& stream_id,
+    const std::string& track_id) const {
+  return HasStreamWithTrack(tab, "hasRemoteStreamWithTrack", stream_id,
+                            track_id);
+}
+
+bool WebRtcTestBase::HasStreamWithTrack(content::WebContents* tab,
+                                        const char* function_name,
+                                        std::string stream_id,
+                                        std::string track_id) const {
+  if (stream_id != kUndefined)
+    stream_id = "'" + stream_id + "'";
+  std::string javascript = base::StringPrintf(
+      "%s(%s, '%s')", function_name, stream_id.c_str(), track_id.c_str());
+  std::string result = ExecuteJavascript(javascript, tab);
+  EXPECT_TRUE(result == "ok-stream-with-track-found" ||
+              result == "ok-stream-with-track-not-found");
+  return result == "ok-stream-with-track-found";
+}
+
+bool WebRtcTestBase::HasSenderWithTrack(content::WebContents* tab,
+                                        std::string track_id) const {
+  std::string javascript =
+      base::StringPrintf("hasSenderWithTrack('%s')", track_id.c_str());
+  std::string result = ExecuteJavascript(javascript, tab);
+  EXPECT_TRUE(result == "ok-sender-with-track-found" ||
+              result == "ok-sender-with-track-not-found");
+  return result == "ok-sender-with-track-found";
+}
+
+bool WebRtcTestBase::HasReceiverWithTrack(content::WebContents* tab,
+                                          std::string track_id) const {
+  std::string javascript =
+      base::StringPrintf("hasReceiverWithTrack('%s')", track_id.c_str());
+  std::string result = ExecuteJavascript(javascript, tab);
+  EXPECT_TRUE(result == "ok-receiver-with-track-found" ||
+              result == "ok-receiver-with-track-not-found");
+  return result == "ok-receiver-with-track-found";
+}
+
+size_t WebRtcTestBase::GetNegotiationNeededCount(
+    content::WebContents* tab) const {
+  std::string result = ExecuteJavascript("getNegotiationNeededCount()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-negotiation-count-is-",
+                               base::CompareCase::SENSITIVE));
+  size_t count = 0;
+  EXPECT_TRUE(base::StringToSizeT(result.substr(24), &count));
+  return count;
 }

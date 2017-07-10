@@ -1110,6 +1110,8 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
   if (!valid)
     exception_state.ThrowDOMException(kSyntaxError,
                                       "Unable to add the provided stream.");
+  // Ensure |rtp_senders_| is up-to-date.
+  getSenders();
 }
 
 void RTCPeerConnection::removeStream(MediaStream* stream,
@@ -1234,6 +1236,75 @@ HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() {
     }
   }
   return rtp_receivers;
+}
+
+RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
+                                          MediaStreamVector streams,
+                                          ExceptionState& exception_state) {
+  DCHECK(track);
+  DCHECK(track->Component());
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+    return nullptr;
+  if (streams.size() >= 2) {
+    // TODO(hbos): Don't throw an exception when this is supported by the lower
+    // layers. https://crbug.com/webrtc/7932
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "Adding a track to multiple streams is not supported.");
+    return nullptr;
+  }
+  for (const auto sender_entry : rtp_senders_) {
+    RTCRtpSender* sender = sender_entry.value;
+    if (sender->track() == track) {
+      exception_state.ThrowDOMException(
+          kInvalidAccessError, "A sender already exists for the track.");
+      return nullptr;
+    }
+  }
+
+  WebVector<WebMediaStream> web_streams(streams.size());
+  for (size_t i = 0; i < streams.size(); ++i) {
+    web_streams[i] = streams[i]->Descriptor();
+  }
+  std::unique_ptr<WebRTCRtpSender> web_rtp_sender =
+      peer_handler_->AddTrack(track->Component(), web_streams);
+  if (!web_rtp_sender) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "A sender could not be created for this track.");
+    return nullptr;
+  }
+
+  uintptr_t id = web_rtp_sender->Id();
+  DCHECK(rtp_senders_.find(id) == rtp_senders_.end());
+  RTCRtpSender* rtp_sender = new RTCRtpSender(std::move(web_rtp_sender), track);
+  tracks_.insert(track->Component(), track);
+  rtp_senders_.insert(id, rtp_sender);
+  return rtp_sender;
+}
+
+void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
+                                    ExceptionState& exception_state) {
+  DCHECK(sender);
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+    return;
+  if (rtp_senders_.find(sender->web_rtp_sender()->Id()) == rtp_senders_.end()) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        "The sender was not created by this peer connection.");
+  }
+
+  if (!peer_handler_->RemoveTrack(sender->web_rtp_sender())) {
+    // Operation aborted. This indicates that the sender is no longer used by
+    // the peer connection, i.e. that it was removed due to setting a remote
+    // description of type "rollback".
+    // Note: Until the WebRTC library supports re-using senders, a sender will
+    // also stop being used as a result of being removed.
+    return;
+  }
+  // Successfully removing the track results in the sender's track property
+  // being nulled.
+  DCHECK(!sender->web_rtp_sender()->Track());
+  sender->SetTrack(nullptr);
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(

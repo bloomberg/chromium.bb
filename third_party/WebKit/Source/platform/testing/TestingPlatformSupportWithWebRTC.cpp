@@ -80,6 +80,16 @@ MockWebRTCPeerConnectionHandler::GetReceivers() {
   return WebVector<std::unique_ptr<WebRTCRtpReceiver>>();
 }
 
+std::unique_ptr<WebRTCRtpSender> MockWebRTCPeerConnectionHandler::AddTrack(
+    const WebMediaStreamTrack&,
+    const WebVector<WebMediaStream>&) {
+  return nullptr;
+}
+
+bool MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender*) {
+  return false;
+}
+
 WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(
     const WebString& label,
     const WebRTCDataChannelInit&) {

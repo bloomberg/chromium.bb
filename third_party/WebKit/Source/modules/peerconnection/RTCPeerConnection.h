@@ -156,6 +156,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   HeapVector<Member<RTCRtpSender>> getSenders();
   HeapVector<Member<RTCRtpReceiver>> getReceivers();
+  RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
+  void removeTrack(RTCRtpSender*, ExceptionState&);
 
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,

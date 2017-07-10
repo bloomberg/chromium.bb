@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RTCPeerConnection.getSenders</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getAudioTracks()[0];
+      let sender = pc.addTrack(track);
+      assert_equals(sender.track, track);
+      assert_array_equals(pc.getLocalStreams(), []);
+    });
+}, 'addTrack() for a single track.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getAudioTracks()[0];
+      let sender = pc.addTrack(track, stream);
+      assert_equals(sender.track, track);
+      // TODO(hbos): |addTrack| does not add to the set of local streams. When
+      // |getLocalStreams| is updated to return the streams of all senders this
+      // would have an observable effect here. https://crbug.com/738918
+      assert_array_equals(pc.getLocalStreams(), []);
+    });
+}, 'addTrack() for a single track and its stream.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 2)
+    .then(function(streams) {
+      let streamA = streams[0];
+      let trackA = streamA.getAudioTracks()[0];
+      let streamB = streams[1];
+      let sender = pc.addTrack(trackA, streamB);
+      assert_equals(sender.track, trackA);
+      // TODO(hbos): |addTrack| does not add to the set of local streams. When
+      // |getLocalStreams| is updated to return the streams of all senders this
+      // would have an observable effect here. https://crbug.com/738918
+      assert_array_equals(pc.getLocalStreams(), []);
+    });
+}, 'addTrack() for a single track and a different stream.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 2)
+    .then(function(streams) {
+      let streamA = streams[0];
+      let streamB = streams[1];
+      let track = streamA.getAudioTracks()[0];
+      let exception = null;
+      try {
+        pc.addTrack(track, streamA, streamB);
+      } catch (e) {
+        exception = e;
+      }
+      // The spec supports multiple streams per track but our implementation
+      // doesn't. Fix test when resolving https://crbug.com/webrtc/7932.
+      assert_true(exception != null);
+      assert_equals('NotSupportedError', exception.name);
+    });
+}, 'addTrack() for a single track and two streams throws NotSupportedError.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getAudioTracks()[0];
+      let sender = pc.addTrack(track);
+      assert_equals(sender.track, track);
+      let exception = null;
+      try {
+        pc.addTrack(track);
+      } catch (e) {
+        exception = e;
+      }
+      assert_equals('InvalidAccessError', exception.name);
+    });
+}, 'addTrack() when already added throws InvalidAccessError.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getAudioTracks()[0];
+      pc.addStream(stream);
+      let exception = null;
+      try {
+        // The interaction between |addStream| and |addTrack| is not
+        // standardized (|addStream| is non-standard). Because |addStream|
+        // creates a sender for the track and |addTrack| throws if there already
+        // exists a sender for the track.
+        pc.addTrack(track);
+      } catch (e) {
+        exception = e;
+      }
+      assert_true(exception != null);
+      assert_equals('InvalidAccessError', exception.name);
+    });
+}, 'addTrack() after addStream() throws InvalidAccessError.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getAudioTracks()[0];
+      let sender = pc.addTrack(track);
+      assert_equals(sender.track, track);
+      assert_array_equals(pc.getSenders(), [ sender ]);
+      assert_array_equals(pc.getLocalStreams(), []);
+      pc.addStream(stream);
+      assert_array_equals(pc.getLocalStreams(), [ stream ]);
+      // The interaction between |addStream| and |addTrack| is not standardized
+      // (|addStream| is non-standard). In our implementation, the existing
+      // sender is reused by |addStream|.
+      assert_array_equals(pc.getSenders(), [ sender ]);
+    });
+}, 'addTrack() before addStream() works.');
+
+/**
+ * Helper functions.
+ */
+
+function createStreams(constraints, numStreams, streamsSoFar = []) {
+  if (numStreams == 0) {
+    return Promise.resolve(streamsSoFar);;
+  }
+  return navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      return createStreams(constraints,
+                           numStreams - 1,
+                           streamsSoFar.concat([stream]));
+    });
+}
+</script>
+</body>
+</html>

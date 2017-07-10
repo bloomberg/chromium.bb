@@ -45,15 +45,6 @@ function verifyRtpSenders(expectedNumTracks = null) {
     throw failTest('One getSenders() call is not equal to the next.');
   }
 
-  let localTracks = new Set();
-  peerConnection_().getLocalStreams().forEach(function(stream) {
-    stream.getTracks().forEach(function(track) {
-      localTracks.add(track);
-    });
-  });
-  if (peerConnection_().getSenders().length != localTracks.size)
-    throw failTest('The number of senders and tracks are not the same.');
-
   let senders = new Set();
   let senderTracks = new Set();
   peerConnection_().getSenders().forEach(function(sender) {
@@ -67,10 +58,6 @@ function verifyRtpSenders(expectedNumTracks = null) {
   if (senderTracks.size != senders.size)
     throw failTest('senderTracks.size != senders.size');
 
-  if (!setEquals_(senderTracks, localTracks)) {
-    throw failTest('The set of sender tracks is not equal to the set of ' +
-                   'stream tracks.');
-  }
   returnToTest('ok-senders-verified');
 }
 
@@ -93,15 +80,6 @@ function verifyRtpReceivers(expectedNumTracks = null) {
     throw failTest('One getReceivers() call is not equal to the next.');
   }
 
-  let remoteTracks = new Set();
-  peerConnection_().getRemoteStreams().forEach(function(stream) {
-    stream.getTracks().forEach(function(track) {
-      remoteTracks.add(track);
-    });
-  });
-  if (peerConnection_().getReceivers().length != remoteTracks.size)
-    throw failTest('The number of receivers and tracks are not the same.');
-
   let receivers = new Set();
   let receiverTracks = new Set();
   peerConnection_().getReceivers().forEach(function(receiver) {
@@ -117,14 +95,167 @@ function verifyRtpReceivers(expectedNumTracks = null) {
   if (receiverTracks.size != receivers.size)
     throw failTest('receiverTracks.size != receivers.size');
 
-  if (!setEquals_(receiverTracks, remoteTracks)) {
-    throw failTest('The set of receiver tracks is not equal to the set of ' +
-                   'stream tracks.');
-  }
   returnToTest('ok-receivers-verified');
 }
 
+/**
+ * Creates an audio and video track and adds them to the peer connection using
+ * |addTrack|. They are added with or without a stream in accordance with
+ * |streamArgumentType|.
+ *
+ * Returns
+ * "ok-<audio stream id> <audio track id> <video stream id> <video track id>" on
+ * success. If no stream is backing up the track, <stream id> is "null".
+ *
+ * @param {string} streamArgumentType Must be one of the following values:
+ * 'no-stream' - The tracks are added without an associated stream.
+ * 'shared-stream' - The tracks are added with the same associated stream.
+ * 'individual-streams' - A stream is created for each track.
+ */
+function createAndAddAudioAndVideoTrack(streamArgumentType) {
+  if (streamArgumentType !== 'no-stream' &&
+      streamArgumentType !== 'shared-stream' &&
+      streamArgumentType !== 'individual-streams')
+    throw failTest('Unsupported streamArgumentType.');
+  getUserMedia({ audio: true, video: true },
+      function(stream) {
+        let audioStream = undefined;
+        if (streamArgumentType !== 'no-stream')
+          audioStream = new MediaStream();
+
+        let audioTrack = stream.getAudioTracks()[0];
+        let audioSender =
+            audioStream ? peerConnection_().addTrack(audioTrack, audioStream)
+                        : peerConnection_().addTrack(audioTrack);
+        if (!audioSender || audioSender.track != audioTrack)
+          throw failTest('addTrack did not return a sender with the track.');
+
+        let videoStream = undefined;
+        if (streamArgumentType === 'shared-stream') {
+          videoStream = audioStream;
+        } else if (streamArgumentType === 'individual-streams') {
+          videoStream = new MediaStream();
+        }
+
+        let videoTrack = stream.getVideoTracks()[0];
+        let videoSender =
+            videoStream ? peerConnection_().addTrack(videoTrack, videoStream)
+                        : peerConnection_().addTrack(videoTrack);
+        if (!videoSender || videoSender.track != videoTrack)
+          throw failTest('addTrack did not return a sender with the track.');
+
+        let audioStreamId = audioStream ? audioStream.id : 'null';
+        let videoStreamId = videoStream ? videoStream.id : 'null';
+        returnToTest('ok-' + audioStreamId + ' ' + audioTrack.id
+                     + ' ' + videoStreamId + ' ' + videoTrack.id);
+      },
+      function(error) {
+        throw failTest('getUserMedia failed: ' + error);
+      });
+}
+
+/**
+ * Calls |removeTrack| with the first sender that has the track with |trackId|
+ * and verifies the SDP is updated accordingly.
+ *
+ * Returns "ok-sender-removed" on success.
+ */
+function removeTrack(trackId) {
+  let sender = null;
+  let otherSenderHasTrack = false;
+  peerConnection_().getSenders().forEach(function(s) {
+    if (s.track && s.track.id == trackId) {
+      if (!sender)
+        sender = s;
+      else
+        otherSenderHasTrack = true;
+    }
+  });
+  if (!sender)
+    throw failTest('There is no sender for track ' + trackId);
+  peerConnection_().removeTrack(sender);
+  if (sender.track)
+    throw failTest('sender.track was not nulled by removeTrack.');
+  returnToTest('ok-sender-removed');
+}
+
+/**
+ * Returns "ok-stream-with-track-found" or "ok-stream-with-track-not-found".
+ * If |streamId| is null then any stream having a track with |trackId| will do.
+ */
+function hasLocalStreamWithTrack(streamId, trackId) {
+  if (hasStreamWithTrack(
+          peerConnection_().getLocalStreams(), streamId, trackId)) {
+    returnToTest('ok-stream-with-track-found');
+    return;
+  }
+  returnToTest('ok-stream-with-track-not-found');
+}
+
+/**
+ * Returns "ok-stream-with-track-found" or "ok-stream-with-track-not-found".
+ * If |streamId| is null then any stream having a track with |trackId| will do.
+ */
+function hasRemoteStreamWithTrack(streamId, trackId) {
+  if (hasStreamWithTrack(
+          peerConnection_().getRemoteStreams(), streamId, trackId)) {
+    returnToTest('ok-stream-with-track-found');
+    return;
+  }
+  returnToTest('ok-stream-with-track-not-found');
+}
+
+/**
+ * Returns "ok-sender-with-track-found" or "ok-sender-with-track-not-found".
+ */
+function hasSenderWithTrack(trackId) {
+  if (hasSenderOrReceiverWithTrack(peerConnection_().getSenders(), trackId)) {
+    returnToTest('ok-sender-with-track-found');
+    return;
+  }
+  returnToTest('ok-sender-with-track-not-found');
+}
+
+/**
+ * Returns "ok-receiver-with-track-found" or "ok-receiver-with-track-not-found".
+ */
+function hasReceiverWithTrack(trackId) {
+  if (hasSenderOrReceiverWithTrack(peerConnection_().getReceivers(), trackId)) {
+    returnToTest('ok-receiver-with-track-found');
+    return;
+  }
+  returnToTest('ok-receiver-with-track-not-found');
+}
+
 // Internals.
+
+/** @private */
+function hasStreamWithTrack(streams, streamId, trackId) {
+  for (let i = 0; i < streams.length; ++i) {
+    let stream = streams[i];
+    if (streamId && stream.id !== streamId)
+      continue;
+    let tracks = stream.getTracks();
+    for (let j = 0; j < tracks.length; ++j) {
+      let track = tracks[j];
+      if (track.id == trackId) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** @private */
+function hasSenderOrReceiverWithTrack(sendersOrReceivers, trackId) {
+  for (let i = 0; i < sendersOrReceivers.length; ++i) {
+    if (sendersOrReceivers[i].track &&
+        sendersOrReceivers[i].track.id === trackId) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /** @private */
 function arrayEquals_(a, b) {
