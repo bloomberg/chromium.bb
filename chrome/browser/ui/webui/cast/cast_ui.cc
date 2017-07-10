@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/cast/cast_ui.h"
 
-#include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/event_page_request_manager.h"
+#include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -16,11 +16,11 @@
 CastUI::CastUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // Retrieve the ID of the component extension.
-  // TODO(crbug.com/597778): remove reference to MediaRouterMojoImpl.
-  auto* router = static_cast<media_router::MediaRouterMojoImpl*>(
-      media_router::MediaRouterFactory::GetApiForBrowserContext(
-          web_ui->GetWebContents()->GetBrowserContext()));
-  std::string extension_id = router->media_route_provider_extension_id();
+  auto* event_page_request_manager =
+      media_router::EventPageRequestManagerFactory::GetApiForBrowserContext(
+          web_ui->GetWebContents()->GetBrowserContext());
+  std::string extension_id =
+      event_page_request_manager->media_route_provider_extension_id();
 
   // Set up the chrome://cast data source and add required resources.
   content::WebUIDataSource* html_source =

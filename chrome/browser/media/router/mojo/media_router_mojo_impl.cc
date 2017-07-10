@@ -222,11 +222,6 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
   RemoveInvalidRouteControllers(routes);
 }
 
-const std::string& MediaRouterMojoImpl::media_route_provider_extension_id()
-    const {
-  return event_page_request_manager_->media_route_provider_extension_id();
-}
-
 void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     bool is_incognito,

@@ -44,6 +44,7 @@ class Browser;
 namespace media_router {
 
 class CreatePresentationConnectionRequest;
+class EventPageRequestManager;
 class IssuesObserver;
 class MediaRoute;
 class MediaRouter;
@@ -413,6 +414,9 @@ class MediaRouterUI
 
   // Pointer to the MediaRouter for this instance's BrowserContext.
   MediaRouter* router_;
+
+  // Request manager for the Media Router component extension.
+  const EventPageRequestManager* event_page_request_manager_;
 
   // The start time for UI initialization metrics timer. When a dialog has been
   // been painted and initialized with initial data, this should be cleared.
