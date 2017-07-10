@@ -16,8 +16,6 @@ source_set("webui") {
     "ntp_tiles_internals_ui.h",
     "physical_web_ui.cc",
     "physical_web_ui.h",
-    "popular_sites_internals_ui.cc",
-    "popular_sites_internals_ui.h",
     "terms_ui.h",
     "terms_ui.mm",
     "version_handler.cc",

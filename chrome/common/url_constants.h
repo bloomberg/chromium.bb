@@ -278,7 +278,6 @@ extern const char kChromeUISandboxHost[];
 extern const char kChromeUIContextualSearchPromoHost[];
 extern const char kChromeUIOfflineInternalsURL[];
 extern const char kChromeUIPhysicalWebDiagnosticsHost[];
-extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
 #endif
