@@ -33,6 +33,8 @@
 
 namespace blink {
 
+using cssvalue::ToCSSCrossfadeValue;
+
 CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
     : CSSValue(class_type) {}
 

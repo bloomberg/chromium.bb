@@ -37,8 +37,10 @@ namespace blink {
 
 class CrossfadeSubimageObserverProxy;
 
+namespace cssvalue {
+
 class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
-  friend class CrossfadeSubimageObserverProxy;
+  friend class blink::CrossfadeSubimageObserverProxy;
   USING_PRE_FINALIZER(CSSCrossfadeValue, Dispose);
 
  public:
@@ -116,6 +118,7 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, IsCrossfadeValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSCrossfadeValue_h
