@@ -24,7 +24,6 @@ class LoadingIndicator : public TexturedElement {
   void SetLoadProgress(float progress);
 
   void SetEnabled(bool enabled) override;
-  void OnBeginFrame(const base::TimeTicks& ticks) override;
 
  private:
   UiTexture* GetTexture() const override;

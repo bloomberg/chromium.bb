@@ -35,26 +35,19 @@ class UrlBar : public TexturedElement {
   void OnButtonUp(const gfx::PointF& position) override;
   bool HitTest(const gfx::PointF& point) const override;
 
-  void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
-  void SetEnabled(bool enabled) override;
-
   void SetHistoryButtonsEnabled(bool can_go_back);
   void SetToolbarState(const ToolbarState& state);
 
  private:
-  void UpdateTexture() override;
   UiTexture* GetTexture() const override;
   void OnStateUpdated(const gfx::PointF& position);
 
   std::unique_ptr<UrlBarTexture> texture_;
   base::Callback<void()> back_button_callback_;
   base::Callback<void()> security_icon_callback_;
-  bool enabled_ = false;
   bool can_go_back_ = false;
   bool down_ = false;
   bool security_region_down_ = false;
-  base::TimeTicks last_begin_frame_time_;
-  base::TimeTicks last_update_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlBar);
 };

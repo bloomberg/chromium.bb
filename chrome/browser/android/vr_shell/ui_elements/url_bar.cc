@@ -9,16 +9,6 @@
 
 namespace vr_shell {
 
-namespace {
-
-// We will often get spammed with many updates. We will also get security and
-// url updates out of sync. To address both these problems, we will hang onto
-// dirtyness for |kUpdateDelay| before updating our texture to reduce visual
-// churn.
-constexpr int64_t kUpdateDelayMS = 50;
-
-}  // namespace
-
 UrlBar::UrlBar(int preferred_width,
                const base::Callback<void()>& back_button_callback,
                const base::Callback<void()>& security_icon_callback,
@@ -29,11 +19,6 @@ UrlBar::UrlBar(int preferred_width,
       security_icon_callback_(security_icon_callback) {}
 
 UrlBar::~UrlBar() = default;
-
-void UrlBar::UpdateTexture() {
-  TexturedElement::UpdateTexture();
-  last_update_time_ = last_begin_frame_time_;
-}
 
 UiTexture* UrlBar::GetTexture() const {
   return texture_.get();
@@ -72,20 +57,6 @@ void UrlBar::OnButtonUp(const gfx::PointF& position) {
 
 bool UrlBar::HitTest(const gfx::PointF& position) const {
   return texture_->HitsUrlBar(position) || texture_->HitsBackButton(position);
-}
-
-void UrlBar::OnBeginFrame(const base::TimeTicks& begin_frame_time) {
-  last_begin_frame_time_ = begin_frame_time;
-  if (enabled_ && texture_->dirty()) {
-    int64_t delta_ms = (begin_frame_time - last_update_time_).InMilliseconds();
-    if (delta_ms > kUpdateDelayMS)
-      UpdateTexture();
-  }
-}
-
-void UrlBar::SetEnabled(bool enabled) {
-  enabled_ = enabled;
-  set_visible(enabled);
 }
 
 void UrlBar::SetToolbarState(const ToolbarState& state) {
