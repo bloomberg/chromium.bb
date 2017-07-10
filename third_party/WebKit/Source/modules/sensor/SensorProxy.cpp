@@ -11,9 +11,9 @@
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 
-using namespace device::mojom::blink;
-
 namespace blink {
+
+using namespace device::mojom::blink;
 
 SensorProxy::SensorProxy(SensorType sensor_type,
                          SensorProviderProxy* provider,

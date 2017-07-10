@@ -14,8 +14,6 @@
 #include "modules/sensor/SensorProviderProxy.h"
 #include "services/device/public/interfaces/sensor.mojom-blink.h"
 
-using namespace device::mojom::blink;
-
 namespace blink {
 
 namespace {
@@ -28,7 +26,7 @@ constexpr double kMinWaitingInterval =
 Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions& sensor_options,
                ExceptionState& exception_state,
-               SensorType type)
+               device::mojom::blink::SensorType type)
     : ContextLifecycleObserver(execution_context),
       sensor_options_(sensor_options),
       type_(type),
