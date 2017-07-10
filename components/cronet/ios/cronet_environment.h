@@ -68,13 +68,15 @@ class CronetEnvironment {
   void AddQuicHint(const std::string& host, int port, int alternate_port);
 
   // Setters and getters for |http2_enabled_|, |quic_enabled_|, and
-  // |forced_quic_origin_|. These only have any effect before Start() is
-  // called.
+  // |brotli_enabled| These only have any effect
+  // before Start() is called.
   void set_http2_enabled(bool enabled) { http2_enabled_ = enabled; }
   void set_quic_enabled(bool enabled) { quic_enabled_ = enabled; }
+  void set_brotli_enabled(bool enabled) { brotli_enabled_ = enabled; }
 
   bool http2_enabled() const { return http2_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
+  bool brotli_enabled() const { return brotli_enabled_; }
 
   void set_quic_user_agent_id(const std::string& quic_user_agent_id) {
     quic_user_agent_id_ = quic_user_agent_id;
@@ -145,6 +147,7 @@ class CronetEnvironment {
 
   bool http2_enabled_;
   bool quic_enabled_;
+  bool brotli_enabled_;
   std::string quic_user_agent_id_;
   std::string accept_language_;
   std::string experimental_options_;

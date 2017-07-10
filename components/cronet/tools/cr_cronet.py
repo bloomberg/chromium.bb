@@ -101,6 +101,7 @@ def main():
 
   gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
+      'disable_brotli_filter=false ' + \
       'use_platform_icu_alternatives=true '+ \
       'enable_reporting=false '+ \
       'is_component_build=false ' + \

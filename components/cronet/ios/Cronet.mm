@@ -43,6 +43,7 @@ base::LazyInstance<std::unique_ptr<cronet::CronetEnvironment>>::Leaky
 // sane.
 BOOL gHttp2Enabled = YES;
 BOOL gQuicEnabled = NO;
+BOOL gBrotliEnabled = NO;
 cronet::URLRequestContextConfig::HttpCacheType gHttpCache =
     cronet::URLRequestContextConfig::HttpCacheType::DISK;
 QuicHintVector gQuicHints;
@@ -179,6 +180,11 @@ class CronetHttpProtocolHandlerDelegate
   gQuicEnabled = quicEnabled;
 }
 
++ (void)setBrotliEnabled:(BOOL)brotliEnabled {
+  [self checkNotStarted];
+  gBrotliEnabled = brotliEnabled;
+}
+
 + (void)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort {
   [self checkNotStarted];
   gQuicHints.push_back(
@@ -281,6 +287,7 @@ class CronetHttpProtocolHandlerDelegate
 
   gChromeNet.Get()->set_http2_enabled(gHttp2Enabled);
   gChromeNet.Get()->set_quic_enabled(gQuicEnabled);
+  gChromeNet.Get()->set_brotli_enabled(gBrotliEnabled);
   gChromeNet.Get()->set_experimental_options(
       base::SysNSStringToUTF8(gExperimentalOptions));
   gChromeNet.Get()->set_http_cache(gHttpCache);

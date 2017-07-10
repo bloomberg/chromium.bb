@@ -22,6 +22,7 @@ namespace {
 const char kEchoHeaderPath[] = "/EchoHeader?";
 const char kSetCookiePath[] = "/SetCookie?";
 const char kBigDataPath[] = "/BigData?";
+const char kUseEncodingPath[] = "/UseEncoding?";
 
 std::unique_ptr<net::EmbeddedTestServer> g_test_server;
 base::LazyInstance<std::string>::Leaky g_big_data_body =
@@ -40,6 +41,29 @@ std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
     header_value = it->second;
   auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
   http_response->set_content(header_value);
+  return std::move(http_response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> UseEncodingInResponse(
+    const net::test_server::HttpRequest& request) {
+  std::string encoding;
+  DCHECK(base::StartsWith(request.relative_url, kUseEncodingPath,
+                          base::CompareCase::INSENSITIVE_ASCII));
+
+  encoding = request.relative_url.substr(strlen(kUseEncodingPath));
+  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  if (!encoding.compare("brotli")) {
+    const char quickfoxCompressed[] = {
+        0x0b, 0x15, -0x80, 0x54, 0x68, 0x65, 0x20, 0x71, 0x75, 0x69, 0x63, 0x6b,
+        0x20, 0x62, 0x72,  0x6f, 0x77, 0x6e, 0x20, 0x66, 0x6f, 0x78, 0x20, 0x6a,
+        0x75, 0x6d, 0x70,  0x73, 0x20, 0x6f, 0x76, 0x65, 0x72, 0x20, 0x74, 0x68,
+        0x65, 0x20, 0x6c,  0x61, 0x7a, 0x79, 0x20, 0x64, 0x6f, 0x67, 0x03};
+    std::string quickfoxCompressedStr(quickfoxCompressed,
+                                      sizeof(quickfoxCompressed));
+    http_response->set_content(quickfoxCompressedStr);
+    http_response->AddCustomHeader(std::string("content-encoding"),
+                                   std::string("br"));
+  }
   return std::move(http_response);
 }
 
@@ -81,6 +105,10 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return ReturnBigDataInResponse(request);
   }
+  if (base::StartsWith(request.relative_url, kUseEncodingPath,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return UseEncodingInResponse(request);
+  }
   return base::MakeUnique<net::test_server::BasicHttpResponse>();
 }
 
@@ -106,6 +134,11 @@ void TestServer::Shutdown() {
 std::string TestServer::GetEchoHeaderURL(const std::string& header_name) {
   DCHECK(g_test_server);
   return g_test_server->GetURL(kEchoHeaderPath + header_name).spec();
+}
+
+std::string TestServer::GetUseEncodingURL(const std::string& header_name) {
+  DCHECK(g_test_server);
+  return g_test_server->GetURL(kUseEncodingPath + header_name).spec();
 }
 
 std::string TestServer::GetSetCookieURL(const std::string& cookie_line) {

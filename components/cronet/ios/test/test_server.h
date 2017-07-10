@@ -17,6 +17,9 @@ class TestServer {
   // Returns URL which respond with echo of header with |header_name| in
   // response body.
   static std::string GetEchoHeaderURL(const std::string& header_name);
+  // Returns URL which responds with "The quick brown fox jumps over the lazy
+  // dog" in specified encoding.
+  static std::string GetUseEncodingURL(const std::string& header_name);
   // Returns URL which respond with setting cookie to |cookie_line| and echo it
   // in response body.
   static std::string GetSetCookieURL(const std::string& cookie_line);
