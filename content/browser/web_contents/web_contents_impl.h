@@ -35,6 +35,7 @@
 #include "content/common/accessibility_mode.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -913,6 +914,7 @@ class CONTENT_EXPORT WebContentsImpl
                            LoadResourceWithEmptySecurityInfo);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            ResetJavaScriptDialogOnUserNavigate);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, ParseDownloadHeaders);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
@@ -1294,6 +1296,11 @@ class CONTENT_EXPORT WebContentsImpl
   // Notify this WebContents that the preferences have changed. This will send
   // an IPC to all the renderer process associated with this WebContents.
   void NotifyPreferencesChanged();
+
+  // Format of |headers| is a new line separated list of key value pairs:
+  // "<key1>: <value1>\r\n<key2>: <value2>".
+  static DownloadUrlParameters::RequestHeadersType ParseDownloadHeaders(
+      const std::string& headers);
 
   // Data for core operation ---------------------------------------------------
 

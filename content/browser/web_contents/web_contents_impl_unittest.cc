@@ -27,6 +27,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -3483,6 +3484,38 @@ TEST_F(WebContentsImplTest, LoadResourceWithEmptySecurityInfo) {
   EXPECT_TRUE(state_delegate->HasAllowException(test_url.host()));
 
   DeleteContents();
+}
+
+TEST_F(WebContentsImplTest, ParseDownloadHeaders) {
+  DownloadUrlParameters::RequestHeadersType request_headers =
+      WebContentsImpl::ParseDownloadHeaders("A: 1\r\nB: 2\r\nC: 3\r\n\r\n");
+  ASSERT_EQ(3u, request_headers.size());
+  EXPECT_EQ("A", request_headers[0].first);
+  EXPECT_EQ("1", request_headers[0].second);
+  EXPECT_EQ("B", request_headers[1].first);
+  EXPECT_EQ("2", request_headers[1].second);
+  EXPECT_EQ("C", request_headers[2].first);
+  EXPECT_EQ("3", request_headers[2].second);
+
+  request_headers = WebContentsImpl::ParseDownloadHeaders("A:1\r\nA:2\r\n");
+  ASSERT_EQ(2u, request_headers.size());
+  EXPECT_EQ("A", request_headers[0].first);
+  EXPECT_EQ("1", request_headers[0].second);
+  EXPECT_EQ("A", request_headers[1].first);
+  EXPECT_EQ("2", request_headers[1].second);
+
+  request_headers = WebContentsImpl::ParseDownloadHeaders("A 1\r\nA: 2");
+  ASSERT_EQ(1u, request_headers.size());
+  EXPECT_EQ("A", request_headers[0].first);
+  EXPECT_EQ("2", request_headers[0].second);
+
+  request_headers = WebContentsImpl::ParseDownloadHeaders("A: 1");
+  ASSERT_EQ(1u, request_headers.size());
+  EXPECT_EQ("A", request_headers[0].first);
+  EXPECT_EQ("1", request_headers[0].second);
+
+  request_headers = WebContentsImpl::ParseDownloadHeaders("A 1");
+  ASSERT_EQ(0u, request_headers.size());
 }
 
 namespace {
