@@ -336,7 +336,7 @@ void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
   per_compositor_data_[compositor]->display->Resize(size);
 }
 
-const cc::ResourceSettings& InProcessContextFactory::GetResourceSettings()
+const viz::ResourceSettings& InProcessContextFactory::GetResourceSettings()
     const {
   return renderer_settings_.resource_settings;
 }

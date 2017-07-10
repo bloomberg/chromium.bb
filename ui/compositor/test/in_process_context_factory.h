@@ -83,7 +83,7 @@ class InProcessContextFactory : public ContextFactory,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
-  const cc::ResourceSettings& GetResourceSettings() const override;
+  const viz::ResourceSettings& GetResourceSettings() const override;
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   cc::FrameSinkManager* GetFrameSinkManager() override;

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "cc/output/context_provider.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/child_thread_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -51,7 +52,7 @@ GpuVideoAcceleratorFactoriesImpl::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    const cc::BufferToTextureTargetMap& image_texture_targets,
+    const viz::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
@@ -67,7 +68,7 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    const cc::BufferToTextureTargetMap& image_texture_targets,
+    const viz::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
@@ -262,7 +263,7 @@ bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames()
 
 unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
     gfx::BufferFormat format) {
-  auto found = image_texture_targets_.find(cc::BufferToTextureTargetKey(
+  auto found = image_texture_targets_.find(viz::BufferToTextureTargetKey(
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format));
   DCHECK(found != image_texture_targets_.end());
   return found->second;

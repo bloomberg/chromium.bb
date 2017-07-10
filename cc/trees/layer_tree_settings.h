@@ -14,10 +14,10 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/renderer_settings.h"
-#include "cc/resources/resource_settings.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/tiles/tile_manager_settings.h"
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -32,7 +32,7 @@ class CC_EXPORT LayerTreeSettings {
   SchedulerSettings ToSchedulerSettings() const;
   TileManagerSettings ToTileManagerSettings() const;
 
-  ResourceSettings resource_settings;
+  viz::ResourceSettings resource_settings;
   bool single_thread_proxy_scheduler = true;
   bool main_frame_before_activation_enabled = false;
   bool using_synchronous_renderer_compositor = false;

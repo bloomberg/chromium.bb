@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace cc {
@@ -19,10 +19,10 @@ class FakeResourceProvider : public ResourceProvider {
   static std::unique_ptr<FakeResourceProvider> Create(
       ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager) {
-    ResourceSettings resource_settings;
+    viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.buffer_to_texture_target_map =
-        DefaultBufferToTextureTargetMapForTesting();
+        viz::DefaultBufferToTextureTargetMapForTesting();
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, nullptr, nullptr, true, false,
         resource_settings));
@@ -32,10 +32,10 @@ class FakeResourceProvider : public ResourceProvider {
       ContextProvider* context_provider,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-    ResourceSettings resource_settings;
+    viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.buffer_to_texture_target_map =
-        DefaultBufferToTextureTargetMapForTesting();
+        viz::DefaultBufferToTextureTargetMapForTesting();
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
         nullptr, true, false, resource_settings));
@@ -48,7 +48,7 @@ class FakeResourceProvider : public ResourceProvider {
                        BlockingTaskRunner* blocking_main_thread_task_runner,
                        bool delegated_sync_points_required,
                        bool enable_color_corect_rasterization,
-                       const ResourceSettings resource_settings)
+                       const viz::ResourceSettings resource_settings)
       : ResourceProvider(context_provider,
                          shared_bitmap_manager,
                          gpu_memory_buffer_manager,

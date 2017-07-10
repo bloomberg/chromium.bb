@@ -132,7 +132,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.resource_settings.texture_id_allocation_chunk_size = 1;
     settings.resource_settings.buffer_to_texture_target_map =
-        DefaultBufferToTextureTargetMapForTesting();
+        viz::DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 

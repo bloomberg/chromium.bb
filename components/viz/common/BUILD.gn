@@ -13,9 +13,13 @@ source_set("common") {
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
     "quads/resource_format.h",
+    "resources/buffer_to_texture_target_map.cc",
+    "resources/buffer_to_texture_target_map.h",
     "resources/platform_color.h",
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
+    "resources/resource_settings.cc",
+    "resources/resource_settings.h",
   ]
 
   deps = [
@@ -37,6 +41,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "gl_helper_unittest.cc",
+    "resources/buffer_to_texture_target_map_unittest.cc",
+    "resources/platform_color_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
 

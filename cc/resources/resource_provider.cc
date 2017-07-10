@@ -369,7 +369,7 @@ ResourceProvider::Settings::Settings(
     ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required,
     bool enable_color_correct_rasterization,
-    const ResourceSettings& resource_settings)
+    const viz::ResourceSettings& resource_settings)
     : default_resource_type(resource_settings.use_gpu_memory_buffer_resources
                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
                                 : RESOURCE_TYPE_GL_TEXTURE),
@@ -416,7 +416,7 @@ ResourceProvider::ResourceProvider(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     bool delegated_sync_points_required,
     bool enable_color_correct_rasterization,
-    const ResourceSettings& resource_settings)
+    const viz::ResourceSettings& resource_settings)
     : settings_(compositor_context_provider,
                 delegated_sync_points_required,
                 enable_color_correct_rasterization,
@@ -2039,7 +2039,7 @@ GLenum ResourceProvider::GetImageTextureTarget(gfx::BufferUsage usage,
                                                viz::ResourceFormat format) {
   gfx::BufferFormat buffer_format = BufferFormat(format);
   auto found = buffer_to_texture_target_map_.find(
-      BufferToTextureTargetKey(usage, buffer_format));
+      viz::BufferToTextureTargetKey(usage, buffer_format));
   DCHECK(found != buffer_to_texture_target_map_.end());
   return found->second;
 }

@@ -30,13 +30,13 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/resources/release_callback_impl.h"
-#include "cc/resources/resource_settings.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_settings.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -87,7 +87,7 @@ class CC_EXPORT ResourceProvider
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    bool delegated_sync_points_required,
                    bool enable_color_correct_rasterization,
-                   const ResourceSettings& resource_settings);
+                   const viz::ResourceSettings& resource_settings);
   ~ResourceProvider() override;
 
   void Initialize();
@@ -766,7 +766,7 @@ class CC_EXPORT ResourceProvider
     Settings(ContextProvider* compositor_context_provider,
              bool delegated_sync_points_needed,
              bool enable_color_correct_rasterization,
-             const ResourceSettings& resource_settings);
+             const viz::ResourceSettings& resource_settings);
 
     int max_texture_size = 0;
     bool use_texture_storage_ext = false;
@@ -793,7 +793,7 @@ class CC_EXPORT ResourceProvider
   ChildMap children_;
   scoped_refptr<Fence> current_read_lock_fence_;
   std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
-  BufferToTextureTargetMap buffer_to_texture_target_map_;
+  viz::BufferToTextureTargetMap buffer_to_texture_target_map_;
 
   // Keep track of whether deleted resources should be batched up or returned
   // immediately.

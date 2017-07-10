@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -54,7 +54,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      const cc::BufferToTextureTargetMap& image_texture_targets,
+      const viz::BufferToTextureTargetMap& image_texture_targets,
       bool enable_video_accelerator);
 
   // media::GpuVideoAcceleratorFactories implementation.
@@ -109,7 +109,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      const cc::BufferToTextureTargetMap& image_texture_targets,
+      const viz::BufferToTextureTargetMap& image_texture_targets,
       bool enable_video_accelerator);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
@@ -127,7 +127,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   // Whether gpu memory buffers should be used to hold video frames data.
   bool enable_gpu_memory_buffer_video_frames_;
-  const cc::BufferToTextureTargetMap image_texture_targets_;
+  const viz::BufferToTextureTargetMap image_texture_targets_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 
