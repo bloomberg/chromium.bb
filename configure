@@ -332,6 +332,7 @@ EXPERIMENT_LIST="
     ncobmc_adapt_weight
     bgsprite
     var_tx_no_tx_mode
+    mrc_tx
 "
 CONFIG_LIST="
     dependency_tracking
