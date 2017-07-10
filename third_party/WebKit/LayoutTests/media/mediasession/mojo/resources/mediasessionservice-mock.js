@@ -4,9 +4,6 @@
 
 "use strict";
 
-var MediaSessionAction;
-var MediaSessionPlaybackState;
-
 function mojoString16ToJS(mojoString16) {
   return String.fromCharCode.apply(null, mojoString16.data);
 }
@@ -39,73 +36,67 @@ function mojoMetadataToJS(mojoMetadata) {
   return new MediaMetadata({title: title, artist: artist, album: album, artwork: artwork});
 }
 
-let mediaSessionServiceMock = loadMojoModules(
-    'mediaSessionServiceMock',
-    ['third_party/WebKit/public/platform/modules/mediasession/media_session.mojom',
-     'mojo/public/js/bindings',
-    ]).then(mojo => {
-      let [mediaSessionService, bindings] = mojo.modules;
+var MediaSessionAction = blink.mojom.MediaSessionAction;
+var MediaSessionPlaybackState = blink.mojom.MediaSessionPlaybackState;
 
-      MediaSessionAction = mediaSessionService.MediaSessionAction;
-      MediaSessionPlaybackState = mediaSessionService.MediaSessionPlaybackState;
+class MediaSessionServiceMock {
+  constructor() {
+    this.pendingResponse_ = null;
+    this.bindingSet_ = new mojo.BindingSet(
+        blink.mojom.MediaSessionService);
 
-      class MediaSessionServiceMock {
-        constructor(interfaceProvider) {
-          interfaceProvider.addInterfaceOverrideForTesting(
-              mediaSessionService.MediaSessionService.name,
-              handle => this.bindingSet_.addBinding(this, handle));
-          this.interfaceProvider_ = interfaceProvider;
-          this.pendingResponse_ = null;
-          this.bindingSet_ = new bindings.BindingSet(
-              mediaSessionService.MediaSessionService);
-        }
+    this.interceptor_ =
+        new MojoInterfaceInterceptor(blink.mojom.MediaSessionService.name);
+    this.interceptor_.oninterfacerequest =
+        e => this.bindingSet_.addBinding(this, e.handle);
+    this.interceptor_.start();
+  }
 
-        setMetadata(metadata) {
-          if (!!this.metadataCallback_)
-            this.metadataCallback_(mojoMetadataToJS(metadata));
-        }
+  setMetadata(metadata) {
+    if (!!this.metadataCallback_)
+      this.metadataCallback_(mojoMetadataToJS(metadata));
+  }
 
-        setMetadataCallback(callback) {
-          this.metadataCallback_ = callback;
-        }
+  setMetadataCallback(callback) {
+    this.metadataCallback_ = callback;
+  }
 
-        setPlaybackState(state) {
-          if (!!this.setPlaybackStateCallback_)
-            this.setPlaybackStateCallback_(state);
-        }
+  setPlaybackState(state) {
+    if (!!this.setPlaybackStateCallback_)
+      this.setPlaybackStateCallback_(state);
+  }
 
-        setPlaybackStateCallback(callback) {
-          this.setPlaybackStateCallback_ = callback;
-        }
+  setPlaybackStateCallback(callback) {
+    this.setPlaybackStateCallback_ = callback;
+  }
 
-        enableAction(action) {
-          if (!!this.enableDisableActionCallback_)
-            this.enableDisableActionCallback_(action, true);
-        }
+  enableAction(action) {
+    if (!!this.enableDisableActionCallback_)
+      this.enableDisableActionCallback_(action, true);
+  }
 
-        disableAction(action) {
-          if (!!this.enableDisableActionCallback_)
-            this.enableDisableActionCallback_(action, false);
-        }
+  disableAction(action) {
+    if (!!this.enableDisableActionCallback_)
+      this.enableDisableActionCallback_(action, false);
+  }
 
-        setEnableDisableActionCallback(callback) {
-          this.enableDisableActionCallback_ = callback;
-        }
+  setEnableDisableActionCallback(callback) {
+    this.enableDisableActionCallback_ = callback;
+  }
 
-        setClient(client) {
-          this.client_ = client;
-          if (!!this.clientCallback_)
-            this.clientCallback_();
-        }
+  setClient(client) {
+    this.client_ = client;
+    if (!!this.clientCallback_)
+      this.clientCallback_();
+  }
 
-        setClientCallback(callback) {
-          this.clientCallback_ = callback;
-        }
+  setClientCallback(callback) {
+    this.clientCallback_ = callback;
+  }
 
-        getClient() {
-          return this.client_;
-        }
-      }
+  getClient() {
+    return this.client_;
+  }
+}
 
-      return new MediaSessionServiceMock(mojo.frameInterfaces);
-    });
+let mediaSessionServiceMock = new MediaSessionServiceMock();

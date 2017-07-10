@@ -806,7 +806,7 @@ mojom("android_mojo_bindings") {
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  use_new_js_bindings = false
+  js_bindings_mode = "both"
 }
 
 # The offscreen_canvas_mojo_bindings is separated from the rest of mojom files
