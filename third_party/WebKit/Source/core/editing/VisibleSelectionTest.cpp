@@ -219,6 +219,24 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   EXPECT_EQ(PositionInFlatTree(five, 5), selection_in_flat_tree.End());
 }
 
+// For http://wkb.ug/32622
+TEST_F(VisibleSelectionTest, ExpandUsingGranularityWithEmptyCell) {
+  SetBodyContent(
+      "<div contentEditable><table cellspacing=0><tr>"
+      "<td id='first' width='50' height='25pt'></td>"
+      "<td id='second' width='50' height='25pt'></td>"
+      "</tr></table></div>");
+  Element* const first = GetDocument().getElementById("first");
+  const VisibleSelectionInFlatTree& selection =
+      CreateVisibleSelectionWithGranularity(
+          SelectionInFlatTree::Builder()
+              .Collapse(PositionInFlatTree(first, 0))
+              .Build(),
+          kWordGranularity);
+  EXPECT_EQ(PositionInFlatTree(first, 0), selection.Start());
+  EXPECT_EQ(PositionInFlatTree(first, 0), selection.End());
+}
+
 TEST_F(VisibleSelectionTest, Initialisation) {
   SetBodyContent(LOREM_IPSUM);
 
