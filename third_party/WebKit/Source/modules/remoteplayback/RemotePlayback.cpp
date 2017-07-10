@@ -73,6 +73,10 @@ WebURL GetAvailabilityUrl(const WebURL& source) {
   return KURL(kParsedURLString, "remote-playback://" + encoded_source_info);
 }
 
+bool IsBackgroundAvailabilityMonitoringDisabled() {
+  return MemoryCoordinator::IsLowEndDevice();
+}
+
 }  // anonymous namespace
 
 // static
@@ -108,14 +112,13 @@ ScriptPromise RemotePlayback::watchAvailability(
     return promise;
   }
 
-  if (MemoryCoordinator::IsLowEndDevice()) {
+  int id = WatchAvailabilityInternal(new AvailabilityCallbackWrapper(callback));
+  if (id == kWatchAvailabilityNotSupported) {
     resolver->Reject(DOMException::Create(
         kNotSupportedError,
         "Availability monitoring is not supported on this device."));
     return promise;
   }
-
-  int id = WatchAvailabilityInternal(new AvailabilityCallbackWrapper(callback));
 
   // TODO(avayvod): Currently the availability is tracked for each media element
   // as soon as it's created, we probably want to limit that to when the
@@ -234,6 +237,11 @@ void RemotePlayback::PromptInternal() {
 
 int RemotePlayback::WatchAvailabilityInternal(
     AvailabilityCallbackWrapper* callback) {
+  if (RuntimeEnabledFeatures::RemotePlaybackBackendEnabled() &&
+      IsBackgroundAvailabilityMonitoringDisabled()) {
+    return kWatchAvailabilityNotSupported;
+  }
+
   int id;
   do {
     id = GetExecutionContext()->CircularSequentialID();
@@ -352,6 +360,9 @@ void RemotePlayback::PromptCancelled() {
 void RemotePlayback::SourceChanged(const WebURL& source) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
 
+  if (IsBackgroundAvailabilityMonitoringDisabled())
+    return;
+
   WebURL current_url =
       availability_urls_.IsEmpty() ? WebURL() : availability_urls_[0];
   WebURL new_url = GetAvailabilityUrl(source);
@@ -377,6 +388,12 @@ void RemotePlayback::SourceChanged(const WebURL& source) {
 }
 
 bool RemotePlayback::RemotePlaybackAvailable() const {
+  if (IsBackgroundAvailabilityMonitoringDisabled() &&
+      RuntimeEnabledFeatures::RemotePlaybackBackendEnabled() &&
+      !media_element_->currentSrc().IsEmpty()) {
+    return true;
+  }
+
   return availability_ == WebRemotePlaybackAvailability::kDeviceAvailable;
 }
 
@@ -450,6 +467,9 @@ void RemotePlayback::StopListeningForAvailability() {
 }
 
 void RemotePlayback::MaybeStartListeningForAvailability() {
+  if (IsBackgroundAvailabilityMonitoringDisabled())
+    return;
+
   if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled())
     return;
 

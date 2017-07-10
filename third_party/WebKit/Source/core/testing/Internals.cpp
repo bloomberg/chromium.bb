@@ -3414,4 +3414,8 @@ void Internals::setIsLowEndDevice(bool is_low_end_device) {
   MemoryCoordinator::SetIsLowEndDeviceForTesting(is_low_end_device);
 }
 
+bool Internals::isLowEndDevice() const {
+  return MemoryCoordinator::IsLowEndDevice();
+}
+
 }  // namespace blink
