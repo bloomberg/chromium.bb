@@ -177,8 +177,11 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
   int ScrollSize(ScrollbarOrientation) const override { return 100; }
   bool IsScrollCornerVisible() const override { return false; }
   IntRect ScrollCornerRect() const override { return IntRect(); }
-  int VisibleWidth() const override { return 10; }
-  int VisibleHeight() const override { return 10; }
+  IntRect VisibleContentRect(
+      IncludeScrollbarsInRect = kExcludeScrollbars) const override {
+    return IntRect(ScrollOffsetInt().Width(), ScrollOffsetInt().Height(), 10,
+                   10);
+  }
   IntSize ContentsSize() const override { return IntSize(100, 100); }
   bool ScrollbarsCanBeActive() const override { return false; }
   IntRect ScrollableAreaBoundingBox() const override { return IntRect(); }
