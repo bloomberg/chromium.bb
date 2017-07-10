@@ -258,12 +258,13 @@ VisiblePosition SelectionModifier::ModifyExtendingForward(
       pos = NextSentencePosition(pos);
       break;
     case kLineGranularity:
-      pos = NextLinePosition(
-          pos, LineDirectionPointForBlockDirectionNavigation(EXTENT));
+      pos = NextLinePosition(pos, LineDirectionPointForBlockDirectionNavigation(
+                                      selection_.Extent()));
       break;
     case kParagraphGranularity:
       pos = NextParagraphPosition(
-          pos, LineDirectionPointForBlockDirectionNavigation(EXTENT));
+          pos,
+          LineDirectionPointForBlockDirectionNavigation(selection_.Extent()));
       break;
     case kSentenceBoundary:
       pos = EndOfSentence(EndForPlatform());
@@ -348,15 +349,17 @@ VisiblePosition SelectionModifier::ModifyMovingForward(
       // needs to leave the selection at that line start (no need to call
       // nextLinePosition!)
       pos = EndForPlatform();
-      if (!selection_.IsRange() || !IsStartOfLine(pos))
+      if (!selection_.IsRange() || !IsStartOfLine(pos)) {
         pos = NextLinePosition(
-            pos, LineDirectionPointForBlockDirectionNavigation(START));
+            pos,
+            LineDirectionPointForBlockDirectionNavigation(selection_.Start()));
+      }
       break;
     }
     case kParagraphGranularity:
       pos = NextParagraphPosition(
           EndForPlatform(),
-          LineDirectionPointForBlockDirectionNavigation(START));
+          LineDirectionPointForBlockDirectionNavigation(selection_.Start()));
       break;
     case kSentenceBoundary:
       pos = EndOfSentence(EndForPlatform());
@@ -443,11 +446,13 @@ VisiblePosition SelectionModifier::ModifyExtendingBackward(
       break;
     case kLineGranularity:
       pos = PreviousLinePosition(
-          pos, LineDirectionPointForBlockDirectionNavigation(EXTENT));
+          pos,
+          LineDirectionPointForBlockDirectionNavigation(selection_.Extent()));
       break;
     case kParagraphGranularity:
       pos = PreviousParagraphPosition(
-          pos, LineDirectionPointForBlockDirectionNavigation(EXTENT));
+          pos,
+          LineDirectionPointForBlockDirectionNavigation(selection_.Extent()));
       break;
     case kSentenceBoundary:
       pos = StartOfSentence(StartForPlatform());
@@ -529,12 +534,12 @@ VisiblePosition SelectionModifier::ModifyMovingBackward(
     case kLineGranularity:
       pos = PreviousLinePosition(
           StartForPlatform(),
-          LineDirectionPointForBlockDirectionNavigation(START));
+          LineDirectionPointForBlockDirectionNavigation(selection_.Start()));
       break;
     case kParagraphGranularity:
       pos = PreviousParagraphPosition(
           StartForPlatform(),
-          LineDirectionPointForBlockDirectionNavigation(START));
+          LineDirectionPointForBlockDirectionNavigation(selection_.Start()));
       break;
     case kSentenceBoundary:
       pos = StartOfSentence(StartForPlatform());
@@ -617,7 +622,8 @@ bool SelectionModifier::Modify(EAlteration alter,
   // Note: the START position type is arbitrary because it is unused, it would
   // be the requested position type if there were no
   // xPosForVerticalArrowNavigation set.
-  LayoutUnit x = LineDirectionPointForBlockDirectionNavigation(START);
+  LayoutUnit x =
+      LineDirectionPointForBlockDirectionNavigation(selection_.Start());
 
   switch (alter) {
     case FrameSelection::kAlterationMove:
@@ -737,11 +743,13 @@ bool SelectionModifier::ModifyWithPageGranularity(EAlteration alter,
                                       : selection_.End(),
                                   selection_.Affinity());
       x_pos = LineDirectionPointForBlockDirectionNavigation(
-          direction == FrameSelection::kDirectionUp ? START : END);
+          direction == FrameSelection::kDirectionUp ? selection_.Start()
+                                                    : selection_.End());
       break;
     case FrameSelection::kAlterationExtend:
       pos = CreateVisiblePosition(selection_.Extent(), selection_.Affinity());
-      x_pos = LineDirectionPointForBlockDirectionNavigation(EXTENT);
+      x_pos =
+          LineDirectionPointForBlockDirectionNavigation(selection_.Extent());
       break;
   }
 
@@ -830,27 +838,11 @@ static LayoutUnit LineDirectionPointForBlockDirectionNavigationOf(
 }
 
 LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(
-    EPositionType type) {
+    const Position& pos) {
   LayoutUnit x;
 
   if (selection_.IsNone())
     return x;
-
-  Position pos;
-  switch (type) {
-    case START:
-      pos = selection_.Start();
-      break;
-    case END:
-      pos = selection_.End();
-      break;
-    case BASE:
-      pos = selection_.Base();
-      break;
-    case EXTENT:
-      pos = selection_.Extent();
-      break;
-  }
 
   LocalFrame* frame = pos.GetDocument()->GetFrame();
   if (!frame)

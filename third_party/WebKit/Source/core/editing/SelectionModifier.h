@@ -58,11 +58,6 @@ class SelectionModifier {
                                  VerticalDirection);
 
  private:
-  // TODO(yosin): We should move |EPositionType| to "SelectionModifier.cpp",
-  // it is only used for implementing |modify()|.
-  // TODO(yosin) We should use capitalized name for |EPositionType|.
-  enum EPositionType { START, END, BASE, EXTENT };  // NOLINT
-
   LocalFrame* GetFrame() const { return frame_; }
 
   static bool ShouldAlwaysUseDirectionalSelection(LocalFrame*);
@@ -71,7 +66,7 @@ class SelectionModifier {
   VisiblePosition PositionForPlatform(bool is_get_start) const;
   VisiblePosition StartForPlatform() const;
   VisiblePosition EndForPlatform() const;
-  LayoutUnit LineDirectionPointForBlockDirectionNavigation(EPositionType);
+  LayoutUnit LineDirectionPointForBlockDirectionNavigation(const Position&);
   VisiblePosition ModifyExtendingRight(TextGranularity);
   VisiblePosition ModifyExtendingForward(TextGranularity);
   VisiblePosition ModifyMovingRight(TextGranularity);
