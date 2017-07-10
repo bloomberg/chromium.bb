@@ -24,8 +24,6 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
     self.DisableStory('browse:tech:discourse_infinite_scroll',
                       [expectations.ALL_WIN, expectations.ALL_LINUX],
                       'crbug.com/728152')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL_WIN], 'crbug.com/728152')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
 
@@ -52,8 +50,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
     self.DisableStory('browse:tech:discourse_infinite_scroll',
                       [expectations.ALL_WIN, expectations.ALL_LINUX],
                       'crbug.com/728152')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL_WIN], 'crbug.com/728152')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
     self.DisableStory('browse:social:twitter_infinite_scroll',
@@ -76,8 +72,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
     self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
                       'crbug.com/728081')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL], 'crbug.com/728152')
     self.DisableStory(
         'load:tools:drive',
         [expectations.ANDROID_NEXUS5X, expectations.ANDROID_WEBVIEW],
@@ -114,8 +108,6 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
     self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
                       'crbug.com/728081')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL], 'crbug.com/728152')
     self.DisableStory(
         'load:tools:drive',
         [expectations.ANDROID_NEXUS5X, expectations.ANDROID_WEBVIEW],
@@ -165,8 +157,6 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
                       'crbug.com/714650')
     self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
                       'crbug.com/728081')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL], 'crbug.com/728152')
     # TODO(rnephew): This disabling should move to CanRunOnBrowser.
     self.DisableStory('browse:chrome:omnibox',
                       [expectations.ANDROID_WEBVIEW],
