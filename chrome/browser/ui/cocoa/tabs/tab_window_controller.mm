@@ -426,63 +426,64 @@
 
   // In Material Design on 10.10 and higher, the top portion of the window is
   // blurred using an NSVisualEffectView.
-  Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
-  if (!nsVisualEffectViewClass) {
+  if (@available(macOS 10.10, *)) {
+    [window setTitlebarAppearsTransparent:YES];
+
+    // If the window has a normal titlebar, then do not add NSVisualEffectView.
+    if (hasTitleBar)
+      return;
+
+    // NSVisualEffectView provides hints about text anti-aliasing that are wrong
+    // when anything is drawn over it (like a tint or theme image). Wrapping it
+    // stops it from being used for hints. See https://crbug.com/593835.
+    NSView* visualEffectWrapperView = [[[NSView alloc]
+        initWithFrame:[tabStripBackgroundView_ frame]] autorelease];
+
+    visualEffectView_.reset([[NSVisualEffectView alloc]
+        initWithFrame:visualEffectWrapperView.bounds]);
+    DCHECK(visualEffectView_);
+
+    [visualEffectWrapperView
+        setAutoresizingMask:[tabStripBackgroundView_ autoresizingMask]];
+    [visualEffectView_
+        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [tabStripBackgroundView_
+        setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+    // Set to a default appearance and material. If this is an Incognito window
+    // the material and vibrancy should be dark but this method gets called at
+    // the start of -[BrowserWindowController initWithBrowser:takeOwnership:],
+    // before the |browser_| ivar has been set. Without a browser object we
+    // can't check the window's theme. The final setup happens in
+    // -[TabStripView setController:], at which point we have access to the
+    // theme.
+    [visualEffectView_
+        setAppearance:[NSAppearance
+                          appearanceNamed:NSAppearanceNameVibrantLight]];
+    [visualEffectView_ setMaterial:NSVisualEffectMaterialLight];
+    [visualEffectView_ setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+    [visualEffectView_ setState:NSVisualEffectStateFollowsWindowActiveState];
+
+    [visualEffectWrapperView addSubview:visualEffectView_];
+
+    if (chrome::ShouldUseFullSizeContentView()) {
+      [[window contentView] addSubview:visualEffectWrapperView];
+    } else {
+      [rootView addSubview:visualEffectWrapperView
+                positioned:NSWindowBelow
+                relativeTo:nil];
+    }
+
+    // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
+    [tabStripBackgroundView_ setFrame:[visualEffectView_ bounds]];
+    [visualEffectView_ addSubview:tabStripBackgroundView_];
+  } else {
     DCHECK(!chrome::ShouldUseFullSizeContentView());
     [rootView addSubview:tabStripBackgroundView_
               positioned:NSWindowBelow
               relativeTo:nil];
     return;
   }
-
-  [window setTitlebarAppearsTransparent:YES];
-
-  // If the window has a normal titlebar, then do not add NSVisualEffectView.
-  if (hasTitleBar)
-    return;
-
-  // NSVisualEffectView provides hints about text anti-aliasing that are wrong
-  // when anything is drawn over it (like a tint or theme image). Wrapping it
-  // stops it from being used for hints. See https://crbug.com/593835.
-  NSView* visualEffectWrapperView = [[[NSView alloc]
-      initWithFrame:[tabStripBackgroundView_ frame]] autorelease];
-
-  visualEffectView_.reset([[nsVisualEffectViewClass alloc]
-      initWithFrame:visualEffectWrapperView.bounds]);
-  DCHECK(visualEffectView_);
-
-  [visualEffectWrapperView
-      setAutoresizingMask:[tabStripBackgroundView_ autoresizingMask]];
-  [visualEffectView_
-      setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [tabStripBackgroundView_
-      setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
-  // Set to a default appearance and material. If this is an Incognito window
-  // the material and vibrancy should be dark but this method gets called at
-  // the start of -[BrowserWindowController initWithBrowser:takeOwnership:],
-  // before the |browser_| ivar has been set. Without a browser object we
-  // can't check the window's theme. The final setup happens in
-  // -[TabStripView setController:], at which point we have access to the theme.
-  [visualEffectView_ setAppearance:
-      [NSAppearance appearanceNamed:NSAppearanceNameVibrantLight]];
-  [visualEffectView_ setMaterial:NSVisualEffectMaterialLight];
-  [visualEffectView_ setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
-  [visualEffectView_ setState:NSVisualEffectStateFollowsWindowActiveState];
-
-  [visualEffectWrapperView addSubview:visualEffectView_];
-
-  if (chrome::ShouldUseFullSizeContentView()) {
-    [[window contentView] addSubview:visualEffectWrapperView];
-  } else {
-    [rootView addSubview:visualEffectWrapperView
-              positioned:NSWindowBelow
-              relativeTo:nil];
-  }
-
-  // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
-  [tabStripBackgroundView_ setFrame:[visualEffectView_ bounds]];
-  [visualEffectView_ addSubview:tabStripBackgroundView_];
 }
 
 // Called when the size of the window content area has changed. Override to
