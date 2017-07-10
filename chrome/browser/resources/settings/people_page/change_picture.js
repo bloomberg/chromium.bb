@@ -3,30 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Contains the possible types of Change Picture selections.
- * @enum {string}
- */
-var ChangePictureSelectionTypes = {
-  CAMERA: 'camera',
-  FILE: 'file',
-  PROFILE: 'profile',
-  OLD: 'old',
-  DEFAULT: 'default',
-};
-
-/**
- * An image element.
- * @typedef {{
- *   dataset: {
- *     type: !ChangePictureSelectionTypes,
- *     defaultImageIndex: ?number,
- *   },
- *   src: string,
- * }}
- */
-var ChangePictureImageElement;
-
-/**
  * @fileoverview
  * 'settings-change-picture' is the settings subpage containing controls to
  * edit a ChromeOS user's picture.
@@ -54,7 +30,7 @@ Polymer({
      * The currently selected item. This property is bound to the iron-selector
      * and never directly assigned. This may be undefined momentarily as
      * the selection changes due to iron-selector implementation details.
-     * @private {?ChangePictureImageElement}
+     * @private {?CrPicture.ImageElement}
      */
     selectedItem_: Object,
 
@@ -93,9 +69,15 @@ Polymer({
     /** @private */
     selectionTypesEnum_: {
       type: Object,
-      value: ChangePictureSelectionTypes,
+      value: CrPicture.SelectionTypes,
       readOnly: true,
     },
+  },
+
+  listeners: {
+    'discard-image': 'onDiscardImage_',
+    'photo-flipped': 'onPhotoFlipped_',
+    'photo-taken': 'onPhotoTaken_',
   },
 
   /** @private {?settings.ChangePictureBrowserProxy} */
@@ -104,7 +86,7 @@ Polymer({
   /**
    * The fallback image to be selected when the user discards the Old image.
    * This may be null if the user started with the Old image.
-   * @private {?ChangePictureImageElement}
+   * @private {?CrPicture.ImageElement}
    */
   fallbackImage_: null,
 
@@ -170,7 +152,7 @@ Polymer({
    */
   receiveSelectedImage_: function(imageUrl) {
     var index = this.$.selector.items.findIndex(function(image) {
-      return image.dataset.type == ChangePictureSelectionTypes.DEFAULT &&
+      return image.dataset.type == CrPicture.SelectionTypes.DEFAULT &&
           image.src == imageUrl;
     });
     assert(index != -1, 'Default image not found: ' + imageUrl);
@@ -179,7 +161,7 @@ Polymer({
 
     // If user is currently taking a photo, do not steal the focus.
     if (!this.selectedItem_ ||
-        this.selectedItem_.dataset.type != ChangePictureSelectionTypes.CAMERA) {
+        this.selectedItem_.dataset.type != CrPicture.SelectionTypes.CAMERA) {
       this.$.selector.select(index);
     }
   },
@@ -214,7 +196,7 @@ Polymer({
 
     // If user is currently taking a photo, do not steal the focus.
     if (!this.selectedItem_ ||
-        this.selectedItem_.dataset.type != ChangePictureSelectionTypes.CAMERA) {
+        this.selectedItem_.dataset.type != CrPicture.SelectionTypes.CAMERA) {
       this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
     }
   },
@@ -230,24 +212,24 @@ Polymer({
 
   /**
    * Selects an image element.
-   * @param {!ChangePictureImageElement} image
+   * @param {!CrPicture.ImageElement} image
    * @private
    */
   selectImage_: function(image) {
     switch (image.dataset.type) {
-      case ChangePictureSelectionTypes.CAMERA:
+      case CrPicture.SelectionTypes.CAMERA:
         // Nothing needs to be done.
         break;
-      case ChangePictureSelectionTypes.FILE:
+      case CrPicture.SelectionTypes.FILE:
         this.browserProxy_.chooseFile();
         break;
-      case ChangePictureSelectionTypes.PROFILE:
+      case CrPicture.SelectionTypes.PROFILE:
         this.browserProxy_.selectProfileImage();
         break;
-      case ChangePictureSelectionTypes.OLD:
+      case CrPicture.SelectionTypes.OLD:
         this.browserProxy_.selectOldImage();
         break;
-      case ChangePictureSelectionTypes.DEFAULT:
+      case CrPicture.SelectionTypes.DEFAULT:
         this.browserProxy_.selectDefaultImage(image.src);
         break;
       default:
@@ -284,7 +266,7 @@ Polymer({
           selector.selectPrevious();
         } while (this.selectedItem_.hidden);
 
-        if (this.selectedItem_.dataset.type != ChangePictureSelectionTypes.FILE)
+        if (this.selectedItem_.dataset.type != CrPicture.SelectionTypes.FILE)
           this.selectImage_(this.selectedItem_);
 
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
@@ -299,7 +281,7 @@ Polymer({
           selector.selectNext();
         } while (this.selectedItem_.hidden);
 
-        if (this.selectedItem_.dataset.type != ChangePictureSelectionTypes.FILE)
+        if (this.selectedItem_.dataset.type != CrPicture.SelectionTypes.FILE)
           this.selectImage_(this.selectedItem_);
 
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
@@ -309,17 +291,14 @@ Polymer({
       case 'enter':
       case 'space':
         if (this.selectedItem_.dataset.type ==
-            ChangePictureSelectionTypes.CAMERA) {
-          var /** CrCameraElement */ camera = this.$.camera;
-          camera.takePhoto();
+            CrPicture.SelectionTypes.CAMERA) {
+          /** CrPicturePreviewElement */ (this.$.picturePreview).takePhoto();
         } else if (
-            this.selectedItem_.dataset.type ==
-            ChangePictureSelectionTypes.FILE) {
+            this.selectedItem_.dataset.type == CrPicture.SelectionTypes.FILE) {
           this.browserProxy_.chooseFile();
         } else if (
-            this.selectedItem_.dataset.type ==
-            ChangePictureSelectionTypes.OLD) {
-          this.onTapDiscardOldImage_();
+            this.selectedItem_.dataset.type == CrPicture.SelectionTypes.OLD) {
+          this.onDiscardImage_();
         }
         break;
     }
@@ -359,14 +338,14 @@ Polymer({
   },
 
   /**
-   * Discard currently selected Old image. Selects the first default icon.
+   * Discard currently selected image. Selects the first default icon.
    * Returns to the camera stream if the user had just taken a picture.
    * @private
    */
-  onTapDiscardOldImage_: function() {
+  onDiscardImage_: function() {
     this.oldImageUrl_ = '';
 
-    if (this.lastSelectedImageType_ == ChangePictureSelectionTypes.CAMERA)
+    if (this.lastSelectedImageType_ == CrPicture.SelectionTypes.CAMERA)
       this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
 
     if (this.fallbackImage_ != null) {
@@ -383,63 +362,36 @@ Polymer({
   },
 
   /**
-   * @param {string} oldImageUrl
-   * @return {boolean} True if there is no Old image and the Old image icon
-   *     should be hidden.
+   * @param {CrPicture.ImageElement} selectedItem
+   * @return {string}
    * @private
    */
-  isOldImageHidden_: function(oldImageUrl) {
-    return oldImageUrl.length == 0;
+  getImageSrc_: function(selectedItem) {
+    return (selectedItem && selectedItem.src) || '';
   },
 
   /**
-   * @param {ChangePictureImageElement} selectedItem
-   * @return {boolean} True if the preview image should be hidden.
+   * @param {CrPicture.ImageElement} selectedItem
+   * @return {string}
    * @private
    */
-  isPreviewImageHidden_: function(selectedItem) {
-    if (!selectedItem)
-      return true;
-
-    var type = selectedItem.dataset.type;
-    return type != ChangePictureSelectionTypes.DEFAULT &&
-        type != ChangePictureSelectionTypes.PROFILE &&
-        type != ChangePictureSelectionTypes.OLD;
+  getImageType_: function(selectedItem) {
+    return (selectedItem && selectedItem.dataset.type) ||
+        CrPicture.SelectionTypes.NONE;
   },
 
   /**
-   * @param {boolean} cameraPresent
-   * @param {ChangePictureImageElement} selectedItem
-   * @return {boolean} True if the camera is selected in the image grid.
-   * @private
-   */
-  isCameraActive_: function(cameraPresent, selectedItem) {
-    return cameraPresent && !!selectedItem &&
-        selectedItem.dataset.type == ChangePictureSelectionTypes.CAMERA;
-  },
-
-  /**
-   * @param {ChangePictureImageElement} selectedItem
-   * @return {boolean} True if the discard controls should be hidden.
-   * @private
-   */
-  isDiscardHidden_: function(selectedItem) {
-    return !selectedItem ||
-        selectedItem.dataset.type != ChangePictureSelectionTypes.OLD;
-  },
-
-  /**
-   * @param {ChangePictureImageElement} selectedItem
+   * @param {CrPicture.ImageElement} selectedItem
    * @return {boolean} True if the author credit text is shown.
    * @private
    */
   isAuthorCreditShown_: function(selectedItem) {
     return !!selectedItem &&
-        selectedItem.dataset.type == ChangePictureSelectionTypes.DEFAULT;
+        selectedItem.dataset.type == CrPicture.SelectionTypes.DEFAULT;
   },
 
   /**
-   * @param {!ChangePictureImageElement} selectedItem
+   * @param {!CrPicture.ImageElement} selectedItem
    * @param {!Array<!settings.DefaultImage>} defaultImages
    * @return {string} The author name for the selected default image. An empty
    *     string is returned if there is no valid author name.
@@ -450,13 +402,13 @@ Polymer({
       return '';
 
     assert(
-        selectedItem.dataset.defaultImageIndex !== null &&
-        selectedItem.dataset.defaultImageIndex < defaultImages.length);
-    return defaultImages[selectedItem.dataset.defaultImageIndex].author;
+        selectedItem.dataset.index !== null &&
+        selectedItem.dataset.index < defaultImages.length);
+    return defaultImages[selectedItem.dataset.index].author;
   },
 
   /**
-   * @param {!ChangePictureImageElement} selectedItem
+   * @param {!CrPicture.ImageElement} selectedItem
    * @param {!Array<!settings.DefaultImage>} defaultImages
    * @return {string} The author website for the selected default image. An
    *     empty string is returned if there is no valid author name.
@@ -467,8 +419,8 @@ Polymer({
       return '';
 
     assert(
-        selectedItem.dataset.defaultImageIndex !== null &&
-        selectedItem.dataset.defaultImageIndex < defaultImages.length);
-    return defaultImages[selectedItem.dataset.defaultImageIndex].website;
+        selectedItem.dataset.index !== null &&
+        selectedItem.dataset.index < defaultImages.length);
+    return defaultImages[selectedItem.dataset.index].website;
   },
 });

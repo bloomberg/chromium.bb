@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_camera.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_preview.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_types.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
@@ -65,31 +66,10 @@
         color: var(--paper-grey-600);
       }
 
-      #previewPane {
+      cr-picture-preview {
         -webkit-margin-end: 10px;
         flex-shrink: 0;
         width: 228px;
-      }
-
-      #previewPane img {
-        display: block;
-        height: 228px;
-        width: 228px;
-      }
-
-      #discardControlBar {
-        background-color: var(--paper-grey-800);
-        border-bottom-left-radius: 2px;
-        border-bottom-right-radius: 2px;
-        padding: 8px;
-      }
-
-      #discardOldImage {
-        --iron-icon-fill-color: white;
-        background-color: var(--paper-red-500);
-        border-radius: 50%;
-        display: block;
-        margin: 0 auto 0 auto;
       }
     </style>
     <div id="container" class="settings-box" tabindex="0">
@@ -115,7 +95,7 @@
               title="$i18n{oldPhoto}">
           <template is="dom-repeat" items="[[defaultImages_]]">
             <img data-type$="[[selectionTypesEnum_.DEFAULT]]" role="radio"
-                data-default-image-index$="[[index]]" src="[[item.url]]"
+                data-index$="[[index]]" src="[[item.url]]"
                 title="[[item.title]]">
           </template>
         </iron-selector>
@@ -130,24 +110,15 @@
           </div>
         </template>
       </div>
-      <div id="previewPane">
-        <img alt="$i18n{previewAltText}" src="[[selectedItem_.src]]"
-            hidden="[[isPreviewImageHidden_(selectedItem_)]]">
-        <div id="discardControlBar"
-            hidden="[[isDiscardHidden_(selectedItem_)]]">
-          <button is="paper-icon-button-light" id="discardOldImage"
-              class="icon-delete" title="$i18n{discardPhoto}"
-              on-tap="onTapDiscardOldImage_">
-          </button>
-        </div>
-        <cr-camera id="camera"
-            camera-active="[[isCameraActive_(cameraPresent_, selectedItem_)]]"
-            on-photo-taken="onPhotoTaken_"
-            on-photo-flipped="onPhotoFlipped_"
-            flip-photo-label="$i18n{flipPhoto}"
-            take-photo-label="$i18n{takePhoto}">
-        </cr-camera>
-      </div>
+      <cr-picture-preview id="picturePreview" 
+          camera-present="[[cameraPresent_]]",
+          image-src="[[getImageSrc_(selectedItem_)]]"
+          image-type="[[getImageType_(selectedItem_)]]"
+          discard-image-label="$i18n{discardPhoto}"
+          flip-photo-label="$i18n{flipPhoto}"
+          preview-alt-text="$i18n{previewAltText}"
+          take-photo-label="$i18n{takePhoto}">
+      </cr-picture-preview>
     </div>
   </template>
   <script src="change_picture.js"></script>
