@@ -471,11 +471,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   std::string hashChangeContent = "FAIL_loadUrlHashChange";
   [self addHashChangeListenerWithContent:hashChangeContent];
   [ChromeEarlGrey loadURL:hashChangedWithHistoryURL];
-  // TODO(crbug.com/714157): Remove matcher that waits.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::WebViewNotContainingText(
-                                   hashChangeContent)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewNotContainingText:hashChangeContent];
 }
 
 // Loads a URL and replaces its location, then updates its location.hash
