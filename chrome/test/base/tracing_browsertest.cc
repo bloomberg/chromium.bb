@@ -101,7 +101,13 @@ class TracingBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
+// crbug.com/708487.
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
+#else
+#define MAYBE_TestMemoryInfra TestMemoryInfra
+#endif  // defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestMemoryInfra) {
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
