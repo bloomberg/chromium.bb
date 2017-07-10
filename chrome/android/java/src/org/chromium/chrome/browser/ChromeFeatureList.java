@@ -154,6 +154,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
     public static final String CCT_EXTERNAL_LINK_HANDLING = "CCTExternalLinkHandling";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
+    public static final String CCT_REDIRECT_PRECONNECT = "CCTRedirectPreconnect";
     public static final String CHROME_HOME = "ChromeHome";
     public static final String CHROME_HOME_EXPAND_BUTTON = "ChromeHomeExpandButton";
     public static final String CONSISTENT_OMNIBOX_GEOLOCATION = "ConsistentOmniboxGeolocation";

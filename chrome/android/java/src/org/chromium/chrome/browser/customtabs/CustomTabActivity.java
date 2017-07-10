@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -237,6 +238,9 @@ public class CustomTabActivity extends ChromeActivity {
 
         String url = IntentHandler.getUrlFromIntent(intent);
         if (TextUtils.isEmpty(url)) return false;
+        CustomTabsConnection connection = CustomTabsConnection.getInstance(
+                (Application) ContextUtils.getApplicationContext());
+        connection.onHandledIntent(session, url, intent);
         sActiveContentHandler.loadUrlAndTrackFromTimestamp(new LoadUrlParams(url),
                 IntentHandler.getTimestampFromIntent(intent));
         return true;

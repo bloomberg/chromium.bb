@@ -28,6 +28,7 @@ import android.util.Pair;
 import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
@@ -56,6 +57,7 @@ import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.net.GURLUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -115,6 +117,10 @@ public class CustomTabsConnection {
     static final int PREFETCH_ONLY = 2;
     @VisibleForTesting
     static final int HIDDEN_TAB = 3;
+
+    // TODO(lizeb): Move to the support library.
+    @VisibleForTesting
+    static final String REDIRECT_ENDPOINT_KEY = "android.support.customtabs.REDIRECT_ENDPOINT";
 
     private static AtomicReference<CustomTabsConnection> sInstance = new AtomicReference<>();
 
@@ -346,15 +352,15 @@ public class CustomTabsConnection {
         return true;
     }
 
-    /** @return the URL converted to string, or null if it's invalid. */
-    private static String checkAndConvertUri(Uri uri) {
-        if (uri == null) return null;
+    /** @return the URL or null if it's invalid. */
+    private boolean isValid(Uri uri) {
+        if (uri == null) return false;
         // Don't do anything for unknown schemes. Not having a scheme is allowed, as we allow
         // "www.example.com".
         String scheme = uri.normalizeScheme().getScheme();
         boolean allowedScheme = scheme == null || scheme.equals("http") || scheme.equals("https");
-        if (!allowedScheme) return null;
-        return uri.toString();
+        if (!allowedScheme) return false;
+        return true;
     }
 
     /**
@@ -397,7 +403,7 @@ public class CustomTabsConnection {
         boolean atLeastOneUrl = false;
         if (likelyBundles == null) return false;
         WarmupManager warmupManager = WarmupManager.getInstance();
-        Profile profile = Profile.getLastUsedProfile();
+        Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         for (Bundle bundle : likelyBundles) {
             Uri uri;
             try {
@@ -405,9 +411,8 @@ public class CustomTabsConnection {
             } catch (ClassCastException e) {
                 continue;
             }
-            String url = checkAndConvertUri(uri);
-            if (url != null) {
-                warmupManager.maybePreconnectUrlAndSubResources(profile, url);
+            if (isValid(uri)) {
+                warmupManager.maybePreconnectUrlAndSubResources(profile, uri.toString());
                 atLeastOneUrl = true;
             }
         }
@@ -430,7 +435,7 @@ public class CustomTabsConnection {
             final Bundle extras, final List<Bundle> otherLikelyBundles) {
         final boolean lowConfidence =
                 (url == null || TextUtils.isEmpty(url.toString())) && otherLikelyBundles != null;
-        final String urlString = checkAndConvertUri(url);
+        final String urlString = isValid(url) ? url.toString() : null;
         if (url != null && urlString == null && !lowConfidence) return false;
 
         // Things below need the browser process to be initialized.
@@ -723,6 +728,35 @@ public class CustomTabsConnection {
             TraceEvent.end("CustomTabsConnection.takeHiddenTab");
         }
         return null;
+    }
+
+    /**
+     * Called when an intent is handled by either an existing or a new CustomTabActivity.
+     *
+     * @param session Session extracted from the intent.
+     * @param url URL extracted from the intent.
+     * @param intent incoming intent.
+     */
+    void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
+        // For the preconnection to not be a no-op, we need more than just the native library.
+        Context context = ContextUtils.getApplicationContext();
+        if (!ChromeBrowserInitializer.getInstance(context).hasNativeInitializationCompleted()) {
+            return;
+        }
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REDIRECT_PRECONNECT)) return;
+
+        // Conditions:
+        // - There is a valid redirect endpoint.
+        // - The URL's origin is first party with respect to the app.
+        Uri redirectEndpoint = intent.getParcelableExtra(REDIRECT_ENDPOINT_KEY);
+        if (redirectEndpoint == null || !isValid(redirectEndpoint)) return;
+
+        String origin = GURLUtils.getOrigin(url);
+        if (origin == null) return;
+        if (!mClientManager.isFirstPartyOriginForSession(session, Uri.parse(origin))) return;
+
+        WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
+                Profile.getLastUsedProfile(), redirectEndpoint.toString());
     }
 
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */

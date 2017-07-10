@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -227,24 +228,29 @@ public final class WarmupManager {
      */
     public void maybePreconnectUrlAndSubResources(Profile profile, String url) {
         ThreadUtils.assertOnUiThread();
-        if (!DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-            // If there is already a DNS request in flight for this URL, then
-            // the preconnection will start by issuing a DNS request for the
-            // same domain, as the result is not cached. However, such a DNS
-            // request has already been sent from this class, so it is better to
-            // wait for the answer to come back before preconnecting. Otherwise,
-            // the preconnection logic will wait for the result of the second
-            // DNS request, which should arrive after the result of the first
-            // one. Note that we however need to wait for the main thread to be
-            // available in this case, since the preconnection will be sent from
-            // AsyncTask.onPostExecute(), which may delay it.
-            if (mDnsRequestsInFlight.contains(url)) {
-                // Note that if two requests come for the same URL with two
-                // different profiles, the last one will win.
-                mPendingPreconnectWithProfile.put(url, profile);
-            } else {
-                nativePreconnectUrlAndSubresources(profile, url);
-            }
+
+        Uri uri = Uri.parse(url);
+        if (uri == null) return;
+        // HTTP connections will not be used when the data reduction proxy is enabled.
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
+                && UrlConstants.HTTP_SCHEME.equals(uri.normalizeScheme().getScheme())) {
+            return;
+        }
+
+        // If there is already a DNS request in flight for this URL, then the preconnection will
+        // start by issuing a DNS request for the same domain, as the result is not cached. However,
+        // such a DNS request has already been sent from this class, so it is better to wait for the
+        // answer to come back before preconnecting. Otherwise, the preconnection logic will wait
+        // for the result of the second DNS request, which should arrive after the result of the
+        // first one. Note that we however need to wait for the main thread to be available in this
+        // case, since the preconnection will be sent from AsyncTask.onPostExecute(), which may
+        // delay it.
+        if (mDnsRequestsInFlight.contains(url)) {
+            // Note that if two requests come for the same URL with two different profiles, the last
+            // one will win.
+            mPendingPreconnectWithProfile.put(url, profile);
+        } else {
+            nativePreconnectUrlAndSubresources(profile, url);
         }
     }
 
