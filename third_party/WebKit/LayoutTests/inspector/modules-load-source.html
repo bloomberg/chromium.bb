@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+async function test()
+{
+    var initialModules = InspectorTest.loadedModules();
+    await UI.inspectorView.panel("sources");
+    var sourcesModules = InspectorTest.dumpLoadedModules(initialModules);
+
+    var resource;
+    InspectorTest.resourceTreeModel.forAllResources(function(r) {
+        if (r.url.indexOf("inspector-test.js") !== -1) {
+            resource = r;
+            return true;
+        }
+    });
+    InspectorTest.addResult("Now with source code opened");
+    var uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
+    Common.Revealer.reveal(uiLocation);
+    InspectorTest.dumpLoadedModules(sourcesModules);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>This test validates set of loaded modules for Sources panel.</p>
+</body>
+</html>

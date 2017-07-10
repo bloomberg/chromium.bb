@@ -1,0 +1,25 @@
+This test validates initial set of loaded modules.
+
+Loaded modules:
+    bindings
+    common
+    components
+    console_model
+    dom_extension
+    emulation
+    extensions
+    help
+    host
+    main
+    mobile_throttling
+    network_log
+    persistence
+    platform
+    product_registry
+    protocol
+    sdk
+    services
+    text_utils
+    ui
+    workspace
+
