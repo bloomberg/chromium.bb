@@ -214,4 +214,9 @@ id<GREYMatcher> SettingsMenuBackButton() {
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
 
+id<GREYMatcher> SettingsMenuPrivacyButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
+}
+
 }  // namespace chrome_test_util

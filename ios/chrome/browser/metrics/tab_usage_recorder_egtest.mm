@@ -43,6 +43,7 @@
 
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SettingsMenuButton;
+using chrome_test_util::SettingsMenuPrivacyButton;
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
@@ -129,16 +130,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   GREYAssert(
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
       @"Waiting for tab to close");
-}
-
-// Open the settings submenu. Assumes that settings menu is visible.
-void OpenSettingsSubMenuUnsynced(int submenu) {
-  id<GREYMatcher> settings_button_matcher =
-      grey_text(l10n_util::GetNSString(submenu));
-  [[[EarlGrey selectElementWithMatcher:settings_button_matcher]
-         usingSearchAction:grey_swipeSlowInDirection(kGREYDirectionUp)
-      onElementWithMatcher:grey_accessibilityID(kSettingsCollectionViewId)]
-      performAction:grey_tap()];
 }
 
 // Open the settings menu. Wait for the settings menu to appear.
@@ -514,7 +505,7 @@ void SelectTabUsingUI(NSString* title) {
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
   OpenSettingsMenuUnsynced();
-  OpenSettingsSubMenuUnsynced(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   Wait(grey_accessibilityID(kPrivacyCollectionViewId),
        @"Privacy settings view.");
 
