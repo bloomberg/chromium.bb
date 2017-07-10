@@ -188,6 +188,9 @@ class WebServiceWorkerContextClient {
       const WebServiceWorkerResponse& response,
       WebServiceWorkerStreamHandle* body_as_stream,
       double event_dispatch_time) {}
+  virtual void RespondToCanMakePaymentEvent(int event_id,
+                                            bool can_make_payment,
+                                            double event_dispatch_time) {}
   virtual void RespondToPaymentRequestEvent(
       int event_id,
       const WebPaymentAppResponse& response,
