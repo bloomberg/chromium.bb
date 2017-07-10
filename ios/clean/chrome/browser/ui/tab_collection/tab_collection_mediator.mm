@@ -139,18 +139,12 @@
 
 // Constructs a TabCollectionItem from a |webState|.
 - (TabCollectionItem*)tabCollectionItemFromWebState:(web::WebState*)webState {
-  // PLACEHOLDER: Use real webstate title in the future.
   DCHECK(webState);
-  GURL url = webState->GetVisibleURL();
-  NSString* urlText = @"<New Tab>";
-  if (url.is_valid()) {
-    urlText = base::SysUTF8ToNSString(url.spec());
-  }
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   DCHECK(tabHelper);
   TabCollectionItem* item = [[TabCollectionItem alloc] init];
   item.tabID = tabHelper->tab_id();
-  item.title = urlText;
+  item.title = base::SysUTF16ToNSString(webState->GetTitle());
   return item;
 }
 
