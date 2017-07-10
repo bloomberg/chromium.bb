@@ -4947,20 +4947,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.contents_mime_type = ds->GetResponse().MimeType().Utf8();
 
     params.transition = navigation_state->GetTransitionType();
-    if (!ui::PageTransitionIsMainFrame(params.transition)) {
-      // If the main frame does a load, it should not be reported as a subframe
-      // navigation.  This can occur in the following case:
-      // 1. You're on a site with frames.
-      // 2. You do a subframe navigation.  This is stored with transition type
-      //    MANUAL_SUBFRAME.
-      // 3. You navigate to some non-frame site, say, google.com.
-      // 4. You navigate back to the page from step 2.  Since it was initially
-      //    MANUAL_SUBFRAME, it will be that same transition type here.
-      // We don't want that, because any navigation that changes the toplevel
-      // frame should be tracked as a toplevel navigation (this allows us to
-      // update the URL bar, etc).
-      params.transition = ui::PAGE_TRANSITION_LINK;
-    }
+    DCHECK(ui::PageTransitionIsMainFrame(params.transition));
 
     // If the page contained a client redirect (meta refresh, document.loc...),
     // set the transition appropriately.

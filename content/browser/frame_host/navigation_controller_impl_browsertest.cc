@@ -6870,4 +6870,118 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             controller.GetLastCommittedEntry()->GetURL().spec());
 }
 
+// If the main frame does a load, it should not be reported as a subframe
+// navigation. This used to occur in the following case:
+// 1. You're on a site with frames.
+// 2. You do a subframe navigation. This was stored with transition type
+//    MANUAL_SUBFRAME.
+// 3. You navigate to some non-frame site.
+// 4. You navigate back to the page from step 2. Since it was initially
+//    MANUAL_SUBFRAME, it will be that same transition type here.
+// We don't want that, because any navigation that changes the toplevel frame
+// should be tracked as a toplevel navigation (this allows us to update the URL
+// bar, etc).
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       GoBackToManualSubFrame) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  {
+    // Iframe initial load.
+    LoadCommittedCapturer capturer(root->child_at(0));
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_1.html"));
+    NavigateFrameToURL(root->child_at(0), frame_url);
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition_type(), ui::PAGE_TRANSITION_AUTO_SUBFRAME));
+  }
+
+  {
+    // Iframe manual navigation.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    NavigateFrameToURL(root->child_at(0), frame_url);
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition(), ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.navigation_type());
+  }
+
+  {
+    // Main frame navigation.
+    FrameNavigateParamsCapturer capturer(root);
+    GURL main_url_2(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    NavigateFrameToURL(root, main_url_2);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition(), ui::PAGE_TRANSITION_LINK));
+  }
+
+  {
+    // Check the history before going back.
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(
+            shell()->web_contents()->GetController());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(0)->GetTransitionType(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+    // TODO(creis, arthursonzogni): The correct PageTransition is still an open
+    // question. Maybe PAGE_TRANSITION_MANUAL_SUBFRAME is more appropriate.
+    // Please see https://crbug.com/740461.
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(1)->GetTransitionType(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(2)->GetTransitionType(),
+        ui::PAGE_TRANSITION_LINK));
+  }
+
+  {
+    // Back.
+    FrameNavigateParamsCapturer capturer(root);
+    shell()->web_contents()->GetController().GoBack();
+    capturer.Wait();
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        capturer.transition(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FORWARD_BACK |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+  }
+
+  {
+    // Check the history again.
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(
+            shell()->web_contents()->GetController());
+    EXPECT_EQ(3, controller.GetEntryCount());
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(0)->GetTransitionType(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(1)->GetTransitionType(),
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                  ui::PAGE_TRANSITION_FORWARD_BACK |
+                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+    EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+        controller.GetEntryAtIndex(2)->GetTransitionType(),
+        ui::PAGE_TRANSITION_LINK));
+  }
+}
+
 }  // namespace content
