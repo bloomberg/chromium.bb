@@ -1630,7 +1630,11 @@ public class LocationBarLayout extends FrameLayout
                 stopAutocomplete(false);
                 mUrlBar.setUrl(suggestion.getFillIntoEdit(), null);
                 mUrlBar.setSelection(mUrlBar.getText().length());
-                RecordUserAction.record("MobileOmniboxRefineSuggestion");
+                if (suggestion.isUrlSuggestion()) {
+                    RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
+                } else {
+                    RecordUserAction.record("MobileOmniboxRefineSuggestion.Search");
+                }
             }
 
             @Override
