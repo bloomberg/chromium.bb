@@ -179,7 +179,7 @@ VisiblePosition SelectionModifier::NextWordPositionForPlatform(
 }
 
 static VisiblePosition AdjustForwardPositionForUserSelectAll(
-    VisiblePosition& position) {
+    const VisiblePosition& position) {
   Node* const root_user_select_all = EditingStrategy::RootUserSelectAllForNode(
       position.DeepEquivalent().AnchorNode());
   if (!root_user_select_all)
@@ -189,7 +189,7 @@ static VisiblePosition AdjustForwardPositionForUserSelectAll(
 }
 
 static VisiblePosition AdjustBackwardPositionForUserSelectAll(
-    VisiblePosition& position) {
+    const VisiblePosition& position) {
   Node* const root_user_select_all = EditingStrategy::RootUserSelectAllForNode(
       position.DeepEquivalent().AnchorNode());
   if (!root_user_select_all)
