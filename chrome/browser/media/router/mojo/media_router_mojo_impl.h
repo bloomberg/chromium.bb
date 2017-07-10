@@ -115,9 +115,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 
-  // TODO(crbug.com/597778): Remove this getter.
-  const std::string& media_route_provider_extension_id() const;
-
   void set_instance_id_for_test(const std::string& instance_id) {
     instance_id_ = instance_id;
   }
@@ -218,7 +215,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
-  // Stores the ID of |extension| in |media_route_provider_extension_id_|.
+  // Passes the extension's ID to the event page request manager.
   void BindToMojoRequest(
       mojo::InterfaceRequest<mojom::MediaRouter> request,
       const extensions::Extension& extension);
