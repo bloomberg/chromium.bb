@@ -131,7 +131,10 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
     }
     if (tabs > 0) fprintf(probsfile, "%*c", tabs * SPACES_PER_TAB, ' ');
     for (int k = 0; k < total_modes - 1; ++k) {
-      fprintf(probsfile, " %3d,", probs[k]);
+      if (k == total_modes - 2)
+        fprintf(probsfile, " %3d ", probs[k]);
+      else
+        fprintf(probsfile, " %3d,", probs[k]);
       fprintf(logfile, "%d ", counts1d[k]);
     }
     fprintf(logfile, "%d\n", counts1d[total_modes - 1]);
@@ -139,7 +142,13 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
     assert(cts_each_dim[1] == 2);
 
     for (int k = 0; k < cts_each_dim[0]; ++k) {
-      fprintf(probsfile, " %3d,", get_binary_prob((*ct_ptr)[0], (*ct_ptr)[1]));
+      if (k == cts_each_dim[0] - 1) {
+        fprintf(probsfile, " %3d ",
+                get_binary_prob((*ct_ptr)[0], (*ct_ptr)[1]));
+      } else {
+        fprintf(probsfile, " %3d,",
+                get_binary_prob((*ct_ptr)[0], (*ct_ptr)[1]));
+      }
       fprintf(logfile, "%d %d\n", (*ct_ptr)[0], (*ct_ptr)[1]);
       (*ct_ptr) += 2;
     }
@@ -158,9 +167,15 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
         return 1;
       }
       if (dim_of_cts == 2 || (dim_of_cts == 3 && flatten_last_dim)) {
-        fprintf(probsfile, "},\n");
+        if (k == cts_each_dim[0] - 1)
+          fprintf(probsfile, "}\n");
+        else
+          fprintf(probsfile, "},\n");
       } else {
-        fprintf(probsfile, "%*c},\n", tabs * SPACES_PER_TAB, ' ');
+        if (k == cts_each_dim[0] - 1)
+          fprintf(probsfile, "%*c}\n", tabs * SPACES_PER_TAB, ' ');
+        else
+          fprintf(probsfile, "%*c},\n", tabs * SPACES_PER_TAB, ' ');
       }
     }
   }
