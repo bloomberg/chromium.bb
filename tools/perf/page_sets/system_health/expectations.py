@@ -21,9 +21,6 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       'crbug.com/649392')
     self.DisableStory('play:media:pandora', [expectations.ALL],
                       'crbug.com/64939')
-    self.DisableStory('browse:tech:discourse_infinite_scroll',
-                      [expectations.ALL_WIN, expectations.ALL_LINUX],
-                      'crbug.com/728152')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
 
@@ -47,9 +44,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
                       'crbug.com/649392')
     self.DisableStory('play:media:pandora', [expectations.ALL],
                       'crbug.com/64939')
-    self.DisableStory('browse:tech:discourse_infinite_scroll',
-                      [expectations.ALL_WIN, expectations.ALL_LINUX],
-                      'crbug.com/728152')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
     self.DisableStory('browse:social:twitter_infinite_scroll',
@@ -140,9 +134,6 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
                       'crbug.com/712694')
     self.DisableStory('browse:tools:earth', [expectations.ALL],
                       'crbug.com/708590')
-    self.DisableStory('browse:tech:discourse_infinite_scroll',
-                      [expectations.ALL_WIN, expectations.ALL_LINUX],
-                      'crbug.com/728152')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
     self.DisableStory('browse:social:twitter_infinite_scroll',
