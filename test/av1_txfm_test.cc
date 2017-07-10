@@ -66,24 +66,28 @@ void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
 
 double invSqrt2 = 1 / pow(2, 0.5);
 
+double dct_matrix(double n, double k, int size) {
+  return cos(M_PI * (2 * n + 1) * k / (2 * size));
+}
+
 void reference_dct_1d(const double *in, double *out, int size) {
   for (int k = 0; k < size; ++k) {
     out[k] = 0;
     for (int n = 0; n < size; ++n) {
-      out[k] += in[n] * cos(M_PI * (2 * n + 1) * k / (2 * size));
+      out[k] += in[n] * dct_matrix(n, k, size);
     }
     if (k == 0) out[k] = out[k] * invSqrt2;
   }
 }
 
 void reference_idct_1d(const double *in, double *out, int size) {
-  for (int n = 0; n < size; ++n) {
-    out[n] = 0;
-    for (int k = 0; k < size; ++k) {
-      if (k == 0)
-        out[n] += invSqrt2 * in[k] * cos(M_PI * (2 * n + 1) * k / (2 * size));
+  for (int k = 0; k < size; ++k) {
+    out[k] = 0;
+    for (int n = 0; n < size; ++n) {
+      if (n == 0)
+        out[k] += invSqrt2 * in[n] * dct_matrix(k, n, size);
       else
-        out[n] += in[k] * cos(M_PI * (2 * n + 1) * k / (2 * size));
+        out[k] += in[n] * dct_matrix(k, n, size);
     }
   }
 }
