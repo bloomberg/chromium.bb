@@ -75,6 +75,25 @@ void PagePopupClient::AddJavaScriptString(const String& str,
   addLiteral("\"", data);
 }
 
+void PagePopupClient::AddHTMLString(const String& str, SharedBuffer* data) {
+  StringBuilder builder;
+  builder.ReserveCapacity(str.length());
+  for (unsigned i = 0; i < str.length(); ++i) {
+    if (str[i] == '&') {
+      builder.Append("&amp;");
+    } else if (str[i] == '<') {
+      builder.Append("&lt;");
+    } else if (str[i] == '\'') {
+      builder.Append("&apos;");
+    } else if (str[i] == '"') {
+      builder.Append("&quot;");
+    } else {
+      builder.Append(str[i]);
+    }
+  }
+  AddString(builder.ToString(), data);
+}
+
 void PagePopupClient::AddProperty(const char* name,
                                   const String& value,
                                   SharedBuffer* data) {

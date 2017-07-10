@@ -163,12 +163,12 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
                                  ? "<div dir=ltr id=main-message>"
                                  : "<div dir=rtl id=main-message>",
                              data);
-  PagePopupClient::AddString(message_, data);
+  PagePopupClient::AddHTMLString(message_, data);
   PagePopupClient::AddString(sub_message_dir_ == TextDirection::kLtr
                                  ? "</div><div dir=ltr id=sub-message>"
                                  : "</div><div dir=rtl id=sub-message>",
                              data);
-  PagePopupClient::AddString(sub_message_, data);
+  PagePopupClient::AddHTMLString(sub_message_, data);
   PagePopupClient::AddString(
       "</div></main>"
       "<div id=outer-arrow-bottom></div>"
