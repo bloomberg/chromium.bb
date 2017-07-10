@@ -2770,10 +2770,10 @@ const char kModuleScriptsDescription[] =
 
 #if defined(OS_ANDROID)
 
-const char kUseNewDoodleApiName[] = "Use new Doodle API";
+const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 
-const char kUseNewDoodleApiDescription[] =
-    "Enables the new API to fetch Doodles for the NTP.";
+const char kUseDdljsonApiDescription[] =
+    "Enables the new ddljson API to fetch Doodles for the NTP.";
 
 #endif  // defined(OS_ANDROID)
 
