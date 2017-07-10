@@ -1122,10 +1122,19 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_SITE_COPY_BUTTON" desc="Button that the user can press to copy the site to clipboard. [Length: 12em]">
         Copy
       </message>
+      <message name="IDS_IOS_SETTINGS_SITE_COPY_MENU_ITEM" desc="Context menu item available on the cell showing the site/URL with a passwords origin, in the detailed view of a stored credential. The user can select it to copy the site to clipboard. [Length: should be one short word, is under 5em in English]">
+        Copy
+      </message>
       <message name="IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON" desc="Button that the user can press to copy the username to clipboard. [Length: 12em]">
         Copy
       </message>
+      <message name="IDS_IOS_SETTINGS_USERNAME_COPY_MENU_ITEM" desc="Context menu item available on the username cell in the detailed view of a stored credential. The user can select it to copy the username to clipboard. [Length: should be one short word, is under 5em in English]">
+        Copy
+      </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON" desc="Button that the user can press to copy the password to clipboard. [Length: 12em]">
+        Copy
+      </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORD_COPY_MENU_ITEM" desc="Context menu item available on the password cell in detailed view of a stored credential. The user can select it to copy the password to clipboard. [Length: should be one short word, is under 5em in English]">
         Copy
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON" desc="Button that the user can press to delete the saved password. [Length: 31em]">
@@ -1137,6 +1146,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON" desc="Button that the user can press to change the way the password is displayed from plain text to obscured form (i.e. from plain text to dots). [Length: 12em]">
         Hide
       </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORD_HIDE_MENU_ITEM" desc="Context menu item available on the password cell in detailed view of a stored password. The user can select it to hide the password to clipboard. [Length: should be one short word, is under 5em in English]">
+        Hide
+      </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY" desc="Message explaining that the reason why we are requiring the user to re-authenticate is to be able to copy the password. This is shown by iOS in the Touch ID reauthentication system dialogue, right under the OS string 'Touch ID for $BROWSER_NAME'. [Length: 22em]">
         Copy password
       </message>
@@ -1144,6 +1156,9 @@ Handoff must also be enabled in the General section of Settings, and your device
         Show password
       </message>
       <message name="IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON" desc="Button that the user can press in order to have the password displayed in plain text. [Length: 12em]">
+        Show
+      </message>
+      <message name="IDS_IOS_SETTINGS_PASSWORD_SHOW_MENU_ITEM" desc="Context menu item available on the password cell in detailed view of a stored password. The user can select it to show the password to clipboard. [Length: should be one short word, is under 5em in English]">
         Show
       </message>
       <message name="IDS_IOS_SETTINGS_SITE_WAS_COPIED_MESSAGE" desc="Confirmation that the site URL of a saved credential was copied. This is shown alone in an infobar at the bottom of the screen. [Length: 40em]">
