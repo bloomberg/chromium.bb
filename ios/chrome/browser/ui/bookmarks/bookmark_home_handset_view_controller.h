@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_HANDSET_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_HANDSET_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
+
 #import <UIKit/UIKit.h>
 
 #include <set>
@@ -16,13 +18,8 @@ class GURL;
 @protocol UrlLoader;
 
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 @protocol BookmarkHomeHandsetViewControllerDelegate
 // The view controller wants to be dismissed.
@@ -33,7 +30,7 @@ class ChromeBrowserState;
 @end
 
 // Navigate/edit the bookmark hierarchy on a handset.
-@interface BookmarkHomeHandsetViewController : UIViewController {
+@interface BookmarkHomeHandsetViewController : BookmarkHomeViewController {
  @protected
   // The following 2 ivars both represent the set of nodes being edited.
   // The set is for fast lookup.
@@ -43,9 +40,6 @@ class ChromeBrowserState;
   std::set<const bookmarks::BookmarkNode*> _editNodes;
   std::vector<const bookmarks::BookmarkNode*> _editNodesOrdered;
 }
-// Designated initializer.
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState;
 
 #pragma mark - Properties Relevant To Presenters
 
@@ -57,9 +51,6 @@ class ChromeBrowserState;
 @property(nonatomic, assign, readonly) BOOL editing;
 // The set of selected index paths for edition.
 @property(nonatomic, strong, readonly) NSMutableArray* editIndexPaths;
-@property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarks;
-@property(nonatomic, weak, readonly) id<UrlLoader> loader;
-@property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 
 #pragma mark - Relevant Methods
 // Replaces |_editNodes| and |_editNodesOrdered| with new container objects.

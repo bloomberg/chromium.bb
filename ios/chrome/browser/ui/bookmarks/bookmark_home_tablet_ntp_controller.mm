@@ -50,29 +50,9 @@
 using bookmarks::BookmarkNode;
 
 namespace {
-// The width of the bookmark menu, displaying the different sections.
-const CGFloat kMenuWidth = 264.0;
 // The margin on top to the navigation bar.
 const CGFloat kNavigationBarTopMargin = 8.0;
 }  // namespace
-
-// A simple UIView subclass to pass on relayout information to its delegate.
-@protocol ContentViewDelegate<NSObject>
-- (void)willLayoutSubviews;
-@end
-
-@interface ContentView : UIView
-@property(nonatomic, weak) id<ContentViewDelegate> delegate;
-@end
-
-@implementation ContentView
-@synthesize delegate = _delegate;
-
-- (void)layoutSubviews {
-  [self.delegate willLayoutSubviews];
-  [super layoutSubviews];
-}
-@end
 
 @interface BookmarkHomeTabletNTPController ()<
     BookmarkCollectionViewDelegate,
@@ -81,12 +61,9 @@ const CGFloat kNavigationBarTopMargin = 8.0;
     BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
     BookmarkModelBridgeObserver,
-    BookmarkPromoControllerDelegate,
-    ContentViewDelegate> {
+    BookmarkPromoControllerDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
-  ios::ChromeBrowserState* _browserState;  // Weak.
-  __weak id<UrlLoader> _loader;
 
   // The following 2 ivars both represent the set of nodes being edited.
   // The set is for fast lookup.
@@ -97,19 +74,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   std::vector<const BookmarkNode*> _editNodesOrdered;
 }
 
-@property(nonatomic, strong) BookmarkPanelView* panelView;
-
 #pragma mark - Properties and methods akin to BookmarkHomeHandsetViewController
 
 // Whether the view controller is in editing mode.
 @property(nonatomic, assign) BOOL editing;
 // The set of edited index paths.
 @property(nonatomic, strong) NSMutableArray* editIndexPaths;
-// The bookmark model used.
-@property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarks;
-// The user's browser state model used.
-@property(nonatomic, assign, readonly)
-    ios::ChromeBrowserState* browserState;  // from superclass.
 
 // Replaces |_editNodes| and |_editNodesOrdered| with new container objects.
 - (void)resetEditNodes;
@@ -123,31 +93,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
 #pragma mark - Properties and methods akin to BookmarkHomeHandsetViewController
-
-// This views holds the primary content of this controller.
-@property(nonatomic, readwrite, strong) ContentView* view;
-
-// The possible views that can be shown from the menu.
-@property(nonatomic, strong) BookmarkCollectionView* folderView;
-// This view is created and used if the model is not fully loaded yet by the
-// time this controller starts.
-@property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
-
-// The menu with all the folders and special entries.
-@property(nonatomic, strong) BookmarkMenuView* menuView;
-// At any point in time, there is exactly one collection view whose view is part
-// of the view hierarchy. This property determines which collection view is
-// visible. Not by accident, this property also reflects the selected menu item
-// in the BookmarkMenuView.
-@property(nonatomic, strong) BookmarkMenuItem* primaryMenuItem;
 // When the view is first shown on the screen, this property represents the
 // cached value of the y of the content offset of the primary view. This
 // property is set to nil after it is used.
 @property(nonatomic, strong)
     NSNumber* cachedContentPosition;  // FIXME: INACTIVE
 
-// The navigation bar sits on top of the main content.
-@property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
 // The editing bar present when items are selected.
 @property(nonatomic, strong) BookmarkEditingBar* editingBar;
 
@@ -167,31 +118,19 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 #pragma mark Specific to this class.
 
-// Either the menu or the primaryView can scrollToTop.
-@property(nonatomic, assign) BOOL scrollToTop;
-
 // Opens the url.
 - (void)loadURL:(const GURL&)url;
 #pragma mark View loading, laying out, and switching.
-// This method is called if the view needs to be loaded and the model is not
-// ready yet.
-- (void)loadWaitingView;
 // This method should be called at most once in the life-cycle of the class.
 // It should be called at the soonest possible time after the view has been
 // loaded, and the bookmark model is loaded.
 - (void)loadBookmarkViews;
-// If the view doesn't exist, create it.
-- (void)ensureFolderViewExists;
 // Updates the property 'primaryMenuItem'.
 // Updates the UI to reflect the new state of 'primaryMenuItem'.
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated;
-// The active collection view that corresponds to primaryMenuItem.
-- (UIView<BookmarkHomePrimaryView>*)primaryView;
 // Returns whether the menu should be in a side panel that slides in.
 - (BOOL)shouldPresentMenuInSlideInPanel;
-// Returns the width of the menu.
-- (CGFloat)menuWidth;
 // Returns the leading margin of the primary view.
 - (CGFloat)primaryViewLeadingMargin;
 // Moves the menu and primary view to their correct parent views depending on
@@ -273,20 +212,10 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 @implementation BookmarkHomeTabletNTPController
 
-@dynamic view;
 @synthesize editing = _editing;
 @synthesize editIndexPaths = _editIndexPaths;
-@synthesize bookmarks = _bookmarks;
-
-@synthesize folderView = _folderView;
-@synthesize waitForModelView = _waitForModelView;
-
-@synthesize menuView = _menuView;
-@synthesize primaryMenuItem = _primaryMenuItem;
 @synthesize cachedContentPosition = _cachedContentPosition;
-@synthesize navigationBar = _navigationBar;
 @synthesize editingBar = _editingBar;
-@synthesize panelView = _panelView;
 
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize editViewController = _editViewController;
@@ -294,21 +223,14 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @synthesize folderEditor = _folderEditor;
 @synthesize bookmarkPromoController = _bookmarkPromoController;
 
-@synthesize scrollToTop = _scrollToTop;
-
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
 
 - (id)initWithLoader:(id<UrlLoader>)loader
         browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super init];
+  self = [super initWithLoader:loader browserState:browserState];
   if (self) {
-    DCHECK(browserState);
-    _browserState = browserState->GetOriginalChromeBrowserState();
-    _loader = loader;
-
-    _bookmarks = ios::BookmarkModelFactory::GetForBrowserState(_browserState);
-    _bridge.reset(new bookmarks::BookmarkModelBridge(self, _bookmarks));
+    _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
     _editIndexPaths = [[NSMutableArray alloc] init];
     // It is important to initialize the promo controller with the browser state
     // passed in, as it could be incognito.
@@ -320,23 +242,14 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)dealloc {
-  self.view.delegate = nil;
-
-  _folderView.delegate = nil;
-
-  _menuView.delegate = nil;
-
   _editViewController.delegate = nil;
   _folderSelector.delegate = nil;
 }
 
-- (ios::ChromeBrowserState*)browserState {
-  return _browserState;
-}
+#pragma mark - UIViewController method.
 
-#pragma mark - ContentViewDelegate method.
-
-- (void)willLayoutSubviews {
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
   if (![self primaryView] && ![self primaryMenuItem] &&
       self.bookmarks->loaded()) {
     BookmarkMenuItem* item = nil;
@@ -428,25 +341,13 @@ const CGFloat kNavigationBarTopMargin = 8.0;
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  [_loader loadURL:url
+  [self.loader loadURL:url
                referrer:web::Referrer()
              transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
       rendererInitiated:NO];
 }
 
 #pragma mark - Views
-
-- (void)loadWaitingView {
-  DCHECK(!self.waitForModelView);
-  DCHECK(self.view);
-
-  // Present a waiting view.
-  BookmarkHomeWaitingView* waitingView =
-      [[BookmarkHomeWaitingView alloc] initWithFrame:self.view.bounds];
-  self.waitForModelView = waitingView;
-  [self.view addSubview:self.waitForModelView];
-  [self.waitForModelView startWaiting];
-}
 
 - (void)updateMenuViewLayout {
   LayoutRect menuLayout =
@@ -456,17 +357,11 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)loadBookmarkViews {
+  [super loadBookmarkViews];
   DCHECK(self.bookmarks->loaded());
 
-  // Create the menu.
-  LayoutRect menuLayout =
-      LayoutRectMake(0, self.view.bounds.size.width, 0, self.menuWidth,
-                     self.view.bounds.size.height);
-  self.menuView = [[BookmarkMenuView alloc]
-      initWithBrowserState:self.browserState
-                     frame:LayoutRectGetRect(menuLayout)];
   self.menuView.delegate = self;
-  self.menuView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+  self.folderView.delegate = self;
 
   [self moveMenuAndPrimaryViewToAdequateParent];
 
@@ -495,38 +390,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   }
 }
 
-- (void)ensureFolderViewExists {
-  if (self.folderView)
-    return;
-
-  BookmarkCollectionView* view =
-      [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
-                                                     frame:CGRectZero];
-  self.folderView = view;
-  self.folderView.delegate = self;
-  [self.folderView setEditing:self.editing animated:NO];
-  self.folderView.autoresizingMask =
-      UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-}
-
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated {
-  DCHECK(menuItem.type == bookmarks::MenuItemFolder);
-  if ([self.primaryMenuItem isEqual:menuItem])
-    return;
-
   if (![self.view superview])
     return;
 
-  [[self primaryView] removeFromSuperview];
-  self.primaryMenuItem = menuItem;
-
-  [self ensureFolderViewExists];
-  [self.folderView resetFolder:self.primaryMenuItem.folder];
-  [self.folderView promoStateChangedAnimated:NO];
-
-  [[self primaryView] changeOrientation:GetInterfaceOrientation()];
-  [[self primaryView] setScrollsToTop:self.scrollToTop];
+  [super updatePrimaryMenuItem:menuItem];
 
   [self moveMenuAndPrimaryViewToAdequateParent];
 
@@ -536,23 +405,11 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   self.navigationBar.hidden = NO;
   [self updateNavigationBarAnimated:animated
                         orientation:GetInterfaceOrientation()];
-
-  [self.menuView updatePrimaryMenuItem:self.primaryMenuItem];
   [self updateEditBarShadow];
-}
-
-- (UIView<BookmarkHomePrimaryView>*)primaryView {
-  if (self.primaryMenuItem.type == bookmarks::MenuItemFolder)
-    return self.folderView;
-  return nil;
 }
 
 - (BOOL)shouldPresentMenuInSlideInPanel {
   return IsCompactTablet();
-}
-
-- (CGFloat)menuWidth {
-  return kMenuWidth;
 }
 
 - (CGFloat)primaryViewLeadingMargin {
@@ -572,12 +429,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
     [primaryView removeFromSuperview];
 
   if ([self shouldPresentMenuInSlideInPanel]) {
-    // Create (if needed), and add the panelView to the view hierarchy.
-    if (!self.panelView) {
-      self.panelView =
-          [[BookmarkPanelView alloc] initWithFrame:CGRectZero
-                                     menuViewWidth:[self menuWidth]];
-    }
+    // Add the panelView to the view hierarchy.
     [self.view addSubview:self.panelView];
     CGSize size = self.view.bounds.size;
     CGFloat navBarHeight = CGRectGetHeight([self navigationBarFrame]);
@@ -1159,12 +1011,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)wasShown {
-  [_folderView wasShown];
+  [self.folderView wasShown];
 }
 
 - (void)wasHidden {
   [self cachePosition];
-  [_folderView wasHidden];
+  [self.folderView wasHidden];
 }
 
 - (void)dismissModals {
@@ -1184,17 +1036,9 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   [[self primaryView] setScrollsToTop:self.scrollToTop];
 }
 
-- (void)loadView {
-  self.view = [[ContentView alloc] initWithFrame:CGRectZero];
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.delegate = self;
   self.view.backgroundColor = bookmark_utils_ios::mainBackgroundColor();
-  BookmarkNavigationBar* bar =
-      [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
-  self.navigationBar = bar;
   self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
   [self.navigationBar setEditTarget:self
