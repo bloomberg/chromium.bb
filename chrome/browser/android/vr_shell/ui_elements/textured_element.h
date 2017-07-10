@@ -30,12 +30,13 @@ class TexturedElement : public UiElement {
   void Render(UiElementRenderer* renderer,
               gfx::Transform view_proj_matrix) const final;
 
-  void OnBeginFrame(const base::TimeTicks& begin_frame_time) override;
-
  protected:
+  void UpdateTexture();
+
   virtual UiTexture* GetTexture() const = 0;
-  virtual void UpdateTexture();
   virtual void UpdateElementSize();
+
+  void OnBeginFrame(const base::TimeTicks& begin_frame_time) final;
 
  private:
   void Flush(SkSurface* surface);

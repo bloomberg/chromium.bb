@@ -61,9 +61,4 @@ void LoadingIndicator::SetVisibility() {
   set_visible(enabled_ && (loading_ || visibility_timer_.IsRunning()));
 }
 
-void LoadingIndicator::OnBeginFrame(const base::TimeTicks& ticks) {
-  if (enabled_)
-    UpdateTexture();
-}
-
 }  // namespace vr_shell
