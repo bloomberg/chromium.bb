@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_metrics_service_client.h"
 
 #include "android_webview/browser/aw_metrics_log_uploader.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
 #include "base/android/build_info.h"
@@ -13,6 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
+#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
@@ -38,6 +41,13 @@ namespace {
 
 const int kUploadIntervalMinutes = 30;
 
+// A GUID in text form is composed of 32 hex digits and 4 hyphens.
+const size_t GUID_SIZE = 32 + 4;
+
+// Client ID of the app, read and cached synchronously at startup
+base::LazyInstance<std::string>::Leaky g_client_id_guid =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Callbacks for metrics::MetricsStateManager::Create. Store/LoadClientInfo
 // allow Windows Chrome to back up ClientInfo. They're no-ops for WebView.
 
@@ -46,30 +56,6 @@ void StoreClientInfo(const metrics::ClientInfo& client_info) {}
 std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
   std::unique_ptr<metrics::ClientInfo> client_info;
   return client_info;
-}
-
-// A GUID in text form is composed of 32 hex digits and 4 hyphens.
-const size_t GUID_SIZE = 32 + 4;
-
-void GetOrCreateGUID(const base::FilePath guid_file_path, std::string* guid) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-
-  // Try to read an existing GUID.
-  if (base::ReadFileToStringWithMaxSize(guid_file_path, guid, GUID_SIZE)) {
-    if (base::IsValidGUID(*guid))
-      return;
-    else
-      LOG(ERROR) << "Overwriting invalid GUID";
-  }
-
-  // We must write a new GUID.
-  *guid = base::GenerateGUID();
-  if (!base::WriteFile(guid_file_path, guid->c_str(), guid->size())) {
-    // If writing fails, proceed anyway with the new GUID. It won't be persisted
-    // to the next run, but we can still collect metrics with this 1-time GUID.
-    LOG(ERROR) << "Failed to write new GUID";
-  }
-  return;
 }
 
 version_info::Channel GetChannelFromPackageName() {
@@ -89,10 +75,47 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   return g_lazy_instance_.Pointer();
 }
 
+void AwMetricsServiceClient::GetOrCreateGUID() {
+  // Check for cached GUID
+  if (g_client_id_guid.Get().length() == GUID_SIZE)
+    return;
+
+  // UMA uses randomly-generated GUIDs (globally unique identifiers) to
+  // anonymously identify logs. Every WebView-using app on every device
+  // is given a GUID, stored in this file in the app's data directory.
+  base::FilePath user_data_dir;
+  if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
+    LOG(ERROR) << "Failed to get app data directory for Android WebView";
+
+    // Generate a 1-time GUID so metrics can still be collected
+    g_client_id_guid.Get() = base::GenerateGUID();
+    return;
+  }
+
+  const base::FilePath guid_file_path =
+      user_data_dir.Append(FILE_PATH_LITERAL("metrics_guid"));
+
+  // Try to read an existing GUID.
+  if (base::ReadFileToStringWithMaxSize(guid_file_path, &g_client_id_guid.Get(),
+                                        GUID_SIZE)) {
+    if (base::IsValidGUID(g_client_id_guid.Get()))
+      return;
+    LOG(ERROR) << "Overwriting invalid GUID";
+  }
+
+  // We must write a new GUID.
+  g_client_id_guid.Get() = base::GenerateGUID();
+  if (!base::WriteFile(guid_file_path, g_client_id_guid.Get().c_str(),
+                       g_client_id_guid.Get().size())) {
+    // If writing fails, proceed anyway with the new GUID. It won't be persisted
+    // to the next run, but we can still collect metrics with this 1-time GUID.
+    LOG(ERROR) << "Failed to write new GUID";
+  }
+}
+
 void AwMetricsServiceClient::Initialize(
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context,
-    const base::FilePath guid_file_path) {
+    net::URLRequestContextGetter* request_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DCHECK(pref_service_ == nullptr);  // Initialize should only happen once.
@@ -101,22 +124,26 @@ void AwMetricsServiceClient::Initialize(
   request_context_ = request_context;
   channel_ = GetChannelFromPackageName();
 
-  std::string* guid = new std::string;
-  // Initialization happens on the UI thread, but getting the GUID should happen
-  // on the file I/O thread. So we start to initialize, then post to get the
-  // GUID, and then pick up where we left off, back on the UI thread, in
-  // InitializeWithGUID.
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetOrCreateGUID, guid_file_path, guid),
-      base::Bind(&AwMetricsServiceClient::InitializeWithGUID,
-                 base::Unretained(this), base::Owned(guid)));
+  // If Finch is enabled for WebView the GUID will already have been read at
+  // startup
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebViewFinch)) {
+    InitializeWithGUID();
+  } else {
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&AwMetricsServiceClient::GetOrCreateGUID),
+        base::Bind(&AwMetricsServiceClient::InitializeWithGUID,
+                   base::Unretained(this)));
+  }
 }
 
-void AwMetricsServiceClient::InitializeWithGUID(std::string* guid) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  pref_service_->SetString(metrics::prefs::kMetricsClientID, *guid);
+void AwMetricsServiceClient::InitializeWithGUID() {
+  // The guid must have already been initialized at this point, either
+  // synchronously or asynchronously depending on the kEnableWebViewFinch flag
+  DCHECK_EQ(g_client_id_guid.Get().length(), GUID_SIZE);
+  pref_service_->SetString(metrics::prefs::kMetricsClientID,
+                           g_client_id_guid.Get());
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
       pref_service_, this, base::Bind(&StoreClientInfo),

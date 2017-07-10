@@ -44,9 +44,12 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
  public:
   static AwMetricsServiceClient* GetInstance();
+
+  // Retrieve the client ID or generate one if none exists
+  static void GetOrCreateGUID();
+
   void Initialize(PrefService* pref_service,
-                  net::URLRequestContextGetter* request_context,
-                  const base::FilePath guid_file_path);
+                  net::URLRequestContextGetter* request_context);
 
   // metrics::EnabledStateProvider implementation
   bool IsConsentGiven() override;
@@ -79,7 +82,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   AwMetricsServiceClient();
   ~AwMetricsServiceClient() override;
 
-  void InitializeWithGUID(std::string* guid);
+  void InitializeWithGUID();
 
   bool is_enabled_;
   PrefService* pref_service_;

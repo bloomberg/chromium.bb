@@ -6,6 +6,7 @@
 
 namespace switches {
 
+const char kEnableWebViewFinch[] = "enable-webview-finch";
 const char kSyncOnDrawHardware[] = "sync-on-draw-hardware";
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
