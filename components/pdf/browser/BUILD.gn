@@ -15,6 +15,7 @@ static_library("browser") {
     "//base",
     "//components/pdf/common:interfaces",
     "//content/public/browser",
+    "//ui/touch_selection",
   ]
 
   public_deps = [
