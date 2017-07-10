@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "content/network/network_context.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/log/write_to_file_net_log_observer.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
@@ -21,34 +22,27 @@ class NetworkService::MojoNetLog : public net::NetLog {
   MojoNetLog() {
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kLogNetLog))
-      return;
-    base::FilePath log_path =
-        command_line->GetSwitchValuePath(switches::kLogNetLog);
-    base::ScopedFILE file;
-#if defined(OS_WIN)
-    file.reset(_wfopen(log_path.value().c_str(), L"w"));
-#elif defined(OS_POSIX)
-    file.reset(fopen(log_path.value().c_str(), "w"));
-#endif
-    if (!file) {
-      LOG(ERROR) << "Could not open file " << log_path.value()
-                 << " for net logging";
-    } else {
-      write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-      write_to_file_observer_->set_capture_mode(
-          net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-      write_to_file_observer_->StartObserving(this, std::move(file), nullptr,
-                                              nullptr);
+
+    // If specified by the command line, stream network events (NetLog) to a
+    // file on disk. This will last for the duration of the process.
+    if (command_line->HasSwitch(switches::kLogNetLog)) {
+      base::FilePath log_path =
+          command_line->GetSwitchValuePath(switches::kLogNetLog);
+      net::NetLogCaptureMode capture_mode =
+          net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+
+      file_net_log_observer_ =
+          net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
+      file_net_log_observer_->StartObserving(this, capture_mode);
     }
   }
   ~MojoNetLog() override {
-    if (write_to_file_observer_)
-      write_to_file_observer_->StopObserving(nullptr);
+    if (file_net_log_observer_)
+      file_net_log_observer_->StopObserving(nullptr, base::OnceClosure());
   }
 
  private:
-  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
 };
 
