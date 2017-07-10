@@ -242,7 +242,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
     [self setWantsLayer:YES];  // -drawFill: needs a layer.
 
-    if (&NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification) {
+    if (@available(macOS 10.10, *)) {
       NSNotificationCenter* center =
           [[NSWorkspace sharedWorkspace] notificationCenter];
       [center
@@ -259,7 +259,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 - (void)dealloc {
   // Cancel any delayed requests that may still be pending (drags or hover).
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  if (&NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification) {
+  if (@available(macOS 10.10, *)) {
     NSNotificationCenter* center =
         [[NSWorkspace sharedWorkspace] notificationCenter];
     [center removeObserver:self];
