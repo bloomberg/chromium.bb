@@ -278,6 +278,11 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
   passwordItem.text =
       base::SysUTF8ToNSString(password_manager::GetHumanReadableOrigin(*form));
+  if (experimental_flags::IsViewCopyPasswordsEnabled()) {
+    passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    passwordItem.accessoryType =
+        MDCCollectionViewCellAccessoryDisclosureIndicator;
+  }
   return passwordItem;
 }
 
@@ -430,6 +435,18 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 #pragma mark UICollectionViewDelegate
 
+- (void)openDetailedViewForForm:(const autofill::PasswordForm&)form {
+  if (!experimental_flags::IsViewCopyPasswordsEnabled())
+    return;
+
+  UIViewController* controller =
+      [[PasswordDetailsCollectionViewController alloc]
+            initWithPasswordForm:form
+                        delegate:self
+          reauthenticationModule:reauthenticationModule_];
+  [self.navigationController pushViewController:controller animated:YES];
+}
+
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
@@ -440,26 +457,27 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   }
 
   CollectionViewModel* model = self.collectionViewModel;
-  if ([model itemTypeForIndexPath:indexPath] == ItemTypeSavedPassword) {
-    DCHECK_EQ([model sectionIdentifierForSection:indexPath.section],
-              SectionIdentifierSavedPasswords);
-    if (experimental_flags::IsViewCopyPasswordsEnabled()) {
+  NSInteger itemType = [model itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeManageAccount:
+    case ItemTypeHeader:
+    case ItemTypeSavePasswordsSwitch:
+      break;
+    case ItemTypeSavedPassword:
+      DCHECK_EQ(SectionIdentifierSavedPasswords,
+                [model sectionIdentifierForSection:indexPath.section]);
       DCHECK_LT(base::checked_cast<size_t>(indexPath.item), savedForms_.size());
-      autofill::PasswordForm* form = savedForms_[indexPath.item].get();
-      NSString* username = base::SysUTF16ToNSString(form->username_value);
-      NSString* password = base::SysUTF16ToNSString(form->password_value);
-      NSString* origin = base::SysUTF8ToNSString(
-          password_manager::GetHumanReadableOrigin(*form));
-      UIViewController* controller =
-          [[PasswordDetailsCollectionViewController alloc]
-                initWithPasswordForm:*form
-                            delegate:self
-              reauthenticationModule:reauthenticationModule_
-                            username:username
-                            password:password
-                              origin:origin];
-      [self.navigationController pushViewController:controller animated:YES];
-    }
+      [self openDetailedViewForForm:*savedForms_[indexPath.item]];
+      break;
+    case ItemTypeBlacklisted:
+      DCHECK_EQ(SectionIdentifierBlacklist,
+                [model sectionIdentifierForSection:indexPath.section]);
+      DCHECK_LT(base::checked_cast<size_t>(indexPath.item),
+                blacklistedForms_.size());
+      [self openDetailedViewForForm:*blacklistedForms_[indexPath.item]];
+      break;
+    default:
+      NOTREACHED();
   }
 }
 

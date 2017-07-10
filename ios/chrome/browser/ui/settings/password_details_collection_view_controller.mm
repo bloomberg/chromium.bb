@@ -88,13 +88,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize deleteConfirmation = _deleteConfirmation;
 
 - (instancetype)
-  initWithPasswordForm:(autofill::PasswordForm)passwordForm
+  initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
               delegate:
                   (id<PasswordDetailsCollectionViewControllerDelegate>)delegate
-reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
-              username:(NSString*)username
-              password:(NSString*)password
-                origin:(NSString*)origin {
+reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   DCHECK(delegate);
   DCHECK(reauthenticationModule);
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
@@ -103,12 +100,17 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   if (self) {
     _weakDelegate = delegate;
     _weakReauthenticationModule = reauthenticationModule;
+
     _passwordForm = passwordForm;
-    _username = [username copy];
-    _password = [password copy];
+    if (!_passwordForm.blacklisted_by_user) {
+      _username = base::SysUTF16ToNSString(_passwordForm.username_value);
+      _password = base::SysUTF16ToNSString(_passwordForm.password_value);
+    }
     _site = base::SysUTF8ToNSString(_passwordForm.origin.spec());
-    self.title =
-        [PasswordDetailsCollectionViewController simplifyOrigin:origin];
+    self.title = [PasswordDetailsCollectionViewController
+        simplifyOrigin:base::SysUTF8ToNSString(
+                           password_manager::GetHumanReadableOrigin(
+                               _passwordForm))];
     self.collectionViewAccessibilityIdentifier =
         @"PasswordDetailsCollectionViewController";
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -154,41 +156,43 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   [model addItem:[self siteCopyButtonItem]
       toSectionWithIdentifier:SectionIdentifierSite];
 
-  [model addSectionWithIdentifier:SectionIdentifierUsername];
-  CollectionViewTextItem* usernameHeader =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-  usernameHeader.text =
-      l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
-  usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
-  [model setHeader:usernameHeader
-      forSectionWithIdentifier:SectionIdentifierUsername];
-  PasswordDetailsItem* usernameItem =
-      [[PasswordDetailsItem alloc] initWithType:ItemTypeUsername];
-  usernameItem.text = _username;
-  usernameItem.showingText = YES;
-  [model addItem:usernameItem
-      toSectionWithIdentifier:SectionIdentifierUsername];
-  [model addItem:[self usernameCopyButtonItem]
-      toSectionWithIdentifier:SectionIdentifierUsername];
+  if (!_passwordForm.blacklisted_by_user) {
+    [model addSectionWithIdentifier:SectionIdentifierUsername];
+    CollectionViewTextItem* usernameHeader =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    usernameHeader.text =
+        l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
+    usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:usernameHeader
+        forSectionWithIdentifier:SectionIdentifierUsername];
+    PasswordDetailsItem* usernameItem =
+        [[PasswordDetailsItem alloc] initWithType:ItemTypeUsername];
+    usernameItem.text = _username;
+    usernameItem.showingText = YES;
+    [model addItem:usernameItem
+        toSectionWithIdentifier:SectionIdentifierUsername];
+    [model addItem:[self usernameCopyButtonItem]
+        toSectionWithIdentifier:SectionIdentifierUsername];
 
-  [model addSectionWithIdentifier:SectionIdentifierPassword];
-  CollectionViewTextItem* passwordHeader =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-  passwordHeader.text =
-      l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-  passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
-  [model setHeader:passwordHeader
-      forSectionWithIdentifier:SectionIdentifierPassword];
-  _passwordItem = [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
-  _passwordItem.text = _password;
-  _passwordItem.showingText = NO;
-  [model addItem:_passwordItem
-      toSectionWithIdentifier:SectionIdentifierPassword];
+    [model addSectionWithIdentifier:SectionIdentifierPassword];
+    CollectionViewTextItem* passwordHeader =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    passwordHeader.text =
+        l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
+    passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:passwordHeader
+        forSectionWithIdentifier:SectionIdentifierPassword];
+    _passwordItem = [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
+    _passwordItem.text = _password;
+    _passwordItem.showingText = NO;
+    [model addItem:_passwordItem
+        toSectionWithIdentifier:SectionIdentifierPassword];
 
-  [model addItem:[self passwordCopyButtonItem]
-      toSectionWithIdentifier:SectionIdentifierPassword];
-  [model addItem:[self showHidePasswordButtonItem]
-      toSectionWithIdentifier:SectionIdentifierPassword];
+    [model addItem:[self passwordCopyButtonItem]
+        toSectionWithIdentifier:SectionIdentifierPassword];
+    [model addItem:[self showHidePasswordButtonItem]
+        toSectionWithIdentifier:SectionIdentifierPassword];
+  }
 
   [model addSectionWithIdentifier:SectionIdentifierDelete];
   [model addItem:[self deletePasswordButtonItem]

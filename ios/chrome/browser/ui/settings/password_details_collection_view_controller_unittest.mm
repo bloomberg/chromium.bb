@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,6 +66,7 @@ NSString* const kSite = @"https://testorigin.com/";
 NSString* const kUsername = @"testusername";
 NSString* const kPassword = @"testpassword";
 
+// Indices related to the layout for a non-blacklisted, non-federated password.
 const int kSiteSection = 0;
 const int kSiteItem = 0;
 const int kCopySiteButtonItem = 1;
@@ -85,46 +87,41 @@ class PasswordDetailsCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   PasswordDetailsCollectionViewControllerTest()
-      : thread_bundle_(web::TestWebThreadBundle::REAL_DB_THREAD) {}
+      : thread_bundle_(web::TestWebThreadBundle::REAL_DB_THREAD) {
+    origin_ = kSite;
+    form_.username_value = base::SysNSStringToUTF16(kUsername);
+    form_.password_value = base::SysNSStringToUTF16(kPassword);
+    form_.signon_realm = base::SysNSStringToUTF8(origin_);
+    form_.origin = GURL(form_.signon_realm);
+  }
+
   void SetUp() override {
     CollectionViewControllerTest::SetUp();
-    origin_ = kSite;
     delegate_ = [[MockSavePasswordsCollectionViewController alloc] init];
     reauthenticationModule_ = [[MockReauthenticationModule alloc] init];
   }
 
   CollectionViewController* InstantiateController() override {
-    autofill::PasswordForm form;
-    form.username_value = base::SysNSStringToUTF16(kUsername);
-    form.password_value = base::SysNSStringToUTF16(kPassword);
-    form.signon_realm = base::SysNSStringToUTF8(origin_);
-    form.origin = GURL(form.signon_realm);
     return [[PasswordDetailsCollectionViewController alloc]
-          initWithPasswordForm:form
+          initWithPasswordForm:form_
                       delegate:delegate_
-        reauthenticationModule:reauthenticationModule_
-                      username:kUsername
-                      password:kPassword
-                        origin:origin_];
-  }
-
-  void CreateControllerWithOrigin(NSString* test_origin) {
-    origin_ = test_origin;
-    CreateController();
+        reauthenticationModule:reauthenticationModule_];
   }
 
   web::TestWebThreadBundle thread_bundle_;
   MockSavePasswordsCollectionViewController* delegate_;
   MockReauthenticationModule* reauthenticationModule_;
   NSString* origin_;
+  autofill::PasswordForm form_;
 };
 
-TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
+TEST_F(PasswordDetailsCollectionViewControllerTest,
+       TestInitialization_NormalPassword) {
   CreateController();
   CheckController();
   EXPECT_EQ(4, NumberOfSections());
   // Site section
-  EXPECT_EQ(2, NumberOfItemsInSection(kUsernameSection));
+  EXPECT_EQ(2, NumberOfItemsInSection(kSiteSection));
   CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE, kSiteSection);
   PasswordDetailsItem* siteItem =
       GetCollectionViewItem(kSiteSection, kSiteItem);
@@ -160,22 +157,60 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
                            kDeleteSection, kDeleteButtonItem);
 }
 
+TEST_F(PasswordDetailsCollectionViewControllerTest,
+       TestInitialization_Blacklisted) {
+  constexpr int kBlacklistedSiteSection = 0;
+  constexpr int kBlacklistedSiteItem = 0;
+  constexpr int kBlacklistedCopySiteButtonItem = 1;
+
+  constexpr int kBlacklistedDeleteSection = 1;
+  constexpr int kBlacklistedDeleteButtonItem = 0;
+
+  form_.username_value.clear();
+  form_.password_value.clear();
+  form_.blacklisted_by_user = true;
+  CreateController();
+  CheckController();
+  EXPECT_EQ(2, NumberOfSections());
+  // Site section
+  EXPECT_EQ(2, NumberOfItemsInSection(kBlacklistedSiteSection));
+  CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE,
+                           kBlacklistedSiteSection);
+  PasswordDetailsItem* siteItem =
+      GetCollectionViewItem(kBlacklistedSiteSection, kBlacklistedSiteItem);
+  EXPECT_NSEQ(origin_, siteItem.text);
+  EXPECT_TRUE(siteItem.showingText);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_SITE_COPY_BUTTON,
+                           kBlacklistedSiteSection,
+                           kBlacklistedCopySiteButtonItem);
+  // Delete section
+  EXPECT_EQ(1, NumberOfItemsInSection(kBlacklistedDeleteSection));
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON,
+                           kBlacklistedDeleteSection,
+                           kBlacklistedDeleteButtonItem);
+}
+
 struct SimplifyOriginTestData {
-  NSString* origin;
+  GURL origin;
   NSString* expectedSimplifiedOrigin;
 };
 
 TEST_F(PasswordDetailsCollectionViewControllerTest, SimplifyOrigin) {
   SimplifyOriginTestData test_data[] = {
-      {@"http://test.com/index.php", @"test.com"},
-      {@"test.com/index.php", @"test.com"},
-      {@"test.com", @"test.com"}};
+      {GURL("http://test.com/index.php"), @"test.com"},
+      {GURL("https://example.com/index.php"), @"example.com"},
+      {GURL("android://"
+            "Qllt1FacrB0NYCeSFvmudHvssWBPFfC54EbtHTpFxukvw2wClI1rafcVB3kQOMxfJg"
+            "xbVAkGXvC_A52kbPL1EQ==@com.parkingpanda.mobile/"),
+       @"com.parkingpanda.mobile"}};
 
-  for (size_t i = 0; i < arraysize(test_data); i++) {
-    SimplifyOriginTestData& data = test_data[i];
-    CreateControllerWithOrigin(data.origin);
+  for (const auto& data : test_data) {
+    origin_ = base::SysUTF8ToNSString(data.origin.spec());
+    form_.signon_realm = base::SysNSStringToUTF8(origin_);
+    form_.origin = GURL(form_.signon_realm);
+    CreateController();
     EXPECT_NSEQ(data.expectedSimplifiedOrigin, controller().title)
-        << " for origin " << base::SysNSStringToUTF8(test_data[i].origin);
+        << " for origin " << data.origin;
     ResetController();
   }
 }
