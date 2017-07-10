@@ -20,13 +20,11 @@ struct PasswordForm;
 // The designated initializer. |delegate| and |reauthenticaionModule| must not
 // be nil.
 - (instancetype)
-  initWithPasswordForm:(autofill::PasswordForm)passwordForm
+  initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
               delegate:
                   (id<PasswordDetailsCollectionViewControllerDelegate>)delegate
 reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
-              username:(NSString*)username
-              password:(NSString*)password
-                origin:(NSString*)origin NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style
