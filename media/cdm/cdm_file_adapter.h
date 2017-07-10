@@ -29,7 +29,7 @@ class MEDIA_EXPORT CdmFileAdapter
       base::OnceCallback<void(bool success, const std::vector<uint8_t>& data)>;
   using WriteCB = base::OnceCallback<void(bool success)>;
 
-  explicit CdmFileAdapter(cdm::ContentDecryptionModule_8::Host* host);
+  explicit CdmFileAdapter(cdm::ContentDecryptionModule_9::Host* host);
   ~CdmFileAdapter() override;
 
   // Open the file with |name|. |open_cb| will be called when the file is

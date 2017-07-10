@@ -298,8 +298,13 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                         media::kClearKeyCdmPepperMimeType);
       if (cdm_host_type == CdmHostType::kMojo) {
         scoped_feature_list_.InitWithFeatures(
-            {media::kExternalClearKeyForTesting, media::kMojoCdm}, {});
+            {media::kExternalClearKeyForTesting, media::kMojoCdm,
+             media::kSupportExperimentalCdmInterface},
+            {});
       } else {
+        // Pepper CDMs are conditionally compiled with or without support for
+        // experimental CDMs, so media::kSupportExperimentalCdmInterface is
+        // not needed as it isn't checked.
         scoped_feature_list_.InitWithFeatures(
             {media::kExternalClearKeyForTesting}, {});
       }
