@@ -1201,13 +1201,17 @@ jar_src("jar_cronet_impl_native_java_source") {
 action("generate_licenses") {
   _license_path = "$_package_dir/LICENSE"
 
-  script = "//components/cronet/tools/cronet_licenses.py"
+  script = "//tools/licenses.py"
   outputs = [
     _license_path,
   ]
   args = [
-    "license",
+    "license_file",
     rebase_path(_license_path, root_build_dir),
+    "--gn-target",
+    "//components/cronet/android:cronet",
+    "--gn-out-dir",
+    ".",
   ]
 }
 
