@@ -205,6 +205,14 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           media::kBackgroundVideoTrackOptimization,
           "max_keyframe_distance_media_source_ms",
           base::TimeDelta::FromSeconds(10).InMilliseconds()));
+  // When memory pressure based garbage collection is enabled for MSE, the
+  // |enable_instant_source_buffer_gc| flag controls whether the GC is done
+  // immediately on memory pressure notification or during the next SourceBuffer
+  // append (slower, but is MSE-spec compliant).
+  bool enable_instant_source_buffer_gc =
+      base::GetFieldTrialParamByFeatureAsBool(
+          media::kMemoryPressureBasedSourceBufferGC,
+          "enable_instant_source_buffer_gc", false);
 
   // This must be created for every new WebMediaPlayer, each instance generates
   // a new player id which is used to collate logs on the browser side.
@@ -239,7 +247,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           initial_cdm, media_surface_manager_, request_routing_token_cb_,
           media_observer, max_keyframe_distance_to_disable_background_video,
           max_keyframe_distance_to_disable_background_video_mse,
-          webkit_preferences.enable_instant_source_buffer_gc,
+          enable_instant_source_buffer_gc,
           GetContentClient()->renderer()->AllowMediaSuspend(),
           embedded_media_experience_enabled));
 
