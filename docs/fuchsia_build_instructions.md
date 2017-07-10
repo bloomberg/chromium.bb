@@ -90,7 +90,7 @@ files. You can create any number of *build directories* with different
 configurations. To create a build directory, run:
 
 ```shell
-$ gn gen out/fuch --args="is_debug=false dcheck_always_on=true is_component_build=false target_os=\"fuchsia\""
+$ gn gen out/fuchsia --args="is_debug=false dcheck_always_on=true is_component_build=false target_os=\"fuchsia\""
 ```
 
 `use_goma=true` is fine to use also if you're a Googler.
@@ -101,7 +101,7 @@ Currently, not all targets build on Fuchsia. You can build base\_unittests, for
 example:
 
 ```shell
-$ ninja -C out/fuch base_unittests
+$ ninja -C out/fuchsia base_unittests
 ```
 
 ## Run
@@ -122,6 +122,6 @@ The run script also symbolizes backtraces.
 
 A useful alias (for "Build And Run Filtered") is:
 ```shell
-alias barf='ninja -C out/fuch base_unittests -j1000 && out/fuch/bin/run_base_unittests --test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter'
+alias barf='ninja -C out/fuchsia base_unittests -j1000 && out/fuch/bin/run_base_unittests --test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter'
 ```
 to build and run only the tests that are not excluded/known-failing on the bot.
