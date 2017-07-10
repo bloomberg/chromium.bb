@@ -551,13 +551,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.background_video_track_optimization_enabled =
       base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
 
-  // TODO(servolk, asvitkine): Query the value directly when it is available in
-  // the renderer process. See https://crbug.com/681160.
-  prefs.enable_instant_source_buffer_gc =
-      variations::GetVariationParamByFeatureAsBool(
-          media::kMemoryPressureBasedSourceBufferGC,
-          "enable_instant_source_buffer_gc", false);
-
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }

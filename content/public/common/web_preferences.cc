@@ -219,7 +219,6 @@ WebPreferences::WebPreferences()
 #endif
       hide_download_ui(false),
       background_video_track_optimization_enabled(false),
-      enable_instant_source_buffer_gc(false),
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
