@@ -39,6 +39,10 @@ class MODULES_EXPORT RemotePlayback final
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
+  // Result of WatchAvailabilityInternal that means availability is not
+  // supported.
+  static const int kWatchAvailabilityNotSupported = -1;
+
   static RemotePlayback* Create(HTMLMediaElement&);
 
   // Notifies this object that disableRemotePlayback attribute was set on the
@@ -72,6 +76,8 @@ class MODULES_EXPORT RemotePlayback final
   void PromptInternal();
 
   // The implementation of watchAvailability() and cancelWatchAvailability().
+  // Can return kWatchAvailabilityNotSupported to indicate the availability
+  // monitoring is disabled. RemotePlaybackAvailable() will return true then.
   int WatchAvailabilityInternal(AvailabilityCallbackWrapper*);
   bool CancelWatchAvailabilityInternal(int id);
 

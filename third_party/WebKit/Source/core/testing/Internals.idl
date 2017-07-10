@@ -394,4 +394,5 @@ enum EffectiveConnectionType {
     void crash();
 
     void setIsLowEndDevice(boolean isLowEndDevice);
+    boolean isLowEndDevice();
 };

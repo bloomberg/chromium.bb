@@ -66,12 +66,12 @@ void MediaControlsMediaEventListener::Attach() {
 
     // TODO(avayvod, mlamouri): Attach can be called twice. See
     // https://crbug.com/713275.
-    if (remote_playback_availability_callback_id_ == -1) {
-      remote_playback_availability_callback_id_ =
+    if (!remote_playback_availability_callback_id_.has_value()) {
+      remote_playback_availability_callback_id_ = WTF::make_optional(
           remote->WatchAvailabilityInternal(new AvailabilityCallbackWrapper(
               WTF::Bind(&MediaControlsMediaEventListener::
                             OnRemotePlaybackAvailabilityChanged,
-                        WrapWeakPersistent(this))));
+                        WrapWeakPersistent(this)))));
     }
   }
 }
@@ -100,10 +100,12 @@ void MediaControlsMediaEventListener::Detach() {
 
     // TODO(avayvod): apparently Detach() can be called without a previous
     // Attach() call. See https://crbug.com/713275 for more details.
-    if (remote_playback_availability_callback_id_ != -1) {
+    if (remote_playback_availability_callback_id_.has_value() &&
+        remote_playback_availability_callback_id_.value() !=
+            RemotePlayback::kWatchAvailabilityNotSupported) {
       remote->CancelWatchAvailabilityInternal(
-          remote_playback_availability_callback_id_);
-      remote_playback_availability_callback_id_ = -1;
+          remote_playback_availability_callback_id_.value());
+      remote_playback_availability_callback_id_.reset();
     }
   }
 }

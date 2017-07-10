@@ -567,6 +567,8 @@ class Internals final : public GarbageCollected<Internals>,
 
   // Overrides if the device is low-end (low on memory).
   void setIsLowEndDevice(bool);
+  // Returns if the device is low-end.
+  bool isLowEndDevice() const;
 
  private:
   explicit Internals(ExecutionContext*);

@@ -5,6 +5,7 @@
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
         <script src="../media-file.js"></script>
+        <script src="util.js"></script>
     </head>
     <body>
         <script>
@@ -12,6 +13,7 @@
             // - internals.setIsLowEndDevice()
             async_test(function(t)
             {
+                enableRemotePlaybackBackendForTest(t);
                 var v = document.createElement('video');
                 v.src = findMediaFile('video', '../content/test');
                 document.body.appendChild(v);
