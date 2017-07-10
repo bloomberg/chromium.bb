@@ -93,6 +93,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private final RenderCoordinates mRenderCoordinates;
     private ActionMode.Callback mCallback;
 
+    // Used to customize PastePopupMenu
+    private ActionMode.Callback mNonSelectionCallback;
+
     // Selection rectangle in DIP.
     private final Rect mSelectionRect = new Rect();
 
@@ -205,6 +208,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mCallback = callback;
     }
 
+    void setNonSelectionCallback(ActionMode.Callback callback) {
+        mNonSelectionCallback = callback;
+    }
+
     @Override
     public boolean isActionModeValid() {
         return mActionMode != null;
@@ -296,7 +303,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             return;
         }
 
-        if (!supportsFloatingActionMode() && !canPaste()) return;
+        if (!supportsFloatingActionMode() && !canPaste() && mNonSelectionCallback == null) return;
         destroyPastePopup();
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
@@ -334,7 +341,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         Context windowContext = mWindowAndroid.getContext().get();
         if (windowContext == null) return;
         if (supportsFloatingActionMode()) {
-            mPastePopupMenu = new FloatingPastePopupMenu(windowContext, mView, delegate);
+            mPastePopupMenu = new FloatingPastePopupMenu(
+                    windowContext, mView, delegate, mNonSelectionCallback);
         } else {
             mPastePopupMenu = new LegacyPastePopupMenu(windowContext, mView, delegate);
         }

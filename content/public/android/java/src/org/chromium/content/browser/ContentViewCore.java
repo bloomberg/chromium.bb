@@ -506,6 +506,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mSelectionPopupController.setCallback(callback);
     }
 
+    /**
+     * Set {@link ActionMode.Callback} used by {@link SelectionPopupController} when no text is
+     * selected.
+     * @param callback ActionMode.Callback instance.
+     */
+    public void setNonSelectionActionModeCallback(ActionMode.Callback callback) {
+        mSelectionPopupController.setNonSelectionCallback(callback);
+    }
+
     private void addDisplayAndroidObserverIfNeeded() {
         if (!mAttachedToWindow) return;
         WindowAndroid windowAndroid = getWindowAndroid();
