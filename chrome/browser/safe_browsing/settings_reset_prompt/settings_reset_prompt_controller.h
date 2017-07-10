@@ -83,6 +83,23 @@ class SettingsResetPromptController {
 // feature parameters.
 void MaybeShowSettingsResetPromptWithDelay();
 
+// Delegate for MaybeShowSettingsResetPromptWithDelay() that can be overriden
+// by tests that only want to check if the flow for the settings reset prompt
+// will be initiated.
+class SettingsResetPromptDelegate {
+ public:
+  SettingsResetPromptDelegate();
+  virtual ~SettingsResetPromptDelegate();
+
+  virtual void ShowSettingsResetPromptWithDelay() const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptDelegate);
+};
+
+// Sets the global SettingsResetPromptDelegate, usually for testing.
+void SetSettingsResetPromptDelegate(SettingsResetPromptDelegate* delegate);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SETTINGS_RESET_PROMPT_SETTINGS_RESET_PROMPT_CONTROLLER_H_
