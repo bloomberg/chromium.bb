@@ -9,62 +9,13 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8PaymentAppResponse.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/PaymentAppResponse.h"
+#include "modules/payments/PaymentHandlerUtils.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "public/platform/modules/payments/WebPaymentAppResponse.h"
 
 namespace blink {
-namespace {
-
-// Returns the error message to let the developer know about the reason of the
-// unusual failures.
-const String GetMessageForResponseError(WebServiceWorkerResponseError error) {
-  String error_message =
-      "The respondWith() was rejected in PaymentRequestEvent: ";
-  switch (error) {
-    case kWebServiceWorkerResponseErrorPromiseRejected:
-      error_message = error_message + "the promise was rejected.";
-      break;
-    case kWebServiceWorkerResponseErrorDefaultPrevented:
-      error_message =
-          error_message +
-          "preventDefault() was called without calling respondWith().";
-      break;
-    case kWebServiceWorkerResponseErrorNoV8Instance:
-      error_message = error_message +
-                      "an object that was not a PaymentResponse was passed to "
-                      "respondWith().";
-      break;
-    case kWebServiceWorkerResponseErrorResponseTypeError:
-      error_message = error_message +
-                      "the promise was resolved with an error response object.";
-      break;
-    case kWebServiceWorkerResponseErrorUnknown:
-      error_message = error_message + "an unexpected error occurred.";
-      break;
-    case kWebServiceWorkerResponseErrorResponseTypeOpaque:
-    case kWebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
-    case kWebServiceWorkerResponseErrorBodyUsed:
-    case kWebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
-    case kWebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
-    case kWebServiceWorkerResponseErrorBodyLocked:
-    case kWebServiceWorkerResponseErrorNoForeignFetchResponse:
-    case kWebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin:
-    case kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin:
-    case kWebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
-    case kWebServiceWorkerResponseErrorDataPipeCreationFailed:
-      NOTREACHED();
-      error_message = error_message + "an unexpected error occurred.";
-      break;
-  }
-  return error_message;
-}
-
-}  // namespace
-
-PaymentRequestRespondWithObserver::~PaymentRequestRespondWithObserver() {}
 
 PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
     ExecutionContext* context,
@@ -75,10 +26,8 @@ PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
 
 void PaymentRequestRespondWithObserver::OnResponseRejected(
     WebServiceWorkerResponseError error) {
-  DCHECK(GetExecutionContext());
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                             GetMessageForResponseError(error)));
+  PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
+                                           "PaymentRequestEvent", error);
 
   WebPaymentAppResponse web_data;
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())

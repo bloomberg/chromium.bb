@@ -8,6 +8,8 @@ blink_modules_sources("payments") {
   sources = [
     "CanMakePaymentEvent.cpp",
     "CanMakePaymentEvent.h",
+    "CanMakePaymentRespondWithObserver.cpp",
+    "CanMakePaymentRespondWithObserver.h",
     "HTMLIFrameElementPayments.cpp",
     "HTMLIFrameElementPayments.h",
     "PaymentAddress.cpp",
@@ -18,6 +20,8 @@ blink_modules_sources("payments") {
     "PaymentCompleter.h",
     "PaymentEventDataConversion.cpp",
     "PaymentEventDataConversion.h",
+    "PaymentHandlerUtils.cpp",
+    "PaymentHandlerUtils.h",
     "PaymentInstruments.cpp",
     "PaymentInstruments.h",
     "PaymentManager.cpp",
