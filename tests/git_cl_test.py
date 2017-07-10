@@ -550,13 +550,15 @@ class GitCookiesCheckerTest(TestCase):
       ('dup',                    'git-example.google.com'),
       ('dup-review',             'git-example.google.com'),
       ('partial',                'git-example.google.com'),
+      ('gpartial-review',        'git-example.google.com'),
     ])
     self.assertTrue(self.c.has_generic_host())
     self.assertEqual(set(['conflict.googlesource.com']),
                      self.c.get_conflicting_hosts())
     self.assertEqual(set(['dup.googlesource.com']),
                      self.c.get_duplicated_hosts())
-    self.assertEqual(set(['partial.googlesource.com']),
+    self.assertEqual(set(['partial.googlesource.com',
+                          'gpartial-review.googlesource.com']),
                      self.c.get_partially_configured_hosts())
     self.assertEqual(set(['chromium.googlesource.com',
                           'chrome-internal.googlesource.com']),
@@ -571,12 +573,15 @@ class GitCookiesCheckerTest(TestCase):
   def test_report(self):
     self.test_analysis()
     self.mock(sys, 'stdout', StringIO.StringIO())
+    self.mock(git_cl.gerrit_util.CookiesAuthenticator, 'get_gitcookies_path',
+              classmethod(lambda _: '~/.gitcookies'))
     self.assertTrue(self.c.find_and_report_problems())
     with open(os.path.join(os.path.dirname(__file__),
                            'git_cl_creds_check_report.txt')) as f:
       expected = f.read()
     def by_line(text):
       return [l.rstrip() for l in text.rstrip().splitlines()]
+    self.maxDiff = 10000
     self.assertEqual(by_line(sys.stdout.getvalue().strip()), by_line(expected))
 
 class TestGitCl(TestCase):

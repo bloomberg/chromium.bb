@@ -3845,6 +3845,12 @@ class _GitCookiesChecker(object):
     prefix = git_host.split('.', 1)[0]
     return prefix + '-review.' + self._GOOGLESOURCE
 
+  def _get_counterpart_host(self, host):
+    assert host.endswith(self._GOOGLESOURCE)
+    git = self._canonical_git_googlesource_host(host)
+    gerrit = self._canonical_gerrit_googlesource_host(git)
+    return git if gerrit == host else gerrit
+
   def has_generic_host(self):
     """Returns whether generic .googlesource.com has been configured.
 
@@ -3870,14 +3876,14 @@ class _GitCookiesChecker(object):
 
   def get_partially_configured_hosts(self):
     return set(
-        host for host, identities_pair in
-        self._get_git_gerrit_identity_pairs().iteritems()
-        if None in identities_pair and host != '.' + self._GOOGLESOURCE)
+        (host if i1 else self._canonical_gerrit_googlesource_host(host))
+        for host, (i1, i2) in self._get_git_gerrit_identity_pairs().iteritems()
+        if None in (i1, i2) and host != '.' + self._GOOGLESOURCE)
 
   def get_conflicting_hosts(self):
     return set(
-        host for host, (i1, i2) in
-        self._get_git_gerrit_identity_pairs().iteritems()
+        host
+        for host, (i1, i2) in self._get_git_gerrit_identity_pairs().iteritems()
         if None not in (i1, i2) and i1 != i2)
 
   def get_duplicated_hosts(self):
@@ -3904,61 +3910,83 @@ class _GitCookiesChecker(object):
     return hosts
 
   @staticmethod
-  def print_hosts(hosts, extra_column_func=None):
+  def _format_hosts(hosts, extra_column_func=None):
     hosts = sorted(hosts)
     assert hosts
     if extra_column_func is None:
       extras = [''] * len(hosts)
     else:
       extras = [extra_column_func(host) for host in hosts]
-    tmpl = '    %%-%ds %%-%ds' % (max(map(len, hosts)), max(map(len, extras)))
+    tmpl = '%%-%ds    %%-%ds' % (max(map(len, hosts)), max(map(len, extras)))
+    lines = []
     for he in zip(hosts, extras):
-      print(tmpl % he)
-    print()
+      lines.append(tmpl % he)
+    return lines
 
-  def find_and_report_problems(self):
-    """Returns True if there was at least one problem, else False."""
-    problems = [False]
-    def add_problem():
-      if not problems[0]:
-        print('\n\n.gitcookies problem report:\n')
-      problems[0] = True
-
+  def _find_problems(self):
     if self.has_generic_host():
-      add_problem()
-      print('  .googlesource.com record detected\n'
-            '    Chrome Infrastructure team recommends to list full host names '
-            'explicitly.\n')
+      yield ('.googlesource.com wildcard record detected',
+             ['Chrome Infrastructure team recommends to list full host names '
+              'explicitly.'],
+             None)
 
     dups = self.get_duplicated_hosts()
     if dups:
-      add_problem()
-      print('  The following hosts were defined twice:\n')
-      self.print_hosts(dups)
+      yield ('The following hosts were defined twice',
+             self._format_hosts(dups),
+             None)
 
     partial = self.get_partially_configured_hosts()
     if partial:
-      add_problem()
-      print('  Credentials should come in pairs for Git and Gerrit hosts. '
-            'These hosts are missing:')
-      self.print_hosts(partial)
+      yield ('Credentials should come in pairs for Git and Gerrit hosts. '
+             'These hosts are missing',
+             self._format_hosts(partial, lambda host: 'but %s defined' %
+                self._get_counterpart_host(host)),
+             partial)
 
     conflicting = self.get_conflicting_hosts()
     if conflicting:
-      add_problem()
-      print('  The following Git hosts have differing credentials from their '
-            'Gerrit counterparts:\n')
-      self.print_hosts(conflicting, lambda host: '%s vs %s' %
-                       tuple(self._get_git_gerrit_identity_pairs()[host]))
+      yield ('The following Git hosts have differing credentials from their '
+             'Gerrit counterparts',
+             self._format_hosts(conflicting, lambda host: '%s vs %s' %
+                 tuple(self._get_git_gerrit_identity_pairs()[host])),
+             conflicting)
 
     wrong = self.get_hosts_with_wrong_identities()
     if wrong:
-      add_problem()
-      print('  These hosts likely use wrong identity:\n')
-      self.print_hosts(wrong, lambda host: '%s but %s recommended' %
-                       (self._get_git_gerrit_identity_pairs()[host][0],
-                        self._EXPECTED_HOST_IDENTITY_DOMAINS[host]))
-    return problems[0]
+      yield ('These hosts likely use wrong identity',
+             self._format_hosts(wrong, lambda host: '%s but %s recommended' %
+                (self._get_git_gerrit_identity_pairs()[host][0],
+                 self._EXPECTED_HOST_IDENTITY_DOMAINS[host])),
+             wrong)
+
+  def find_and_report_problems(self):
+    """Returns True if there was at least one problem, else False."""
+    found = False
+    bad_hosts = set()
+    for title, sublines, hosts in self._find_problems():
+      if not found:
+        found = True
+        print('\n\n.gitcookies problem report:\n')
+      bad_hosts.update(hosts or [])
+      print('  %s%s' % (title , (':' if sublines else '')))
+      if sublines:
+        print()
+        print('    %s' % '\n    '.join(sublines))
+      print()
+
+    if bad_hosts:
+      assert found
+      print('  You can manually remove corresponding lines in your %s file and '
+            'visit the following URLs with correct account to generate '
+            'correct credential lines:\n' %
+            gerrit_util.CookiesAuthenticator.get_gitcookies_path())
+      print('    %s' % '\n    '.join(sorted(set(
+          gerrit_util.CookiesAuthenticator().get_new_password_url(
+              self._canonical_git_googlesource_host(host))
+          for host in bad_hosts
+      ))))
+    return found
 
 
 def CMDcreds_check(parser, args):

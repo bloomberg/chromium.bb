@@ -99,6 +99,15 @@ class CookiesAuthenticator(Authenticator):
     self.gitcookies = self._get_gitcookies()
 
   @classmethod
+  def get_new_password_url(cls, host):
+    assert not host.startswith('http')
+    # Assume *.googlesource.com pattern.
+    parts = host.split('.')
+    if not parts[0].endswith('-review'):
+      parts[0] += '-review'
+    return 'https://%s/new-password' % ('.'.join(parts))
+
+  @classmethod
   def get_new_password_message(cls, host):
     assert not host.startswith('http')
     # Assume *.googlesource.com pattern.
