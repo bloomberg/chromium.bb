@@ -13,7 +13,9 @@
 #include "content/public/gpu/content_gpu_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/gpu/gpu_arc_video_decode_accelerator.h"
+#include "components/arc/common/video_decode_accelerator.mojom.h"
+#include "components/arc/common/video_encode_accelerator.mojom.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -37,6 +39,10 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   void CreateArcVideoDecodeAccelerator(
       const service_manager::BindSourceInfo& source_info,
       ::arc::mojom::VideoDecodeAcceleratorRequest request);
+
+  void CreateArcVideoEncodeAccelerator(
+      const service_manager::BindSourceInfo& source_info,
+      ::arc::mojom::VideoEncodeAcceleratorRequest request);
 #endif
 
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;

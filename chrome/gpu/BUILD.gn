@@ -25,6 +25,8 @@ static_library("gpu") {
       "chrome_arc_video_decode_accelerator.h",
       "gpu_arc_video_decode_accelerator.cc",
       "gpu_arc_video_decode_accelerator.h",
+      "gpu_arc_video_encode_accelerator.cc",
+      "gpu_arc_video_encode_accelerator.h",
     ]
   }
 }

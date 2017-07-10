@@ -10,5 +10,6 @@ typemaps = [
   "//components/arc/common/ime.typemap",
   "//components/arc/common/intent_helper.typemap",
   "//components/arc/common/video_common.typemap",
+  "//components/arc/common/video_encode_accelerator.typemap",
   "//components/arc/common/volume_mounter.typemap",
 ]

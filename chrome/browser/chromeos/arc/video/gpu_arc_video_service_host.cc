@@ -31,6 +31,11 @@ void ConnectToVideoDecodeAcceleratorOnIOThread(
   content::BindInterfaceInGpuProcess(std::move(request));
 }
 
+void ConnectToVideoEncodeAcceleratorOnIOThread(
+    mojom::VideoEncodeAcceleratorRequest request) {
+  content::BindInterfaceInGpuProcess(std::move(request));
+}
+
 }  // namespace
 
 class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
@@ -47,7 +52,10 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
 
   void CreateEncodeAccelerator(
       mojom::VideoEncodeAcceleratorRequest request) override {
-    // TODO(owenlin): Implement this function.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ConnectToVideoEncodeAcceleratorOnIOThread,
+                       base::Passed(&request)));
   }
 
  private:
