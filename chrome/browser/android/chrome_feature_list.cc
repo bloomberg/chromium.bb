@@ -83,6 +83,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhysicalWebSharing,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
+    &kSpannableInlineAutocomplete,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabReparenting,
@@ -224,6 +225,9 @@ const base::Feature kPhysicalWebFeature{"PhysicalWeb",
 
 const base::Feature kPhysicalWebSharing{"PhysicalWebSharing",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSpannableInlineAutocomplete{
+    "SpannableInlineAutocomplete", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpecialLocaleFeature{"SpecialLocale",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

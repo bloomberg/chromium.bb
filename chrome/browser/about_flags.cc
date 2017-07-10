@@ -3150,6 +3150,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(search_provider_logos::features::kUseDdljsonApi)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"spannable-inline-autocomplete",
+     flag_descriptions::kSpannableInlineAutocompleteName,
+     flag_descriptions::kSpannableInlineAutocompleteDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kSpannableInlineAutocomplete)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

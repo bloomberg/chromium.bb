@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.StrictMode;
+import android.support.annotation.CallSuper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.VerticallyFixedEditText;
 
 /**
@@ -52,18 +54,25 @@ public class AutocompleteEditText
     }
 
     private void ensureModel() {
-        if (mModel == null) {
+        if (mModel != null) return;
+
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
+            Log.i(TAG, "Using spannable model...");
+            mModel = new SpannableAutocompleteEditTextModel(this);
+        } else {
+            Log.i(TAG, "Using non-spannable model...");
             mModel = new AutocompleteEditTextModel(this);
-            // Feed initial values.
-            mModel.setIgnoreTextChangeFromAutocomplete(true);
-            mModel.onFocusChanged(hasFocus());
-            mModel.onSetText(getText());
-            mModel.onTextChanged(getText(), 0, 0, getText().length());
-            mModel.onSelectionChanged(getSelectionStart(), getSelectionEnd());
-            if (mLastEditWasPaste) mModel.onPaste();
-            mModel.setIgnoreTextChangeFromAutocomplete(false);
-            mModel.setIgnoreTextChangeFromAutocomplete(mIgnoreTextChangesForAutocomplete);
         }
+        // Feed initial values.
+        mModel.setIgnoreTextChangeFromAutocomplete(true);
+        mModel.onFocusChanged(hasFocus());
+        mModel.onSetText(getText());
+        mModel.onTextChanged(getText(), 0, 0, getText().length());
+        mModel.onSelectionChanged(getSelectionStart(), getSelectionEnd());
+        if (mLastEditWasPaste) mModel.onPaste();
+        mModel.setIgnoreTextChangeFromAutocomplete(false);
+        mModel.setIgnoreTextChangeFromAutocomplete(mIgnoreTextChangesForAutocomplete);
     }
 
     /**
@@ -142,6 +151,7 @@ public class AutocompleteEditText
     }
 
     /** Call this when text is pasted. */
+    @CallSuper
     public void onPaste() {
         mLastEditWasPaste = true;
         if (mModel != null) mModel.onPaste();
@@ -233,16 +243,13 @@ public class AutocompleteEditText
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        return createInputConnection(super.onCreateInputConnection(outAttrs));
-    }
-
-    @VisibleForTesting
-    public InputConnection createInputConnection(InputConnection target) {
+        InputConnection target = super.onCreateInputConnection(outAttrs);
         // Initially, target is null until View gets the focus.
         if (target == null && mModel == null) {
-            if (DEBUG) Log.i(TAG, "createInputConnection - ignoring null target.");
+            if (DEBUG) Log.i(TAG, "onCreateInputConnection - ignoring null target.");
             return null;
         }
+        if (DEBUG) Log.i(TAG, "onCreateInputConnection: " + target);
         ensureModel();
         InputConnection retVal = mModel.onCreateInputConnection(target);
         if (mIgnoreImeForTest) return null;
@@ -250,8 +257,14 @@ public class AutocompleteEditText
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    public boolean dispatchKeyEvent(final KeyEvent event) {
         if (mIgnoreImeForTest) return true;
+        if (mModel == null) return super.dispatchKeyEvent(event);
+        return mModel.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean super_dispatchKeyEvent(KeyEvent event) {
         return super.dispatchKeyEvent(event);
     }
 
@@ -288,4 +301,7 @@ public class AutocompleteEditText
             sendAccessibilityEventUnchecked(event);
         }
     }
+
+    @Override
+    public void onUpdateSelectionForTesting(int selStart, int selEnd) {}
 }

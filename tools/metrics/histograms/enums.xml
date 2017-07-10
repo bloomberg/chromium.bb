@@ -22380,6 +22380,7 @@ from previous Chrome versions.
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
+  <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
   <int value="-2009622663" label="WebRtcHWH264Encoding:enabled"/>
   <int value="-2008272679" label="disable-webrtc-hw-encoding"/>
   <int value="-2005089558" label="BackgroundVideoTrackOptimization:disabled"/>
@@ -22425,6 +22426,7 @@ from previous Chrome versions.
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
   <int value="-1888273969" label="tab-capture-upscale-quality"/>
+  <int value="-1887862464" label="SpannableInlineAutocomplete:disabled"/>
   <int value="-1887053262"
       label="enable-zero-suggest-most-visited-without-serp"/>
   <int value="-1882330924" label="NTPArticleSuggestions:enabled"/>

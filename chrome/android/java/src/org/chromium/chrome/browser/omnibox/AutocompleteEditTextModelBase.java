@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.text.Editable;
+import android.view.KeyEvent;
 import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,6 +34,15 @@ public interface AutocompleteEditTextModelBase {
         void setSelection(int autocompleteIndex, int length);
         /** @see TextView#announceForAccessibility(CharSequence) */
         void announceForAccessibility(CharSequence inlineAutocompleteText);
+        /** @see TextView#getHighlightColor() */
+        int getHighlightColor();
+
+        /**
+         * Call super.dispatchKeyEvent(KeyEvent).
+         * @param event Key event.
+         * @return The return value of super.dispatchKeyEvent(KeyEvent).
+         */
+        boolean super_dispatchKeyEvent(KeyEvent event);
 
         /**
          * This is called when autocomplete replaces the whole text.
@@ -51,6 +61,15 @@ public interface AutocompleteEditTextModelBase {
          * @param updateDisplay True if string is changed.
          */
         void onAutocompleteTextStateChanged(boolean updateDisplay);
+
+        /**
+         * This is called roughly the same time as when we call
+         * InputMethodManager#updateSelection().
+         *
+         * @param selStart Selection start.
+         * @param selEnd Selection end.
+         */
+        void onUpdateSelectionForTesting(int selStart, int selEnd);
     }
 
     /**
@@ -59,6 +78,13 @@ public interface AutocompleteEditTextModelBase {
      * @return A wrapper @{link InputConnection} created by the model.
      */
     InputConnection onCreateInputConnection(InputConnection inputConnection);
+
+    /**
+     * Called when View#dispatchKeyEvent(KeyEvent event) is called.
+     * @param event The key event.
+     * @return True if key event has been handled, false otherwise.
+     */
+    boolean dispatchKeyEvent(KeyEvent event);
 
     /**
      * Called when TextView#setText(CharSequence, BufferType) is called.
