@@ -64,7 +64,7 @@ class TransTestBase {
         ref_input[ni] = static_cast<double>(input[ni]);
       }
 
-      fwd_txfm_(input, output);
+      inv_txfm_(input, output);
       reference_idct_1d(ref_input, ref_output, txfm_size_);
 
       for (int ni = 0; ni < txfm_size_; ++ni) {
@@ -77,7 +77,7 @@ class TransTestBase {
 
   double max_error_;
   int txfm_size_;
-  IdctFunc fwd_txfm_;
+  IdctFunc inv_txfm_;
 };
 
 typedef std::tr1::tuple<IdctFunc, int, int> IdctParam;
@@ -85,7 +85,7 @@ class AV1InvTxfm : public TransTestBase,
                    public ::testing::TestWithParam<IdctParam> {
  public:
   virtual void SetUp() {
-    fwd_txfm_ = GET_PARAM(0);
+    inv_txfm_ = GET_PARAM(0);
     txfm_size_ = GET_PARAM(1);
     max_error_ = GET_PARAM(2);
   }
