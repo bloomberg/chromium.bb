@@ -78,8 +78,6 @@ class SystemTrayDelegateChromeOS
   void OnAccessibilityModeChanged(
       ash::AccessibilityNotificationVisibility notify);
 
-  void UpdatePerformanceTracing();
-
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 

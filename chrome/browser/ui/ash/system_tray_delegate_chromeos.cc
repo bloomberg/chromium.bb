@@ -155,14 +155,9 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
       prefs::kShouldAlwaysShowAccessibilityMenu,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
                  base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
-  user_pref_registrar_->Add(
-      prefs::kPerformanceTracingEnabled,
-      base::Bind(&SystemTrayDelegateChromeOS::UpdatePerformanceTracing,
-                 base::Unretained(this)));
 
   UpdateShowLogoutButtonInTray();
   UpdateLogoutDialogDuration();
-  UpdatePerformanceTracing();
   search_key_mapped_to_ =
       profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
 }
@@ -260,14 +255,6 @@ void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(
     ash::AccessibilityNotificationVisibility notify) {
   GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
-}
-
-void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
-  if (!user_pref_registrar_)
-    return;
-  bool value = user_pref_registrar_->prefs()->GetBoolean(
-      prefs::kPerformanceTracingEnabled);
-  GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
 }
 
 // Overridden from chrome::BrowserListObserver.

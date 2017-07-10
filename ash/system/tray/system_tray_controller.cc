@@ -199,6 +199,10 @@ void SystemTrayController::SetEnterpriseDomain(
   Shell::Get()->system_tray_notifier()->NotifyEnterpriseDomainChanged();
 }
 
+void SystemTrayController::SetPerformanceTracingIconVisible(bool visible) {
+  Shell::Get()->system_tray_notifier()->NotifyTracingModeChanged(visible);
+}
+
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                           bool factory_reset_required,
                                           mojom::UpdateType update_type) {

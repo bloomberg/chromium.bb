@@ -72,6 +72,7 @@ class ASH_EXPORT SystemTrayController
   void SetUse24HourClock(bool use_24_hour) override;
   void SetEnterpriseDomain(const std::string& enterprise_domain,
                            bool active_directory_managed) override;
+  void SetPerformanceTracingIconVisible(bool visible) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
                       bool factory_reset_required,
                       mojom::UpdateType update_type) override;

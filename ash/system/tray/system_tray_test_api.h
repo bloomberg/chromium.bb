@@ -26,6 +26,7 @@ class SystemTrayTestApi {
   TraySupervisedUser* tray_supervised_user() {
     return tray_->tray_supervised_user_;
   }
+  TrayTracing* tray_tracing() { return tray_->tray_tracing_; }
   TraySystemInfo* tray_system_info() { return tray_->tray_system_info_; }
   TrayTiles* tray_tiles() { return tray_->tray_tiles_; }
 

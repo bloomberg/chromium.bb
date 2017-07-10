@@ -232,6 +232,10 @@ void SystemTrayClient::SetPrimaryTrayVisible(bool visible) {
   system_tray_->SetPrimaryTrayVisible(visible);
 }
 
+void SystemTrayClient::SetPerformanceTracingIconVisible(bool visible) {
+  system_tray_->SetPerformanceTracingIconVisible(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ash::mojom::SystemTrayClient:
 

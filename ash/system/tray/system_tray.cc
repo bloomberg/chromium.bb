@@ -247,7 +247,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(base::MakeUnique<TrayIME>(this));
   tray_accessibility_ = new TrayAccessibility(this);
   AddTrayItem(base::WrapUnique(tray_accessibility_));
-  AddTrayItem(base::MakeUnique<TrayTracing>(this));
+  tray_tracing_ = new TrayTracing(this);
+  AddTrayItem(base::WrapUnique(tray_tracing_));
   AddTrayItem(
       base::MakeUnique<TrayPower>(this, message_center::MessageCenter::Get()));
   tray_network_ = new TrayNetwork(this);
