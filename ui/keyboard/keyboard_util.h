@@ -7,13 +7,16 @@
 
 #include <string>
 
-// TODO(beng): replace with forward decl once RootWindow is renamed.
-#include "ui/aura/window.h"
+#include "base/strings/string16.h"
 #include "ui/keyboard/keyboard_export.h"
 
 namespace aura {
 class WindowTreeHost;
 }
+
+namespace gfx {
+class Rect;
+};
 
 class GURL;
 
