@@ -35,6 +35,7 @@ group("features") {
     "//ios/showcase/settings",
     "//ios/showcase/tab",
     "//ios/showcase/tab_grid",
+    "//ios/showcase/text_badge_view",
     "//ios/showcase/toolbar",
     "//ios/showcase/tools_menu",
     "//ios/showcase/uikit_table_view_cell",
@@ -75,6 +76,7 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/root:eg_tests",
     "//ios/showcase/tab:eg_tests",
     "//ios/showcase/tab_grid:eg_tests",
+    "//ios/showcase/text_badge_view:eg_tests",
     "//ios/showcase/toolbar:eg_tests",
 
     # All shared libraries must have the sanitizer deps to properly link in
