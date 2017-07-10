@@ -199,7 +199,7 @@ int SystemHostResolverCall(const std::string& host,
   hints.ai_socktype = SOCK_STREAM;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
-    !defined(OS_ANDROID)
+    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   DnsReloaderMaybeReload();
 #endif
   int err = getaddrinfo(host.c_str(), NULL, &hints, &ai);

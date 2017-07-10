@@ -2059,7 +2059,7 @@ HostResolverImpl::HostResolverImpl(
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
-    !defined(OS_ANDROID)
+    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   EnsureDnsReloaderInit();
 #endif
 
