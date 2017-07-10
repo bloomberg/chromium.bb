@@ -39,8 +39,9 @@ struct KeyValuePairKeyExtractor {
 };
 
 // Note: empty or deleted key values are not allowed, using them may lead to
-// undefined behavior.  For pointer keys this means that null pointers are not
-// allowed unless you supply custom key traits.
+// undefined behavior. For pointer keys this means that null pointers are not
+// allowed; for integer keys 0 or -1 can't be used as a key. This restriction
+// can be lifted if you supply custom key traits.
 template <typename KeyArg,
           typename MappedArg,
           typename HashArg = typename DefaultHash<KeyArg>::Hash,
