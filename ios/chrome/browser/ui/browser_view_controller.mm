@@ -4044,6 +4044,21 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
+- (void)sharePage {
+  ShareToData* data = activity_services::ShareToDataForTab([_model currentTab]);
+  if (data)
+    [self sharePageWithData:data];
+}
+
+- (void)bookmarkPage {
+  [self initializeBookmarkInteractionController];
+  [_bookmarkInteractionController
+      presentBookmarkForTab:[_model currentTab]
+        currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()
+                     inView:[_toolbarController bookmarkButtonView]
+                 originRect:[_toolbarController bookmarkButtonAnchorRect]];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4054,14 +4069,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* currentTab = [_model currentTab];
 
   switch (command) {
-    case IDC_BOOKMARK_PAGE:
-      [self initializeBookmarkInteractionController];
-      [_bookmarkInteractionController
-          presentBookmarkForTab:[_model currentTab]
-            currentlyBookmarked:_toolbarModelIOS->IsCurrentTabBookmarkedByUser()
-                         inView:[_toolbarController bookmarkButtonView]
-                     originRect:[_toolbarController bookmarkButtonAnchorRect]];
-      break;
     case IDC_FIND:
       [self initFindBarForTab];
       break;
@@ -4122,9 +4129,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self.dispatcher reload];
       break;
     }
-    case IDC_SHARE_PAGE:
-      [self sharePage];
-      break;
     case IDC_SHOW_MAIL_COMPOSER:
       [self showMailComposer:sender];
       break;
@@ -4248,11 +4252,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
-- (void)sharePage {
-  ShareToData* data = activity_services::ShareToDataForTab([_model currentTab]);
-  if (data)
-    [self sharePageWithData:data];
-}
 
 - (void)sharePageWithData:(ShareToData*)data {
   id<ShareProtocol> controller = [_dependencyFactory shareControllerInstance];

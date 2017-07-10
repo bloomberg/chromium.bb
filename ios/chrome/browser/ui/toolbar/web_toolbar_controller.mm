@@ -508,7 +508,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
     // Assign tags before calling -setUpButton, since only buttons with tags
     // have -chromeExecuteCommand added as a target.
-    [_starButton setTag:IDC_BOOKMARK_PAGE];
     [_voiceSearchButton setTag:IDC_VOICE_SEARCH];
 
     [_webToolbar addSubview:_voiceSearchButton];
@@ -544,6 +543,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [_reloadButton addTarget:self.dispatcher
                       action:@selector(reload)
             forControlEvents:UIControlEventTouchUpInside];
+    [_starButton addTarget:self.dispatcher
+                    action:@selector(bookmarkPage)
+          forControlEvents:UIControlEventTouchUpInside];
   } else {
     [_forwardButton setAlpha:0.0];
   }

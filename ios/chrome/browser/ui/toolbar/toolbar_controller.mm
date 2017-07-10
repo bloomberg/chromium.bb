@@ -16,7 +16,7 @@
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/image_util.h"
@@ -302,7 +302,6 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
     if (idiom == IPAD_IDIOM) {
       CGRect shareButtonFrame = LayoutRectGetRect(kShareMenuButtonFrame);
       shareButton_ = [[UIButton alloc] initWithFrame:shareButtonFrame];
-      [shareButton_ setTag:IDC_SHARE_PAGE];
       [shareButton_
           setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
                               UIViewAutoresizingFlexibleBottomMargin];
@@ -311,6 +310,9 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
            forInitialState:UIControlStateNormal
           hasDisabledImage:YES
              synchronously:NO];
+      [shareButton_ addTarget:self.dispatcher
+                       action:@selector(sharePage)
+             forControlEvents:UIControlEventTouchUpInside];
       SetA11yLabelAndUiAutomationName(shareButton_, IDS_IOS_TOOLS_MENU_SHARE,
                                       kToolbarShareButtonIdentifier);
       [view_ addSubview:shareButton_];
