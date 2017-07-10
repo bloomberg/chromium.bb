@@ -4,6 +4,7 @@
 
 #include "ios/web/public/payments/payment_request.h"
 
+#include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
@@ -362,7 +363,13 @@ std::unique_ptr<base::DictionaryValue> PaymentResponse::ToDictionaryValue()
 
   result->SetString(kPaymentRequestId, this->payment_request_id);
   result->SetString(kPaymentResponseMethodName, this->method_name);
-  result->SetString(kPaymentResponseDetails, this->details);
+  // |this.details| is a json-serialized string. Parse it to a base::Value so
+  // that when |this| is converted to a JSON string, |this.details| won't get
+  // json-escaped.
+  std::unique_ptr<base::Value> details =
+      base::JSONReader().ReadToValue(this->details);
+  if (details)
+    result->Set(kPaymentResponseDetails, std::move(details));
   if (!this->shipping_address.ToDictionaryValue()->empty()) {
     result->Set(kPaymentResponseShippingAddress,
                 this->shipping_address.ToDictionaryValue());

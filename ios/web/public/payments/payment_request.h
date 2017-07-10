@@ -262,8 +262,8 @@ class PaymentResponse {
   // to fulfil the transaction.
   base::string16 method_name;
 
-  // A credit card response object used by the merchant to process the
-  // transaction and determine successful fund transfer.
+  // The json-serialized stringified details of the payment method. Used by the
+  // merchant to process the transaction and determine successful fund transfer.
   std::string details;
 
   // If request_shipping was set to true in the PaymentOptions passed to the

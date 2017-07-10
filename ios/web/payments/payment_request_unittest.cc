@@ -264,7 +264,6 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 TEST(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
 
-  expected_value.SetString("details", "");
   expected_value.SetString("paymentRequestID", "");
   expected_value.SetString("methodName", "");
 
@@ -288,9 +287,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
       new base::DictionaryValue);
   billing_address->SetString("postalCode", "90210");
   details->Set("billingAddress", std::move(billing_address));
-  std::string stringified_details;
-  base::JSONWriter::Write(*details, &stringified_details);
-  expected_value.SetString("details", stringified_details);
+  expected_value.Set("details", std::move(details));
   expected_value.SetString("paymentRequestID", "12345");
   expected_value.SetString("methodName", "American Express");
   std::unique_ptr<base::DictionaryValue> shipping_address(
