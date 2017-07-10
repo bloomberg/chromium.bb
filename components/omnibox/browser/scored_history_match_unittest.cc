@@ -66,7 +66,7 @@ class ScoredHistoryMatchTest : public testing::Test {
   // GetTopicalityScore().  It only works for scoring a single term, not
   // multiple terms.
   float GetTopicalityScoreOfTermAgainstURLAndTitle(const base::string16& term,
-                                                   const base::string16& url,
+                                                   const GURL& url,
                                                    const base::string16& title);
 };
 
@@ -107,7 +107,7 @@ String16Vector ScoredHistoryMatchTest::Make2Terms(const char* term_1,
 
 float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
     const base::string16& term,
-    const base::string16& url,
+    const GURL& url,
     const base::string16& title) {
   String16Vector term_vector = {term};
   WordStarts term_word_starts = {0};
@@ -119,16 +119,18 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
     term_word_starts[0] = iter.prev();
   }
   RowWordStarts row_word_starts;
-  String16SetFromString16(url, &row_word_starts.url_word_starts_);
+  base::string16 url_string = base::UTF8ToUTF16(url.spec());
+  String16SetFromString16(url_string, &row_word_starts.url_word_starts_);
   String16SetFromString16(title, &row_word_starts.title_word_starts_);
   ScoredHistoryMatch scored_match(history::URLRow(GURL(url)), VisitInfoVector(),
                                   term, term_vector, term_word_starts,
                                   row_word_starts, false, 1, base::Time::Max());
-  scored_match.url_matches = MatchTermInString(term, url, 0);
+  scored_match.url_matches = MatchTermInString(term, url_string, 0);
   scored_match.title_matches = MatchTermInString(term, title, 0);
   scored_match.topicality_threshold_ = -1;
-  return scored_match.GetTopicalityScore(1, url, term_word_starts,
-                                         row_word_starts);
+  return scored_match.GetTopicalityScore(1, url,
+                                         base::OffsetAdjuster::Adjustments(),
+                                         term_word_starts, row_word_starts);
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -350,10 +352,10 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
 
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {
   const float hostname = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("def"), ASCIIToUTF16("http://abc.def.com/"),
+      ASCIIToUTF16("def"), GURL("http://abc.def.com/"),
       ASCIIToUTF16("Non-Matching Title"));
   const float hostname_no_slash = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("def"), ASCIIToUTF16("http://abc.def.com"),
+      ASCIIToUTF16("def"), GURL("http://abc.def.com"),
       ASCIIToUTF16("Non-Matching Title"));
   EXPECT_EQ(hostname_no_slash, hostname);
 }
@@ -615,9 +617,7 @@ TEST_F(ScoredHistoryMatchTest, GetDocumentSpecificityScore) {
 // This function only tests scoring of single terms that match exactly
 // once somewhere in the URL or title.
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
-  base::string16 url = ASCIIToUTF16(
-      "http://abc.def.com/path1/path2?"
-      "arg1=val1&arg2=val2#hash_component");
+  GURL url("http://abc.def.com/path1/path2?arg1=val1&arg2=val2#hash_component");
   base::string16 title = ASCIIToUTF16("here is a title");
   auto Score = [&](const char* term) {
     return GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16(term), url,
