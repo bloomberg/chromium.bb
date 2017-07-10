@@ -48,6 +48,8 @@ source_set("common_source_set") {
     "remoting_view_controller.mm",
     "session_reconnect_view.h",
     "session_reconnect_view.mm",
+    "side_menu_items.h",
+    "side_menu_items.mm",
   ]
 
   deps = [
