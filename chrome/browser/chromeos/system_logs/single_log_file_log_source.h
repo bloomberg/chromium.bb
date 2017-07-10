@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_SOURCE_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_SOURCE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_FILE_LOG_SOURCE_H_
+#define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_FILE_LOG_SOURCE_H_
 
 #include <stddef.h>
 #include <sys/types.h>
@@ -21,7 +21,7 @@ class Time;
 namespace system_logs {
 
 // Gathers log data from a single source, possibly incrementally.
-class SingleLogSource : public SystemLogsSource {
+class SingleLogFileLogSource : public SystemLogsSource {
  public:
   enum class SupportedSource {
     // For /var/log/messages.
@@ -34,8 +34,8 @@ class SingleLogSource : public SystemLogsSource {
     kAtrusLog,
   };
 
-  explicit SingleLogSource(SupportedSource source);
-  ~SingleLogSource() override;
+  explicit SingleLogFileLogSource(SupportedSource source);
+  ~SingleLogFileLogSource() override;
 
   // During testing, use this to set a custom Chrome start time to override the
   // actual start time. Does not take ownership of |start_time|. Call this again
@@ -46,7 +46,7 @@ class SingleLogSource : public SystemLogsSource {
   void Fetch(const SysLogsSourceCallback& callback) override;
 
  private:
-  friend class SingleLogSourceTest;
+  friend class SingleLogFileLogSourceTest;
 
   // Returns the full path of the log file.
   base::FilePath GetLogFilePath() const;
@@ -85,11 +85,11 @@ class SingleLogSource : public SystemLogsSource {
   // For removing PII from log results.
   feedback::AnonymizerTool anonymizer_;
 
-  base::WeakPtrFactory<SingleLogSource> weak_ptr_factory_;
+  base::WeakPtrFactory<SingleLogFileLogSource> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SingleLogSource);
+  DISALLOW_COPY_AND_ASSIGN(SingleLogFileLogSource);
 };
 
 }  // namespace system_logs
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_SOURCE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SINGLE_LOG_FILE_LOG_SOURCE_H_

@@ -19,10 +19,10 @@ namespace {
 
 using api::feedback_private::LOG_SOURCE_MESSAGES;
 using api::feedback_private::LOG_SOURCE_UILATEST;
+using api::feedback_private::LogSource;
 using api::feedback_private::ReadLogSourceResult;
 using api::feedback_private::ReadLogSourceParams;
-using system_logs::SingleLogSource;
-using SupportedSource = system_logs::SingleLogSource::SupportedSource;
+using system_logs::SystemLogsSource;
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
@@ -32,11 +32,12 @@ std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
 // Dummy function used as a callback for FetchFromSource().
 void OnFetchedFromSource(const ReadLogSourceResult& result) {}
 
-// A dummy SingleLogSource that does not require real system logs to be
+// A dummy SystemLogsSource that does not require real system logs to be
 // available during testing. Always returns an empty result.
-class EmptySingleLogSource : public SingleLogSource {
+class EmptySingleLogSource : public system_logs::SystemLogsSource {
  public:
-  explicit EmptySingleLogSource(SupportedSource type) : SingleLogSource(type) {}
+  explicit EmptySingleLogSource(LogSource type)
+      : SystemLogsSource(api::feedback_private::ToString(type)) {}
 
   ~EmptySingleLogSource() override = default;
 
@@ -47,7 +48,7 @@ class EmptySingleLogSource : public SingleLogSource {
 
     // Do not directly pass the result to the callback, because that's not how
     // log sources actually work. Instead, simulate the asynchronous operation
-    // of a SingleLogSource by invoking the callback separately.
+    // of a SystemLogsSource by invoking the callback separately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, base::Owned(result_map)));
   }
@@ -55,7 +56,7 @@ class EmptySingleLogSource : public SingleLogSource {
   // Instantiates a new instance of this class. Does not retain ownership. Used
   // to create a Callback that can be used to override the default behavior of
   // SingleLogSourceFactory.
-  static std::unique_ptr<SingleLogSource> Create(SupportedSource type) {
+  static std::unique_ptr<SystemLogsSource> Create(LogSource type) {
     return base::MakeUnique<EmptySingleLogSource>(type);
   }
 

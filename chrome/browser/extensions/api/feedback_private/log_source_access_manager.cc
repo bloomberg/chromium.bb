@@ -20,9 +20,7 @@ namespace extensions {
 namespace {
 
 namespace feedback_private = api::feedback_private;
-using feedback_private::LogSource;
-using SingleLogSource = system_logs::SingleLogSource;
-using SupportedSource = system_logs::SingleLogSource::SupportedSource;
+
 using SystemLogsResponse = system_logs::SystemLogsResponse;
 
 const int kMaxReadersPerSource = 10;
@@ -38,22 +36,6 @@ base::TimeDelta GetMinTimeBetweenReads() {
   return g_rate_limiting_timeout
              ? *g_rate_limiting_timeout
              : base::TimeDelta::FromMilliseconds(kDefaultRateLimitingTimeoutMs);
-}
-
-// Converts from feedback_private::LogSource to SupportedSource.
-SupportedSource GetSupportedSourceType(LogSource source) {
-  switch (source) {
-    case feedback_private::LOG_SOURCE_MESSAGES:
-      return SupportedSource::kMessages;
-    case feedback_private::LOG_SOURCE_UILATEST:
-      return SupportedSource::kUiLatest;
-    case feedback_private::LOG_SOURCE_NONE:
-    default:
-      NOTREACHED() << "Unknown log source type.";
-      return SingleLogSource::SupportedSource::kMessages;
-  }
-  NOTREACHED();
-  return SingleLogSource::SupportedSource::kMessages;
 }
 
 // SystemLogsResponse is a map of strings -> strings. The map value has the
@@ -155,7 +137,7 @@ void LogSourceAccessManager::RemoveSource(const SourceAndExtension& key) {
 }
 
 LogSourceAccessManager::SourceAndExtension::SourceAndExtension(
-    api::feedback_private::LogSource source,
+    feedback_private::LogSource source,
     const std::string& extension_id)
     : source(source), extension_id(extension_id) {}
 
@@ -173,8 +155,7 @@ int LogSourceAccessManager::CreateResource(const SourceAndExtension& key) {
   std::unique_ptr<LogSourceResource> new_resource =
       base::MakeUnique<LogSourceResource>(
           key.extension_id,
-          SingleLogSourceFactory::CreateSingleLogSource(
-              GetSupportedSourceType(key.source)),
+          SingleLogSourceFactory::CreateSingleLogSource(key.source),
           base::Bind(&LogSourceAccessManager::RemoveSource,
                      weak_factory_.GetWeakPtr(), key));
 
@@ -206,7 +187,7 @@ base::TimeTicks LogSourceAccessManager::GetLastExtensionAccessTime(
 }
 
 size_t LogSourceAccessManager::GetNumActiveResourcesForSource(
-    api::feedback_private::LogSource source) const {
+    feedback_private::LogSource source) const {
   size_t count = 0;
   // The stored entries are sorted first by source type, then by extension ID.
   // We can take advantage of this fact to avoid iterating over all elements.

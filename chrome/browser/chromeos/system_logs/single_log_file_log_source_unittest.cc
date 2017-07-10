@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_logs/single_log_source.h"
+#include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 
 #include <string>
 
@@ -38,17 +38,17 @@ size_t GetNumLinesInString(const std::string& string) {
 
 }  // namespace
 
-class SingleLogSourceTest : public ::testing::Test {
+class SingleLogFileLogSourceTest : public ::testing::Test {
  public:
-  SingleLogSourceTest()
+  SingleLogFileLogSourceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         num_callback_calls_(0) {
     InitializeTestLogDir();
   }
 
-  ~SingleLogSourceTest() override {
-    SingleLogSource::SetChromeStartTimeForTesting(nullptr);
+  ~SingleLogFileLogSourceTest() override {
+    SingleLogFileLogSource::SetChromeStartTimeForTesting(nullptr);
   }
 
  protected:
@@ -72,8 +72,8 @@ class SingleLogSourceTest : public ::testing::Test {
 
   // Initializes the unit under test, |source_| to read a file from the dummy
   // system log directory.
-  void InitializeSource(SingleLogSource::SupportedSource source_type) {
-    source_ = base::MakeUnique<SingleLogSource>(source_type);
+  void InitializeSource(SingleLogFileLogSource::SupportedSource source_type) {
+    source_ = base::MakeUnique<SingleLogFileLogSource>(source_type);
     source_->log_file_dir_path_ = log_dir_.GetPath();
     log_file_path_ = source_->log_file_dir_path_.Append(source_->source_name());
     ASSERT_TRUE(base::PathExists(log_file_path_)) << log_file_path_.value();
@@ -108,8 +108,8 @@ class SingleLogSourceTest : public ::testing::Test {
   // Calls source_.Fetch() to start a logs fetch operation. Passes in
   // OnFileRead() as a callback. Runs until Fetch() has completed.
   void FetchFromSource() {
-    source_->Fetch(
-        base::Bind(&SingleLogSourceTest::OnFileRead, base::Unretained(this)));
+    source_->Fetch(base::Bind(&SingleLogFileLogSourceTest::OnFileRead,
+                              base::Unretained(this)));
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -141,7 +141,7 @@ class SingleLogSourceTest : public ::testing::Test {
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Unit under test.
-  std::unique_ptr<SingleLogSource> source_;
+  std::unique_ptr<SingleLogFileLogSource> source_;
 
   // Counts the number of times that |source_| has invoked the callback.
   int num_callback_calls_;
@@ -156,19 +156,19 @@ class SingleLogSourceTest : public ::testing::Test {
   // Path to the dummy log file in |log_dir_|.
   base::FilePath log_file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(SingleLogSourceTest);
+  DISALLOW_COPY_AND_ASSIGN(SingleLogFileLogSourceTest);
 };
 
-TEST_F(SingleLogSourceTest, EmptyFile) {
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+TEST_F(SingleLogFileLogSourceTest, EmptyFile) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
   EXPECT_EQ("", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, SingleRead) {
-  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+TEST_F(SingleLogFileLogSourceTest, SingleRead) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kUiLatest);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "Hello world!\n"));
   FetchFromSource();
@@ -177,8 +177,8 @@ TEST_F(SingleLogSourceTest, SingleRead) {
   EXPECT_EQ("Hello world!\n", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, IncrementalReads) {
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+TEST_F(SingleLogFileLogSourceTest, IncrementalReads) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Hello world!\n"));
   FetchFromSource();
@@ -210,11 +210,11 @@ TEST_F(SingleLogSourceTest, IncrementalReads) {
       file_contents);
 }
 
-// The log files read by SingleLogSource are not expected to be overwritten.
-// This test is just to ensure that the SingleLogSource class is robust enough
-// not to break in the event of an overwrite.
-TEST_F(SingleLogSourceTest, FileOverwrite) {
-  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+// The log files read by SingleLogFileLogSource are not expected to be
+// overwritten. This test is just to ensure that the SingleLogFileLogSource
+// class is robust enough not to break in the event of an overwrite.
+TEST_F(SingleLogFileLogSourceTest, FileOverwrite) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kUiLatest);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "0123456789\n"));
   FetchFromSource();
@@ -249,8 +249,8 @@ TEST_F(SingleLogSourceTest, FileOverwrite) {
   EXPECT_EQ("yz\n", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, IncompleteLines) {
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+TEST_F(SingleLogFileLogSourceTest, IncompleteLines) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "0123456789"));
   FetchFromSource();
@@ -286,8 +286,8 @@ TEST_F(SingleLogSourceTest, IncompleteLines) {
   EXPECT_EQ("Goodbye world\n", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, Anonymize) {
-  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+TEST_F(SingleLogFileLogSourceTest, Anonymize) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kUiLatest);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"),
                            "My MAC address is: 11:22:33:44:55:66\n"));
@@ -312,8 +312,8 @@ TEST_F(SingleLogSourceTest, Anonymize) {
   EXPECT_EQ("Your MAC address is: ab:88:cd:00:00:02\n", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, HandleLogFileRotation) {
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+TEST_F(SingleLogFileLogSourceTest, HandleLogFileRotation) {
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
 
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "1st log file\n"));
   FetchFromSource();
@@ -351,13 +351,13 @@ TEST_F(SingleLogSourceTest, HandleLogFileRotation) {
   EXPECT_EQ("Also no newline here...yet\n", latest_response());
 }
 
-TEST_F(SingleLogSourceTest, ReadRecentLinesFromMessages) {
+TEST_F(SingleLogFileLogSourceTest, ReadRecentLinesFromMessages) {
   // Write some lines to messages. Use various timestamp styles. Some lines have
   // timestamps, Some do not. All timestamps are in chronological order.
   const base::FilePath messages_path = base::FilePath("messages");
   // All timestamps below include time zone info. Some are EDT (-0400) and
-  // others are PDT (-0700). These make sure that SingleLogSource is able to
-  // read various standard timestamp formats.
+  // others are PDT (-0700). These make sure that SingleLogFileLogSource is able
+  // to read various standard timestamp formats.
   EXPECT_TRUE(
       AppendToFile(messages_path, "13 Jun 2017 15:00:00 -0400 : Alpha\n"));
   EXPECT_TRUE(
@@ -395,28 +395,28 @@ TEST_F(SingleLogSourceTest, ReadRecentLinesFromMessages) {
 
   // Provide a fake Chrome start time for testing: 15:00 EDT
   base::Time chrome_start_time = first_line_time;
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
   // Read from messages. The first line of messages should not have been read.
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(1, num_callback_calls());
   EXPECT_EQ(10U, GetNumLinesInString(latest_response())) << latest_response();
 
   // Update Chrome start time to: 15:15 EDT
   chrome_start_time += base::TimeDelta::FromMinutes(15);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(2, num_callback_calls());
   EXPECT_EQ(9U, GetNumLinesInString(latest_response())) << latest_response();
 
   // Update Chrome start time: 15:45 EDT
   chrome_start_time += base::TimeDelta::FromMinutes(30);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(3, num_callback_calls());
   EXPECT_EQ(5U, GetNumLinesInString(latest_response())) << latest_response();
@@ -424,9 +424,9 @@ TEST_F(SingleLogSourceTest, ReadRecentLinesFromMessages) {
   // Update Chrome start time: 17:10 EDT
   chrome_start_time = first_line_time + base::TimeDelta::FromHours(2) +
                       base::TimeDelta::FromMinutes(10);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(4, num_callback_calls());
   EXPECT_EQ(4U, GetNumLinesInString(latest_response())) << latest_response();
@@ -434,18 +434,18 @@ TEST_F(SingleLogSourceTest, ReadRecentLinesFromMessages) {
   // Update Chrome start time: 17:40:00.125 EDT
   chrome_start_time +=
       base::TimeDelta::FromMinutes(30) + base::TimeDelta::FromMilliseconds(125);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(5, num_callback_calls());
   EXPECT_EQ(2U, GetNumLinesInString(latest_response())) << latest_response();
 
   // Update Chrome start time: 17:40:00.126 EDT
   chrome_start_time += base::TimeDelta::FromMilliseconds(1);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(6, num_callback_calls());
   EXPECT_EQ(1U, GetNumLinesInString(latest_response())) << latest_response();
@@ -453,18 +453,18 @@ TEST_F(SingleLogSourceTest, ReadRecentLinesFromMessages) {
   // Update Chrome start time: 18:10 EDT
   chrome_start_time = first_line_time + base::TimeDelta::FromHours(3) +
                       base::TimeDelta::FromMinutes(10);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(7, num_callback_calls());
   EXPECT_EQ(1U, GetNumLinesInString(latest_response())) << latest_response();
 
   // Update Chrome start time: 18:15 EDT
   chrome_start_time += base::TimeDelta::FromMinutes(5);
-  SingleLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
+  SingleLogFileLogSource::SetChromeStartTimeForTesting(&chrome_start_time);
 
-  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+  InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
   FetchFromSource();
   EXPECT_EQ(8, num_callback_calls());
   EXPECT_EQ(0U, GetNumLinesInString(latest_response())) << latest_response();
