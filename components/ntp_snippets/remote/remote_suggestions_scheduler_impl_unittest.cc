@@ -81,6 +81,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
                      const RemoteSuggestionsFetcher*());
   MOCK_CONST_METHOD1(GetUrlWithFavicon,
                      GURL(const ContentSuggestion::ID& suggestion_id));
+  MOCK_CONST_METHOD0(IsDisabled, bool());
   MOCK_METHOD1(GetCategoryStatus, CategoryStatus(Category));
   MOCK_METHOD1(GetCategoryInfo, CategoryInfo(Category));
   MOCK_METHOD3(ClearHistory,

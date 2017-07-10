@@ -94,6 +94,8 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   GURL GetUrlWithFavicon(
       const ContentSuggestion::ID& suggestion_id) const override;
 
+  bool IsDisabled() const override;
+
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;
