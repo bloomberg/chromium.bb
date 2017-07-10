@@ -148,7 +148,6 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
   if (base_.IsNotNull())
     builder.SetBaseAndExtent(base_, extent_);
   return builder.SetAffinity(affinity_)
-      .SetGranularity(granularity_)
       .SetIsDirectional(is_directional_)
       .Build();
 }
