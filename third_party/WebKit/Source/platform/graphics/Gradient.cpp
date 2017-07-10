@@ -167,8 +167,7 @@ sk_sp<PaintShader> Gradient::CreateShaderInternal(
 }
 
 void Gradient::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
-  if (!cached_shader_ ||
-      local_matrix != cached_shader_->sk_shader()->getLocalMatrix() ||
+  if (!cached_shader_ || local_matrix != cached_shader_->GetLocalMatrix() ||
       flags.getColorFilter() != color_filter_.get()) {
     color_filter_ = flags.refColorFilter();
     flags.setColorFilter(nullptr);
