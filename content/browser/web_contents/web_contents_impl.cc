@@ -94,7 +94,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/invalidate_type.h"
@@ -3278,12 +3277,9 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
   if (headers.empty()) {
     params->set_prefer_cache(true);
   } else {
-    for (const base::StringPiece& key_value : base::SplitStringPiece(
-             headers, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      std::vector<std::string> pair = base::SplitString(
-          key_value, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      DCHECK_EQ(2ul, pair.size());
-      params->add_request_header(pair[0], pair[1]);
+    for (DownloadUrlParameters::RequestHeadersNameValuePair key_value :
+         ParseDownloadHeaders(headers)) {
+      params->add_request_header(key_value.first, key_value.second);
     }
   }
   BrowserContext::GetDownloadManager(GetBrowserContext())
@@ -5836,6 +5832,19 @@ void WebContentsImpl::NotifyPreferencesChanged() {
   }
   for (RenderViewHost* render_view_host : render_view_host_set)
     render_view_host->OnWebkitPreferencesChanged();
+}
+
+DownloadUrlParameters::RequestHeadersType WebContentsImpl::ParseDownloadHeaders(
+    const std::string& headers) {
+  DownloadUrlParameters::RequestHeadersType request_headers;
+  for (const base::StringPiece& key_value : base::SplitStringPiece(
+           headers, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<std::string> pair = base::SplitString(
+        key_value, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (2ul == pair.size())
+      request_headers.push_back(make_pair(pair[0], pair[1]));
+  }
+  return request_headers;
 }
 
 void WebContentsImpl::SetOpenerForNewContents(FrameTreeNode* opener,
