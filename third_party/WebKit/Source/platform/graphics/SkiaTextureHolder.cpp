@@ -10,6 +10,7 @@
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace blink {
@@ -47,16 +48,10 @@ SkiaTextureHolder::SkiaTextureHolder(
   GrGLTextureInfo texture_info;
   texture_info.fTarget = GL_TEXTURE_2D;
   texture_info.fID = shared_context_texture_id;
-  GrBackendTextureDesc backend_texture;
-  backend_texture.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  backend_texture.fWidth = mailbox_size.Width();
-  backend_texture.fHeight = mailbox_size.Height();
-  backend_texture.fConfig = kSkia8888_GrPixelConfig;
-  backend_texture.fTextureHandle =
-      skia::GrGLTextureInfoToGrBackendObject(texture_info);
-
-  sk_sp<SkImage> new_image =
-      SkImage::MakeFromAdoptedTexture(shared_gr_context, backend_texture);
+  GrBackendTexture backend_texture(mailbox_size.Width(), mailbox_size.Height(),
+                                   kSkia8888_GrPixelConfig, texture_info);
+  sk_sp<SkImage> new_image = SkImage::MakeFromAdoptedTexture(
+      shared_gr_context, backend_texture, kBottomLeft_GrSurfaceOrigin);
   ReleaseImageThreadSafe();
   image_ = new_image;
   shared_context_id_ = SharedGpuContext::ContextId();
