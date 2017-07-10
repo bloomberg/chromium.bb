@@ -130,7 +130,7 @@ const NSPoint kPoint = {10, 10};
 
 // Fake a controller for callback ponging
 
-- (void)viewDidLoad {
+- (void)viewDidLoadImpl {
   // no-op
 }
 
