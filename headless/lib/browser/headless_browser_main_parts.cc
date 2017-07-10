@@ -27,6 +27,8 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
     base::FilePath log_path =
         command_line->GetSwitchValuePath(switches::kLogNetLog);
     net_log_.reset(new HeadlessNetLog(log_path));
+  } else {
+    net_log_.reset(new net::NetLog());
   }
 
   if (browser_->options()->DevtoolsServerEnabled()) {

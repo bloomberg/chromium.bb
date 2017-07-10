@@ -11,9 +11,12 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "headless/public/headless_browser.h"
 
+namespace net {
+class NetLog;
+}  // namespace net
+
 namespace headless {
 
-class HeadlessNetLog;
 class HeadlessBrowserImpl;
 
 class HeadlessBrowserMainParts : public content::BrowserMainParts {
@@ -28,13 +31,13 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopStart() override;
 #endif
 
-  HeadlessNetLog* net_log() const { return net_log_.get(); }
+  net::NetLog* net_log() const { return net_log_.get(); }
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
 
   bool devtools_http_handler_started_;
-  std::unique_ptr<HeadlessNetLog> net_log_;
+  std::unique_ptr<net::NetLog> net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserMainParts);
 };

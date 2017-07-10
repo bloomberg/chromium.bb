@@ -1438,4 +1438,31 @@ class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(FailedUrlRequestTest);
 
+class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
+                              public network::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetNetwork()->AddObserver(this);
+
+    base::RunLoop run_loop;
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/set-cookie?cookie1").spec());
+  }
+
+  void OnResponseReceived(
+      const network::ResponseReceivedParams& params) override {
+    EXPECT_NE(std::string::npos, params.GetResponse()->GetHeadersText().find(
+                                     "Set-Cookie: cookie1"));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsSetCookieTest);
+
 }  // namespace headless
