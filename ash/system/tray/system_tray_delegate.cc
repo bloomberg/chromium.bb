@@ -12,8 +12,6 @@ SystemTrayDelegate::~SystemTrayDelegate() = default;
 
 void SystemTrayDelegate::Initialize() {}
 
-void SystemTrayDelegate::ShowUserLogin() {}
-
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;

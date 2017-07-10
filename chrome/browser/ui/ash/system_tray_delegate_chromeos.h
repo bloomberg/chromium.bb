@@ -43,7 +43,6 @@ class SystemTrayDelegateChromeOS
 
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;
-  void ShowUserLogin() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   void ActiveUserWasChanged() override;
   bool IsSearchKeyMappedToCapsLock() override;

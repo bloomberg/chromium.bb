@@ -30,12 +30,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,9 +46,6 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -61,16 +53,6 @@
 #include "ui/chromeos/events/pref_names.h"
 
 namespace chromeos {
-
-namespace {
-
-void OnAcceptMultiprofilesIntro(bool no_show_again) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
-  UserAddingScreen::Get()->Start();
-}
-
-}  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
     : networking_config_delegate_(
@@ -118,50 +100,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   if (DBusThreadManager::IsInitialized())
     DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-}
-
-void SystemTrayDelegateChromeOS::ShowUserLogin() {
-  if (!ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled())
-    return;
-
-  // Only regular non-supervised users could add other users to current session.
-  if (user_manager::UserManager::Get()->GetActiveUser()->GetType() !=
-      user_manager::USER_TYPE_REGULAR) {
-    return;
-  }
-
-  if (user_manager::UserManager::Get()->GetLoggedInUsers().size() >=
-      session_manager::kMaxmiumNumberOfUserSessions) {
-    return;
-  }
-
-  // Launch sign in screen to add another user to current session.
-  if (user_manager::UserManager::Get()
-          ->GetUsersAllowedForMultiProfile()
-          .size()) {
-    // Don't show dialog if any logged in user in multi-profiles session
-    // dismissed it.
-    bool show_intro = true;
-    const user_manager::UserList logged_in_users =
-        user_manager::UserManager::Get()->GetLoggedInUsers();
-    for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-         it != logged_in_users.end();
-         ++it) {
-      show_intro &=
-          !multi_user_util::GetProfileFromAccountId((*it)->GetAccountId())
-               ->GetPrefs()
-               ->GetBoolean(prefs::kMultiProfileNeverShowIntro);
-      if (!show_intro)
-        break;
-    }
-    if (show_intro) {
-      base::Callback<void(bool)> on_accept =
-          base::Bind(&OnAcceptMultiprofilesIntro);
-      ShowMultiprofilesIntroDialog(on_accept);
-    } else {
-      UserAddingScreen::Get()->Start();
-    }
-  }
 }
 
 ash::NetworkingConfigDelegate*

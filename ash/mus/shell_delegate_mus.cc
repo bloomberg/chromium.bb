@@ -40,7 +40,7 @@ bool ShellDelegateMus::IsIncognitoAllowed() const {
 
 bool ShellDelegateMus::IsMultiProfilesEnabled() const {
   NOTIMPLEMENTED();
-  return false;
+  return true;  // For manual testing of multi-profile under mash.
 }
 
 bool ShellDelegateMus::IsRunningInForcedAppMode() const {

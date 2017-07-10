@@ -69,6 +69,9 @@ class SessionControllerClient
   void RequestLockScreen() override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(ash::CycleUserDirection direction) override;
+  void ShowMultiProfileLogin() override;
+
+  static bool IsMultiProfileEnabled();
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
