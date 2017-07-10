@@ -42,7 +42,7 @@ const TxfmFunc inv_txfm_func_ls[][2] = {
 };
 
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12
-const int8_t cos_bit[12] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
+const int8_t cos_bit[12] = { 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13 };
 const int8_t range_bit[12] = { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 };
 
 TEST(av1_inv_txfm1d, round_trip) {
