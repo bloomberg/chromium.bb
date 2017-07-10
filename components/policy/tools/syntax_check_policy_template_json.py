@@ -281,6 +281,12 @@ class PolicyTemplateChecker(object):
                             container_name='features',
                             identifier=policy.get('name'))
 
+      # If 'device only' policy is on, feature 'per_profile' shouldn't exist.
+      if (policy.get('device_only', False) and
+          features.get('per_profile', False)):
+        self._Error('per_profile attribute should not be set '
+                    'for policies with device_only=True')
+
       # All policies must declare whether they allow changes at runtime.
       self._CheckContains(features, 'dynamic_refresh', bool,
                           container_name='features',
