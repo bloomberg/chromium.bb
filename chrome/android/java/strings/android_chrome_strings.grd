@@ -2686,11 +2686,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
         Options available near top of the screen
       </message>
-      <message name="IDS_ACCESSIBILITY_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
-        {NUM_SELECTED, plural,
-          =1 {1 selected}
-          other {# selected}}
-      </message>
       <message name="IDS_ACCESSIBILITY_SHARE_SELECTED_ITEMS" desc="Content description for the button to share selected items. [ICU Syntax]">
         {NUM_SELECTED, plural,
           =1 {Share 1 selected item}
@@ -2700,6 +2695,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
         {NUM_SELECTED, plural,
           =1 {Remove 1 selected item}
           other {Remove # selected items}}
+      </message>
+
+      <message name="IDS_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
+        {NUM_SELECTED, plural,
+          =1 {1 selected}
+          other {# selected}}
       </message>
 
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
