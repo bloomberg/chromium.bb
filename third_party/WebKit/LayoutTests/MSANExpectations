@@ -39,7 +39,6 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-e
 
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag-replace-state.html [ Timeout Pass ]
 crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag.html [ Timeout Pass ]
-crbug.com/736802 [ Linux ] virtual/mojo-loading/http/tests/fetch/serviceworker-proxied/thorough/cors-preflight2-other-https.html [ Crash ]
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
 crbug.com/736554 [ Linux ] external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
