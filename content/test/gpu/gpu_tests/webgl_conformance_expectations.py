@@ -116,10 +116,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
         ['passthrough'], bug=1639) # angle bug ID
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['passthrough'], bug=1635) # angle bug ID
-    self.Fail('conformance/reading/read-pixels-test.html',
-        ['passthrough'], bug=1639) # angle bug ID
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/buffers/buffer-uninitialized.html',
@@ -127,6 +123,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/' +
         'webgl-draw-buffers-framebuffer-unsupported.html',
         ['passthrough', 'opengl'], bug=682745)
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['passthrough', 'opengl'], bug=1635) # angle bug ID
     self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
@@ -187,20 +185,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'amd'], bug=665521)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance/glsl/misc/shaders-with-uniform-structs.html',
-        ['passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['passthrough', 'd3d11'], bug=1635) # angle bug ID
-    self.Fail('conformance/textures/canvas/' +
-        'tex-2d-rgb-rgb-unsigned_byte.html',
-        ['passthrough', 'd3d11'], bug=1635) # angle bug ID
-    self.Fail('conformance/textures/misc/gl-teximage.html',
-        ['passthrough', 'd3d11'], bug=1635) # angle bug ID
-    self.Fail('conformance/textures/misc/texture-mips.html',
-        ['passthrough', 'd3d11'], bug=1635) # angle bug ID
 
     # Win / AMD / Passthrough command decoder / D3D11
     self.Flaky('conformance/textures/misc/copytexsubimage2d-subrects.html',

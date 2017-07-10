@@ -206,21 +206,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance2/glsl3/no-attribute-vertex-shader.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/rendering/clearbuffer-sub-source.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-srgb8-rgb-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-srgb8_alpha8-rgba-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Skip('conformance2/textures/misc/' +
         'copy-texture-image-webgl-specific.html',
@@ -230,31 +216,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
-    self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
     self.Fail('conformance/reading/read-pixels-test.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/fboinvalidate/sub.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_*.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/instancedrendering.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/readpixel.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     # Mac only.
