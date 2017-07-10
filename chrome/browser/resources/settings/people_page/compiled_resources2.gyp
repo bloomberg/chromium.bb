@@ -6,7 +6,8 @@
     {
       'target_name': 'change_picture',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/change_picture/compiled_resources2.gyp:cr_camera',
+        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/change_picture/compiled_resources2.gyp:cr_picture_preview',
+        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/change_picture/compiled_resources2.gyp:cr_picture_types',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-selector/compiled_resources2.gyp:iron-selector-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',

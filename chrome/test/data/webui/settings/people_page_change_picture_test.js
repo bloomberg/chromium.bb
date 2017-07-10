@@ -82,8 +82,7 @@ cr.define('settings_people_page_change_picture', function() {
     suite('ChangePictureTests', function() {
       var changePicture = null;
       var browserProxy = null;
-      var crCamera = null;
-      var discardControlBar = null;
+      var crPicturePreview = null;
 
       suiteSetup(function() {
         loadTimeData.overrideValues({
@@ -98,10 +97,8 @@ cr.define('settings_people_page_change_picture', function() {
         changePicture = document.createElement('settings-change-picture');
         document.body.appendChild(changePicture);
 
-        crCamera = changePicture.$$('cr-camera');
-        assertTrue(!!crCamera);
-        discardControlBar = changePicture.$.discardControlBar;
-        assertTrue(!!discardControlBar);
+        crPicturePreview = changePicture.$$('cr-picture-preview');
+        assertTrue(!!crPicturePreview);
 
         changePicture.currentRouteChanged(settings.routes.CHANGE_PICTURE);
 
@@ -120,27 +117,44 @@ cr.define('settings_people_page_change_picture', function() {
         cr.webUIListenerCallback('camera-presence-changed', false);
         Polymer.dom.flush();
 
-        expectTrue(cameraIcon.hidden);
-        expectFalse(crCamera.cameraActive);
+        return new Promise(function(resolve) {
+          changePicture.async(resolve);
+        }).then(function() {
+          expectTrue(cameraIcon.hidden);
+          expectFalse(crPicturePreview.cameraPresent);
+          expectFalse(crPicturePreview.cameraActive_);
 
-        cr.webUIListenerCallback('camera-presence-changed', true);
-        Polymer.dom.flush();
+          cr.webUIListenerCallback('camera-presence-changed', true);
+          Polymer.dom.flush();
+          return new Promise(function(resolve) {
+            changePicture.async(resolve);
+          });
+        }).then(function() {
+          expectFalse(cameraIcon.hidden);
+          expectTrue(crPicturePreview.cameraPresent);
+          expectFalse(crPicturePreview.cameraActive_);
 
-        expectFalse(cameraIcon.hidden);
-        expectFalse(crCamera.cameraActive);
+          MockInteractions.tap(cameraIcon);
+          Polymer.dom.flush();
+          return new Promise(function(resolve) {
+            changePicture.async(resolve);
+          });
+        }).then(function() {
+          expectFalse(cameraIcon.hidden);
+          expectTrue(crPicturePreview.cameraActive_);
+          expectEquals(CrPicture.SelectionTypes.CAMERA,
+                       changePicture.selectedItem_.dataset.type);
+          var discard = crPicturePreview.$$('#discard');
+          expectTrue(!discard || discard.hidden);
 
-        MockInteractions.tap(cameraIcon);
-
-        Polymer.dom.flush();
-        expectFalse(cameraIcon.hidden);
-        expectTrue(crCamera.cameraActive);
-        expectEquals(ChangePictureSelectionTypes.CAMERA,
-                     changePicture.selectedItem_.dataset.type);
-        expectTrue(discardControlBar.hidden);
-
-        // Ensure that the camera is deactivated if user navigates away.
-        changePicture.currentRouteChanged(settings.routes.BASIC);
-        expectFalse(crCamera.cameraActive);
+          // Ensure that the camera is deactivated if user navigates away.
+          changePicture.currentRouteChanged(settings.routes.BASIC);
+          return new Promise(function(resolve) {
+            changePicture.async(resolve);
+          });
+        }).then(function() {
+          expectFalse(crPicturePreview.cameraActive_);
+        });
       });
 
       test('ChangePictureProfileImage', function() {
@@ -153,16 +167,17 @@ cr.define('settings_people_page_change_picture', function() {
         return browserProxy.whenCalled('selectProfileImage').then(function() {
           Polymer.dom.flush();
 
-          expectEquals(ChangePictureSelectionTypes.PROFILE,
+          expectEquals(CrPicture.SelectionTypes.PROFILE,
                        changePicture.selectedItem_.dataset.type);
-          expectFalse(crCamera.cameraActive);
-          expectTrue(discardControlBar.hidden);
+          expectFalse(crPicturePreview.cameraActive_);
+          var discard = crPicturePreview.$$('#discard');
+          expectTrue(!discard || discard.hidden);
 
           // Ensure that the selection is restored after navigating away and
           // then back to the subpage.
           changePicture.currentRouteChanged(settings.routes.BASIC);
           changePicture.currentRouteChanged(settings.routes.CHANGE_PICTURE);
-          expectEquals(ChangePictureSelectionTypes.PROFILE,
+          expectEquals(CrPicture.SelectionTypes.PROFILE,
                        changePicture.selectedItem_.dataset.type);
         });
       });
@@ -178,11 +193,13 @@ cr.define('settings_people_page_change_picture', function() {
 
         // Expect the old image to be selected once an old image is sent via
         // the native interface.
-        expectEquals(ChangePictureSelectionTypes.OLD,
+        expectEquals(CrPicture.SelectionTypes.OLD,
                      changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
-        expectFalse(crCamera.cameraActive);
-        expectFalse(discardControlBar.hidden);
+        expectFalse(crPicturePreview.cameraActive_);
+        var discard = crPicturePreview.$$('#discard');
+        assertTrue(!!discard);
+        expectFalse(discard.hidden);
       });
 
       test('ChangePictureSelectFirstDefaultImage', function() {
@@ -196,11 +213,12 @@ cr.define('settings_people_page_change_picture', function() {
               expectEquals('chrome://foo/1.png', args[0]);
 
               Polymer.dom.flush();
-              expectEquals(ChangePictureSelectionTypes.DEFAULT,
+              expectEquals(CrPicture.SelectionTypes.DEFAULT,
                            changePicture.selectedItem_.dataset.type);
               expectEquals(firstDefaultImage, changePicture.selectedItem_);
-              expectFalse(crCamera.cameraActive);
-              expectTrue(discardControlBar.hidden);
+              expectFalse(crPicturePreview.cameraActive_);
+              var discard = crPicturePreview.$$('#discard');
+              expectTrue(!discard || discard.hidden);
 
               // Now verify that arrow keys actually select the new image.
               browserProxy.resetResolver('selectDefaultImage');
@@ -215,8 +233,6 @@ cr.define('settings_people_page_change_picture', function() {
       test('ChangePictureRestoreImageAfterDiscard', function() {
         var firstDefaultImage = changePicture.$$('img[data-type="default"]');
         assertTrue(!!firstDefaultImage);
-        var discardOldImage = changePicture.$.discardOldImage;
-        assertTrue(!!discardOldImage);
 
         MockInteractions.tap(firstDefaultImage);
 
@@ -227,10 +243,12 @@ cr.define('settings_people_page_change_picture', function() {
           cr.webUIListenerCallback('old-image-changed', 'fake-old-image.jpg');
 
           Polymer.dom.flush();
-          expectEquals(ChangePictureSelectionTypes.OLD,
+          expectEquals(CrPicture.SelectionTypes.OLD,
                        changePicture.selectedItem_.dataset.type);
 
-          MockInteractions.tap(discardOldImage);
+          var discardButton = crPicturePreview.$$('#discard button');
+          assertTrue(!!discardButton);
+          MockInteractions.tap(discardButton);
 
           Polymer.dom.flush();
           expectEquals(firstDefaultImage, changePicture.selectedItem_);

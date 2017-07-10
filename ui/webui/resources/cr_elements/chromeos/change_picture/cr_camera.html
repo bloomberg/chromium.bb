@@ -64,23 +64,21 @@
         margin: 0 auto 0 auto;
       }
     </style>
-    <div hidden="[[!cameraActive]]">
-      <div id="perspectiveBox">
-        <div id="userImageStreamCrop">
-          <video id="cameraVideo" autoplay hidden="[[!cameraOnline_]]"></video>
-          <paper-spinner active="[[!cameraOnline_]]"></paper-spinner>
-        </div>
+    <div id="perspectiveBox">
+      <div id="userImageStreamCrop">
+        <video id="cameraVideo" autoplay hidden="[[!cameraOnline_]]"></video>
+        <paper-spinner active="[[!cameraOnline_]]"></paper-spinner>
       </div>
-      <div id="cameraControls">
-        <button is="paper-icon-button-light" id="flipPhoto" tabindex="2"
-            title="[[flipPhotoLabel]]" on-tap="onTapFlipPhoto_"
-            disabled="[[!cameraOnline_]]">
-        </button>
-        <button is="paper-icon-button-light" id="takePhoto" tabindex="1"
-            title="[[takePhotoLabel]]" on-tap="takePhoto"
-            disabled="[[!cameraOnline_]]">
-        </button>
-      </div>
+    </div>
+    <div id="cameraControls">
+      <button is="paper-icon-button-light" id="flipPhoto" tabindex="2"
+          title="[[flipPhotoLabel]]" on-tap="onTapFlipPhoto_"
+          disabled="[[!cameraOnline_]]">
+      </button>
+      <button is="paper-icon-button-light" id="takePhoto" tabindex="1"
+          title="[[takePhotoLabel]]" on-tap="takePhoto"
+          disabled="[[!cameraOnline_]]">
+      </button>
     </div>
   </template>
   <script src="cr_camera.js"></script>

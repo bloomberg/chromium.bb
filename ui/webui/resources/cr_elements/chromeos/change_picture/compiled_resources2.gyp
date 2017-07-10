@@ -5,10 +5,18 @@
   'targets': [
     {
       'target_name': 'cr_camera',
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'cr_camera',
+        'cr_picture_types',
       ],
+      'target_name': 'cr_picture_preview',
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cr_picture_types',
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],

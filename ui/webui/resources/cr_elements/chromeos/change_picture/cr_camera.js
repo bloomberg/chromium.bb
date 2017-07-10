@@ -19,16 +19,6 @@ Polymer({
   is: 'cr-camera',
 
   properties: {
-    /**
-     * True if the user has selected the camera as the user image source.
-     * @type {boolean}
-     */
-    cameraActive: {
-      type: Boolean,
-      observer: 'cameraActiveChanged_',
-      value: false,
-    },
-
     /** Strings provided by host */
     flipPhotoLabel: String,
     takePhotoLabel: String,
@@ -58,13 +48,12 @@ Polymer({
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.cameraOnline_ = true;
     }.bind(this));
-    if (this.cameraActive)
-      this.startCamera_();
+    this.startCamera();
   },
 
   /** @override */
   detached: function() {
-    this.stopCamera_();
+    this.stopCamera();
   },
 
   /**
@@ -88,20 +77,9 @@ Polymer({
     this.fire('photo-taken', {photoDataUrl: photoDataUrl});
   },
 
-  /** @private */
-  cameraActiveChanged_: function() {
-    if (this.cameraActive)
-      this.startCamera_();
-    else
-      this.stopCamera_();
-  },
-
-  /**
-   * Tries to start the camera stream capture.
-   * @private
-   */
-  startCamera_: function() {
-    this.stopCamera_();
+  /** Tries to start the camera stream capture. */
+  startCamera: function() {
+    this.stopCamera();
     this.cameraStartInProgress_ = true;
 
     var successCallback = function(stream) {
@@ -122,11 +100,8 @@ Polymer({
     navigator.webkitGetUserMedia({video: true}, successCallback, errorCallback);
   },
 
-  /**
-   * Stops camera capture, if it's currently active.
-   * @private
-   */
-  stopCamera_: function() {
+  /** Stops the camera stream capture if it's currently active. */
+  stopCamera: function() {
     this.cameraOnline_ = false;
     this.$.cameraVideo.src = '';
     if (this.cameraStream_)

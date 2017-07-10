@@ -1,0 +1,49 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="cr_camera.html">
+<link rel="import" href="cr_picture_types.html">
+
+<dom-module id="cr-picture-preview">
+  <template>
+    <style include="cr-shared-style">
+      img {
+        display: block;
+        width: 100%;
+      }
+
+      #discard {
+        background-color: var(--paper-grey-800);
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        padding: 8px;
+      }
+
+      #discard button {
+        --iron-icon-fill-color: white;
+        background-color: var(--paper-red-500);
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto 0 auto;
+      }
+    </style>
+    <template is="dom-if"
+        if="[[showImagePreview_(cameraActive_, imageSrc)]]">
+      <img alt="[[previewAltText]]" src="[[imageSrc]]">
+      <div id="discard" hidden="[[!showDiscard_(imageType)]]">
+        <button is="paper-icon-button-light" id="discardImage"
+            class="icon-delete" title="[[discardImageLabel]]"
+            on-tap="onTapDiscardImage_">
+        </button>
+      </div>
+    </template>
+    <template is="dom-if" if="[[cameraActive_]]">
+      <cr-camera id="camera"
+          flip-photo-label="[[flipPhotoLabel]]"
+          take-photo-label="[[takePhotoLabel]]">
+      </cr-camera>
+    </template>
+  </template>
+  <script src="cr_picture_preview.js"></script>
+</dom-module>
