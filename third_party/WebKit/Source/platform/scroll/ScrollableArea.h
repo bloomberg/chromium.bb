@@ -240,7 +240,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   }
 
   virtual IntRect VisibleContentRect(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const;
+      IncludeScrollbarsInRect = kExcludeScrollbars) const = 0;
   virtual int VisibleHeight() const { return VisibleContentRect().Height(); }
   virtual int VisibleWidth() const { return VisibleContentRect().Width(); }
   virtual IntSize ContentsSize() const = 0;

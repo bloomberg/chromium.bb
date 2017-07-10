@@ -609,20 +609,6 @@ void ScrollableArea::ShowOverlayScrollbars() {
   }
 }
 
-IntRect ScrollableArea::VisibleContentRect(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  int scrollbar_width =
-      scrollbar_inclusion == kIncludeScrollbars ? VerticalScrollbarWidth() : 0;
-  int scrollbar_height = scrollbar_inclusion == kIncludeScrollbars
-                             ? HorizontalScrollbarHeight()
-                             : 0;
-
-  return EnclosingIntRect(
-      IntRect(GetScrollOffset().Width(), GetScrollOffset().Height(),
-              std::max(0, VisibleWidth() + scrollbar_width),
-              std::max(0, VisibleHeight() + scrollbar_height)));
-}
-
 IntSize ScrollableArea::ClampScrollOffset(const IntSize& scroll_offset) const {
   return scroll_offset.ShrunkTo(MaximumScrollOffsetInt())
       .ExpandedTo(MinimumScrollOffsetInt());

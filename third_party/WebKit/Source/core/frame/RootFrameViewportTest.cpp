@@ -66,6 +66,11 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     return FlooredIntSize(MaximumScrollOffset());
   }
 
+  IntRect VisibleContentRect(
+      IncludeScrollbarsInRect = kExcludeScrollbars) const override {
+    return IntRect(IntPoint(FlooredIntSize(scroll_offset_)), viewport_size_);
+  }
+
   IntSize ContentsSize() const override { return contents_size_; }
   void SetContentSize(const IntSize& contents_size) {
     contents_size_ = contents_size;
