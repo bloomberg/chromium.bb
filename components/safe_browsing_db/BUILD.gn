@@ -217,6 +217,7 @@ static_library("v4_feature_list") {
   ]
   deps = [
     "//base",
+    "//components/safe_browsing:features",
   ]
 }
 
