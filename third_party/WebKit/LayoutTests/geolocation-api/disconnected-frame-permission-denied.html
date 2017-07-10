@@ -42,7 +42,7 @@ function onIframeUnloaded() {
 }
 
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     // Prime the Geolocation instance by denying permission. This makes sure that we execute the
     // same code path for both preemptive and non-preemptive permissions policies.
     mock.setGeolocationPermission(false);

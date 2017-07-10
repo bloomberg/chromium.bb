@@ -11,7 +11,7 @@ description("Tests that when a request is made on a Geolocation object after its
 
 var iframe = document.createElement('iframe');
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(51.478, -0.166, 100);
 

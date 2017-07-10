@@ -21,7 +21,7 @@ function onSecondIframeLoaded() {
 }
 
 var iframe = document.createElement('iframe');
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(51.478, -0.166, 100);
     iframe.src = 'resources/callback-to-deleted-context-inner1.html';

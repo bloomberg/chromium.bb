@@ -11,7 +11,7 @@ description("Tests that when Geolocation permission is denied, watches are stopp
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
 
     // Configure the mock Geolocation service to report a position to cause permission
     // to be requested, then deny it.

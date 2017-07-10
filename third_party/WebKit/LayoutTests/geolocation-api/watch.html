@@ -33,7 +33,7 @@ function checkError(e) {
     debug('');
 }
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 

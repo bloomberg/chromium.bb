@@ -17,7 +17,7 @@ var position;
 var error;
 var isPageVisible = true;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
 
     debug("* Page is visible");

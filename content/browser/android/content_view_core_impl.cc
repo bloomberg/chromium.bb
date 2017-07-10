@@ -48,7 +48,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/user_agent.h"
-#include "device/geolocation/geolocation_service_context.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"

@@ -11,7 +11,7 @@ description("Tests that when a watch times out and is cleared from the error cal
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPosition(51.478, -0.166, 100.0);
 
     var watchId = navigator.geolocation.watchPosition(function() {

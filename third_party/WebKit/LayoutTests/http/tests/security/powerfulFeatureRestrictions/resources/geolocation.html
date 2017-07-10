@@ -10,7 +10,7 @@ var mockAccuracy = 100.0;
 if (!window.mojo)
     console.error('This test can not run without mojo');
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 

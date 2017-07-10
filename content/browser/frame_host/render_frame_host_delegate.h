@@ -39,7 +39,7 @@ class Message;
 }
 
 namespace device {
-class GeolocationServiceContext;
+class GeolocationContext;
 }
 
 namespace gfx {
@@ -189,8 +189,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id);
 
-  // Gets the GeolocationServiceContext associated with this delegate.
-  virtual device::GeolocationServiceContext* GetGeolocationServiceContext();
+  // Gets the GeolocationContext associated with this delegate.
+  virtual device::GeolocationContext* GetGeolocationContext();
 
   // Gets the WakeLock that serves wake lock requests from the renderer.
   virtual device::mojom::WakeLock* GetRendererWakeLock();

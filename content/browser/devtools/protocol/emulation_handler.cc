@@ -13,13 +13,13 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
-#include "device/geolocation/geolocation_service_context.h"
+#include "device/geolocation/geolocation_context.h"
 #include "device/geolocation/geoposition.h"
 
 namespace content {
 namespace protocol {
 
-using GeolocationServiceContext = device::GeolocationServiceContext;
+using GeolocationContext = device::GeolocationContext;
 using Geoposition = device::Geoposition;
 
 namespace {
@@ -90,8 +90,8 @@ Response EmulationHandler::SetGeolocationOverride(
   if (!GetWebContents())
     return Response::InternalError();
 
-  GeolocationServiceContext* geolocation_context =
-      GetWebContents()->GetGeolocationServiceContext();
+  GeolocationContext* geolocation_context =
+      GetWebContents()->GetGeolocationContext();
   std::unique_ptr<Geoposition> geoposition(new Geoposition());
   if (latitude.isJust() && longitude.isJust() && accuracy.isJust()) {
     geoposition->latitude = latitude.fromJust();
@@ -111,8 +111,8 @@ Response EmulationHandler::ClearGeolocationOverride() {
   if (!GetWebContents())
     return Response::InternalError();
 
-  GeolocationServiceContext* geolocation_context =
-      GetWebContents()->GetGeolocationServiceContext();
+  GeolocationContext* geolocation_context =
+      GetWebContents()->GetGeolocationContext();
   geolocation_context->ClearOverride();
   return Response::OK();
 }

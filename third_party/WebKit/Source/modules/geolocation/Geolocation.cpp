@@ -496,46 +496,45 @@ void Geolocation::StartUpdating(GeoNotifier* notifier) {
   updating_ = true;
   if (notifier->Options().enableHighAccuracy() && !enable_high_accuracy_) {
     enable_high_accuracy_ = true;
-    if (geolocation_service_)
-      geolocation_service_->SetHighAccuracy(true);
+    if (geolocation_)
+      geolocation_->SetHighAccuracy(true);
   }
-  UpdateGeolocationServiceConnection();
+  UpdateGeolocationConnection();
 }
 
 void Geolocation::StopUpdating() {
   updating_ = false;
-  UpdateGeolocationServiceConnection();
+  UpdateGeolocationConnection();
   enable_high_accuracy_ = false;
 }
 
-void Geolocation::UpdateGeolocationServiceConnection() {
+void Geolocation::UpdateGeolocationConnection() {
   if (!GetExecutionContext() || !GetPage() || !GetPage()->IsPageVisible() ||
       !updating_) {
-    geolocation_service_.reset();
-    disconnected_geolocation_service_ = true;
+    geolocation_.reset();
+    disconnected_geolocation_ = true;
     return;
   }
-  if (geolocation_service_)
+  if (geolocation_)
     return;
 
   GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&geolocation_service_));
-  geolocation_service_.set_connection_error_handler(ConvertToBaseCallback(
-      WTF::Bind(&Geolocation::OnGeolocationConnectionError,
-                WrapWeakPersistent(this))));
+      mojo::MakeRequest(&geolocation_));
+  geolocation_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
+      &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this))));
   if (enable_high_accuracy_)
-    geolocation_service_->SetHighAccuracy(true);
+    geolocation_->SetHighAccuracy(true);
   QueryNextPosition();
 }
 
 void Geolocation::QueryNextPosition() {
-  geolocation_service_->QueryNextPosition(ConvertToBaseCallback(
+  geolocation_->QueryNextPosition(ConvertToBaseCallback(
       WTF::Bind(&Geolocation::OnPositionUpdated, WrapPersistent(this))));
 }
 
 void Geolocation::OnPositionUpdated(
     device::mojom::blink::GeopositionPtr position) {
-  disconnected_geolocation_service_ = false;
+  disconnected_geolocation_ = false;
   if (position->valid) {
     last_position_ = CreateGeoposition(*position);
     PositionChanged();
@@ -543,12 +542,12 @@ void Geolocation::OnPositionUpdated(
     HandleError(
         CreatePositionError(position->error_code, position->error_message));
   }
-  if (!disconnected_geolocation_service_)
+  if (!disconnected_geolocation_)
     QueryNextPosition();
 }
 
 void Geolocation::PageVisibilityChanged() {
-  UpdateGeolocationServiceConnection();
+  UpdateGeolocationConnection();
 }
 
 void Geolocation::OnGeolocationConnectionError() {

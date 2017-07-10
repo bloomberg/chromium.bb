@@ -24,7 +24,7 @@ var testSet = [
 var currentTestIndex = -1;
 var globalCoordinates = null;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
 
     function runNextTest()

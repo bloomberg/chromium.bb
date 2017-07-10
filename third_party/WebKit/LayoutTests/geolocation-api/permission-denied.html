@@ -11,7 +11,7 @@ description("Tests Geolocation when permission is denied, using the mock service
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
 
     mock.setGeolocationPermission(false);
     mock.setGeolocationPosition(51.478, -0.166, 100.0);

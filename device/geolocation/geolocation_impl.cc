@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/geolocation_service_impl.h"
+#include "device/geolocation/geolocation_impl.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "device/geolocation/geolocation_service_context.h"
+#include "device/geolocation/geolocation_context.h"
 
 namespace device {
 
@@ -58,19 +58,18 @@ void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
 
 }  // namespace
 
-GeolocationServiceImpl::GeolocationServiceImpl(
-    mojo::InterfaceRequest<GeolocationService> request,
-    GeolocationServiceContext* context)
+GeolocationImpl::GeolocationImpl(mojo::InterfaceRequest<Geolocation> request,
+                                 GeolocationContext* context)
     : binding_(this, std::move(request)),
       context_(context),
       high_accuracy_(false),
       has_position_to_report_(false) {
   DCHECK(context_);
-  binding_.set_connection_error_handler(base::Bind(
-      &GeolocationServiceImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::Bind(&GeolocationImpl::OnConnectionError, base::Unretained(this)));
 }
 
-GeolocationServiceImpl::~GeolocationServiceImpl() {
+GeolocationImpl::~GeolocationImpl() {
   // Make sure to respond to any pending callback even without a valid position.
   if (!position_callback_.is_null()) {
     if (!current_position_.valid) {
@@ -82,11 +81,11 @@ GeolocationServiceImpl::~GeolocationServiceImpl() {
   }
 }
 
-void GeolocationServiceImpl::PauseUpdates() {
+void GeolocationImpl::PauseUpdates() {
   geolocation_subscription_.reset();
 }
 
-void GeolocationServiceImpl::ResumeUpdates() {
+void GeolocationImpl::ResumeUpdates() {
   if (position_override_.Validate()) {
     OnLocationUpdate(position_override_);
     return;
@@ -95,15 +94,15 @@ void GeolocationServiceImpl::ResumeUpdates() {
   StartListeningForUpdates();
 }
 
-void GeolocationServiceImpl::StartListeningForUpdates() {
+void GeolocationImpl::StartListeningForUpdates() {
   geolocation_subscription_ =
       GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
-          base::Bind(&GeolocationServiceImpl::OnLocationUpdate,
+          base::Bind(&GeolocationImpl::OnLocationUpdate,
                      base::Unretained(this)),
           high_accuracy_);
 }
 
-void GeolocationServiceImpl::SetHighAccuracy(bool high_accuracy) {
+void GeolocationImpl::SetHighAccuracy(bool high_accuracy) {
   UMA_HISTOGRAM_BOOLEAN(
       "Geolocation.GeolocationDispatcherHostImpl.EnableHighAccuracy",
       high_accuracy);
@@ -117,8 +116,7 @@ void GeolocationServiceImpl::SetHighAccuracy(bool high_accuracy) {
   StartListeningForUpdates();
 }
 
-void GeolocationServiceImpl::QueryNextPosition(
-    QueryNextPositionCallback callback) {
+void GeolocationImpl::QueryNextPosition(QueryNextPositionCallback callback) {
   if (!position_callback_.is_null()) {
     DVLOG(1) << "Overlapped call to QueryNextPosition!";
     OnConnectionError();  // Simulate a connection error.
@@ -131,7 +129,7 @@ void GeolocationServiceImpl::QueryNextPosition(
     ReportCurrentPosition();
 }
 
-void GeolocationServiceImpl::SetOverride(const Geoposition& position) {
+void GeolocationImpl::SetOverride(const Geoposition& position) {
   position_override_ = position;
   if (!position_override_.Validate()) {
     ResumeUpdates();
@@ -142,19 +140,19 @@ void GeolocationServiceImpl::SetOverride(const Geoposition& position) {
   OnLocationUpdate(position_override_);
 }
 
-void GeolocationServiceImpl::ClearOverride() {
+void GeolocationImpl::ClearOverride() {
   position_override_ = Geoposition();
   StartListeningForUpdates();
 }
 
-void GeolocationServiceImpl::OnConnectionError() {
-  context_->ServiceHadConnectionError(this);
+void GeolocationImpl::OnConnectionError() {
+  context_->OnConnectionError(this);
 
   // The above call deleted this instance, so the only safe thing to do is
   // return.
 }
 
-void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
+void GeolocationImpl::OnLocationUpdate(const Geoposition& position) {
   RecordGeopositionErrorCode(position.error_code);
   DCHECK(context_);
 
@@ -177,7 +175,7 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
     ReportCurrentPosition();
 }
 
-void GeolocationServiceImpl::ReportCurrentPosition() {
+void GeolocationImpl::ReportCurrentPosition() {
   std::move(position_callback_).Run(current_position_.Clone());
   has_position_to_report_ = false;
 }

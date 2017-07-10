@@ -13,7 +13,7 @@ if (!window.testRunner)
   debug('This test can not run without testRunner');
 
 document.body.onload = function() {
-    geolocationServiceMock.then(mock => {
+    geolocationMock.then(mock => {
         mock.setGeolocationPermission(true);
         mock.setGeolocationPosition(51.478, -0.166, 100);
 
