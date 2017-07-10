@@ -5,6 +5,7 @@
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -225,7 +226,7 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   } configs[] = {
       {gfx::BufferUsage::SCANOUT, gfx::BufferFormat::YVU_420, {10, 20}, true},
       {gfx::BufferUsage::GPU_READ, gfx::BufferFormat::ATC, {10, 20}, true},
-      {gfx::BufferUsage::GPU_READ, gfx::BufferFormat::YVU_420, {10, 20}, false},
+      {gfx::BufferUsage::GPU_READ, gfx::BufferFormat::YVU_420, {64, 64}, false},
   };
   for (const auto& config : configs) {
     gfx::GpuMemoryBufferHandle allocated_handle;
@@ -253,6 +254,30 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
                 allocated_handle.type);
     }
   }
+}
+
+TEST_F(ServerGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
+  gfx::ClientNativePixmapFactory::ResetInstance();
+  TestGpuService gpu_service;
+  ServerGpuMemoryBufferManager manager(&gpu_service, 1);
+  base::Thread diff_thread("TestThread");
+  ASSERT_TRUE(diff_thread.Start());
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer;
+  base::RunLoop run_loop;
+  ASSERT_TRUE(diff_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(
+                     [](ServerGpuMemoryBufferManager* manager,
+                        std::unique_ptr<gfx::GpuMemoryBuffer>* out_buffer,
+                        const base::Closure& callback) {
+                       *out_buffer = manager->CreateGpuMemoryBuffer(
+                           gfx::Size(64, 64), gfx::BufferFormat::YVU_420,
+                           gfx::BufferUsage::GPU_READ, gpu::kNullSurfaceHandle);
+                       callback.Run();
+                     },
+                     &manager, &buffer, run_loop.QuitClosure())));
+  run_loop.Run();
+  EXPECT_TRUE(buffer);
+  buffer.reset();
 }
 
 }  // namespace viz

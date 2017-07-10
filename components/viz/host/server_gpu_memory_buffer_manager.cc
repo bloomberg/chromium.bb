@@ -171,9 +171,9 @@ void ServerGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
   if (iter == allocated_buffers_[client_id].end())
     return;
   DCHECK_NE(gfx::EMPTY_BUFFER, iter->second.type);
-  allocated_buffers_[client_id].erase(id);
   if (iter->second.type != gfx::SHARED_MEMORY_BUFFER)
     gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
+  allocated_buffers_[client_id].erase(id);
 }
 
 void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
