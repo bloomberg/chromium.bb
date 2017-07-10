@@ -211,7 +211,7 @@ std::unique_ptr<ReaderInitParams> CreateReaderInitParamsForSensor(
       return CreateGyroscopeReaderInitParams();
     case mojom::SensorType::MAGNETOMETER:
       return CreateMagnetometerReaderInitParams();
-    case mojom::SensorType::ABSOLUTE_ORIENTATION:
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
       return CreateAbsoluteOrientationReaderInitParams();
     default:
       NOTIMPLEMENTED();
