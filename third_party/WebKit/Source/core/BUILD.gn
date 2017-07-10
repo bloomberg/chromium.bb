@@ -1084,6 +1084,19 @@ jumbo_target("core_generated") {
   foreach(current, targets_generating_sources) {
     sources += get_target_outputs(current)
   }
+  jumbo_excluded_sources = [
+    # Same variables as HTMLElementFactory
+    "$blink_core_output_dir/SVGElementFactory.cpp",
+
+    # Same variables (stringpool_t, stringpool_contents) as CSSValueKeywords
+    "$blink_core_output_dir/CSSPropertyNames.cpp",
+
+    # Global "using namespace blink" and "using namespace XPath"
+    "$blink_core_output_dir/XPathGrammar.cpp",
+
+    # Using global "using namespace WTF"
+    "//third_party/WebKit/Source/bindings/core/v8/custom/V8CSSStyleDeclarationCustom.cpp",
+  ]
   public_deps = [
     ":all_generators",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_impl",
