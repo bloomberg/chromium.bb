@@ -144,7 +144,7 @@ class FakeServerHelperAndroid {
                                   sync_pb::EntitySpecifics* entity_specifics);
 
   // Creates a bookmark entity.
-  std::unique_ptr<fake_server::FakeServerEntity> CreateBookmarkEntity(
+  std::unique_ptr<syncer::LoopbackServerEntity> CreateBookmarkEntity(
       JNIEnv* env,
       jstring title,
       jstring url,

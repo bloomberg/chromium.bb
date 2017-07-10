@@ -22,7 +22,7 @@ namespace syncer {
 PersistentPermanentEntity::~PersistentPermanentEntity() {}
 
 // static
-std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::Create(
+std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateNew(
     const ModelType& model_type,
     const string& server_tag,
     const string& name,

@@ -19,8 +19,6 @@
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
-#include "components/sync/test/fake_server/tombstone_entity.h"
-#include "components/sync/test/fake_server/unique_client_entity.h"
 #include "jni/FakeServerHelper_jni.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -146,7 +144,7 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
                              &entity_specifics);
 
   fake_server_ptr->InjectEntity(
-      fake_server::UniqueClientEntity::CreateForInjection(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
           base::android::ConvertJavaStringToUTF8(env, name), entity_specifics));
 }
 
@@ -223,7 +221,7 @@ void FakeServerHelperAndroid::ModifyBookmarkEntity(
     const JavaParamRef<jstring>& parent_id) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
-  std::unique_ptr<fake_server::FakeServerEntity> bookmark =
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
       CreateBookmarkEntity(env, title, url, parent_id);
   sync_pb::SyncEntity proto;
   bookmark->SerializeAsProto(&proto);
@@ -258,7 +256,7 @@ void FakeServerHelperAndroid::ModifyBookmarkFolderEntity(
       proto.specifics());
 }
 
-std::unique_ptr<fake_server::FakeServerEntity>
+std::unique_ptr<syncer::LoopbackServerEntity>
 FakeServerHelperAndroid::CreateBookmarkEntity(JNIEnv* env,
                                               jstring title,
                                               jstring url,
@@ -284,10 +282,9 @@ FakeServerHelperAndroid::GetBookmarkBarFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jlong fake_server) {
-  fake_server::FakeServer* fake_server_ptr =
-      reinterpret_cast<fake_server::FakeServer*>(fake_server);
-  return base::android::ConvertUTF8ToJavaString(
-      env, fake_server_ptr->GetBookmarkBarFolderId());
+  // Rather hard code this here then incur the cost of yet another method.
+  // It is very unlikely that this will ever change.
+  return base::android::ConvertUTF8ToJavaString(env, "32904_bookmark_bar");
 }
 
 void FakeServerHelperAndroid::DeleteEntity(JNIEnv* env,
@@ -298,7 +295,7 @@ void FakeServerHelperAndroid::DeleteEntity(JNIEnv* env,
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   std::string native_id = base::android::ConvertJavaStringToUTF8(env, id);
   fake_server_ptr->InjectEntity(
-      fake_server::TombstoneEntity::Create(native_id, std::string()));
+      syncer::PersistentTombstoneEntity::CreateNew(native_id, std::string()));
 }
 
 void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,

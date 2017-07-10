@@ -20,8 +20,12 @@ class PersistentTombstoneEntity : public LoopbackServerEntity {
   ~PersistentTombstoneEntity() override;
 
   // Factory function for PersistentTombstoneEntity.
-  static std::unique_ptr<LoopbackServerEntity> Create(
+  static std::unique_ptr<LoopbackServerEntity> CreateFromEntity(
       const sync_pb::SyncEntity& id);
+
+  static std::unique_ptr<LoopbackServerEntity> CreateNew(
+      const std::string& id,
+      const std::string& client_defined_unique_tag);
 
   // LoopbackServerEntity implementation.
   bool RequiresParentId() const override;
@@ -34,7 +38,11 @@ class PersistentTombstoneEntity : public LoopbackServerEntity {
  private:
   PersistentTombstoneEntity(const std::string& id,
                             int64_t version,
-                            const syncer::ModelType& model_type);
+                            const syncer::ModelType& model_type,
+                            const std::string& client_defined_unique_tag);
+
+  // The tag for this entity.
+  const std::string client_defined_unique_tag_;
 };
 
 }  // namespace syncer
