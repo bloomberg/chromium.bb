@@ -112,7 +112,7 @@ def GetApprovalSummary(_opts, cls):
       if not cat in approvs:
         # Ignore the extended categories in the summary view.
         continue
-      elif approvs[cat] is '':
+      elif approvs[cat] == '':
         approvs[cat] = val
       elif val < 0:
         approvs[cat] = min(approvs[cat], val)
@@ -130,7 +130,7 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
   if show_approvals and not opts.verbose:
     approvs = GetApprovalSummary(opts, cl)
     for cat in GERRIT_SUMMARY_CATS:
-      if approvs[cat] is '' or approvs[cat] == 0:
+      if approvs[cat] in ('', 0):
         functor = lambda x: x
       elif approvs[cat] < 0:
         functor = red

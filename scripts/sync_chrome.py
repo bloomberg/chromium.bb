@@ -52,7 +52,7 @@ def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
 
-  if options.gclient is '':
+  if options.gclient == '':
     parser.error('--gclient can not be an empty string!')
   gclient_path = options.gclient or osutils.Which('gclient')
   if not gclient_path:
