@@ -156,16 +156,17 @@ void LocalTranslator::TranslateOpenVPN() {
   if (user_auth_type == ::onc::openvpn_user_auth_type::kOTP)
     CopyFieldFromONCToShill(::onc::openvpn::kOTP, shill::kOpenVPNTokenProperty);
 
-  // Shill supports only one RemoteCertKU but ONC a list.
-  // Copy only the first entry if existing.
-  const base::ListValue* cert_kus = NULL;
+  // Shill supports only one RemoteCertKU but ONC specifies a list, so copy only
+  // the first entry if the lists exists. Otherwise copy an empty string to
+  // reset any previous configuration.
+  const base::ListValue* cert_kus = nullptr;
   std::string cert_ku;
   if (onc_object_->GetListWithoutPathExpansion(::onc::openvpn::kRemoteCertKU,
-                                               &cert_kus) &&
-      cert_kus->GetString(0, &cert_ku)) {
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kOpenVPNRemoteCertKUProperty, cert_ku);
+                                               &cert_kus)) {
+    cert_kus->GetString(0, &cert_ku);
   }
+  shill_dictionary_->SetStringWithoutPathExpansion(
+      shill::kOpenVPNRemoteCertKUProperty, cert_ku);
 
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
