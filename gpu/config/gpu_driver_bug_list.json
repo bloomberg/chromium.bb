@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.16",
+  "version": "10.17",
   "entries": [
     {
       "id": 1,
@@ -2551,6 +2551,18 @@
       "gl_vendor": "NVIDIA.*",
       "disabled_extensions": [
         "EGL_EXT_image_flush_external"
+      ]
+    },
+    {
+      "id": 235,
+      "description": "Avoid waiting on a egl fence before pageflipping and rely on implicit sync.",
+      "cr_bugs": [721463],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "Intel.*",
+      "features": [
+        "rely_on_implicit_sync_for_swap_buffers"
       ]
     }
   ],

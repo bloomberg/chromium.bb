@@ -225,6 +225,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // calling this.
   virtual void WaitForSnapshotRendering();
 
+  // Tells the surface to rely on implicit or explicit sync when swapping
+  // buffers.
+  virtual void SetRelyOnImplicitSync(bool rely_on_implicit_sync);
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -298,6 +302,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void WaitForSnapshotRendering() override;
+  void SetRelyOnImplicitSync(bool rely_on_implicit_sync) override;
 
   GLSurface* surface() const { return surface_.get(); }
 
