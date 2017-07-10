@@ -158,9 +158,9 @@ class DataReductionProxyConfigTest : public testing::Test {
     responder.response = response;
     responder.status = status;
     responder.http_response_code = response_code;
-    EXPECT_CALL(*config(), SecureProxyCheck(_, _))
+    EXPECT_CALL(*config(), SecureProxyCheck(_))
         .Times(1)
-        .WillRepeatedly(testing::WithArgs<1>(
+        .WillRepeatedly(testing::WithArgs<0>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
     config()->SetIsCaptivePortal(is_captive_portal);
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();

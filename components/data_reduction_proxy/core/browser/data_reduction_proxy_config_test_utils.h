@@ -164,9 +164,8 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                      bool(const net::URLRequest& request,
                           const net::ProxyConfig& data_reduction_proxy_config,
                           base::TimeDelta* min_retry_delay));
-  MOCK_METHOD2(SecureProxyCheck,
-               void(const GURL& secure_proxy_check_url,
-                    FetcherResponseCallback fetcher_callback));
+  MOCK_METHOD1(SecureProxyCheck,
+               void(FetcherResponseCallback fetcher_callback));
   MOCK_METHOD1(
       IsNetworkQualityProhibitivelySlow,
       bool(const net::NetworkQualityEstimator* network_quality_estimator));

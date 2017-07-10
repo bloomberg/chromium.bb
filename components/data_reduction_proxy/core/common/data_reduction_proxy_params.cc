@@ -32,10 +32,6 @@ const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
 const char kLitePage[] = "Enabled_Preview";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
-// A one-off change, until the Data Reduction Proxy configuration service is
-// available.
-const char kCarrierTestOrigin[] =
-    "http://o-o.preferred.nttdocomodcp-hnd1.proxy-dev.googlezip.net:80";
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://check.googlezip.net/generate_204";
@@ -454,6 +450,16 @@ const char* GetServerExperimentsFieldTrialName() {
   return kServerExperimentsFieldTrial;
 }
 
+GURL GetSecureProxyCheckURL() {
+  std::string secure_proxy_check_url =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDataReductionProxySecureProxyCheckURL);
+  if (secure_proxy_check_url.empty())
+    secure_proxy_check_url = kDefaultSecureProxyCheckUrl;
+
+  return GURL(secure_proxy_check_url);
+}
+
 }  // namespace params
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo() : proxy_index(0) {}
@@ -494,11 +500,6 @@ bool DataReductionProxyParams::Init() {
              << fallback_origin_.ToURI();
     return false;
   }
-
-  if (!secure_proxy_check_url_.is_valid()) {
-    DVLOG(1) << "Invalid secure proxy check url: <null>";
-    return false;
-  }
   return true;
 }
 
@@ -515,10 +516,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
   origin = command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
   std::string fallback_origin =
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyFallback);
-  std::string secure_proxy_check_url = command_line.GetSwitchValueASCII(
-      switches::kDataReductionProxySecureProxyCheckURL);
-  std::string warmup_url = command_line.GetSwitchValueASCII(
-      switches::kDataReductionProxyWarmupURL);
 
   // Set from preprocessor constants those params that are not specified on the
   // command line.
@@ -526,8 +523,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     origin = GetDefaultOrigin();
   if (fallback_origin.empty())
     fallback_origin = GetDefaultFallbackOrigin();
-  if (secure_proxy_check_url.empty())
-    secure_proxy_check_url = GetDefaultSecureProxyCheckURL();
 
   origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
   fallback_origin_ =
@@ -542,8 +537,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     proxies_for_http_.push_back(
         DataReductionProxyServer(fallback_origin_, ProxyServer::CORE));
   }
-
-  secure_proxy_check_url_ = GURL(secure_proxy_check_url);
 }
 
 const std::vector<DataReductionProxyServer>&
@@ -553,28 +546,13 @@ DataReductionProxyParams::proxies_for_http() const {
   return proxies_for_http_;
 }
 
-// Returns the URL to check to decide if the secure proxy origin should be
-// used.
-const GURL& DataReductionProxyParams::secure_proxy_check_url() const {
-  return secure_proxy_check_url_;
-}
-
 // TODO(kundaji): Remove tests for macro definitions.
 std::string DataReductionProxyParams::GetDefaultOrigin() const {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableDataReductionProxyCarrierTest))
-    return kCarrierTestOrigin;
   return kDefaultSpdyOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {
   return kDefaultFallbackOrigin;
 }
-
-std::string DataReductionProxyParams::GetDefaultSecureProxyCheckURL() const {
-  return kDefaultSecureProxyCheckUrl;
-}
-
 
 }  // namespace data_reduction_proxy

@@ -16,7 +16,6 @@ DataReductionProxyMutableConfigValues::CreateFromParams(
     const DataReductionProxyParams* params) {
   std::unique_ptr<DataReductionProxyMutableConfigValues> config_values(
       new DataReductionProxyMutableConfigValues());
-  config_values->secure_proxy_check_url_ = params->secure_proxy_check_url();
   return config_values;
 }
 
@@ -48,11 +47,6 @@ DataReductionProxyMutableConfigValues::proxies_for_http() const {
   // according to field trials such as the DRP QUIC field trial and their
   // corresponding command line flags (crbug.com/533637).
   return proxies_for_http_;
-}
-
-const GURL& DataReductionProxyMutableConfigValues::secure_proxy_check_url()
-    const {
-  return secure_proxy_check_url_;
 }
 
 void DataReductionProxyMutableConfigValues::UpdateValues(

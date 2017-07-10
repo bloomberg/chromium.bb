@@ -117,11 +117,6 @@ const char kCrossProcessGuestViewIsolationDescription[] =
     "Highly experimental where guests such as &lt;webview> are implemented on "
     "the out-of-process iframe infrastructure.";
 
-const char kDataReductionProxyCarrierTestName[] =
-    "Enable a carrier-specific Data Reduction Proxy for testing.";
-const char kDataReductionProxyCarrierTestDescription[] =
-    "Use a carrier-specific Data Reduction Proxy for testing.";
-
 const char kDataReductionProxyLoFiName[] = "Data Saver Lo-Fi mode";
 const char kDataReductionProxyLoFiDescription[] =
     "Forces Data Saver Lo-Fi mode to be always enabled, enabled only on "

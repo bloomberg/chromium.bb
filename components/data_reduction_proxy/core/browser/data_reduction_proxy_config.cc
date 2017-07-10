@@ -257,8 +257,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
     fetcher_callback_.Run(response, status, source->GetResponseCode());
   }
 
-  void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
-                                   FetcherResponseCallback fetcher_callback) {
+  void CheckIfSecureProxyIsAllowed(FetcherResponseCallback fetcher_callback) {
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation(
             "data_reduction_proxy_secure_proxy_check", R"(
@@ -283,8 +282,9 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
                 "it is enabled by installing the Data Saver extension."
               policy_exception_justification: "Not implemented."
             })");
-    fetcher_ = net::URLFetcher::Create(
-        secure_proxy_check_url, net::URLFetcher::GET, this, traffic_annotation);
+    fetcher_ =
+        net::URLFetcher::Create(params::GetSecureProxyCheckURL(),
+                                net::URLFetcher::GET, this, traffic_annotation);
     data_use_measurement::DataUseUserData::AttachToFetcher(
         fetcher_.get(),
         data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
@@ -761,7 +761,6 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
     SecureProxyCheck(
-        config_values_->secure_proxy_check_url(),
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
@@ -862,7 +861,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     // synchronously on the IO thread, and |this| outlives
     // |secure_proxy_checker_|.
     SecureProxyCheck(
-        config_values_->secure_proxy_check_url(),
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
@@ -895,17 +893,15 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
 }
 
 void DataReductionProxyConfig::SecureProxyCheck(
-    const GURL& secure_proxy_check_url,
     FetcherResponseCallback fetcher_callback) {
   net_log_with_source_ = net::NetLogWithSource::Make(
       net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   if (event_creator_) {
-    event_creator_->BeginSecureProxyCheck(
-        net_log_with_source_, config_values_->secure_proxy_check_url());
+    event_creator_->BeginSecureProxyCheck(net_log_with_source_,
+                                          params::GetSecureProxyCheckURL());
   }
 
-  secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,
-                                                     fetcher_callback);
+  secure_proxy_checker_->CheckIfSecureProxyIsAllowed(fetcher_callback);
 }
 
 void DataReductionProxyConfig::FetchWarmupURL() {

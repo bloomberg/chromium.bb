@@ -59,20 +59,12 @@ const char kDataReductionProxySecureProxyCheckURL[] =
 const char kDataReductionProxyServerExperimentsDisabled[] =
     "data-reduction-proxy-server-experiments-disabled";
 
-// Sets a URL to fetch to warm up the data reduction proxy on startup and
-// network changes.
-const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";
-
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 
 // Enable the data reduction proxy bypass warning.
 const char kEnableDataReductionProxyBypassWarning[] =
     "enable-data-reduction-proxy-bypass-warning";
-
-// Enables the origin of the carrier test data reduction proxy.
-const char kEnableDataReductionProxyCarrierTest[] =
-    "enable-data-reduction-proxy-carrier-test";
 
 // Enables lite page from the data reduction proxy. This means a lite page
 // should be requested instead of placeholders whenever Lo-Fi mode is on. Lo-fi

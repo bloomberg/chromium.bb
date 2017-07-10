@@ -23,18 +23,14 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultOrigin();
   static std::string DefaultFallbackOrigin();
-  static std::string DefaultSecureProxyCheckURL();
 
   static std::string FlagOrigin();
   static std::string FlagFallbackOrigin();
-  static std::string FlagSecureProxyCheckURL();
 
  protected:
   std::string GetDefaultOrigin() const override;
 
   std::string GetDefaultFallbackOrigin() const override;
-
-  std::string GetDefaultSecureProxyCheckURL() const override;
 
  private:
   bool init_result_;
