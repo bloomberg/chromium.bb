@@ -52,10 +52,10 @@ class TransTestBase {
 
  protected:
   void RunInvAccuracyCheck() {
-    tran_low_t *input = new tran_low_t[txfm_size_];
-    tran_low_t *output = new tran_low_t[txfm_size_];
-    double *ref_input = new double[txfm_size_];
-    double *ref_output = new double[txfm_size_];
+    tran_low_t input[64];
+    tran_low_t output[64];
+    double ref_input[64];
+    double ref_output[64];
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     const int count_test_block = 5000;
@@ -74,11 +74,6 @@ class TransTestBase {
             max_error_);
       }
     }
-
-    delete[] input;
-    delete[] output;
-    delete[] ref_input;
-    delete[] ref_output;
   }
 
   double max_error_;
