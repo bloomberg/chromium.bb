@@ -837,6 +837,10 @@ public class AwContents implements SmartClipProvider {
         contentViewCore.setActionModeCallback(
                 new AwActionModeCallback(mContext, this,
                         contentViewCore.getActionModeCallbackHelper()));
+        if (mAutofillProvider != null) {
+            contentViewCore.setNonSelectionActionModeCallback(
+                    new AutofillActionModeCallback(context, mAutofillProvider));
+        }
         contentViewCore.addGestureStateListener(gestureStateListener);
     }
 

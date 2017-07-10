@@ -53,6 +53,17 @@ public abstract class AutofillProvider {
     public abstract void onProvideAutoFillVirtualStructure(ViewStructure structure, int flags);
 
     /**
+     * @return whether query autofill suggestion.
+     */
+    // TODO(michaelbai): Change it to abstract after DEP roll.
+    public boolean shouldQueryAutofillSuggestion() {
+        return false;
+    }
+
+    // TODO(michaelbai): Change it to abstract after DEP roll.
+    public void queryAutofillSuggestion() {}
+
+    /**
      * Invoked when filling form is need. AutofillProvider shall ask autofill
      * service for the values with which to fill the form.
      *
