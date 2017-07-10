@@ -198,7 +198,7 @@ class AttachmentStoreForSync : public AttachmentStore {
                          Component sync_component);
 
   // |sync_component_| is passed to frontend when sync related operations are
-  // perfromed.
+  // performed.
   const Component sync_component_;
 
   DISALLOW_COPY_AND_ASSIGN(AttachmentStoreForSync);
