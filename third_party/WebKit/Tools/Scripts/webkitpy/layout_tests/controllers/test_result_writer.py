@@ -145,7 +145,22 @@ class TestResultWriter(object):
         """
         fs = self._filesystem
         output_filename = fs.join(self._root_output_dir, self._test_name)
-        return fs.splitext(output_filename)[0] + modifier
+        base, extension = fs.splitext(output_filename)
+
+        # Below is an affordance for WPT test files that become multiple tests using different URL params,
+        # For example,
+        # - html/syntax/parsing/html5lib_adoption01.html
+        # Becomes two tests:
+        # - html/syntax/parsing/html5lib_adoption01.html?run_type=write
+        # - html/syntax/parsing/html5lib_adoption01.html?run_type=uri
+        # But previously their result file would be the same, since everything after the extension
+        # is removed. Instead, for files with URL params, we use the whole filename for writing results.
+        if '?' in extension:
+            # Question marks are reserved characters in Windows filenames.
+            sanitized_filename = output_filename.replace('?', '_')
+            return sanitized_filename + modifier
+
+        return base + modifier
 
     def _write_file(self, path, contents):
         if contents is not None:

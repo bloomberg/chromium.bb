@@ -13,6 +13,7 @@ import json
 import logging
 
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.common.memoized import memoized
 
 _log = logging.getLogger(__file__)
 
@@ -23,6 +24,7 @@ class WPTManifest(object):
         # TODO(tkent): Create a Manifest object by Manifest.from_json().
         # See ../thirdparty/wpt/wpt/tools/manifest/manifest.py.
         self.raw_dict = json.loads(json_content)
+        self.test_types = ('manual', 'reftest', 'testharness')
 
     def _items_for_path(self, path_in_wpt):
         """Returns manifest items for the given WPT path, or None if not found.
@@ -35,28 +37,50 @@ class WPTManifest(object):
         it will be a list with three items ([url, references, extras]).
         """
         items = self.raw_dict['items']
-        if path_in_wpt in items['manual']:
-            return items['manual'][path_in_wpt]
-        elif path_in_wpt in items['reftest']:
-            return items['reftest'][path_in_wpt]
-        elif path_in_wpt in items['testharness']:
-            return items['testharness'][path_in_wpt]
+        for test_type in self.test_types:
+            if path_in_wpt in items[test_type]:
+                return items[test_type][path_in_wpt]
         return None
+
+    @memoized
+    def all_urls(self):
+        """Returns a set of the urls for all items in the manifest."""
+        urls = set()
+        if 'items' in self.raw_dict:
+            items = self.raw_dict['items']
+            for category in self.test_types:
+                if category in items:
+                    for records in items[category].values():
+                        urls.update([item[0] for item in records])
+        return urls
+
+    @memoized
+    def all_wpt_tests(self):
+        if 'items' not in self.raw_dict:
+            return []
+
+        all_tests = []
+        for test_type in self.test_types:
+            for path_in_wpt in self.raw_dict['items'][test_type]:
+                all_tests.append(path_in_wpt)
+        return all_tests
 
     def is_test_file(self, path_in_wpt):
         return self._items_for_path(path_in_wpt) is not None
 
+    def is_test_url(self, url):
+        """Checks if url is a valid test in the manifest.
+
+        The url must be the WPT test name with a leading slash (/).
+        """
+        if url[0] != '/':
+            raise Exception('Test url missing leading /: %s' % url)
+        return url in self.all_urls()
+
     def file_path_to_url_paths(self, path_in_wpt):
         manifest_items = self._items_for_path(path_in_wpt)
         assert manifest_items is not None
-        if len(manifest_items) != 1:
-            return []
-        url = manifest_items[0][0]
-        if url[1:] != path_in_wpt:
-            # TODO(tkent): foo.any.js and bar.worker.js should be accessed
-            # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
-            return []
-        return [path_in_wpt]
+        return [item[0][1:] for item in manifest_items]
 
     @staticmethod
     def _get_extras_from_item(item):
