@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/NodeOrString.h"
-#include "core/dom/ClientRect.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/FrameTestHelpers.h"
@@ -11,6 +10,7 @@
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -1039,7 +1039,7 @@ TEST_P(RootScrollerTest, RotationAnchoring) {
   MainFrameView()->UpdateAllLifecyclePhases();
 
   // The visual viewport should remain fully filled by the target.
-  ClientRect* rect = target->getBoundingClientRect();
+  DOMRect* rect = target->getBoundingClientRect();
   EXPECT_EQ(rect->left(), GetVisualViewport().GetScrollOffset().Width());
   EXPECT_EQ(rect->top(), GetVisualViewport().GetScrollOffset().Height());
 }

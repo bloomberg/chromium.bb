@@ -8,12 +8,10 @@
     RuntimeEnabled=IntersectionObserver
 ] interface IntersectionObserverEntry {
     readonly attribute DOMHighResTimeStamp time;
-    // TODO(szager): |rootBounds| should not be nullable and it,
-    // |boundingClientRect| and |intersectionRect| should all be
-    // DOMRectReadOnly.
-    readonly attribute ClientRect? rootBounds;
-    readonly attribute ClientRect boundingClientRect;
-    readonly attribute ClientRect intersectionRect;
+    // TODO(szager): |rootBounds| should not be nullable.
+    readonly attribute DOMRectReadOnly? rootBounds;
+    readonly attribute DOMRectReadOnly boundingClientRect;
+    readonly attribute DOMRectReadOnly intersectionRect;
     readonly attribute boolean isIntersecting;
     readonly attribute double intersectionRatio;
     readonly attribute Element target;

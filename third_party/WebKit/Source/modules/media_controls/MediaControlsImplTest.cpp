@@ -10,12 +10,12 @@
 #include "build/build_config.h"
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
-#include "core/dom/ClientRect.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/input/EventHandler.h"
@@ -669,7 +669,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
   testing::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
   ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -702,7 +702,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
   testing::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  ClientRect* timeline_rect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timeline_rect = TimelineElement()->getBoundingClientRect();
   ASSERT_LT(0, timeline_rect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -738,7 +738,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   testing::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
   ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -775,7 +775,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
   testing::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  ClientRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
   ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());

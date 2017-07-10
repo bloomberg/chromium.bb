@@ -51,8 +51,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CSSSelectorWatch.h"
-#include "core/dom/ClientRect.h"
-#include "core/dom/ClientRectList.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementDataCache.h"
@@ -98,6 +96,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectList.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
@@ -1204,24 +1204,24 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
     element_layout_object->AbsoluteQuads(quads, kUseTransforms);
 }
 
-ClientRectList* Element::getClientRects() {
+DOMRectList* Element::getClientRects() {
   Vector<FloatQuad> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
-    return ClientRectList::Create();
+    return DOMRectList::Create();
 
   LayoutObject* element_layout_object = GetLayoutObject();
   DCHECK(element_layout_object);
   GetDocument().AdjustFloatQuadsForScrollAndAbsoluteZoom(
       quads, *element_layout_object);
-  return ClientRectList::Create(quads);
+  return DOMRectList::Create(quads);
 }
 
-ClientRect* Element::getBoundingClientRect() {
+DOMRect* Element::getBoundingClientRect() {
   Vector<FloatQuad> quads;
   ClientQuads(quads);
   if (quads.IsEmpty())
-    return ClientRect::Create();
+    return DOMRect::Create();
 
   FloatRect result = quads[0].BoundingBox();
   for (size_t i = 1; i < quads.size(); ++i)
@@ -1231,7 +1231,7 @@ ClientRect* Element::getBoundingClientRect() {
   DCHECK(element_layout_object);
   GetDocument().AdjustFloatRectForScrollAndAbsoluteZoom(result,
                                                         *element_layout_object);
-  return ClientRect::Create(result);
+  return DOMRect::FromFloatRect(result);
 }
 
 const AtomicString& Element::computedRole() {

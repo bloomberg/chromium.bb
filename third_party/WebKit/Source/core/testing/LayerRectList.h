@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class ClientRect;
+class DOMRectReadOnly;
 class LayerRect;
 class Node;
 
@@ -55,7 +55,7 @@ class LayerRectList final : public GarbageCollected<LayerRectList>,
               const String& layer_name,
               int layer_offset_x,
               int layer_offset_y,
-              ClientRect* layer_relative_rect);
+              DOMRectReadOnly* layer_relative_rect);
 
   DECLARE_TRACE();
 
@@ -67,4 +67,4 @@ class LayerRectList final : public GarbageCollected<LayerRectList>,
 
 }  // namespace blink
 
-#endif  // ClientRectList_h
+#endif  // LayerRectList_h

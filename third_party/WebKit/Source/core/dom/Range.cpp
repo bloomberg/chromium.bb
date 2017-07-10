@@ -27,8 +27,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/CharacterData.h"
-#include "core/dom/ClientRect.h"
-#include "core/dom/ClientRectList.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ExceptionCode.h"
@@ -46,6 +44,8 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/Settings.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectList.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
@@ -1596,17 +1596,17 @@ void Range::expand(const String& unit, ExceptionState& exception_state) {
          end.DeepEquivalent().ComputeOffsetInContainerNode(), exception_state);
 }
 
-ClientRectList* Range::getClientRects() const {
+DOMRectList* Range::getClientRects() const {
   owner_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Vector<FloatQuad> quads;
   GetBorderAndTextQuads(quads);
 
-  return ClientRectList::Create(quads);
+  return DOMRectList::Create(quads);
 }
 
-ClientRect* Range::getBoundingClientRect() const {
-  return ClientRect::Create(BoundingRect());
+DOMRect* Range::getBoundingClientRect() const {
+  return DOMRect::FromFloatRect(BoundingRect());
 }
 
 void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {

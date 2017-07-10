@@ -12,6 +12,10 @@ DOMRect* DOMRect::Create(double x, double y, double width, double height) {
   return new DOMRect(x, y, width, height);
 }
 
+DOMRect* DOMRect::FromFloatRect(const FloatRect& rect) {
+  return new DOMRect(rect.X(), rect.Y(), rect.Width(), rect.Height());
+}
+
 DOMRect* DOMRect::fromRect(const DOMRectInit& other) {
   return new DOMRect(other.x(), other.y(), other.width(), other.height());
 }

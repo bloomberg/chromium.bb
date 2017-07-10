@@ -108,9 +108,9 @@ enum EffectiveConnectionType {
     [RaisesException] void setFormControlStateOfHistoryItem(sequence<DOMString> values);
     readonly attribute Window pagePopupWindow;
 
-    [RaisesException] ClientRect absoluteCaretBounds();
+    [RaisesException] DOMRectReadOnly absoluteCaretBounds();
 
-    ClientRect boundingBox(Element element);
+    DOMRectReadOnly boundingBox(Element element);
 
     [RaisesException] void setMarker(Document document, Range range, DOMString markerType);
     [RaisesException] unsigned long markerCountForNode(Node node, DOMString markerType);
@@ -145,7 +145,7 @@ enum EffectiveConnectionType {
     [RaisesException] Node touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);
     [RaisesException] DOMPoint touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document);
     [RaisesException] Node touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document);
-    [RaisesException] ClientRect bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document document);
+    [RaisesException] DOMRectReadOnly bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document document);
 
     [RaisesException] long lastSpellCheckRequestSequence(Document document);
     [RaisesException] long lastSpellCheckProcessedSequence(Document document);
@@ -212,7 +212,7 @@ enum EffectiveConnectionType {
 
     DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
-    [RaisesException] ClientRectList nonFastScrollableRects(Document document);
+    [RaisesException] DOMRectList nonFastScrollableRects(Document document);
 
     void evictAllResources();
 
@@ -261,8 +261,8 @@ enum EffectiveConnectionType {
     [RaisesException] void forceFullRepaint(Document document);
 
     // Returns a list of draggable/non-draggable regions in the document.
-    [RaisesException] ClientRectList draggableRegions(Document document);
-    [RaisesException] ClientRectList nonDraggableRegions(Document document);
+    [RaisesException] DOMRectList draggableRegions(Document document);
+    [RaisesException] DOMRectList nonDraggableRegions(Document document);
 
     // Returns a string with information about the mouse cursor used at the specified client location.
     DOMString getCurrentCursorInfo();
@@ -293,7 +293,7 @@ enum EffectiveConnectionType {
     readonly attribute unsigned long visibleSelectionAnchorOffset;
     readonly attribute Node? visibleSelectionFocusNode;
     readonly attribute unsigned long visibleSelectionFocusOffset;
-    [RaisesException] ClientRect selectionBounds();
+    [RaisesException] DOMRect selectionBounds();
     readonly attribute DOMString textAffinity;
 
     boolean loseSharedGraphicsContext3D();
@@ -373,8 +373,8 @@ enum EffectiveConnectionType {
     [Unscopable] readonly attribute DOMString unscopableAttribute;
     [Unscopable] DOMString unscopableMethod();
 
-    ClientRectList focusRingRects(Element element);
-    ClientRectList outlineRects(Element element);
+    DOMRectList focusRingRects(Element element);
+    DOMRectList outlineRects(Element element);
     void setCapsLockState(boolean enabled);
 
     // Returns whether the scrollbar was able to be shown or hidden; not all platforms
@@ -387,7 +387,7 @@ enum EffectiveConnectionType {
 
     DOMString getProgrammaticScrollAnimationState(Node node);
 
-    ClientRect visualRect(Node node);
+    DOMRect visualRect(Node node);
 
     OriginTrialsTest originTrialsTest();
 

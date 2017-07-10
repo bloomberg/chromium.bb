@@ -27,7 +27,6 @@
 #include "modules/media_controls/MediaControlsImpl.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ClientRect.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
@@ -40,6 +39,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/media/AutoplayPolicy.h"
@@ -1029,7 +1029,7 @@ void MediaControlsImpl::OnPanelKeypress() {
   ResetHideMediaControlsTimer();
 }
 
-void MediaControlsImpl::NotifyElementSizeChanged(ClientRect* new_size) {
+void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
   // Note that this code permits a bad frame on resize, since it is
   // run after the relayout / paint happens.  It would be great to improve
   // this, but it would be even greater to move this code entirely to

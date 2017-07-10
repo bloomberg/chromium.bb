@@ -24,13 +24,11 @@
 description("Tests that the ClientRectList.item() argument is correctly validated.");
 
 var clientRects = document.getElementById("testElement").getClientRects();
-shouldBe("clientRects.__proto__", "ClientRectList.prototype");
-
 shouldBe("clientRects.length", "3");
 shouldNotBe("clientRects.item(0)", "null");
 shouldNotBe("clientRects.item(1)", "null");
 shouldNotBe("clientRects.item(2)", "null");
-shouldThrow("clientRects.item()", '"TypeError: Failed to execute \'item\' on \'ClientRectList\': 1 argument required, but only 0 present."');
+shouldThrow("clientRects.item()", '"TypeError: Failed to execute \'item\' on \'DOMRectList\': 1 argument required, but only 0 present."');
 shouldBe("clientRects.item(-4294967294)", "clientRects.item(2)"); // -4294967294 wraps to 2.
 
 // According to the specification, we should throw an IndexSizeError exception when index is

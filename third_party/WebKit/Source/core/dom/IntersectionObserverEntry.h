@@ -5,8 +5,8 @@
 #ifndef IntersectionObserverEntry_h
 #define IntersectionObserverEntry_h
 
-#include "core/dom/ClientRect.h"
 #include "core/dom/DOMHighResTimeStamp.h"
+#include "core/geometry/DOMRectReadOnly.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
@@ -31,9 +31,9 @@ class IntersectionObserverEntry final
 
   double time() const { return time_; }
   double intersectionRatio() const { return intersection_ratio_; }
-  ClientRect* boundingClientRect() const { return bounding_client_rect_; }
-  ClientRect* rootBounds() const { return root_bounds_; }
-  ClientRect* intersectionRect() const { return intersection_rect_; }
+  DOMRectReadOnly* boundingClientRect() const { return bounding_client_rect_; }
+  DOMRectReadOnly* rootBounds() const { return root_bounds_; }
+  DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
   bool isIntersecting() const { return is_intersecting_; }
   Element* target() const { return target_.Get(); }
 
@@ -42,9 +42,9 @@ class IntersectionObserverEntry final
  private:
   DOMHighResTimeStamp time_;
   double intersection_ratio_;
-  Member<ClientRect> bounding_client_rect_;
-  Member<ClientRect> root_bounds_;
-  Member<ClientRect> intersection_rect_;
+  Member<DOMRectReadOnly> bounding_client_rect_;
+  Member<DOMRectReadOnly> root_bounds_;
+  Member<DOMRectReadOnly> intersection_rect_;
   Member<Element> target_;
   bool is_intersecting_;
 };

@@ -37,8 +37,8 @@
 
 namespace blink {
 
-class ClientRect;
-class ClientRectList;
+class DOMRect;
+class DOMRectList;
 class ContainerNode;
 class Document;
 class DocumentFragment;
@@ -160,8 +160,8 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   // for details.
   void expand(const String&, ExceptionState&);
 
-  ClientRectList* getClientRects() const;
-  ClientRect* getBoundingClientRect() const;
+  DOMRectList* getClientRects() const;
+  DOMRect* getBoundingClientRect() const;
 
   static Node* CheckNodeWOffset(Node*, unsigned offset, ExceptionState&);
 

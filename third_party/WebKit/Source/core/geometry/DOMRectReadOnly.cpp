@@ -30,6 +30,14 @@ ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* script_state) const {
   return result.GetScriptValue();
 }
 
+DOMRectReadOnly* DOMRectReadOnly::FromIntRect(const IntRect& rect) {
+  return new DOMRectReadOnly(rect.X(), rect.Y(), rect.Width(), rect.Height());
+}
+
+DOMRectReadOnly* DOMRectReadOnly::FromFloatRect(const FloatRect& rect) {
+  return new DOMRectReadOnly(rect.X(), rect.Y(), rect.Width(), rect.Height());
+}
+
 DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
   return new DOMRectReadOnly(other.x(), other.y(), other.width(),
                              other.height());

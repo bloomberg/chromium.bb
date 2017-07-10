@@ -4,9 +4,9 @@
 
 #include "core/html/media/MediaRemotingElements.h"
 
-#include "core/dom/ClientRect.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/input/EventHandler.h"
 #include "platform/text/PlatformLocale.h"
@@ -38,7 +38,7 @@ class MediaRemotingExitButtonElement::MouseEventsListener final
     DCHECK_EQ(event->type(), EventTypeNames::click);
 
     MouseEvent* mouse_event = ToMouseEvent(event);
-    ClientRect* client_rect = element_->getBoundingClientRect();
+    DOMRect* client_rect = element_->getBoundingClientRect();
     const double x = mouse_event->x();
     const double y = mouse_event->y();
     if (x < client_rect->left() || x > client_rect->right() ||

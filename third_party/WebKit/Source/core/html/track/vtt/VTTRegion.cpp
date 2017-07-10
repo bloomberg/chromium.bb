@@ -32,10 +32,10 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ClientRect.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTScanner.h"
@@ -320,12 +320,13 @@ void VTTRegion::DisplayLastVTTCueBox() {
   if (IsScrollingRegion())
     cue_container_->classList().Add(TextTrackCueContainerScrollingClass());
 
-  float region_bottom = region_display_tree_->getBoundingClientRect()->bottom();
+  double region_bottom =
+      region_display_tree_->getBoundingClientRect()->bottom();
 
   // Find first cue that is not entirely displayed and scroll it upwards.
   for (Element& child : ElementTraversal::ChildrenOf(*cue_container_)) {
-    ClientRect* client_rect = child.getBoundingClientRect();
-    float child_bottom = client_rect->bottom();
+    DOMRect* client_rect = child.getBoundingClientRect();
+    double child_bottom = client_rect->bottom();
 
     if (region_bottom >= child_bottom)
       continue;

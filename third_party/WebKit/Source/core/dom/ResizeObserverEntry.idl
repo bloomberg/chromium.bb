@@ -8,6 +8,5 @@
     RuntimeEnabled=ResizeObserver
 ] interface ResizeObserverEntry {
     readonly attribute Element target;
-    // FIXME(atotic): should return DOMReadOnlyRect once GeometryInterfaces land
-    readonly attribute ClientRect contentRect;
+    readonly attribute DOMRectReadOnly contentRect;
 };

@@ -24,19 +24,31 @@
  *
  */
 
-// An old version of CSSOM View Module defines the ClientRect interface:
-// https://www.w3.org/TR/2011/WD-cssom-view-20110804/#the-clientrect-interface
+#include "core/geometry/DOMRectList.h"
 
-// It has since been replaced by DOMRect in CSSOM View Module and
-// Geometry Interfaces Module:
-// https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface
-// https://drafts.fxtf.org/geometry/#DOMRect
+namespace blink {
 
-interface ClientRect {
-    readonly attribute float top;
-    readonly attribute float right;
-    readonly attribute float bottom;
-    readonly attribute float left;
-    readonly attribute float width;
-    readonly attribute float height;
-};
+DOMRectList::DOMRectList() {}
+
+DOMRectList::DOMRectList(const Vector<FloatQuad>& quads) {
+  list_.ReserveInitialCapacity(quads.size());
+  for (const auto& quad : quads)
+    list_.push_back(DOMRect::FromFloatRect(quad.BoundingBox()));
+}
+
+unsigned DOMRectList::length() const {
+  return list_.size();
+}
+
+DOMRect* DOMRectList::item(unsigned index) {
+  if (index >= list_.size())
+    return nullptr;
+
+  return list_[index].Get();
+}
+
+DEFINE_TRACE(DOMRectList) {
+  visitor->Trace(list_);
+}
+
+}  // namespace blink

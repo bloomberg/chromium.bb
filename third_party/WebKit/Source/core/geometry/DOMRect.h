@@ -8,6 +8,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "core/CoreExport.h"
 #include "core/geometry/DOMRectReadOnly.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace blink {
 
@@ -22,6 +23,7 @@ class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
                          double y = 0,
                          double width = 0,
                          double height = 0);
+  static DOMRect* FromFloatRect(const FloatRect&);
   static DOMRect* fromRect(const DOMRectInit&);
 
   void setX(double x) { x_ = x; }

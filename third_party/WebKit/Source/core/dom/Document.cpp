@@ -66,7 +66,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
-#include "core/dom/ClientRect.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
