@@ -16,8 +16,8 @@
 
 // Note: Expect val to be in q4 precision
 static INLINE int scaled_x(int val, const struct scale_factors *sf) {
-  const int off = (sf->x_scale_fp - (1 << REF_SCALE_SHIFT))
-                  << (SUBPEL_BITS - 1);
+  const int off =
+      (sf->x_scale_fp - (1 << REF_SCALE_SHIFT)) * (1 << (SUBPEL_BITS - 1));
   const int64_t tval = (int64_t)val * sf->x_scale_fp + off;
   return (int)ROUND_POWER_OF_TWO_SIGNED_64(tval,
                                            REF_SCALE_SHIFT - SCALE_EXTRA_BITS);
@@ -25,8 +25,8 @@ static INLINE int scaled_x(int val, const struct scale_factors *sf) {
 
 // Note: Expect val to be in q4 precision
 static INLINE int scaled_y(int val, const struct scale_factors *sf) {
-  const int off = (sf->y_scale_fp - (1 << REF_SCALE_SHIFT))
-                  << (SUBPEL_BITS - 1);
+  const int off =
+      (sf->y_scale_fp - (1 << REF_SCALE_SHIFT)) * (1 << (SUBPEL_BITS - 1));
   const int64_t tval = (int64_t)val * sf->y_scale_fp + off;
   return (int)ROUND_POWER_OF_TWO_SIGNED_64(tval,
                                            REF_SCALE_SHIFT - SCALE_EXTRA_BITS);

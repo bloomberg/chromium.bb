@@ -2841,6 +2841,7 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
 }
 #endif  // OUTPUT_YUV_REC
 
+/*
 #if CONFIG_HIGHBITDEPTH
 static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                    YV12_BUFFER_CONFIG *dst, int planes,
@@ -2908,6 +2909,7 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   else
     aom_extend_frame_borders(dst);
 }
+*/
 
 #if CONFIG_GLOBAL_MOTION
 #define GM_RECODE_LOOP_NUM4X4_FACTOR 192
@@ -3346,8 +3348,10 @@ void av1_scale_references(AV1_COMP *cpi) {
                   cm->byte_alignment, NULL, NULL, NULL))
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
-          scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE,
-                                 (int)cm->bit_depth);
+          av1_resize_and_extend_frame(ref, &new_fb_ptr->buf,
+                                      (int)cm->bit_depth);
+          // scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE,
+          //                        (int)cm->bit_depth);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
         }
@@ -3370,7 +3374,8 @@ void av1_scale_references(AV1_COMP *cpi) {
                                        NULL, NULL, NULL))
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
-          scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE);
+          av1_resize_and_extend_frame(ref, &new_fb_ptr->buf);
+          // scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
         }
