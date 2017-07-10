@@ -87,6 +87,9 @@ class BackgroundDownloader : public CrxDownloader {
   void StartTimer();
   void OnTimer();
 
+  // Creates or opens a job for the given url and queues it up. Returns S_OK if
+  // a new job was created or S_FALSE if an existing job for the |url| was found
+  // in the BITS queue.
   HRESULT QueueBitsJob(const GURL& url,
                        Microsoft::WRL::ComPtr<IBackgroundCopyJob>* job);
   HRESULT CreateOrOpenJob(const GURL& url,
