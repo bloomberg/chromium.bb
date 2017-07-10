@@ -1000,6 +1000,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   NotifyNavigationEntryCommitted(details);
 
+  if (active_entry->GetURL().SchemeIs(url::kHttpsScheme)) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus",
+                          !!active_entry->GetSSL().certificate);
+  }
+
   if (overriding_user_agent_changed)
     delegate_->UpdateOverridingUserAgent();
 
