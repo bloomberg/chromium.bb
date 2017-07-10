@@ -25,19 +25,19 @@ using libaom_test::ACMRandom;
 
 namespace {
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
-                        const INV_TXFM_PARAM *inv_txfm_param);
+                        const TxfmParam *txfm_param);
 using std::tr1::tuple;
 using libaom_test::FhtFunc;
 typedef tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t, int> Ht32x16Param;
 
 void fht32x16_ref(const int16_t *in, tran_low_t *out, int stride,
-                  FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fht32x16_c(in, out, stride, fwd_txfm_param);
+                  TxfmParam *txfm_param) {
+  av1_fht32x16_c(in, out, stride, txfm_param);
 }
 
 void iht32x16_ref(const tran_low_t *in, uint8_t *out, int stride,
-                  const INV_TXFM_PARAM *inv_txfm_param) {
-  av1_iht32x16_512_add_c(in, out, stride, inv_txfm_param);
+                  const TxfmParam *txfm_param) {
+  av1_iht32x16_512_add_c(in, out, stride, txfm_param);
 }
 
 class AV1Trans32x16HT : public libaom_test::TransformTestBase,
@@ -55,18 +55,17 @@ class AV1Trans32x16HT : public libaom_test::TransformTestBase,
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
     num_coeffs_ = GET_PARAM(4);
-    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
-    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    txfm_param_.tx_type = GET_PARAM(2);
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(const int16_t *in, tran_low_t *out, int stride) {
-    fwd_txfm_(in, out, stride, &fwd_txfm_param_);
+    fwd_txfm_(in, out, stride, &txfm_param_);
   }
 
   void RunInvTxfm(const tran_low_t *out, uint8_t *dst, int stride) {
-    inv_txfm_(out, dst, stride, &inv_txfm_param_);
+    inv_txfm_(out, dst, stride, &txfm_param_);
   }
 
   FhtFunc fwd_txfm_;

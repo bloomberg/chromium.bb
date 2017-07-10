@@ -21,6 +21,25 @@
 #define UNIT_QUANT_SHIFT 2
 #define UNIT_QUANT_FACTOR (1 << UNIT_QUANT_SHIFT)
 
+typedef struct txfm_param {
+  // for both forward and inverse transforms
+  int tx_type;
+  int tx_size;
+  int lossless;
+  int bd;
+#if CONFIG_LGT
+  int is_inter;
+  int stride;
+  int mode;
+  uint8_t *dst;
+#endif
+// for inverse transforms only
+#if CONFIG_ADAPT_SCAN
+  const int16_t *eob_threshold;
+#endif
+  int eob;
+} TxfmParam;
+
 // Constants:
 //  for (int i = 1; i< 32; ++i)
 //    printf("static const int cospi_%d_64 = %.0f;\n", i,

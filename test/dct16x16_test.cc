@@ -226,9 +226,9 @@ void reference_16x16_dct_2d(int16_t input[256], double output[256]) {
 typedef void (*FdctFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*IdctFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef void (*FhtFunc)(const int16_t *in, tran_low_t *out, int stride,
-                        FWD_TXFM_PARAM *fwd_txfm_param);
+                        TxfmParam *txfm_param);
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
-                        const INV_TXFM_PARAM *inv_txfm_param);
+                        const TxfmParam *txfm_param);
 
 typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t> Dct16x16Param;
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t> Ht16x16Param;
@@ -236,46 +236,46 @@ typedef std::tr1::tuple<IdctFunc, IdctFunc, int, aom_bit_depth_t>
     Idct16x16Param;
 
 void fdct16x16_ref(const int16_t *in, tran_low_t *out, int stride,
-                   FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
+                   TxfmParam * /*txfm_param*/) {
   aom_fdct16x16_c(in, out, stride);
 }
 
 void idct16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
-                   const INV_TXFM_PARAM * /*inv_txfm_param*/) {
+                   const TxfmParam * /*txfm_param*/) {
   aom_idct16x16_256_add_c(in, dest, stride);
 }
 
 void fht16x16_ref(const int16_t *in, tran_low_t *out, int stride,
-                  FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fht16x16_c(in, out, stride, fwd_txfm_param);
+                  TxfmParam *txfm_param) {
+  av1_fht16x16_c(in, out, stride, txfm_param);
 }
 
 void iht16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
-                  const INV_TXFM_PARAM *inv_txfm_param) {
-  av1_iht16x16_256_add_c(in, dest, stride, inv_txfm_param);
+                  const TxfmParam *txfm_param) {
+  av1_iht16x16_256_add_c(in, dest, stride, txfm_param);
 }
 
 #if CONFIG_HIGHBITDEPTH
 void fht16x16_10(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fwd_txfm2d_16x16_c(in, out, stride, fwd_txfm_param->tx_type, 10);
+                 TxfmParam *txfm_param) {
+  av1_fwd_txfm2d_16x16_c(in, out, stride, txfm_param->tx_type, 10);
 }
 
 void fht16x16_12(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fwd_txfm2d_16x16_c(in, out, stride, fwd_txfm_param->tx_type, 12);
+                 TxfmParam *txfm_param) {
+  av1_fwd_txfm2d_16x16_c(in, out, stride, txfm_param->tx_type, 12);
 }
 
 void iht16x16_10(const tran_low_t *in, uint8_t *out, int stride,
-                 const INV_TXFM_PARAM *inv_txfm_param) {
+                 const TxfmParam *txfm_param) {
   av1_inv_txfm2d_add_16x16_c(in, CONVERT_TO_SHORTPTR(out), stride,
-                             inv_txfm_param->tx_type, 10);
+                             txfm_param->tx_type, 10);
 }
 
 void iht16x16_12(const tran_low_t *in, uint8_t *out, int stride,
-                 const INV_TXFM_PARAM *inv_txfm_param) {
+                 const TxfmParam *txfm_param) {
   av1_inv_txfm2d_add_16x16_c(in, CONVERT_TO_SHORTPTR(out), stride,
-                             inv_txfm_param->tx_type, 12);
+                             txfm_param->tx_type, 12);
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
@@ -361,7 +361,7 @@ class Trans16x16TestBase {
       for (int j = 0; j < kNumCoeffs; ++j)
         input_block[j] = (rnd.Rand16() & mask_) - (rnd.Rand16() & mask_);
 
-      fwd_txfm_ref(input_block, output_ref_block, pitch_, &fwd_txfm_param_);
+      fwd_txfm_ref(input_block, output_ref_block, pitch_, &txfm_param_);
       ASM_REGISTER_STATE_CHECK(RunFwdTxfm(input_block, output_block, pitch_));
 
       // The minimum quant value is 4.
@@ -388,8 +388,7 @@ class Trans16x16TestBase {
         for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = -mask_;
       }
 
-      fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_,
-                   &fwd_txfm_param_);
+      fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_, &txfm_param_);
       ASM_REGISTER_STATE_CHECK(
           RunFwdTxfm(input_extreme_block, output_block, pitch_));
 
@@ -425,8 +424,7 @@ class Trans16x16TestBase {
       if (i == 1)
         for (int j = 0; j < kNumCoeffs; ++j) input_extreme_block[j] = -mask_;
 
-      fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_,
-                   &fwd_txfm_param_);
+      fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_, &txfm_param_);
 
       // clear reconstructed pixel buffers
       memset(dst, 0, kNumCoeffs * sizeof(uint8_t));
@@ -441,12 +439,12 @@ class Trans16x16TestBase {
       for (int j = 1; j < kNumCoeffs; ++j)
         output_ref_block[j] = (output_ref_block[j] / ac_thred) * ac_thred;
       if (bit_depth_ == AOM_BITS_8) {
-        inv_txfm_ref(output_ref_block, ref, pitch_, &inv_txfm_param_);
+        inv_txfm_ref(output_ref_block, ref, pitch_, &txfm_param_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(output_ref_block, dst, pitch_));
 #if CONFIG_HIGHBITDEPTH
       } else {
         inv_txfm_ref(output_ref_block, CONVERT_TO_BYTEPTR(ref16), pitch_,
-                     &inv_txfm_param_);
+                     &txfm_param_);
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(output_ref_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
 #endif
@@ -579,8 +577,7 @@ class Trans16x16TestBase {
   int mask_;
   FhtFunc fwd_txfm_ref;
   IhtFunc inv_txfm_ref;
-  FWD_TXFM_PARAM fwd_txfm_param_;
-  INV_TXFM_PARAM inv_txfm_param_;
+  TxfmParam txfm_param_;
 };
 
 class Trans16x16DCT : public Trans16x16TestBase,
@@ -597,8 +594,7 @@ class Trans16x16DCT : public Trans16x16TestBase,
     inv_txfm_ref = idct16x16_ref;
     mask_ = (1 << bit_depth_) - 1;
     inv_txfm_ref = idct16x16_ref;
-    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
-    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    txfm_param_.tx_type = GET_PARAM(2);
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
@@ -639,8 +635,7 @@ class Trans16x16HT : public Trans16x16TestBase,
     bit_depth_ = GET_PARAM(3);
     pitch_ = 16;
     mask_ = (1 << bit_depth_) - 1;
-    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
-    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    txfm_param_.tx_type = GET_PARAM(2);
 #if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10:
@@ -665,10 +660,10 @@ class Trans16x16HT : public Trans16x16TestBase,
 
  protected:
   void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {
-    fwd_txfm_(in, out, stride, &fwd_txfm_param_);
+    fwd_txfm_(in, out, stride, &txfm_param_);
   }
   void RunInvTxfm(tran_low_t *out, uint8_t *dst, int stride) {
-    inv_txfm_(out, dst, stride, &inv_txfm_param_);
+    inv_txfm_(out, dst, stride, &txfm_param_);
   }
 
   FhtFunc fwd_txfm_;

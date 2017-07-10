@@ -490,7 +490,7 @@ static AV1_QUANT_FACADE
 #endif  // !CONFIG_PVQ
 
 typedef void (*fwdTxfmFunc)(const int16_t *diff, tran_low_t *coeff, int stride,
-                            FWD_TXFM_PARAM *param);
+                            TxfmParam *txfm_param);
 static const fwdTxfmFunc fwd_txfm_func[2] = { av1_fwd_txfm,
                                               av1_highbd_fwd_txfm };
 
@@ -532,7 +532,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
 #endif
 
-  FWD_TXFM_PARAM fwd_txfm_param;
+  TxfmParam txfm_param;
 
 #if CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
   uint8_t *dst;
@@ -623,20 +623,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   (void)ctx;
 
-  fwd_txfm_param.tx_type = tx_type;
-  fwd_txfm_param.tx_size = tx_size;
-  fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
+  txfm_param.tx_type = tx_type;
+  txfm_param.tx_size = tx_size;
+  txfm_param.lossless = xd->lossless[mbmi->segment_id];
 #if CONFIG_LGT
-  fwd_txfm_param.is_inter = is_inter_block(mbmi);
-  fwd_txfm_param.dst = dst;
-  fwd_txfm_param.stride = dst_stride;
-  fwd_txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+  txfm_param.is_inter = is_inter_block(mbmi);
+  txfm_param.dst = dst;
+  txfm_param.stride = dst_stride;
+  txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
 #endif
 
 #if !CONFIG_PVQ
-  fwd_txfm_param.bd = xd->bd;
+  txfm_param.bd = xd->bd;
   const int is_hbd = get_bitdepth_data_path_index(xd);
-  fwd_txfm_func[is_hbd](src_diff, coeff, diff_stride, &fwd_txfm_param);
+  fwd_txfm_func[is_hbd](src_diff, coeff, diff_stride, &txfm_param);
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
@@ -654,14 +654,14 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #else  // CONFIG_PVQ
   (void)xform_quant_idx;
 #if CONFIG_HIGHBITDEPTH
-  fwd_txfm_param.bd = xd->bd;
+  txfm_param.bd = xd->bd;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    av1_highbd_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-    av1_highbd_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+    av1_highbd_fwd_txfm(src_int16, coeff, diff_stride, &txfm_param);
+    av1_highbd_fwd_txfm(pred, ref_coeff, diff_stride, &txfm_param);
   } else {
 #endif
-    av1_fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-    av1_fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
+    av1_fwd_txfm(src_int16, coeff, diff_stride, &txfm_param);
+    av1_fwd_txfm(pred, ref_coeff, diff_stride, &txfm_param);
 #if CONFIG_HIGHBITDEPTH
   }
 #endif
@@ -827,7 +827,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-  INV_TXFM_PARAM inv_txfm_param;
+  TxfmParam txfm_param;
   uint8_t *dst;
   int ctx = 0;
   dst = &pd->dst
@@ -863,21 +863,20 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_HIGHBITDEPTH
     }
 #endif  // !CONFIG_PVQ
-    inv_txfm_param.bd = xd->bd;
-    inv_txfm_param.tx_type = DCT_DCT;
-    inv_txfm_param.eob = p->eobs[block];
-    inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+    txfm_param.bd = xd->bd;
+    txfm_param.tx_type = DCT_DCT;
+    txfm_param.eob = p->eobs[block];
+    txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride,
-                                  &inv_txfm_param);
+      av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
     }
 #endif  //  CONFIG_HIGHBITDEPTH
     if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-      av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
+      av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
     } else {
-      av1_idct4x4_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
+      av1_idct4x4_add(dqcoeff, dst, pd->dst.stride, &txfm_param);
     }
   }
 }

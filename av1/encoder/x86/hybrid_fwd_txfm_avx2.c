@@ -14,7 +14,6 @@
 #include "./av1_rtcd.h"
 #include "./aom_dsp_rtcd.h"
 
-#include "av1/common/idct.h"
 #include "aom_dsp/x86/fwd_txfm_avx2.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/txfm_common_avx2.h"
@@ -915,9 +914,9 @@ static void fidtx16_avx2(__m256i *in) {
 #endif
 
 void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
-                       FWD_TXFM_PARAM *fwd_txfm_param) {
+                       TxfmParam *txfm_param) {
   __m256i in[16];
-  int tx_type = fwd_txfm_param->tx_type;
+  int tx_type = txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:
@@ -1511,10 +1510,10 @@ static void fidtx32_avx2(__m256i *in0, __m256i *in1) {
 #endif
 
 void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
-                       FWD_TXFM_PARAM *fwd_txfm_param) {
+                       TxfmParam *txfm_param) {
   __m256i in0[32];  // left 32 columns
   __m256i in1[32];  // right 32 columns
-  int tx_type = fwd_txfm_param->tx_type;
+  int tx_type = txfm_param->tx_type;
 
   switch (tx_type) {
     case DCT_DCT:

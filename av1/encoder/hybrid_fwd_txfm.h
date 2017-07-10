@@ -19,10 +19,10 @@ extern "C" {
 #endif
 
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
-                  FWD_TXFM_PARAM *fwd_txfm_param);
+                  TxfmParam *txfm_param);
 
 void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
-                         int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param);
+                         int diff_stride, TxfmParam *txfm_param);
 
 #ifdef __cplusplus
 }  // extern "C"

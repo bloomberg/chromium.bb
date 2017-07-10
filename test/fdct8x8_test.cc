@@ -40,9 +40,9 @@ const int kSignBiasMaxDiff15 = 10000;
 typedef void (*FdctFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*IdctFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef void (*FhtFunc)(const int16_t *in, tran_low_t *out, int stride,
-                        FWD_TXFM_PARAM *fwd_txfm_param);
+                        TxfmParam *txfm_param);
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
-                        const INV_TXFM_PARAM *inv_txfm_param);
+                        const TxfmParam *txfm_param);
 
 typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t> Dct8x8Param;
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t> Ht8x8Param;
@@ -78,36 +78,36 @@ void reference_8x8_dct_2d(const int16_t input[kNumCoeffs],
 }
 
 void fdct8x8_ref(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
+                 TxfmParam * /*txfm_param*/) {
   aom_fdct8x8_c(in, out, stride);
 }
 
 void fht8x8_ref(const int16_t *in, tran_low_t *out, int stride,
-                FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fht8x8_c(in, out, stride, fwd_txfm_param);
+                TxfmParam *txfm_param) {
+  av1_fht8x8_c(in, out, stride, txfm_param);
 }
 
 #if CONFIG_HIGHBITDEPTH
 void fht8x8_10(const int16_t *in, tran_low_t *out, int stride,
-               FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fwd_txfm2d_8x8_c(in, out, stride, fwd_txfm_param->tx_type, 10);
+               TxfmParam *txfm_param) {
+  av1_fwd_txfm2d_8x8_c(in, out, stride, txfm_param->tx_type, 10);
 }
 
 void fht8x8_12(const int16_t *in, tran_low_t *out, int stride,
-               FWD_TXFM_PARAM *fwd_txfm_param) {
-  av1_fwd_txfm2d_8x8_c(in, out, stride, fwd_txfm_param->tx_type, 12);
+               TxfmParam *txfm_param) {
+  av1_fwd_txfm2d_8x8_c(in, out, stride, txfm_param->tx_type, 12);
 }
 
 void iht8x8_10(const tran_low_t *in, uint8_t *out, int stride,
-               const INV_TXFM_PARAM *inv_txfm_param) {
+               const TxfmParam *txfm_param) {
   av1_inv_txfm2d_add_8x8_c(in, CONVERT_TO_SHORTPTR(out), stride,
-                           inv_txfm_param->tx_type, 10);
+                           txfm_param->tx_type, 10);
 }
 
 void iht8x8_12(const tran_low_t *in, uint8_t *out, int stride,
-               const INV_TXFM_PARAM *inv_txfm_param) {
+               const TxfmParam *txfm_param) {
   av1_inv_txfm2d_add_8x8_c(in, CONVERT_TO_SHORTPTR(out), stride,
-                           inv_txfm_param->tx_type, 12);
+                           txfm_param->tx_type, 12);
 }
 
 #endif  // CONFIG_HIGHBITDEPTH
@@ -310,8 +310,8 @@ class FwdTrans8x8TestBase {
 
       ASM_REGISTER_STATE_CHECK(
           RunFwdTxfm(test_input_block, test_temp_block, pitch_));
-      ASM_REGISTER_STATE_CHECK(fwd_txfm_ref(test_input_block, ref_temp_block,
-                                            pitch_, &fwd_txfm_param_));
+      ASM_REGISTER_STATE_CHECK(
+          fwd_txfm_ref(test_input_block, ref_temp_block, pitch_, &txfm_param_));
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
 #if CONFIG_HIGHBITDEPTH
@@ -494,8 +494,7 @@ class FwdTrans8x8TestBase {
   FhtFunc fwd_txfm_ref;
   aom_bit_depth_t bit_depth_;
   int mask_;
-  FWD_TXFM_PARAM fwd_txfm_param_;
-  INV_TXFM_PARAM inv_txfm_param_;
+  TxfmParam txfm_param_;
 };
 
 class FwdTrans8x8DCT : public FwdTrans8x8TestBase,
@@ -510,8 +509,7 @@ class FwdTrans8x8DCT : public FwdTrans8x8TestBase,
     fwd_txfm_ref = fdct8x8_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
-    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
-    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    txfm_param_.tx_type = GET_PARAM(2);
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
@@ -550,8 +548,7 @@ class FwdTrans8x8HT : public FwdTrans8x8TestBase,
     fwd_txfm_ref = fht8x8_ref;
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
-    fwd_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
-    inv_txfm_param_.tx_type = (TX_TYPE)GET_PARAM(2);
+    txfm_param_.tx_type = GET_PARAM(2);
 #if CONFIG_HIGHBITDEPTH
     switch (bit_depth_) {
       case AOM_BITS_10: fwd_txfm_ref = fht8x8_10; break;
@@ -565,10 +562,10 @@ class FwdTrans8x8HT : public FwdTrans8x8TestBase,
 
  protected:
   void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {
-    fwd_txfm_(in, out, stride, &fwd_txfm_param_);
+    fwd_txfm_(in, out, stride, &txfm_param_);
   }
   void RunInvTxfm(tran_low_t *out, uint8_t *dst, int stride) {
-    inv_txfm_(out, dst, stride, &inv_txfm_param_);
+    inv_txfm_(out, dst, stride, &txfm_param_);
   }
 
   FhtFunc fwd_txfm_;
