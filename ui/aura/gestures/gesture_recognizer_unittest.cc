@@ -660,8 +660,7 @@ void SetTouchRadius(ui::TouchEvent* event, float radius_x, float radius_y) {
 
 }  // namespace
 
-class GestureRecognizerTest : public AuraTestBase,
-                              public ::testing::WithParamInterface<bool> {
+class GestureRecognizerTest : public AuraTestBase {
  public:
   GestureRecognizerTest() {}
 
