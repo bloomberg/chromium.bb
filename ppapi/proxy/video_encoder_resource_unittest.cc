@@ -6,7 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
@@ -290,7 +292,7 @@ class VideoEncoderResourceTest : public PluginProxyTest,
   void SendBitstreamBuffers(const ResourceMessageCallParams& params,
                             uint32_t buffer_length) {
     std::vector<SerializedHandle> handles;
-    for (base::SharedMemory* mem : shared_memory_bitstreams_) {
+    for (const auto& mem : shared_memory_bitstreams_) {
       ASSERT_EQ(mem->requested_size(), buffer_length);
       base::SharedMemoryHandle handle = mem->handle().Duplicate();
       ASSERT_TRUE(handle.IsValid());
@@ -423,7 +425,7 @@ class VideoEncoderResourceTest : public PluginProxyTest,
   const PPB_VideoEncoder_0_2* encoder_iface_;
   const PPB_VideoEncoder_0_1* encoder_iface_0_1_;
 
-  ScopedVector<base::SharedMemory> shared_memory_bitstreams_;
+  std::vector<std::unique_ptr<base::SharedMemory>> shared_memory_bitstreams_;
 
   MediaStreamBufferManager video_frames_manager_;
 };

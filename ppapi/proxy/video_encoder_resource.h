@@ -9,10 +9,10 @@
 
 #include <deque>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
@@ -46,7 +46,7 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
     ShmBuffer(uint32_t id, std::unique_ptr<base::SharedMemory> shm);
     ~ShmBuffer();
 
-    // Index of the buffer in the ScopedVector. Buffers have the same id in
+    // Index of the buffer in the vector. Buffers have the same id in
     // the plugin and the host.
     uint32_t id;
     std::unique_ptr<base::SharedMemory> shm;
@@ -56,7 +56,7 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
     BitstreamBuffer(uint32_t id, uint32_t size, bool key_frame);
     ~BitstreamBuffer();
 
-    // Index of the buffer in the ScopedVector. Same as ShmBuffer::id.
+    // Index of the buffer in the vector. Same as ShmBuffer::id.
     uint32_t id;
     uint32_t size;
     bool key_frame;
@@ -141,7 +141,7 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
       VideoFrameMap;
   VideoFrameMap video_frames_;
 
-  ScopedVector<ShmBuffer> shm_buffers_;
+  std::vector<std::unique_ptr<ShmBuffer>> shm_buffers_;
 
   std::deque<BitstreamBuffer> available_bitstream_buffers_;
   typedef std::map<void*, uint32_t> BitstreamBufferMap;

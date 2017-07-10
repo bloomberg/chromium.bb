@@ -401,10 +401,10 @@ void VideoEncoderResource::OnPluginMsgBitstreamBuffers(
         new base::SharedMemory(shm_handles[i], true));
     CHECK(shm->Map(buffer_length));
 
-    ShmBuffer* buffer = new ShmBuffer(i, std::move(shm));
-    shm_buffers_.push_back(buffer);
+    auto buffer = base::MakeUnique<ShmBuffer>(i, std::move(shm));
     bitstream_buffer_map_.insert(
         std::make_pair(buffer->shm->memory(), buffer->id));
+    shm_buffers_.push_back(std::move(buffer));
   }
 }
 

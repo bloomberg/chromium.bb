@@ -238,14 +238,10 @@ int32_t VideoDecoderResource::Decode(uint32_t decode_id,
       return PP_ERROR_NOMEMORY;
 
     available_shm_buffers_.push_back(shm_buffer.get());
-    if (shm_buffers_.size() < kMaximumPendingDecodes) {
-      shm_buffers_.push_back(shm_buffer.release());
-    } else {
-      // Delete manually since ScopedVector won't delete the existing element if
-      // we just assign it.
-      delete shm_buffers_[shm_id];
-      shm_buffers_[shm_id] = shm_buffer.release();
-    }
+    if (shm_buffers_.size() < kMaximumPendingDecodes)
+      shm_buffers_.push_back(std::move(shm_buffer));
+    else
+      shm_buffers_[shm_id] = std::move(shm_buffer);
   }
 
   // At this point we should have shared memory to hold the plugin's buffer.
@@ -486,7 +482,7 @@ void VideoDecoderResource::OnPluginMsgDecodeComplete(
     return;
   }
   // Make the shm buffer available.
-  available_shm_buffers_.push_back(shm_buffers_[shm_id]);
+  available_shm_buffers_.push_back(shm_buffers_[shm_id].get());
   // If the plugin is waiting, let it call Decode again.
   if (decode_callback_.get()) {
     scoped_refptr<TrackedCallback> callback;
