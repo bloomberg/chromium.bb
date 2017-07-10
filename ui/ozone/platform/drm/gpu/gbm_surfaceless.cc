@@ -115,6 +115,15 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   frame->callback = surface_swap_callback;
   unsubmitted_frames_.push_back(base::MakeUnique<PendingFrame>());
 
+  // TODO(dcastagna): Remove the following workaround once we get explicit sync
+  // on Intel.
+  // We can not rely on implicit sync on external devices (crbug.com/692508).
+  if (rely_on_implicit_sync_ && !IsOnExternalDrmDevice()) {
+    frame->ready = true;
+    SubmitFrame();
+    return;
+  }
+
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
@@ -165,6 +174,10 @@ EGLConfig GbmSurfaceless::GetConfig() {
     config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
   }
   return config_;
+}
+
+void GbmSurfaceless::SetRelyOnImplicitSync(bool rely_on_implicit_sync) {
+  rely_on_implicit_sync_ = rely_on_implicit_sync;
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
@@ -233,6 +246,10 @@ void GbmSurfaceless::SwapCompleted(const SwapCompletionCallback& callback,
   }
 
   SubmitFrame();
+}
+
+bool GbmSurfaceless::IsOnExternalDrmDevice() {
+  return planes_.empty() ? false : planes_[0].buffer->RequiresGlFinish();
 }
 
 }  // namespace ui

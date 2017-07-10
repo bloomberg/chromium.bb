@@ -225,6 +225,8 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
+  GPU_OP(RELY_ON_IMPLICIT_SYNC_FOR_SWAP_BUFFERS,             \
+         rely_on_implicit_sync_for_swap_buffers)             \
 // clang-format on
 
 namespace gpu {
