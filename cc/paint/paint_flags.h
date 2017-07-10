@@ -177,7 +177,7 @@ class CC_PAINT_EXPORT PaintFlags {
   }
 
   ALWAYS_INLINE void setShader(sk_sp<PaintShader> shader) {
-    paint_.setShader(shader ? shader->sk_shader() : nullptr);
+    paint_.setShader(shader ? shader->GetSkShader() : nullptr);
   }
   ALWAYS_INLINE SkPathEffect* getPathEffect() const {
     return paint_.getPathEffect();

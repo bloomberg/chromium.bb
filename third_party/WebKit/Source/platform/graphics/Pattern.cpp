@@ -63,7 +63,7 @@ void Pattern::ApplyToFlags(PaintFlags& flags, const SkMatrix& local_matrix) {
 }
 
 bool Pattern::IsLocalMatrixChanged(const SkMatrix& local_matrix) const {
-  return local_matrix != cached_shader_->sk_shader()->getLocalMatrix();
+  return local_matrix != cached_shader_->GetLocalMatrix();
 }
 
 }  // namespace blink
