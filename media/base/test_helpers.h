@@ -157,6 +157,11 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 bool VerifyFakeVideoBufferForTest(const scoped_refptr<DecoderBuffer>& buffer,
                                   const VideoDecoderConfig& config);
 
+// Compares two {Audio|Video}DecoderConfigs
+MATCHER_P(DecoderConfigEq, config, "") {
+  return arg.Matches(config);
+}
+
 MATCHER_P(HasTimestamp, timestamp_in_ms, "") {
   return arg.get() && !arg->end_of_stream() &&
          arg->timestamp().InMilliseconds() == timestamp_in_ms;

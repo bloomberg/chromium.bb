@@ -115,6 +115,8 @@ class CourierRenderer : public Renderer {
   void SetCdmCallback(std::unique_ptr<pb::RpcMessage> message);
   void OnTimeUpdate(std::unique_ptr<pb::RpcMessage> message);
   void OnBufferingStateChange(std::unique_ptr<pb::RpcMessage> message);
+  void OnAudioConfigChange(std::unique_ptr<pb::RpcMessage> message);
+  void OnVideoConfigChange(std::unique_ptr<pb::RpcMessage> message);
   void OnVideoNaturalSizeChange(std::unique_ptr<pb::RpcMessage> message);
   void OnVideoOpacityChange(std::unique_ptr<pb::RpcMessage> message);
   void OnStatisticsUpdate(std::unique_ptr<pb::RpcMessage> message);

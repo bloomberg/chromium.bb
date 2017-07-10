@@ -15,6 +15,7 @@
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
+#include "media/mojo/common/media_type_converters.h"
 #include "media/renderers/video_overlay_factory.h"
 
 namespace media {
@@ -280,6 +281,18 @@ void MojoRenderer::OnVideoOpacityChange(bool opaque) {
   DVLOG(2) << __func__ << ": " << opaque;
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnVideoOpacityChange(opaque);
+}
+
+void MojoRenderer::OnAudioConfigChange(const AudioDecoderConfig& config) {
+  DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnAudioConfigChange(config);
+}
+
+void MojoRenderer::OnVideoConfigChange(const VideoDecoderConfig& config) {
+  DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoConfigChange(config);
 }
 
 void MojoRenderer::OnStatisticsUpdate(const PipelineStatistics& stats) {

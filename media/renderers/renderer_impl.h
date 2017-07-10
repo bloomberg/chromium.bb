@@ -17,12 +17,14 @@
 #include "base/time/clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
+#include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -171,8 +173,11 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
+
   void OnWaitingForDecryptionKey();
   void OnVideoNaturalSizeChange(const gfx::Size& size);
+  void OnAudioConfigChange(const AudioDecoderConfig& config);
+  void OnVideoConfigChange(const VideoDecoderConfig& config);
   void OnVideoOpacityChange(bool opaque);
 
   void OnStreamRestartCompleted();

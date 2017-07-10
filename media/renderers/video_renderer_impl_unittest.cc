@@ -140,6 +140,7 @@ class VideoRendererImplTest : public testing::Test {
     if (low_delay)
       demuxer_stream->set_liveness(DemuxerStream::LIVENESS_LIVE);
     EXPECT_CALL(mock_cb_, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(mock_cb_, OnAudioConfigChange(_)).Times(0);
     renderer_->Initialize(demuxer_stream, nullptr, &mock_cb_,
                           base::Bind(&WallClockTimeSource::GetWallClockTimes,
                                      base::Unretained(&time_source_)),
@@ -1307,6 +1308,31 @@ TEST_F(VideoRendererImplTest, FramesAreNotExpiredDuringPreroll) {
       .WillOnce(RunClosure(event.GetClosure()));
   AdvanceTimeInMs(10);
   event.RunAndWait();
+
+  Destroy();
+}
+
+TEST_F(VideoRendererImplTest, VideoConfigChange) {
+  Initialize();
+
+  // Configure demuxer stream to allow config changes.
+  EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
+      .WillRepeatedly(Return(true));
+
+  // Signal a config change at the next DemuxerStream::Read().
+  EXPECT_CALL(demuxer_stream_, Read(_))
+      .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged, nullptr));
+
+  // Use LargeEncrypted config (non-default) to ensure its plumbed through to
+  // callback.
+  demuxer_stream_.set_video_decoder_config(TestVideoConfig::LargeEncrypted());
+
+  EXPECT_CALL(mock_cb_, OnVideoConfigChange(
+                            DecoderConfigEq(TestVideoConfig::LargeEncrypted())))
+      .Times(1);
+
+  // Start plyaing to trigger DemuxerStream::Read(), surfacing the config change
+  StartPlayingFrom(0);
 
   Destroy();
 }

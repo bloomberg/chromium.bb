@@ -22,6 +22,7 @@
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer.h"
 #include "media/base/video_renderer_sink.h"
@@ -105,6 +106,10 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnStatisticsUpdate(const PipelineStatistics& stats);
   void OnBufferingStateChange(BufferingState state);
   void OnWaitingForDecryptionKey();
+
+  // Called by the VideoFrameStream when a config change occurs. Will notify
+  // RenderClient of the new config.
+  void OnConfigChange(const VideoDecoderConfig& config);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. If a frame is available the planes will be
@@ -209,6 +214,11 @@ class MEDIA_EXPORT VideoRendererImpl
   // access these values on |task_runner_|.
   VideoRendererSink* const sink_;
   bool sink_started_;
+
+  // Stores the last decoder config that was passed to
+  // RendererClient::OnVideoConfigChange. Used to prevent signaling config
+  // to the upper layers when when the new config is the same.
+  VideoDecoderConfig current_decoder_config_;
 
   // Used for accessing data members.
   base::Lock lock_;

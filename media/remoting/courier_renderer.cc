@@ -409,6 +409,12 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       VLOG(2) << __func__ << ": Received RPC_RC_ONERROR.";
       OnFatalError(RECEIVER_PIPELINE_ERROR);
       break;
+    case pb::RpcMessage::RPC_RC_ONAUDIOCONFIGCHANGE:
+      OnAudioConfigChange(std::move(message));
+      break;
+    case pb::RpcMessage::RPC_RC_ONVIDEOCONFIGCHANGE:
+      OnVideoConfigChange(std::move(message));
+      break;
     case pb::RpcMessage::RPC_RC_ONVIDEONATURALSIZECHANGE:
       OnVideoNaturalSizeChange(std::move(message));
       break;
@@ -582,6 +588,54 @@ void CourierRenderer::OnBufferingStateChange(
   if (!state.has_value())
     return;
   client_->OnBufferingStateChange(state.value());
+}
+
+void CourierRenderer::OnAudioConfigChange(
+    std::unique_ptr<pb::RpcMessage> message) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(message);
+  // Shutdown remoting session if receiving malformed RPC message.
+  if (!message->has_rendererclient_onaudioconfigchange_rpc()) {
+    VLOG(1) << __func__ << " missing required RPC message";
+    OnFatalError(RPC_INVALID);
+    return;
+  }
+
+  const auto* audio_config_message =
+      message->mutable_rendererclient_onaudioconfigchange_rpc();
+  const pb::AudioDecoderConfig pb_audio_config =
+      audio_config_message->audio_decoder_config();
+  AudioDecoderConfig out_audio_config;
+  ConvertProtoToAudioDecoderConfig(pb_audio_config, &out_audio_config);
+  DCHECK(out_audio_config.IsValidConfig());
+
+  VLOG(2) << __func__ << ": Received RPC_RC_ONAUDIOCONFIGCHANGE with config:"
+          << out_audio_config.AsHumanReadableString();
+  client_->OnAudioConfigChange(out_audio_config);
+}
+
+void CourierRenderer::OnVideoConfigChange(
+    std::unique_ptr<pb::RpcMessage> message) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(message);
+  // Shutdown remoting session if receiving malformed RPC message.
+  if (!message->has_rendererclient_onvideoconfigchange_rpc()) {
+    VLOG(1) << __func__ << " missing required RPC message";
+    OnFatalError(RPC_INVALID);
+    return;
+  }
+
+  const auto* video_config_message =
+      message->mutable_rendererclient_onvideoconfigchange_rpc();
+  const pb::VideoDecoderConfig pb_video_config =
+      video_config_message->video_decoder_config();
+  VideoDecoderConfig out_video_config;
+  ConvertProtoToVideoDecoderConfig(pb_video_config, &out_video_config);
+  DCHECK(out_video_config.IsValidConfig());
+
+  VLOG(2) << __func__ << ": Received RPC_RC_ONVIDEOCONFIGCHANGE with config:"
+          << out_video_config.AsHumanReadableString();
+  client_->OnVideoConfigChange(out_video_config);
 }
 
 void CourierRenderer::OnVideoNaturalSizeChange(

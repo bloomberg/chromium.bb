@@ -222,6 +222,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
                     const AddTextTrackDoneCB& done_cb));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
+  MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));
+  MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
 

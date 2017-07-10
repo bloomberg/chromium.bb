@@ -337,6 +337,14 @@ message RendererClientOnBufferingStateChange {
   optional State state = 1;
 }
 
+message RendererClientOnAudioConfigChange {
+  optional AudioDecoderConfig audio_decoder_config = 1;
+}
+
+message RendererClientOnVideoConfigChange {
+  optional VideoDecoderConfig video_decoder_config = 1;
+}
+
 message DemuxerStreamReadUntil {
   optional int32 callback_handle = 1;
   optional uint32 count = 2;
@@ -473,6 +481,8 @@ message RpcMessage {
     RPC_RC_ONSTATISTICSUPDATE = 2006;
     RPC_RC_ONWAITINGFORDECRYPTIONKEY = 2007;
     RPC_RC_ONDURATIONCHANGE = 2008;
+    RPC_RC_ONAUDIOCONFIGCHANGE = 2009;
+    RPC_RC_ONVIDEOCONFIGCHANGE = 2010;
     // DemuxerStream message
     RPC_DS_INITIALIZE = 3000;
     RPC_DS_READUNTIL = 3001;
@@ -555,9 +565,15 @@ message RpcMessage {
     Size rendererclient_onvideonatualsizechange_rpc = 201;
     // RPC_RC_ONSTATISTICSUPDATE
     PipelineStatistics rendererclient_onstatisticsupdate_rpc = 202;
-    // RPC_RC_ONTIMEUPDATE
+    // RPC_RC_ONBUFFERINGSTATECHANGE
     RendererClientOnBufferingStateChange
         rendererclient_onbufferingstatechange_rpc = 203;
+    // RPC_RC_ONAUDIOCONFIGCHANGE
+    RendererClientOnAudioConfigChange rendererclient_onaudioconfigchange_rpc =
+        204;
+    // RPC_RC_ONVIDEOCONFIGCHANGE
+    RendererClientOnVideoConfigChange rendererclient_onvideoconfigchange_rpc =
+        205;
 
     // RPC_DS_READUNTIL
     DemuxerStreamReadUntil demuxerstream_readuntil_rpc = 300;

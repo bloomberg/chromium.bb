@@ -357,6 +357,9 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   state_ = kInitializing;
   client_ = client;
 
+  current_decoder_config_ = stream->audio_decoder_config();
+  DCHECK(current_decoder_config_.IsValidConfig());
+
   audio_buffer_stream_ = base::MakeUnique<AudioBufferStream>(
       task_runner_, create_audio_decoders_cb_, media_log_);
 
@@ -612,7 +615,8 @@ void AudioRendererImpl::DecodedAudioReady(
                  << " ts:" << buffer->timestamp().InMicroseconds()
                  << " old:" << last_decoded_sample_rate_
                  << " new:" << buffer->sample_rate();
-        OnConfigChange();
+        // Send a bogus config to reset timestamp state.
+        OnConfigChange(AudioDecoderConfig());
       }
       last_decoded_sample_rate_ = buffer->sample_rate();
 
@@ -980,10 +984,19 @@ void AudioRendererImpl::ChangeState_Locked(State new_state) {
   state_ = new_state;
 }
 
-void AudioRendererImpl::OnConfigChange() {
+void AudioRendererImpl::OnConfigChange(const AudioDecoderConfig& config) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(expecting_config_changes_);
   buffer_converter_->ResetTimestampState();
+
+  // An invalid config may be supplied by callers who simply want to reset
+  // internal state outside of detecting a new config from the demuxer stream.
+  // RendererClient only cares to know about config changes that differ from
+  // previous configs.
+  if (config.IsValidConfig() && !current_decoder_config_.Matches(config)) {
+    current_decoder_config_ = config;
+    client_->OnAudioConfigChange(config);
+  }
 }
 
 void AudioRendererImpl::SetBufferingState_Locked(

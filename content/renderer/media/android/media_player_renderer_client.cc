@@ -138,6 +138,15 @@ void MediaPlayerRendererClient::OnWaitingForDecryptionKey() {
   client_->OnWaitingForDecryptionKey();
 }
 
+void MediaPlayerRendererClient::OnAudioConfigChange(
+    const media::AudioDecoderConfig& config) {
+  client_->OnAudioConfigChange(config);
+}
+void MediaPlayerRendererClient::OnVideoConfigChange(
+    const media::VideoDecoderConfig& config) {
+  client_->OnVideoConfigChange(config);
+}
+
 void MediaPlayerRendererClient::OnVideoNaturalSizeChange(
     const gfx::Size& size) {
   stream_texture_wrapper_->UpdateTextureSize(size);

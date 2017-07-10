@@ -94,6 +94,8 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
   void OnBufferingStateChange(BufferingState state) final;
   void OnWaitingForDecryptionKey() final;
+  void OnAudioConfigChange(const AudioDecoderConfig& config) final;
+  void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
   void OnDurationChange(base::TimeDelta duration) final;
