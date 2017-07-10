@@ -1091,7 +1091,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * through the form from top to bottom.
      */
     private void updateSectionButtons() {
-        boolean mayEnableButton = true;
+        // Disable edit buttons when the client is checking a selection.
+        boolean mayEnableButton = !mIsClientCheckingSelection;
         for (int i = 0; i < mPaymentContainerLayout.getChildCount(); i++) {
             View child = mPaymentContainerLayout.getChildAt(i);
             if (!(child instanceof PaymentRequestSection)) continue;
