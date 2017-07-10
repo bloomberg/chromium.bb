@@ -4,6 +4,8 @@
 
 static_library("search_provider_logos") {
   sources = [
+    "features.cc",
+    "features.h",
     "fixed_logo_api.cc",
     "fixed_logo_api.h",
     "google_logo_api.cc",
@@ -34,6 +36,7 @@ static_library("search_provider_logos") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "google_logo_api_unittest.cc",
     "logo_cache_unittest.cc",
     "logo_tracker_unittest.cc",
   ]

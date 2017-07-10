@@ -7,12 +7,16 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+class GURL;
 
 namespace search_provider_logos {
 
@@ -72,6 +76,18 @@ struct Logo {
   // Metadata about the logo.
   LogoMetadata metadata;
 };
+
+// Parses the response from the server and returns it as an EncodedLogo. Returns
+// null if the response is invalid.
+using ParseLogoResponse = base::Callback<std::unique_ptr<EncodedLogo>(
+    std::unique_ptr<std::string> response,
+    base::Time response_time,
+    bool* parsing_failed)>;
+
+// Encodes the fingerprint of the cached logo in the logo URL. This enables the
+// server to verify whether the cached logo is up to date.
+using AppendQueryparamsToLogoURL =
+    base::Callback<GURL(const GURL& logo_url, const std::string& fingerprint)>;
 
 }  // namespace search_provider_logos
 

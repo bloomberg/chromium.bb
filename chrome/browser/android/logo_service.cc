@@ -5,6 +5,7 @@
 #include "chrome/browser/android/logo_service.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -29,17 +30,6 @@ namespace {
 
 const char kCachedLogoDirectory[] = "Search Logo";
 const int kDecodeLogoTimeoutSeconds = 30;
-
-// Returns the URL where the doodle can be downloaded, e.g.
-// https://www.google.com/async/newtab_mobile. This depends on the user's
-// Google domain.
-GURL GetGoogleDoodleURL(Profile* profile) {
-  GURL google_base_url(UIThreadSearchTermsData(profile).GoogleBaseURLValue());
-  const char kGoogleDoodleURLPath[] = "async/newtab_mobile";
-  GURL::Replacements replacements;
-  replacements.SetPathStr(kGoogleDoodleURLPath);
-  return google_base_url.ReplaceComponents(replacements);
-}
 
 class LogoDecoderDelegate : public ImageDecoder::ImageRequest {
  public:
@@ -139,22 +129,25 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
         profile_->GetRequestContext(), base::MakeUnique<ChromeLogoDelegate>());
   }
 
-  GURL url = use_fixed_logo ? logo_url : GetGoogleDoodleURL(profile_);
-  auto parse_logo_response_callback =
-      use_fixed_logo
-          ? base::Bind(&search_provider_logos::ParseFixedLogoResponse)
-          : base::Bind(&search_provider_logos::GoogleParseLogoResponse);
+  if (use_fixed_logo) {
+    logo_tracker_->SetServerAPI(
+        logo_url, base::Bind(&search_provider_logos::ParseFixedLogoResponse),
+        base::Bind(&search_provider_logos::UseFixedLogoUrl));
+  } else {
+    GURL google_base_url =
+        GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
 
-  bool use_gray_background =
-      !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
-  auto append_query_params_callback =
-      use_fixed_logo
-          ? base::Bind(&search_provider_logos::UseFixedLogoUrl)
-          : base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL,
-                       use_gray_background);
+    bool use_gray_background =
+        !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
 
-  logo_tracker_->SetServerAPI(url, parse_logo_response_callback,
-                              append_query_params_callback);
+    logo_tracker_->SetServerAPI(
+        search_provider_logos::GetGoogleDoodleURL(google_base_url),
+        search_provider_logos::GetGoogleParseLogoResponseCallback(
+            google_base_url),
+        search_provider_logos::GetGoogleAppendQueryparamsCallback(
+            use_gray_background));
+  }
+
   logo_tracker_->GetLogo(observer);
 }
 

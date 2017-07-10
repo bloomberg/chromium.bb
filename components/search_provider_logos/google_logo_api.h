@@ -14,14 +14,40 @@
 
 namespace search_provider_logos {
 
-// Implements AppendFingerprintToLogoURL, defined in logo_tracker.h, for Google
-// doodles.
-GURL GoogleAppendQueryparamsToLogoURL(bool gray_background,
-                                      const GURL& logo_url,
-                                      const std::string& fingerprint);
+// Returns the URL where the doodle can be downloaded, e.g.
+// https://www.google.com/async/newtab_mobile. This depends on the user's
+// Google domain.
+GURL GetGoogleDoodleURL(const GURL& google_base_url);
 
-// Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles.
-std::unique_ptr<EncodedLogo> GoogleParseLogoResponse(
+// These return the correct callbacks for appending queryparams and parsing the
+// response ("Legacy" or "New"), based on the value of features::kUseDdljsonApi.
+AppendQueryparamsToLogoURL GetGoogleAppendQueryparamsCallback(
+    bool gray_background);
+ParseLogoResponse GetGoogleParseLogoResponseCallback(const GURL& base_url);
+
+// Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
+// doodles (old newtab_mobile API).
+GURL GoogleLegacyAppendQueryparamsToLogoURL(bool gray_background,
+                                            const GURL& logo_url,
+                                            const std::string& fingerprint);
+
+// Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles
+// (old newtab_mobile API).
+std::unique_ptr<EncodedLogo> GoogleLegacyParseLogoResponse(
+    std::unique_ptr<std::string> response,
+    base::Time response_time,
+    bool* parsing_failed);
+
+// Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
+// doodles (new ddljson API).
+GURL GoogleNewAppendQueryparamsToLogoURL(bool gray_background,
+                                         const GURL& logo_url,
+                                         const std::string& fingerprint);
+
+// Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles
+// (new ddljson API).
+std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
+    const GURL& base_url,
     std::unique_ptr<std::string> response,
     base::Time response_time,
     bool* parsing_failed);

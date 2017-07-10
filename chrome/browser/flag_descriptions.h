@@ -1132,8 +1132,8 @@ extern const char kUpdateMenuItemDescription[];
 extern const char kUseAndroidMidiApiName[];
 extern const char kUseAndroidMidiApiDescription[];
 
-extern const char kUseNewDoodleApiName[];
-extern const char kUseNewDoodleApiDescription[];
+extern const char kUseDdljsonApiName[];
+extern const char kUseDdljsonApiDescription[];
 
 extern const char kWebPaymentsModifiersName[];
 extern const char kWebPaymentsModifiersDescription[];

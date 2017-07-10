@@ -67,18 +67,6 @@ class LogoDelegate {
       base::Callback<void(const SkBitmap&)> image_decoded_callback) = 0;
 };
 
-// Parses the response from the server and returns it as an EncodedLogo. Returns
-// null if the response is invalid.
-using ParseLogoResponse = base::Callback<std::unique_ptr<EncodedLogo>(
-    std::unique_ptr<std::string> response,
-    base::Time response_time,
-    bool* parsing_failed)>;
-
-// Encodes the fingerprint of the cached logo in the logo URL. This enables the
-// server to verify whether the cached logo is up to date.
-using AppendQueryparamsToLogoURL =
-    base::Callback<GURL(const GURL& logo_url, const std::string& fingerprint)>;
-
 // This class provides the logo for a search provider. Logos are downloaded from
 // the search provider's logo URL and cached on disk.
 //

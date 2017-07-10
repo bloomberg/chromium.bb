@@ -64,6 +64,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/proximity_auth/switches.h"
+#include "components/search_provider_logos/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_features.h"
@@ -3142,6 +3143,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"network-service", flag_descriptions::kEnableNetworkServiceName,
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkService)},
+
+#if defined(OS_ANDROID)
+    {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
+     flag_descriptions::kUseDdljsonApiDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(search_provider_logos::features::kUseDdljsonApi)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
