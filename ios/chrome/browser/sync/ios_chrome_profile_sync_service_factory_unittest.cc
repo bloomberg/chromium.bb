@@ -48,6 +48,7 @@ class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SESSIONS);
     datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::TYPED_URLS);
+    datatypes.push_back(syncer::USER_EVENTS);
 
     return datatypes;
   }

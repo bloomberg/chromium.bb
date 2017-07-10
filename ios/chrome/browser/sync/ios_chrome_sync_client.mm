@@ -38,6 +38,7 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
@@ -59,6 +60,7 @@
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -364,6 +366,10 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       // TODO(gangwu):implement TypedURLSyncBridge and return real
       // TypedURLSyncBridge here.
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    case syncer::USER_EVENTS:
+      return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
+          ->GetSyncBridge()
+          ->AsWeakPtr();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
