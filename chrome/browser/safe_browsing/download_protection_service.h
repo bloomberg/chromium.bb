@@ -253,6 +253,8 @@ class DownloadProtectionService {
                            PPAPIDownloadRequest_InvalidResponse);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            PPAPIDownloadRequest_Timeout);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           VerifyReferrerChainWithEmptyNavigationHistory);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
                            CheckClientDownloadOverridenByFlag);
 
@@ -300,8 +302,7 @@ class DownloadProtectionService {
   // a download. This function also records UMA stats of download attribution
   // result.
   std::unique_ptr<ReferrerChain> IdentifyReferrerChain(
-    const GURL& download_url,
-    content::WebContents* web_contents);
+      const content::DownloadItem& item);
 
   // If kDownloadAttribution feature is enabled, identify referrer chain of the
   // PPAPI download based on the frame URL where the download is initiated.

@@ -151,6 +151,9 @@ class WebContentsTester {
       int http_status_code,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes) = 0;
+
+  // Sets the return value of GetLastCommittedUrl() of TestWebContents.
+  virtual void SetLastCommittedURL(const GURL& url) = 0;
 };
 
 }  // namespace content

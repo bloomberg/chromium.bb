@@ -50,6 +50,7 @@
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_contents_tester.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
@@ -2384,6 +2385,37 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   EXPECT_EQ(".txt", request.alternate_extensions(0));
   EXPECT_EQ(".abc", request.alternate_extensions(1));
   EXPECT_EQ(".sdF", request.alternate_extensions(2));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyReferrerChainWithEmptyNavigationHistory) {
+  // Setup a web_contents with "http://example.com" as its last committed url.
+  content::WebContents* web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile_.get(),
+                                                        nullptr);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents);
+  web_contents_tester->SetLastCommittedURL(GURL("http://example.com"));
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(
+      &item, {"http://referrer.com", "http://www.evil.com/a.exe"},  // url_chain
+      "http://example.com/",                                        // referrer
+      FILE_PATH_LITERAL("a.tmp"),                                   // tmp_path
+      FILE_PATH_LITERAL("a.exe"));  // final_path
+  ON_CALL(item, GetWebContents()).WillByDefault(Return(web_contents));
+
+  std::unique_ptr<ReferrerChain> referrer_chain =
+      download_service_->IdentifyReferrerChain(item);
+
+  ASSERT_EQ(1, referrer_chain->size());
+  EXPECT_EQ(item.GetUrlChain().back(), referrer_chain->Get(0).url());
+  EXPECT_EQ(web_contents->GetLastCommittedURL().spec(),
+            referrer_chain->Get(0).referrer_url());
+  EXPECT_EQ(ReferrerChainEntry::EVENT_URL, referrer_chain->Get(0).type());
+  EXPECT_EQ(static_cast<int>(item.GetUrlChain().size()),
+            referrer_chain->Get(0).server_redirect_chain_size());
+  EXPECT_FALSE(referrer_chain->Get(0).is_retargeting());
 }
 
 // ------------ class DownloadProtectionServiceFlagTest ----------------
