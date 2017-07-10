@@ -248,15 +248,6 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated and will be removed soon.
-     */
-    // TODO(bsazonov) remove this method after fixing internal usages.
-    @MainThread
-    public void getGoogleAccounts(final Callback<Account[]> callback) {
-        tryGetGoogleAccounts(callback);
-    }
-
-    /**
      * Determine whether there are any Google accounts on the device.
      * Returns false if an error occurs while getting account list.
      */
