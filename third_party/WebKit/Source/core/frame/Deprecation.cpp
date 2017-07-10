@@ -252,7 +252,7 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
     case WebFeature::kLegacyProtocolEmbeddedAsSubresource:
       return String::Format(
           "Subresource requests using legacy protocols (like `ftp:`) are "
-          "are blocked. Please deliver web-accessible resources over modern "
+          "blocked. Please deliver web-accessible resources over modern "
           "protocols like HTTPS. See "
           "https://www.chromestatus.com/feature/5709390967472128 for details.");
 
