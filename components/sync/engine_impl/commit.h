@@ -47,15 +47,15 @@ class Commit {
   ~Commit();
 
   // |extensions_activity| may be null.
-  static Commit* Init(ModelTypeSet requested_types,
-                      ModelTypeSet enabled_types,
-                      size_t max_entries,
-                      const std::string& account_name,
-                      const std::string& cache_guid,
-                      bool cookie_jar_mismatch,
-                      bool cookie_jar_empty,
-                      CommitProcessor* commit_processor,
-                      ExtensionsActivity* extensions_activity);
+  static std::unique_ptr<Commit> Init(ModelTypeSet requested_types,
+                                      ModelTypeSet enabled_types,
+                                      size_t max_entries,
+                                      const std::string& account_name,
+                                      const std::string& cache_guid,
+                                      bool cookie_jar_mismatch,
+                                      bool cookie_jar_empty,
+                                      CommitProcessor* commit_processor,
+                                      ExtensionsActivity* extensions_activity);
 
   // |extensions_activity| may be null.
   SyncerError PostAndProcessResponse(NudgeTracker* nudge_tracker,

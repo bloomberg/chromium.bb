@@ -255,7 +255,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // requests.
   void UpdateConnectionStatus();
 
-  void SetServerStatus(HttpResponse::ServerConnectionCode server_status);
+  using ServerConnectionManager::SetServerStatus;
 
   // Return by copy to be thread-safe.
   const std::string store_birthday() {
@@ -272,7 +272,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // Adds a new progress marker to the last update.
   sync_pb::DataTypeProgressMarker* AddUpdateProgressMarker();
 
-  void ResetAuthToken() { auth_token_.clear(); }
+  void ResetAuthToken() { InvalidateAndClearAuthToken(); }
 
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,

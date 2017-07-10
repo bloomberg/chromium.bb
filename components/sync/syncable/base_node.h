@@ -39,7 +39,6 @@ namespace syncer {
 class BaseTransaction;
 
 namespace syncable {
-class BaseTransaction;
 class Entry;
 class Id;
 }

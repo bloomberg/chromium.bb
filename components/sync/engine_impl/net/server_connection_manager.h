@@ -228,6 +228,27 @@ class ServerConnectionManager : public CancelationObserver {
   // ServerConnectionManager to cleanup active connections.
   void OnConnectionDestroyed(Connection* connection);
 
+ private:
+  // A class to help deal with cleaning up active Connection objects when (for
+  // ex) multiple early-exits are present in some scope. ScopedConnectionHelper
+  // informs the ServerConnectionManager before the Connection object it takes
+  // ownership of is destroyed.
+  class ScopedConnectionHelper {
+   public:
+    // |manager| must outlive this. Takes ownership of |connection|.
+    ScopedConnectionHelper(ServerConnectionManager* manager,
+                           Connection* connection);
+    ~ScopedConnectionHelper();
+    Connection* get();
+
+   private:
+    ServerConnectionManager* manager_;
+    std::unique_ptr<Connection> connection_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedConnectionHelper);
+  };
+
+  void NotifyStatusChanged();
+
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
 
@@ -265,27 +286,6 @@ class ServerConnectionManager : public CancelationObserver {
   // A non-owning pointer to any active http connection, so that we can abort
   // it if necessary.
   Connection* active_connection_;
-
- private:
-  // A class to help deal with cleaning up active Connection objects when (for
-  // ex) multiple early-exits are present in some scope. ScopedConnectionHelper
-  // informs the ServerConnectionManager before the Connection object it takes
-  // ownership of is destroyed.
-  class ScopedConnectionHelper {
-   public:
-    // |manager| must outlive this. Takes ownership of |connection|.
-    ScopedConnectionHelper(ServerConnectionManager* manager,
-                           Connection* connection);
-    ~ScopedConnectionHelper();
-    Connection* get();
-
-   private:
-    ServerConnectionManager* manager_;
-    std::unique_ptr<Connection> connection_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedConnectionHelper);
-  };
-
-  void NotifyStatusChanged();
 
   CancelationSignal* const cancelation_signal_;
   bool signal_handler_registered_;

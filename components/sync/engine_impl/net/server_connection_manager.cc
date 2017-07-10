@@ -222,7 +222,7 @@ void ServerConnectionManager::InvalidateAndClearAuthToken() {
   // Copy over the token to previous invalid token.
   if (!auth_token_.empty()) {
     previously_invalidated_token.assign(auth_token_);
-    auth_token_ = std::string();
+    auth_token_.clear();
   }
 }
 
