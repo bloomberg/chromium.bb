@@ -136,7 +136,7 @@ appropriate directory, including, but not limited to:
 - PseudoElementData
 - VisitedLinkState (HTMLLinkElement)
 
-## fullscreen (-> core/fullscreen or core/html)
+## [Fullscreen](https://fullscreen.spec.whatwg.org/) (-> core/fullscreen)
 
 - DocumentFullscreen
 - ElementFullscreen
