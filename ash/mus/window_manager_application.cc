@@ -129,10 +129,14 @@ void WindowManagerApplication::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
 
-  aura_init_ = base::MakeUnique<views::AuraInit>(
+  aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
       views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
+  if (!aura_init_) {
+    context()->QuitNow();
+    return;
+  }
   window_manager_ = base::MakeUnique<WindowManager>(
       context()->connector(), ash_config_, show_primary_host_on_connect_);
 
