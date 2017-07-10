@@ -698,14 +698,20 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
     LoadAndLaunchPlatformApp("web_view/interstitial_teardown",
                              "EmbedderLoaded");
 
-    // Now load the guest.
+    // Create the guest.
     content::WebContents* embedder_web_contents =
         GetFirstAppWindowWebContents();
-    ExtensionTestMessageListener second("GuestAddedToDom", false);
+    ExtensionTestMessageListener guest_added("GuestAddedToDom", false);
+    EXPECT_TRUE(content::ExecuteScript(embedder_web_contents,
+                                       base::StringPrintf("createGuest();\n")));
+    ASSERT_TRUE(guest_added.WaitUntilSatisfied());
+
+    // Now load the guest.
+    ExtensionTestMessageListener guest_loaded("GuestLoaded", false);
     EXPECT_TRUE(content::ExecuteScript(
         embedder_web_contents,
         base::StringPrintf("loadGuest(%d);\n", host_and_port.port())));
-    ASSERT_TRUE(second.WaitUntilSatisfied());
+    ASSERT_TRUE(guest_loaded.WaitUntilSatisfied());
 
     // Wait for interstitial page to be shown in guest.
     content::WebContents* guest_web_contents =
@@ -1786,6 +1792,23 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
             content::GetFocusedRenderWidgetHost(guest_web_contents));
   EXPECT_EQ(interstitial_widget,
             content::GetFocusedRenderWidgetHost(outer_web_contents));
+}
+
+// Test makes sure that the browser does not crash when a <webview> navigates
+// out of an interstitial.
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageDetach) {
+  InterstitialTestHelper();
+
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+  EXPECT_TRUE(guest_web_contents->ShowingInterstitialPage());
+
+  // Navigate to about:blank.
+  content::TestNavigationObserver load_observer(guest_web_contents);
+  bool result = ExecuteScript(guest_web_contents,
+                              "window.location.assign('about:blank')");
+  EXPECT_TRUE(result);
+  load_observer.Wait();
 }
 
 // This test makes sure the browser process does not crash if app is closed

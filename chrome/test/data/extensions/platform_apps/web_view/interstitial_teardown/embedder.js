@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var webview;
+
+window.createGuest = function() {
+  webview = document.createElement('webview');
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+  chrome.test.sendMessage('GuestAddedToDom');
+}
+
 window.loadGuest = function(port) {
   window.console.log('embedder.loadGuest: ' + port);
-  var webview = document.createElement('webview');
 
   // This page is not loaded, we just need a https URL.
   var guestSrcHTTPS = 'https://localhost:' + port +
@@ -16,8 +24,7 @@ window.loadGuest = function(port) {
   webview.style.left = '0px';
   webview.style.top = '0px';
 
-  document.body.appendChild(webview);
-  chrome.test.sendMessage('GuestAddedToDom');
+  chrome.test.sendMessage('GuestLoaded');
 };
 
 window.onload = function() {
