@@ -398,6 +398,8 @@
     // Other properties can depend upon high priority properties (e.g. font-size / ems)
     {
       name: "color",
+      api_class: "CSSPropertyAPIColor",
+      api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
       interpolable: true,
@@ -690,7 +692,7 @@
     },
     {
       name: "background-color",
-      api_class: true,
+      api_class: "CSSPropertyAPIColor",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
@@ -1302,7 +1304,7 @@
     },
     {
       name: "flood-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       interpolable: true,
@@ -1547,7 +1549,7 @@
     },
     {
       name: "lighting-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       interpolable: true,
@@ -2360,7 +2362,7 @@
     },
     {
       name: "stop-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       interpolable: true,
@@ -2954,7 +2956,7 @@
     },
     {
       name: "column-rule-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
@@ -3190,7 +3192,7 @@
     },
     {
       name: "-webkit-tap-highlight-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       inherited: true,
@@ -3207,7 +3209,7 @@
     },
     {
       name: "-webkit-text-emphasis-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3235,7 +3237,7 @@
     },
     {
       name: "-webkit-text-fill-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3255,7 +3257,7 @@
     },
     {
       name: "-webkit-text-stroke-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3427,7 +3429,7 @@
 
     {
       name: "-webkit-border-end-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3443,7 +3445,7 @@
     },
     {
       name: "-webkit-border-start-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3459,7 +3461,7 @@
     },
     {
       name: "-webkit-border-before-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3475,7 +3477,7 @@
     },
     {
       name: "-webkit-border-after-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: "CSSPropertyAPIColorNoQuirks",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
