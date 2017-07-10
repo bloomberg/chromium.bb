@@ -130,7 +130,7 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
   if show_approvals and not opts.verbose:
     approvs = GetApprovalSummary(opts, cl)
     for cat in GERRIT_SUMMARY_CATS:
-      if approvs[cat] is '':
+      if approvs[cat] is '' or approvs[cat] == 0:
         functor = lambda x: x
       elif approvs[cat] < 0:
         functor = red
