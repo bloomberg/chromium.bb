@@ -180,10 +180,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddString("hostname", url.host());
 
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature) &&
-      safe_browsing::ChromeCleanerController::ShouldShowCleanupInSettingsUI()) {
+  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
     AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
-    html_source->AddBoolean("chromeCleanupEnabled", true);
+
+    if (safe_browsing::ChromeCleanerController::ShouldShowCleanupInSettingsUI())
+      html_source->AddBoolean("chromeCleanupEnabled", true);
   }
 #endif  // defined(OS_WIN)
 

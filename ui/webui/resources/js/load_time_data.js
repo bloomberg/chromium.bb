@@ -8,6 +8,10 @@
  * content has finished loading). This data includes both localized strings and
  * any data that is important to have ready from a very early stage (e.g. things
  * that must be displayed right away).
+ *
+ * Note that loadTimeData is not guaranteed to be consistent between page
+ * refreshes (https://crbug.com/740629) and should not contain values that might
+ * change if the page is re-opened later.
  */
 
 /** @type {!LoadTimeData} */ var loadTimeData;
