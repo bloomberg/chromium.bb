@@ -83,7 +83,9 @@ class NET_EXPORT FileNetLogObserver : public NetLog::ThreadSafeObserver {
   // Stops observing net_log() and closes the output file(s). Must be called
   // after StartObserving. Should be called before destruction of the
   // FileNetLogObserver and the NetLog, or the NetLog files will be deleted when
-  // the observer is destroyed.
+  // the observer is destroyed. Note that it is OK to destroy |this| immediately
+  // after calling StopObserving() - the callback will still be called once the
+  // file writing has completed.
   //
   // |polled_data| is an optional argument used to add additional network stack
   // state to the log.
