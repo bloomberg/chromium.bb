@@ -42,6 +42,7 @@
 #include "jni/PersonalDataManager_jni.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 namespace {
@@ -310,10 +311,12 @@ class AndroidAddressNormalizerDelegate
 };
 
 void OnSubKeysReceived(ScopedJavaGlobalRef<jobject> jdelegate,
-                       const std::vector<std::string>& sub_keys) {
+                       const std::vector<std::string>& subkeys_codes,
+                       const std::vector<std::string>& subkeys_names) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_GetSubKeysRequestDelegate_onSubKeysReceived(
-      env, jdelegate, base::android::ToJavaArrayOfStrings(env, sub_keys));
+      env, jdelegate, base::android::ToJavaArrayOfStrings(env, subkeys_codes),
+      base::android::ToJavaArrayOfStrings(env, subkeys_names));
 }
 
 }  // namespace
@@ -776,8 +779,10 @@ void PersonalDataManagerAndroid::StartRegionSubKeysRequest(
   ::payments::SubKeyReceiverCallback cb = base::BindOnce(
       &OnSubKeysReceived, ScopedJavaGlobalRef<jobject>(my_jdelegate));
 
-  subkey_requester_.StartRegionSubKeysRequest(region_code, jtimeout_seconds,
-                                              std::move(cb));
+  std::string language =
+      l10n_util::GetLanguage(g_browser_process->GetApplicationLocale());
+  subkey_requester_.StartRegionSubKeysRequest(region_code, language,
+                                              jtimeout_seconds, std::move(cb));
 }
 
 void PersonalDataManagerAndroid::CancelPendingGetSubKeys(

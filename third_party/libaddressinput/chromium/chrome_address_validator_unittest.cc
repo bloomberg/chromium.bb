@@ -120,23 +120,83 @@ AddressValidator* LargeAddressValidatorTest::validator_ = NULL;
 
 TEST_F(AddressValidatorTest, SubKeysLoaded) {
   const std::string country_code = "US";
-  const std::string first_state = "AL";
+  const std::string state_code = "AL";
+  const std::string state_name = "Alabama";
+  const std::string language = "en";
 
   validator_->LoadRules(country_code);
-  std::vector<std::string> sub_keys =
-      validator_->GetRegionSubKeys(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
   ASSERT_FALSE(sub_keys.empty());
-  ASSERT_EQ(sub_keys[0], first_state);
+  ASSERT_EQ(state_code, sub_keys[0].first);
+  ASSERT_EQ(state_name, sub_keys[0].second);
+}
+
+TEST_F(AddressValidatorTest, SubKeysLoaded_DefaultLanguage) {
+  const std::string country_code = "CA";
+  const std::string province_code = "BC";
+  const std::string province_name = "British Columbia";
+  const std::string language = "en";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
+  ASSERT_FALSE(sub_keys.empty());
+  ASSERT_EQ(province_code, sub_keys[1].first);
+  ASSERT_EQ(province_name, sub_keys[1].second);
+}
+
+TEST_F(AddressValidatorTest, SubKeysLoaded_NonDefaultLanguage) {
+  const std::string country_code = "CA";
+  const std::string province_code = "BC";
+  const std::string province_name = "Colombie-Britannique";
+  const std::string language = "fr";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
+  ASSERT_FALSE(sub_keys.empty());
+  ASSERT_EQ(province_code, sub_keys[1].first);
+  ASSERT_EQ(province_name, sub_keys[1].second);
+}
+
+TEST_F(AddressValidatorTest, SubKeysLoaded_LanguageNotAvailable) {
+  const std::string country_code = "CA";
+  const std::string province_code = "BC";
+  const std::string province_name = "British Columbia";
+  const std::string language = "es";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
+  ASSERT_FALSE(sub_keys.empty());
+  ASSERT_EQ(province_code, sub_keys[1].first);
+  ASSERT_EQ(province_name, sub_keys[1].second);
+}
+
+TEST_F(AddressValidatorTest, SubKeysLoaded_NamesNotAvailable) {
+  const std::string country_code = "ES";
+  const std::string province_code = "A Coruña";
+  const std::string province_name = "A Coruña";
+  const std::string language = "es";
+
+  validator_->LoadRules(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
+  ASSERT_FALSE(sub_keys.empty());
+  ASSERT_EQ(province_code, sub_keys[0].first);
+  ASSERT_EQ(province_name, sub_keys[0].second);
 }
 
 TEST_F(AddressValidatorTest, SubKeysNotExist) {
   const std::string country_code = "OZ";
+  const std::string language = "en";
 
   set_expected_status(AddressValidator::RULES_UNAVAILABLE);
 
   validator_->LoadRules(country_code);
-  std::vector<std::string> sub_keys =
-      validator_->GetRegionSubKeys(country_code);
+  std::vector<std::pair<std::string, std::string>> sub_keys =
+      validator_->GetRegionSubKeys(country_code, language);
   ASSERT_TRUE(sub_keys.empty());
 }
 

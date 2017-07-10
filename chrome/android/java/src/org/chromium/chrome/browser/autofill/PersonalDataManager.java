@@ -71,10 +71,11 @@ public class PersonalDataManager {
          * Called when the subkeys are received sucessfully.
          * Here the subkeys are admin areas.
          *
-         * @param subKeys The subKeys.
+         * @param subKeysCodes The subkeys' codes.
+         * @param subKeysNames The subkeys' names.
          */
         @CalledByNative("GetSubKeysRequestDelegate")
-        void onSubKeysReceived(String[] subKeys);
+        void onSubKeysReceived(String[] subKeysCodes, String[] subKeysNames);
     }
 
     /**

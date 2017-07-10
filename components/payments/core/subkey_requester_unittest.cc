@@ -25,6 +25,7 @@ using ::i18n::addressinput::Storage;
 using ::i18n::addressinput::TestdataSource;
 
 const char kLocale[] = "OZ";
+const char kLanguage[] = "en";
 const int kInvalidSize = -1;
 const int kCorrectSize = 2;  // for subkeys = Do, Re
 const int kEmptySize = 0;
@@ -33,8 +34,9 @@ class SubKeyReceiver : public base::RefCountedThreadSafe<SubKeyReceiver> {
  public:
   SubKeyReceiver() : subkeys_size_(kInvalidSize) {}
 
-  void OnSubKeysReceived(const std::vector<std::string>& subkeys) {
-    subkeys_size_ = subkeys.size();
+  void OnSubKeysReceived(const std::vector<std::string>& subkeys_codes,
+                         const std::vector<std::string>& subkeys_names) {
+    subkeys_size_ = subkeys_codes.size();
   }
 
   int subkeys_size() const { return subkeys_size_; }
@@ -62,7 +64,13 @@ class ChromiumTestdataSource : public TestdataSource {
         new std::string(
             "{\"data/OZ\": "
             "{\"id\":\"data/OZ\",\"key\":\"OZ\",\"name\":\"Oz \", "
-            "\"lang\":\"en\",\"languages\":\"en\",\"sub_keys\":\"DO~Re\"}}"));
+            "\"lang\":\"en\",\"sub_keys\":\"DO~RE\", \"sub_names\":\"Do~Re\"},"
+            "\"data/OZ/DO\": "
+            "{\"id\":\"data/OZ/DO\",\"key\":\"DO\",\"name\":\"Do \", "
+            "\"lang\":\"en\"},"
+            "\"data/OZ/RE\": "
+            "{\"id\":\"data/OZ/RE\",\"key\":\"RE\",\"name\":\"Re \", "
+            "\"lang\":\"en\"}}"));
   }
 
  private:
@@ -138,7 +146,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesLoaded) {
   EXPECT_TRUE(requester_->AreRulesLoadedForRegion(kLocale));
 
   // Start the request.
-  requester_->StartRegionSubKeysRequest(kLocale, 0, std::move(cb));
+  requester_->StartRegionSubKeysRequest(kLocale, kLanguage, 0, std::move(cb));
 
   // Since the rules are already loaded, the subkeys should be received
   // synchronously.
@@ -159,7 +167,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillNotLoad) {
   requester_->ShouldLoadRules(false);
 
   // Start the normalization.
-  requester_->StartRegionSubKeysRequest(kLocale, 0, std::move(cb));
+  requester_->StartRegionSubKeysRequest(kLocale, kLanguage, 0, std::move(cb));
 
   // Let the timeout execute.
   base::RunLoop().RunUntilIdle();
@@ -181,7 +189,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillLoad) {
   // call.
   requester_->ShouldLoadRules(true);
   // Start the request.
-  requester_->StartRegionSubKeysRequest(kLocale, 0, std::move(cb));
+  requester_->StartRegionSubKeysRequest(kLocale, kLanguage, 0, std::move(cb));
 
   // Even if the rules are not loaded before the call to
   // StartRegionSubKeysRequest, they should get loaded in the call. Since our

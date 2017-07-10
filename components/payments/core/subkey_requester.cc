@@ -29,10 +29,12 @@ class SubKeyRequest : public SubKeyRequester::Request {
  public:
   // The |delegate| and |address_validator| need to outlive this Request.
   SubKeyRequest(const std::string& region_code,
+                const std::string& language,
                 int timeout_seconds,
                 autofill::AddressValidator* address_validator,
                 SubKeyReceiverCallback on_subkeys_received)
       : region_code_(region_code),
+        language_(language),
         address_validator_(address_validator),
         on_subkeys_received_(std::move(on_subkeys_received)),
         has_responded_(false),
@@ -52,12 +54,20 @@ class SubKeyRequest : public SubKeyRequester::Request {
       return;
     has_responded_ = true;
 
-    std::move(on_subkeys_received_)
-        .Run(address_validator_->GetRegionSubKeys(region_code_));
+    auto subkeys =
+        address_validator_->GetRegionSubKeys(region_code_, language_);
+    std::vector<std::string> subkeys_codes;
+    std::vector<std::string> subkeys_names;
+    for (auto s : subkeys) {
+      subkeys_codes.push_back(s.first);
+      subkeys_names.push_back(s.second);
+    }
+    std::move(on_subkeys_received_).Run(subkeys_codes, subkeys_names);
   }
 
  private:
   std::string region_code_;
+  std::string language_;
   // Not owned. Never null. Outlive this object.
   autofill::AddressValidator* address_validator_;
 
@@ -78,12 +88,14 @@ SubKeyRequester::SubKeyRequester(std::unique_ptr<Source> source,
 SubKeyRequester::~SubKeyRequester() {}
 
 void SubKeyRequester::StartRegionSubKeysRequest(const std::string& region_code,
+                                                const std::string& language,
                                                 int timeout_seconds,
                                                 SubKeyReceiverCallback cb) {
   DCHECK(timeout_seconds >= 0);
 
-  std::unique_ptr<SubKeyRequest> request(base::MakeUnique<SubKeyRequest>(
-      region_code, timeout_seconds, &address_validator_, std::move(cb)));
+  std::unique_ptr<SubKeyRequest> request(
+      base::MakeUnique<SubKeyRequest>(region_code, language, timeout_seconds,
+                                      &address_validator_, std::move(cb)));
 
   if (AreRulesLoadedForRegion(region_code)) {
     request->OnRulesLoaded();
