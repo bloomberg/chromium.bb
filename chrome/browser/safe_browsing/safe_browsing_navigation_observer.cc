@@ -7,10 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,7 +101,11 @@ SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
     : content::WebContentsObserver(contents),
       manager_(manager),
       has_user_gesture_(false),
-      last_user_gesture_timestamp_(base::Time()) {}
+      last_user_gesture_timestamp_(base::Time()),
+      content_settings_observer_(this) {
+  content_settings_observer_.Add(HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
+}
 
 SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 
@@ -254,6 +261,19 @@ void SafeBrowsingNavigationObserver::DidOpenRequestedURL(
       web_contents(), source_render_frame_host->GetProcess()->GetID(),
       source_render_frame_host->GetRoutingID(), url, new_contents,
       renderer_initiated);
+}
+
+void SafeBrowsingNavigationObserver::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  // For all the content settings that can be changed via page info UI, we
+  // assume there is a user gesture associated with the content setting change.
+  if (primary_pattern.Matches(web_contents()->GetLastCommittedURL()) &&
+      PageInfoUI::ContentSettingsTypeInPageInfo(content_type)) {
+    DidGetUserInteraction(blink::WebInputEvent::kMouseDown);
+  }
 }
 
 }  // namespace safe_browsing

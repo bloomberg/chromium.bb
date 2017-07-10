@@ -100,6 +100,13 @@ int TestWebContents::DownloadImage(const GURL& url,
   return g_next_image_download_id;
 }
 
+const GURL& TestWebContents::GetLastCommittedURL() const {
+  if (last_committed_url_.is_valid()) {
+    return last_committed_url_;
+  }
+  return WebContentsImpl::GetLastCommittedURL();
+}
+
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int nav_entry_id,
                                       bool did_create_new_entry,
@@ -206,6 +213,10 @@ bool TestWebContents::TestDidDownloadImage(
   pending_image_downloads_[url].pop_front();
   callback.Run(id, http_status_code, url, bitmaps, original_bitmap_sizes);
   return true;
+}
+
+void TestWebContents::SetLastCommittedURL(const GURL& url) {
+  last_committed_url_ = url;
 }
 
 bool TestWebContents::CrossProcessNavigationPending() {

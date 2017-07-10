@@ -5,13 +5,18 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_H_
 
+#include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
 }
+
+class HostContentSettingsMap;
 
 namespace safe_browsing {
 class SafeBrowsingNavigationObserverManager;
@@ -68,7 +73,8 @@ struct ResolvedIPAddress {
 // Observes the navigation events for a single WebContents (both main-frame
 // and sub-frame navigations).
 class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
-                                       public content::WebContentsObserver {
+                                       public content::WebContentsObserver,
+                                       public content_settings::Observer {
  public:
   static void MaybeCreateForWebContents(
       content::WebContents* web_contents);
@@ -83,6 +89,7 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
   ~SafeBrowsingNavigationObserver() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SBNavigationObserverTest, TestContentSettingChange);
   typedef std::unordered_map<content::NavigationHandle*,
                              std::unique_ptr<NavigationEvent>>
       NavigationHandleMap;
@@ -107,6 +114,12 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
+  // content_settings::Observer overrides.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
+
   // Map keyed on NavigationHandle* to keep track of all the ongoing navigation
   // events. NavigationHandle pointers are owned by RenderFrameHost. Since a
   // NavigationHandle object will be destructed after navigation is done,
@@ -121,6 +134,8 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
   bool has_user_gesture_;
 
   base::Time last_user_gesture_timestamp_;
+  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingNavigationObserver);
 };

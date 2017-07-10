@@ -55,6 +55,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
+  const GURL& GetLastCommittedURL() const override;
 
   // WebContentsTester implementation.
   void CommitPendingNavigation() override;
@@ -90,6 +91,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       int http_status_code,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes) override;
+  void SetLastCommittedURL(const GURL& url) override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();
@@ -187,6 +189,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Map keyed by image URL. Values are <id, callback> pairs.
   std::map<GURL, std::list<std::pair<int, ImageDownloadCallback>>>
       pending_image_downloads_;
+  GURL last_committed_url_;
 };
 
 }  // namespace content

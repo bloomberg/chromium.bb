@@ -195,6 +195,9 @@ class PageInfoUI {
   // Returns true if the Certificate Viewer link should be shown.
   static bool ShouldShowCertificateLink();
 
+  // Return true if the given ContentSettingsType is in PageInfoUI.
+  static bool ContentSettingsTypeInPageInfo(ContentSettingsType type);
+
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
 

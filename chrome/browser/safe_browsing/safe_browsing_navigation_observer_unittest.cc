@@ -347,4 +347,33 @@ TEST_F(SBNavigationObserverTest, TestRecordHostToIpMapping) {
   EXPECT_EQ("9.9.9.9", host_to_ip_map()->at(host_1).at(0).ip);
 }
 
+TEST_F(SBNavigationObserverTest, TestContentSettingChange) {
+  user_gesture_map()->clear();
+  ASSERT_EQ(0U, user_gesture_map()->size());
+
+  content::WebContents* web_content =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  // Simulate content setting change via page info UI.
+  navigation_observer_->OnContentSettingChanged(
+      ContentSettingsPattern::FromURL(web_content->GetLastCommittedURL()),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      std::string());
+
+  // A user gesture should be recorded.
+  ASSERT_EQ(1U, user_gesture_map()->size());
+  EXPECT_NE(user_gesture_map()->end(), user_gesture_map()->find(web_content));
+
+  user_gesture_map()->clear();
+  ASSERT_EQ(0U, user_gesture_map()->size());
+
+  // Simulate content setting change that cannot be changed via page info UI.
+  navigation_observer_->OnContentSettingChanged(
+      ContentSettingsPattern::FromURL(web_content->GetLastCommittedURL()),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+      std::string());
+  // No user gesture should be recorded.
+  EXPECT_EQ(0U, user_gesture_map()->size());
+}
+
 }  // namespace safe_browsing
