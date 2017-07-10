@@ -265,7 +265,10 @@ class MyActivity(object):
 
     bugs = []
     if description:
-      matches = re.findall('BUG=(((\d+)(,\s?)?)+)', description)
+      # Handle both "Bug: 99999" and "BUG=99999" bug notations
+      # Multiple bugs can be noted on a single line or in multiple ones.
+      matches = re.findall(r'BUG[=:]\s?(((\d+)(,\s?)?)+)', description,
+                           flags=re.IGNORECASE)
       if matches:
         for match in matches:
           bugs.extend(match[0].replace(' ', '').split(','))
