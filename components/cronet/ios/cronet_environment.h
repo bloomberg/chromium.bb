@@ -29,7 +29,7 @@ class WaitableEvent;
 namespace net {
 class CookieStore;
 class NetLog;
-class WriteToFileNetLogObserver;
+class FileNetLogObserver;
 }  // namespace net
 
 namespace cronet {
@@ -131,7 +131,7 @@ class CronetEnvironment {
                                     const base::Closure& task);
 
   // Helper methods that start/stop net logging on the network thread.
-  void StartNetLogOnNetworkThread(base::ScopedFILE file, bool log_bytes);
+  void StartNetLogOnNetworkThread(const base::FilePath&, bool log_bytes);
   void StopNetLogOnNetworkThread(base::WaitableEvent* log_stopped_event);
 
   // Returns the HttpNetworkSession object from the passed in
@@ -169,7 +169,7 @@ class CronetEnvironment {
   std::string user_agent_;
   bool user_agent_partial_;
   std::unique_ptr<net::NetLog> net_log_;
-  std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   bool enable_pkp_bypass_for_local_trust_anchors_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetEnvironment);
