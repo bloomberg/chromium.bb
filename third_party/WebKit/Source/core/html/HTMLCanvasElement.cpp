@@ -892,7 +892,10 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
   if (!RuntimeEnabledFeatures::DisplayList2dCanvasEnabled())
     return false;
 
-  return true;
+  // TODO(crbug.com/721727): Due to a rendering regression with display-
+  // list-2d-canvas, this feature is now disabled by default.  For now, the
+  // feature will only be enabled with --force-display-list-2d-canvas.
+  return false;
 }
 
 std::unique_ptr<ImageBufferSurface>
