@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "core/CoreExport.h"
-#include "core/loader/DocumentLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
@@ -16,6 +15,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class KURL;
 
 // Wrapper around a WebDocumentSubresourceFilter. This class will make it easier
@@ -25,7 +25,7 @@ class CORE_EXPORT SubresourceFilter final
     : public GarbageCollectedFinalized<SubresourceFilter> {
  public:
   static SubresourceFilter* Create(
-      DocumentLoader*,
+      ExecutionContext&,
       std::unique_ptr<WebDocumentSubresourceFilter>);
   ~SubresourceFilter();
 
@@ -34,16 +34,16 @@ class CORE_EXPORT SubresourceFilter final
                  SecurityViolationReportingPolicy);
   bool AllowWebSocketConnection(const KURL&);
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(document_loader_); }
+  DECLARE_VIRTUAL_TRACE();
 
  private:
-  SubresourceFilter(DocumentLoader*,
+  SubresourceFilter(ExecutionContext*,
                     std::unique_ptr<WebDocumentSubresourceFilter>);
 
   void ReportLoad(const KURL& resource_url,
                   WebDocumentSubresourceFilter::LoadPolicy);
 
-  Member<DocumentLoader> document_loader_;
+  Member<ExecutionContext> execution_context_;
   std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter_;
 };
 

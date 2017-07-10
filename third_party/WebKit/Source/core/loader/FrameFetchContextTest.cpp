@@ -178,8 +178,8 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
 
   void SetFilterPolicy(WebDocumentSubresourceFilter::LoadPolicy policy) {
     document->Loader()->SetSubresourceFilter(SubresourceFilter::Create(
-        document->Loader(), WTF::MakeUnique<FixedPolicySubresourceFilter>(
-                                policy, &filtered_load_callback_counter_)));
+        *document, WTF::MakeUnique<FixedPolicySubresourceFilter>(
+                       policy, &filtered_load_callback_counter_)));
   }
 
   ResourceRequestBlockedReason CanRequest() {

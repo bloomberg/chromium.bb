@@ -13,6 +13,7 @@
 namespace blink {
 
 class ResourceFetcher;
+class SubresourceFilter;
 class WebTaskRunner;
 class WebURLLoader;
 class WebWorkerFetchContext;
@@ -111,6 +112,7 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   Member<WorkerOrWorkletGlobalScope> global_scope_;
   std::unique_ptr<WebWorkerFetchContext> web_context_;
+  Member<SubresourceFilter> subresource_filter_;
   Member<ResourceFetcher> resource_fetcher_;
   RefPtr<WebTaskRunner> loading_task_runner_;
 };

@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceFilter.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
@@ -159,8 +160,8 @@ void WebDataSourceImpl::DetachFromFrame() {
 
 void WebDataSourceImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
-  DocumentLoader::SetSubresourceFilter(
-      SubresourceFilter::Create(this, WTF::WrapUnique(subresource_filter)));
+  DocumentLoader::SetSubresourceFilter(SubresourceFilter::Create(
+      *GetFrame()->GetDocument(), WTF::WrapUnique(subresource_filter)));
 }
 
 void WebDataSourceImpl::SetServiceWorkerNetworkProvider(

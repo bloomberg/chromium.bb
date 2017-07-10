@@ -2960,6 +2960,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
     worker_fetch_context->set_is_controlled_by_service_worker(
         provider->IsControlledByServiceWorker());
   }
+  for (auto& observer : observers_)
+    observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
   return std::move(worker_fetch_context);
 }
 

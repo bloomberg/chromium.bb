@@ -91,6 +91,19 @@ void WorkerFetchContextImpl::DidDisplayContentWithCertificateErrors(
                                                                url));
 }
 
+void WorkerFetchContextImpl::SetSubresourceFilterBuilder(
+    std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>
+        subresource_filter_builder) {
+  subresource_filter_builder_ = std::move(subresource_filter_builder);
+}
+
+std::unique_ptr<blink::WebDocumentSubresourceFilter>
+WorkerFetchContextImpl::TakeSubresourceFilter() {
+  if (!subresource_filter_builder_)
+    return nullptr;
+  return std::move(subresource_filter_builder_)->Build();
+}
+
 void WorkerFetchContextImpl::set_service_worker_provider_id(int id) {
   service_worker_provider_id_ = id;
 }
