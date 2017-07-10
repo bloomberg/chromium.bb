@@ -5,16 +5,17 @@
 #include "core/css/properties/CSSPropertyAPIColor.h"
 
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+  return CSSPropertyParserHelpers::ConsumeColor(
+      range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
 }
 
 }  // namespace blink
