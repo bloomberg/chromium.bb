@@ -39,6 +39,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSite = kSectionIdentifierEnumZero,
   SectionIdentifierUsername,
   SectionIdentifierPassword,
+  SectionIdentifierFederation,
   SectionIdentifierDelete,
 };
 
@@ -51,6 +52,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypePassword,
   ItemTypeCopyPassword,
   ItemTypeShowHide,
+  ItemTypeFederation,
   ItemTypeDelete,
 };
 
@@ -72,6 +74,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* _username;
   // The saved password.
   NSString* _password;
+  // The federation providing this credential, if any.
+  NSString* _federation;
   // The origin site of the saved credential.
   NSString* _site;
   // Whether the password is shown in plain text form or in obscured form.
@@ -115,7 +119,12 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     _passwordForm = passwordForm;
     if (!_passwordForm.blacklisted_by_user) {
       _username = base::SysUTF16ToNSString(_passwordForm.username_value);
-      _password = base::SysUTF16ToNSString(_passwordForm.password_value);
+      if (_passwordForm.federation_origin.unique()) {
+        _password = base::SysUTF16ToNSString(_passwordForm.password_value);
+      } else {
+        _federation =
+            base::SysUTF8ToNSString(_passwordForm.federation_origin.host());
+      }
     }
     _site = base::SysUTF8ToNSString(_passwordForm.origin.spec());
     self.title = [PasswordDetailsCollectionViewController
@@ -185,24 +194,42 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
     [model addItem:[self usernameCopyButtonItem]
         toSectionWithIdentifier:SectionIdentifierUsername];
 
-    [model addSectionWithIdentifier:SectionIdentifierPassword];
-    CollectionViewTextItem* passwordHeader =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
-    passwordHeader.text =
-        l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-    passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:passwordHeader
-        forSectionWithIdentifier:SectionIdentifierPassword];
-    _passwordItem = [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
-    _passwordItem.text = _password;
-    _passwordItem.showingText = NO;
-    [model addItem:_passwordItem
-        toSectionWithIdentifier:SectionIdentifierPassword];
+    if (_passwordForm.federation_origin.unique()) {
+      [model addSectionWithIdentifier:SectionIdentifierPassword];
+      CollectionViewTextItem* passwordHeader =
+          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+      passwordHeader.text =
+          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
+      passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
+      [model setHeader:passwordHeader
+          forSectionWithIdentifier:SectionIdentifierPassword];
+      _passwordItem =
+          [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
+      _passwordItem.text = _password;
+      _passwordItem.showingText = NO;
+      [model addItem:_passwordItem
+          toSectionWithIdentifier:SectionIdentifierPassword];
 
-    [model addItem:[self passwordCopyButtonItem]
-        toSectionWithIdentifier:SectionIdentifierPassword];
-    [model addItem:[self showHidePasswordButtonItem]
-        toSectionWithIdentifier:SectionIdentifierPassword];
+      [model addItem:[self passwordCopyButtonItem]
+          toSectionWithIdentifier:SectionIdentifierPassword];
+      [model addItem:[self showHidePasswordButtonItem]
+          toSectionWithIdentifier:SectionIdentifierPassword];
+    } else {
+      [model addSectionWithIdentifier:SectionIdentifierFederation];
+      CollectionViewTextItem* federationHeader =
+          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+      federationHeader.text =
+          l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION);
+      federationHeader.textColor = [[MDCPalette greyPalette] tint500];
+      [model setHeader:federationHeader
+          forSectionWithIdentifier:SectionIdentifierFederation];
+      PasswordDetailsItem* federationItem =
+          [[PasswordDetailsItem alloc] initWithType:ItemTypeFederation];
+      federationItem.text = _federation;
+      federationItem.showingText = YES;
+      [model addItem:federationItem
+          toSectionWithIdentifier:SectionIdentifierFederation];
+    }
   }
 
   [model addSectionWithIdentifier:SectionIdentifierDelete];
