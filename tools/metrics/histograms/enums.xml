@@ -33341,6 +33341,7 @@ from previous Chrome versions.
   <int value="24" label="BACKGROUND_FETCH_CLICK"/>
   <int value="25" label="BACKGROUND_FETCH_FAIL"/>
   <int value="26" label="BACKGROUND_FETCHED"/>
+  <int value="27" label="NAVIGATION_HINT"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">
