@@ -17,15 +17,6 @@ cr.define('print_preview', function() {
        */
       this.loadCallback_ = null;
 
-      /** @private {!EventTracker} The plugin stub's event tracker. */
-      this.tracker_ = new EventTracker();
-
-      // Call documentLoadComplete as soon as the preview area starts the
-      // preview.
-      this.tracker_.add(
-          area,
-          print_preview.PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS,
-          this.documentLoadComplete.bind(this));
     }
 
     /**
@@ -36,11 +27,6 @@ cr.define('print_preview', function() {
       this.loadCallback_ = callback;
     }
 
-    documentLoadComplete() {
-      if (this.loadCallback_)
-        this.loadCallback_();
-    }
-
     /**
      * Stubbed out since some tests result in a call.
      * @param {string} url The url to initialize the plugin to.
@@ -49,6 +35,17 @@ cr.define('print_preview', function() {
      * @param {boolean} modifiable Whether the source document is modifiable.
      */
     resetPrintPreviewMode(url, color, pages, modifiable) {}
+
+    /**
+     * Called when the preview area wants the plugin to load a preview page.
+     * Immediately calls loadCallback_().
+     * @param {string} url The preview URL
+     * @param {number} index The index of the page number to load.
+     */
+    loadPreviewPage(url, index) {
+      if (this.loadCallback_)
+        this.loadCallback_();
+    }
   }
 
   return {PDFPluginStub: PDFPluginStub};

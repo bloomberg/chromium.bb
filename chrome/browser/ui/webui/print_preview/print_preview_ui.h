@@ -135,9 +135,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Closes the print preview dialog.
   void OnClosePrintPreviewDialog();
 
-  // Reload the printers list.
-  void OnReloadPrintersList();
-
   // Notifies the WebUI to set print preset options from source PDF.
   void OnSetOptionsFromDocument(
       const PrintHostMsg_SetOptionsFromDocument_Params& params);
