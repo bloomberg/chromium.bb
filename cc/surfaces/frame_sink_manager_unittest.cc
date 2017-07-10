@@ -13,6 +13,11 @@
 
 namespace cc {
 
+namespace {
+
+constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+}
+
 class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
  public:
   explicit FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id)
@@ -111,6 +116,28 @@ TEST_F(FrameSinkManagerTest, SingleClients) {
   // Re-set BFS for original
   manager_.RegisterBeginFrameSource(&source, client.frame_sink_id());
   EXPECT_EQ(&source, client.source());
+  manager_.UnregisterBeginFrameSource(&source);
+  EXPECT_EQ(nullptr, client.source());
+}
+
+// This test verifies that a client is still connected to the BeginFrameSource
+// after restart.
+TEST_F(FrameSinkManagerTest, ClientRestart) {
+  FakeFrameSinkManagerClient client(kArbitraryFrameSinkId);
+  StubBeginFrameSource source;
+  client.Register(&manager_);
+
+  manager_.RegisterBeginFrameSource(&source, kArbitraryFrameSinkId);
+  EXPECT_EQ(&source, client.source());
+
+  // |client| is disconnect from |source| after Unregister.
+  client.Unregister();
+  EXPECT_EQ(nullptr, client.source());
+
+  // |client| is reconnected with |source| after re-Register.
+  client.Register(&manager_);
+  EXPECT_EQ(&source, client.source());
+
   manager_.UnregisterBeginFrameSource(&source);
   EXPECT_EQ(nullptr, client.source());
 }

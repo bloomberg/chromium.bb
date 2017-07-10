@@ -67,8 +67,6 @@ void FrameSinkManager::UnregisterFrameSinkManagerClient(
   if (source_iter != frame_sink_source_map_.end()) {
     if (source_iter->second.source)
       client_iter->second->SetBeginFrameSource(nullptr);
-    if (!source_iter->second.has_children())
-      frame_sink_source_map_.erase(source_iter);
   }
   clients_.erase(client_iter);
 }
