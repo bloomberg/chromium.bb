@@ -159,12 +159,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** Whether the disappearance of the toolbar buttons is currently animating. */
     private boolean mAnimatingToolbarButtonDisappearance;
 
-    /** The current left position of the location bar background. */
-    private int mLocationBarBackgroundLeftPosition;
-
-    /** The current right position of the location bar background. */
-    private int mLocationBarBackgroundRightPosition;
-
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -356,31 +350,25 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     protected int getLeftPositionOfLocationBarBackground(VisualState visualState) {
         if (!mAnimatingToolbarButtonAppearance && !mAnimatingToolbarButtonDisappearance) {
-            mLocationBarBackgroundLeftPosition =
-                    super.getLeftPositionOfLocationBarBackground(visualState);
+            return super.getLeftPositionOfLocationBarBackground(visualState);
         } else {
             int targetPosition = getViewBoundsLeftOfLocationBar(visualState);
             int currentPosition = targetPosition + getLocationBarBackgroundLeftOffset();
-            mLocationBarBackgroundLeftPosition = (int) MathUtils.interpolate(
+            return (int) MathUtils.interpolate(
                     targetPosition, currentPosition, mToolbarButtonVisibilityPercent);
         }
-
-        return mLocationBarBackgroundLeftPosition;
     }
 
     @Override
     protected int getRightPositionOfLocationBarBackground(VisualState visualState) {
         if (!mAnimatingToolbarButtonAppearance && !mAnimatingToolbarButtonDisappearance) {
-            mLocationBarBackgroundRightPosition =
-                    super.getRightPositionOfLocationBarBackground(visualState);
+            return super.getRightPositionOfLocationBarBackground(visualState);
         } else {
             int targetPosition = getViewBoundsRightOfLocationBar(visualState);
             int currentPosition = targetPosition - getLocationBarBackgroundRightOffset();
-            mLocationBarBackgroundRightPosition = (int) MathUtils.interpolate(
+            return (int) MathUtils.interpolate(
                     targetPosition, currentPosition, mToolbarButtonVisibilityPercent);
         }
-
-        return mLocationBarBackgroundRightPosition;
     }
 
     private int getLocationBarBackgroundLeftOffset() {
@@ -733,18 +721,28 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         float locationBarTranslationX;
         boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
-
-        if (isLocationBarRtl) {
-            locationBarTranslationX = mLocationBarBackgroundRightPosition
-                    - mUnfocusedLocationBarLayoutWidth - mUnfocusedLocationBarLayoutLeft;
-        } else {
-            locationBarTranslationX =
-                    mUnfocusedLocationBarLayoutLeft + mLocationBarBackgroundLeftPosition;
-        }
-
         FrameLayout.LayoutParams locationBarLayoutParams = getFrameLayoutParams(mLocationBar);
         int currentLeftMargin = locationBarLayoutParams.leftMargin;
-        locationBarTranslationX -= (currentLeftMargin + mToolbarSidePadding);
+        int currentWidth = locationBarLayoutParams.width;
+
+        if (isLocationBarRtl) {
+            // The location bar contents should be aligned with the right side of the toolbar.
+            // If RTL text is displayed in an LTR toolbar, the right position of the location bar
+            // background will change as the location bar background expands/contracts.
+            locationBarTranslationX =
+                    -currentWidth + getRightPositionOfLocationBarBackground(mVisualState);
+
+            if (!mHasVisibleViewPriorToUrlBar) locationBarTranslationX -= mToolbarSidePadding;
+        } else {
+            // The location bar contents should be aligned with the left side of the location bar
+            // background. If LTR text is displayed in an RTL toolbar, the current left position of
+            // the location bar background will change as the location bar background
+            // expands/contracts.
+            locationBarTranslationX = mUnfocusedLocationBarLayoutLeft
+                    + getLeftPositionOfLocationBarBackground(mVisualState) - mToolbarSidePadding;
+        }
+
+        locationBarTranslationX -= currentLeftMargin;
 
         // Get the padding straight from the location bar instead of
         // |mLocationBarBackgroundPadding|, because it might be different in incognito mode.
