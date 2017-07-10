@@ -1942,7 +1942,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const MODE_INFO *mi = xd->mi[0];
 
   const struct segmentation *const seg = &cm->seg;
-  struct segmentation_probs *const segp = &cm->fc->seg;
+  struct segmentation_probs *const segp = &ec_ctx->seg;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const PREDICTION_MODE mode = mbmi->mode;
@@ -2384,8 +2384,13 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #endif  // CONFIG_INTRABC
                               const int mi_row, const int mi_col,
                               aom_writer *w) {
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
   const struct segmentation *const seg = &cm->seg;
-  struct segmentation_probs *const segp = &cm->fc->seg;
+  struct segmentation_probs *const segp = &ec_ctx->seg;
   const MODE_INFO *const mi = xd->mi[0];
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
@@ -2398,12 +2403,6 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #endif
   (void)mi_row;
   (void)mi_col;
-
-#if CONFIG_EC_ADAPT
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   if (seg->update_map) write_segment_id(w, seg, segp, mbmi->segment_id);
 

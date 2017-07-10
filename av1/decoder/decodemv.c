@@ -624,7 +624,12 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
   FRAME_COUNTS *counts = xd->counts;
-  struct segmentation_probs *const segp = &cm->fc->seg;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+  struct segmentation_probs *const segp = &ec_ctx->seg;
   int segment_id;
 
   if (!seg->enabled) return 0;  // Default for disabled segmentation
@@ -654,7 +659,13 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
   FRAME_COUNTS *counts = xd->counts;
-  struct segmentation_probs *const segp = &cm->fc->seg;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+  struct segmentation_probs *const segp = &ec_ctx->seg;
+
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int predicted_segment_id, segment_id;
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
