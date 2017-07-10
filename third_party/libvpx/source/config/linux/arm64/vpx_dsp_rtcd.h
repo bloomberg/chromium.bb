@@ -218,24 +218,28 @@ void vpx_fdct16x16_neon(const int16_t *input, tran_low_t *output, int stride);
 #define vpx_fdct16x16 vpx_fdct16x16_neon
 
 void vpx_fdct16x16_1_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct16x16_1 vpx_fdct16x16_1_c
+void vpx_fdct16x16_1_neon(const int16_t *input, tran_low_t *output, int stride);
+#define vpx_fdct16x16_1 vpx_fdct16x16_1_neon
 
 void vpx_fdct32x32_c(const int16_t *input, tran_low_t *output, int stride);
 void vpx_fdct32x32_neon(const int16_t *input, tran_low_t *output, int stride);
 #define vpx_fdct32x32 vpx_fdct32x32_neon
 
 void vpx_fdct32x32_1_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct32x32_1 vpx_fdct32x32_1_c
+void vpx_fdct32x32_1_neon(const int16_t *input, tran_low_t *output, int stride);
+#define vpx_fdct32x32_1 vpx_fdct32x32_1_neon
 
 void vpx_fdct32x32_rd_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct32x32_rd vpx_fdct32x32_rd_c
+void vpx_fdct32x32_rd_neon(const int16_t *input, tran_low_t *output, int stride);
+#define vpx_fdct32x32_rd vpx_fdct32x32_rd_neon
 
 void vpx_fdct4x4_c(const int16_t *input, tran_low_t *output, int stride);
 void vpx_fdct4x4_neon(const int16_t *input, tran_low_t *output, int stride);
 #define vpx_fdct4x4 vpx_fdct4x4_neon
 
 void vpx_fdct4x4_1_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct4x4_1 vpx_fdct4x4_1_c
+void vpx_fdct4x4_1_neon(const int16_t *input, tran_low_t *output, int stride);
+#define vpx_fdct4x4_1 vpx_fdct4x4_1_neon
 
 void vpx_fdct8x8_c(const int16_t *input, tran_low_t *output, int stride);
 void vpx_fdct8x8_neon(const int16_t *input, tran_low_t *output, int stride);
@@ -444,7 +448,8 @@ unsigned int vpx_sad16x16_neon(const uint8_t *src_ptr, int src_stride, const uin
 #define vpx_sad16x16 vpx_sad16x16_neon
 
 unsigned int vpx_sad16x16_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad16x16_avg vpx_sad16x16_avg_c
+unsigned int vpx_sad16x16_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad16x16_avg vpx_sad16x16_avg_neon
 
 void vpx_sad16x16x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad16x16x3 vpx_sad16x16x3_c
@@ -457,10 +462,12 @@ void vpx_sad16x16x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref
 #define vpx_sad16x16x8 vpx_sad16x16x8_c
 
 unsigned int vpx_sad16x32_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad16x32 vpx_sad16x32_c
+unsigned int vpx_sad16x32_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad16x32 vpx_sad16x32_neon
 
 unsigned int vpx_sad16x32_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad16x32_avg vpx_sad16x32_avg_c
+unsigned int vpx_sad16x32_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad16x32_avg vpx_sad16x32_avg_neon
 
 void vpx_sad16x32x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad16x32x4d vpx_sad16x32x4d_c
@@ -470,7 +477,8 @@ unsigned int vpx_sad16x8_neon(const uint8_t *src_ptr, int src_stride, const uint
 #define vpx_sad16x8 vpx_sad16x8_neon
 
 unsigned int vpx_sad16x8_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad16x8_avg vpx_sad16x8_avg_c
+unsigned int vpx_sad16x8_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad16x8_avg vpx_sad16x8_avg_neon
 
 void vpx_sad16x8x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad16x8x3 vpx_sad16x8x3_c
@@ -482,10 +490,12 @@ void vpx_sad16x8x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_
 #define vpx_sad16x8x8 vpx_sad16x8x8_c
 
 unsigned int vpx_sad32x16_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad32x16 vpx_sad32x16_c
+unsigned int vpx_sad32x16_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad32x16 vpx_sad32x16_neon
 
 unsigned int vpx_sad32x16_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad32x16_avg vpx_sad32x16_avg_c
+unsigned int vpx_sad32x16_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad32x16_avg vpx_sad32x16_avg_neon
 
 void vpx_sad32x16x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad32x16x4d vpx_sad32x16x4d_c
@@ -495,7 +505,8 @@ unsigned int vpx_sad32x32_neon(const uint8_t *src_ptr, int src_stride, const uin
 #define vpx_sad32x32 vpx_sad32x32_neon
 
 unsigned int vpx_sad32x32_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad32x32_avg vpx_sad32x32_avg_c
+unsigned int vpx_sad32x32_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad32x32_avg vpx_sad32x32_avg_neon
 
 void vpx_sad32x32x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad32x32x3 vpx_sad32x32x3_c
@@ -508,10 +519,12 @@ void vpx_sad32x32x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref
 #define vpx_sad32x32x8 vpx_sad32x32x8_c
 
 unsigned int vpx_sad32x64_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad32x64 vpx_sad32x64_c
+unsigned int vpx_sad32x64_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad32x64 vpx_sad32x64_neon
 
 unsigned int vpx_sad32x64_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad32x64_avg vpx_sad32x64_avg_c
+unsigned int vpx_sad32x64_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad32x64_avg vpx_sad32x64_avg_neon
 
 void vpx_sad32x64x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad32x64x4d vpx_sad32x64x4d_c
@@ -521,7 +534,8 @@ unsigned int vpx_sad4x4_neon(const uint8_t *src_ptr, int src_stride, const uint8
 #define vpx_sad4x4 vpx_sad4x4_neon
 
 unsigned int vpx_sad4x4_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad4x4_avg vpx_sad4x4_avg_c
+unsigned int vpx_sad4x4_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad4x4_avg vpx_sad4x4_avg_neon
 
 void vpx_sad4x4x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad4x4x3 vpx_sad4x4x3_c
@@ -533,10 +547,12 @@ void vpx_sad4x4x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_p
 #define vpx_sad4x4x8 vpx_sad4x4x8_c
 
 unsigned int vpx_sad4x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad4x8 vpx_sad4x8_c
+unsigned int vpx_sad4x8_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad4x8 vpx_sad4x8_neon
 
 unsigned int vpx_sad4x8_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad4x8_avg vpx_sad4x8_avg_c
+unsigned int vpx_sad4x8_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad4x8_avg vpx_sad4x8_avg_neon
 
 void vpx_sad4x8x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad4x8x4d vpx_sad4x8x4d_c
@@ -545,10 +561,12 @@ void vpx_sad4x8x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_p
 #define vpx_sad4x8x8 vpx_sad4x8x8_c
 
 unsigned int vpx_sad64x32_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad64x32 vpx_sad64x32_c
+unsigned int vpx_sad64x32_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad64x32 vpx_sad64x32_neon
 
 unsigned int vpx_sad64x32_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad64x32_avg vpx_sad64x32_avg_c
+unsigned int vpx_sad64x32_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad64x32_avg vpx_sad64x32_avg_neon
 
 void vpx_sad64x32x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad64x32x4d vpx_sad64x32x4d_c
@@ -558,7 +576,8 @@ unsigned int vpx_sad64x64_neon(const uint8_t *src_ptr, int src_stride, const uin
 #define vpx_sad64x64 vpx_sad64x64_neon
 
 unsigned int vpx_sad64x64_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad64x64_avg vpx_sad64x64_avg_c
+unsigned int vpx_sad64x64_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad64x64_avg vpx_sad64x64_avg_neon
 
 void vpx_sad64x64x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad64x64x3 vpx_sad64x64x3_c
@@ -575,7 +594,8 @@ unsigned int vpx_sad8x16_neon(const uint8_t *src_ptr, int src_stride, const uint
 #define vpx_sad8x16 vpx_sad8x16_neon
 
 unsigned int vpx_sad8x16_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad8x16_avg vpx_sad8x16_avg_c
+unsigned int vpx_sad8x16_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad8x16_avg vpx_sad8x16_avg_neon
 
 void vpx_sad8x16x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad8x16x3 vpx_sad8x16x3_c
@@ -587,10 +607,12 @@ void vpx_sad8x16x8_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_
 #define vpx_sad8x16x8 vpx_sad8x16x8_c
 
 unsigned int vpx_sad8x4_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
-#define vpx_sad8x4 vpx_sad8x4_c
+unsigned int vpx_sad8x4_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride);
+#define vpx_sad8x4 vpx_sad8x4_neon
 
 unsigned int vpx_sad8x4_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad8x4_avg vpx_sad8x4_avg_c
+unsigned int vpx_sad8x4_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad8x4_avg vpx_sad8x4_avg_neon
 
 void vpx_sad8x4x4d_c(const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array);
 #define vpx_sad8x4x4d vpx_sad8x4x4d_c
@@ -603,7 +625,8 @@ unsigned int vpx_sad8x8_neon(const uint8_t *src_ptr, int src_stride, const uint8
 #define vpx_sad8x8 vpx_sad8x8_neon
 
 unsigned int vpx_sad8x8_avg_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
-#define vpx_sad8x8_avg vpx_sad8x8_avg_c
+unsigned int vpx_sad8x8_avg_neon(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred);
+#define vpx_sad8x8_avg vpx_sad8x8_avg_neon
 
 void vpx_sad8x8x3_c(const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array);
 #define vpx_sad8x8x3 vpx_sad8x8x3_c
