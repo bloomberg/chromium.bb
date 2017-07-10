@@ -446,24 +446,22 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   if (currentCount == newCount)
     return;
 
-  // If the animations are enabled, the items are added then the rotation
-  // animation is triggered, creating a weird sequenced animation.
-  [UIView setAnimationsEnabled:NO];
   if (currentCount > newCount) {
     for (NSInteger i = newCount; i < currentCount; i++) {
-      NSIndexPath* itemToRemove =
-          [NSIndexPath indexPathForItem:newCount inSection:mostVisitedSection];
-      [self.collectionViewController dismissEntryAtIndexPath:itemToRemove];
+      [self.collectionViewController.collectionViewModel
+                 removeItemWithType:ItemTypeMostVisited
+          fromSectionWithIdentifier:SectionIdentifierMostVisited
+                            atIndex:newCount];
     }
   } else {
-    NSMutableArray* itemsToBeAdded = [NSMutableArray array];
     for (NSInteger i = currentCount; i < newCount; i++) {
-      [itemsToBeAdded addObject:mostVisited[i]];
+      CSCollectionViewItem* item = mostVisited[i];
+      item.type = ItemTypeMostVisited;
+      [self.collectionViewController.collectionViewModel
+                          addItem:item
+          toSectionWithIdentifier:SectionIdentifierMostVisited];
     }
-    [self.collectionViewController addSuggestions:itemsToBeAdded
-                                    toSectionInfo:mostVisitedSectionInfo];
   }
-  [UIView setAnimationsEnabled:YES];
 }
 
 - (void)dismissItem:(CSCollectionViewItem*)item {
