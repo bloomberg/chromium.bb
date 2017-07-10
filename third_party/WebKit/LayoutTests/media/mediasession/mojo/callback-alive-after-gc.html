@@ -2,8 +2,9 @@
 <title>Test that setting MediaSession callbacks are alive after garbage-collection</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script src="../../../resources/gc.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.js"></script>
 <script src="resources/mediasessionservice-mock.js"></script>
 <script src="resources/utils.js"></script>
 <script>
@@ -11,15 +12,13 @@
 var mock;
 
 async_test(function(t) {
-  mediaSessionServiceMock.then(m => {
-    mock = m;
-    mock.setClientCallback(_ => {
-      gc();
-      setTimeout(_ => {
-        mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
-      });
+  let mock = mediaSessionServiceMock;
+  mock.setClientCallback(_ => {
+    gc();
+    setTimeout(_ => {
+      mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
     });
-    window.navigator.mediaSession.setActionHandler("play", _ => { t.done(); });
   });
+  window.navigator.mediaSession.setActionHandler("play", _ => { t.done(); });
 });
 </script>

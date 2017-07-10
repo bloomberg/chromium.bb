@@ -10,9 +10,6 @@ mojom("mojo") {
   sources = [
     "geometry.mojom",
   ]
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
 }
 
 mojom("test_interfaces") {
