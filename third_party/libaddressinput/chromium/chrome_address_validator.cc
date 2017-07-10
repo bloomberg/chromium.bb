@@ -60,18 +60,39 @@ void AddressValidator::LoadRules(const std::string& region_code) {
   supplier_->LoadRules(region_code, *rules_loaded_);
 }
 
-std::vector<std::string> AddressValidator::GetRegionSubKeys(
-    const std::string& region_code) {
+std::vector<std::pair<std::string, std::string>>
+AddressValidator::GetRegionSubKeys(const std::string& region_code,
+                                   const std::string& language) {
+  std::vector<std::pair<std::string, std::string>> subkeys_codes_names;
   if (!AreRulesLoadedForRegion(region_code))
-    return std::vector<std::string>();
+    return subkeys_codes_names;
 
   auto rules = supplier_->GetRulesForRegion(region_code);
   auto rule_iterator = rules.find("data/" + region_code);
-
+  // This happens if the rules are bad.
   if (rule_iterator == rules.end() || !rule_iterator->second)
-    return std::vector<std::string>();
+    return subkeys_codes_names;
 
-  return rule_iterator->second->GetSubKeys();
+  auto subkeys_codes = rule_iterator->second->GetSubKeys();
+
+  // If the device language is available, show the names in that language.
+  // Otherwise, show the default names.
+  std::string lang_suffix = "";
+  if (rules.find("data/" + region_code + "--" + language) != rules.end())
+    lang_suffix = "--" + language;  // ex: --fr
+
+  for (auto subkey_code : subkeys_codes) {
+    auto rule = rules.find("data/" + region_code + '/' + subkey_code +
+                           lang_suffix);  // exp: data/CA/QC--fr
+    // This happens if the rules are bad.
+    if (rule == rules.end() || !rule_iterator->second)
+      continue;
+    auto subkey_name = rule->second->GetName();
+    if (subkey_name.empty())  // For some cases, the name is not available.
+      subkey_name = subkey_code;
+    subkeys_codes_names.push_back(make_pair(subkey_code, subkey_name));
+  }
+  return subkeys_codes_names;
 }
 
 AddressValidator::Status AddressValidator::ValidateAddress(

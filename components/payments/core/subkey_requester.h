@@ -10,8 +10,10 @@
 
 namespace payments {
 
+// This receives a region code and the device's language.
 using SubKeyReceiverCallback =
-    base::OnceCallback<void(const std::vector<std::string>&)>;
+    base::OnceCallback<void(const std::vector<std::string>&,
+                            const std::vector<std::string>&)>;
 
 // SubKeyRequester Loads Rules from the server and extracts the subkeys.
 // For a given key (region code for a country, such as US), the list of its
@@ -37,8 +39,9 @@ class SubKeyRequester : public autofill::LoadRulesListener {
   // |region_code|. The received subkeys will be returned to the |requester|. If
   // the subkeys are not received in |timeout_seconds|, then the requester will
   // be informed and the request will be canceled. |requester| should never be
-  // null.
+  // null. The requesting device language is set to |language|, ex:"fr".
   void StartRegionSubKeysRequest(const std::string& region_code,
+                                 const std::string& language,
                                  int timeout_seconds,
                                  SubKeyReceiverCallback cb);
 
