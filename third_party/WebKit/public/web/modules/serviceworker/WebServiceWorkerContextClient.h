@@ -239,6 +239,13 @@ class WebServiceWorkerContextClient {
   // ServiceWorker specific method. Called after PaymentRequestEvent (dispatched
   // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
   // context.
+  virtual void DidHandleCanMakePaymentEvent(int payment_request_event_id,
+                                            WebServiceWorkerEventResult result,
+                                            double event_dispatch_time) {}
+
+  // ServiceWorker specific method. Called after PaymentRequestEvent (dispatched
+  // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
+  // context.
   virtual void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                             WebServiceWorkerEventResult result,
                                             double event_dispatch_time) {}

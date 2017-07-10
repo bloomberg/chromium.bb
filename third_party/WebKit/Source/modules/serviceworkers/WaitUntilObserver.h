@@ -26,6 +26,7 @@ class MODULES_EXPORT WaitUntilObserver final
 
   enum EventType {
     kActivate,
+    kCanMakePayment,
     kFetch,
     kInstall,
     kMessage,

@@ -48,6 +48,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/fetch/GlobalFetch.h"
+#include "modules/serviceworkers/RespondWithObserver.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -207,6 +208,19 @@ void ServiceWorkerGlobalScope::DispatchExtendableEvent(
   // Check if the worker thread is forcibly terminated during the event
   // because of timeout etc.
   observer->DidDispatchEvent(GetThread()->IsForciblyTerminated());
+}
+
+void ServiceWorkerGlobalScope::DispatchExtendableEventWithRespondWith(
+    Event* event,
+    WaitUntilObserver* wait_until_observer,
+    RespondWithObserver* respond_with_observer) {
+  wait_until_observer->WillDispatchEvent();
+  respond_with_observer->WillDispatchEvent();
+  DispatchEventResult dispatch_result = DispatchEvent(event);
+  respond_with_observer->DidDispatchEvent(dispatch_result);
+  // false is okay because waitUntil() for events with respondWith() doesn't
+  // care about the promise rejection or an uncaught runtime script error.
+  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
 }
 
 DEFINE_TRACE(ServiceWorkerGlobalScope) {

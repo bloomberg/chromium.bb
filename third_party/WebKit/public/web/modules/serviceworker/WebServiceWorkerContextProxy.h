@@ -40,6 +40,7 @@
 namespace blink {
 
 struct WebBackgroundFetchSettledFetch;
+struct WebCanMakePaymentEventData;
 class WebDataConsumerHandle;
 class WebServiceWorkerRequest;
 class WebString;
@@ -114,6 +115,10 @@ class WebServiceWorkerContextProxy {
   virtual void DispatchSyncEvent(int sync_event_id,
                                  const WebString& tag,
                                  LastChanceOption) = 0;
+
+  virtual void DispatchCanMakePaymentEvent(
+      int event_id,
+      const WebCanMakePaymentEventData&) = 0;
 
   virtual void DispatchPaymentRequestEvent(
       int event_id,

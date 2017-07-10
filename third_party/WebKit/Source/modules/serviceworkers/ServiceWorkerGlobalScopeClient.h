@@ -131,6 +131,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void DidHandleSyncEvent(int sync_event_id,
                           WebServiceWorkerEventResult,
                           double event_dispatch_time);
+  void DidHandleCanMakePaymentEvent(int payment_request_event_id,
+                                    WebServiceWorkerEventResult,
+                                    double event_dispatch_time);
   void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                     WebServiceWorkerEventResult,
                                     double event_dispatch_time);

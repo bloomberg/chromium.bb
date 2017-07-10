@@ -55,6 +55,8 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
+#include "modules/payments/CanMakePaymentEvent.h"
+#include "modules/payments/CanMakePaymentRespondWithObserver.h"
 #include "modules/payments/PaymentEventDataConversion.h"
 #include "modules/payments/PaymentRequestEvent.h"
 #include "modules/payments/PaymentRequestEventInit.h"
@@ -280,14 +282,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
     // onNavigationPreloadError() will be called.
     pending_preload_fetch_events_.insert(fetch_event_id, fetch_event);
   }
-  wait_until_observer->WillDispatchEvent();
-  respond_with_observer->WillDispatchEvent();
-  DispatchEventResult dispatch_result =
-      WorkerGlobalScope()->DispatchEvent(fetch_event);
-  respond_with_observer->DidDispatchEvent(dispatch_result);
-  // false is okay because waitUntil for fetch event doesn't care about the
-  // promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
+
+  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
+      fetch_event, wait_until_observer, respond_with_observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
@@ -373,14 +370,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
       EventTypeNames::foreignfetch, event_init, respond_with_observer,
       wait_until_observer);
-  wait_until_observer->WillDispatchEvent();
-  respond_with_observer->WillDispatchEvent();
-  DispatchEventResult dispatch_result =
-      WorkerGlobalScope()->DispatchEvent(fetch_event);
-  respond_with_observer->DidDispatchEvent(dispatch_result);
-  // false is okay because waitUntil for foreign fetch event doesn't care
-  // about the promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
+
+  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
+      fetch_event, wait_until_observer, respond_with_observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
@@ -451,12 +443,32 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
+void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
+    int event_id,
+    const WebCanMakePaymentEventData& web_event_data) {
+  WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
+      WorkerGlobalScope(), WaitUntilObserver::kCanMakePayment, event_id);
+  CanMakePaymentRespondWithObserver* respond_with_observer =
+      new CanMakePaymentRespondWithObserver(WorkerGlobalScope(), event_id,
+                                            wait_until_observer);
+
+  Event* event = CanMakePaymentEvent::Create(
+      EventTypeNames::canmakepayment,
+      PaymentEventDataConversion::ToCanMakePaymentEventInit(
+          WorkerGlobalScope()->ScriptController()->GetScriptState(),
+          web_event_data),
+      respond_with_observer, wait_until_observer);
+
+  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
+      event, wait_until_observer, respond_with_observer);
+}
+
 void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
     int event_id,
     const WebPaymentRequestEventData& web_app_request) {
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPaymentRequest, event_id);
-  RespondWithObserver* respond_with_observer =
+  PaymentRequestRespondWithObserver* respond_with_observer =
       PaymentRequestRespondWithObserver::Create(WorkerGlobalScope(), event_id,
                                                 wait_until_observer);
 
@@ -467,14 +479,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
           web_app_request),
       respond_with_observer, wait_until_observer);
 
-  wait_until_observer->WillDispatchEvent();
-  respond_with_observer->WillDispatchEvent();
-  DispatchEventResult dispatch_result =
-      WorkerGlobalScope()->DispatchEvent(event);
-  respond_with_observer->DidDispatchEvent(dispatch_result);
-  // false is okay because waitUntil for payment request event doesn't care
-  // about the promise rejection or an uncaught runtime script error.
-  wait_until_observer->DidDispatchEvent(false /* event_dispatch_failed */);
+  WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
+      event, wait_until_observer, respond_with_observer);
 }
 
 bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
