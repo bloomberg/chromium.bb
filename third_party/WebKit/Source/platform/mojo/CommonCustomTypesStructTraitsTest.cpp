@@ -29,7 +29,7 @@ class TestString16Impl : public mojo::common::test::blink::TestString16 {
   mojo::Binding<mojo::common::test::blink::TestString16> binding_;
 };
 
-class CommonCustomTypesStructTraitsTest : public testing::Test {
+class CommonCustomTypesStructTraitsTest : public ::testing::Test {
  protected:
   CommonCustomTypesStructTraitsTest() {}
   ~CommonCustomTypesStructTraitsTest() override {}
