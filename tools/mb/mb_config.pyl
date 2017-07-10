@@ -1777,7 +1777,7 @@
     },
 
     'mac_new_sdk': {
-      'gn_args': 'mac_sdk_min=10.12',
+      'gn_args': 'mac_sdk_min="10.12"',
     },
 
     'headless': {
