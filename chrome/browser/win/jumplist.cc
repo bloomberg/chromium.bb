@@ -841,7 +841,7 @@ int JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
   //    closed" category updates for the 1st time after Chrome is launched.
   // 2) The number of icons in |icon_dir| has exceeded the limit.
   if (icon_cur->empty() || FilesExceedLimitInDir(icon_dir, max_items * 2)) {
-    DeleteDirectoryContentAndLogRuntime(icon_dir, kFileDeleteLimit);
+    DeleteDirectoryContent(icon_dir, kFileDeleteLimit);
     icon_cur->clear();
     icon_next->clear();
     // Create new icons only when the directory exists and is empty.

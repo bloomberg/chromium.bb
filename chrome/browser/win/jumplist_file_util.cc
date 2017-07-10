@@ -83,13 +83,6 @@ void DeleteDirectory(const base::FilePath& path, int max_file_deleted) {
   ::RemoveDirectory(path.value().c_str());
 }
 
-void DeleteDirectoryContentAndLogRuntime(const base::FilePath& path,
-                                         int max_file_deleted) {
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.DeleteDirectoryContentDuration");
-
-  DeleteDirectoryContent(path, kFileDeleteLimit);
-}
-
 bool FilesExceedLimitInDir(const base::FilePath& path, int max_files) {
   int count = 0;
   base::FileEnumerator file_iter(path, false, base::FileEnumerator::FILES);

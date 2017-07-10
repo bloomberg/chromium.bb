@@ -34,12 +34,6 @@ void DeleteDirectoryContent(const base::FilePath& path, int max_file_deleted);
 // |path|. If |path| is empty after the call, it is removed.
 void DeleteDirectory(const base::FilePath& path, int max_file_deleted);
 
-// Deletes the content in the folder at |path| and records the runtime to UMA.
-// TODO(chengx): Remove this method and use DeleteDirectoryContent after fixing
-// http://crbug.com/40407.
-void DeleteDirectoryContentAndLogRuntime(const base::FilePath& path,
-                                         int max_file_deleted);
-
 // Returns true if the directory at |path| has more than |max_files| files.
 // Sub-directories are not taken into account here.
 bool FilesExceedLimitInDir(const base::FilePath& path, int max_files);

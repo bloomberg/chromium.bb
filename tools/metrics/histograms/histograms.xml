@@ -87850,6 +87850,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplist.DeleteDirectoryContentDuration" units="ms">
+  <obsolete>
+    Obsolete 07/06/2016 as we are no long recording this metric.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in DeleteDirectoryContentAndLogRuntime().</summary>
 </histogram>
