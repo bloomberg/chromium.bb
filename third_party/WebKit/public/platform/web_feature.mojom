@@ -1587,6 +1587,8 @@ enum WebFeature {
   kCSSSelectorWebkitMediaControlsFullscreenButton = 2049,
   kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton = 2050,
   kLinearAccelerationSensorConstructor = 2051,
+  kReportUriMultipleEndpoints = 2052,
+  kReportUriSingleEndpoint = 2053,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
