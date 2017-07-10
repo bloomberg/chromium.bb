@@ -237,6 +237,8 @@ void VideoRendererImpl::Initialize(
 
   video_frame_stream_.reset(new VideoFrameStream(
       task_runner_, create_video_decoders_cb_, media_log_));
+  video_frame_stream_->set_config_change_observer(base::Bind(
+      &VideoRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 
   // Always re-initialize or reset the |gpu_memory_buffer_pool_| in case we are
   // switching between video tracks with incompatible video formats (e.g. 8-bit
@@ -262,6 +264,9 @@ void VideoRendererImpl::Initialize(
   client_ = client;
   wall_clock_time_cb_ = wall_clock_time_cb;
   state_ = kInitializing;
+
+  current_decoder_config_ = stream->video_decoder_config();
+  DCHECK(current_decoder_config_.IsValidConfig());
 
   video_frame_stream_->Initialize(
       stream, base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
@@ -377,6 +382,18 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
 void VideoRendererImpl::OnWaitingForDecryptionKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnWaitingForDecryptionKey();
+}
+
+void VideoRendererImpl::OnConfigChange(const VideoDecoderConfig& config) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(config.IsValidConfig());
+
+  // RendererClient only cares to know about config changes that differ from
+  // previous configs.
+  if (!current_decoder_config_.Matches(config)) {
+    current_decoder_config_ = config;
+    client_->OnVideoConfigChange(config);
+  }
 }
 
 void VideoRendererImpl::SetTickClockForTesting(

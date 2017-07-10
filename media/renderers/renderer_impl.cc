@@ -51,6 +51,12 @@ class RendererImpl::RendererClientInternal : public RendererClient {
   void OnWaitingForDecryptionKey() override {
     renderer_->OnWaitingForDecryptionKey();
   }
+  void OnAudioConfigChange(const AudioDecoderConfig& config) override {
+    renderer_->OnAudioConfigChange(config);
+  }
+  void OnVideoConfigChange(const VideoDecoderConfig& config) override {
+    renderer_->OnVideoConfigChange(config);
+  }
   void OnVideoNaturalSizeChange(const gfx::Size& size) override {
     DCHECK(type_ == DemuxerStream::VIDEO);
     renderer_->OnVideoNaturalSizeChange(size);
@@ -992,6 +998,16 @@ void RendererImpl::OnError(PipelineStatus error) {
 void RendererImpl::OnWaitingForDecryptionKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnWaitingForDecryptionKey();
+}
+
+void RendererImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnAudioConfigChange(config);
+}
+
+void RendererImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoConfigChange(config);
 }
 
 void RendererImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {

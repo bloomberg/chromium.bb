@@ -1529,7 +1529,7 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnVideoNaturalSizeChange");
 
   // The input |size| is from the decoded video frame, which is the original
   // natural size and need to be rotated accordingly.
@@ -1575,6 +1575,28 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
   } else if (bridge_->GetWebLayer()) {
     bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
   }
+}
+
+void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
+
+  pipeline_metadata_.audio_decoder_config = config;
+
+  if (observer_)
+    observer_->OnMetadataChanged(pipeline_metadata_);
+}
+
+void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
+
+  // TODO(chcunningham): Observe changes to video codec profile to signal
+  // beginning of a new Media Capabilities playback report.
+  pipeline_metadata_.video_decoder_config = config;
+
+  if (observer_)
+    observer_->OnMetadataChanged(pipeline_metadata_);
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {

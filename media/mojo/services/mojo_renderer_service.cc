@@ -14,6 +14,7 @@
 #include "media/base/media_url_demuxer.h"
 #include "media/base/renderer.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/media_resource_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 
@@ -184,6 +185,18 @@ void MojoRendererService::OnBufferingStateChange(BufferingState state) {
 void MojoRendererService::OnWaitingForDecryptionKey() {
   DVLOG(1) << __func__;
   client_->OnWaitingForDecryptionKey();
+}
+
+void MojoRendererService::OnAudioConfigChange(
+    const AudioDecoderConfig& config) {
+  DVLOG(2) << __func__ << "(" << config.AsHumanReadableString() << ")";
+  client_->OnAudioConfigChange(config);
+}
+
+void MojoRendererService::OnVideoConfigChange(
+    const VideoDecoderConfig& config) {
+  DVLOG(2) << __func__ << "(" << config.AsHumanReadableString() << ")";
+  client_->OnVideoConfigChange(config);
 }
 
 void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {

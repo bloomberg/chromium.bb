@@ -72,6 +72,11 @@ interface RendererClient {
   // OnError() will be called before firing the completion callback.
   OnError();
 
+  // Executed whenever DemuxerStream status returns kConfigChange. Initial
+  // configs provided by OnMetadata.
+  OnAudioConfigChange(AudioDecoderConfig config);
+  OnVideoConfigChange(VideoDecoderConfig config);
+
   // Executed for the first video frame and whenever natural size changes.
   OnVideoNaturalSizeChange(gfx.mojom.Size size);
 

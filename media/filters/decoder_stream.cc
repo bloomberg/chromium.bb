@@ -643,7 +643,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     pending_buffers_.clear();
 
     if (!config_change_observer_cb_.is_null())
-      config_change_observer_cb_.Run();
+      config_change_observer_cb_.Run(StreamTraits::GetDecoderConfig(stream_));
 
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {

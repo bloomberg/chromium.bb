@@ -63,6 +63,8 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
   void OnStatisticsUpdate(const media::PipelineStatistics& stats) override;
   void OnBufferingStateChange(media::BufferingState state) override;
   void OnWaitingForDecryptionKey() override;
+  void OnAudioConfigChange(const media::AudioDecoderConfig& config) override;
+  void OnVideoConfigChange(const media::VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
   void OnDurationChange(base::TimeDelta duration) override;

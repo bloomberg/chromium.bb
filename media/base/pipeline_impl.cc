@@ -121,6 +121,8 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
   void OnBufferingStateChange(BufferingState state) final;
   void OnWaitingForDecryptionKey() final;
+  void OnAudioConfigChange(const AudioDecoderConfig& config) final;
+  void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
   void OnDurationChange(base::TimeDelta duration) final;
@@ -703,6 +705,24 @@ void PipelineImpl::RendererWrapper::OnVideoOpacityChange(bool opaque) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PipelineImpl::OnVideoOpacityChange, weak_pipeline_, opaque));
+}
+
+void PipelineImpl::RendererWrapper::OnAudioConfigChange(
+    const AudioDecoderConfig& config) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnAudioConfigChange, weak_pipeline_, config));
+}
+
+void PipelineImpl::RendererWrapper::OnVideoConfigChange(
+    const VideoDecoderConfig& config) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PipelineImpl::OnVideoConfigChange, weak_pipeline_, config));
 }
 
 void PipelineImpl::RendererWrapper::OnDurationChange(base::TimeDelta duration) {
@@ -1342,6 +1362,24 @@ void PipelineImpl::OnVideoOpacityChange(bool opaque) {
 
   DCHECK(client_);
   client_->OnVideoOpacityChange(opaque);
+}
+
+void PipelineImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
+
+  DCHECK(client_);
+  client_->OnAudioConfigChange(config);
+}
+
+void PipelineImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
+  DVLOG(2) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsRunning());
+
+  DCHECK(client_);
+  client_->OnVideoConfigChange(config);
 }
 
 void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {

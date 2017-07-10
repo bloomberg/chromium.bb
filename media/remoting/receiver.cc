@@ -9,6 +9,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/renderer.h"
 #include "media/remoting/proto_enum_utils.h"
+#include "media/remoting/proto_utils.h"
 #include "media/remoting/stream_provider.h"
 
 namespace media {
@@ -268,6 +269,30 @@ void Receiver::OnWaitingForDecryptionKey() {
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(remote_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY);
+  rpc_broker_->SendMessageToRemote(std::move(rpc));
+}
+
+void Receiver::OnAudioConfigChange(const AudioDecoderConfig& config) {
+  DVLOG(3) << __func__ << ": Issues RPC_RC_ONAUDIOCONFIGCHANGE message.";
+  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  rpc->set_handle(remote_handle_);
+  rpc->set_proc(pb::RpcMessage::RPC_RC_ONAUDIOCONFIGCHANGE);
+  auto* message = rpc->mutable_rendererclient_onaudioconfigchange_rpc();
+  pb::AudioDecoderConfig* proto_audio_config =
+      message->mutable_audio_decoder_config();
+  ConvertAudioDecoderConfigToProto(config, proto_audio_config);
+  rpc_broker_->SendMessageToRemote(std::move(rpc));
+}
+
+void Receiver::OnVideoConfigChange(const VideoDecoderConfig& config) {
+  DVLOG(3) << __func__ << ": Issues RPC_RC_ONVIDEOCONFIGCHANGE message.";
+  std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
+  rpc->set_handle(remote_handle_);
+  rpc->set_proc(pb::RpcMessage::RPC_RC_ONVIDEOCONFIGCHANGE);
+  auto* message = rpc->mutable_rendererclient_onvideoconfigchange_rpc();
+  pb::VideoDecoderConfig* proto_video_config =
+      message->mutable_video_decoder_config();
+  ConvertVideoDecoderConfigToProto(config, proto_video_config);
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 

@@ -42,6 +42,7 @@ class MEDIA_EXPORT DecoderStream {
   typedef DecoderStreamTraits<StreamType> StreamTraits;
   typedef typename StreamTraits::DecoderType Decoder;
   typedef typename StreamTraits::OutputType Output;
+  typedef typename StreamTraits::DecoderConfigType DecoderConfig;
 
   enum Status {
     OK,  // Everything went as planned.
@@ -110,7 +111,7 @@ class MEDIA_EXPORT DecoderStream {
   // Allows callers to register for notification of config changes; this is
   // called immediately after receiving the 'kConfigChanged' status from the
   // DemuxerStream, before any action is taken to handle the config change.
-  using ConfigChangeObserverCB = base::Closure;
+  using ConfigChangeObserverCB = base::Callback<void(const DecoderConfig&)>;
   void set_config_change_observer(
       ConfigChangeObserverCB config_change_observer) {
     config_change_observer_cb_ = config_change_observer;

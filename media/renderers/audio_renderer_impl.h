@@ -29,6 +29,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
@@ -186,15 +187,17 @@ class MEDIA_EXPORT AudioRendererImpl
   void OnBufferingStateChange(BufferingState state);
   void OnWaitingForDecryptionKey();
 
+  // Generally called by the AudioBufferStream when a config change occurs. May
+  // also be called internally with an empty config to reset config-based state.
+  // Will notify RenderClient when called with a valid config.
+  void OnConfigChange(const AudioDecoderConfig& config);
+
   // Used to initiate the flush operation once all pending reads have
   // completed.
   void DoFlush_Locked();
 
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
-
-  // Called by the AudioBufferStream when a config change occurs.
-  void OnConfigChange();
 
   // Updates |buffering_state_| and fires |buffering_state_cb_|.
   void SetBufferingState_Locked(BufferingState buffering_state);
@@ -209,6 +212,11 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Whether or not we expect to handle config changes.
   bool expecting_config_changes_;
+
+  // Stores the last decoder config that was passed to
+  // RendererClient::OnAudioConfigChange. Used to prevent signaling config
+  // to the upper layers when when the new config is the same.
+  AudioDecoderConfig current_decoder_config_;
 
   // The sink (destination) for rendered audio. |sink_| must only be accessed
   // on |task_runner_|. |sink_| must never be called under |lock_| or else we
