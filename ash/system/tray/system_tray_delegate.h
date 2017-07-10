@@ -26,9 +26,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Called after SystemTray has been instantiated.
   virtual void Initialize();
 
-  // Shows login UI to add other users to this session.
-  virtual void ShowUserLogin();
-
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
 

@@ -67,6 +67,7 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   void RequestLockScreen() override;
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(CycleUserDirection direction) override;
+  void ShowMultiProfileLogin() override;
 
  private:
   SessionController* const controller_;

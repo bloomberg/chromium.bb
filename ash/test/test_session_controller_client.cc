@@ -179,5 +179,7 @@ void TestSessionControllerClient::CycleActiveUser(
   SwitchActiveUser((*it)->user_info->account_id);
 }
 
+void TestSessionControllerClient::ShowMultiProfileLogin() {}
+
 }  // namespace test
 }  // namespace ash

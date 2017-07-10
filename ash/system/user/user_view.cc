@@ -19,7 +19,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -262,7 +261,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     // The last item is the "sign in another user" row.
     if (index_in_add_menu == sender->parent()->child_count() - 1) {
       MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
-      Shell::Get()->system_tray_delegate()->ShowUserLogin();
+      Shell::Get()->session_controller()->ShowMultiProfileLogin();
     } else {
       const int user_index = index_in_add_menu;
       SwitchUser(user_index);

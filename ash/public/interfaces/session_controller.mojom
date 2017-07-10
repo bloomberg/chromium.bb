@@ -169,4 +169,7 @@ interface SessionControllerClient {
 
   // Switch the active user to the next or previous user.
   CycleActiveUser(CycleUserDirection direction);
+
+  // Show the multi-profile login UI to add another user to this session.
+  ShowMultiProfileLogin();
 };

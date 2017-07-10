@@ -41,7 +41,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
@@ -50,6 +49,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -406,28 +406,7 @@ service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
 }
 
 bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return false;
-  // If there is a user manager, we need to see that we can at least have 2
-  // simultaneous users to allow this feature.
-  if (!user_manager::UserManager::IsInitialized())
-    return false;
-  size_t admitted_users_to_be_added =
-      user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile().size();
-  size_t logged_in_users =
-      user_manager::UserManager::Get()->GetLoggedInUsers().size();
-  if (!logged_in_users) {
-    // The shelf gets created on the login screen and as such we have to create
-    // all multi profile items of the the system tray menu before the user logs
-    // in. For special cases like Kiosk mode and / or guest mode this isn't a
-    // problem since either the browser gets restarted and / or the flag is not
-    // allowed, but for an "ephermal" user (see crbug.com/312324) it is not
-    // decided yet if they could add other users to their session or not.
-    // TODO(skuhne): As soon as the issue above needs to be resolved, this logic
-    // should change.
-    logged_in_users = 1;
-  }
-  return admitted_users_to_be_added + logged_in_users > 1;
+  return SessionControllerClient::IsMultiProfileEnabled();
 }
 
 bool ChromeShellDelegate::IsIncognitoAllowed() const {

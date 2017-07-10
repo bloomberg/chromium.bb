@@ -16,13 +16,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
@@ -31,6 +36,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -111,6 +117,14 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
 
 void DoSwitchUser(const AccountId& account_id) {
   UserManager::Get()->SwitchActiveUser(account_id);
+}
+
+// Callback for the dialog that warns the user about multi-profile, which has
+// a "never show again" checkbox.
+void OnAcceptMultiProfileIntro(bool never_show_again) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, never_show_again);
+  chromeos::UserAddingScreen::Get()->Start();
 }
 
 }  // namespace
@@ -213,6 +227,67 @@ void SessionControllerClient::SwitchActiveUser(const AccountId& account_id) {
 void SessionControllerClient::CycleActiveUser(
     ash::CycleUserDirection direction) {
   DoCycleActiveUser(direction);
+}
+
+void SessionControllerClient::ShowMultiProfileLogin() {
+  if (!IsMultiProfileEnabled())
+    return;
+
+  // Only regular non-supervised users could add other users to current session.
+  if (UserManager::Get()->GetActiveUser()->GetType() !=
+      user_manager::USER_TYPE_REGULAR) {
+    return;
+  }
+
+  if (UserManager::Get()->GetLoggedInUsers().size() >=
+      session_manager::kMaxmiumNumberOfUserSessions) {
+    return;
+  }
+
+  // Launch sign in screen to add another user to current session.
+  if (!UserManager::Get()->GetUsersAllowedForMultiProfile().empty()) {
+    // Don't show the dialog if any logged-in user in the multi-profile session
+    // dismissed it.
+    bool show_intro = true;
+    const user_manager::UserList logged_in_users =
+        UserManager::Get()->GetLoggedInUsers();
+    for (User* user : logged_in_users) {
+      show_intro &=
+          !multi_user_util::GetProfileFromAccountId(user->GetAccountId())
+               ->GetPrefs()
+               ->GetBoolean(prefs::kMultiProfileNeverShowIntro);
+      if (!show_intro)
+        break;
+    }
+    if (show_intro) {
+      base::Callback<void(bool)> on_accept =
+          base::Bind(&OnAcceptMultiProfileIntro);
+      chromeos::ShowMultiprofilesIntroDialog(on_accept);
+    } else {
+      chromeos::UserAddingScreen::Get()->Start();
+    }
+  }
+}
+
+// static
+bool SessionControllerClient::IsMultiProfileEnabled() {
+  if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
+    return false;
+  size_t admitted_users_to_be_added =
+      UserManager::Get()->GetUsersAllowedForMultiProfile().size();
+  size_t logged_in_users = UserManager::Get()->GetLoggedInUsers().size();
+  if (logged_in_users == 0) {
+    // The shelf gets created on the login screen and as such we have to create
+    // all multi profile items of the the system tray menu before the user logs
+    // in. For special cases like Kiosk mode and / or guest mode this isn't a
+    // problem since either the browser gets restarted and / or the flag is not
+    // allowed, but for an "ephermal" user (see crbug.com/312324) it is not
+    // decided yet if they could add other users to their session or not.
+    // TODO(skuhne): As soon as the issue above needs to be resolved, this logic
+    // should change.
+    logged_in_users = 1;
+  }
+  return (admitted_users_to_be_added + logged_in_users) > 1;
 }
 
 void SessionControllerClient::ActiveUserChanged(const User* active_user) {

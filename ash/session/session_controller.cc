@@ -180,6 +180,11 @@ void SessionController::CycleActiveUser(CycleUserDirection direction) {
     client_->CycleActiveUser(direction);
 }
 
+void SessionController::ShowMultiProfileLogin() {
+  if (client_)
+    client_->ShowMultiProfileLogin();
+}
+
 void SessionController::AddObserver(SessionObserver* observer) {
   observers_.AddObserver(observer);
 }

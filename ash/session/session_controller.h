@@ -110,6 +110,9 @@ class ASH_EXPORT SessionController
   // ordering as user sessions are created.
   void CycleActiveUser(CycleUserDirection direction);
 
+  // Show the multi-profile login UI to add another user to this session.
+  void ShowMultiProfileLogin();
+
   void AddObserver(SessionObserver* observer);
   void RemoveObserver(SessionObserver* observer);
 
