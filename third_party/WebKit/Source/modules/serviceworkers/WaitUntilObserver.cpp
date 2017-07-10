@@ -251,6 +251,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
     case kActivate:
       client->DidHandleActivateEvent(event_id_, result, event_dispatch_time_);
       break;
+    case kCanMakePayment:
+      client->DidHandleCanMakePaymentEvent(event_id_, result,
+                                           event_dispatch_time_);
+      break;
     case kFetch:
       client->DidHandleFetchEvent(event_id_, result, event_dispatch_time_);
       break;

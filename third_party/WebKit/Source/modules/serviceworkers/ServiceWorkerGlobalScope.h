@@ -42,6 +42,7 @@
 namespace blink {
 
 class Dictionary;
+class RespondWithObserver;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClients;
@@ -87,6 +88,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   void DispatchExtendableEvent(Event*, WaitUntilObserver*);
+
+  // For ExtendableEvents that also have a respondWith() function.
+  void DispatchExtendableEventWithRespondWith(Event*,
+                                              WaitUntilObserver*,
+                                              RespondWithObserver*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(install);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);

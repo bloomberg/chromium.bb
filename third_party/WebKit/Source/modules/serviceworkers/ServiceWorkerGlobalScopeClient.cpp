@@ -212,6 +212,14 @@ void ServiceWorkerGlobalScopeClient::DidHandleSyncEvent(
   client_.DidHandleSyncEvent(sync_event_id, result, event_dispatch_time);
 }
 
+void ServiceWorkerGlobalScopeClient::DidHandleCanMakePaymentEvent(
+    int payment_request_event_id,
+    WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
+  client_.DidHandleCanMakePaymentEvent(payment_request_event_id, result,
+                                       event_dispatch_time);
+}
+
 void ServiceWorkerGlobalScopeClient::DidHandlePaymentRequestEvent(
     int payment_request_event_id,
     WebServiceWorkerEventResult result,
