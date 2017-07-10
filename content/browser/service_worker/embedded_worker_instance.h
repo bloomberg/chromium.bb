@@ -47,6 +47,8 @@ class ServiceWorkerContextCore;
 // This gives an interface to control one EmbeddedWorker instance, which
 // may be 'in-waiting' or running in one of the child processes added by
 // AddProcessReference().
+//
+// Owned by ServiceWorkerVersion. Lives on the IO thread.
 class CONTENT_EXPORT EmbeddedWorkerInstance
     : NON_EXPORTED_BASE(public mojom::EmbeddedWorkerInstanceHost) {
  public:

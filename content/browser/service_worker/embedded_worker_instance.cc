@@ -238,8 +238,8 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   DISALLOW_COPY_AND_ASSIGN(DevToolsProxy);
 };
 
-// A handle for a worker process managed by ServiceWorkerProcessManager on the
-// UI thread.
+// A handle for a renderer process managed by ServiceWorkerProcessManager on the
+// UI thread. Lives on the IO thread.
 class EmbeddedWorkerInstance::WorkerProcessHandle {
  public:
   WorkerProcessHandle(const base::WeakPtr<ServiceWorkerContextCore>& context,
@@ -250,12 +250,19 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
         embedded_worker_id_(embedded_worker_id),
         process_id_(process_id),
         is_new_process_(is_new_process) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id_);
   }
 
   ~WorkerProcessHandle() {
-    if (context_)
-      context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (!context_)
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
+                       context_->process_manager()->AsWeakPtr(),
+                       embedded_worker_id_));
   }
 
   int process_id() const { return process_id_; }
@@ -290,6 +297,7 @@ class EmbeddedWorkerInstance::StartTask {
         is_installed_(false),
         started_during_browser_startup_(false),
         weak_factory_(this) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                       "EmbeddedWorkerInstance::Start",
                                       instance_, "Script", script_url.spec());
@@ -309,8 +317,11 @@ class EmbeddedWorkerInstance::StartTask {
         break;
       case ProcessAllocationState::ALLOCATING:
         // Abort half-baked process allocation on the UI thread.
-        instance_->context_->process_manager()->ReleaseWorkerProcess(
-            instance_->embedded_worker_id());
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
+                           instance_->context_->process_manager()->AsWeakPtr(),
+                           instance_->embedded_worker_id()));
         break;
       case ProcessAllocationState::ALLOCATED:
         // Otherwise, the process will be released by EmbeddedWorkerInstance.
@@ -461,6 +472,7 @@ bool EmbeddedWorkerInstance::Listener::OnMessageReceived(
 }
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(status_ == EmbeddedWorkerStatus::STOPPING ||
          status_ == EmbeddedWorkerStatus::STOPPED)
       << static_cast<int>(status_);
@@ -584,7 +596,9 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       instance_host_binding_(this),
       devtools_attached_(false),
       network_accessed_for_script_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void EmbeddedWorkerInstance::OnProcessAllocated(
     std::unique_ptr<WorkerProcessHandle> handle,

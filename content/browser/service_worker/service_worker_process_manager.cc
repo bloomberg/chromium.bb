@@ -237,16 +237,7 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
 }
 
 void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ServiceWorkerProcessManager::ReleaseWorkerProcess,
-                   weak_this_,
-                   embedded_worker_id));
-    return;
-  }
-
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (process_id_for_test_ != ChildProcessHost::kInvalidUniqueID) {
     // Unittests don't increment or decrement the worker refcount of a
     // RenderProcessHost.
@@ -267,7 +258,7 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   if (info == instance_info_.end())
     return;
 
-  RenderProcessHost* rph = NULL;
+  RenderProcessHost* rph = nullptr;
   if (info->second.site_instance.get()) {
     rph = info->second.site_instance->GetProcess();
     DCHECK_EQ(info->second.process_id, rph->GetID())
