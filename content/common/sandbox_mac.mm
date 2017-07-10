@@ -72,14 +72,14 @@ const char* Sandbox::kSandboxEnableLogging = "ENABLE_LOGGING";
 const char* Sandbox::kSandboxDisableDenialLogging =
     "DISABLE_SANDBOX_DENIAL_LOGGING";
 const char* Sandbox::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
-const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
-const char* Sandbox::kSandboxMavericks = "IS_MAVERICKS";
+const char* Sandbox::kSandboxOSVersion = "OS_VERSION";
 const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
 const char* Sandbox::kSandboxBundlePath = "BUNDLE_PATH";
 const char* Sandbox::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
 const char* Sandbox::kSandboxChromeBundleId = "BUNDLE_ID";
 const char* Sandbox::kSandboxComponentPath = "COMPONENT_PATH";
 const char* Sandbox::kSandboxChromePID = "CHROMIUM_PID";
+const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.

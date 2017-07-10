@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/sys_info.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -19,6 +21,25 @@
 #include "sandbox/mac/seatbelt_exec.h"
 
 namespace content {
+
+namespace {
+
+// Produce the OS version as an integer "1010", etc. and pass that to the
+// profile. The profile converts the string back to a number and can do
+// comparison operations on OS version.
+std::string GetOSVersion() {
+  int32_t major_version, minor_version, bugfix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  base::CheckedNumeric<int32_t> os_version(major_version);
+  os_version *= 100;
+  os_version += minor_version;
+
+  int32_t final_os_version = os_version.ValueOrDie();
+  return std::to_string(final_os_version);
+}
+
+}  // namespace
 
 void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
   const base::CommandLine* command_line =
@@ -35,12 +56,7 @@ void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
       Sandbox::GetCanonicalSandboxPath(base::GetHomeDir()).value();
   CHECK(client->SetParameter(Sandbox::kSandboxHomedirAsLiteral, homedir));
 
-  CHECK(client->SetBooleanParameter(Sandbox::kSandboxMavericks,
-                                    base::mac::IsOS10_9()));
-
-  bool elcap_or_later = base::mac::IsAtLeastOS10_11();
-  CHECK(client->SetBooleanParameter(Sandbox::kSandboxElCapOrLater,
-                                    elcap_or_later));
+  CHECK(client->SetParameter(Sandbox::kSandboxOSVersion, GetOSVersion()));
 
   std::string bundle_path =
       Sandbox::GetCanonicalSandboxPath(base::mac::MainBundlePath()).value();
