@@ -40,6 +40,7 @@ int get_txfm1d_size(TX_SIZE tx_size);
 void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1);
 
 void reference_dct_1d(const double *in, double *out, int size);
+void reference_idct_1d(const double *in, double *out, int size);
 
 void reference_adst_1d(const double *in, double *out, int size);
 

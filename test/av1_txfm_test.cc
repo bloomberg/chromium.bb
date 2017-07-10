@@ -76,6 +76,18 @@ void reference_dct_1d(const double *in, double *out, int size) {
   }
 }
 
+void reference_idct_1d(const double *in, double *out, int size) {
+  for (int n = 0; n < size; ++n) {
+    out[n] = 0;
+    for (int k = 0; k < size; ++k) {
+      if (k == 0)
+        out[n] += invSqrt2 * in[k] * cos(M_PI * (2 * n + 1) * k / (2 * size));
+      else
+        out[n] += in[k] * cos(M_PI * (2 * n + 1) * k / (2 * size));
+    }
+  }
+}
+
 void reference_adst_1d(const double *in, double *out, int size) {
   for (int k = 0; k < size; ++k) {
     out[k] = 0;
