@@ -6,6 +6,8 @@
         "browser": [
           "arc::mojom::VideoDecodeAccelerator",
           "arc::mojom::VideoDecodeClient",
+          "arc::mojom::VideoEncodeAccelerator",
+          "arc::mojom::VideoEncodeClient",
           "chrome::mojom::ResourceUsageReporter"
         ]
       }
