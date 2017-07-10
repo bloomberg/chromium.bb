@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/omnibox/browser/history_url_provider.h"
@@ -100,6 +99,17 @@ void InitDaysAgoToRecencyScoreArray() {
                 days_ago_to_recency_score[days_ago - 1]);
     }
   }
+}
+
+size_t GetAdjustedOffsetForComponent(
+    const GURL& url,
+    const base::OffsetAdjuster::Adjustments& adjustments,
+    const url::Parsed::ComponentType& component) {
+  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+
+  size_t result = parsed.CountCharactersBefore(component, true);
+  base::OffsetAdjuster::AdjustOffset(adjustments, &result);
+  return result;
 }
 
 }  // namespace
@@ -254,8 +264,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     }
   }
 
-  const float topicality_score = GetTopicalityScore(
-      terms_vector.size(), url, terms_to_word_starts_offsets, word_starts);
+  const float topicality_score =
+      GetTopicalityScore(terms_vector.size(), gurl, adjustments,
+                         terms_to_word_starts_offsets, word_starts);
   const float frequency_score = GetFrequency(now, is_url_bookmarked, visits);
   const float specificity_score =
       GetDocumentSpecificityScore(num_matching_pages);
@@ -425,7 +436,8 @@ void ScoredHistoryMatch::Init() {
 
 float ScoredHistoryMatch::GetTopicalityScore(
     const int num_terms,
-    const base::string16& url,
+    const GURL& url,
+    const base::OffsetAdjuster::Adjustments& adjustments,
     const WordStarts& terms_to_word_starts_offsets,
     const RowWordStarts& word_starts) {
   // A vector that accumulates per-term scores.  The strongest match--a
@@ -439,32 +451,24 @@ float ScoredHistoryMatch::GetTopicalityScore(
       word_starts.url_word_starts_.begin();
   WordStarts::const_iterator end_word_starts =
       word_starts.url_word_starts_.end();
-  const size_t question_mark_pos = url.find('?');
-  const size_t colon_pos = url.find(':');
-  // The + 3 skips the // that probably appears in the protocol
-  // after the colon.  If the protocol doesn't have two slashes after
-  // the colon, that's okay--all this ends up doing is starting our
-  // search for the next / a few characters into the hostname.  The
-  // only times this can cause problems is if we have a protocol without
-  // a // after the colon and the hostname is only one or two characters.
-  // This isn't worth worrying about.
-  const size_t end_of_hostname_pos = (colon_pos != std::string::npos)
-                                         ? url.find('/', colon_pos + 3)
-                                         : url.find('/');
-  size_t last_part_of_hostname_pos = (end_of_hostname_pos != std::string::npos)
-                                         ? url.rfind('.', end_of_hostname_pos)
-                                         : url.rfind('.');
+
+  const size_t query_pos =
+      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::QUERY);
+  const size_t host_pos =
+      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::HOST);
+  const size_t path_pos =
+      GetAdjustedOffsetForComponent(url, adjustments, url::Parsed::PATH);
   // Loop through all URL matches and score them appropriately.
   // First, filter all matches not at a word boundary and in the path (or
   // later).
   url_matches = FilterTermMatchesByWordStarts(
       url_matches, terms_to_word_starts_offsets, word_starts.url_word_starts_,
-      end_of_hostname_pos, std::string::npos);
-  if (colon_pos != std::string::npos) {
+      path_pos, std::string::npos);
+  if (url.has_scheme()) {
     // Also filter matches not at a word boundary and in the scheme.
     url_matches = FilterTermMatchesByWordStarts(
         url_matches, terms_to_word_starts_offsets, word_starts.url_word_starts_,
-        0, colon_pos);
+        0, host_pos);
   }
   for (const auto& url_match : url_matches) {
     // Calculate the offset in the URL string where the meaningful (word) part
@@ -480,21 +484,22 @@ float ScoredHistoryMatch::GetTopicalityScore(
     }
     const bool at_word_boundary = (next_word_starts != end_word_starts) &&
                                   (*next_word_starts == term_word_offset);
-    if ((question_mark_pos != std::string::npos) &&
-        (term_word_offset >= question_mark_pos)) {
-      // The match is in a CGI ?... fragment.
+    if (term_word_offset >= query_pos) {
+      // The match is in the query or ref component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 5;
-    } else if ((end_of_hostname_pos != std::string::npos) &&
-               (term_word_offset >= end_of_hostname_pos)) {
-      // The match is in the path.
+    } else if (term_word_offset >= path_pos) {
+      // The match is in the path component.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 8;
-    } else if ((colon_pos == std::string::npos) ||
-               (term_word_offset >= colon_pos)) {
-      // The match is in the hostname.
-      if ((last_part_of_hostname_pos == std::string::npos) ||
-          (term_word_offset < last_part_of_hostname_pos)) {
+    } else if (term_word_offset >= host_pos) {
+      // Get the position of the last period in the hostname.
+      const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
+      size_t last_part_of_host_pos = url.possibly_invalid_spec().rfind(
+          '.', parsed.CountCharactersBefore(url::Parsed::PATH, true));
+      base::OffsetAdjuster::AdjustOffset(adjustments, &last_part_of_host_pos);
+
+      if (term_word_offset < last_part_of_host_pos) {
         // Either there are no dots in the hostname or this match isn't
         // the last dotted component.
         term_scores[url_match.term_num] += at_word_boundary ? 10 : 2;

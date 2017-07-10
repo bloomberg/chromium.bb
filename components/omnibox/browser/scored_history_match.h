@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_match.h"
 #include "components/history/core/browser/history_types.h"
@@ -122,9 +123,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // url_matches and title_matches in the process so they only reflect matches
   // used for scoring.  (For instance, some mid-word matches are not given
   // credit in scoring.)  Requires that |url_matches| and |title_matches| are
-  // sorted.
+  // sorted. |adjustments| must contain any adjustments used to format |url|.
   float GetTopicalityScore(const int num_terms,
-                           const base::string16& cleaned_up_url,
+                           const GURL& url,
+                           const base::OffsetAdjuster::Adjustments& adjustments,
                            const WordStarts& terms_to_word_starts_offsets,
                            const RowWordStarts& word_starts);
 
