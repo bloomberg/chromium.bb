@@ -85,10 +85,6 @@ function doTest(behavior) {
     ].join(''),
     `${behavior}-3: Shift click end`);
 
-  // These two fail on Mac due  https://bugs.webkit.org/show_bug.cgi?id=36256
-  // In the first shiftClick call, the space after five is selected and
-  // shouldn't be. In the second shiftClick call, "six" is selected and
-  // shouldn't be.
   assert_selection(
     kSample,
     selection => {
@@ -103,7 +99,7 @@ function doTest(behavior) {
     behavior === 'mac'
       ? [
           '<div id="first">|one <span id="start"></span>two three</div>',
-          '<div id="second">four <span id="end"></span>five ^six</div>',
+          '<div id="second">four <span id="end"></span>five^ six</div>',
         ].join('')
       : [
           '<div id="first">|one <span id="start"></span>two^ three</div>',
@@ -127,10 +123,10 @@ function doTest(behavior) {
     behavior === 'mac'
       ? [
           '<div id="first">one <span id="start"></span>|two three</div>',
-          '<div id="second">four <span id="end"></span>five six^</div>',
+          '<div id="second">four <span id="end"></span>five^ six</div>',
         ].join('')
       : [
-          '<div id="first">one <span id="start"></span>^two| three</div>',
+          '<div id="first">one <span id="start"></span>|two^ three</div>',
           '<div id="second">four <span id="end"></span>five six</div>',
         ].join(''),
     `${behavior}-5: Shift click start`);
