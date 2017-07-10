@@ -136,8 +136,6 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
                       'crbug.com/708590')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
-    self.DisableStory('browse:social:twitter_infinite_scroll',
-                      [expectations.ALL], 'crbug.com/728464')
 
 # Should only include browse:*:* stories.
 class V8BrowsingMobileExpecations(expectations.StoryExpectations):
