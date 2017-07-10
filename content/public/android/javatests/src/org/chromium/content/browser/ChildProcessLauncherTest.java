@@ -507,6 +507,9 @@ public class ChildProcessLauncherTest {
         Assert.assertNull(createChildProcessLauncher(mConnectionAllocator,
                 true /* setupConnection */, false /* queueIfNoFreeConnection */));
 
+        waitForConnectionState(connections[0], CONNECTION_BLOCK_UNTIL_SETUP);
+        waitForConnectionState(connections[1], CONNECTION_BLOCK_UNTIL_SETUP);
+
         // Stop one connection, that should free-up a connection and the first queued launcher
         // should use it.
         stopLauncher(launchers[0]);
