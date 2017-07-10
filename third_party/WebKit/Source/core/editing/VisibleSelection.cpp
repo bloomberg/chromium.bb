@@ -478,19 +478,20 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
   AdjustSelectionToAvoidCrossingEditingBoundaries();
   UpdateSelectionType();
 
-  if (GetSelectionType() == kRangeSelection) {
-    // "Constrain" the selection to be the smallest equivalent range of
-    // nodes. This is a somewhat arbitrary choice, but experience shows that
-    // it is useful to make to make the selection "canonical" (if only for
-    // purposes of comparing selections). This is an ideal point of the code
-    // to do this operation, since all selection changes that result in a
-    // RANGE come through here before anyone uses it.
-    // TODO(yosin) Canonicalizing is good, but haven't we already done it
-    // (when we set these two positions to |VisiblePosition|
-    // |deepEquivalent()|s above)?
-    start_ = MostForwardCaretPosition(start_);
-    end_ = MostBackwardCaretPosition(end_);
-  }
+  if (GetSelectionType() != kRangeSelection)
+    return;
+
+  // "Constrain" the selection to be the smallest equivalent range of
+  // nodes. This is a somewhat arbitrary choice, but experience shows that
+  // it is useful to make to make the selection "canonical" (if only for
+  // purposes of comparing selections). This is an ideal point of the code
+  // to do this operation, since all selection changes that result in a
+  // RANGE come through here before anyone uses it.
+  // TODO(yosin) Canonicalizing is good, but haven't we already done it
+  // (when we set these two positions to |VisiblePosition|
+  // |deepEquivalent()|s above)?
+  start_ = MostForwardCaretPosition(start_);
+  end_ = MostBackwardCaretPosition(end_);
 }
 
 template <typename Strategy>
