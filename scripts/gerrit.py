@@ -224,7 +224,8 @@ def FilteredQuery(opts, query, helper=None):
 def UserActTodo(opts):
   """List CLs needing your review"""
   cls = FilteredQuery(opts, ('reviewer:self status:open NOT owner:self '
-                             'label:Code-Review=0,user=self'))
+                             'label:Code-Review=0,user=self '
+                             'NOT label:Verified<0'))
   PrintCls(opts, cls)
 
 
