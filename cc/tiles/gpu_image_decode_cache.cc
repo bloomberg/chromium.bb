@@ -1253,15 +1253,16 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     }
   }
   image_data->decode.mark_used();
-  DCHECK(uploaded_image);
 
-  if (draw_image.target_color_space().IsValid()) {
+  // TODO(crbug.com/740737): uploaded_image is sometimes null for reasons that
+  // need investigation.
+
+  if (uploaded_image && draw_image.target_color_space().IsValid()) {
     TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage - color conversion");
     uploaded_image = uploaded_image->makeColorSpace(
         draw_image.target_color_space().ToSkColorSpace(),
         SkTransferFunctionBehavior::kIgnore);
   }
-  DCHECK(uploaded_image);
 
   // At-raster may have decoded this while we were unlocked. If so, ignore our
   // result.
