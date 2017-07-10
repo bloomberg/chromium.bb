@@ -22,6 +22,7 @@
 /svn
 /svn.bat
 /svnversion.bat
+/.bleeding_edge
 /.codereview_upload_cookies
 /.gitconfig
 /.git_bleeding_edge
