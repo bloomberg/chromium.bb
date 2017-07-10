@@ -36,7 +36,6 @@ import traceback
 from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.controllers.manager import Manager
-from webkitpy.layout_tests.generate_results_dashboard import DashBoardGenerator
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.factory import configuration_options, platform_options
 from webkitpy.layout_tests.views import buildbot_results
@@ -605,11 +604,6 @@ def run(port, options, args, logging_stream, stdout):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
             stdout.flush()
-
-            _log.debug('Generating dashboard...')
-            gen_dash_board = DashBoardGenerator(port)
-            gen_dash_board.generate()
-            _log.debug('Dashboard generated.')
 
         _log.debug('')
         _log.debug('Testing completed, Exit status: %d', run_details.exit_code)
