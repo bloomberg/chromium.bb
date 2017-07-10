@@ -45,7 +45,11 @@ class AuditorResult {
     ERROR_FATAL,          // A fatal error that should stop process.
     ERROR_MISSING,        // A function is called without annotation.
     ERROR_NO_ANNOTATION,  // A function is called with NO_ANNOTATION tag.
-    ERROR_SYNTAX          // Annotation syntax is not right.
+    ERROR_SYNTAX,         // Annotation syntax is not right.
+    ERROR_RESERVED_UNIQUE_ID_HASH_CODE,  // A unique id has a hash code similar
+                                         // to a reserved word.
+    ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE  // Two unique ids have similar hash
+                                         // codes.
   };
 
   static const int kNoCodeLineSpecified;
@@ -59,6 +63,12 @@ class AuditorResult {
 
   AuditorResult(ResultType type);
 
+  ~AuditorResult();
+
+  AuditorResult(const AuditorResult& other);
+
+  void AddDetail(const std::string& message);
+
   ResultType type() const { return type_; };
 
   std::string file_path() const { return file_path_; }
@@ -68,7 +78,7 @@ class AuditorResult {
 
  private:
   ResultType type_;
-  std::string message_;
+  std::vector<std::string> details_;
   std::string file_path_;
   int line_;
 };
@@ -177,6 +187,26 @@ class TrafficAnnotationAuditor {
   // Computes the hash value of a traffic annotation unique id.
   static int ComputeHashValue(const std::string& unique_id);
 
+  // Loads the whitelist file and populates |ignore_list_|.
+  bool LoadWhiteList();
+
+  // Checks to see if a |file_path| matches a whitelist with given type.
+  bool IsWhitelisted(const std::string& file_path,
+                     AuditorException::ExceptionType whitelist_type);
+
+  // Checks to see if any unique id or its hash code is duplicated.
+  void CheckDuplicateHashes();
+
+  // Preforms all checks on extracted annotations and calls, and adds the
+  // results to |errors_|.
+  void RunAllChecks();
+
+  // Returns a mapping of reserved unique ids' hash codes to the unique ids'
+  // texts. This list includes all unique ids that are defined in
+  // net/traffic_annotation/network_traffic_annotation.h and
+  // net/traffic_annotation/network_traffic_annotation_test_helper.h
+  const std::map<int, std::string>& GetReservedUniqueIDs();
+
   std::string clang_tool_raw_output() const { return clang_tool_raw_output_; };
 
   void set_clang_tool_raw_output(const std::string& raw_output) {
@@ -194,12 +224,6 @@ class TrafficAnnotationAuditor {
   const std::vector<AuditorResult>& errors() const { return errors_; }
 
  private:
-  // Loads the whitelist file and populates ignore_list member variables.
-  bool LoadWhiteList();
-
-  // Checks to see if a |file_path| matches a |whitelist| of partial paths.
-  bool IsWhitelisted(const std::string file_path,
-                     const std::vector<std::string>& whitelist);
 
   const base::FilePath source_path_;
   const base::FilePath build_path_;
