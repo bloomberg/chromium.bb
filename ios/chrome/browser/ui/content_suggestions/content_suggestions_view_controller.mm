@@ -204,7 +204,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
   }
   [self.collectionUpdater updateMostVisitedForSize:size];
-  [self.collectionView.collectionViewLayout invalidateLayout];
+  [self.collectionView reloadData];
 }
 
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
@@ -212,6 +212,10 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super willTransitionToTraitCollection:newCollection
                withTransitionCoordinator:coordinator];
+  // Invalidating the layout after changing the cellStyle/contentInset results
+  // in the layout not being updated. Do it before to have it taken into
+  // account.
+  [self.collectionView.collectionViewLayout invalidateLayout];
   if (ShouldCellsBeFullWidth(newCollection)) {
     self.collectionView.contentInset = UIEdgeInsetsZero;
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
@@ -220,7 +224,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         UIEdgeInsetsMake(0, self.cardStyleMargin, 0, self.cardStyleMargin);
     self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   }
-  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 #pragma mark - UICollectionViewDelegate
