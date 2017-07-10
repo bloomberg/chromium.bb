@@ -23,6 +23,7 @@ class CSSProperty;
 class CSSStringValue;
 class CSSURIValue;
 class CSSValuePair;
+class StylePropertyShorthand;
 
 // When these functions are successful, they will consume all the relevant
 // tokens from the range and also consume any whitespace which follows. When
@@ -129,6 +130,12 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     const CSSParserContext&,
                                     CSSParserTokenRange&,
                                     bool& needs_legacy_parsing);
+
+bool ConsumeShorthandVia4LonghandsAPI(const StylePropertyShorthand&,
+                                      bool important,
+                                      const CSSParserContext&,
+                                      CSSParserTokenRange&,
+                                      HeapVector<CSSProperty, 256>& properties);
 
 // Template implementations are at the bottom of the file for readability.
 
