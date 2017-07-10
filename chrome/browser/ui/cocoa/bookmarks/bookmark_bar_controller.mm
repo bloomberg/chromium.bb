@@ -344,7 +344,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
   // viewDidLoad became part of the API in 10.10.
   if (!base::mac::IsAtLeastOS10_10())
-    [self viewDidLoad];
+    [self viewDidLoadImpl];
 }
 
 - (BookmarkButton*)findAncestorButtonOnBarForNode:(const BookmarkNode*)node {
@@ -459,6 +459,12 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 }
 
 - (void)viewDidLoad {
+  // This indirection allows the viewDidLoad implementation to be called from
+  // elsewhere without triggering an availability warning.
+  [self viewDidLoadImpl];
+}
+
+- (void)viewDidLoadImpl {
   // We are enabled by default.
   barIsEnabled_ = YES;
 
