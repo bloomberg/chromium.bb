@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 
 namespace task_manager {
