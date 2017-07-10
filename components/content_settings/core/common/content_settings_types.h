@@ -71,8 +71,7 @@ enum ContentSettingsType {
   // specific origin.
   CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
 
-  // WARNING: This enum is going to be removed soon. Do not depend on NUM_TYPES.
-  CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE,
+  CONTENT_SETTINGS_NUM_TYPES,
 };
 
 struct ContentSettingsTypeHash {
