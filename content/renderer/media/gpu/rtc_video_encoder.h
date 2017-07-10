@@ -65,9 +65,6 @@ class CONTENT_EXPORT RTCVideoEncoder
   class Impl;
   friend class RTCVideoEncoder::Impl;
 
-  void RecordInitEncodeUMA(int32_t init_retval,
-                           media::VideoCodecProfile profile);
-
   // The video codec type, as reported to WebRTC.
   const webrtc::VideoCodecType video_codec_type_;
 
