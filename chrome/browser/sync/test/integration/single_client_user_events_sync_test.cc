@@ -30,14 +30,14 @@ UserEventSpecifics CreateEvent(int minutes_ago) {
 
 CommitResponse::ResponseType BounceType(
     CommitResponse::ResponseType type,
-    const fake_server::FakeServerEntity& entity) {
+    const syncer::LoopbackServerEntity& entity) {
   return type;
 }
 
 CommitResponse::ResponseType TransientErrorFirst(
     bool* first,
     UserEventSpecifics* retry_specifics,
-    const fake_server::FakeServerEntity& entity) {
+    const syncer::LoopbackServerEntity& entity) {
   if (*first) {
     *first = false;
     SyncEntity sync_entity;

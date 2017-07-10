@@ -46,7 +46,7 @@ LoopbackServerEntity::CreateEntityFromProto(
     const sync_pb::LoopbackServerEntity& entity) {
   switch (entity.type()) {
     case sync_pb::LoopbackServerEntity_Type_TOMBSTONE:
-      return PersistentTombstoneEntity::Create(entity.entity());
+      return PersistentTombstoneEntity::CreateFromEntity(entity.entity());
     case sync_pb::LoopbackServerEntity_Type_PERMANENT:
       return base::MakeUnique<PersistentPermanentEntity>(
           entity.entity().id_string(), entity.entity().version(),
@@ -57,7 +57,7 @@ LoopbackServerEntity::CreateEntityFromProto(
     case sync_pb::LoopbackServerEntity_Type_BOOKMARK:
       return PersistentBookmarkEntity::CreateFromEntity(entity.entity());
     case sync_pb::LoopbackServerEntity_Type_UNIQUE:
-      return PersistentUniqueClientEntity::Create(entity.entity());
+      return PersistentUniqueClientEntity::CreateFromEntity(entity.entity());
     case sync_pb::LoopbackServerEntity_Type_UNKNOWN:
       CHECK(false) << "Unknown type encountered";
       return std::unique_ptr<LoopbackServerEntity>(nullptr);
