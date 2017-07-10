@@ -64,13 +64,17 @@ void Remove(int remove_mask,
   auto* observer =
       new BrowsingDataTaskObserver(remover, std::move(callback), 2);
 
-  int filterable_mask =
-      remove_mask &
-      ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
-  int nonfilterable_mask =
-      remove_mask &
-      ~ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
+  int filterable_mask = 0;
+  int nonfilterable_mask = remove_mask;
 
+  if (!filter_builder->IsEmptyBlacklist()) {
+    filterable_mask =
+        remove_mask &
+        ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
+    nonfilterable_mask =
+        remove_mask &
+        ~ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;
+  }
   browsing_data::RecordDeletionForPeriod(time_period);
 
   if (filterable_mask) {
