@@ -515,8 +515,8 @@ public class ChildProcessLauncherHelper {
         boolean bindToCallerCheck =
                 creationParams == null ? false : creationParams.getBindToCallerCheck();
         bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
-        bundle.putParcelable(ContentChildProcessConstants.EXTRA_LINKER_PARAMS,
-                getLinkerParamsForNewConnection());
+        ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
+        if (linkerParams != null) linkerParams.populateBundle(bundle);
         return bundle;
     }
 

@@ -12,10 +12,6 @@ public interface ContentChildProcessConstants {
     // Note that because that intent maybe reused if a service is restarted, none should be process
     // specific.
 
-    // Key in the binding Intent's Bundle for the ChromiumLinkerParams.
-    public static final String EXTRA_LINKER_PARAMS =
-            "com.google.android.apps.chrome.extra.linker_params";
-
     // Below are the names for the items placed in the Bundle passed in the
     // IChildProcessService.setupConnection call, once the connection has been established.
 
