@@ -49,10 +49,20 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
   test_data_directory = test_data_directory.Append(kWebUITestFolder);
   library_search_paths_.push_back(test_data_directory);
 
+// When the sanitizers (ASAN/MSAN/TSAN) are enabled, the WebUI tests
+// which use this generated directory are disabled in the build.
+// However, the generated directory is there if NaCl is enabled --
+// though it's usually disabled on the bots when the sanitizers are
+// enabled. Also, it seems some ChromeOS-specific tests use the
+// js2gtest GN template.
+#if (!defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER) && \
+     !defined(LEAK_SANITIZER) && !defined(SYZYASAN)) ||           \
+    !defined(DISABLE_NACL) || defined(OS_CHROMEOS)
   base::FilePath gen_test_data_directory;
   ASSERT_TRUE(
       PathService::Get(chrome::DIR_GEN_TEST_DATA, &gen_test_data_directory));
   library_search_paths_.push_back(gen_test_data_directory);
+#endif
 
   base::FilePath source_root_directory;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_root_directory));
