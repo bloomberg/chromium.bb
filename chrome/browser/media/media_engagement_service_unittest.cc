@@ -197,6 +197,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   void SetNow(base::Time now) { test_clock_->SetNow(now); }
 
+  std::vector<media::mojom::MediaEngagementScoreDetails> GetAllScoreDetails()
+      const {
+    return service_->GetAllScoreDetails();
+  }
+
  private:
   base::SimpleTestClock* test_clock_ = nullptr;
 
@@ -206,6 +211,13 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+TEST_F(MediaEngagementServiceTest, MojoSerialization) {
+  EXPECT_EQ(0u, GetAllScoreDetails().size());
+
+  RecordVisitAndPlaybackAndAdvanceClock(GURL("https://www.google.com"));
+  EXPECT_EQ(1u, GetAllScoreDetails().size());
+}
 
 TEST_F(MediaEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
   GURL url1("ftp://www.google.com/");

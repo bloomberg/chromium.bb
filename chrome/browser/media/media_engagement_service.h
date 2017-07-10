@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/media/media_engagement_score.h"
+#include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -58,6 +59,11 @@ class MediaEngagementService : public KeyedService,
 
   // Record a media playback on a |url|.
   void RecordPlayback(const GURL& url);
+
+  // Returns an array of engagement score details for all origins which
+  // have a score.
+  std::vector<media::mojom::MediaEngagementScoreDetails> GetAllScoreDetails()
+      const;
 
   // Overridden from history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
