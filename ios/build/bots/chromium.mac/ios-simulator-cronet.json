@@ -6,7 +6,7 @@
   "xcode version": "8.0",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
-    "disable_brotli_filter=true",
+    "disable_brotli_filter=false",
     "disable_file_support=true",
     "disable_ftp_support=true",
     "enable_websockets=false",

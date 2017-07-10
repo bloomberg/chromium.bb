@@ -51,6 +51,10 @@ GRPC_SUPPORT_EXPORT
 // any effect before |start| is called.
 + (void)setQuicEnabled:(BOOL)quicEnabled;
 
+// Sets whether Brotli should be supported by CronetEngine. This method only has
+// any effect before |start| is called.
++ (void)setBrotliEnabled:(BOOL)brotliEnabled;
+
 // Set HTTP Cache type to be used by CronetEngine.  This method only has any
 // effect before |start| is called.  See HttpCacheType enum for available
 // options.

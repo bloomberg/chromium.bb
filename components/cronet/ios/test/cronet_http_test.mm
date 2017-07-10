@@ -372,4 +372,50 @@ TEST_F(HttpTest, DataSchemeNotSupported) {
   EXPECT_TRUE([[delegate_ responseBody] containsString:testString]);
 }
 
+TEST_F(HttpTest, BrotliAdvertisedTest) {
+  [Cronet shutdownForTesting];
+
+  [Cronet setBrotliEnabled:YES];
+
+  StartCronet(grpc_support::GetQuicTestServerPort());
+
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:@"br"]);
+}
+
+TEST_F(HttpTest, BrotliNotAdvertisedTest) {
+  [Cronet shutdownForTesting];
+
+  [Cronet setBrotliEnabled:NO];
+
+  StartCronet(grpc_support::GetQuicTestServerPort());
+
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_FALSE([[delegate_ responseBody] containsString:@"br"]);
+}
+
+TEST_F(HttpTest, BrotliHandleDecoding) {
+  [Cronet shutdownForTesting];
+
+  [Cronet setBrotliEnabled:YES];
+
+  StartCronet(grpc_support::GetQuicTestServerPort());
+
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetUseEncodingURL("brotli")));
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_STREQ(base::SysNSStringToUTF8([delegate_ responseBody]).c_str(),
+               "The quick brown fox jumps over the lazy dog");
+}
+
 }  // namespace cronet

@@ -219,6 +219,7 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent,
                                      bool user_agent_partial)
     : http2_enabled_(false),
       quic_enabled_(false),
+      brotli_enabled_(false),
       http_cache_(URLRequestContextConfig::HttpCacheType::DISK),
       user_agent_(user_agent),
       user_agent_partial_(user_agent_partial),
@@ -348,6 +349,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   context_builder.SetHttpServerProperties(std::move(http_server_properties));
 
+  context_builder.set_enable_brotli(brotli_enabled_);
   main_context_ = context_builder.Build();
 
   main_context_->transport_security_state()
