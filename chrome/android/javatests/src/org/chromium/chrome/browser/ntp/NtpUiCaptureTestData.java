@@ -36,8 +36,8 @@ import java.util.Map;
  */
 public class NtpUiCaptureTestData {
     private static final String[] FAKE_MOST_VISITED_TITLES =
-            new String[] {"Simple", "A longer label", "A label that should be truncated",
-                    "Dummy site", "Fake", "Not real", "Test", "Most visited 8"};
+            new String[] {"Queries", "Football, cricket, hockey, and more | Sports", "Meme Feed",
+                    "Facts", "The Morning News", "Tech", "Shop.rr", "Now Entertainment"};
 
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS =
             new String[] {"", "", "", "", "", "", "", ""};
@@ -46,47 +46,35 @@ public class NtpUiCaptureTestData {
             TileSource.TOP_SITES, TileSource.TOP_SITES, TileSource.TOP_SITES, TileSource.TOP_SITES,
             TileSource.TOP_SITES, TileSource.TOP_SITES, TileSource.TOP_SITES};
 
-    private static final String[] FAKE_MOST_VISITED_URLS = new String[] {
-            "junk1", "junk2", "junk3", "Dummy", "Fake", "Not real", "Test", "Most visited 8"};
+    private static final String[] FAKE_MOST_VISITED_URLS =
+            new String[] {"queries", "sports", "meme", "facts", "news", "tech", "shop", "movies"};
 
     private static final int[] FAKE_MOST_VISITED_COLORS = {Color.RED, Color.BLUE, Color.GREEN,
             Color.BLACK, Color.CYAN, Color.DKGRAY, Color.BLUE, Color.YELLOW};
 
     private static final SnippetArticle[] FAKE_ARTICLE_SUGGESTIONS = new SnippetArticle[] {
             new SnippetArticle(KnownCategories.ARTICLES, "suggestion0",
-                    "Lorem ipsum dolor sit amet, consectetur ", "Lorem Ipsum",
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
-                            + "tempor incididunt ut labore et dolore magna aliqua.",
-                    "junk1", getTimestamp(2017, Calendar.JUNE, 1), 0.0f, 0L, false),
-            new SnippetArticle(KnownCategories.ARTICLES, "suggestion1",
-                    "A title that just goes on, and on, and on; tells a complete story at great "
-                            + "length, and is simply too long.",
-                    "A publisher with a very long name", "preview", "junk1",
+                    "James Roderick to step down as conductor for Laville orchestra",
+                    "The Morning News", "summary is not used", "http://example.com",
+                    getTimestamp(2017, Calendar.JUNE, 1), 0.0f, 0L, false),
+            new SnippetArticle(KnownCategories.ARTICLES, "suggestion1", "Boy raises orphaned goat",
+                    "Meme feed", "summary is not used", "http://example.com",
+                    getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false),
+            new SnippetArticle(KnownCategories.ARTICLES, "suggestion2", "Top gigs this week",
+                    "Now Entertainment", "summary is not used", "http://example.com",
                     getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false)};
 
     private static final SnippetArticle[] FAKE_BOOKMARK_SUGGESTIONS = new SnippetArticle[] {
-            new SnippetArticle(KnownCategories.BOOKMARKS, "suggestion2",
-                    "Look, it’s very, very simple…. All I want… is a cup of tea.", "Publisher",
-                    "My attempt to get a teapot and kettle in London (y'know that country that "
-                            + "drinks staggering amounts of tea) ... should have been easy, "
-                            + "right?\n"
-                            + "\n"
-                            + "The ticket includes this gem:\n"
-                            + "--------\n"
-                            + " The concern with kettles is the fact that they are portable and "
-                            + "carry hot water.\n"
-                            + "\n"
-                            + "Yes, they are designed explicitly to do that, safely.\n"
-                            + "\n"
-                            + " There is a concern that staff are at risk to burns and scalds "
-                            + "when combining the two. \n"
-                            + "\n"
-                            + "Unlike the large machine that puts out pressurized steam ?\n",
-                    "junk1", getTimestamp(2017, Calendar.MARCH, 10), 0.0f, 0L, false),
-            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark1", "Title3", "Publisher",
-                    "preview", "junk1", getTimestamp(2017, Calendar.FEBRUARY, 20), 0.0f, 0L, false),
-            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark2", "Title4", "Publisher",
-                    "preview", "junk1", getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false),
+            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark0",
+                    "Light pollution worse than ever", "Facts", "summary is not used",
+                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 10), 0.0f, 0L, false),
+            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark1",
+                    "Emergency services suffering further budget cuts", "The Morning News",
+                    "summary is not used", "http://example.com",
+                    getTimestamp(2017, Calendar.FEBRUARY, 20), 0.0f, 0L, false),
+            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark2",
+                    "Local election yields surprise winner", "Facts", "summary is not used",
+                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false),
     };
 
     private static long getTimestamp(int year, int month, int day) {
@@ -110,15 +98,14 @@ public class NtpUiCaptureTestData {
         Assert.assertNotNull(favicon);
         fakeSuggestionsSource.setFaviconForId("suggestion0", favicon);
         fakeSuggestionsSource.setThumbnailForId("suggestion0",
-                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/google.png")));
+                BitmapFactory.decodeFile(
+                        UrlUtils.getTestFilePath("/android/UiCapture/conductor.jpg")));
         fakeSuggestionsSource.setThumbnailForId("suggestion1",
-                BitmapFactory.decodeFile(
-                        UrlUtils.getTestFilePath("/android/UiCapture/tower-bridge.jpg")));
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/goat.jpg")));
         fakeSuggestionsSource.setThumbnailForId("suggestion2",
-                BitmapFactory.decodeFile(
-                        UrlUtils.getTestFilePath("/android/UiCapture/kettle.jpg")));
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/gig.jpg")));
         fakeSuggestionsSource.setThumbnailForId("bookmark1",
-                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/frog.jpg")));
+                BitmapFactory.decodeFile(UrlUtils.getTestFilePath("/android/UiCapture/fire.jpg")));
         return fakeSuggestionsSource;
     }
 
