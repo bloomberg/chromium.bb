@@ -1820,22 +1820,6 @@ uint32_t GLES2Util::ConvertToSizedFormat(uint32_t format, uint32_t type) {
   return format;
 }
 
-// static
-bool GLES2Util::ComputeDataSize(uint32_t count,
-                                size_t size,
-                                unsigned int elements_per_unit,
-                                uint32_t* dst) {
-  uint32_t value;
-  if (!SafeMultiplyUint32(count, static_cast<uint32_t>(size), &value)) {
-    return false;
-  }
-  if (!SafeMultiplyUint32(value, elements_per_unit, &value)) {
-    return false;
-  }
-  *dst = value;
-  return true;
-}
-
 namespace {
 
 // GL context configuration attributes. Those in the 16-bit range are the same

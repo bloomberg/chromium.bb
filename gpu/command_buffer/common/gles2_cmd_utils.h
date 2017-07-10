@@ -252,10 +252,12 @@ class GLES2_UTILS_EXPORT GLES2Util {
       uint32_t internal_format, uint32_t type, int* r, int* g, int* b, int* a);
 
   // Computes the data size for certain gl commands like glUniform.
-  static bool ComputeDataSize(uint32_t count,
-                              size_t size,
-                              unsigned int elements_per_unit,
-                              uint32_t* dst);
+  template <typename VALUE_TYPE, unsigned int ELEMENTS_PER_UNIT>
+  static bool ComputeDataSize(uint32_t count, uint32_t* dst) {
+    constexpr uint32_t element_size = sizeof(VALUE_TYPE) * ELEMENTS_PER_UNIT;
+    return base::CheckMul(count, element_size)
+        .template AssignIfValid<uint32_t>(dst);
+  }
 
 #include "gpu/command_buffer/common/gles2_cmd_utils_autogen.h"
 
