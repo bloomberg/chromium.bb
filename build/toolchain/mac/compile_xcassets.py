@@ -76,8 +76,8 @@ def FilterCompilerOutput(compiler_output, relative_paths):
   return ''.join(filtered_output)
 
 
-def CompileAssetCatalog(
-    output, platform, product_type, min_deployment_target, inputs):
+def CompileAssetCatalog(output, platform, product_type, min_deployment_target,
+    inputs, compress_pngs):
   """Compile the .xcassets bundles to an asset catalog using actool.
 
   Args:
@@ -86,13 +86,16 @@ def CompileAssetCatalog(
     product_type: the bundle type
     min_deployment_target: minimum deployment target
     inputs: list of absolute paths to .xcassets bundles
+    compress_pngs: whether to enable compression of pngs
   """
   command = [
       'xcrun', 'actool', '--output-format=human-readable-text',
-      '--compress-pngs', '--notices', '--warnings', '--errors',
-      '--platform', platform, '--minimum-deployment-target',
-      min_deployment_target,
+      '--notices', '--warnings', '--errors', '--platform', platform,
+      '--minimum-deployment-target', min_deployment_target,
   ]
+
+  if compress_pngs:
+    command.extend(['--compress-pngs'])
 
   if product_type != '':
     command.extend(['--product-type', product_type])
@@ -145,6 +148,9 @@ def Main():
       '--output', '-o', required=True,
       help='path to the compiled assets catalog')
   parser.add_argument(
+      '--compress-pngs', '-c', action='store_true', default=False,
+      help='recompress PNGs while compiling assets catalog')
+  parser.add_argument(
       '--product-type', '-T',
       help='type of the containing bundle')
   parser.add_argument(
@@ -163,7 +169,8 @@ def Main():
       args.platform,
       args.product_type,
       args.minimum_deployment_target,
-      args.inputs)
+      args.inputs,
+      args.compress_pngs)
 
 
 if __name__ == '__main__':
