@@ -71373,6 +71373,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AndroidGmsUpdatingDialogShownTime" units="ms">
+  <owner>bsazonov@chromium.org</owner>
+  <summary>
+    How long the &quot;Waiting for Google Play Services to finish updating&quot;
+    dialog is shown.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AndroidSigninPromoAction"
     enum="AndroidSigninPromoAction">
   <obsolete>
