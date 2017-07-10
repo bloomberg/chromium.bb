@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
-                       AddAndRemoveTracksWithSharedStream) {
+                       DISABLED_AddAndRemoveTracksWithSharedStream) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
