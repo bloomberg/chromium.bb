@@ -13,7 +13,6 @@
 // also need to be updated.
 
 // clang-format off
-#define IDC_RELOAD                                     33002
 #define IDC_NEW_TAB                                    34014
 #define IDC_FULLSCREEN                                 34030
 #define IDC_VIEW_SOURCE                                35002
