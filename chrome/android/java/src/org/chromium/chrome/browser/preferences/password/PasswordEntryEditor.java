@@ -66,14 +66,6 @@ public class PasswordEntryEditor extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (shouldDisplayInteractivePasswordEntryEditor()) {
-            mView = inflater.inflate(R.layout.password_entry_editor_interactive, container, false);
-        } else {
-            mView = inflater.inflate(R.layout.password_entry_editor, container, false);
-        }
-        getActivity().setTitle(R.string.password_entry_editor_title);
-        mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
-                Context.CLIPBOARD_SERVICE);
         // Extras are set on this intent in class {@link SavePasswordsPreferences}.
         mExtras = getArguments();
         assert mExtras != null;
@@ -81,12 +73,28 @@ public class PasswordEntryEditor extends Fragment {
         final String name = mExtras.containsKey(SavePasswordsPreferences.PASSWORD_LIST_NAME)
                 ? mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_NAME)
                 : null;
+
+        mException = (name == null);
+        if (shouldDisplayInteractivePasswordEntryEditor()) {
+            if (!mException) {
+                mView = inflater.inflate(
+                        R.layout.password_entry_editor_interactive, container, false);
+            } else {
+                mView = inflater.inflate(R.layout.password_entry_exception, container, false);
+            }
+        } else {
+            mView = inflater.inflate(R.layout.password_entry_editor, container, false);
+        }
+        getActivity().setTitle(R.string.password_entry_editor_title);
+        mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
+                Context.CLIPBOARD_SERVICE);
         TextView nameView = (TextView) mView.findViewById(R.id.password_entry_editor_name);
-        if (name != null) {
+        if (!mException) {
             nameView.setText(name);
         } else {
-            nameView.setText(R.string.section_saved_passwords_exceptions);
-            mException = true;
+            if (!shouldDisplayInteractivePasswordEntryEditor()) {
+                nameView.setText(R.string.section_saved_passwords_exceptions);
+            }
         }
         final String url = mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
         TextView urlView = (TextView) mView.findViewById(R.id.password_entry_editor_url);
@@ -95,9 +103,11 @@ public class PasswordEntryEditor extends Fragment {
             mKeyguardManager =
                     (KeyguardManager) getActivity().getApplicationContext().getSystemService(
                             Context.KEYGUARD_SERVICE);
-            hidePassword();
-            hookupPasswordButtons();
-            hookupCopyUsernameButton();
+            if (!mException) {
+                hidePassword();
+                hookupPasswordButtons();
+                hookupCopyUsernameButton();
+            }
             hookupCopySiteButton();
         } else {
             hookupCancelDeleteButtons();
