@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/values.h"
+#include "chrome/browser/media/media_engagement_score_details.mojom.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "url/gurl.h"
 
 class HostContentSettingsMap;
@@ -59,6 +61,9 @@ class MediaEngagementScore final {
   void SetMediaPlaybacks(int media_playbacks) {
     media_playbacks_ = media_playbacks;
   }
+
+  // Get a breakdown of the score that can be serialized by Mojo.
+  media::mojom::MediaEngagementScoreDetails GetScoreDetails() const;
 
  private:
   friend class MediaEngagementServiceTest;

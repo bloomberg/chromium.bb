@@ -95,7 +95,25 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetVisits(int visits) { score_->visits_ = visits; }
+
+  void VerifyGetScoreDetails(MediaEngagementScore* score) {
+    media::mojom::MediaEngagementScoreDetails details =
+        score->GetScoreDetails();
+    EXPECT_EQ(details.origin, score->origin_);
+    EXPECT_EQ(details.total_score, score->GetTotalScore());
+    EXPECT_EQ(details.visits, score->visits());
+    EXPECT_EQ(details.media_playbacks, score->media_playbacks());
+    EXPECT_EQ(details.last_media_playback_time,
+              score->last_media_playback_time());
+  }
 };
+
+// Test Mojo serialization.
+TEST_F(MediaEngagementScoreTest, MojoSerialization) {
+  VerifyGetScoreDetails(score_);
+  UpdateScore(score_);
+  VerifyGetScoreDetails(score_);
+}
 
 // Test that scores are read / written correctly from / to empty score
 // dictionaries.
