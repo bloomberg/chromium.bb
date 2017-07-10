@@ -1283,12 +1283,22 @@ Response InspectorDOMAgent::getNodeForLocation(
 }
 
 Response InspectorDOMAgent::resolveNode(
-    int node_id,
+    protocol::Maybe<int> node_id,
+    protocol::Maybe<int> backend_node_id,
     Maybe<String> object_group,
     std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*
         result) {
   String object_group_name = object_group.fromMaybe("");
-  Node* node = NodeForId(node_id);
+  Node* node = nullptr;
+
+  if (node_id.isJust() == backend_node_id.isJust())
+    return Response::Error("Either nodeId or backendNodeId must be specified.");
+
+  if (node_id.isJust())
+    node = NodeForId(node_id.fromJust());
+  else
+    node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
+
   if (!node)
     return Response::Error("No node with given id found");
   *result = ResolveNode(node, object_group_name);
