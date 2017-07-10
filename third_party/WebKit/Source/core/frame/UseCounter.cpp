@@ -1198,7 +1198,7 @@ DEFINE_TRACE(UseCounter) {
   visitor->Trace(observers_);
 }
 
-void UseCounter::DidCommitLoad(KURL url) {
+void UseCounter::DidCommitLoad(const KURL& url) {
   legacy_counter_.UpdateMeasurements();
 
   // Reset state from previous load.
