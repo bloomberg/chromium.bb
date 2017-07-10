@@ -20,7 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
@@ -215,8 +215,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
     cmd->AppendSwitchASCII(
         switches::kContentImageTextureTarget,
-        cc::BufferToTextureTargetMapToString(
-            cc::DefaultBufferToTextureTargetMapForTesting()));
+        viz::BufferToTextureTargetMapToString(
+            viz::DefaultBufferToTextureTargetMapForTesting()));
 
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
         blink::scheduler::RendererScheduler::Create();

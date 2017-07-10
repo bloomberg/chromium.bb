@@ -53,9 +53,9 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "cc/output/buffer_to_texture_target_map.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
@@ -2165,7 +2165,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   command_line->AppendSwitchASCII(
       switches::kContentImageTextureTarget,
-      cc::BufferToTextureTargetMapToString(CreateBufferToTextureTargetMap()));
+      viz::BufferToTextureTargetMapToString(CreateBufferToTextureTargetMap()));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

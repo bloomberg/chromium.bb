@@ -45,7 +45,6 @@
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/vulkan_in_process_context_provider.h"
@@ -58,6 +57,7 @@
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -825,7 +825,7 @@ void RenderThreadImpl::Init(
   std::string image_texture_target_string =
       command_line.GetSwitchValueASCII(switches::kContentImageTextureTarget);
   buffer_to_texture_target_map_ =
-      cc::StringToBufferToTextureTargetMap(image_texture_target_string);
+      viz::StringToBufferToTextureTargetMap(image_texture_target_string);
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
@@ -1605,7 +1605,7 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
-const cc::BufferToTextureTargetMap&
+const viz::BufferToTextureTargetMap&
 RenderThreadImpl::GetBufferToTextureTargetMap() {
   return buffer_to_texture_target_map_;
 }

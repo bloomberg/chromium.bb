@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 
 #include <vector>
 
@@ -9,7 +9,7 @@
 #include "base/strings/string_split.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
-namespace cc {
+namespace viz {
 
 BufferToTextureTargetMap StringToBufferToTextureTargetMap(
     const std::string& str) {
@@ -69,4 +69,4 @@ BufferToTextureTargetMap DefaultBufferToTextureTargetMapForTesting() {
   return image_targets;
 }
 
-}  // namespace cc
+}  // namespace viz

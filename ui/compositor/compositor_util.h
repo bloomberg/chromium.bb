@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace cc {
@@ -17,7 +17,7 @@ class RendererSettings;
 namespace ui {
 
 COMPOSITOR_EXPORT cc::RendererSettings CreateRendererSettings(
-    const cc::BufferToTextureTargetMap& image_targets);
+    const viz::BufferToTextureTargetMap& image_targets);
 
 }  // namespace ui
 

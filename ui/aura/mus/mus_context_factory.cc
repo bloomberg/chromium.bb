@@ -19,8 +19,8 @@
 namespace aura {
 
 namespace {
-cc::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
-  cc::BufferToTextureTargetMap image_targets;
+viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
+  viz::BufferToTextureTargetMap image_targets;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
     gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
@@ -96,7 +96,7 @@ cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
-const cc::ResourceSettings& MusContextFactory::GetResourceSettings() const {
+const viz::ResourceSettings& MusContextFactory::GetResourceSettings() const {
   return renderer_settings_.resource_settings;
 }
 

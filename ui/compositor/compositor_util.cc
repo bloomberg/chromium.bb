@@ -14,7 +14,7 @@
 namespace ui {
 
 cc::RendererSettings CreateRendererSettings(
-    const cc::BufferToTextureTargetMap& image_targets) {
+    const viz::BufferToTextureTargetMap& image_targets) {
   cc::RendererSettings renderer_settings;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =

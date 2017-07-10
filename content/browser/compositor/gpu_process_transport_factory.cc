@@ -812,7 +812,7 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
     data->display->SetOutputIsSecure(secure);
 }
 
-const cc::ResourceSettings& GpuProcessTransportFactory::GetResourceSettings()
+const viz::ResourceSettings& GpuProcessTransportFactory::GetResourceSettings()
     const {
   return renderer_settings_.resource_settings;
 }

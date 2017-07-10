@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_RESOURCE_SETTINGS_H_
-#define CC_RESOURCES_RESOURCE_SETTINGS_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_SETTINGS_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_SETTINGS_H_
 
-#include "cc/cc_export.h"
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 
-namespace cc {
+namespace viz {
 
 // ResourceSettings contains all the settings that are needed to create a
 // ResourceProvider.
-class CC_EXPORT ResourceSettings {
+class ResourceSettings {
  public:
   ResourceSettings();
   ResourceSettings(const ResourceSettings& other);
@@ -24,6 +23,6 @@ class CC_EXPORT ResourceSettings {
   BufferToTextureTargetMap buffer_to_texture_target_map;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_RESOURCE_SETTINGS_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_SETTINGS_H_

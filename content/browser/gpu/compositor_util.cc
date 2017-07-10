@@ -402,8 +402,8 @@ std::vector<std::string> GetDriverBugWorkarounds() {
   return GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds();
 }
 
-cc::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
-  cc::BufferToTextureTargetMap image_targets;
+viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
+  viz::BufferToTextureTargetMap image_targets;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
     gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);

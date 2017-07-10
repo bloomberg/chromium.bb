@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/buffer_to_texture_target_map.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 // Ensures that a map populated with various values can be serialized to/from
@@ -34,4 +34,4 @@ TEST(BufferToTextureTargetMapTest, SerializeRoundTrip) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

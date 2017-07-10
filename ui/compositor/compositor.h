@@ -47,7 +47,6 @@ class LayerTreeDebugState;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LocalSurfaceId;
-class ResourceSettings;
 class TaskGraphRunner;
 }
 
@@ -63,6 +62,7 @@ class GpuMemoryBufferManager;
 
 namespace viz {
 class HostFrameSinkManager;
+class ResourceSettings;
 }
 
 namespace ui {
@@ -169,7 +169,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
   // Gets the renderer settings.
-  virtual const cc::ResourceSettings& GetResourceSettings() const = 0;
+  virtual const viz::ResourceSettings& GetResourceSettings() const = 0;
 
   virtual void AddObserver(ContextFactoryObserver* observer) = 0;
 

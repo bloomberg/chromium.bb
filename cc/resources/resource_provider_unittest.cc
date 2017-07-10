@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/single_release_callback.h"
@@ -28,6 +27,7 @@
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -104,15 +104,15 @@ static std::unique_ptr<SharedBitmap> CreateAndFillSharedBitmap(
   return shared_bitmap;
 }
 
-static ResourceSettings CreateResourceSettings(
+static viz::ResourceSettings CreateResourceSettings(
     size_t texture_id_allocation_chunk_size = 1) {
-  ResourceSettings resource_settings;
+  viz::ResourceSettings resource_settings;
   resource_settings.texture_id_allocation_chunk_size =
       texture_id_allocation_chunk_size;
   resource_settings.use_gpu_memory_buffer_resources =
       kUseGpuMemoryBufferResources;
   resource_settings.buffer_to_texture_target_map =
-      DefaultBufferToTextureTargetMapForTesting();
+      viz::DefaultBufferToTextureTargetMapForTesting();
   return resource_settings;
 }
 
@@ -462,7 +462,7 @@ class ResourceProviderTest
     child_gpu_memory_buffer_manager_ =
         gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
 
-    ResourceSettings resource_settings = CreateResourceSettings();
+    viz::ResourceSettings resource_settings = CreateResourceSettings();
     resource_provider_ = base::MakeUnique<ResourceProvider>(
         context_provider_.get(), shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
@@ -2105,7 +2105,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     child_context_provider->BindToCurrentThread();
     auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
 
-    ResourceSettings resource_settings = CreateResourceSettings();
+    viz::ResourceSettings resource_settings = CreateResourceSettings();
     std::unique_ptr<ResourceProvider> child_resource_provider(
         base::MakeUnique<ResourceProvider>(
             child_context_provider.get(), shared_bitmap_manager.get(), nullptr,

@@ -18,7 +18,6 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -39,6 +38,7 @@
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -82,7 +82,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
     settings.resource_settings.buffer_to_texture_target_map =
-        DefaultBufferToTextureTargetMapForTesting();
+        viz::DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 

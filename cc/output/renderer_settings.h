@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "cc/cc_export.h"
-#include "cc/resources/resource_settings.h"
+#include "components/viz/common/resources/resource_settings.h"
 
 namespace cc {
 
@@ -18,7 +18,7 @@ class CC_EXPORT RendererSettings {
   RendererSettings(const RendererSettings& other);
   ~RendererSettings();
 
-  ResourceSettings resource_settings;
+  viz::ResourceSettings resource_settings;
   bool allow_antialiasing = true;
   bool force_antialiasing = false;
   bool force_blending_with_shaders = false;

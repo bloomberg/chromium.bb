@@ -73,7 +73,7 @@ cc::TaskGraphRunner* FakeContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-const cc::ResourceSettings& FakeContextFactory::GetResourceSettings() const {
+const viz::ResourceSettings& FakeContextFactory::GetResourceSettings() const {
   return renderer_settings_.resource_settings;
 }
 
