@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -26,52 +27,66 @@ using FlatStringOffset = flatbuffers::Offset<flatbuffers::String>;
 using FlatDomains = flatbuffers::Vector<FlatStringOffset>;
 using FlatDomainsOffset = flatbuffers::Offset<FlatDomains>;
 
+using ActivationTypeMap =
+    base::flat_map<proto::ActivationType, flat::ActivationType>;
+using ElementTypeMap = base::flat_map<proto::ElementType, flat::ElementType>;
+
 // Maps proto::ActivationType to flat::ActivationType.
-const base::flat_map<proto::ActivationType, flat::ActivationType>
-    kActivationTypeMap(
-        {
-            {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
-            {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
-            // ELEMHIDE is not supported.
-            {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
-            // GENERICHIDE is not supported.
-            {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
-            {proto::ACTIVATION_TYPE_GENERICBLOCK,
-             flat::ActivationType_GENERIC_BLOCK},
-        },
-        base::KEEP_FIRST_OF_DUPES);
+const ActivationTypeMap& GetActivationTypeMap() {
+  CR_DEFINE_STATIC_LOCAL(
+      ActivationTypeMap, activation_type_map,
+      (
+          {
+              {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
+              {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
+              // ELEMHIDE is not supported.
+              {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
+              // GENERICHIDE is not supported.
+              {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
+              {proto::ACTIVATION_TYPE_GENERICBLOCK,
+               flat::ActivationType_GENERIC_BLOCK},
+          },
+          base::KEEP_FIRST_OF_DUPES));
+  return activation_type_map;
+}
 
 // Maps proto::ElementType to flat::ElementType.
-const base::flat_map<proto::ElementType, flat::ElementType> kElementTypeMap(
-    {
-        {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
-        {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
-        {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
-        {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
-        {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
-        {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
-        {proto::ELEMENT_TYPE_XMLHTTPREQUEST, flat::ElementType_XMLHTTPREQUEST},
-        {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
-         flat::ElementType_OBJECT_SUBREQUEST},
-        {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
-        {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
-        {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
-        {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
-        // Filtering popups is not supported.
-        {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
-        {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
-    },
-    base::KEEP_FIRST_OF_DUPES);
+const ElementTypeMap& GetElementTypeMap() {
+  CR_DEFINE_STATIC_LOCAL(
+      ElementTypeMap, element_type_map,
+      (
+          {
+              {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
+              {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
+              {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
+              {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
+              {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
+              {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
+              {proto::ELEMENT_TYPE_XMLHTTPREQUEST,
+               flat::ElementType_XMLHTTPREQUEST},
+              {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
+               flat::ElementType_OBJECT_SUBREQUEST},
+              {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
+              {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
+              {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
+              {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
+              // Filtering popups is not supported.
+              {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
+              {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
+          },
+          base::KEEP_FIRST_OF_DUPES));
+  return element_type_map;
+}
 
 flat::ActivationType ProtoToFlatActivationType(proto::ActivationType type) {
-  const auto it = kActivationTypeMap.find(type);
-  DCHECK(it != kActivationTypeMap.end());
+  const auto it = GetActivationTypeMap().find(type);
+  DCHECK(it != GetActivationTypeMap().end());
   return it->second;
 }
 
 flat::ElementType ProtoToFlatElementType(proto::ElementType type) {
-  const auto it = kElementTypeMap.find(type);
-  DCHECK(it != kElementTypeMap.end());
+  const auto it = GetElementTypeMap().find(type);
+  DCHECK(it != GetElementTypeMap().end());
   return it->second;
 }
 
@@ -235,12 +250,13 @@ class UrlRuleFlatBufferConverter {
     static_assert(flat::ElementType_ANY <= std::numeric_limits<uint16_t>::max(),
                   "Element types can not be stored in uint16_t.");
 
-    // Ensure all proto::ElementType(s) are mapped in |kElementTypeMap|.
-    DCHECK_EQ(proto::ELEMENT_TYPE_ALL, GetKeysMask(kElementTypeMap));
+    const ElementTypeMap& element_type_map = GetElementTypeMap();
+    // Ensure all proto::ElementType(s) are mapped in |element_type_map|.
+    DCHECK_EQ(proto::ELEMENT_TYPE_ALL, GetKeysMask(element_type_map));
 
     element_types_ = flat::ElementType_NONE;
 
-    for (const auto& pair : kElementTypeMap)
+    for (const auto& pair : element_type_map)
       if (rule_.element_types() & pair.first)
         element_types_ |= pair.second;
 
@@ -259,12 +275,13 @@ class UrlRuleFlatBufferConverter {
         flat::ActivationType_ANY <= std::numeric_limits<uint8_t>::max(),
         "Activation types can not be stored in uint8_t.");
 
-    // Ensure all proto::ActivationType(s) are mapped in |kActivationTypeMap|.
-    DCHECK_EQ(proto::ACTIVATION_TYPE_ALL, GetKeysMask(kActivationTypeMap));
+    const ActivationTypeMap& activation_type_map = GetActivationTypeMap();
+    // Ensure all proto::ActivationType(s) are mapped in |activation_type_map|.
+    DCHECK_EQ(proto::ACTIVATION_TYPE_ALL, GetKeysMask(activation_type_map));
 
     activation_types_ = flat::ActivationType_NONE;
 
-    for (const auto& pair : kActivationTypeMap)
+    for (const auto& pair : activation_type_map)
       if (rule_.activation_types() & pair.first)
         activation_types_ |= pair.second;
 
