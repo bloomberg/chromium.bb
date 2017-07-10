@@ -80,7 +80,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                           return a.type < b.type;
                         }));
   static_assert(kHistogramValue[kNumHistogramValues - 1].type ==
-                    CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE - 1,
+                    CONTENT_SETTINGS_NUM_TYPES - 1,
                 "Update content settings histogram lookup");
 
   const HistogramValue* found = std::lower_bound(
