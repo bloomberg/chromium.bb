@@ -33,6 +33,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 static bool SubimageIsPending(CSSValue* value) {
   if (value->IsImageValue())
@@ -302,4 +303,5 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCrossfadeValue) {
   CSSImageGeneratorValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
