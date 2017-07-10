@@ -1,0 +1,24 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+test("viz_unittests") {
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/viz/host:unit_tests",
+    "//components/viz/service:unit_tests",
+    "//mojo/edk/system",
+    "//ui/gl:test_support",
+  ]
+
+  if (!is_android) {
+    deps += [ "//components/viz/common:unit_tests" ]
+  }
+}

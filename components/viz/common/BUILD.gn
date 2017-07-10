@@ -31,19 +31,14 @@ source_set("common") {
   ]
 }
 
+# These tests don't pass on Android so this target isn't in viz_unittests. If
+# you add a test here that should run on Android you need to change that.
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "resources/platform_color_unittest.cc",
+    "gl_helper_unittest.cc",
     "yuv_readback_unittest.cc",
   ]
-
-  if (!is_android) {
-    sources += [
-      # Many of these fail on Android with the test GL implementation.
-      "gl_helper_unittest.cc",
-    ]
-  }
 
   deps = [
     ":common",

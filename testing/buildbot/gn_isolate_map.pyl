@@ -1069,6 +1069,10 @@
     "label": "//ui/views:views_unittests",
     "type": "windowed_test_launcher",
   },
+  "viz_unittests": {
+    "label": "//components/viz:viz_unittests",
+    "type": "windowed_test_launcher",
+  },
   "vr_common_unittests": {
     "label": "//chrome/browser/android/vr_shell:vr_common_unittests",
     "type": "console_test_launcher",
