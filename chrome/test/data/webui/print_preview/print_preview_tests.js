@@ -693,21 +693,12 @@ cr.define('print_preview_test', function() {
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         // Indicate that the number of copies print preset is set for source
         // PDF.
-        var printPresetOptions = {
-          disableScaling: true,
-          copies: 2
-        };
-        var printPresetOptionsEvent = new Event(
-            print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
-        printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
-        nativeLayer.getEventTarget().
-            dispatchEvent(printPresetOptionsEvent);
-
+        var copies = 2;
+        cr.webUIListenerCallback('print-preset-options', true, copies);
         checkSectionVisible($('copies-settings'), true);
         expectEquals(
-            printPresetOptions.copies,
-            parseInt($('copies-settings').
-                querySelector('.user-value').value));
+            copies,
+            parseInt($('copies-settings').querySelector('.user-value').value));
 
         return whenAnimationDone('other-options-collapsible');
       });
@@ -720,15 +711,7 @@ cr.define('print_preview_test', function() {
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         // Indicate that the duplex print preset is set to 'long edge' for
         // source PDF.
-        var printPresetOptions = {
-          duplex: 1
-        };
-        var printPresetOptionsEvent = new Event(
-            print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS);
-        printPresetOptionsEvent.optionsFromDocument = printPresetOptions;
-        nativeLayer.getEventTarget().
-            dispatchEvent(printPresetOptionsEvent);
-
+        cr.webUIListenerCallback('print-preset-options', false, 1, 1);
         var otherOptions = $('other-options-settings');
         checkSectionVisible(otherOptions, true);
         var duplexContainer =

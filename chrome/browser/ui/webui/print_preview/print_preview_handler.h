@@ -86,6 +86,23 @@ class PrintPreviewHandler
   // Called when print preview is ready.
   void OnPrintPreviewReady(int preview_uid, int request_id);
 
+  // Send the print preset options from the document.
+  void SendPrintPresetOptions(bool disable_scaling, int copies, int duplex);
+
+  // Send the print preview page count and fit to page scaling
+  void SendPageCountReady(int page_count,
+                          int request_id,
+                          int fit_to_page_scaling);
+
+  // Send the default page layout
+  void SendPageLayoutReady(const base::DictionaryValue& layout,
+                           bool has_custom_page_size_style);
+
+  // Notify the WebUI that the page preview is ready.
+  void SendPagePreviewReady(int page_index,
+                            int preview_uid,
+                            int preview_response_id);
+
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Called when the user press ctrl+shift+p to display the native system
   // dialog.
@@ -187,7 +204,7 @@ class PrintPreviewHandler
 #endif
 
   // Callback for the signin dialog to call once signin is complete.
-  void OnSigninComplete();
+  void OnSigninComplete(const std::string& callback_id);
 
   // Brings up a dialog to allow the user to sign into cloud print.
   // |args| is unused.

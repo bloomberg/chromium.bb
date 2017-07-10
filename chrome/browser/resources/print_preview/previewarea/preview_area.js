@@ -357,6 +357,7 @@ cr.define('print_preview', function() {
             this.previewGenerator_,
             print_preview.PreviewGenerator.EventType.DOCUMENT_READY,
             this.onDocumentReady_.bind(this));
+        this.previewGenerator_.addWebUIEventListeners(this.listenerTracker);
       } else {
         this.showCustomMessage(loadTimeData.getString('noPlugin'));
       }
@@ -365,9 +366,6 @@ cr.define('print_preview', function() {
     /** @override */
     exitDocument: function() {
       print_preview.Component.prototype.exitDocument.call(this);
-      if (this.previewGenerator_) {
-        this.previewGenerator_.removeEventListeners();
-      }
       this.overlayEl_ = null;
       this.openSystemDialogButton_ = null;
     },

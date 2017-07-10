@@ -559,11 +559,8 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   DCHECK_GT(params.page_count, 0);
   if (g_testing_delegate)
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
-  base::Value count(params.page_count);
-  base::Value request_id(params.preview_request_id);
-  base::Value fit_to_page_scaling(params.fit_to_page_scaling);
-  web_ui()->CallJavascriptFunctionUnsafe("onDidGetPreviewPageCount", count,
-                                         request_id, fit_to_page_scaling);
+  handler_->SendPageCountReady(params.page_count, params.preview_request_id,
+                               params.fit_to_page_scaling);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
@@ -590,22 +587,15 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
                     printable_area.width());
   layout.SetInteger(printing::kSettingPrintableAreaHeight,
                     printable_area.height());
-
-  base::Value has_page_size_style(has_custom_page_size_style);
-  web_ui()->CallJavascriptFunctionUnsafe("onDidGetDefaultPageLayout", layout,
-                                         has_page_size_style);
+  handler_->SendPageLayoutReady(layout, has_custom_page_size_style);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,
                                       int preview_request_id) {
   DCHECK_GE(page_number, 0);
-  base::Value number(page_number);
-  base::Value ui_identifier(id_);
-  base::Value request_id(preview_request_id);
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
-  web_ui()->CallJavascriptFunctionUnsafe("onDidPreviewPage", number,
-                                         ui_identifier, request_id);
+  handler_->SendPagePreviewReady(page_number, id_, preview_request_id);
 }
 
 void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
@@ -667,19 +657,10 @@ void PrintPreviewUI::OnClosePrintPreviewDialog() {
   delegate->OnDialogCloseFromWebUI();
 }
 
-void PrintPreviewUI::OnReloadPrintersList() {
-  web_ui()->CallJavascriptFunctionUnsafe("reloadPrintersList");
-}
-
 void PrintPreviewUI::OnSetOptionsFromDocument(
     const PrintHostMsg_SetOptionsFromDocument_Params& params) {
-  base::DictionaryValue options;
-  options.SetBoolean(printing::kSettingDisableScaling,
-                     params.is_scaling_disabled);
-  options.SetInteger(printing::kSettingCopies, params.copies);
-  options.SetInteger(printing::kSettingDuplexMode, params.duplex);
-  web_ui()->CallJavascriptFunctionUnsafe("printPresetOptionsFromDocument",
-                                         options);
+  handler_->SendPrintPresetOptions(params.is_scaling_disabled, params.copies,
+                                   params.duplex);
 }
 
 // static

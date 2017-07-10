@@ -21,12 +21,6 @@ cr.define('print_preview', function() {
       ]);
 
     /**
-     * @private {!cr.EventTarget} The event target used for dispatching and
-     *     receiving events.
-     */
-    this.eventTarget_ = new cr.EventTarget();
-
-    /**
      * @private {!print_preview.NativeInitialSettings} The initial settings
      *     to be used for the response to a |getInitialSettings| call.
      */
@@ -95,12 +89,31 @@ cr.define('print_preview', function() {
         generateDraft: generateDraft,
         requestId: requestId,
       });
-      var rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
-      rejectString = rejectString.substring(
-          rejectString.lastIndexOf(".") + 1, rejectString.length);
-      return destination.id == this.badPrinterId_ ?
-          Promise.reject(rejectString) :
-          Promise.resolve(requestId);
+      if (destination.id == this.badPrinterId_) {
+        var rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
+        rejectString = rejectString.substring(
+            rejectString.lastIndexOf('.') + 1, rejectString.length);
+        return Promise.reject(rejectString);
+      }
+      var pageRanges = printTicketStore.pageRange.getDocumentPageRanges();
+      if (pageRanges.length == 0) {  // assume full length document, 1 page.
+        cr.webUIListenerCallback('page-count-ready', 1, requestId, 100);
+        cr.webUIListenerCallback('page-preview-ready', 0, 0, requestId);
+      } else {
+        var pages = pageRanges.reduce(function(soFar, range) {
+          for (var page = range.from; page <= range.to; page++) {
+            soFar.push(page);
+          }
+          return soFar;
+        }, []);
+        cr.webUIListenerCallback(
+            'page-count-ready', pages.length, requestId, 100);
+        pages.forEach(function(page) {
+          cr.webUIListenerCallback(
+              'page-preview-ready', page - 1, 0, requestId);
+        });
+      }
+      return Promise.resolve(requestId);
     },
 
     /** @override */
@@ -136,16 +149,7 @@ cr.define('print_preview', function() {
     },
 
     /** Stubs for |print_preview.NativeLayer| methods that call C++ handlers. */
-    previewReadyForTest: function() {},
     startHideDialog: function () {},
-
-    /** @return {!cr.EventTarget} The native layer event target. */
-    getEventTarget: function() { return this.eventTarget_; },
-
-    /** @param {!cr.EventTarget} eventTarget The event target to use. */
-    setEventTarget: function(eventTarget) {
-      this.eventTarget_ = eventTarget;
-    },
 
     /**
      * @param {!print_preview.NativeInitialSettings} settings The settings

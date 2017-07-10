@@ -310,6 +310,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.showSystemDialogBeforeNextPrint_ = false;
+
+    /**
+     * Whether the preview is listening for the manipulate-settings-for-test
+     * UI event.
+     * @private {boolean}
+     */
+    this.isListeningForManipulateSettings_ = false;
   }
 
   PrintPreview.prototype = {
@@ -332,35 +339,21 @@ cr.define('print_preview', function() {
       print_preview.PrintPreviewFocusManager.getInstance().initialize();
       cr.ui.FocusOutlineManager.forDocument(document);
       this.listenerTracker.add('print-failed', this.onPrintFailed_.bind(this));
-      this.listenerTracker.add(
-          'privet-printer-added',
-          this.destinationStore_.onPrivetPrinterAdded_.bind(
-              this.destinationStore_));
-      this.listenerTracker.add(
-          'extension-printers-added',
-          this.destinationStore_.onExtensionPrintersAdded_.bind(
-              this.destinationStore_));
+      this.destinationStore_.addWebUIEventListeners(this.listenerTracker);
       this.listenerTracker.add(
           'use-cloud-print', this.onCloudPrintEnable_.bind(this));
+      this.listenerTracker.add(
+          'print-preset-options',
+          this.onPrintPresetOptionsFromDocument_.bind(this));
+      this.listenerTracker.add(
+          'preview-page-count', this.onPageCountReady_.bind(this));
+      this.listenerTracker.add(
+          'enable-manipulate-settings-for-test',
+          this.onEnableManipulateSettingsForTest_.bind(this));
     },
 
     /** @override */
     enterDocument: function() {
-      // Native layer events.
-      var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS,
-          this.onPrintPresetOptionsFromDocument_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
-          this.onPageCountReady_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.MANIPULATE_SETTINGS_FOR_TEST,
-          this.onManipulateSettingsForTest_.bind(this));
-
       if ($('system-dialog-link')) {
         this.tracker.add(
             getRequiredElement('system-dialog-link'), 'click',
@@ -824,7 +817,8 @@ cr.define('print_preview', function() {
     onPreviewGenerationDone_: function() {
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = true;
-      this.nativeLayer_.previewReadyForTest();
+      if (this.isListeningForManipulateSettings_)
+        this.nativeLayer_.previewReadyForTest();
       this.printIfReady_();
     },
 
@@ -1002,41 +996,46 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSignInActivated_: function(addAccount) {
-      this.nativeLayer_.startCloudPrintSignIn(addAccount);
+      this.nativeLayer_.signIn(addAccount)
+          .then(this.destinationStore_.onDestinationsReload.bind(
+              this.destinationStore_));
     },
 
     /**
      * Updates printing options according to source document presets.
-     * @param {Event} event Contains options from source document.
+     * @param {boolean} disableScaling Whether the document disables scaling.
+     * @param {number} copies The default number of copies from the document.
+     * @param {number} duplex The default duplex setting from the document.
      * @private
      */
-    onPrintPresetOptionsFromDocument_: function(event) {
-      if (event.optionsFromDocument.disableScaling)
+    onPrintPresetOptionsFromDocument_: function(
+        disableScaling, copies, duplex) {
+      if (disableScaling)
         this.documentInfo_.updateIsScalingDisabled(true);
 
-      if (event.optionsFromDocument.copies > 0 &&
-          this.printTicketStore_.copies.isCapabilityAvailable()) {
-        this.printTicketStore_.copies.updateValue(
-            event.optionsFromDocument.copies);
+      if (copies > 0 && this.printTicketStore_.copies.isCapabilityAvailable()) {
+        this.printTicketStore_.copies.updateValue(copies);
       }
 
-      if (event.optionsFromDocument.duplex >= 0 &&
-          this.printTicketStore_.duplex.isCapabilityAvailable()) {
-        this.printTicketStore_.duplex.updateValue(
-            event.optionsFromDocument.duplex);
+      if (duplex >= 0 & this.printTicketStore_.duplex.isCapabilityAvailable()) {
+        this.printTicketStore_.duplex.updateValue(duplex);
       }
     },
 
     /**
      * Called when the Page Count Ready message is received to update the fit to
      * page scaling value in the scaling settings.
-     * @param {Event} event Event object representing the page count ready
-     *     message
+     * @param {number} pageCount The document's page count (unused).
+     * @param {number} previewResponseId The request ID that corresponds to this
+     *     page count (unused).
+     * @param {number} fitToPageScaling The scaling required to fit the document
+     *     to page.
      * @private
      */
-    onPageCountReady_: function(event) {
-      if (event.fitToPageScaling >= 0) {
-        this.scalingSettings_.updateFitToPageScaling(event.fitToPageScaling);
+    onPageCountReady_: function(
+        pageCount, previewResponseId, fitToPageScaling) {
+      if (fitToPageScaling >= 0) {
+        this.scalingSettings_.updateFitToPageScaling(fitToPageScaling);
       }
     },
 
@@ -1053,14 +1052,24 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the print preview settings need to be changed for testing.
-     * @param {Event} event Event object that contains the option that is to
-     *     be changed and what to set that option.
+     * Called to start listening for the manipulate-settings-for-test WebUI
+     * event so that settings can be modified by this event.
      * @private
      */
-    onManipulateSettingsForTest_: function(event) {
-      var settings =
-          /** @type {print_preview.PreviewSettings} */ (event.settings);
+    onEnableManipulateSettingsForTest_: function() {
+      this.listenerTracker.add(
+          'manipulate-settings-for-test',
+          this.onManipulateSettingsForTest_.bind(this));
+      this.isListeningForManipulateSettings_ = true;
+    },
+
+    /**
+     * Called when the print preview settings need to be changed for testing.
+     * @param {!print_preview.PreviewSettings} settings Contains print preview
+     *     settings to change and the values to change them to.
+     * @private
+     */
+    onManipulateSettingsForTest_: function(settings) {
       if ('selectSaveAsPdfDestination' in settings) {
         this.saveAsPdfForTest_();  // No parameters.
       } else if ('layoutSettings' in settings) {

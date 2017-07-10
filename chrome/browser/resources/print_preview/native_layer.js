@@ -85,19 +85,6 @@ cr.define('print_preview', function() {
    * @constructor
    */
   function NativeLayer() {
-    // Bind global handlers
-    global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
-    global.onDidGetDefaultPageLayout =
-        this.onDidGetDefaultPageLayout_.bind(this);
-    global.onDidGetPreviewPageCount = this.onDidGetPreviewPageCount_.bind(this);
-    global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
-    global.onEnableManipulateSettingsForTest =
-        this.onEnableManipulateSettingsForTest_.bind(this);
-    global.printPresetOptionsFromDocument =
-        this.onPrintPresetOptionsFromDocument_.bind(this);
-
-    /** @private {!cr.EventTarget} */
-    this.eventTarget_ = new cr.EventTarget();
   }
 
   /** @private {?print_preview.NativeLayer} */
@@ -122,27 +109,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Event types dispatched from the Chromium native layer.
-   * @enum {string}
-   * @const
-   */
-  NativeLayer.EventType = {
-    DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
-    DISABLE_SCALING: 'print_preview.NativeLayer.DISABLE_SCALING',
-    MANIPULATE_SETTINGS_FOR_TEST:
-        'print_preview.NativeLayer.MANIPULATE_SETTINGS_FOR_TEST',
-    PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
-    PAGE_LAYOUT_READY: 'print_preview.NativeLayer.PAGE_LAYOUT_READY',
-    PAGE_PREVIEW_READY: 'print_preview.NativeLayer.PAGE_PREVIEW_READY',
-    PREVIEW_GENERATION_DONE:
-        'print_preview.NativeLayer.PREVIEW_GENERATION_DONE',
-    PREVIEW_GENERATION_FAIL:
-        'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
-    SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
-    PRINT_PRESET_OPTIONS: 'print_preview.NativeLayer.PRINT_PRESET_OPTIONS',
-  };
-
-  /**
    * Constant values matching printing::DuplexMode enum.
    * @enum {number}
    */
@@ -164,11 +130,6 @@ cr.define('print_preview', function() {
   NativeLayer.SERIALIZED_STATE_VERSION_ = 1;
 
   NativeLayer.prototype = {
-    /** @return {!cr.EventTarget} The event target for the native layer.*/
-    getEventTarget: function() {
-      return this.eventTarget_;
-    },
-
     /**
      * Requests access token for cloud print requests.
      * @param {string} authType type of access token.
@@ -314,13 +275,12 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Requests that a preview be generated. The following events may be
-     * dispatched in response:
-     *   - PAGE_COUNT_READY
-     *   - PAGE_LAYOUT_READY
-     *   - PAGE_PREVIEW_READY
-     *   - PREVIEW_GENERATION_DONE
-     *   - PREVIEW_GENERATION_FAIL
+     * Requests that a preview be generated. The following Web UI events may
+     * be triggered in response:
+     *   'print-preset-options',
+     *   'page-count-ready',
+     *   'page-layout-ready',
+     *   'page-preview-ready'
      * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
@@ -526,9 +486,11 @@ cr.define('print_preview', function() {
      *     will be dispatched in response.
      * @param {boolean} addAccount Whether to open an 'add a new account' or
      *     default sign in page.
+     * @return {!Promise} Promise that resolves when the sign in tab has been
+     *     closed and the destinations should be reloaded.
      */
-    startCloudPrintSignIn: function(addAccount) {
-      chrome.send('signIn', [addAccount]);
+    signIn: function(addAccount) {
+      return cr.sendWithPromise('signIn', addAccount);
     },
 
     /** Navigates the user to the system printer settings interface. */
@@ -551,116 +513,13 @@ cr.define('print_preview', function() {
       chrome.send('forceOpenNewTab', [url]);
     },
 
-    /** Reloads the printer list. */
-    onReloadPrintersList_: function() {
-      cr.dispatchSimpleEvent(
-          this.eventTarget_, NativeLayer.EventType.DESTINATIONS_RELOAD);
-    },
-
-    /**
-     * @param {{contentWidth: number, contentHeight: number, marginLeft: number,
-     *          marginRight: number, marginTop: number, marginBottom: number,
-     *          printableAreaX: number, printableAreaY: number,
-     *          printableAreaWidth: number, printableAreaHeight: number}}
-     *          pageLayout Specifies default page layout details in points.
-     * @param {boolean} hasCustomPageSizeStyle Indicates whether the previewed
-     *     document has a custom page size style.
-     * @private
-     */
-    onDidGetDefaultPageLayout_: function(pageLayout, hasCustomPageSizeStyle) {
-      var pageLayoutChangeEvent =
-          new Event(NativeLayer.EventType.PAGE_LAYOUT_READY);
-      pageLayoutChangeEvent.pageLayout = pageLayout;
-      pageLayoutChangeEvent.hasCustomPageSizeStyle = hasCustomPageSizeStyle;
-      this.eventTarget_.dispatchEvent(pageLayoutChangeEvent);
-    },
-
-    /**
-     * Update the page count and check the page range.
-     * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
-     * @param {number} pageCount The number of pages.
-     * @param {number} previewResponseId The preview request id that resulted in
-     *      this response.
-     * @param {number} fitToPageScaling The scaling percentage required to fit
-     *      the document to page, rounded to the nearest integer.
-     * @private
-     */
-    onDidGetPreviewPageCount_: function(
-        pageCount, previewResponseId, fitToPageScaling) {
-      var pageCountChangeEvent =
-          new Event(NativeLayer.EventType.PAGE_COUNT_READY);
-      pageCountChangeEvent.pageCount = pageCount;
-      pageCountChangeEvent.previewResponseId = previewResponseId;
-      pageCountChangeEvent.fitToPageScaling = fitToPageScaling;
-      this.eventTarget_.dispatchEvent(pageCountChangeEvent);
-    },
-
-    /**
-     * Notification that a print preview page has been rendered.
-     * Check if the settings have changed and request a regeneration if needed.
-     * Called from PrintPreviewUI::OnDidPreviewPage().
-     * @param {number} pageNumber The page number, 0-based.
-     * @param {number} previewUid Preview unique identifier.
-     * @param {number} previewResponseId The preview request id that resulted in
-     *     this response.
-     * @private
-     */
-    onDidPreviewPage_: function(pageNumber, previewUid, previewResponseId) {
-      var pagePreviewGenEvent =
-          new Event(NativeLayer.EventType.PAGE_PREVIEW_READY);
-      pagePreviewGenEvent.pageIndex = pageNumber;
-      pagePreviewGenEvent.previewUid = previewUid;
-      pagePreviewGenEvent.previewResponseId = previewResponseId;
-      this.eventTarget_.dispatchEvent(pagePreviewGenEvent);
-    },
-
-    /**
-     * Updates print preset options from source PDF document.
-     * Called from PrintPreviewUI::OnSetOptionsFromDocument().
-     * @param {{disableScaling: boolean, copies: number,
-     *          duplex: number}} options Specifies
-     *     printing options according to source document presets.
-     * @private
-     */
-    onPrintPresetOptionsFromDocument_: function(options) {
-      var printPresetOptionsEvent =
-          new Event(NativeLayer.EventType.PRINT_PRESET_OPTIONS);
-      printPresetOptionsEvent.optionsFromDocument = options;
-      this.eventTarget_.dispatchEvent(printPresetOptionsEvent);
-    },
-
-    /**
-     * Allows for onManipulateSettings to be called
-     * from the native layer.
-     * @private
-     */
-    onEnableManipulateSettingsForTest_: function() {
-      global.onManipulateSettingsForTest =
-          this.onManipulateSettingsForTest_.bind(this);
-    },
-
-    /**
-     * Dispatches an event to print_preview.js to change
-     * a particular setting for print preview.
-     * @param {!print_preview.PreviewSettings} settings Object containing the
-     *     value to be changed and that value should be set to.
-     * @private
-     */
-    onManipulateSettingsForTest_: function(settings) {
-      var manipulateSettingsEvent =
-          new Event(NativeLayer.EventType.MANIPULATE_SETTINGS_FOR_TEST);
-      manipulateSettingsEvent.settings = settings;
-      this.eventTarget_.dispatchEvent(manipulateSettingsEvent);
-    },
-
     /**
      * Sends a message to the test, letting it know that an
      * option has been set to a particular value and that the change has
      * finished modifying the preview area.
      */
     previewReadyForTest: function() {
-      if (global.onManipulateSettingsForTest)
-        chrome.send('UILoadedForTest');
+      chrome.send('UILoadedForTest');
     },
 
     /**
@@ -668,8 +527,7 @@ cr.define('print_preview', function() {
      * had not been changed successfully.
      */
     previewFailedForTest: function() {
-      if (global.onManipulateSettingsForTest)
-        chrome.send('UIFailedLoadingForTest');
+      chrome.send('UIFailedLoadingForTest');
     }
   };
 

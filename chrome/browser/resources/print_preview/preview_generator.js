@@ -135,15 +135,6 @@ cr.define('print_preview', function() {
      * @private
      */
     this.selectedDestination_ = null;
-
-    /**
-     * Event tracker used to keep track of native layer events.
-     * @type {!EventTracker}
-     * @private
-     */
-    this.tracker_ = new EventTracker();
-
-    this.addEventListeners_();
   }
 
   /**
@@ -169,6 +160,21 @@ cr.define('print_preview', function() {
 
   PreviewGenerator.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /**
+     * Starts listening for relevant WebUI events and adds the listeners to
+     * |listenerTracker|. |listenerTracker| is responsible for removing the
+     * listeners when necessary.
+     * @param {!WebUIListenerTracker} listenerTracker
+     */
+    addWebUIEventListeners: function(listenerTracker) {
+      listenerTracker.add(
+          'page-count-ready', this.onPageCountReady_.bind(this));
+      listenerTracker.add(
+          'page-layout-ready', this.onPageLayoutReady_.bind(this));
+      listenerTracker.add(
+          'page-preview-ready', this.onPagePreviewReady_.bind(this));
+    },
 
     /**
      * Request that new preview be generated. A preview request will not be
@@ -214,31 +220,6 @@ cr.define('print_preview', function() {
             this.destinationStore_.selectedDestination, this.printTicketStore_,
             this.documentInfo_, this.generateDraft_, this.inFlightRequestId_),
       };
-    },
-
-    /** Removes all event listeners that the preview generator has attached. */
-    removeEventListeners: function() {
-      this.tracker_.removeAll();
-    },
-
-    /**
-     * Adds event listeners to the relevant native layer events.
-     * @private
-     */
-    addEventListeners_: function() {
-      var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PAGE_LAYOUT_READY,
-          this.onPageLayoutReady_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
-          this.onPageCountReady_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PAGE_PREVIEW_READY,
-          this.onPagePreviewReady_.bind(this));
     },
 
     /**
@@ -322,70 +303,86 @@ cr.define('print_preview', function() {
     /**
      * Called when the page layout of the document is ready. Always occurs
      * as a result of a preview request.
-     * @param {Event} event Contains layout info about the document.
+     * @param {{marginTop: number,
+     *          marginLeft: number,
+     *          marginBottom: number,
+     *          marginRight: number,
+     *          contentWidth: number,
+     *          contentHeight: number,
+     *          printableAreaX: number,
+     *          printableAreaY: number,
+     *          printableAreaWidth: number,
+     *          printableAreaHeight: number,
+     *        }} pageLayout Layout information about the document.
+     * @param {boolean} hasCustomPageSizeStyle Whether this document has a
+     *     custom page size or style to use.
      * @private
      */
-    onPageLayoutReady_: function(event) {
+    onPageLayoutReady_: function(pageLayout, hasCustomPageSizeStyle) {
       // NOTE: A request ID is not specified, so assuming its for the current
       // in-flight request.
 
       var origin = new print_preview.Coordinate2d(
-          event.pageLayout.printableAreaX, event.pageLayout.printableAreaY);
+          pageLayout.printableAreaX, pageLayout.printableAreaY);
       var size = new print_preview.Size(
-          event.pageLayout.printableAreaWidth,
-          event.pageLayout.printableAreaHeight);
+          pageLayout.printableAreaWidth, pageLayout.printableAreaHeight);
 
       var margins = new print_preview.Margins(
-          Math.round(event.pageLayout.marginTop),
-          Math.round(event.pageLayout.marginRight),
-          Math.round(event.pageLayout.marginBottom),
-          Math.round(event.pageLayout.marginLeft));
+          Math.round(pageLayout.marginTop), Math.round(pageLayout.marginRight),
+          Math.round(pageLayout.marginBottom),
+          Math.round(pageLayout.marginLeft));
 
       var o = print_preview.ticket_items.CustomMarginsOrientation;
       var pageSize = new print_preview.Size(
-          event.pageLayout.contentWidth + margins.get(o.LEFT) +
-              margins.get(o.RIGHT),
-          event.pageLayout.contentHeight + margins.get(o.TOP) +
+          pageLayout.contentWidth + margins.get(o.LEFT) + margins.get(o.RIGHT),
+          pageLayout.contentHeight + margins.get(o.TOP) +
               margins.get(o.BOTTOM));
 
       this.documentInfo_.updatePageInfo(
           new print_preview.PrintableArea(origin, size), pageSize,
-          event.hasCustomPageSizeStyle, margins);
+          hasCustomPageSizeStyle, margins);
     },
 
     /**
      * Called when the document page count is received from the native layer.
      * Always occurs as a result of a preview request.
-     * @param {Event} event Contains the document's page count.
+     * @param {number} pageCount The document's page count.
+     * @param {number} previewResponseId The request ID that corresponds to this
+     *     page count.
+     * @param {number} fitToPageScaling The scaling required to fit the document
+     *     to page (unused).
      * @private
      */
-    onPageCountReady_: function(event) {
-      if (this.inFlightRequestId_ != event.previewResponseId) {
+    onPageCountReady_: function(
+        pageCount, previewResponseId, fitToPageScaling) {
+      if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
-      this.documentInfo_.updatePageCount(event.pageCount);
+      this.documentInfo_.updatePageCount(pageCount);
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
     },
 
     /**
      * Called when a page's preview has been generated. Dispatches a
      * PAGE_READY event.
-     * @param {Event} event Contains the page index and preview UID.
+     * @param {number} pageIndex The index of the page whose preview is ready.
+     * @param {number} previewUid The unique ID of the print preview UI.
+     * @param {number} previewResponseId The preview request ID that this page
+     *     preview is a response to.
      * @private
      */
-    onPagePreviewReady_: function(event) {
-      if (this.inFlightRequestId_ != event.previewResponseId) {
+    onPagePreviewReady_: function(pageIndex, previewUid, previewResponseId) {
+      if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
-      var pageNumber = event.pageIndex + 1;
+      var pageNumber = pageIndex + 1;
       var pageNumberSet = this.printTicketStore_.pageRange.getPageNumberSet();
       if (pageNumberSet.hasPageNumber(pageNumber)) {
         var previewIndex = pageNumberSet.getPageNumberIndex(pageNumber);
         if (previewIndex == 0) {
-          this.dispatchPreviewStartEvent_(event.previewUid, event.pageIndex);
+          this.dispatchPreviewStartEvent_(previewUid, pageIndex);
         }
-        this.dispatchPageReadyEvent_(
-            previewIndex, pageNumber, event.previewUid);
+        this.dispatchPageReadyEvent_(previewIndex, pageNumber, previewUid);
       }
     },
 
