@@ -560,8 +560,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
   // Returns whether this tab should transition to a new renderer for
-  // cross-site URLs.  Enabled unless we see the --process-per-tab command line
-  // switch.  Can be overridden in unit tests.
+  // cross-site URLs.  Enabled unless we see the --single-process command line
+  // switch.
   bool ShouldTransitionCrossSite();
 
   // Returns true if for the navigation from |current_effective_url| to

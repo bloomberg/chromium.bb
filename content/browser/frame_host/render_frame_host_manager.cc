@@ -1039,30 +1039,10 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
 }
 
 bool RenderFrameHostManager::ShouldTransitionCrossSite() {
-  // The logic below is weaker than "are all sites isolated" -- it asks instead,
-  // "is any site isolated". That's appropriate here since we're just trying to
-  // figure out if we're in any kind of site isolated mode, and in which case,
-  // we ignore the kSingleProcess and kProcessPerTab settings.
-  //
-  // TODO(nick): Move all handling of kSingleProcess/kProcessPerTab into
-  // SiteIsolationPolicy so we have a consistent behavior around the interaction
-  // of the process model flags.
-  //
-  // TODO(creis, alexmos): This looks like it will break single-process and
-  // process-per-tab.  See https://crbug.com/688617.
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return true;
-
-  // False in the single-process mode, as it makes RVHs to accumulate
-  // in swapped_out_hosts_.
-  // True if we are using process-per-site-instance (default) or
-  // process-per-site (kProcessPerSite).
-  // TODO(nick): Move handling of kSingleProcess and kProcessPerTab into
-  // SiteIsolationPolicy.
+  // False in single-process mode, which does not support cross-process
+  // navigations or OOPIFs.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSingleProcess) &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kProcessPerTab);
+      switches::kSingleProcess);
 }
 
 bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(

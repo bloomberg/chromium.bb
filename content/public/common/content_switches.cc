@@ -720,6 +720,9 @@ const char kProcessPerSite[]                = "process-per-site";
 // renderer process.  We default to using a renderer process for each
 // site instance (i.e., group of pages from the same registered domain with
 // script connections to each other).
+// TODO(creis): This flag is currently a no-op.  We should refactor it to avoid
+// "unnecessary" process swaps for cross-site navigations but still swap when
+// needed for security (e.g., isolated origins).
 const char kProcessPerTab[]                 = "process-per-tab";
 
 // The value of this switch determines whether the process is started as a
