@@ -152,6 +152,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> GetReceivers()
       override;
+  std::unique_ptr<blink::WebRTCRtpSender> AddTrack(
+      const blink::WebMediaStreamTrack& web_track,
+      const blink::WebVector<blink::WebMediaStream>& web_streams) override;
+  bool RemoveTrack(blink::WebRTCRtpSender* web_sender) override;
+
   blink::WebRTCDataChannelHandler* CreateDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;

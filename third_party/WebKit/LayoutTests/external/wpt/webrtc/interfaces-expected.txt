@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 498 tests; 188 PASS, 310 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 498 tests; 194 PASS, 304 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Main test driver 
 PASS Test driver for asyncInitCertificate 
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: OperationError: TEST_ERROR Reached unreachable code
@@ -61,8 +61,8 @@ PASS RTCPeerConnection interface: operation generateCertificate(AlgorithmIdentif
 PASS RTCPeerConnection interface: operation getSenders() 
 PASS RTCPeerConnection interface: operation getReceivers() 
 FAIL RTCPeerConnection interface: operation getTransceivers() assert_own_property: interface prototype object missing non-static operation expected property "getTransceivers" missing
-FAIL RTCPeerConnection interface: operation addTrack(MediaStreamTrack,MediaStream) assert_own_property: interface prototype object missing non-static operation expected property "addTrack" missing
-FAIL RTCPeerConnection interface: operation removeTrack(RTCRtpSender) assert_own_property: interface prototype object missing non-static operation expected property "removeTrack" missing
+PASS RTCPeerConnection interface: operation addTrack(MediaStreamTrack,MediaStream) 
+PASS RTCPeerConnection interface: operation removeTrack(RTCRtpSender) 
 FAIL RTCPeerConnection interface: operation addTransceiver([object Object],[object Object],RTCRtpTransceiverInit) assert_own_property: interface prototype object missing non-static operation expected property "addTransceiver" missing
 FAIL RTCPeerConnection interface: attribute ontrack assert_true: The prototype object must have a property "ontrack" expected true got false
 FAIL RTCPeerConnection interface: attribute sctp assert_true: The prototype object must have a property "sctp" expected true got false
@@ -125,10 +125,10 @@ FAIL RTCPeerConnection interface: calling generateCertificate(AlgorithmIdentifie
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getSenders" with the proper type (34) 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getReceivers" with the proper type (35) 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getTransceivers" with the proper type (36) assert_inherits: property "getTransceivers" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTrack" with the proper type (37) assert_inherits: property "addTrack" not found in prototype chain
-FAIL RTCPeerConnection interface: calling addTrack(MediaStreamTrack,MediaStream) on new RTCPeerConnection() with too few arguments must throw TypeError assert_inherits: property "addTrack" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "removeTrack" with the proper type (38) assert_inherits: property "removeTrack" not found in prototype chain
-FAIL RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on new RTCPeerConnection() with too few arguments must throw TypeError assert_inherits: property "removeTrack" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTrack" with the proper type (37) 
+PASS RTCPeerConnection interface: calling addTrack(MediaStreamTrack,MediaStream) on new RTCPeerConnection() with too few arguments must throw TypeError 
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "removeTrack" with the proper type (38) 
+PASS RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on new RTCPeerConnection() with too few arguments must throw TypeError 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTransceiver" with the proper type (39) assert_inherits: property "addTransceiver" not found in prototype chain
 FAIL RTCPeerConnection interface: calling addTransceiver([object Object],[object Object],RTCRtpTransceiverInit) on new RTCPeerConnection() with too few arguments must throw TypeError assert_inherits: property "addTransceiver" not found in prototype chain
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type (40) assert_inherits: property "ontrack" not found in prototype chain

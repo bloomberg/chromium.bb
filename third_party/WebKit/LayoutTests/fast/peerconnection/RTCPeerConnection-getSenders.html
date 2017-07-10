@@ -15,11 +15,11 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 1, true, false);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
     });
-}, 'getSenders() for a single audio track.');
+}, 'getSenders() for a stream with a single audio track.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
@@ -29,11 +29,11 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 1, false, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
     });
-}, 'getSenders() for a single video track.');
+}, 'getSenders() for a stream with a single video track.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
@@ -43,11 +43,11 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 1, true, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
     });
-}, 'getSenders() for a single stream with an audio and video track.');
+}, 'getSenders() for a stream with an audio and video track.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
@@ -57,7 +57,7 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 2, true, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
     });
@@ -72,7 +72,7 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 2, true, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
 
@@ -83,7 +83,7 @@ promise_test(function() {
 
       pc.removeStream(pc.getLocalStreams()[0]);
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 1, true, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
 
@@ -97,7 +97,7 @@ promise_test(function() {
         pc.addStream(streams[i]);
       }
       verifyStreamAndTrackCounts(pc.getLocalStreams(), 2, true, true);
-      verifyLocalTracksHaveSenders(pc);
+      verifyLocalStreamTracksHaveSenders(pc);
       // Make sure object identities are preserved between calls.
       assert_array_equals(pc.getSenders(), pc.getSenders());
 
@@ -116,6 +116,19 @@ promise_test(function() {
       assert_equals(pc.getSenders().length, 0);
     });
 }, 'getSenders() for streams being added and removed.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:false}, 1)
+    .then(function(streams) {
+      let track = streams[0].getAudioTracks()[0];
+      let sender = pc.addTrack(track);
+      verifyTracksHaveSenders(pc, new Set([ track ]));
+      assert_equals(pc.getSenders()[0], sender);
+      pc.removeTrack(sender);
+      assert_equals(pc.getSenders().length, 0);
+    });
+}, 'getSenders() for addTrack() and removeTrack().');
 
 /**
  * Helper functions to tests.
@@ -141,7 +154,7 @@ function verifyStreamAndTrackCounts(streams, streamCount, audio, video) {
   }
 }
 
-function verifyLocalTracksHaveSenders(pc) {
+function verifyLocalStreamTracksHaveSenders(pc) {
   let localTracks = new Set();
   let localStreams = pc.getLocalStreams();
   for (let i = 0; i < localStreams.length; ++i) {
@@ -150,17 +163,20 @@ function verifyLocalTracksHaveSenders(pc) {
       localTracks.add(localStreamTracks[j]);
     }
   }
+  return verifyTracksHaveSenders(pc, localTracks);
+}
 
+function verifyTracksHaveSenders(pc, tracks) {
   let senderTracks = new Set();
   let senders = pc.getSenders();
   for (let i = 0; i < senders.length; ++i) {
     assert_true(senders[i] != null);
     assert_true(senders[i].track != null);
-    assert_true(localTracks.has(senders[i].track));
+    assert_true(tracks.has(senders[i].track));
     assert_false(senderTracks.has(senders[i].track));
     senderTracks.add(senders[i].track);
   }
-  assert_equals(senderTracks.size, localTracks.size);
+  assert_equals(senderTracks.size, tracks.size);
 }
 </script>
 </body>

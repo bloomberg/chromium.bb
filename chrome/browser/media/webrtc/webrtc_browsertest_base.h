@@ -47,6 +47,14 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kUseDefaultAudioCodec[];
   static const char kUseDefaultVideoCodec[];
 
+  static const char kUndefined[];
+
+  enum class StreamArgumentType {
+    NO_STREAM,
+    SHARED_STREAM,
+    INDIVIDUAL_STREAMS
+  };
+
  protected:
   WebRtcTestBase();
   ~WebRtcTestBase() override;
@@ -198,6 +206,22 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void VerifyRtpReceivers(content::WebContents* tab,
                           base::Optional<size_t> expected_num_tracks =
                               base::Optional<size_t>()) const;
+  std::vector<std::string> CreateAndAddAudioAndVideoTrack(
+      content::WebContents* tab,
+      StreamArgumentType stream_argument_type) const;
+  void RemoveTrack(content::WebContents* tab,
+                   const std::string& track_id) const;
+  bool HasLocalStreamWithTrack(content::WebContents* tab,
+                               const std::string& stream_id,
+                               const std::string& track_id) const;
+  bool HasRemoteStreamWithTrack(content::WebContents* tab,
+                                const std::string& stream_id,
+                                const std::string& track_id) const;
+  bool HasSenderWithTrack(content::WebContents* tab,
+                          std::string track_id) const;
+  bool HasReceiverWithTrack(content::WebContents* tab,
+                            std::string track_id) const;
+  size_t GetNegotiationNeededCount(content::WebContents* tab) const;
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
@@ -210,6 +234,10 @@ class WebRtcTestBase : public InProcessBrowserTest {
                      content::WebContents* from_tab) const;
   void GatherAndSendIceCandidates(content::WebContents* from_tab,
                                   content::WebContents* to_tab) const;
+  bool HasStreamWithTrack(content::WebContents* tab,
+                          const char* function_name,
+                          std::string stream_id,
+                          std::string track_id) const;
 
   infobars::InfoBar* GetUserMediaAndWaitForInfoBar(
       content::WebContents* tab_contents,

@@ -1698,6 +1698,43 @@ RTCPeerConnectionHandler::GetReceivers() {
   return result;
 }
 
+std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
+    const blink::WebMediaStreamTrack& track,
+    const blink::WebVector<blink::WebMediaStream>& streams) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Get or create the associated track and stream adapters.
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter =
+      track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+      stream_adapters(streams.size());
+  std::vector<webrtc::MediaStreamInterface*> webrtc_streams(streams.size());
+  for (size_t i = 0; i < streams.size(); ++i) {
+    stream_adapters[i] =
+        stream_adapter_map_->GetOrCreateLocalStreamAdapter(streams[i]);
+    webrtc_streams[i] = stream_adapters[i]->adapter().webrtc_media_stream();
+  }
+
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender =
+      native_peer_connection_->AddTrack(track_adapter->webrtc_track(),
+                                        webrtc_streams);
+  if (!webrtc_sender)
+    return nullptr;
+  return base::MakeUnique<RTCRtpSender>(std::move(webrtc_sender),
+                                        std::move(track_adapter),
+                                        std::move(stream_adapters));
+}
+
+bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RTCRtpSender* sender = static_cast<RTCRtpSender*>(web_sender);
+  if (!native_peer_connection_->RemoveTrack(sender->webrtc_rtp_sender())) {
+    return false;
+  }
+  sender->OnRemoved();
+  return true;
+}
+
 void RTCPeerConnectionHandler::CloseClientPeerConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!is_closed_)

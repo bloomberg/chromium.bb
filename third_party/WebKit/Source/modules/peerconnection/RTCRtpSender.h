@@ -26,6 +26,11 @@ class RTCRtpSender final : public GarbageCollectedFinalized<RTCRtpSender>,
 
   MediaStreamTrack* track();
 
+  WebRTCRtpSender* web_rtp_sender();
+  // Sets the track. This must be called when the |WebRTCRtpSender| has its
+  // track updated, and the |track| must match the |WebRTCRtpSender::Track|.
+  void SetTrack(MediaStreamTrack*);
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

@@ -103,6 +103,14 @@ class WebRTCPeerConnectionHandler {
   // webrtc-layer receivers, multiple |WebRTCRtpReceiver| objects referencing
   // the same webrtc-layer receiver have the same |id|.
   virtual WebVector<std::unique_ptr<WebRTCRtpReceiver>> GetReceivers() = 0;
+  // Adds the track to the peer connection, returning the resulting sender on
+  // success and null on failure.
+  virtual std::unique_ptr<WebRTCRtpSender> AddTrack(
+      const WebMediaStreamTrack&,
+      const WebVector<WebMediaStream>&) = 0;
+  // Removes the sender, returning whether successful. On success, the sender's
+  // track must have been set to null.
+  virtual bool RemoveTrack(WebRTCRtpSender*) = 0;
   virtual WebRTCDTMFSenderHandler* CreateDTMFSender(
       const WebMediaStreamTrack&) = 0;
   virtual void Stop() = 0;

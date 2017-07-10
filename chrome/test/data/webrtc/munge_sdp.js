@@ -29,7 +29,7 @@ function setOpusDtxEnabled(sdp) {
   var defaultCodec = getSdpDefaultAudioCodec(sdp);
   if (defaultCodec !== 'opus') {
     failure('setOpusDtxEnabled',
-             'Default audio codec is not set to \'opus\'.');
+            'Default audio codec is not set to \'opus\'.');
   }
 
   // Find codec ID for Opus, e.g. 111 if 'a=rtpmap:111 opus/48000/2'.
@@ -64,14 +64,15 @@ function setSdpDefaultCodec(sdp, type, codec) {
   // Find codec ID, e.g. 100 for 'VP8' if 'a=rtpmap:100 VP8/9000'.
   var codecId = findRtpmapId(sdpLines, codec);
   if (codecId === null) {
-    failure('sdpPreferCodec', 'Unknown ID for |codec| = \'' + codec + '\'.');
+    failure('setSdpDefaultCodec',
+            'Unknown ID for |codec| = \'' + codec + '\'.');
   }
 
   // Find 'm=|type|' line, e.g. 'm=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116'.
   var mLineNo = findLine(sdpLines, 'm=' + type);
   if (mLineNo === null) {
     failure('setSdpDefaultCodec',
-             '\'m=' + type + '\' line missing from |sdp|.');
+            '\'m=' + type + '\' line missing from |sdp|.');
   }
 
   // Modify video line to use the desired codec as the default.
@@ -106,21 +107,21 @@ function getSdpDefaultCodec(sdp, type) {
   var mLineNo = findLine(sdpLines, 'm=' + type);
   if (mLineNo === null) {
     failure('getSdpDefaultCodec',
-             '\'m=' + type + '\' line missing from |sdp|.');
+            '\'m=' + type + '\' line missing from |sdp|.');
   }
 
   // The default codec's ID.
   var defaultCodecId = getMLineDefaultCodec(sdpLines[mLineNo]);
   if (defaultCodecId === null) {
     failure('getSdpDefaultCodec',
-             '\'m=' + type + '\' line contains no codecs.');
+            '\'m=' + type + '\' line contains no codecs.');
   }
 
   // Find codec name, e.g. 'VP8' for 100 if 'a=rtpmap:100 VP8/9000'.
   var defaultCodec = findRtpmapCodec(sdpLines, defaultCodecId);
   if (defaultCodec === null) {
     failure('getSdpDefaultCodec',
-             'Unknown codec name for default codec ' + defaultCodecId + '.');
+            'Unknown codec name for default codec ' + defaultCodecId + '.');
   }
   return defaultCodec;
 }
@@ -244,9 +245,9 @@ function mergeSdpLines(sdpLines) {
 }
 
 /** @private */
-function findLine(lines, startsWith) {
-  for (var i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith(startsWith))
+function findLine(lines, lineStartsWith, startingLine = 0) {
+  for (var i = startingLine; i < lines.length; i++) {
+    if (lines[i].startsWith(lineStartsWith))
       return i;
   }
   return null;
