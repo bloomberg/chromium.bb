@@ -93,12 +93,11 @@ WaitForConstantsTask.prototype = {
 };
 
 /**
-  * A Task that creates a log dump in the browser process via
-  * WriteToFileNetLogObserver, waits to receive it via IPC, and and then loads
-  * it as a string.
+  * A Task that creates a log dump in the browser process, waits to receive it
+  * via IPC, and and then loads it as a string.
   * @param {integer} truncate The number of bytes to truncate from the end of
   *     the string, if any, to simulate a truncated log due to crash, or
-  *     quitting without properly shutting down a WriteToFileNetLogObserver.
+  *     quitting without properly shutting down the log writer.
   * @extends {NetInternalsTest.Task}
   */
 function GetNetLogFileContentsAndLoadLogTask(truncate) {
@@ -178,7 +177,7 @@ function checkViewsAfterLogLoaded() {
 
 /**
  * Checks the visibility of each view after loading a log dump created by the
- * WriteToFileNetLogObserver. Also checks that the BrowserBridge is disabled.
+ * browser. Also checks that the BrowserBridge is disabled.
  */
 function checkViewsAfterNetLogFileLoaded() {
   expectTrue(g_browser.isDisabled());
@@ -235,9 +234,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
 });
 
 /**
- * Exports a log dump by using a WriteToFileNetLogObserver and attempts to load
- * it from a string.  The string is passed to Javascript via an IPC rather than
- * drag and drop.
+ * Attempts to load a NetLog created by the browser. The log contents are
+ * passed to Javascript via an IPC rather than drag and drop.
  */
 TEST_F('NetInternalsTest',
     'netInternalsLogUtilImportNetLogFile',
