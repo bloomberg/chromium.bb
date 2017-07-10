@@ -43,6 +43,15 @@ class SubstituteData {
 
   SubstituteData(
       RefPtr<SharedBuffer> content,
+      SubstituteDataLoadPolicy substitute_data_load_policy = kLoadNormally)
+      : SubstituteData(content,
+                       "text/html",
+                       "UTF-8",
+                       KURL(),
+                       substitute_data_load_policy) {}
+
+  SubstituteData(
+      RefPtr<SharedBuffer> content,
       const AtomicString& mime_type,
       const AtomicString& text_encoding,
       const KURL& failing_url,
