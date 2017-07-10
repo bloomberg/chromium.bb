@@ -947,10 +947,23 @@ LayoutRect FrameSelection::UnclippedBounds() const {
   return LayoutRect(layout_selection_->SelectionBounds());
 }
 
-static IntRect AbsoluteSelectionBoundsOf(
-    const VisibleSelectionInFlatTree& selection) {
-  return ComputeTextRect(
-      EphemeralRangeInFlatTree(selection.Start(), selection.End()));
+IntRect FrameSelection::ComputeRectToScroll(
+    RevealExtentOption reveal_extent_option) {
+  const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
+  LayoutRect rect;
+  switch (selection.GetSelectionType()) {
+    case kCaretSelection:
+      return AbsoluteCaretBounds();
+    case kRangeSelection: {
+      if (reveal_extent_option == kRevealExtent)
+        return AbsoluteCaretBoundsOf(CreateVisiblePosition(selection.Extent()));
+      layout_selection_->SetHasPendingSelection();
+      return layout_selection_->SelectionBounds();
+    }
+    default:
+      NOTREACHED();
+      return {};
+  }
 }
 
 // TODO(editing-dev): This should be done in FlatTree world.
@@ -967,23 +980,6 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   if (selection.GetSelectionType() == kNoSelection)
     return;
 
-  LayoutRect rect;
-  switch (selection.GetSelectionType()) {
-    case kCaretSelection:
-      rect = LayoutRect(AbsoluteCaretBounds());
-      break;
-    case kRangeSelection: {
-      rect = LayoutRect(
-          reveal_extent_option == kRevealExtent
-              ? AbsoluteCaretBoundsOf(CreateVisiblePosition(selection.Extent()))
-              : AbsoluteSelectionBoundsOf(ComputeVisibleSelectionInFlatTree()));
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
-
   // FIXME: This code only handles scrolling the startContainer's layer, but
   // the selection rect could intersect more than just that.
   if (DocumentLoader* document_loader = frame_->Loader().GetDocumentLoader())
@@ -992,7 +988,8 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   DCHECK(start.AnchorNode());
   DCHECK(start.AnchorNode()->GetLayoutObject());
   if (!start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-          rect, alignment, alignment))
+          LayoutRect(ComputeRectToScroll(reveal_extent_option)), alignment,
+          alignment))
     return;
 
   UpdateAppearance();

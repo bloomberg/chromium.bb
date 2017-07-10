@@ -280,6 +280,8 @@ class CORE_EXPORT FrameSelection final
 
   GranularityStrategy* GetGranularityStrategy();
 
+  IntRect ComputeRectToScroll(RevealExtentOption);
+
   // Implementation of |SynchronousMutationObserver| member functions.
   void ContextDestroyed(Document*) final;
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
