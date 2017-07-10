@@ -164,15 +164,15 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     """Tests that GetExperimentalBuilders parses out EXPERIMENTAL-BUILDERS=."""
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (EXPERIMENTAL-BUILDERS=x86-generic-paladin).'),
+            'Tree is open (EXPERIMENTAL=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
     builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])
 
     self._SetupMockTreeStatusResponses(
         final_tree_status=('Tree is open '
-                           '(EXPERIMENTAL-BUILDERS=x86-generic-paladin,'
-                           'amd64-generic-paladin EXPERIMENTAL-BUILDERS='
+                           '(EXPERIMENTAL=x86-generic-paladin,'
+                           'amd64-generic-paladin EXPERIMENTAL='
                            'arm-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
     builders = tree_status.GetExperimentalBuilders(self.status_url)
@@ -183,31 +183,15 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     # Builders not in the site config are filtered out.
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (EXPERIMENTAL-BUILDERS=foo-generic-paladin).'),
+            'Tree is open (EXPERIMENTAL=foo-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
     builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertEqual(builders, [])
 
-    # Underscore instead of hyphen.
-    self._SetupMockTreeStatusResponses(
-        final_tree_status=(
-            'Tree is open (EXPERIMENTAL_BUILDERS=x86-generic-paladin).'),
-        final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetExperimentalBuilders(self.status_url)
-    self.assertItemsEqual(builders, ['x86-generic-paladin'])
-
-    # No plural.
-    self._SetupMockTreeStatusResponses(
-        final_tree_status=('Tree is open '
-                           '(EXPERIMENTAL-BUILDER=x86-generic-paladin).'),
-        final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetExperimentalBuilders(self.status_url)
-    self.assertItemsEqual(builders, ['x86-generic-paladin'])
-
     # Case insensitive.
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (experimental-builders=x86-generic-paladin).'),
+            'Tree is open (experimental=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
     builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])

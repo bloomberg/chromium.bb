@@ -51,10 +51,8 @@ DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP = 30
 # Default timeout (seconds) for waiting for tree status
 DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
 
-# Match EXPERIMENTAL-BUILDERS= case-insensitive as well as variants that would
-# use underscore instead of hyphen or omit the plural.
-EXPERIMENTAL_BUILDERS_RE = re.compile(
-    r'EXPERIMENTAL?[-_]BUILDERS?=(\S+)', re.IGNORECASE)
+# Match EXPERIMENTAL= case-insensitive.
+EXPERIMENTAL_BUILDERS_RE = re.compile(r'EXPERIMENTAL=(\S+)', re.IGNORECASE)
 
 
 class PasswordFileDoesNotExist(Exception):
@@ -215,7 +213,7 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
     if status_dict:
       for match in EXPERIMENTAL_BUILDERS_RE.findall(
           status_dict.get(TREE_STATUS_MESSAGE)):
-        # The value for EXPERIMENTAL-BUILDERS= could be a comma-separated list
+        # The value for EXPERIMENTAL= could be a comma-separated list
         # of builders.
         for builder in match.split(','):
           if builder in site_config:
