@@ -472,6 +472,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [toolsCell.reloadButton removeTarget:self.dispatcher
                                 action:@selector(reload)
                       forControlEvents:UIControlEventTouchUpInside];
+  [toolsCell.shareButton removeTarget:self.dispatcher
+                               action:@selector(sharePage)
+                     forControlEvents:UIControlEventTouchUpInside];
   [toolsCell.starButton removeTarget:self.dispatcher
                               action:@selector(bookmarkPage)
                     forControlEvents:UIControlEventTouchUpInside];
@@ -595,6 +598,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
     [cell.reloadButton addTarget:self.dispatcher
                           action:@selector(reload)
                 forControlEvents:UIControlEventTouchUpInside];
+    [cell.shareButton addTarget:self.dispatcher
+                         action:@selector(sharePage)
+               forControlEvents:UIControlEventTouchUpInside];
     [cell.starButton addTarget:self.dispatcher
                         action:@selector(bookmarkPage)
               forControlEvents:UIControlEventTouchUpInside];
