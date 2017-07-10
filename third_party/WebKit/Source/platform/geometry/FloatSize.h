@@ -120,11 +120,6 @@ class PLATFORM_EXPORT FloatSize {
   explicit FloatSize(
       const CGSize&);  // don't do this implicitly since it's lossy
   operator CGSize() const;
-#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-  explicit FloatSize(
-      const NSSize&);  // don't do this implicitly since it's lossy
-  operator NSSize() const;
-#endif
 #endif
 
   operator SkSize() const { return SkSize::Make(width_, height_); }

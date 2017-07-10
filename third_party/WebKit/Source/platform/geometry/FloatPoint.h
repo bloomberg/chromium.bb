@@ -133,10 +133,6 @@ class PLATFORM_EXPORT FloatPoint {
 #if defined(OS_MACOSX)
   FloatPoint(const CGPoint&);
   operator CGPoint() const;
-#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-  FloatPoint(const NSPoint&);
-  operator NSPoint() const;
-#endif
 #endif
 
   // Can we remove this one?

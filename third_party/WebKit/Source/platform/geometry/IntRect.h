@@ -191,9 +191,6 @@ class PLATFORM_EXPORT IntRect {
 
 #if defined(OS_MACOSX)
   operator CGRect() const;
-#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-  operator NSRect() const;
-#endif
 #endif
 
   operator SkRect() const;
@@ -237,13 +234,6 @@ inline bool operator==(const IntRect& a, const IntRect& b) {
 inline bool operator!=(const IntRect& a, const IntRect& b) {
   return a.Location() != b.Location() || a.Size() != b.Size();
 }
-
-#if defined(OS_MACOSX)
-PLATFORM_EXPORT IntRect EnclosingIntRect(const CGRect&);
-#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
-#endif
-#endif
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
