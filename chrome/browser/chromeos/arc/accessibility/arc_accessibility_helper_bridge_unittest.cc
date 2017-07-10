@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/exo/wm_helper.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -57,9 +59,20 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
   void SetUp() override {
     wm_helper_ = base::MakeUnique<FakeWMHelper>();
     exo::WMHelper::SetInstance(wm_helper_.get());
+    testing_profile_ = base::MakeUnique<TestingProfile>();
     bridge_service_ = base::MakeUnique<ArcBridgeService>();
     accessibility_helper_bridge_ =
-        base::MakeUnique<ArcAccessibilityHelperBridge>(bridge_service_.get());
+        base::MakeUnique<ArcAccessibilityHelperBridge>(testing_profile_.get(),
+                                                       bridge_service_.get());
+  }
+
+  void TearDown() override {
+    accessibility_helper_bridge_->Shutdown();
+    accessibility_helper_bridge_.reset();
+    bridge_service_.reset();
+    testing_profile_.reset();
+    exo::WMHelper::SetInstance(nullptr);
+    wm_helper_.reset();
   }
 
   ArcAccessibilityHelperBridge* accessibility_helper_bridge() {
@@ -67,7 +80,9 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<FakeWMHelper> wm_helper_;
+  std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcAccessibilityHelperBridge> accessibility_helper_bridge_;
 

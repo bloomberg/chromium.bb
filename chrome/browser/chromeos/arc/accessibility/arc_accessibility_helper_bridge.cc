@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/aura_constants.h"
@@ -43,10 +44,11 @@ int32_t GetTaskId(aura::Window* window) {
   return task_id;
 }
 
-void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data) {
+void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
+                         Profile* profile) {
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager)
+  if (!accessibility_manager || accessibility_manager->profile() != profile)
     return;
 
   exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
@@ -66,7 +68,7 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data) {
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
 }
 
-arc::mojom::AccessibilityFilterType GetFilterType() {
+arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableChromeVoxArcSupport)) {
     return arc::mojom::AccessibilityFilterType::ALL;
@@ -75,6 +77,10 @@ arc::mojom::AccessibilityFilterType GetFilterType() {
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
   if (!accessibility_manager)
+    return arc::mojom::AccessibilityFilterType::OFF;
+
+  // TODO(yawano): Support the case where primary user is in background.
+  if (accessibility_manager->profile() != profile)
     return arc::mojom::AccessibilityFilterType::OFF;
 
   if (accessibility_manager->IsSpokenFeedbackEnabled())
@@ -91,57 +97,57 @@ arc::mojom::AccessibilityFilterType GetFilterType() {
 namespace arc {
 
 ArcAccessibilityHelperBridge::ArcAccessibilityHelperBridge(
-    ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), current_task_id_(kNoTaskId) {
-  arc_bridge_service()->accessibility_helper()->AddObserver(this);
+    Profile* profile,
+    ArcBridgeService* arc_bridge_service)
+    : profile_(profile),
+      arc_bridge_service_(arc_bridge_service),
+      binding_(this),
+      current_task_id_(kNoTaskId) {
+  arc_bridge_service_->accessibility_helper()->AddObserver(this);
+
+  // Null on testing.
+  auto* app_list_prefs = ArcAppListPrefs::Get(profile_);
+  if (app_list_prefs)
+    app_list_prefs->AddObserver(this);
 }
 
-ArcAccessibilityHelperBridge::~ArcAccessibilityHelperBridge() {
+ArcAccessibilityHelperBridge::~ArcAccessibilityHelperBridge() = default;
+
+void ArcAccessibilityHelperBridge::Shutdown() {
   // We do not unregister ourselves from WMHelper as an ActivationObserver
   // because it is always null at this point during teardown.
 
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (accessibility_manager) {
-    Profile* profile = accessibility_manager->profile();
-    if (profile && ArcAppListPrefs::Get(profile))
-      ArcAppListPrefs::Get(profile)->RemoveObserver(this);
-  }
+  // Null on testing.
+  auto* app_list_prefs = ArcAppListPrefs::Get(profile_);
+  if (app_list_prefs)
+    app_list_prefs->RemoveObserver(this);
 
-  ArcBridgeService* arc_bridge_service_ptr = arc_bridge_service();
-  if (arc_bridge_service_ptr)
-    arc_bridge_service_ptr->accessibility_helper()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->accessibility_helper()->RemoveObserver(this);
 }
 
 void ArcAccessibilityHelperBridge::OnInstanceReady() {
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager)
-    return;
-
-  Profile* profile = accessibility_manager->profile();
-  if (!profile)
-    return;
-
-  ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
-  if (!arc_app_list_prefs)
-    return;
-
-  arc_app_list_prefs->AddObserver(this);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->accessibility_helper(), Init);
+      arc_bridge_service_->accessibility_helper(), Init);
   DCHECK(instance);
 
   mojom::AccessibilityHelperHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
   instance->Init(std::move(host_proxy));
 
-  arc::mojom::AccessibilityFilterType filter_type = GetFilterType();
+  arc::mojom::AccessibilityFilterType filter_type =
+      GetFilterTypeForProfile(profile_);
   instance->SetFilter(filter_type);
 
   if (filter_type == arc::mojom::AccessibilityFilterType::ALL ||
       filter_type ==
           arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME) {
+    // TODO(yawano): Handle the case where filter_type has changed between
+    // OFF/FOCUS and ALL/WHITELISTED_PACKAGE_NAME after this initialization.
     exo::WMHelper::GetInstance()->AddActivationObserver(this);
   }
 }
@@ -150,12 +156,14 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEventDeprecated(
     mojom::AccessibilityEventType event_type,
     mojom::AccessibilityNodeInfoDataPtr event_source) {
   if (event_type == arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
-    DispatchFocusChange(event_source.get());
+    DispatchFocusChange(event_source.get(), profile_);
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
-  arc::mojom::AccessibilityFilterType filter_type = GetFilterType();
+  // TODO(yawano): Handle AccessibilityFilterType::OFF.
+  arc::mojom::AccessibilityFilterType filter_type =
+      GetFilterTypeForProfile(profile_);
 
   if (filter_type == arc::mojom::AccessibilityFilterType::ALL ||
       filter_type ==
@@ -203,7 +211,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     return;
 
   CHECK_EQ(1U, event_data.get()->node_data.size());
-  DispatchFocusChange(event_data.get()->node_data[0].get());
+  DispatchFocusChange(event_data.get()->node_data[0].get(), profile_);
 }
 
 void ArcAccessibilityHelperBridge::OnAction(
@@ -227,7 +235,7 @@ void ArcAccessibilityHelperBridge::OnAction(
   }
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service()->accessibility_helper(), PerformAction);
+      arc_bridge_service_->accessibility_helper(), PerformAction);
   instance->PerformAction(std::move(action_data));
 }
 
