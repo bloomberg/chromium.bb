@@ -34,30 +34,27 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService
   void Construct(mojom::AudioDecoderClientAssociatedPtrInfo client) final;
   void Initialize(const AudioDecoderConfig& config,
                   int32_t cdm_id,
-                  const InitializeCallback& callback) final;
+                  InitializeCallback callback) final;
 
   void SetDataSource(mojo::ScopedDataPipeConsumerHandle receive_pipe) final;
 
-  void Decode(mojom::DecoderBufferPtr buffer,
-              const DecodeCallback& callback) final;
+  void Decode(mojom::DecoderBufferPtr buffer, DecodeCallback callback) final;
 
-  void Reset(const ResetCallback& callback) final;
+  void Reset(ResetCallback callback) final;
 
  private:
   // Called by |decoder_| upon finishing initialization.
-  void OnInitialized(const InitializeCallback& callback,
+  void OnInitialized(InitializeCallback callback,
                      scoped_refptr<ContentDecryptionModule> cdm,
                      bool success);
 
-  void OnReadDone(const DecodeCallback& callback,
-                  scoped_refptr<DecoderBuffer> buffer);
+  void OnReadDone(DecodeCallback callback, scoped_refptr<DecoderBuffer> buffer);
 
   // Called by |decoder_| when DecoderBuffer is accepted or rejected.
-  void OnDecodeStatus(const DecodeCallback& callback,
-                      media::DecodeStatus status);
+  void OnDecodeStatus(DecodeCallback callback, media::DecodeStatus status);
 
   // Called by |decoder_| when reset sequence is finished.
-  void OnResetDone(const ResetCallback& callback);
+  void OnResetDone(ResetCallback callback);
 
   // Called by |decoder_| for each decoded buffer.
   void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);

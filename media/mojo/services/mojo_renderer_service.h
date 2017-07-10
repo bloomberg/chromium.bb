@@ -66,14 +66,14 @@ class MEDIA_MOJO_EXPORT MojoRendererService
                   base::Optional<std::vector<mojom::DemuxerStreamPtr>> streams,
                   const base::Optional<GURL>& media_url,
                   const base::Optional<GURL>& first_party_for_cookies,
-                  const InitializeCallback& callback) final;
-  void Flush(const FlushCallback& callback) final;
+                  InitializeCallback callback) final;
+  void Flush(FlushCallback callback) final;
   void StartPlayingFrom(base::TimeDelta time_delta) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
-  void SetCdm(int32_t cdm_id, const SetCdmCallback& callback) final;
+  void SetCdm(int32_t cdm_id, SetCdmCallback callback) final;
   void InitiateScopedSurfaceRequest(
-      const InitiateScopedSurfaceRequestCallback& callback) final;
+      InitiateScopedSurfaceRequestCallback callback) final;
 
   void set_bad_message_cb(base::Closure bad_message_cb) {
     bad_message_cb_ = bad_message_cb;
@@ -100,10 +100,10 @@ class MEDIA_MOJO_EXPORT MojoRendererService
 
   // Called when the MediaResourceShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
-  void OnStreamReady(const base::Callback<void(bool)>& callback);
+  void OnStreamReady(base::OnceCallback<void(bool)> callback);
 
   // Called when |audio_renderer_| initialization has completed.
-  void OnRendererInitializeDone(const base::Callback<void(bool)>& callback,
+  void OnRendererInitializeDone(base::OnceCallback<void(bool)> callback,
                                 PipelineStatus status);
 
   // Periodically polls the media time from the renderer and notifies the client
@@ -115,11 +115,11 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void SchedulePeriodicMediaTimeUpdates();
 
   // Callback executed once Flush() completes.
-  void OnFlushCompleted(const FlushCallback& callback);
+  void OnFlushCompleted(FlushCallback callback);
 
   // Callback executed once SetCdm() completes.
   void OnCdmAttached(scoped_refptr<ContentDecryptionModule> cdm,
-                     const base::Callback<void(bool)>& callback,
+                     base::OnceCallback<void(bool)> callback,
                      bool success);
 
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;

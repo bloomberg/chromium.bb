@@ -19,9 +19,9 @@ template <typename... T>
 class MojoCdmPromise : public CdmPromiseTemplate<T...> {
  public:
   using CallbackType =
-      base::Callback<void(mojom::CdmPromiseResultPtr, const T&...)>;
+      base::OnceCallback<void(mojom::CdmPromiseResultPtr, const T&...)>;
 
-  explicit MojoCdmPromise(const CallbackType& callback);
+  explicit MojoCdmPromise(CallbackType callback);
   ~MojoCdmPromise() final;
 
   // CdmPromiseTemplate<> implementation.

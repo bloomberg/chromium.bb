@@ -71,11 +71,12 @@ void MojoDecryptorService::Initialize(
 
 void MojoDecryptorService::Decrypt(StreamType stream_type,
                                    mojom::DecoderBufferPtr encrypted,
-                                   const DecryptCallback& callback) {
+                                   DecryptCallback callback) {
   DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
-      std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnReadDone,
-                                           weak_this_, stream_type, callback));
+      std::move(encrypted),
+      base::BindOnce(&MojoDecryptorService::OnReadDone, weak_this_, stream_type,
+                     std::move(callback)));
 }
 
 void MojoDecryptorService::CancelDecrypt(StreamType stream_type) {
@@ -85,38 +86,38 @@ void MojoDecryptorService::CancelDecrypt(StreamType stream_type) {
 
 void MojoDecryptorService::InitializeAudioDecoder(
     const AudioDecoderConfig& config,
-    const InitializeAudioDecoderCallback& callback) {
+    InitializeAudioDecoderCallback callback) {
   DVLOG(1) << __func__;
   decryptor_->InitializeAudioDecoder(
       config, base::Bind(&MojoDecryptorService::OnAudioDecoderInitialized,
-                         weak_this_, callback));
+                         weak_this_, base::Passed(&callback)));
 }
 
 void MojoDecryptorService::InitializeVideoDecoder(
     const VideoDecoderConfig& config,
-    const InitializeVideoDecoderCallback& callback) {
+    InitializeVideoDecoderCallback callback) {
   DVLOG(1) << __func__;
   decryptor_->InitializeVideoDecoder(
       config, base::Bind(&MojoDecryptorService::OnVideoDecoderInitialized,
-                         weak_this_, callback));
+                         weak_this_, base::Passed(&callback)));
 }
 
 void MojoDecryptorService::DecryptAndDecodeAudio(
     mojom::DecoderBufferPtr encrypted,
-    const DecryptAndDecodeAudioCallback& callback) {
+    DecryptAndDecodeAudioCallback callback) {
   DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
-      std::move(encrypted),
-      base::BindOnce(&MojoDecryptorService::OnAudioRead, weak_this_, callback));
+      std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnAudioRead,
+                                           weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::DecryptAndDecodeVideo(
     mojom::DecoderBufferPtr encrypted,
-    const DecryptAndDecodeVideoCallback& callback) {
+    DecryptAndDecodeVideoCallback callback) {
   DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
-      std::move(encrypted),
-      base::BindOnce(&MojoDecryptorService::OnVideoRead, weak_this_, callback));
+      std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnVideoRead,
+                                           weak_this_, std::move(callback)));
 }
 
 void MojoDecryptorService::ResetDecoder(StreamType stream_type) {
@@ -130,20 +131,20 @@ void MojoDecryptorService::DeinitializeDecoder(StreamType stream_type) {
 }
 
 void MojoDecryptorService::OnReadDone(StreamType stream_type,
-                                      const DecryptCallback& callback,
+                                      DecryptCallback callback,
                                       scoped_refptr<DecoderBuffer> buffer) {
   if (!buffer) {
-    callback.Run(Status::kError, nullptr);
+    std::move(callback).Run(Status::kError, nullptr);
     return;
   }
 
-  decryptor_->Decrypt(
-      stream_type, std::move(buffer),
-      base::Bind(&MojoDecryptorService::OnDecryptDone, weak_this_, callback));
+  decryptor_->Decrypt(stream_type, std::move(buffer),
+                      base::Bind(&MojoDecryptorService::OnDecryptDone,
+                                 weak_this_, base::Passed(&callback)));
 }
 
 void MojoDecryptorService::OnDecryptDone(
-    const DecryptCallback& callback,
+    DecryptCallback callback,
     Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
@@ -151,62 +152,61 @@ void MojoDecryptorService::OnDecryptDone(
 
   if (!buffer) {
     DCHECK_NE(status, Status::kSuccess);
-    callback.Run(status, nullptr);
+    std::move(callback).Run(status, nullptr);
     return;
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
   if (!mojo_buffer) {
-    callback.Run(Status::kError, nullptr);
+    std::move(callback).Run(Status::kError, nullptr);
     return;
   }
 
-  callback.Run(status, std::move(mojo_buffer));
+  std::move(callback).Run(status, std::move(mojo_buffer));
 }
 
 void MojoDecryptorService::OnAudioDecoderInitialized(
-    const InitializeAudioDecoderCallback& callback,
+    InitializeAudioDecoderCallback callback,
     bool success) {
   DVLOG(1) << __func__ << "(" << success << ")";
-  callback.Run(success);
+  std::move(callback).Run(success);
 }
 
 void MojoDecryptorService::OnVideoDecoderInitialized(
-    const InitializeVideoDecoderCallback& callback,
+    InitializeVideoDecoderCallback callback,
     bool success) {
   DVLOG(1) << __func__ << "(" << success << ")";
-  callback.Run(success);
+  std::move(callback).Run(success);
 }
 
-void MojoDecryptorService::OnAudioRead(
-    const DecryptAndDecodeAudioCallback& callback,
-    scoped_refptr<DecoderBuffer> buffer) {
+void MojoDecryptorService::OnAudioRead(DecryptAndDecodeAudioCallback callback,
+                                       scoped_refptr<DecoderBuffer> buffer) {
   if (!buffer) {
-    callback.Run(Status::kError, std::vector<mojom::AudioBufferPtr>());
+    std::move(callback).Run(Status::kError,
+                            std::vector<mojom::AudioBufferPtr>());
     return;
   }
 
   decryptor_->DecryptAndDecodeAudio(
-      std::move(buffer),
-      base::Bind(&MojoDecryptorService::OnAudioDecoded, weak_this_, callback));
+      std::move(buffer), base::Bind(&MojoDecryptorService::OnAudioDecoded,
+                                    weak_this_, base::Passed(&callback)));
 }
 
-void MojoDecryptorService::OnVideoRead(
-    const DecryptAndDecodeVideoCallback& callback,
-    scoped_refptr<DecoderBuffer> buffer) {
+void MojoDecryptorService::OnVideoRead(DecryptAndDecodeVideoCallback callback,
+                                       scoped_refptr<DecoderBuffer> buffer) {
   if (!buffer) {
-    callback.Run(Status::kError, nullptr, nullptr);
+    std::move(callback).Run(Status::kError, nullptr, nullptr);
     return;
   }
 
   decryptor_->DecryptAndDecodeVideo(
-      std::move(buffer),
-      base::Bind(&MojoDecryptorService::OnVideoDecoded, weak_this_, callback));
+      std::move(buffer), base::Bind(&MojoDecryptorService::OnVideoDecoded,
+                                    weak_this_, base::Passed(&callback)));
 }
 
 void MojoDecryptorService::OnAudioDecoded(
-    const DecryptAndDecodeAudioCallback& callback,
+    DecryptAndDecodeAudioCallback callback,
     Status status,
     const media::Decryptor::AudioFrames& frames) {
   DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
@@ -218,11 +218,11 @@ void MojoDecryptorService::OnAudioDecoded(
   for (const auto& frame : frames)
     audio_buffers.push_back(mojom::AudioBuffer::From(frame));
 
-  callback.Run(status, std::move(audio_buffers));
+  std::move(callback).Run(status, std::move(audio_buffers));
 }
 
 void MojoDecryptorService::OnVideoDecoded(
-    const DecryptAndDecodeVideoCallback& callback,
+    DecryptAndDecodeVideoCallback callback,
     Status status,
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
@@ -230,7 +230,7 @@ void MojoDecryptorService::OnVideoDecoded(
 
   if (!frame) {
     DCHECK_NE(status, Status::kSuccess);
-    callback.Run(status, nullptr, nullptr);
+    std::move(callback).Run(status, nullptr, nullptr);
     return;
   }
 
@@ -242,7 +242,7 @@ void MojoDecryptorService::OnVideoDecoded(
                             mojo::MakeRequest(&releaser));
   }
 
-  callback.Run(status, std::move(frame), std::move(releaser));
+  std::move(callback).Run(status, std::move(frame), std::move(releaser));
 }
 
 }  // namespace media

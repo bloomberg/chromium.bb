@@ -27,8 +27,8 @@ static mojom::CdmPromiseResultPtr GetRejectResult(
 }
 
 template <typename... T>
-MojoCdmPromise<T...>::MojoCdmPromise(const CallbackType& callback)
-    : callback_(callback) {
+MojoCdmPromise<T...>::MojoCdmPromise(CallbackType callback)
+    : callback_(std::move(callback)) {
   DCHECK(!callback_.is_null());
 }
 
@@ -46,8 +46,7 @@ void MojoCdmPromise<T...>::resolve(const T&... result) {
   MarkPromiseSettled();
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
   cdm_promise_result->success = true;
-  callback_.Run(std::move(cdm_promise_result), result...);
-  callback_.Reset();
+  std::move(callback_).Run(std::move(cdm_promise_result), result...);
 }
 
 template <typename... T>
@@ -55,8 +54,8 @@ void MojoCdmPromise<T...>::reject(CdmPromise::Exception exception,
                                   uint32_t system_code,
                                   const std::string& error_message) {
   MarkPromiseSettled();
-  callback_.Run(GetRejectResult(exception, system_code, error_message), T()...);
-  callback_.Reset();
+  std::move(callback_).Run(
+      GetRejectResult(exception, system_code, error_message), T()...);
 }
 
 template class MojoCdmPromise<>;

@@ -26,19 +26,19 @@ class OutputProtectionImpl : public media::mojom::OutputProtection {
   ~OutputProtectionImpl() final;
 
   // media::mojom::OutputProtection implementation.
-  void QueryStatus(const QueryStatusCallback& callback) final;
+  void QueryStatus(QueryStatusCallback callback) final;
   void EnableProtection(uint32_t desired_protection_mask,
-                        const EnableProtectionCallback& callback) final;
+                        EnableProtectionCallback callback) final;
 
  private:
   // Callbacks for QueryStatus and EnableProtection results.
   // Note: These are bound using weak pointers so that we won't fire |callback|
   // after the binding is destroyed.
-  void OnQueryStatusResult(const QueryStatusCallback& callback,
+  void OnQueryStatusResult(QueryStatusCallback callback,
                            bool success,
                            uint32_t link_mask,
                            uint32_t protection_mask);
-  void OnEnableProtectionResult(const EnableProtectionCallback& callback,
+  void OnEnableProtectionResult(EnableProtectionCallback callback,
                                 bool success);
 
   // Helper function to lazily create the |proxy_| and return it.

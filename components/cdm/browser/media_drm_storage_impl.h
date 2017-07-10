@@ -37,17 +37,14 @@ class MediaDrmStorageImpl final : public media::mojom::MediaDrmStorage,
 
   // media::mojom::MediaDrmStorage implementation.
   void Initialize(const url::Origin& origin) final;
-  void OnProvisioned(const OnProvisionedCallback& callback) final;
-  void SavePersistentSession(
-      const std::string& session_id,
-      media::mojom::SessionDataPtr session_data,
-      const SavePersistentSessionCallback& callback) final;
-  void LoadPersistentSession(
-      const std::string& session_id,
-      const LoadPersistentSessionCallback& callback) final;
-  void RemovePersistentSession(
-      const std::string& session_id,
-      const RemovePersistentSessionCallback& callback) final;
+  void OnProvisioned(OnProvisionedCallback callback) final;
+  void SavePersistentSession(const std::string& session_id,
+                             media::mojom::SessionDataPtr session_data,
+                             SavePersistentSessionCallback callback) final;
+  void LoadPersistentSession(const std::string& session_id,
+                             LoadPersistentSessionCallback callback) final;
+  void RemovePersistentSession(const std::string& session_id,
+                               RemovePersistentSessionCallback callback) final;
 
   // content::WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) final;

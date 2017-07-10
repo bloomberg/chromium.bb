@@ -30,7 +30,7 @@ MojoAudioOutputStreamProvider::~MojoAudioOutputStreamProvider() {
 void MojoAudioOutputStreamProvider::Acquire(
     mojom::AudioOutputStreamRequest stream_request,
     const AudioParameters& params,
-    const AcquireCallback& callback) {
+    AcquireCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (audio_output_) {
     LOG(ERROR) << "Output acquired twice.";
