@@ -261,7 +261,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
         mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
-        mNumberRollView.setString(R.plurals.accessibility_selected_items);
+        mNumberRollView.setString(R.plurals.selected_items);
 
         mOriginalContentInsetStart = getContentInsetStart();
         mOriginalContentInsetEnd = getContentInsetEnd();
