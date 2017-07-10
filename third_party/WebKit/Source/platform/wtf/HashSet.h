@@ -30,8 +30,9 @@ namespace WTF {
 struct IdentityExtractor;
 
 // Note: empty or deleted values are not allowed, using them may lead to
-// undefined behavior.  For pointer valuess this means that null pointers are
-// not allowed unless you supply custom traits.
+// undefined behavior. For pointer keys this means that null pointers are not
+// allowed; for integer keys 0 or -1 can't be used as a key. This restriction
+// can be lifted if you supply custom key traits.
 template <typename ValueArg,
           typename HashArg = typename DefaultHash<ValueArg>::Hash,
           typename TraitsArg = HashTraits<ValueArg>,
