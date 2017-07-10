@@ -91,11 +91,6 @@
       showcase::kClassForInstantiationKey : @"SCContentWidgetCoordinator",
       showcase::kUseCaseKey : @"Content Widget",
     },
-    @{
-      showcase::kClassForDisplayKey : @"TextBadgeView",
-      showcase::kClassForInstantiationKey : @"SCTextBadgeViewController",
-      showcase::kUseCaseKey : @"Text badge view",
-    },
   ];
 }
 
