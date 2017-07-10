@@ -41,6 +41,9 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   virtual GURL GetUrlWithFavicon(
       const ContentSuggestion::ID& suggestion_id) const = 0;
 
+  // Whether the service is explicity disabled.
+  virtual bool IsDisabled() const = 0;
+
  protected:
   RemoteSuggestionsProvider(Observer* observer);
 };

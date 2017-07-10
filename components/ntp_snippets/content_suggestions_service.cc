@@ -432,19 +432,27 @@ void ContentSuggestionsService::ReloadSuggestions() {
 }
 
 void ContentSuggestionsService::SetRemoteSuggestionsEnabled(bool enabled) {
-  pref_service_->SetBoolean(prefs::kEnableSnippets, enabled);
+  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
+  // remove by M62.
+  NOTREACHED();
 }
 
 bool ContentSuggestionsService::AreRemoteSuggestionsEnabled() const {
-  return pref_service_->GetBoolean(prefs::kEnableSnippets);
+  return !remote_suggestions_provider_->IsDisabled();
 }
 
 bool ContentSuggestionsService::AreRemoteSuggestionsManaged() const {
-  return pref_service_->IsManagedPreference(prefs::kEnableSnippets);
+  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
+  // remove by M62.
+  NOTREACHED();
+  return false;
 }
 
 bool ContentSuggestionsService::AreRemoteSuggestionsManagedByCustodian() const {
-  return pref_service_->IsPreferenceManagedByCustodian(prefs::kEnableSnippets);
+  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
+  // remove by M62.
+  NOTREACHED();
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
