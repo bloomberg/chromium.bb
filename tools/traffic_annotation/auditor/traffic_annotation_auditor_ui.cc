@@ -120,6 +120,9 @@ int main(int argc, char* argv[]) {
   if (!auditor.ParseClangToolRawOutput())
     return 1;
 
+  // Perform checks.
+  auditor.RunAllChecks();
+
   // Write the summary file.
   if (!summary_file.empty()) {
     const std::vector<AnnotationInstance>& annotation_instances =
@@ -178,17 +181,11 @@ int main(int argc, char* argv[]) {
                                     instance.proto.unique_id()),
                                 instance.proto.unique_id()));
     }
-    items.push_back(std::make_pair(
-        TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test"));
-    items.push_back(
-        std::make_pair(PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code,
-                       "test_partial"));
-    items.push_back(std::make_pair(
-        NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code, "undefined"));
-    DCHECK_EQ(NO_PARTIAL_TRAFFIC_ANNOTATION_YET.unique_id_hash_code,
-              NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code);
-    items.push_back(std::make_pair(
-        MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"));
+
+    const std::map<int, std::string> reserved_ids =
+        auditor.GetReservedUniqueIDs();
+    for (const auto& item : reserved_ids)
+      items.push_back(item);
 
     std::sort(items.begin(), items.end());
     for (const auto& item : items)

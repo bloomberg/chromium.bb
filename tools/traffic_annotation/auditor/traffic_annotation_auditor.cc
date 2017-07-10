@@ -28,6 +28,13 @@ uint32_t recursive_hash(const char* str, int N) {
     return (recursive_hash(str, N - 1) * 31 + str[N - 1]) % 138003713;
 }
 
+std::map<int, std::string> kReservedAnnotations = {
+    {TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test"},
+    {PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS.unique_id_hash_code, "test_partial"},
+    {NO_TRAFFIC_ANNOTATION_YET.unique_id_hash_code, "undefined"},
+    {MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code, "missing"},
+};
+
 // This class receives parsing errors from google::protobuf::TextFormat::Parser
 // which is used during protobuf deserialization.
 class SimpleErrorCollector : public google::protobuf::io::ErrorCollector {
@@ -73,11 +80,21 @@ AuditorResult::AuditorResult(ResultType type,
                              const std::string& message,
                              const std::string& file_path,
                              int line)
-    : type_(type), message_(message), file_path_(file_path), line_(line) {
-  DCHECK(type == AuditorResult::ResultType::RESULT_OK ||
+    : type_(type), file_path_(file_path), line_(line) {
+  DCHECK(line != kNoCodeLineSpecified ||
+         type == AuditorResult::ResultType::RESULT_OK ||
          type == AuditorResult::ResultType::RESULT_IGNORE ||
          type == AuditorResult::ResultType::ERROR_FATAL ||
-         line != kNoCodeLineSpecified);
+         type ==
+             AuditorResult::ResultType::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE);
+  DCHECK(!message.empty() || type == AuditorResult::ResultType::RESULT_OK ||
+         type == AuditorResult::ResultType::RESULT_IGNORE ||
+         type == AuditorResult::ResultType::ERROR_MISSING ||
+         type == AuditorResult::ResultType::ERROR_NO_ANNOTATION ||
+         type ==
+             AuditorResult::ResultType::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE);
+  if (!message.empty())
+    details_.push_back(message);
 };
 
 AuditorResult::AuditorResult(ResultType type, const std::string& message)
@@ -92,10 +109,23 @@ AuditorResult::AuditorResult(ResultType type)
                                    std::string(),
                                    kNoCodeLineSpecified) {}
 
+AuditorResult::AuditorResult(const AuditorResult& other)
+    : type_(other.type_),
+      details_(other.details_),
+      file_path_(other.file_path_),
+      line_(other.line_){};
+
+AuditorResult::~AuditorResult() {}
+
+void AuditorResult::AddDetail(const std::string& message) {
+  details_.push_back(message);
+}
+
 std::string AuditorResult::ToText() const {
   switch (type_) {
     case AuditorResult::ResultType::ERROR_FATAL:
-      return message_;
+      DCHECK(details_.size());
+      return details_[0];
 
     case AuditorResult::ResultType::ERROR_MISSING:
       return base::StringPrintf("Missing annotation in '%s', line %i.",
@@ -106,10 +136,32 @@ std::string AuditorResult::ToText() const {
                                 file_path_.c_str(), line_);
 
     case AuditorResult::ResultType::ERROR_SYNTAX: {
-      std::string flat_message(message_);
+      DCHECK(details_.size());
+      std::string flat_message(details_[0]);
       std::replace(flat_message.begin(), flat_message.end(), '\n', ' ');
       return base::StringPrintf("Syntax error in '%s': %s", file_path_.c_str(),
                                 flat_message.c_str());
+    }
+
+    case AuditorResult::ResultType::ERROR_RESERVED_UNIQUE_ID_HASH_CODE:
+      DCHECK(details_.size());
+      return base::StringPrintf(
+          "Unique id '%s' in '%s:%i' has a hash code similar to a reserved "
+          "word and should be changed.",
+          details_[0].c_str(), file_path_.c_str(), line_);
+
+    case AuditorResult::ResultType::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE: {
+      DCHECK(details_.size());
+      std::string error_text(
+          "The following annotations have similar unique id "
+          "hash codes and should be updated: ");
+      for (const std::string& duplicate : details_)
+        error_text += duplicate + ", ";
+      error_text.pop_back();
+      error_text.pop_back();
+      error_text += ".";
+
+      return error_text;
     }
 
     default:
@@ -325,8 +377,11 @@ bool TrafficAnnotationAuditor::RunClangTool(
 }
 
 bool TrafficAnnotationAuditor::IsWhitelisted(
-    const std::string file_path,
-    const std::vector<std::string>& whitelist) {
+    const std::string& file_path,
+    AuditorException::ExceptionType whitelist_type) {
+  const std::vector<std::string>& whitelist =
+      ignore_list_[static_cast<int>(whitelist_type)];
+
   for (const std::string& ignore_path : whitelist) {
     if (!strncmp(file_path.c_str(), ignore_path.c_str(), ignore_path.length()))
       return true;
@@ -377,12 +432,10 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
                  : new_call.Deserialize(lines, current, end_line);
 
     if (!IsWhitelisted(result.file_path(),
-                       ignore_list_[static_cast<int>(
-                           AuditorException::ExceptionType::ALL)]) &&
+                       AuditorException::ExceptionType::ALL) &&
         (result.type() != AuditorResult::ResultType::ERROR_MISSING ||
          !IsWhitelisted(result.file_path(),
-                        ignore_list_[static_cast<int>(
-                            AuditorException::ExceptionType::MISSING)]))) {
+                        AuditorException::ExceptionType::MISSING))) {
       switch (result.type()) {
         case AuditorResult::ResultType::RESULT_OK: {
           if (annotation_block)
@@ -446,4 +499,55 @@ bool TrafficAnnotationAuditor::LoadWhiteList() {
   LOG(ERROR)
       << "Could not read tools/traffic_annotation/auditor/white_list.txt";
   return false;
+}
+
+const std::map<int, std::string>&
+TrafficAnnotationAuditor::GetReservedUniqueIDs() {
+  return kReservedAnnotations;
+}
+
+void TrafficAnnotationAuditor::CheckDuplicateHashes() {
+  const std::map<int, std::string> reserved_ids = GetReservedUniqueIDs();
+
+  std::map<int, std::vector<unsigned int>> unique_ids;
+  for (unsigned int index = 0; index < extracted_annotations_.size(); index++) {
+    AnnotationInstance& instance = extracted_annotations_[index];
+
+    // If unique id's hash code is similar to a reserved id, add an error.
+    if (reserved_ids.find(instance.unique_id_hash_code) != reserved_ids.end()) {
+      errors_.push_back(AuditorResult(
+          AuditorResult::ResultType::ERROR_RESERVED_UNIQUE_ID_HASH_CODE,
+          instance.proto.unique_id(), instance.proto.source().file(),
+          instance.proto.source().line()));
+      continue;
+    }
+
+    // Find unique ids with similar hash codes.
+    if (unique_ids.find(instance.unique_id_hash_code) == unique_ids.end()) {
+      std::vector<unsigned> empty_list;
+      unique_ids.insert(
+          std::make_pair(instance.unique_id_hash_code, empty_list));
+    }
+    unique_ids[instance.unique_id_hash_code].push_back(index);
+  }
+
+  // Add error for unique ids with similar hash codes.
+  for (const auto& item : unique_ids) {
+    if (item.second.size() > 1) {
+      AuditorResult error(
+          AuditorResult::ResultType::ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE);
+      for (unsigned int index : item.second) {
+        error.AddDetail(base::StringPrintf(
+            "%s in '%s:%i'",
+            extracted_annotations_[index].proto.unique_id().c_str(),
+            extracted_annotations_[index].proto.source().file().c_str(),
+            extracted_annotations_[index].proto.source().line()));
+      }
+      errors_.push_back(error);
+    }
+  }
+}
+
+void TrafficAnnotationAuditor::RunAllChecks() {
+  CheckDuplicateHashes();
 }
