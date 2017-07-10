@@ -12,31 +12,37 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/exo/wm_helper.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_host_delegate.h"
 
+class Profile;
+
 namespace arc {
 
-class ArcBridgeService;
 class AXTreeSourceArc;
+class ArcBridgeService;
 
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
 // accessibility events and info via mojo interface and dispatch them to chrome
 // os components.
 class ArcAccessibilityHelperBridge
-    : public ArcService,
+    : public KeyedService,
       public mojom::AccessibilityHelperHost,
       public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
       public exo::WMHelper::ActivationObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer {
  public:
-  explicit ArcAccessibilityHelperBridge(ArcBridgeService* bridge_service);
+  ArcAccessibilityHelperBridge(Profile* profile,
+                               ArcBridgeService* arc_bridge_service);
   ~ArcAccessibilityHelperBridge() override;
+
+  // KeyedService overrides.
+  void Shutdown() override;
 
   // InstanceHolder<mojom::AccessibilityHelperInstance>::Observer overrides.
   void OnInstanceReady() override;
@@ -73,8 +79,9 @@ class ArcAccessibilityHelperBridge
   void OnWindowActivated(aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  Profile* const profile_;
+  ArcBridgeService* const arc_bridge_service_;
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
-
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>> package_name_to_tree_;
   std::map<std::string, std::set<int32_t>> package_name_to_task_ids_;
   int32_t current_task_id_;
