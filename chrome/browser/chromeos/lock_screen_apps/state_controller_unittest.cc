@@ -24,6 +24,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -325,6 +327,12 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
+    auto power_client = base::MakeUnique<chromeos::FakePowerManagerClient>();
+    power_manager_client_ = power_client.get();
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+    dbus_setter->SetPowerManagerClient(std::move(power_client));
+
     BrowserWithTestWindowTest::SetUp();
 
     session_manager_ = base::MakeUnique<session_manager::SessionManager>();
@@ -473,6 +481,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   TestingProfile* profile() { return &profile_; }
   TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
 
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return power_manager_client_;
+  }
+
   session_manager::SessionManager* session_manager() {
     return session_manager_.get();
   }
@@ -504,6 +516,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   // before running the loop, as that is the method that starts the state
   // controller.
   base::RunLoop ready_waiter_;
+
+  // Power manager client set by the test - the power manager client instance is
+  // owned by DBusThreadManager.
+  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
@@ -942,6 +958,51 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnSessionUnlock) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(app_window()->closed());
+}
+
+TEST_F(LockScreenAppStateTest, CloseAppWindowOnSuspend) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  power_manager_client()->SendSuspendImminent();
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(app_window()->closed());
+}
+
+TEST_F(LockScreenAppStateTest, CloseAppWindowOnScreenOff) {
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  power_manager_client()->SendBrightnessChanged(10 /* level */,
+                                                true /* user_initiated */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(app_window()->closed());
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
+
+  power_manager_client()->SendBrightnessChanged(0 /* level */,
+                                                true /* user_initiated */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(app_window()->closed());
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
+
+  power_manager_client()->SendBrightnessChanged(10 /* level */,
+                                                false /* user_initiated */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(app_window()->closed());
+  EXPECT_EQ(TrayActionState::kActive,
+            state_controller()->GetLockScreenNoteState());
+
+  power_manager_client()->SendBrightnessChanged(0 /* level */,
+                                                false /* user_initiated */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(app_window()->closed());
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
 }
 
 TEST_F(LockScreenAppStateTest, AppWindowClosedOnAppUnload) {
