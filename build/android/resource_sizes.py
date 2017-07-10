@@ -771,11 +771,6 @@ def _VerifyLibBuildIdsMatch(tools_prefix, *so_files):
                     'Your output directory is likely stale.')
 
 
-def _ReadBuildVars(output_dir):
-  with open(os.path.join(output_dir, 'build_vars.txt')) as f:
-    return dict(l.replace('//', '').rstrip().split('=', 1) for l in f)
-
-
 def main():
   argparser = argparse.ArgumentParser(description='Print APK size metrics.')
   argparser.add_argument('--min-pak-resource-size', type=int, default=20*1024,
@@ -814,7 +809,7 @@ def main():
   if not args.no_output_dir:
     constants.CheckOutputDirectory()
     devil_chromium.Initialize()
-    build_vars = _ReadBuildVars(constants.GetOutDirectory())
+    build_vars = build_utils.ReadBuildVars()
     tools_prefix = os.path.join(constants.GetOutDirectory(),
                                 build_vars['android_tool_prefix'])
   else:
