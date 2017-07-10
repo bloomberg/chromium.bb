@@ -29,7 +29,7 @@ class PlatformSensorProvider {
      * creation and @see android.hardware.SensorEventListener registration.
      * @see android.hardware.SensorManager
      */
-    private final SensorManager mSensorManager;
+    private SensorManager mSensorManager;
 
     /**
      * Thread that is handling all sensor events.
@@ -133,6 +133,14 @@ class PlatformSensorProvider {
     @CalledByNative
     protected static PlatformSensorProvider create() {
         return new PlatformSensorProvider(ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * Sets |mSensorManager| to null for testing purposes.
+     */
+    @CalledByNative
+    protected void setSensorManagerToNullForTesting() {
+        mSensorManager = null;
     }
 
     /**

@@ -18,6 +18,8 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
 
   static PlatformSensorProviderAndroid* GetInstance();
 
+  void SetSensorManagerToNullForTesting();
+
  protected:
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
