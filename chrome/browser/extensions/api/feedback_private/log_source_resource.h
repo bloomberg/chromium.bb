@@ -9,14 +9,14 @@
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/system_logs/single_log_source.h"
 #include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 
 namespace extensions {
 
-// Holds a SingleLogSource object that is used by an extension using the
+// Holds a SystemLogsSource object that is used by an extension using the
 // feedbackPrivate API.
 class LogSourceResource : public ApiResource {
  public:
@@ -24,18 +24,18 @@ class LogSourceResource : public ApiResource {
       content::BrowserThread::UI;
 
   LogSourceResource(const std::string& extension_id,
-                    std::unique_ptr<system_logs::SingleLogSource> source,
+                    std::unique_ptr<system_logs::SystemLogsSource> source,
                     base::Closure unregister_callback_);
 
   ~LogSourceResource() override;
 
-  system_logs::SingleLogSource* GetLogSource() const { return source_.get(); }
+  system_logs::SystemLogsSource* GetLogSource() const { return source_.get(); }
 
  private:
   friend class ApiResourceManager<LogSourceResource>;
   static const char* service_name() { return "LogSourceResource"; }
 
-  std::unique_ptr<system_logs::SingleLogSource> source_;
+  std::unique_ptr<system_logs::SystemLogsSource> source_;
 
   // This unregisters the LogSourceResource from a LogSourceAccessManager when
   // this resource is cleaned up. Just pass in a base::Closure to the

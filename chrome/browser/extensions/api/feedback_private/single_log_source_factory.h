@@ -8,22 +8,23 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "chrome/browser/chromeos/system_logs/single_log_source.h"
+#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "chrome/common/extensions/api/feedback_private.h"
 
 namespace extensions {
 
-// Provides a way to override the creation of a new SingleLogSource during
+// Provides a way to override the creation of a new Single*LogSource during
 // testing.
 class SingleLogSourceFactory {
  public:
   using CreateCallback =
-      base::Callback<std::unique_ptr<system_logs::SingleLogSource>(
-          system_logs::SingleLogSource::SupportedSource)>;
+      base::Callback<std::unique_ptr<system_logs::SystemLogsSource>(
+          api::feedback_private::LogSource)>;
 
-  // Returns a SingleLogSource with source type of |type|. The caller must take
-  // ownership of the returned object.
-  static std::unique_ptr<system_logs::SingleLogSource> CreateSingleLogSource(
-      system_logs::SingleLogSource::SupportedSource type);
+  // Returns a Single*LogSource with source type corresponding to |type|. The
+  // caller must takeownership of the returned object.
+  static std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
+      api::feedback_private::LogSource type);
 
   // Pass in a callback that gets executed instead of the default behavior of
   // CreateSingleLogSource. Does not take ownership of |callback|. When done

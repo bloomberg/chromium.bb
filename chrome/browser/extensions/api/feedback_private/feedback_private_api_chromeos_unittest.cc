@@ -18,12 +18,12 @@ namespace extensions {
 
 namespace {
 
+using api::feedback_private::LogSource;
 using api::feedback_private::ReadLogSourceResult;
 using api::feedback_private::ReadLogSourceParams;
 using base::TimeDelta;
-using system_logs::SingleLogSource;
 using system_logs::SystemLogsResponse;
-using SupportedSource = system_logs::SingleLogSource::SupportedSource;
+using system_logs::SystemLogsSource;
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
@@ -41,12 +41,12 @@ std::string ParamsToJSON(const ReadLogSourceParams& params) {
   return params_json_string;
 }
 
-// A dummy SingleLogSource that does not require real system logs to be
+// A dummy SystemLogsSource that does not require real system logs to be
 // available during testing.
-class TestSingleLogSource : public SingleLogSource {
+class TestSingleLogSource : public SystemLogsSource {
  public:
-  explicit TestSingleLogSource(SupportedSource type)
-      : SingleLogSource(type), call_count_(0) {}
+  explicit TestSingleLogSource(LogSource type)
+      : SystemLogsSource(ToString(type)), call_count_(0) {}
 
   ~TestSingleLogSource() override = default;
 
@@ -66,7 +66,7 @@ class TestSingleLogSource : public SingleLogSource {
 
     // Do not directly pass the result to the callback, because that's not how
     // log sources actually work. Instead, simulate the asynchronous operation
-    // of a SingleLogSource by invoking the callback separately.
+    // of a SystemLogsSource by invoking the callback separately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, base::Owned(result_map)));
   }
@@ -74,7 +74,7 @@ class TestSingleLogSource : public SingleLogSource {
   // Instantiates a new instance of this class. Does not retain ownership. Used
   // to create a Callback that can be used to override the default behavior of
   // SingleLogSourceFactory.
-  static std::unique_ptr<SingleLogSource> Create(SupportedSource type) {
+  static std::unique_ptr<SystemLogsSource> Create(LogSource type) {
     return base::MakeUnique<TestSingleLogSource>(type);
   }
 

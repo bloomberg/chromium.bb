@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/system_logs/single_log_source.h"
+#include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -34,13 +34,13 @@ const base::Time* g_chrome_start_time_for_test = nullptr;
 // base system log directory path. In the future, if non-file source types are
 // added, this function should return an empty file path.
 base::FilePath GetLogFileSourceRelativeFilePath(
-    SingleLogSource::SupportedSource source) {
+    SingleLogFileLogSource::SupportedSource source) {
   switch (source) {
-    case SingleLogSource::SupportedSource::kMessages:
+    case SingleLogFileLogSource::SupportedSource::kMessages:
       return base::FilePath("messages");
-    case SingleLogSource::SupportedSource::kUiLatest:
+    case SingleLogFileLogSource::SupportedSource::kUiLatest:
       return base::FilePath("ui/ui.LATEST");
-    case SingleLogSource::SupportedSource::kAtrusLog:
+    case SingleLogFileLogSource::SupportedSource::kAtrusLog:
       return base::FilePath("atrus.log");
   }
   NOTREACHED();
@@ -134,7 +134,7 @@ size_t GetFirstFileOffsetWithTime(const base::FilePath& path,
 
 }  // namespace
 
-SingleLogSource::SingleLogSource(SupportedSource source_type)
+SingleLogFileLogSource::SingleLogFileLogSource(SupportedSource source_type)
     : SystemLogsSource(GetLogFileSourceRelativeFilePath(source_type).value()),
       source_type_(source_type),
       log_file_dir_path_(kDefaultSystemLogDirPath),
@@ -142,15 +142,15 @@ SingleLogSource::SingleLogSource(SupportedSource source_type)
       file_inode_(0),
       weak_ptr_factory_(this) {}
 
-SingleLogSource::~SingleLogSource() {}
+SingleLogFileLogSource::~SingleLogFileLogSource() {}
 
 // static
-void SingleLogSource::SetChromeStartTimeForTesting(
+void SingleLogFileLogSource::SetChromeStartTimeForTesting(
     const base::Time* start_time) {
   g_chrome_start_time_for_test = start_time;
 }
 
-void SingleLogSource::Fetch(const SysLogsSourceCallback& callback) {
+void SingleLogFileLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -158,17 +158,18 @@ void SingleLogSource::Fetch(const SysLogsSourceCallback& callback) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
       base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND),
-      base::Bind(&SingleLogSource::ReadFile, weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&SingleLogFileLogSource::ReadFile,
+                 weak_ptr_factory_.GetWeakPtr(),
                  kMaxNumAllowedLogRotationsDuringFileRead, response),
       base::Bind(callback, base::Owned(response)));
 }
 
-base::FilePath SingleLogSource::GetLogFilePath() const {
+base::FilePath SingleLogFileLogSource::GetLogFilePath() const {
   return base::FilePath(log_file_dir_path_).Append(source_name());
 }
 
-void SingleLogSource::ReadFile(size_t num_rotations_allowed,
-                               SystemLogsResponse* result) {
+void SingleLogFileLogSource::ReadFile(size_t num_rotations_allowed,
+                                      SystemLogsResponse* result) {
   // Attempt to open the file if it was not previously opened.
   if (!file_.IsValid()) {
     file_.Initialize(GetLogFilePath(),
