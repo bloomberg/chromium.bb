@@ -4,7 +4,6 @@
 
 #include "ui/gfx/mac/io_surface.h"
 
-#include <AvailabilityMacros.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -17,15 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space_switches.h"
-
-#if defined(MAC_OS_X_VERSION_10_13) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_13
-// https://crbug.com/729896, https://openradar.appspot.com/32883726
-#undef CGColorSpaceCopyICCProfile
-extern "C" {
-CFDataRef CGColorSpaceCopyICCProfile(CGColorSpaceRef);
-}  // extern "C"
-#endif  // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_13
 
 namespace gfx {
 
