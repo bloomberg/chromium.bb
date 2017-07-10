@@ -98,12 +98,6 @@ class PLATFORM_EXPORT IntPoint {
   explicit IntPoint(
       const CGPoint&);  // don't do this implicitly since it's lossy
   operator CGPoint() const;
-
-#if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-  explicit IntPoint(
-      const NSPoint&);  // don't do this implicitly since it's lossy
-  operator NSPoint() const;
-#endif
 #endif
 
   String ToString() const;
