@@ -16,6 +16,7 @@
 #include "base/i18n/timezone.h"
 #include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1115,8 +1116,7 @@ bool PersonalDataManager::IsCountryOfInterest(const std::string& country_code)
         AutofillCountry::CountryCodeForLocale(app_locale())));
   }
 
-  return std::find(country_codes.begin(), country_codes.end(),
-                   base::ToLowerASCII(country_code)) != country_codes.end();
+  return base::ContainsValue(country_codes, base::ToLowerASCII(country_code));
 }
 
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
@@ -1384,8 +1384,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
     std::string country_code = base::ToUpperASCII(base::UTF16ToASCII(
         profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
 
-    if (std::find(country_codes.begin(), country_codes.end(), country_code) !=
-            country_codes.end()) {
+    if (base::ContainsValue(country_codes, country_code)) {
       // Verified profiles count 100x more than unverified ones.
       votes[country_code] += profiles[i]->IsVerified() ? 100 : 1;
     }

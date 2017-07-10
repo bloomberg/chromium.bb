@@ -111,9 +111,7 @@ bool IsElementInControlElementSet(
     return false;
   const WebFormControlElement form_control_element =
       element.ToConst<WebFormControlElement>();
-  return std::find(control_elements.begin(),
-                   control_elements.end(),
-                   form_control_element) != control_elements.end();
+  return base::ContainsValue(control_elements, form_control_element);
 }
 
 bool IsElementInsideFormOrFieldSet(const WebElement& element) {
