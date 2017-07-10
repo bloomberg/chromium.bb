@@ -1,6 +1,9 @@
 {% from 'macros.tmpl' import license %}
 {{license()}}
 
+#ifndef CSSValueIDMappingsGenerated_h
+#define CSSValueIDMappingsGenerated_h
+
 #include "base/logging.h"
 #include "core/CSSValueKeywords.h"
 #include "core/ComputedStyleBaseConstants.h"
@@ -51,3 +54,5 @@ inline CSSValueID platformEnumToCSSValueIDGenerated({{enum_name}} v) {
 } // namespace detail
 
 } // namespace blink
+
+#endif  // CSSValueIDMappingsGenerated_h
