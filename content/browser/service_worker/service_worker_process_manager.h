@@ -60,9 +60,11 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   // Returns a reference to a running process suitable for starting the service
   // worker described by |emdedded_worker_id|, |pattern|, and |script_url|.
   //
-  // AllocateWorkerProcess() tries to return an existing process. If one is not
-  // available, or |can_use_existing_process| is false, it will create a new
-  // one.
+  // AllocateWorkerProcess() tries to return a process that already exists in
+  // this ServiceWorkerProcessManager's map of processes, populated via
+  // AddProcessReferenceToPattern().  If one is not found, or
+  // |can_use_existing_process| is false, it will instead use SiteInstance to
+  // get a process, possibly creating a new one.
   //
   // If SERVICE_WORKER_OK is returned, |out_info| contains information about the
   // process.
@@ -79,6 +81,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
 
   // Drops a reference to a process that was running a Service Worker, and its
   // SiteInstance.  This must match a call to AllocateWorkerProcess.
+  //
+  // Called on the UI thread.
   void ReleaseWorkerProcess(int embedded_worker_id);
 
   // Sets a single process ID that will be used for all embedded workers.  This
