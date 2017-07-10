@@ -1357,6 +1357,7 @@ test("browser_tests") {
       "../browser/net/sdch_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
       "../browser/ntp_snippets/content_suggestions_service_factory_browsertest.cc",
+      "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
       "../browser/page_load_metrics/observers/ads_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer_browsertest.cc",
