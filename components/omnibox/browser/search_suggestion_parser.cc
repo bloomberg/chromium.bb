@@ -279,13 +279,9 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
       formatted_url_.find(input_text) : prefix->prefix.length();
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
                    (!prefix || (match_start != 0));
-  const url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
-      ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
-
   base::string16 match_contents = url_formatter::FormatUrl(
-      url_, format_types, net::UnescapeRule::SPACES, nullptr,
-      nullptr, &match_start);
+      url_, AutocompleteMatch::GetFormatTypes(trim_http),
+      net::UnescapeRule::SPACES, nullptr, nullptr, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
   if (match_start == base::string16::npos)

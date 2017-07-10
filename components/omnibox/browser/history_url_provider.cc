@@ -571,10 +571,10 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // Trim off "http://" if the user didn't type it.
     DCHECK(!trim_http ||
            !AutocompleteInput::HasHTTPScheme(input.text()));
-    auto format_types = AutocompleteMatch::GetFormatTypes(false);
     base::string16 display_string(url_formatter::FormatUrl(
-        destination_url, format_types, net::UnescapeRule::SPACES, nullptr,
-        nullptr, nullptr));
+        destination_url,
+        url_formatter::kFormatUrlOmitAll & ~url_formatter::kFormatUrlOmitHTTP,
+        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -1143,11 +1143,9 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   size_t inline_autocomplete_offset =
       history_match.input_location + params.input.text().length();
 
-  auto format_types = AutocompleteMatch::GetFormatTypes(
-      params.trim_http && !history_match.match_in_scheme);
-  // Never omit HTTPS from fill_into_edit lest it be misinterpreted.
-  auto fill_into_edit_format_types =
-      format_types & ~url_formatter::kFormatUrlExperimentalOmitHTTPS;
+  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitAll;
+  if (!params.trim_http || history_match.match_in_scheme)
+    fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
@@ -1175,6 +1173,8 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
+  const auto format_types = AutocompleteMatch::GetFormatTypes(
+      params.trim_http && !history_match.match_in_scheme);
   match.contents = url_formatter::FormatUrl(info.url(), format_types,
                                             net::UnescapeRule::SPACES, nullptr,
                                             nullptr, &match_start);

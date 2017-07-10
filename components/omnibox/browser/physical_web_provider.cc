@@ -233,10 +233,8 @@ void PhysicalWebProvider::ConstructZeroSuggestMatches(
         AutocompleteMatchType::PHYSICAL_WEB);
     match.destination_url = url;
 
-    // Physical Web results should omit http:// (but not https://) and never
-    // appear bold.
-    match.contents = url_formatter::FormatUrl(url,
-        url_formatter::kFormatUrlOmitHTTP, net::UnescapeRule::SPACES,
+    match.contents = url_formatter::FormatUrl(
+        url, AutocompleteMatch::GetFormatTypes(true), net::UnescapeRule::SPACES,
         nullptr, nullptr, nullptr);
     match.contents_class.push_back(
         ACMatchClassification(0, ACMatchClassification::URL));
