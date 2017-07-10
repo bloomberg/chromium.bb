@@ -493,6 +493,20 @@ class ClientManager {
                               : params.mSpeculationMode;
     }
 
+    /**
+     * Returns whether an origin is first-party with respect to a session, that is if the
+     * application linked to the session has a relation with the provided origin. This does not
+     * calls OriginVerifier, but only checks the cached relations.
+     *
+     * @param session The session.
+     * @param origin Origin to verify
+     */
+    public synchronized boolean isFirstPartyOriginForSession(
+            CustomTabsSessionToken session, Uri origin) {
+        SessionParams params = mSessionParams.get(session);
+        return params == null ? false : OriginVerifier.isValidOrigin(params.packageName, origin);
+    }
+
     /** Tries to bind to a client to keep it alive, and returns true for success. */
     public synchronized boolean keepAliveForSession(CustomTabsSessionToken session, Intent intent) {
         // When an application is bound to a service, its priority is raised to
