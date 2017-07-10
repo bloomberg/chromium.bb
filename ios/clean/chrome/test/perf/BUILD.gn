@@ -73,4 +73,8 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
   } else {
     extra_substitutions += [ "CHROMIUM_BUNDLE_ID=gtest.$target_name" ]
   }
+
+  if (ios_encryption_export_compliance_code != "") {
+    extra_substitutions += [ "ENCRYPTION_EXPORT_COMPLIANCE_CODE=$ios_encryption_export_compliance_code" ]
+  }
 }
