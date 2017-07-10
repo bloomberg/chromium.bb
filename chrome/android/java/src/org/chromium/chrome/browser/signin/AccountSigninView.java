@@ -242,6 +242,7 @@ public class AccountSigninView extends FrameLayout {
 
         final List<String> oldAccountNames = mAccountNames;
         final AlertDialog updatingGmsDialog;
+        final long dialogShowTime = SystemClock.elapsedRealtime();
 
         if (mIsGooglePlayServicesOutOfDate) {
             updatingGmsDialog = new AlertDialog.Builder(getContext())
@@ -258,6 +259,8 @@ public class AccountSigninView extends FrameLayout {
             public void onResult(List<String> result) {
                 if (updatingGmsDialog != null) {
                     updatingGmsDialog.dismiss();
+                    RecordHistogram.recordTimesHistogram("Signin.AndroidGmsUpdatingDialogShownTime",
+                            SystemClock.elapsedRealtime() - dialogShowTime, TimeUnit.MILLISECONDS);
                 }
                 mIsGooglePlayServicesOutOfDate = false;
 
