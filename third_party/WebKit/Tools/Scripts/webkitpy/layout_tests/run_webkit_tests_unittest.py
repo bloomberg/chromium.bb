@@ -1142,7 +1142,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # The run exit code is 0, indicating success; since we're resetting
         # baselines, it's OK for actual results to not match baselines.
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         self.assert_baselines(
             file_list, log_stream,
             'failures/unexpected/text-image-checksum',
@@ -1177,7 +1177,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 9)
+        self.assertEqual(len(file_list), 8)
         self.assert_baselines(
             file_list, log_stream,
             'failures/unexpected/missing_text', ['.txt'])
@@ -1208,7 +1208,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         self.assert_baselines(
             file_list, log_stream,
             'platform/test-mac-mac10.10/failures/unexpected/text-image-checksum',
@@ -1223,7 +1223,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 6)
+        self.assertEqual(len(file_list), 5)
         self.assert_baselines(
             file_list, log_stream, 'passes/reftest', expected_extensions=[])
 
@@ -1238,7 +1238,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 7)
+        self.assertEqual(len(file_list), 6)
         self.assert_baselines(
             file_list, log_stream, 'passes/reftest',
             expected_extensions=['.txt'])
@@ -1261,7 +1261,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         file_list = host.filesystem.written_files.keys()
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         # We should create new image baseline only.
         self.assert_baselines(
             file_list, log_stream,
@@ -1296,7 +1296,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         file_list = host.filesystem.written_files.keys()
         # Exclude the removed file.
         file_list.remove(flag_specific_baseline_txt)
-        self.assertEqual(len(file_list), 8)
+        self.assertEqual(len(file_list), 7)
         # We should create new image baseline only.
         self.assert_baselines(
             file_list, log_stream,

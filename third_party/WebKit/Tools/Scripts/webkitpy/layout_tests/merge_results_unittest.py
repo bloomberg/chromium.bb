@@ -543,12 +543,6 @@ class JSONTestResultsMerger(unittest.TestCase):
 
 class LayoutTestDirMergerTests(unittest.TestCase):
 
-    maxDiff = None
-
-    # Common HTML files every shard has.
-    dashboard_html = '<html><body>Dashboard would be here.</body></html>'
-    dashboard_css = '.css { value = would be here }'
-
     # JSON files for shard 1
     # Shard1 has the following tests;
     #   testdir1/test1.html
@@ -784,8 +778,6 @@ ADD_RESULTS({
         # Files for shard0
         '/shards/0/layout-test-results/access_log.txt': shard0_access_log,
         '/shards/0/layout-test-results/archived_results.json': shard0_archived_results_json,
-        '/shards/0/layout-test-results/dashboard.css': dashboard_css,
-        '/shards/0/layout-test-results/dashboard.html': dashboard_html,
         '/shards/0/layout-test-results/error_log.txt': shard0_error_log,
         '/shards/0/layout-test-results/failing_results.json': "ADD_RESULTS(" + shard0_output_json + ");",
         '/shards/0/layout-test-results/full_results.json': shard0_output_json,
@@ -810,8 +802,6 @@ ADD_RESULTS({
         # Files for shard1
         '/shards/1/layout-test-results/access_log.txt': shard1_access_log,
         '/shards/1/layout-test-results/archived_results.json': shard1_archived_results_json,
-        '/shards/1/layout-test-results/dashboard.css': dashboard_css,
-        '/shards/1/layout-test-results/dashboard.html': dashboard_html,
         '/shards/1/layout-test-results/error_log.txt': shard1_error_log,
         '/shards/1/layout-test-results/failing_results.json': "ADD_RESULTS(" + shard1_output_json + ");",
         '/shards/1/layout-test-results/full_results.json': shard1_output_json,
@@ -1024,8 +1014,6 @@ ADD_RESULTS({
     layout_test_output_filesystem = {
         '/out/layout-test-results/access_log.txt': output_access_log,
         '/out/layout-test-results/archived_results.json': output_archived_results_json,
-        '/out/layout-test-results/dashboard.css': dashboard_css,
-        '/out/layout-test-results/dashboard.html': dashboard_html,
         '/out/layout-test-results/error_log.txt': output_error_log,
         '/out/layout-test-results/failing_results.json': "ADD_RESULTS(" + output_output_json + ");",
         '/out/layout-test-results/full_results.json': output_output_json,
