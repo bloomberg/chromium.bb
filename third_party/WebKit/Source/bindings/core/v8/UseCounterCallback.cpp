@@ -121,6 +121,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kPromiseConstructorReturnedUndefined:
       blink_feature = WebFeature::kV8PromiseConstructorReturnedUndefined;
       break;
+    case v8::Isolate::kConstructorNonUndefinedPrimitiveReturn:
+      blink_feature = WebFeature::kV8ConstructorNonUndefinedPrimitiveReturn;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

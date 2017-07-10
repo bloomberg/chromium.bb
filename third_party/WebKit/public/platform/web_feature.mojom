@@ -1589,6 +1589,7 @@ enum WebFeature {
   kLinearAccelerationSensorConstructor = 2051,
   kReportUriMultipleEndpoints = 2052,
   kReportUriSingleEndpoint = 2053,
+  kV8ConstructorNonUndefinedPrimitiveReturn = 2054,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
