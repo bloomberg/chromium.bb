@@ -30,7 +30,7 @@ RelativeOrientationSensor::RelativeOrientationSensor(
     : OrientationSensor(execution_context,
                         options,
                         exception_state,
-                        SensorType::RELATIVE_ORIENTATION) {}
+                        SensorType::RELATIVE_ORIENTATION_QUATERNION) {}
 
 DEFINE_TRACE(RelativeOrientationSensor) {
   OrientationSensor::Trace(visitor);

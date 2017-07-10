@@ -74,7 +74,7 @@ struct SensorReading {
   // PRESSURE:
   // values[0]: atmospheric pressure in hPa (millibar).
   //
-  // ABSOLUTE_ORIENTATION:
+  // ABSOLUTE_ORIENTATION_QUATERNION:
   // values[0]: x value of a quaternion representing the orientation of the
   // device in 3D space.
   // values[1]: y value of a quaternion representing the orientation of the
@@ -84,7 +84,7 @@ struct SensorReading {
   // values[3]: w value of a quaternion representing the orientation of the
   // device in 3D space.
   //
-  // RELATIVE_ORIENTATION:
+  // RELATIVE_ORIENTATION_QUATERNION:
   // (Identical to ABSOLUTE_ORIENTATION except that it doesn't use the
   // geomagnetic field.)
   // values[0]: x value of a quaternion representing the orientation of the

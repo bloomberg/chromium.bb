@@ -159,9 +159,9 @@ public class PlatformSensorAndProviderTest {
         verify(mSensorManager).getSensorList(Sensor.TYPE_GYROSCOPE);
         provider.createSensor(SensorType.MAGNETOMETER);
         verify(mSensorManager).getSensorList(Sensor.TYPE_MAGNETIC_FIELD);
-        provider.createSensor(SensorType.ABSOLUTE_ORIENTATION);
+        provider.createSensor(SensorType.ABSOLUTE_ORIENTATION_QUATERNION);
         verify(mSensorManager).getSensorList(Sensor.TYPE_ROTATION_VECTOR);
-        provider.createSensor(SensorType.RELATIVE_ORIENTATION);
+        provider.createSensor(SensorType.RELATIVE_ORIENTATION_QUATERNION);
         verify(mSensorManager).getSensorList(Sensor.TYPE_GAME_ROTATION_VECTOR);
     }
 

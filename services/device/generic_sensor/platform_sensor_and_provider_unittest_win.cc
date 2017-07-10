@@ -678,12 +678,13 @@ TEST_F(PlatformSensorAndProviderTestWin,
        CheckDeviceOrientationReadingConversion) {
   mojo::ScopedSharedBufferHandle handle =
       PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
-  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
-      sizeof(SensorReadingSharedBuffer),
-      SensorReadingSharedBuffer::GetOffset(SensorType::ABSOLUTE_ORIENTATION));
+  mojo::ScopedSharedBufferMapping mapping =
+      handle->MapAtOffset(sizeof(SensorReadingSharedBuffer),
+                          SensorReadingSharedBuffer::GetOffset(
+                              SensorType::ABSOLUTE_ORIENTATION_QUATERNION));
 
   SetSupportedSensor(SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION);
-  auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION);
+  auto sensor = CreateSensor(SensorType::ABSOLUTE_ORIENTATION_QUATERNION);
   EXPECT_TRUE(sensor);
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
