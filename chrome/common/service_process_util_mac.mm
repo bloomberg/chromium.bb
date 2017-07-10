@@ -29,14 +29,6 @@
 #include "components/version_info/version_info.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 
-@interface NSFileManager (YosemiteSDK)
-- (BOOL)getRelationship:(NSURLRelationship*)outRelationship
-            ofDirectory:(NSSearchPathDirectory)directory
-               inDomain:(NSSearchPathDomainMask)domainMask
-            toItemAtURL:(NSURL*)url
-                  error:(NSError**)error;
-@end
-
 using ::base::FilePathWatcher;
 
 namespace {
@@ -363,11 +355,7 @@ void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
     // 10.8, but didn't add getRelationship:... until 10.10.  So fall back to
     // the deprecated function while running on 10.9 (and delete the else block
     // when Chromium requires OS X 10.10+).
-    if ([file_manager respondsToSelector:@selector(getRelationship:
-                                                       ofDirectory:
-                                                          inDomain:
-                                                       toItemAtURL:
-                                                             error:)]) {
+    if (@available(macOS 10.10, *)) {
       NSURLRelationship relationship;
       if ([file_manager getRelationship:&relationship
                             ofDirectory:NSTrashDirectory
