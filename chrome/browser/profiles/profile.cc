@@ -143,14 +143,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kSessionExitType, std::string());
   registry->RegisterInt64Pref(prefs::kSiteEngagementLastUpdateTime, 0,
                               PrefRegistry::LOSSY_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
-                                false);
   registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);
-  registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   // This pref is intentionally outside the above #if. That flag corresponds
   // to the Notifier extension and does not gate the launcher page.
   // TODO(skare): Remove or rename ENABLE_GOOGLE_NOW: http://crbug.com/459827.

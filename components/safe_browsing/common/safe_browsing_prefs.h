@@ -13,22 +13,23 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace prefs {
+// Boolean that is true when SafeBrowsing is enabled.
+extern const char kSafeBrowsingEnabled[];
+
+// Boolean that tell us whether Safe Browsing extended reporting is enabled.
+extern const char kSafeBrowsingExtendedReportingEnabled[];
+
 // Boolean that tells us whether users are given the option to opt in to Safe
 // Browsing extended reporting. This is exposed as a preference that can be
 // overridden by enterprise policy.
 extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
 
-// Boolean that tell us whether Safe Browsing extended reporting is enabled.
-extern const char kSafeBrowsingExtendedReportingEnabled[];
+// A dictionary mapping incident types to a dict of incident key:digest pairs.
+extern const char kSafeBrowsingIncidentsSent[];
 
-// Boolean indicating whether Safe Browsing Scout reporting is enabled, which
-// collects data for malware detection.
-extern const char kSafeBrowsingScoutReportingEnabled[];
-
-// Boolean indicating whether the Scout reporting workflow is enabled. This
-// affects which of SafeBrowsingExtendedReporting or SafeBrowsingScoutReporting
-// is used.
-extern const char kSafeBrowsingScoutGroupSelected[];
+// Boolean that is true when the SafeBrowsing interstitial should not allow
+// users to proceed anyway.
+extern const char kSafeBrowsingProceedAnywayDisabled[];
 
 // Boolean indicating whether the user has ever seen a security interstitial
 // containing the legacy Extended Reporting opt-in.
@@ -37,6 +38,15 @@ extern const char kSafeBrowsingSawInterstitialExtendedReporting[];
 // Boolean indicating whether the user has ever seen a security interstitial
 // containing the new Scout opt-in.
 extern const char kSafeBrowsingSawInterstitialScoutReporting[];
+
+// Boolean indicating whether the Scout reporting workflow is enabled. This
+// affects which of SafeBrowsingExtendedReporting or SafeBrowsingScoutReporting
+// is used.
+extern const char kSafeBrowsingScoutGroupSelected[];
+
+// Boolean indicating whether Safe Browsing Scout reporting is enabled, which
+// collects data for malware detection.
+extern const char kSafeBrowsingScoutReportingEnabled[];
 }
 
 namespace safe_browsing {

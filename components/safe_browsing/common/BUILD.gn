@@ -33,6 +33,7 @@ static_library("safe_browsing_prefs") {
   ]
   deps = [
     "//base:base",
+    "//components/pref_registry:pref_registry",
     "//components/prefs",
   ]
 }
