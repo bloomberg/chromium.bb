@@ -5,6 +5,7 @@
    "OpenVPN.Port": "1234",
    "OpenVPN.Proto": "udp",
    "OpenVPN.User": "hans",
+   "OpenVPN.RemoteCertKU":"",
    "Provider.Host": "terminus.muc",
    "Provider.Type": "openvpn",
    "ProxyConfig": "{\"mode\":\"direct\"}",

@@ -5,6 +5,7 @@
   "OpenVPN.Password":"some password",
   "OpenVPN.Port":"443",
   "OpenVPN.Proto":"udp",
+  "OpenVPN.RemoteCertKU":"",
   "OpenVPN.User":"abc ${LOGIN_EMAIL} def",
   "Provider.Host":"vpn.my.domain.com",
   "Provider.Type":"openvpn",
