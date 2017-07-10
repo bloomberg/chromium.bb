@@ -20,6 +20,7 @@ var sendRequestHandler = require('sendRequest');
 var contextType = process.GetContextType();
 var extensionId = process.GetExtensionId();
 var manifestVersion = process.GetManifestVersion();
+var platform = process.GetPlatform();
 var sendRequest = sendRequestHandler.sendRequest;
 
 // Stores the name and definition of each API function, with methods to
@@ -87,24 +88,6 @@ APIFunctions.prototype.setCustomCallback =
   return this.setHook_(apiName, 'customCallback', customizedFunction);
 };
 
-// Get the platform from navigator.appVersion.
-function getPlatform() {
-  var platforms = [
-    [/CrOS Touch/, "chromeos touch"],
-    [/CrOS/, "chromeos"],
-    [/Linux/, "linux"],
-    [/Mac/, "mac"],
-    [/Win/, "win"],
-  ];
-
-  for (var i = 0; i < platforms.length; i++) {
-    if ($RegExp.exec(platforms[i][0], navigator.appVersion)) {
-      return platforms[i][1];
-    }
-  }
-  return "unknown";
-}
-
 function isPlatformSupported(schemaNode, platform) {
   return !schemaNode.platforms ||
       $Array.indexOf(schemaNode.platforms, platform) > -1;
@@ -144,8 +127,6 @@ function createCustomType(type) {
   logging.CHECK(customType, jsModuleName + ' must export itself.');
   return customType;
 }
-
-var platform = getPlatform();
 
 function Binding(apiName) {
   this.apiName_ = apiName;

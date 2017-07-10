@@ -29,6 +29,7 @@ class ProcessInfoNativeHandler : public ObjectBackedNativeHandler {
   void GetManifestVersion(const v8::FunctionCallbackInfo<v8::Value>& args);
   void IsSendRequestDisabled(const v8::FunctionCallbackInfo<v8::Value>& args);
   void HasSwitch(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetPlatform(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   std::string extension_id_;
   std::string context_type_;
