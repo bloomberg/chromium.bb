@@ -534,8 +534,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
 // Disabled because the test always fails the first time it runs on the Win Aura
 // bots, and usually but not always passes second-try (See crbug.com/179532).
-// On Linux, the test frequently times out. (See crbug.com/440043).
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
 #define MAYBE_QuickOverscrollDirectionChange \
         DISABLED_QuickOverscrollDirectionChange
 #else
@@ -564,6 +563,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   aura::Window* content = web_contents->GetContentNativeView();
   ui::EventSink* sink = content->GetHost()->event_sink();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
+
+  // Spurious mouse moves interfere with the overscroll gesture which causes
+  // this test to fail. This observer will let us know if this is happening.
+  SpuriousMouseMoveEventObserver mouse_observer(GetRenderWidgetHost());
 
   base::TimeTicks timestamp = ui::EventTimeForNow();
   ui::TouchEvent press(
