@@ -248,5 +248,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
   ASSERT_TRUE(app_browser != browser());
 
   WaitAndValidateBrowserWindowProperties(
-      base::Bind(&ValidateHostedAppWindowProperties, app_browser, extension));
+      base::Bind(&ValidateHostedAppWindowProperties, app_browser,
+                 base::RetainedRef(extension)));
 }
