@@ -30,12 +30,13 @@ const uint64_t kWarmUpFramesBeforeEnteringLowPowerMode = 30;
   NSRect screenFrame = [[eventTargetWindow screen] frame];
   NSRect initialRect = NSMakeRect(
       0, 0, NSWidth(screenFrame), NSHeight(screenFrame));
-  if (self = [super
-          initWithContentRect:initialRect
-                    styleMask:NSTitledWindowMask | NSResizableWindowMask |
-                              NSFullSizeContentViewWindowMask
-                      backing:NSBackingStoreBuffered
-                        defer:NO]) {
+  auto mask = NSTitledWindowMask | NSResizableWindowMask;
+  if (@available(macOS 10.10, *))
+    mask |= NSFullSizeContentViewWindowMask;
+  if (self = [super initWithContentRect:initialRect
+                              styleMask:mask
+                                backing:NSBackingStoreBuffered
+                                  defer:NO]) {
     eventTargetWindow_.reset(eventTargetWindow, base::scoped_policy::RETAIN);
     [self setCollectionBehavior:NSWindowCollectionBehaviorIgnoresCycle];
     [self setExcludedFromWindowsMenu:YES];
