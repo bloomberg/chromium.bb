@@ -65,18 +65,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeBlacklisted,    // This is a repeated item type.
 };
 
-// TODO(crbug.com/669538): This function should be removed after original
-// version of GetHumanReadableOrigin will be moved to affiliation_utils.
-std::string GetHumanReadableOriginCopy(
-    const autofill::PasswordForm& password_form) {
-  password_manager::FacetURI facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(
-          password_form.signon_realm);
-  if (facet_uri.IsValidAndroidFacetURI())
-    return facet_uri.scheme() + "://" + facet_uri.android_package_name();
-  return base::UTF16ToUTF8(url_formatter::FormatUrl(password_form.origin));
-}
-
 }  // namespace
 
 namespace password_manager {
@@ -274,7 +262,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   SavedFormContentItem* passwordItem =
       [[SavedFormContentItem alloc] initWithType:ItemTypeSavedPassword];
   passwordItem.text =
-      base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
+      base::SysUTF8ToNSString(password_manager::GetHumanReadableOrigin(*form));
   passwordItem.detailText = base::SysUTF16ToNSString(form->username_value);
   if (experimental_flags::IsViewCopyPasswordsEnabled()) {
     passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -289,7 +277,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   BlacklistedFormContentItem* passwordItem =
       [[BlacklistedFormContentItem alloc] initWithType:ItemTypeBlacklisted];
   passwordItem.text =
-      base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
+      base::SysUTF8ToNSString(password_manager::GetHumanReadableOrigin(*form));
   return passwordItem;
 }
 
@@ -460,8 +448,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       autofill::PasswordForm* form = savedForms_[indexPath.item].get();
       NSString* username = base::SysUTF16ToNSString(form->username_value);
       NSString* password = base::SysUTF16ToNSString(form->password_value);
-      NSString* origin =
-          base::SysUTF8ToNSString(GetHumanReadableOriginCopy(*form));
+      NSString* origin = base::SysUTF8ToNSString(
+          password_manager::GetHumanReadableOrigin(*form));
       UIViewController* controller =
           [[PasswordDetailsCollectionViewController alloc]
                 initWithPasswordForm:*form
