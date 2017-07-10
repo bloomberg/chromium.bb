@@ -5725,6 +5725,8 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 #endif
 #endif  // CONFIG_EXT_INTER
 
+  /* NB: kf_y_cdf is discarded after use, so no need
+     for backwards update */
   AVERAGE_TILE_CDFS(y_mode_cdf)
 
   if (cm->interp_filter == SWITCHABLE) {

@@ -310,8 +310,10 @@ typedef struct frame_contexts {
 #endif
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [CDF_SIZE(SWITCHABLE_FILTERS)];
-  /* Keep track of kf_y_cdf here, as this makes handling
-     multiple copies for adaptation in tiles easier */
+  /* kf_y_cdf is discarded after use, so does not require persistent storage.
+     However, we keep it with the other CDFs in this struct since it needs to
+     be copied to each tile to support parallelism just like the others.
+   */
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)];
   aom_cdf_prob tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
