@@ -47,14 +47,18 @@ class MojoTestState : public content::TestState {
   MojoTestState(MojoTestConnector* connector,
                 base::CommandLine* command_line,
                 base::TestLauncher::LaunchOptions* test_launch_options,
-                const std::string& mus_config_switch)
+                MojoTestConnector::Config config)
       : connector_(connector),
         background_service_manager_(nullptr),
         platform_channel_(base::MakeUnique<mojo::edk::PlatformChannelPair>()),
         main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        config_(config),
         weak_factory_(this) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
-    command_line->AppendSwitchASCII(switches::kMusConfig, mus_config_switch);
+    command_line->AppendSwitchASCII(switches::kMusConfig,
+                                    config_ == MojoTestConnector::Config::MASH
+                                        ? switches::kMash
+                                        : switches::kMus);
 
     platform_channel_->PrepareToPassClientHandleToChildProcess(
         command_line, &handle_passing_info_);
@@ -115,9 +119,11 @@ class MojoTestState : public content::TestState {
     pid_receiver_->SetPID(pid);
     pid_receiver_.reset();
 
-    background_service_manager_->StartService(
-        service_manager::Identity(mash::session::mojom::kServiceName,
-                                  service_manager::mojom::kRootUserID));
+    if (config_ == MojoTestConnector::Config::MASH) {
+      background_service_manager_->StartService(
+          service_manager::Identity(mash::session::mojom::kServiceName,
+                                    service_manager::mojom::kRootUserID));
+    }
   }
 
   mojo::edk::OutgoingBrokerClientInvitation broker_client_invitation_;
@@ -137,6 +143,8 @@ class MojoTestState : public content::TestState {
   std::unique_ptr<mojo::edk::PlatformChannelPair> platform_channel_;
   service_manager::mojom::PIDReceiverPtr pid_receiver_;
   const scoped_refptr<base::TaskRunner> main_task_runner_;
+
+  const MojoTestConnector::Config config_;
 
   base::WeakPtrFactory<MojoTestState> weak_factory_;
 
@@ -260,10 +268,8 @@ MojoTestConnector::~MojoTestConnector() {}
 std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
     base::CommandLine* command_line,
     base::TestLauncher::LaunchOptions* test_launch_options) {
-  return base::MakeUnique<MojoTestState>(
-      this, command_line, test_launch_options,
-      config_ == MojoTestConnector::Config::MASH ? switches::kMash
-                                                 : switches::kMus);
+  return base::MakeUnique<MojoTestState>(this, command_line,
+                                         test_launch_options, config_);
 }
 
 void MojoTestConnector::StartService(const std::string& service_name) {
