@@ -212,6 +212,9 @@ struct AutocompleteMatch {
   // Gets the formatting flags used for display of suggestions. This method
   // encapsulates the return of experimental flags too, so any URLs displayed
   // as an Omnibox suggestion should use this method.
+  //
+  // This function returns flags that may destructively format the URL, and
+  // therefore should never be used for the |fill_into_edit| field.
   static url_formatter::FormatUrlTypes GetFormatTypes(bool trim_scheme);
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
