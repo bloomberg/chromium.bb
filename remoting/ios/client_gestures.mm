@@ -30,7 +30,11 @@ remoting::GestureInterpreter::GestureState toGestureState(
   UIPanGestureRecognizer* _panRecognizer;
   UIPanGestureRecognizer* _flingRecognizer;
   UIPanGestureRecognizer* _scrollRecognizer;
-  UIPanGestureRecognizer* _threeFingerPanRecognizer;
+
+  // TODO(yuweih): Commented out because this makes two-finger gestures not
+  // quite responsive. Clean these up if it's really unnecessary.
+  //  UIPanGestureRecognizer* _threeFingerPanRecognizer;
+
   UIPinchGestureRecognizer* _pinchRecognizer;
   UITapGestureRecognizer* _singleTapRecognizer;
   UITapGestureRecognizer* _twoFingerTapRecognizer;
@@ -79,13 +83,13 @@ remoting::GestureInterpreter::GestureState toGestureState(
   _scrollRecognizer.delegate = self;
   [view addGestureRecognizer:_scrollRecognizer];
 
-  _threeFingerPanRecognizer = [[UIPanGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(threeFingerPanGestureTriggered:)];
-  _threeFingerPanRecognizer.minimumNumberOfTouches = 3;
-  _threeFingerPanRecognizer.maximumNumberOfTouches = 3;
-  _threeFingerPanRecognizer.delegate = self;
-  [view addGestureRecognizer:_threeFingerPanRecognizer];
+  //  _threeFingerPanRecognizer = [[UIPanGestureRecognizer alloc]
+  //      initWithTarget:self
+  //              action:@selector(threeFingerPanGestureTriggered:)];
+  //  _threeFingerPanRecognizer.minimumNumberOfTouches = 3;
+  //  _threeFingerPanRecognizer.maximumNumberOfTouches = 3;
+  //  _threeFingerPanRecognizer.delegate = self;
+  //  [view addGestureRecognizer:_threeFingerPanRecognizer];
 
   _pinchRecognizer = [[UIPinchGestureRecognizer alloc]
       initWithTarget:self
@@ -117,10 +121,11 @@ remoting::GestureInterpreter::GestureState toGestureState(
   [_twoFingerTapRecognizer
       requireGestureRecognizerToFail:_threeFingerTapRecognizer];
   [_pinchRecognizer requireGestureRecognizerToFail:_singleTapRecognizer];
-  [_pinchRecognizer requireGestureRecognizerToFail:_threeFingerPanRecognizer];
+  //  [_pinchRecognizer
+  //  requireGestureRecognizerToFail:_threeFingerPanRecognizer];
   [_panRecognizer requireGestureRecognizerToFail:_singleTapRecognizer];
-  [_threeFingerPanRecognizer
-      requireGestureRecognizerToFail:_threeFingerTapRecognizer];
+  //  [_threeFingerPanRecognizer
+  //      requireGestureRecognizerToFail:_threeFingerTapRecognizer];
   [_panRecognizer requireGestureRecognizerToFail:_scrollRecognizer];
 
   return self;
