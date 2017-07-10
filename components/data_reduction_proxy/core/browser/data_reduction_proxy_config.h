@@ -28,8 +28,6 @@
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -266,11 +264,9 @@ class DataReductionProxyConfig
   // of either Lo-Fi enabled or Lo-Fi control field trial group.
   void PopulateAutoLoFiParams();
 
-  // Requests the given |secure_proxy_check_url|. Upon completion, returns the
-  // results to the caller via the |fetcher_callback|. Virtualized for unit
-  // testing.
-  virtual void SecureProxyCheck(const GURL& secure_proxy_check_url,
-                                FetcherResponseCallback fetcher_callback);
+  // Requests the secure proxy check URL. Upon completion, returns the results
+  // to the caller via the |fetcher_callback|. Virtualized for unit testing.
+  virtual void SecureProxyCheck(FetcherResponseCallback fetcher_callback);
 
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.

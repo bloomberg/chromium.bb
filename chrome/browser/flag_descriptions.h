@@ -93,9 +93,6 @@ extern const char kCreditCardAssistDescription[];
 extern const char kCrossProcessGuestViewIsolationName[];
 extern const char kCrossProcessGuestViewIsolationDescription[];
 
-extern const char kDataReductionProxyCarrierTestName[];
-extern const char kDataReductionProxyCarrierTestDescription[];
-
 extern const char kDataReductionProxyLoFiName[];
 extern const char kDataReductionProxyLoFiDescription[];
 extern const char kDataReductionProxyLoFiAlwaysOn[];

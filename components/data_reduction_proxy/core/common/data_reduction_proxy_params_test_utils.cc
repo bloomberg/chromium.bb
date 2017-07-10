@@ -8,11 +8,9 @@ namespace {
 // Test values to replace the values specified in preprocessor defines.
 static const char kDefaultOrigin[] = "origin.net:80";
 static const char kDefaultFallbackOrigin[] = "fallback.net:80";
-static const char kDefaultSecureProxyCheckURL[] = "http://proxycheck.net/";
 
 static const char kFlagOrigin[] = "https://origin.org:443";
 static const char kFlagFallbackOrigin[] = "fallback.org:80";
-static const char kFlagSecureProxyCheckURL[] = "http://proxycheck.org/";
 }
 
 namespace data_reduction_proxy {
@@ -38,10 +36,6 @@ std::string TestDataReductionProxyParams::DefaultFallbackOrigin() {
   return kDefaultFallbackOrigin;
 }
 
-std::string TestDataReductionProxyParams::DefaultSecureProxyCheckURL() {
-  return kDefaultSecureProxyCheckURL;
-}
-
 std::string TestDataReductionProxyParams::FlagOrigin() {
   return kFlagOrigin;
 }
@@ -50,21 +44,12 @@ std::string TestDataReductionProxyParams::FlagFallbackOrigin() {
   return kFlagFallbackOrigin;
 }
 
-std::string TestDataReductionProxyParams::FlagSecureProxyCheckURL() {
-  return kFlagSecureProxyCheckURL;
-}
-
 std::string TestDataReductionProxyParams::GetDefaultOrigin() const {
   return kDefaultOrigin;
 }
 
 std::string TestDataReductionProxyParams::GetDefaultFallbackOrigin() const {
   return kDefaultFallbackOrigin;
-}
-
-std::string TestDataReductionProxyParams::GetDefaultSecureProxyCheckURL()
-    const {
-  return kDefaultSecureProxyCheckURL;
 }
 
 }  // namespace data_reduction_proxy

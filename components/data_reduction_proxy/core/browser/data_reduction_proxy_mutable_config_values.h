@@ -42,14 +42,12 @@ class DataReductionProxyMutableConfigValues
   // Overrides of |DataReductionProxyConfigValues|
   const std::vector<DataReductionProxyServer>& proxies_for_http()
       const override;
-  const GURL& secure_proxy_check_url() const override;
 
  protected:
   DataReductionProxyMutableConfigValues();
 
  private:
   std::vector<DataReductionProxyServer> proxies_for_http_;
-  GURL secure_proxy_check_url_;
 
   // Permits use of locally specified Data Reduction Proxy servers instead of
   // ones specified from the Data Saver API.

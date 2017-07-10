@@ -1861,13 +1861,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)},
 #endif  // ENABLE_EXTENSIONS
-#if defined(OS_ANDROID)
-    {"enable-data-reduction-proxy-carrier-test",
-     flag_descriptions::kDataReductionProxyCarrierTestName,
-     flag_descriptions::kDataReductionProxyCarrierTestDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kEnableDataReductionProxyCarrierTest)},
-#endif  // OS_ANDROID
     {"enable-hotword-hardware",
      flag_descriptions::kExperimentalHotwordHardwareName,
      flag_descriptions::kExperimentalHotwordHardwareDescription, kOsCrOS,
