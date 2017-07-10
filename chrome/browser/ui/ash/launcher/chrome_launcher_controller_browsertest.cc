@@ -1327,7 +1327,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
 }
 
 // Check the launcher activation state for applications and browser.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_ActivationStateCheck) {
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivationStateCheck) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   // Get the browser item index
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
