@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -188,9 +189,16 @@ bool ChromeConfigurator::EnabledCupSigning() const {
 // not accessing any global browser state while the code is running.
 scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  constexpr base::TaskTraits traits = {
+      base::MayBlock(), base::TaskPriority::BACKGROUND,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+#if defined(OS_WIN)
+  // Use the COM STA task runner as the Windows background downloader requires
+  // COM initialization.
+  return base::CreateCOMSTATaskRunnerWithTraits(traits);
+#else
+  return base::CreateSequencedTaskRunnerWithTraits(traits);
+#endif
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {
