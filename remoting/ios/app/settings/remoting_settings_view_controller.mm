@@ -87,6 +87,10 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   [self loadContent];
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleLightContent;
+}
+
 #pragma mark - UICollectionViewDataSource
 
 - (NSInteger)numberOfSectionsInCollectionView:
