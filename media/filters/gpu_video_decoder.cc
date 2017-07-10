@@ -83,20 +83,14 @@ const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
 enum { kMaxInFlightDecodes = 4 };
 
 struct GpuVideoDecoder::PendingDecoderBuffer {
-  PendingDecoderBuffer(std::unique_ptr<SHMBuffer> s,
+  PendingDecoderBuffer(std::unique_ptr<base::SharedMemory> s,
                        const scoped_refptr<DecoderBuffer>& b,
                        const DecodeCB& done_cb)
-      : shm_buffer(std::move(s)), buffer(b), done_cb(done_cb) {}
-  std::unique_ptr<SHMBuffer> shm_buffer;
+      : shared_memory(std::move(s)), buffer(b), done_cb(done_cb) {}
+  std::unique_ptr<base::SharedMemory> shared_memory;
   scoped_refptr<DecoderBuffer> buffer;
   DecodeCB done_cb;
 };
-
-GpuVideoDecoder::SHMBuffer::SHMBuffer(std::unique_ptr<base::SharedMemory> m,
-                                      size_t s)
-    : shm(std::move(m)), size(s) {}
-
-GpuVideoDecoder::SHMBuffer::~SHMBuffer() {}
 
 GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
                                         base::TimeDelta ts,
@@ -439,17 +433,17 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   size_t size = buffer->data_size();
-  std::unique_ptr<SHMBuffer> shm_buffer = GetSHM(size);
-  if (!shm_buffer) {
+  auto shared_memory = GetSharedMemory(size);
+  if (!shared_memory) {
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
-  memcpy(shm_buffer->shm->memory(), buffer->data(), size);
+  memcpy(shared_memory->memory(), buffer->data(), size);
   // AndroidVideoDecodeAccelerator needs the timestamp to output frames in
   // presentation order.
   BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_,
-                                   shm_buffer->shm->handle(), size, 0,
+                                   shared_memory->handle(), size, 0,
                                    buffer->timestamp());
 
   if (buffer->decrypt_config())
@@ -461,7 +455,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
       !base::ContainsKey(bitstream_buffers_in_decoder_, bitstream_buffer.id()));
   bitstream_buffers_in_decoder_.emplace(
       bitstream_buffer.id(),
-      PendingDecoderBuffer(std::move(shm_buffer), buffer, decode_cb));
+      PendingDecoderBuffer(std::move(shared_memory), buffer, decode_cb));
   DCHECK_LE(static_cast<int>(bitstream_buffers_in_decoder_.size()),
             kMaxInFlightDecodes);
   RecordBufferData(bitstream_buffer, *buffer.get());
@@ -748,27 +742,24 @@ void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
     vda_->ReusePictureBuffer(picture_buffer_id);
 }
 
-std::unique_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
+std::unique_ptr<base::SharedMemory> GpuVideoDecoder::GetSharedMemory(
     size_t min_size) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   if (available_shm_segments_.empty() ||
-      available_shm_segments_.back()->size < min_size) {
+      available_shm_segments_.back()->mapped_size() < min_size) {
     size_t size_to_allocate = std::max(min_size, kSharedMemorySegmentBytes);
-    std::unique_ptr<base::SharedMemory> shm =
-        factories_->CreateSharedMemory(size_to_allocate);
     // CreateSharedMemory() can return NULL during Shutdown.
-    if (!shm)
-      return NULL;
-    return base::MakeUnique<SHMBuffer>(std::move(shm), size_to_allocate);
+    return factories_->CreateSharedMemory(size_to_allocate);
   }
-  std::unique_ptr<SHMBuffer> ret(std::move(available_shm_segments_.back()));
+  auto ret = std::move(available_shm_segments_.back());
   available_shm_segments_.pop_back();
   return ret;
 }
 
-void GpuVideoDecoder::PutSHM(std::unique_ptr<SHMBuffer> shm_buffer) {
+void GpuVideoDecoder::PutSharedMemory(
+    std::unique_ptr<base::SharedMemory> shared_memory) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  available_shm_segments_.push_back(std::move(shm_buffer));
+  available_shm_segments_.push_back(std::move(shared_memory));
 }
 
 void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
@@ -783,7 +774,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
     return;
   }
 
-  PutSHM(std::move(it->second.shm_buffer));
+  PutSharedMemory(std::move(it->second.shared_memory));
   it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
                                           : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);

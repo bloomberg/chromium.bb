@@ -90,14 +90,6 @@ class MEDIA_EXPORT GpuVideoDecoder
     kError
   };
 
-  // A shared memory segment and its allocated size.
-  struct SHMBuffer {
-    SHMBuffer(std::unique_ptr<base::SharedMemory> m, size_t s);
-    ~SHMBuffer();
-    std::unique_ptr<base::SharedMemory> shm;
-    size_t size;
-  };
-
   // A SHMBuffer and the DecoderBuffer its data came from.
   struct PendingDecoderBuffer;
 
@@ -125,10 +117,10 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // Request a shared-memory segment of at least |min_size| bytes.  Will
   // allocate as necessary.
-  std::unique_ptr<SHMBuffer> GetSHM(size_t min_size);
+  std::unique_ptr<base::SharedMemory> GetSharedMemory(size_t min_size);
 
   // Return a shared-memory segment to the available pool.
-  void PutSHM(std::unique_ptr<SHMBuffer> shm_buffer);
+  void PutSharedMemory(std::unique_ptr<base::SharedMemory> shm_buffer);
 
   // Destroy all PictureBuffers in |buffers|, and delete their textures.
   void DestroyPictureBuffers(PictureBufferMap* buffers);
@@ -187,7 +179,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Shared-memory buffer pool.  Since allocating SHM segments requires a
   // round-trip to the browser process, we keep allocation out of the
   // steady-state of the decoder.
-  std::vector<std::unique_ptr<SHMBuffer>> available_shm_segments_;
+  std::vector<std::unique_ptr<base::SharedMemory>> available_shm_segments_;
 
   // Placeholder sync token that was created and validated after the most
   // recent picture buffers were created.
