@@ -1211,7 +1211,7 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
         RoundedIntPoint(compositing_container->SubpixelAccumulation());
   } else if (compositing_container) {
     graphics_layer_parent_location = ancestor_compositing_bounds.Location();
-  } else {
+  } else if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     graphics_layer_parent_location =
         GetLayoutObject().View()->DocumentRect().Location();
   }
