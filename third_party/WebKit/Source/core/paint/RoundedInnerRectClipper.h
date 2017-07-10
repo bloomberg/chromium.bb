@@ -29,7 +29,7 @@ class RoundedInnerRectClipper {
   ~RoundedInnerRectClipper();
 
  private:
-  const DisplayItemClient& layout_object_;
+  const DisplayItemClient& display_item_;
   const PaintInfo& paint_info_;
   bool use_paint_controller_;
   DisplayItem::Type clip_type_;

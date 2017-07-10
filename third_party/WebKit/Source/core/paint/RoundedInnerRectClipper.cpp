@@ -12,12 +12,12 @@
 namespace blink {
 
 RoundedInnerRectClipper::RoundedInnerRectClipper(
-    const DisplayItemClient& layout_object,
+    const DisplayItemClient& display_item,
     const PaintInfo& paint_info,
     const LayoutRect& rect,
     const FloatRoundedRect& clip_rect,
     RoundedInnerRectClipperBehavior behavior)
-    : layout_object_(layout_object),
+    : display_item_(display_item),
       paint_info_(paint_info),
       use_paint_controller_(behavior == kApplyToDisplayList),
       clip_type_(use_paint_controller_
@@ -73,7 +73,7 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
 
   if (use_paint_controller_) {
     paint_info_.context.GetPaintController().CreateAndAppend<ClipDisplayItem>(
-        layout_object, clip_type_, LayoutRect::InfiniteIntRect(),
+        display_item, clip_type_, LayoutRect::InfiniteIntRect(),
         rounded_rect_clips);
   } else {
     paint_info.context.Save();
@@ -89,7 +89,7 @@ RoundedInnerRectClipper::~RoundedInnerRectClipper() {
   DisplayItem::Type end_type = DisplayItem::ClipTypeToEndClipType(clip_type_);
   if (use_paint_controller_) {
     paint_info_.context.GetPaintController().EndItem<EndClipDisplayItem>(
-        layout_object_, end_type);
+        display_item_, end_type);
   } else {
     paint_info_.context.Restore();
   }
