@@ -9,7 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/log/write_to_file_net_log_observer.h"
+#include "net/log/net_log.h"
+
+namespace net {
+class FileNetLogObserver;
+}
 
 namespace chromecast {
 
@@ -19,7 +23,7 @@ class CastNetLog : public net::NetLog {
   ~CastNetLog() override;
 
  private:
-  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetLog);
 };
