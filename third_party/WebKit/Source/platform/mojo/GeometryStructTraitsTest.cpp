@@ -14,7 +14,7 @@ namespace blink {
 namespace {
 
 class GeometryStructTraitsTest
-    : public testing::Test,
+    : public ::testing::Test,
       public gfx::mojom::blink::GeometryTraitsTestService {
  public:
   GeometryStructTraitsTest() {}
