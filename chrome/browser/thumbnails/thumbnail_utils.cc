@@ -4,6 +4,8 @@
 
 #include "chrome/browser/thumbnails/thumbnail_utils.h"
 
+#include <algorithm>
+
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -43,6 +45,9 @@ gfx::Size GetCopySizeForThumbnail(ui::ScaleFactor scale_factor,
     scale_factor = ui::SCALE_FACTOR_200P;
   }
   float scale = GetScaleForScaleFactor(scale_factor);
+  // Limit the scale factor to a maximum of 2x for privacy reasons; see
+  // crbug.com/670488.
+  scale = std::min(2.0f, scale);
   return gfx::ScaleToFlooredSize(thumbnail_size, scale);
 }
 

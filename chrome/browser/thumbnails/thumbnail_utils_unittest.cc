@@ -79,18 +79,24 @@ TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfoDifferentScales) {
                                 &target_size_result);
   EXPECT_EQ(expected_2x_size, target_size_result);
 
+  // Test at 1.5x scale.
+  gfx::Size expected_15x_size = gfx::ScaleToFlooredSize(thumbnail_size, 1.5);
+  thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_150P,
+                                thumbnail_size, &clipping_rect_result,
+                                &target_size_result);
+  EXPECT_EQ(expected_15x_size, target_size_result);
+
   // Test at 2x scale.
   thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_200P,
                                 thumbnail_size, &clipping_rect_result,
                                 &target_size_result);
   EXPECT_EQ(expected_2x_size, target_size_result);
 
-  // Test at 3x scale.
-  gfx::Size expected_3x_size = gfx::ScaleToFlooredSize(thumbnail_size, 3.0);
+  // Test at 3x scale. Expect a 2x (!) thumbnail (see crbug.com/670488).
   thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_300P,
                                 thumbnail_size, &clipping_rect_result,
                                 &target_size_result);
-  EXPECT_EQ(expected_3x_size, target_size_result);
+  EXPECT_EQ(expected_2x_size, target_size_result);
 }
 
 TEST_F(SimpleThumbnailCropTest, GetClippingRect) {
