@@ -13,9 +13,6 @@ suite('CrActionMenu', function() {
   /** @type {?NodeList<HTMLElement>} */
   var items = null;
 
-  /** @type {HTMLElement} */
-  var dots = null;
-
   setup(function() {
     PolymerTest.clearBody();
 
@@ -31,13 +28,10 @@ suite('CrActionMenu', function() {
 
     menu = document.querySelector('dialog[is=cr-action-menu]');
     items = menu.querySelectorAll('.dropdown-item');
-    dots = document.querySelector('#dots');
     assertEquals(3, items.length);
   });
 
   teardown(function() {
-    document.body.style.direction = 'ltr';
-
     if (menu.open)
       menu.close();
   });
@@ -51,25 +45,25 @@ suite('CrActionMenu', function() {
   }
 
   test('hidden or disabled items', function() {
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
     down();
     assertEquals(menu.root.activeElement, items[0]);
 
     menu.close();
     items[0].hidden = true;
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
     down();
     assertEquals(menu.root.activeElement, items[1]);
 
     menu.close();
     items[1].disabled = true;
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
     down();
     assertEquals(menu.root.activeElement, items[2]);
   });
 
   test('focus after down/up arrow', function() {
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
 
     // The menu should be focused when shown, but not on any of the items.
     assertEquals(menu, document.activeElement);
@@ -99,8 +93,8 @@ suite('CrActionMenu', function() {
     assertEquals(items[0], menu.root.activeElement);
   });
 
-  test('pressing up arrow when no focus will focus last item', function() {
-    menu.showAt(dots);
+  test('pressing up arrow when no focus will focus last item', function(){
+    menu.showAt(document.querySelector('#dots'));
     assertEquals(menu, document.activeElement);
 
     up();
@@ -112,7 +106,7 @@ suite('CrActionMenu', function() {
     var item = document.createElement('button');
     item.classList.add('dropdown-item');
     menu.insertBefore(item, items[0]);
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
 
     down();
     assertEquals(item, menu.root.activeElement);
@@ -128,7 +122,7 @@ suite('CrActionMenu', function() {
   });
 
   test('close on resize', function() {
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
     assertTrue(menu.open);
 
     window.dispatchEvent(new CustomEvent('resize'));
@@ -136,7 +130,7 @@ suite('CrActionMenu', function() {
   });
 
   test('close on popstate', function() {
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
     assertTrue(menu.open);
 
     window.dispatchEvent(new CustomEvent('popstate'));
@@ -146,6 +140,7 @@ suite('CrActionMenu', function() {
   /** @param {string} key The key to use for closing. */
   function testFocusAfterClosing(key) {
     return new Promise(function(resolve) {
+      var dots = document.querySelector('#dots');
       menu.showAt(dots);
       assertTrue(menu.open);
 
@@ -156,9 +151,7 @@ suite('CrActionMenu', function() {
     });
   }
 
-  test('close on Tab', function() {
-    return testFocusAfterClosing('Tab');
-  });
+  test('close on Tab', function() { return testFocusAfterClosing('Tab'); });
   test('close on Escape', function() {
     return testFocusAfterClosing('Escape');
   });
@@ -169,7 +162,7 @@ suite('CrActionMenu', function() {
       node.dispatchEvent(e);
     }
 
-    menu.showAt(dots);
+    menu.showAt(document.querySelector('#dots'));
 
     // Moving mouse on option 1 should focus it.
     assertNotEquals(items[0], menu.root.activeElement);
@@ -266,7 +259,7 @@ suite('CrActionMenu', function() {
       height: 0,
       maxX: menuWidth * 2 - 10,
     });
-    assertEquals(`${menuWidth - 10}px`, menu.style.left);
+    assertEquals(`${menuWidth  - 10}px`, menu.style.left);
     assertEquals(`0px`, menu.style.top);
     menu.close();
 
@@ -277,116 +270,88 @@ suite('CrActionMenu', function() {
     assertEquals(140 - menuWidth, menu.offsetLeft);
     assertEquals('250px', menu.style.top);
     menu.close();
+    document.body.style.direction = 'ltr';
   });
 
-  suite('offscreen scroll positioning', function() {
+  test('offscreen scroll positioning', function() {
     var bodyHeight = 10000;
     var bodyWidth = 20000;
     var containerLeft = 5000;
     var containerTop = 10000;
     var containerWidth = 500;
     var containerHeight = 500;
+    document.body.innerHTML = `
+      <style>
+        body {
+          height: ${bodyHeight}px;
+          width: ${bodyWidth}px;
+        }
 
-    setup(function() {
-      document.body.scrollTop = 0;
-      document.body.scrollLeft = 0;
-      document.body.innerHTML = `
-        <style>
-          body {
-            height: ${bodyHeight}px;
-            width: ${bodyWidth}px;
-          }
+        #container {
+          overflow: auto;
+          position: absolute;
+          top: ${containerTop}px;
+          left: ${containerLeft}px;
+          height: ${containerHeight}px;
+          width: ${containerWidth}px;
+        }
 
-          #container {
-            overflow: auto;
-            position: absolute;
-            top: ${containerTop}px;
-            left: ${containerLeft}px;
-            right: ${containerLeft}px;
-            height: ${containerHeight}px;
-            width: ${containerWidth}px;
-          }
-
-          #inner-container {
-            height: 1000px;
-            width: 1000px;
-          }
-        </style>
-        <div id="container">
-          <div id="inner-container">
-            <button id="dots">...</button>
-            <dialog is="cr-action-menu">
-              <button class="dropdown-item">Un</button>
-              <hr>
-              <button class="dropdown-item">Dos</button>
-              <button class="dropdown-item">Tres</button>
-            </dialog>
-          </div>
+        #inner-container {
+          height: 1000px;
+          width: 1000px;
+        }
+      </style>
+      <div id="container">
+        <div id="inner-container">
+          <button id="dots">...</button>
+          <dialog is="cr-action-menu">
+            <button class="dropdown-item">Un</button>
+            <hr>
+            <button class="dropdown-item">Dos</button>
+            <button class="dropdown-item">Tres</button>
+          </dialog>
         </div>
-      `;
-      menu = document.querySelector('dialog[is=cr-action-menu]');
-      dots = document.querySelector('#dots');
-    })
+      </div>
+    `;
+    menu = document.querySelector('dialog[is=cr-action-menu]');
+    var dots = document.querySelector('#dots');
 
     // Show the menu, scrolling the body to the button.
-    test('simple offscreen', function() {
-      menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
-      assertEquals(`${containerLeft}px`, menu.style.left);
-      assertEquals(`${containerTop}px`, menu.style.top);
-      menu.close();
-    });
+    menu.showAt(
+        dots,
+        {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    assertEquals(`${containerLeft}px`, menu.style.left);
+    assertEquals(`${containerTop}px`, menu.style.top);
+    menu.close();
 
     // Show the menu, scrolling the container to the button, and the body to the
     // button.
-    test('offscreen and out of scroll container viewport', function() {
-      document.body.scrollLeft = bodyWidth;
-      document.body.scrollTop = bodyHeight;
-      var container = document.querySelector('#container');
+    document.body.scrollLeft = bodyWidth;
+    document.body.scrollTop = bodyHeight;
 
-      container.scrollLeft = containerLeft;
-      container.scrollTop = containerTop;
+    document.querySelector('#container').scrollLeft = containerLeft;
+    document.querySelector('#container').scrollTop = containerTop;
 
-      menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
-      assertEquals(`${containerLeft}px`, menu.style.left);
-      assertEquals(`${containerTop}px`, menu.style.top);
-      menu.close();
-    });
+    menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    assertEquals(`${containerLeft}px`, menu.style.left);
+    assertEquals(`${containerTop}px`, menu.style.top);
+    menu.close();
 
     // Show the menu for an already onscreen button. The anchor should be
     // overridden so that no scrolling happens.
-    test('onscreen forces anchor change', function() {
-      var rect = dots.getBoundingClientRect();
-      document.body.scrollLeft = rect.right - document.body.clientWidth;
-      document.body.scrollTop = rect.bottom - document.body.clientHeight;
+    document.body.scrollLeft = 0;
+    document.body.scrollTop = 0;
 
-      menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
-      var menuWidth = menu.offsetWidth;
-      var menuHeight = menu.offsetHeight;
-      var buttonWidth = dots.offsetWidth;
-      var buttonHeight = dots.offsetHeight;
-      assertEquals(containerLeft - menuWidth + buttonWidth, menu.offsetLeft);
-      assertEquals(containerTop - menuHeight + buttonHeight, menu.offsetTop);
-      menu.close();
-    });
+    var rect = dots.getBoundingClientRect();
+    document.body.scrollLeft = rect.right - document.body.clientWidth;
+    document.body.scrollTop = rect.bottom - document.body.clientHeight;
 
-    test('scroll position maintained for showAtPosition', function() {
-      document.body.scrollLeft = 500;
-      document.body.scrollTop = 1000;
-      menu.showAtPosition({top: 50, left: 50});
-      assertEquals(550, menu.offsetLeft);
-      assertEquals(1050, menu.offsetTop);
-      menu.close();
-    });
-
-    test('rtl', function() {
-      // Anchor to an item in RTL.
-      document.body.style.direction = 'rtl';
-      menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
-      assertEquals(
-          container.offsetLeft + containerWidth - menu.offsetWidth,
-          menu.offsetLeft);
-      assertEquals(containerTop, menu.offsetTop);
-      menu.close();
-    });
+    menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    var menuWidth = menu.offsetWidth;
+    var menuHeight = menu.offsetHeight;
+    var buttonWidth = dots.offsetWidth;
+    var buttonHeight = dots.offsetHeight;
+    assertEquals(containerLeft - menuWidth + buttonWidth, menu.offsetLeft);
+    assertEquals(containerTop - menuHeight + buttonHeight, menu.offsetTop);
   });
 });
