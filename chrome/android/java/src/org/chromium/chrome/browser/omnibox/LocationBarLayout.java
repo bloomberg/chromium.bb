@@ -858,7 +858,7 @@ public class LocationBarLayout extends FrameLayout
         }
         mDeferredNativeRunnables.clear();
 
-        mUrlBar.onOmniboxFullyFunctional();
+        mUrlBar.onNativeLibraryReady();
         updateVisualsForState();
     }
 

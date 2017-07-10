@@ -37,8 +37,8 @@ public abstract class ChromeFeatureList {
 
     /**
      * @return Whether the native FeatureList has been initialized. If this method returns false,
-     * none of the methods in this class that require native access should be called (except in
-     * tests if test features have been set).
+     *         none of the methods in this class that require native access should be called (except
+     *         in tests if test features have been set).
      */
     public static boolean isInitialized() {
         if (sTestFeatures != null) return true;
@@ -200,6 +200,7 @@ public abstract class ChromeFeatureList {
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
+    public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";

@@ -48,6 +48,7 @@ extern const base::Feature NTPShowGoogleGInOmniboxFeature;
 extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebSharing;
+extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;

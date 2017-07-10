@@ -1114,6 +1114,9 @@ extern const char kServiceWorkerPaymentAppsDescription[];
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
 
+extern const char kSpannableInlineAutocompleteName[];
+extern const char kSpannableInlineAutocompleteDescription[];
+
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 
