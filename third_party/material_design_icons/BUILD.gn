@@ -20,22 +20,42 @@ _image_sets = [
   "action/ic_print",
   "action/ic_report_problem",
   "action/ic_search",
+  "action/ic_settings_white",
   "communication/ic_comment",
   "communication/ic_email",
   "communication/ic_message",
   "content/ic_link",
   "editor/ic_mode_edit",
   "file/ic_file_download",
+  "hardware/ic_desktop_windows",
+  "hardware/ic_desktop_windows_white",
   "hardware/ic_keyboard_arrow_right",
+  "hardware/ic_mouse",
   "image/ic_photo_camera",
   "image/ic_photo_library",
   "navigation/ic_arrow_back",
+  "navigation/ic_arrow_forward_white",
   "navigation/ic_check",
   "navigation/ic_chevron_left",
+  "navigation/ic_chevron_left_white_36pt",
   "navigation/ic_chevron_right",
   "navigation/ic_close",
+  "navigation/ic_close_white",
+  "navigation/ic_fullscreen",
+  "navigation/ic_fullscreen_exit",
+  "navigation/ic_menu_white",
   "navigation/ic_more_vert",
   "navigation/ic_refresh",
+  "navigation/ic_refresh_white",
+  "toggle/ic_check_box_outline_blank_white",
+  "toggle/ic_check_box_white",
+  "toggle/ic_radio_button_checked_white",
+  "toggle/ic_radio_button_unchecked_white",
+
+  # Note: this imageset is incorrect (miss the Contents.json file) but it
+  # appears to be unused, so for the moment keep it commented out. See
+  # https://github.com/google/material-design-icons/issues/630 for progress.
+  # "action/ic_touch_app",
 ]
 
 # Define all the imagesets using the description from _image_sets variable.

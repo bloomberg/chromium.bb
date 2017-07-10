@@ -3,73 +3,44 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/ios/imageset.gni")
 import("//build/config/ios/rules.gni")
 import("//remoting/build/config/remoting_build.gni")
 
-bundle_data("assets") {
+group("assets") {
+  public_deps = [
+    ":Background",
+    "//third_party/material_design_icons:ic_arrow_forward_white",
+    "//third_party/material_design_icons:ic_check_box_outline_blank_white",
+    "//third_party/material_design_icons:ic_check_box_white",
+    "//third_party/material_design_icons:ic_chevron_left_white_36pt",
+    "//third_party/material_design_icons:ic_close_white",
+    "//third_party/material_design_icons:ic_desktop_windows_white",
+    "//third_party/material_design_icons:ic_menu_white",
+    "//third_party/material_design_icons:ic_radio_button_checked_white",
+    "//third_party/material_design_icons:ic_radio_button_unchecked_white",
+    "//third_party/material_design_icons:ic_refresh_white",
+    "//third_party/material_design_icons:ic_settings_white",
+
+    # Note: those assets seems to be unreferenced by the code, according to
+    # grep. Maybe they are in downstream repository, so leaving them for now.
+    "//third_party/material_design_icons:ic_desktop_windows",
+    "//third_party/material_design_icons:ic_fullscreen",
+    "//third_party/material_design_icons:ic_fullscreen_exit",
+    "//third_party/material_design_icons:ic_mouse",
+
+    # Note: this imageset is incorrect (miss the Contents.json file) but it
+    # appears to be unused, so for the moment keep it commented out. See
+    # https://github.com/google/material-design-icons/issues/630 for progress.
+    # "//third_party/material_design_icons:ic_touch_app",
+  ]
+}
+
+imageset("Background") {
   sources = [
-    "Assets.xcassets/Back.imageset/Contents.json",
-    "Assets.xcassets/Back.imageset/ic_keyboard_arrow_left_white_1x_ios_36dp.png",
-    "Assets.xcassets/Back.imageset/ic_keyboard_arrow_left_white_2x_ios_36dp.png",
-    "Assets.xcassets/Back.imageset/ic_keyboard_arrow_left_white_3x_ios_36dp.png",
     "Assets.xcassets/Background.imageset/Contents.json",
     "Assets.xcassets/Background.imageset/bkg1.jpg",
     "Assets.xcassets/Background.imageset/bkg1_2x.jpg",
-    "Assets.xcassets/Settings.imageset/Contents.json",
-    "Assets.xcassets/Settings.imageset/ic_settings_white_1x_ios_24dp.png",
-    "Assets.xcassets/Settings.imageset/ic_settings_white_2x_ios_24dp.png",
-    "Assets.xcassets/Settings.imageset/ic_settings_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_arrow_forward_white.imageset/Contents.json",
-    "Assets.xcassets/ic_arrow_forward_white.imageset/ic_arrow_forward_white.png",
-    "Assets.xcassets/ic_arrow_forward_white.imageset/ic_arrow_forward_white_2x.png",
-    "Assets.xcassets/ic_arrow_forward_white.imageset/ic_arrow_forward_white_3x.png",
-    "Assets.xcassets/ic_check_box.imageset/Contents.json",
-    "Assets.xcassets/ic_check_box.imageset/ic_check_box_white_1x_ios_24dp.png",
-    "Assets.xcassets/ic_check_box.imageset/ic_check_box_white_2x_ios_24dp.png",
-    "Assets.xcassets/ic_check_box.imageset/ic_check_box_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_check_box_outline_blank.imageset/Contents.json",
-    "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_1x_ios_24dp.png",
-    "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_2x_ios_24dp.png",
-    "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_desktop.imageset/Contents.json",
-    "Assets.xcassets/ic_desktop.imageset/ic_desktop.png",
-    "Assets.xcassets/ic_desktop.imageset/ic_desktop@2x.png",
-    "Assets.xcassets/ic_desktop.imageset/ic_desktop@3x.png",
-    "Assets.xcassets/ic_desktop_windows.imageset/Contents.json",
-    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows.png",
-    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows@2x.png",
-    "Assets.xcassets/ic_desktop_windows.imageset/ic_desktop_windows@3x.png",
-    "Assets.xcassets/ic_fullscreen.imageset/Contents.json",
-    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen.png",
-    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen@2x.png",
-    "Assets.xcassets/ic_fullscreen.imageset/ic_fullscreen@3x.png",
-    "Assets.xcassets/ic_fullscreen_exit.imageset/Contents.json",
-    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit.png",
-    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit@2x.png",
-    "Assets.xcassets/ic_fullscreen_exit.imageset/ic_fullscreen_exit@3x.png",
-    "Assets.xcassets/ic_menu.imageset/Contents.json",
-    "Assets.xcassets/ic_menu.imageset/ic_menu_white.png",
-    "Assets.xcassets/ic_menu.imageset/ic_menu_white_2x.png",
-    "Assets.xcassets/ic_menu.imageset/ic_menu_white_3x.png",
-    "Assets.xcassets/ic_mouse.imageset/Contents.json",
-    "Assets.xcassets/ic_mouse.imageset/ic_mouse.png",
-    "Assets.xcassets/ic_mouse.imageset/ic_mouse@2x.png",
-    "Assets.xcassets/ic_mouse.imageset/ic_mouse@3x.png",
-    "Assets.xcassets/ic_radio_button_checked.imageset/Contents.json",
-    "Assets.xcassets/ic_radio_button_checked.imageset/ic_radio_button_checked_white_1x_ios_24dp.png",
-    "Assets.xcassets/ic_radio_button_checked.imageset/ic_radio_button_checked_white_2x_ios_24dp.png",
-    "Assets.xcassets/ic_radio_button_checked.imageset/ic_radio_button_checked_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_radio_button_unchecked.imageset/Contents.json",
-    "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_1x_ios_24dp.png",
-    "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_2x_ios_24dp.png",
-    "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_touch_app.imageset/Contents.json",
-    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app.png",
-    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_2x.png",
-    "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
 
@@ -77,36 +48,31 @@ bundle_data("assets") {
 # the internal app's source set, that are already pulled-in by other deps of the
 # internal app. We will need to redesign these once crbug.com/734054 is
 # resolved.
-bundle_data("system_icons") {
-  sources = [
-    "system_icons.xcassets/ic_close.imageset/Contents.json",
-    "system_icons.xcassets/ic_close.imageset/ic_close_white_1x_ios_24dp.png",
-    "system_icons.xcassets/ic_close.imageset/ic_close_white_2x_ios_24dp.png",
-    "system_icons.xcassets/ic_close.imageset/ic_close_white_3x_ios_24dp.png",
-    "system_icons.xcassets/ic_refresh.imageset/Contents.json",
-    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white.png",
-    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white_2x.png",
-    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white_3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
+group("system_icons") {
+}
+
+group("launchscreen_assets") {
+  public_deps = [
+    ":launchscreen_app_logo",
+    ":launchscreen_brand_name",
   ]
 }
 
-bundle_data("launchscreen_assets") {
+imageset("launchscreen_app_logo") {
   sources = [
-    "launchscreen_images.xcassets/Contents.json",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@2x.png",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@3x.png",
+  ]
+}
+
+imageset("launchscreen_brand_name") {
+  sources = [
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@2x.png",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
 

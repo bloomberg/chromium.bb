@@ -114,7 +114,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"Back"];
+    icon = [UIImage imageNamed:@"ic_chevron_left_white_36pt"];
   });
   return icon;
 }
@@ -123,7 +123,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_check_box"];
+    icon = [UIImage imageNamed:@"ic_check_box_white"];
   });
   return icon;
 }
@@ -132,7 +132,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_check_box_outline_blank"];
+    icon = [UIImage imageNamed:@"ic_check_box_outline_blank_white"];
   });
   return icon;
 }
@@ -141,7 +141,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_close"];
+    icon = [UIImage imageNamed:@"ic_close_white"];
   });
   return icon;
 }
@@ -150,7 +150,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_desktop"];
+    icon = [UIImage imageNamed:@"ic_desktop_windows_white"];
   });
   return icon;
 }
@@ -159,7 +159,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_menu"];
+    icon = [UIImage imageNamed:@"ic_menu_white"];
   });
   return icon;
 }
@@ -168,7 +168,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_radio_button_checked"];
+    icon = [UIImage imageNamed:@"ic_radio_button_checked_white"];
   });
   return icon;
 }
@@ -177,7 +177,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_radio_button_unchecked"];
+    icon = [UIImage imageNamed:@"ic_radio_button_unchecked_white"];
   });
   return icon;
 }
@@ -186,7 +186,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"ic_refresh"];
+    icon = [UIImage imageNamed:@"ic_refresh_white"];
   });
   return icon;
 }
@@ -195,7 +195,7 @@
   static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    icon = [UIImage imageNamed:@"Settings"];
+    icon = [UIImage imageNamed:@"ic_settings_white"];
   });
   return icon;
 }

@@ -96,6 +96,5 @@ ios_remoting_app_tmpl("ios_remoting_app") {
     ":main",
     "//remoting/ios/app/resources:launchscreen_assets",
     "//remoting/ios/app/resources:remoting_icons",
-    "//remoting/ios/app/resources:system_icons",
   ]
 }
