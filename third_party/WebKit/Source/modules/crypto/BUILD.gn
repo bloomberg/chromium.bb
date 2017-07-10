@@ -14,6 +14,7 @@ blink_modules_sources("crypto") {
     "CryptoKey.h",
     "CryptoResultImpl.cpp",
     "CryptoResultImpl.h",
+    "CryptoUtilities.h",
     "DOMWindowCrypto.cpp",
     "DOMWindowCrypto.h",
     "NormalizeAlgorithm.cpp",

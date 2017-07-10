@@ -39,6 +39,7 @@
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMTypedArray.h"
+#include "modules/crypto/CryptoUtilities.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
@@ -49,8 +50,6 @@
 namespace blink {
 
 namespace {
-
-typedef ArrayBufferOrArrayBufferView BufferSource;
 
 struct AlgorithmNameMapping {
   // Must be an upper case ASCII string.
@@ -263,11 +262,6 @@ class ErrorContext {
   // the majority of cases (up to 1 nested algorithm identifier).
   Vector<const char*, 10> messages_;
 };
-
-static WebVector<uint8_t> CopyBytes(const DOMArrayPiece& source) {
-  return WebVector<uint8_t>(static_cast<const uint8_t*>(source.Data()),
-                            source.ByteLength());
-}
 
 // Defined by the WebCrypto spec as:
 //
