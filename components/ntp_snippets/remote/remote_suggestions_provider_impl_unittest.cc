@@ -114,10 +114,11 @@ const char kTestJsonDefaultCategoryTitle[] = "Some title";
 
 const int kUnknownRemoteCategoryId = 1234;
 
-const int kMaxAdditionalPrefetchedSuggestions = 5;
-
+// Different from default values to confirm that variation param values are
+// used.
+const int kMaxAdditionalPrefetchedSuggestions = 7;
 const base::TimeDelta kMaxAgeForAdditionalPrefetchedSuggestion =
-    base::TimeDelta::FromHours(36);
+    base::TimeDelta::FromHours(48);
 
 base::Time GetDefaultCreationTime() {
   base::Time out_time;
@@ -619,14 +620,22 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kArticleSuggestionsFeature.name});
   }
 
-  void EnableKeepingPrefetchedContentSuggestions() {
+  void EnableKeepingPrefetchedContentSuggestions(
+      int max_additional_prefetched_suggestions,
+      const base::TimeDelta& max_age_for_additional_prefetched_suggestion) {
     // params_manager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
     // previous settings first to make this explicit.
     params_manager_.ClearAllVariationParams();
     params_manager_.SetVariationParamsWithFeatureAssociations(
         kKeepPrefetchedContentSuggestions.name,
-        /*param_values=*/std::map<std::string, std::string>(),
+        {
+            {"max_additional_prefetched_suggestions",
+             base::IntToString(max_additional_prefetched_suggestions)},
+            {"max_age_for_additional_prefetched_suggestion_minutes",
+             base::IntToString(
+                 max_age_for_additional_prefetched_suggestion.InMinutes())},
+        },
         {kKeepPrefetchedContentSuggestions.name});
   }
 
@@ -2469,7 +2478,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldFetchNormallyWithoutPrefetchedPagesTracker) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProvider();
   std::vector<FetchedCategory> fetched_categories;
   fetched_categories.push_back(
@@ -2486,7 +2498,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldKeepPrefetchedSuggestionsAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2536,7 +2551,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldIgnoreNotPrefetchedSuggestionsAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2584,7 +2602,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldLimitKeptPrefetchedSuggestionsAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2638,7 +2659,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldMixInPrefetchedSuggestionsByScoreAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2708,7 +2732,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(
     RemoteSuggestionsProviderImplTest,
     ShouldKeepMostRecentlyFetchedPrefetchedSuggestionsFirstAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2761,7 +2788,10 @@ TEST_F(
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotKeepStalePrefetchedSuggestionsAfterFetchWhenEnabled) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
@@ -2848,7 +2878,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldWaitForPrefetchedPagesTrackerInitialization) {
-  EnableKeepingPrefetchedContentSuggestions();
+  EnableKeepingPrefetchedContentSuggestions(
+      kMaxAdditionalPrefetchedSuggestions,
+      kMaxAgeForAdditionalPrefetchedSuggestion);
+
   auto provider = MakeSuggestionsProviderWithoutInitialization(
       /*use_mock_prefetched_pages_tracker=*/true);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
