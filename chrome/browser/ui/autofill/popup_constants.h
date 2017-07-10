@@ -9,12 +9,12 @@
 
 namespace autofill {
 
-#if defined(TOOLKIT_VIEWS)
-// In views, the implementation takes care of the border itself.
-const int kPopupBorderThickness = 0;
-#else
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 // TODO(crbug.com/676221): Change this to pixels
 const int kPopupBorderThickness = 1;
+#else
+// In views, the implementation takes care of the border itself.
+const int kPopupBorderThickness = 0;
 #endif
 
 }  // namespace autofill
