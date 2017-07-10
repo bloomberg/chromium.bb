@@ -50,15 +50,16 @@ Commit::~Commit() {
   DCHECK(cleaned_up_);
 }
 
-Commit* Commit::Init(ModelTypeSet requested_types,
-                     ModelTypeSet enabled_types,
-                     size_t max_entries,
-                     const std::string& account_name,
-                     const std::string& cache_guid,
-                     bool cookie_jar_mismatch,
-                     bool cookie_jar_empty,
-                     CommitProcessor* commit_processor,
-                     ExtensionsActivity* extensions_activity) {
+// static
+std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
+                                     ModelTypeSet enabled_types,
+                                     size_t max_entries,
+                                     const std::string& account_name,
+                                     const std::string& cache_guid,
+                                     bool cookie_jar_mismatch,
+                                     bool cookie_jar_empty,
+                                     CommitProcessor* commit_processor,
+                                     ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
   ContributionMap contributions;
   commit_processor->GatherCommitContributions(requested_types, max_entries,
@@ -109,8 +110,8 @@ Commit* Commit::Init(ModelTypeSet requested_types,
   }
 
   // If we made it this far, then we've successfully prepared a commit message.
-  return new Commit(std::move(contributions), message,
-                    extensions_activity_buffer);
+  return base::MakeUnique<Commit>(std::move(contributions), message,
+                                  extensions_activity_buffer);
 }
 
 SyncerError Commit::PostAndProcessResponse(

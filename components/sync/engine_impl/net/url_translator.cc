@@ -22,15 +22,6 @@ const char kClientName[] = "Chromium";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }  // namespace
 
-// Convenience wrappers around CgiEscapePath().
-string CgiEscapeString(const char* src) {
-  return CgiEscapeString(string(src));
-}
-
-string CgiEscapeString(const string& src) {
-  return net::EscapeUrlEncodedData(src, true);
-}
-
 // This method appends the query string to the sync server path.
 string MakeSyncServerPath(const string& path, const string& query_string) {
   string result = path;
@@ -42,10 +33,10 @@ string MakeSyncServerPath(const string& path, const string& query_string) {
 string MakeSyncQueryString(const string& client_id) {
   string query;
   query += kParameterClient;
-  query += "=" + CgiEscapeString(kClientName);
+  query += "=" + net::EscapeUrlEncodedData(kClientName, true);
   query += "&";
   query += kParameterClientID;
-  query += "=" + CgiEscapeString(client_id);
+  query += "=" + net::EscapeUrlEncodedData(client_id, true);
   return query;
 }
 

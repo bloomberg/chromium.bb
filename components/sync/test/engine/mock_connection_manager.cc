@@ -763,15 +763,10 @@ void MockConnectionManager::SetServerNotReachable() {
 
 void MockConnectionManager::UpdateConnectionStatus() {
   if (!server_reachable_) {
-    server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
+    SetServerStatus(HttpResponse::CONNECTION_UNAVAILABLE);
   } else {
-    server_status_ = HttpResponse::SERVER_CONNECTION_OK;
+    SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
   }
-}
-
-void MockConnectionManager::SetServerStatus(
-    HttpResponse::ServerConnectionCode server_status) {
-  server_status_ = server_status;
 }
 
 }  // namespace syncer

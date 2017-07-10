@@ -12,10 +12,6 @@ namespace syncer {
 // Contains the declaration of a few helper functions used for generating sync
 // URLs.
 
-// Convenience wrappers around CgiEscapePath(), used by gaia_auth.
-std::string CgiEscapeString(const char* src);
-std::string CgiEscapeString(const std::string& src);
-
 // This method appends the query string to the sync server path.
 std::string MakeSyncServerPath(const std::string& path,
                                const std::string& query_string);
