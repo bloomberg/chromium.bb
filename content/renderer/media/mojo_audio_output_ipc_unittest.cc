@@ -139,7 +139,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
 
   void Acquire(media::mojom::AudioOutputStreamRequest stream_request,
                const media::AudioParameters& params,
-               const AcquireCallback& callback) override {
+               AcquireCallback callback) override {
     EXPECT_EQ(binding_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     binding_.emplace(stream_, std::move(stream_request));

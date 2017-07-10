@@ -32,19 +32,19 @@ ProvisionFetcherImpl::~ProvisionFetcherImpl() {}
 
 void ProvisionFetcherImpl::Retrieve(const std::string& default_url,
                                     const std::string& request_data,
-                                    const RetrieveCallback& callback) {
+                                    RetrieveCallback callback) {
   DVLOG(1) << __FUNCTION__ << ": " << default_url;
   provision_fetcher_->Retrieve(
       default_url, request_data,
       base::Bind(&ProvisionFetcherImpl::OnResponse, weak_factory_.GetWeakPtr(),
-                 callback));
+                 base::Passed(&callback)));
 }
 
-void ProvisionFetcherImpl::OnResponse(const RetrieveCallback& callback,
+void ProvisionFetcherImpl::OnResponse(RetrieveCallback callback,
                                       bool success,
                                       const std::string& response) {
   DVLOG(1) << __FUNCTION__ << ": " << success;
-  callback.Run(success, response);
+  std::move(callback).Run(success, response);
 }
 
 }  // namespace content

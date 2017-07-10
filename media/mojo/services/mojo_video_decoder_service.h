@@ -42,10 +42,9 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
                  mojom::CommandBufferIdPtr command_buffer_id) final;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const InitializeCallback& callback) final;
-  void Decode(mojom::DecoderBufferPtr buffer,
-              const DecodeCallback& callback) final;
-  void Reset(const ResetCallback& callback) final;
+                  InitializeCallback callback) final;
+  void Decode(mojom::DecoderBufferPtr buffer, DecodeCallback callback) final;
+  void Reset(ResetCallback callback) final;
   void OnReleaseMailbox(const base::UnguessableToken& release_token,
                         const gpu::SyncToken& release_sync_token) final;
 
@@ -54,11 +53,11 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   // running mojom::VideoDecoder callbacks after connection error happens and
   // |this| is deleted. It's not safe to run the callbacks after a connection
   // error.
-  void OnDecoderInitialized(const InitializeCallback& callback, bool success);
-  void OnDecoderRead(const DecodeCallback& callback,
+  void OnDecoderInitialized(InitializeCallback callback, bool success);
+  void OnDecoderRead(DecodeCallback callback,
                      scoped_refptr<DecoderBuffer> buffer);
-  void OnDecoderDecoded(const DecodeCallback& callback, DecodeStatus status);
-  void OnDecoderReset(const ResetCallback& callback);
+  void OnDecoderDecoded(DecodeCallback callback, DecodeStatus status);
+  void OnDecoderReset(ResetCallback callback);
 
   void OnDecoderOutput(MojoMediaClient::ReleaseMailboxCB,
                        const scoped_refptr<VideoFrame>& frame);

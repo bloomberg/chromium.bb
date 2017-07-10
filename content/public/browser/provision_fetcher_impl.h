@@ -40,11 +40,11 @@ class CONTENT_EXPORT ProvisionFetcherImpl
   // media::mojom::ProvisionFetcher implementation.
   void Retrieve(const std::string& default_url,
                 const std::string& request_data,
-                const RetrieveCallback& callback) final;
+                RetrieveCallback callback) final;
 
  private:
   // Callback for media::ProvisionFetcher::Retrieve().
-  void OnResponse(const RetrieveCallback& callback,
+  void OnResponse(RetrieveCallback callback,
                   bool success,
                   const std::string& response);
 

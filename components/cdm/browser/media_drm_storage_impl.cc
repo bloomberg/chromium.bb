@@ -123,13 +123,13 @@ void MediaDrmStorageImpl::Initialize(const url::Origin& origin) {
   initialized_ = true;
 }
 
-void MediaDrmStorageImpl::OnProvisioned(const OnProvisionedCallback& callback) {
+void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -144,19 +144,19 @@ void MediaDrmStorageImpl::OnProvisioned(const OnProvisionedCallback& callback) {
 
   storage_dict->SetWithoutPathExpansion(origin_string_,
                                         CreateOriginDictionary());
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void MediaDrmStorageImpl::SavePersistentSession(
     const std::string& session_id,
     media::mojom::SessionDataPtr session_data,
-    const SavePersistentSessionCallback& callback) {
+    SavePersistentSessionCallback callback) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -196,18 +196,18 @@ void MediaDrmStorageImpl::SavePersistentSession(
       session_id, CreateSessionDictionary(session_data->key_set_id,
                                           session_data->mime_type));
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void MediaDrmStorageImpl::LoadPersistentSession(
     const std::string& session_id,
-    const LoadPersistentSessionCallback& callback) {
+    LoadPersistentSessionCallback callback) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -221,14 +221,14 @@ void MediaDrmStorageImpl::LoadPersistentSession(
     DVLOG(1) << __func__
              << ": Failed to save persistent session data; entry for origin "
              << origin_ << " does not exist.";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   const base::DictionaryValue* sessions_dict = nullptr;
   if (!origin_dict->GetDictionary(kSessions, &sessions_dict)) {
     DVLOG(2) << __func__ << ": Sessions dictionary does not exist.";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -236,7 +236,7 @@ void MediaDrmStorageImpl::LoadPersistentSession(
   if (!sessions_dict->GetDictionaryWithoutPathExpansion(session_id,
                                                         &session_dict)) {
     DVLOG(2) << __func__ << ": Session dictionary does not exist.";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -244,22 +244,23 @@ void MediaDrmStorageImpl::LoadPersistentSession(
   std::string mime_type;
   if (!GetSessionData(session_dict, &key_set_id, &mime_type)) {
     DVLOG(2) << __func__ << ": Failed to read session data.";
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
-  callback.Run(media::mojom::SessionData::New(key_set_id, mime_type));
+  std::move(callback).Run(
+      media::mojom::SessionData::New(key_set_id, mime_type));
 }
 
 void MediaDrmStorageImpl::RemovePersistentSession(
     const std::string& session_id,
-    const RemovePersistentSessionCallback& callback) {
+    RemovePersistentSessionCallback callback) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -273,19 +274,19 @@ void MediaDrmStorageImpl::RemovePersistentSession(
   if (!origin_dict) {
     DVLOG(1) << __func__ << ": Entry for rigin " << origin_string_
              << " does not exist.";
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
   base::DictionaryValue* sessions_dict = nullptr;
   if (!origin_dict->GetDictionary(kSessions, &sessions_dict)) {
     DVLOG(2) << __func__ << ": Sessions dictionary does not exist.";
-    callback.Run(true);
+    std::move(callback).Run(true);
     return;
   }
 
   sessions_dict->RemoveWithoutPathExpansion(session_id, nullptr);
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void MediaDrmStorageImpl::RenderFrameDeleted(

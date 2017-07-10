@@ -34,7 +34,7 @@ void MojoAudioDecoderService::Construct(
 
 void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
                                          int32_t cdm_id,
-                                         const InitializeCallback& callback) {
+                                         InitializeCallback callback) {
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
 
   // Get CdmContext from cdm_id if the stream is encrypted.
@@ -43,29 +43,29 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
   if (config.is_encrypted()) {
     if (!mojo_cdm_service_context_) {
       DVLOG(1) << "CDM service context not available.";
-      callback.Run(false, false);
+      std::move(callback).Run(false, false);
       return;
     }
 
     cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
     if (!cdm) {
       DVLOG(1) << "CDM not found for CDM id: " << cdm_id;
-      callback.Run(false, false);
+      std::move(callback).Run(false, false);
       return;
     }
 
     cdm_context = cdm->GetCdmContext();
     if (!cdm_context) {
       DVLOG(1) << "CDM context not available for CDM id: " << cdm_id;
-      callback.Run(false, false);
+      std::move(callback).Run(false, false);
       return;
     }
   }
 
   decoder_->Initialize(
       config, cdm_context,
-      base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_, callback,
-                 cdm),
+      base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_,
+                 base::Passed(&callback), cdm),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_));
 }
 
@@ -78,31 +78,31 @@ void MojoAudioDecoderService::SetDataSource(
 }
 
 void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
-                                     const DecodeCallback& callback) {
+                                     DecodeCallback callback) {
   DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
       std::move(buffer), base::BindOnce(&MojoAudioDecoderService::OnReadDone,
-                                        weak_this_, callback));
+                                        weak_this_, std::move(callback)));
 }
 
-void MojoAudioDecoderService::Reset(const ResetCallback& callback) {
+void MojoAudioDecoderService::Reset(ResetCallback callback) {
   DVLOG(1) << __func__;
-  decoder_->Reset(
-      base::Bind(&MojoAudioDecoderService::OnResetDone, weak_this_, callback));
+  decoder_->Reset(base::Bind(&MojoAudioDecoderService::OnResetDone, weak_this_,
+                             base::Passed(&callback)));
 }
 
 void MojoAudioDecoderService::OnInitialized(
-    const InitializeCallback& callback,
+    InitializeCallback callback,
     scoped_refptr<ContentDecryptionModule> cdm,
     bool success) {
   DVLOG(1) << __func__ << " success:" << success;
 
   if (success) {
     cdm_ = cdm;
-    callback.Run(success, decoder_->NeedsBitstreamConversion());
+    std::move(callback).Run(success, decoder_->NeedsBitstreamConversion());
   } else {
     // Do not call decoder_->NeedsBitstreamConversion() if init failed.
-    callback.Run(false, false);
+    std::move(callback).Run(false, false);
   }
 }
 
@@ -110,28 +110,28 @@ void MojoAudioDecoderService::OnInitialized(
 // to avoid running the |callback| after connection error happens and |this| is
 // deleted. It's not safe to run the |callback| after a connection error.
 
-void MojoAudioDecoderService::OnReadDone(const DecodeCallback& callback,
+void MojoAudioDecoderService::OnReadDone(DecodeCallback callback,
                                          scoped_refptr<DecoderBuffer> buffer) {
   DVLOG(3) << __func__ << " success:" << !!buffer;
 
   if (!buffer) {
-    callback.Run(DecodeStatus::DECODE_ERROR);
+    std::move(callback).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   decoder_->Decode(buffer, base::Bind(&MojoAudioDecoderService::OnDecodeStatus,
-                                      weak_this_, callback));
+                                      weak_this_, base::Passed(&callback)));
 }
 
-void MojoAudioDecoderService::OnDecodeStatus(const DecodeCallback& callback,
+void MojoAudioDecoderService::OnDecodeStatus(DecodeCallback callback,
                                              media::DecodeStatus status) {
   DVLOG(3) << __func__ << " status:" << status;
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
-void MojoAudioDecoderService::OnResetDone(const ResetCallback& callback) {
+void MojoAudioDecoderService::OnResetDone(ResetCallback callback) {
   DVLOG(1) << __func__;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void MojoAudioDecoderService::OnAudioBufferReady(

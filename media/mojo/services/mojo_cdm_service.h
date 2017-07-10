@@ -53,31 +53,31 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   void Initialize(const std::string& key_system,
                   const std::string& security_origin,
                   mojom::CdmConfigPtr cdm_config,
-                  const InitializeCallback& callback) final;
+                  InitializeCallback callback) final;
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
-                            const SetServerCertificateCallback& callback) final;
+                            SetServerCertificateCallback callback) final;
   void CreateSessionAndGenerateRequest(
       CdmSessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
-      const CreateSessionAndGenerateRequestCallback& callback) final;
+      CreateSessionAndGenerateRequestCallback callback) final;
   void LoadSession(CdmSessionType session_type,
                    const std::string& session_id,
-                   const LoadSessionCallback& callback) final;
+                   LoadSessionCallback callback) final;
   void UpdateSession(const std::string& session_id,
                      const std::vector<uint8_t>& response,
-                     const UpdateSessionCallback& callback) final;
+                     UpdateSessionCallback callback) final;
   void CloseSession(const std::string& session_id,
-                    const CloseSessionCallback& callback) final;
+                    CloseSessionCallback callback) final;
   void RemoveSession(const std::string& session_id,
-                     const RemoveSessionCallback& callback) final;
+                     RemoveSessionCallback callback) final;
 
   // Get CDM to be used by the media pipeline.
   scoped_refptr<::media::ContentDecryptionModule> GetCdm();
 
  private:
   // Callback for CdmFactory::Create().
-  void OnCdmCreated(const InitializeCallback& callback,
+  void OnCdmCreated(InitializeCallback callback,
                     const scoped_refptr<::media::ContentDecryptionModule>& cdm,
                     const std::string& error_message);
 

@@ -55,7 +55,7 @@ void MojoCdmService::SetClient(mojom::ContentDecryptionModuleClientPtr client) {
 void MojoCdmService::Initialize(const std::string& key_system,
                                 const std::string& security_origin,
                                 mojom::CdmConfigPtr cdm_config,
-                                const InitializeCallback& callback) {
+                                InitializeCallback callback) {
   DVLOG(1) << __func__ << ": " << key_system;
   DCHECK(!cdm_);
 
@@ -66,57 +66,60 @@ void MojoCdmService::Initialize(const std::string& key_system,
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
       base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&MojoCdmService::OnCdmCreated, weak_this, callback));
+      base::Bind(&MojoCdmService::OnCdmCreated, weak_this,
+                 base::Passed(&callback)));
 }
 
 void MojoCdmService::SetServerCertificate(
     const std::vector<uint8_t>& certificate_data,
-    const SetServerCertificateCallback& callback) {
+    SetServerCertificateCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->SetServerCertificate(certificate_data,
-                             base::MakeUnique<SimpleMojoCdmPromise>(callback));
+  cdm_->SetServerCertificate(
+      certificate_data,
+      base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
     CdmSessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    const CreateSessionAndGenerateRequestCallback& callback) {
+    CreateSessionAndGenerateRequestCallback callback) {
   DVLOG(2) << __func__;
   cdm_->CreateSessionAndGenerateRequest(
       session_type, init_data_type, init_data,
-      base::MakeUnique<NewSessionMojoCdmPromise>(callback));
+      base::MakeUnique<NewSessionMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::LoadSession(CdmSessionType session_type,
                                  const std::string& session_id,
-                                 const LoadSessionCallback& callback) {
+                                 LoadSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->LoadSession(session_type, session_id,
-                    base::MakeUnique<NewSessionMojoCdmPromise>(callback));
+  cdm_->LoadSession(
+      session_type, session_id,
+      base::MakeUnique<NewSessionMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::UpdateSession(const std::string& session_id,
                                    const std::vector<uint8_t>& response,
-                                   const UpdateSessionCallback& callback) {
+                                   UpdateSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->UpdateSession(
-      session_id, response,
-      std::unique_ptr<SimpleCdmPromise>(new SimpleMojoCdmPromise(callback)));
+  cdm_->UpdateSession(session_id, response,
+                      std::unique_ptr<SimpleCdmPromise>(
+                          new SimpleMojoCdmPromise(std::move(callback))));
 }
 
 void MojoCdmService::CloseSession(const std::string& session_id,
-                                  const CloseSessionCallback& callback) {
+                                  CloseSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->CloseSession(session_id,
-                     base::MakeUnique<SimpleMojoCdmPromise>(callback));
+  cdm_->CloseSession(
+      session_id, base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::RemoveSession(const std::string& session_id,
-                                   const RemoveSessionCallback& callback) {
+                                   RemoveSessionCallback callback) {
   DVLOG(2) << __func__;
-  cdm_->RemoveSession(session_id,
-                      base::MakeUnique<SimpleMojoCdmPromise>(callback));
+  cdm_->RemoveSession(
+      session_id, base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 scoped_refptr<ContentDecryptionModule> MojoCdmService::GetCdm() {
@@ -124,7 +127,7 @@ scoped_refptr<ContentDecryptionModule> MojoCdmService::GetCdm() {
 }
 
 void MojoCdmService::OnCdmCreated(
-    const InitializeCallback& callback,
+    InitializeCallback callback,
     const scoped_refptr<::media::ContentDecryptionModule>& cdm,
     const std::string& error_message) {
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
@@ -136,7 +139,7 @@ void MojoCdmService::OnCdmCreated(
     cdm_promise_result->exception = CdmPromise::Exception::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;
     cdm_promise_result->error_message = error_message;
-    callback.Run(std::move(cdm_promise_result), 0, nullptr);
+    std::move(callback).Run(std::move(cdm_promise_result), 0, nullptr);
     return;
   }
 
@@ -158,8 +161,8 @@ void MojoCdmService::OnCdmCreated(
 
   DVLOG(1) << __func__ << ": CDM successfully created with ID " << cdm_id_;
   cdm_promise_result->success = true;
-  callback.Run(std::move(cdm_promise_result), cdm_id_,
-               std::move(decryptor_service));
+  std::move(callback).Run(std::move(cdm_promise_result), cdm_id_,
+                          std::move(decryptor_service));
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,

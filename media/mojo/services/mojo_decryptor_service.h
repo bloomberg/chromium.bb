@@ -46,49 +46,45 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService
                   mojo::ScopedDataPipeProducerHandle transmit_pipe) final;
   void Decrypt(StreamType stream_type,
                mojom::DecoderBufferPtr encrypted,
-               const DecryptCallback& callback) final;
+               DecryptCallback callback) final;
   void CancelDecrypt(StreamType stream_type) final;
-  void InitializeAudioDecoder(
-      const AudioDecoderConfig& config,
-      const InitializeAudioDecoderCallback& callback) final;
-  void InitializeVideoDecoder(
-      const VideoDecoderConfig& config,
-      const InitializeVideoDecoderCallback& callback) final;
-  void DecryptAndDecodeAudio(
-      mojom::DecoderBufferPtr encrypted,
-      const DecryptAndDecodeAudioCallback& callback) final;
-  void DecryptAndDecodeVideo(
-      mojom::DecoderBufferPtr encrypted,
-      const DecryptAndDecodeVideoCallback& callback) final;
+  void InitializeAudioDecoder(const AudioDecoderConfig& config,
+                              InitializeAudioDecoderCallback callback) final;
+  void InitializeVideoDecoder(const VideoDecoderConfig& config,
+                              InitializeVideoDecoderCallback callback) final;
+  void DecryptAndDecodeAudio(mojom::DecoderBufferPtr encrypted,
+                             DecryptAndDecodeAudioCallback callback) final;
+  void DecryptAndDecodeVideo(mojom::DecoderBufferPtr encrypted,
+                             DecryptAndDecodeVideoCallback callback) final;
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
 
  private:
   void OnReadDone(StreamType stream_type,
-                  const DecryptCallback& callback,
+                  DecryptCallback callback,
                   scoped_refptr<DecoderBuffer> buffer);
 
   // Callback executed once Decrypt() is done.
-  void OnDecryptDone(const DecryptCallback& callback,
+  void OnDecryptDone(DecryptCallback callback,
                      Status status,
                      const scoped_refptr<DecoderBuffer>& buffer);
 
   // Callbacks executed once decoder initialized.
-  void OnAudioDecoderInitialized(const InitializeAudioDecoderCallback& callback,
+  void OnAudioDecoderInitialized(InitializeAudioDecoderCallback callback,
                                  bool success);
-  void OnVideoDecoderInitialized(const InitializeVideoDecoderCallback& callback,
+  void OnVideoDecoderInitialized(InitializeVideoDecoderCallback callback,
                                  bool success);
 
-  void OnAudioRead(const DecryptAndDecodeAudioCallback& callback,
+  void OnAudioRead(DecryptAndDecodeAudioCallback callback,
                    scoped_refptr<DecoderBuffer> buffer);
-  void OnVideoRead(const DecryptAndDecodeVideoCallback& callback,
+  void OnVideoRead(DecryptAndDecodeVideoCallback callback,
                    scoped_refptr<DecoderBuffer> buffer);
 
   // Callbacks executed when DecryptAndDecode are done.
-  void OnAudioDecoded(const DecryptAndDecodeAudioCallback& callback,
+  void OnAudioDecoded(DecryptAndDecodeAudioCallback callback,
                       Status status,
                       const media::Decryptor::AudioFrames& frames);
-  void OnVideoDecoded(const DecryptAndDecodeVideoCallback& callback,
+  void OnVideoDecoded(DecryptAndDecodeVideoCallback callback,
                       Status status,
                       const scoped_refptr<VideoFrame>& frame);
 

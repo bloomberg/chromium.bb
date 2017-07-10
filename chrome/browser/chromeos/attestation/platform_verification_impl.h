@@ -33,12 +33,12 @@ class PlatformVerificationImpl : public media::mojom::PlatformVerification {
   // mojo::InterfaceImpl<PlatformVerification> implementation.
   void ChallengePlatform(const std::string& service_id,
                          const std::string& challenge,
-                         const ChallengePlatformCallback& callback) override;
+                         ChallengePlatformCallback callback) override;
 
  private:
   using Result = PlatformVerificationFlow::Result;
 
-  void OnPlatformChallenged(const ChallengePlatformCallback& callback,
+  void OnPlatformChallenged(ChallengePlatformCallback callback,
                             Result result,
                             const std::string& signed_data,
                             const std::string& signature,
