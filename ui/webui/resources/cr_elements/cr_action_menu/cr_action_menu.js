@@ -89,10 +89,10 @@ function getDefaultShowConfig() {
     width: 0,
     anchorAlignmentX: AnchorAlignment.AFTER_START,
     anchorAlignmentY: AnchorAlignment.AFTER_START,
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0,
+    minX: doc.scrollLeft,
+    minY: doc.scrollTop,
+    maxX: doc.scrollLeft + window.innerWidth,
+    maxY: doc.scrollTop + window.innerHeight,
   };
 }
 
@@ -253,8 +253,22 @@ Polymer({
     // accurate for where the menu should be shown.
     this.anchorElement_.scrollIntoViewIfNeeded();
 
+    // Save the scroll position that ensures the anchor element is onscreen.
+    var doc = document.scrollingElement;
+    var scrollLeft = doc.scrollLeft;
+    var scrollTop = doc.scrollTop;
+
+    // Reset position so that layout isn't affected by the previous position,
+    // and so that the dialog is positioned at the top-start corner of the
+    // document.
+    this.resetStyle_();
+
+    // Show the dialog which will focus the top-start of the body. This makes
+    // the client rect calculation relative to the top-start of the body.
+    this.showModal();
+
     var rect = this.anchorElement_.getBoundingClientRect();
-    this.showAtPosition(/** @type {ShowConfig} */ (Object.assign(
+    this.positionDialog_(/** @type {ShowConfig} */ (Object.assign(
         {
           top: rect.top,
           left: rect.left,
@@ -262,8 +276,18 @@ Polymer({
           width: rect.width,
           // Default to anchoring towards the left.
           anchorAlignmentX: AnchorAlignment.BEFORE_END,
+          minX: scrollLeft,
+          minY: scrollTop,
+          maxX: scrollLeft + window.innerWidth,
+          maxY: scrollTop + window.innerHeight,
         },
         opt_config)));
+
+    // Restore the scroll position.
+    doc.scrollTop = scrollTop;
+    doc.scrollLeft = scrollLeft;
+
+    this.addCloseListeners_();
   },
 
   /**
@@ -271,8 +295,7 @@ Polymer({
    * specified as an X and Y alignment which represents a point in the anchor
    * where the menu will align to, which can have the menu either before or
    * after the given point in each axis. Center alignment places the center of
-   * the menu in line with the center of the anchor. Coordinates are relative to
-   * the top-left of the viewport.
+   * the menu in line with the center of the anchor.
    *
    *            y-start
    *         _____________
@@ -294,32 +317,9 @@ Polymer({
    * @param {!ShowConfig} config
    */
   showAtPosition: function(config) {
-    // Save the scroll position of the viewport.
-    var doc = document.scrollingElement;
-    var scrollLeft = doc.scrollLeft;
-    var scrollTop = doc.scrollTop;
-
-    // Reset position so that layout isn't affected by the previous position,
-    // and so that the dialog is positioned at the top-start corner of the
-    // document.
     this.resetStyle_();
     this.showModal();
-
-    config.top += scrollTop;
-    config.left += scrollLeft;
-
-    this.positionDialog_(/** @type {ShowConfig} */ (Object.assign(
-        {
-          minX: scrollLeft,
-          minY: scrollTop,
-          maxX: scrollLeft + doc.clientWidth,
-          maxY: scrollTop + doc.clientHeight,
-        },
-        config)));
-
-    // Restore the scroll position.
-    doc.scrollTop = scrollTop;
-    doc.scrollLeft = scrollLeft;
+    this.positionDialog_(config);
     this.addCloseListeners_();
   },
 
@@ -331,8 +331,6 @@ Polymer({
   },
 
   /**
-   * Position the dialog using the coordinates in config. Coordinates are
-   * relative to the top-left of the viewport when scrolled to (0, 0).
    * @param {!ShowConfig} config
    * @private
    */
@@ -353,8 +351,7 @@ Polymer({
         left, right, this.offsetWidth, c.anchorAlignmentX, c.minX, c.maxX);
 
     if (rtl) {
-      var menuRight =
-          document.scrollingElement.clientWidth - menuLeft - this.offsetWidth;
+      var menuRight = document.body.scrollWidth - menuLeft - this.offsetWidth;
       this.style.right = menuRight + 'px';
     } else {
       this.style.left = menuLeft + 'px';
