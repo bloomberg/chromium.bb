@@ -106,7 +106,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "device/geolocation/geolocation_service_context.h"
+#include "device/geolocation/geolocation_context.h"
 #include "device/vr/features/features.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
@@ -2809,8 +2809,8 @@ void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
-  device::GeolocationServiceContext* geolocation_service_context =
-      delegate_ ? delegate_->GetGeolocationServiceContext() : NULL;
+  device::GeolocationContext* geolocation_context =
+      delegate_ ? delegate_->GetGeolocationContext() : NULL;
 
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
@@ -2819,19 +2819,19 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&InstalledAppProviderImplDefault::Create));
 #endif  // !defined(OS_ANDROID)
 
-  if (geolocation_service_context) {
-    // TODO(creis): Bind process ID here so that GeolocationServiceImpl
+  if (geolocation_context) {
+    // TODO(creis): Bind process ID here so that GeolocationImpl
     // can perform permissions checks once site isolation is complete.
     // crbug.com/426384
     // NOTE: At shutdown, there is no guaranteed ordering between destruction of
-    // this object and destruction of any GeolocationServicesImpls created via
+    // this object and destruction of any GeolocationsImpls created via
     // the below service registry, the reason being that the destruction of the
     // latter is triggered by receiving a message that the pipe was closed from
     // the renderer side. Hence, supply the reference to this object as a weak
     // pointer.
     GetInterfaceRegistry()->AddInterface(
-        base::Bind(&device::GeolocationServiceContext::CreateService,
-                   base::Unretained(geolocation_service_context)));
+        base::Bind(&device::GeolocationContext::Bind,
+                   base::Unretained(geolocation_context)));
   }
 
   GetInterfaceRegistry()->AddInterface<device::mojom::WakeLock>(base::Bind(

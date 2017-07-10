@@ -13,7 +13,7 @@ var mockMessage = "debug";
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
   mock.setGeolocationPermission(true);
   mock.setGeolocationPositionUnavailableError(mockMessage);
 

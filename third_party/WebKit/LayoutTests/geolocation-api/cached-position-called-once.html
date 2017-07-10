@@ -38,7 +38,7 @@ function getPosition(milliseconds) {
     setTimeout(fn, milliseconds);
 }
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPosition(31.478, -0.166, 100);
     mock.setGeolocationPermission(true);
 

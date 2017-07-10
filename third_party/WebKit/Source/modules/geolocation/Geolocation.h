@@ -158,11 +158,11 @@ class MODULES_EXPORT Geolocation final
 
   void StopUpdating();
 
-  void UpdateGeolocationServiceConnection();
+  void UpdateGeolocationConnection();
   void QueryNextPosition();
 
   // Attempts to obtain a position for the given notifier, either by using
-  // the cached position or by requesting one from the GeolocationService.
+  // the cached position or by requesting one from the Geolocation.
   // Sets a fatal error if permission is denied or no position can be
   // obtained.
   void StartRequest(GeoNotifier*);
@@ -200,17 +200,17 @@ class MODULES_EXPORT Geolocation final
   };
 
   Permission geolocation_permission_;
-  device::mojom::blink::GeolocationServicePtr geolocation_service_;
+  device::mojom::blink::GeolocationPtr geolocation_;
   bool enable_high_accuracy_ = false;
   mojom::blink::PermissionServicePtr permission_service_;
 
   // Whether a GeoNotifier is waiting for a position update.
   bool updating_ = false;
 
-  // Set to true when m_geolocationService is disconnected. This is used to
-  // detect when m_geolocationService is disconnected and reconnected while
-  // running callbacks in response to a call to onPositionUpdated().
-  bool disconnected_geolocation_service_ = false;
+  // Set to true when |geolocation_| is disconnected. This is used to
+  // detect when |geolocation_| is disconnected and reconnected while
+  // running callbacks in response to a call to OnPositionUpdated().
+  bool disconnected_geolocation_ = false;
 };
 
 }  // namespace blink

@@ -1,12 +1,12 @@
 /*
- * geolocation-mock contains a mock implementation of GeolocationService and
+ * geolocation-mock contains a mock implementation of Geolocation and
  * PermissionService.
  */
 
 "use strict";
 
-let geolocationServiceMock = loadMojoModules(
-    'geolocationServiceMock',
+let geolocationMock = loadMojoModules(
+    'geolocationMock',
     ['device/geolocation/public/interfaces/geolocation.mojom',
      'device/geolocation/public/interfaces/geoposition.mojom',
      'third_party/WebKit/public/platform/modules/permissions/permission.mojom',
@@ -16,10 +16,10 @@ let geolocationServiceMock = loadMojoModules(
   let [geolocation, geoposition, permission, permissionStatus, bindings] =
       mojo.modules;
 
-  class GeolocationServiceMock {
+  class GeolocationMock {
     constructor(interfaceProvider) {
       interfaceProvider.addInterfaceOverrideForTesting(
-          geolocation.GeolocationService.name,
+          geolocation.Geolocation.name,
           handle => this.connectGeolocation_(handle));
 
       interfaceProvider.addInterfaceOverrideForTesting(
@@ -54,7 +54,7 @@ let geolocationServiceMock = loadMojoModules(
       this.rejectGeolocationConnections_ = false;
 
       this.geolocationBindingSet_ = new bindings.BindingSet(
-          geolocation.GeolocationService);
+          geolocation.Geolocation);
       this.permissionBindingSet_ = new bindings.BindingSet(
           permission.PermissionService);
     }
@@ -81,7 +81,7 @@ let geolocationServiceMock = loadMojoModules(
     }
 
     /**
-     * A mock implementation of GeolocationService.queryNextPosition(). This
+     * A mock implementation of Geolocation.queryNextPosition(). This
      * returns the position set by a call to setGeolocationPosition() or
      * setGeolocationPositionUnavailableError().
      */
@@ -183,5 +183,5 @@ let geolocationServiceMock = loadMojoModules(
     }
 
   }
-  return new GeolocationServiceMock(mojo.frameInterfaces);
+  return new GeolocationMock(mojo.frameInterfaces);
 });

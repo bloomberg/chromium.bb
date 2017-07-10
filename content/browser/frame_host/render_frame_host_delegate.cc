@@ -72,8 +72,7 @@ RenderFrameHost* RenderFrameHostDelegate::GetGuestByInstanceID(
   return NULL;
 }
 
-device::GeolocationServiceContext*
-RenderFrameHostDelegate::GetGeolocationServiceContext() {
+device::GeolocationContext* RenderFrameHostDelegate::GetGeolocationContext() {
   return nullptr;
 }
 

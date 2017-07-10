@@ -11,7 +11,7 @@ description("Tests Geolocation when the permission service connection fails.");
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
 
     mock.rejectPermissionConnections();
 

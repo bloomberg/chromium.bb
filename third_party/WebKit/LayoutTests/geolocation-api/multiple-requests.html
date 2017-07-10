@@ -17,7 +17,7 @@ var position;
 var watchCallbackInvoked = false;
 var oneShotCallbackInvoked = false;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 

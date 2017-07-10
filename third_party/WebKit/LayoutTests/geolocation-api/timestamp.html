@@ -18,7 +18,7 @@ shouldBeTrue('now != 0');
 var t = null;
 var then = null;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 

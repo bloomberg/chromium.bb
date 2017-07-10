@@ -122,7 +122,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/geolocation/geolocation_service_context.h"
+#include "device/geolocation/geolocation_context.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -512,7 +512,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_subframe_(false),
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
-      geolocation_service_context_(new device::GeolocationServiceContext()),
+      geolocation_context_(new device::GeolocationContext()),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
@@ -2647,9 +2647,8 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
   return guest->GetMainFrame();
 }
 
-device::GeolocationServiceContext*
-WebContentsImpl::GetGeolocationServiceContext() {
-  return geolocation_service_context_.get();
+device::GeolocationContext* WebContentsImpl::GetGeolocationContext() {
+  return geolocation_context_.get();
 }
 
 device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {

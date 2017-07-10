@@ -15,7 +15,7 @@ var mockAccuracy = 100.0;
 
 var position;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude,
                                 mockLongitude,

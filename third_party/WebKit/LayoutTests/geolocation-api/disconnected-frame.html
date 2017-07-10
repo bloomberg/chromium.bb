@@ -31,7 +31,7 @@ function onIframeUnloaded() {
     }, 100);
 }
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(51.478, -0.166, 100);
 

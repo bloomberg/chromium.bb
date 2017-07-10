@@ -106,7 +106,7 @@
           "content::mojom::BrowserTarget",
           "content::mojom::RendererAudioOutputStreamFactory",
           "device::mojom::VRService",
-          "device::mojom::GeolocationService",
+          "device::mojom::Geolocation",
           "device::mojom::NFC",
           "device::mojom::WakeLock",
           "device::usb::DeviceManager",

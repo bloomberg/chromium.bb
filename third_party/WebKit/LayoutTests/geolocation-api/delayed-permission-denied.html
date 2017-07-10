@@ -11,7 +11,7 @@ description("Tests that when a position is available, no callbacks are invoked u
 
 var error;
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPosition(51.478, -0.166, 100);
 
     var permissionSet = false;

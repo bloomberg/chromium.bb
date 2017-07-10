@@ -12,7 +12,7 @@ description("Tests that no timers will trigger for navigator.geolocation object 
 if (!window.testRunner)
   debug('This test can not run without testRunner');
 
-geolocationServiceMock.then(mock => {
+geolocationMock.then(mock => {
     mock.setGeolocationPermission(true);
 
     location = "../fast/events/resources/onunload-single-alert-success.html";

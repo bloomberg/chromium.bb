@@ -9,24 +9,23 @@
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-#ifndef DEVICE_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
-#define DEVICE_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
+#ifndef DEVICE_GEOLOCATION_GEOLOCATION_IMPL_H_
+#define DEVICE_GEOLOCATION_GEOLOCATION_IMPL_H_
 
 namespace device {
 
 class GeolocationProvider;
-class GeolocationServiceContext;
+class GeolocationContext;
 
-// Implements the GeolocationService Mojo interface.
-class GeolocationServiceImpl : public mojom::GeolocationService {
+// Implements the Geolocation Mojo interface.
+class GeolocationImpl : public mojom::Geolocation {
  public:
   // |context| must outlive this object. |update_callback| will be called when
   // location updates are sent, allowing the client to know when the service
   // is being used.
-  GeolocationServiceImpl(
-      mojo::InterfaceRequest<mojom::GeolocationService> request,
-      GeolocationServiceContext* context);
-  ~GeolocationServiceImpl() override;
+  GeolocationImpl(mojo::InterfaceRequest<mojom::Geolocation> request,
+                  GeolocationContext* context);
+  ~GeolocationImpl() override;
 
   // Starts listening for updates.
   void StartListeningForUpdates();
@@ -40,7 +39,7 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
   void ClearOverride();
 
  private:
-  // mojom::GeolocationService:
+  // mojom::Geolocation:
   void SetHighAccuracy(bool high_accuracy) override;
   void QueryNextPosition(QueryNextPositionCallback callback) override;
 
@@ -50,10 +49,10 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
   void ReportCurrentPosition();
 
   // The binding between this object and the other end of the pipe.
-  mojo::Binding<mojom::GeolocationService> binding_;
+  mojo::Binding<mojom::Geolocation> binding_;
 
   // Owns this object.
-  GeolocationServiceContext* context_;
+  GeolocationContext* context_;
   std::unique_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
 
   // The callback passed to QueryNextPosition.
@@ -71,9 +70,9 @@ class GeolocationServiceImpl : public mojom::GeolocationService {
 
   bool has_position_to_report_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationImpl);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
+#endif  // DEVICE_GEOLOCATION_GEOLOCATION_IMPL_H_

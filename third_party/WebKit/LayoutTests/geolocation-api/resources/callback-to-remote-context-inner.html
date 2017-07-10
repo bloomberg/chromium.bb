@@ -6,7 +6,7 @@
     <script src="geolocation-mock.js"></script>
     <script>
       function init() {
-          geolocationServiceMock.then(mock => {
+          geolocationMock.then(mock => {
               mock.setGeolocationPermission(true);
               mock.setGeolocationPosition(51.478, -0.166, 100);
               window.parent.onIframeReady()
