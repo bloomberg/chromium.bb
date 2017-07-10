@@ -100,7 +100,7 @@ class LargeIconService : public KeyedService {
       int desired_size_in_pixel,
       bool may_page_url_be_private,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      const base::Callback<void(bool success)>& callback);
+      const favicon_base::GoogleFaviconServerCallback& callback);
 
  private:
   base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyleImpl(

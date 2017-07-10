@@ -15,6 +15,7 @@ struct FaviconRawBitmapResult;
 struct FaviconImageResult;
 struct LargeIconResult;
 struct LargeIconImageResult;
+enum class GoogleFaviconServerRequestStatus;
 
 // Callback for functions that can be used to return a |gfx::Image| and the
 // |GURL| it is loaded from. They are returned as a |FaviconImageResult| object.
@@ -43,6 +44,9 @@ typedef base::Callback<void(const LargeIconResult&)> LargeIconCallback;
 // not be found.
 typedef base::Callback<void(const LargeIconImageResult&)>
     LargeIconImageCallback;
+
+typedef base::Callback<void(GoogleFaviconServerRequestStatus)>
+    GoogleFaviconServerCallback;
 
 }  // namespace favicon_base
 

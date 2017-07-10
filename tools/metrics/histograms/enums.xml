@@ -18061,6 +18061,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Google CAPTCHA solved"/>
 </enum>
 
+<enum name="GoogleFaviconServerRequestStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure (connection error, no HTTP response)"/>
+  <int value="2" label="Failure (HTTP error)"/>
+  <int value="3" label="Failure (previous HTTP error cached)"/>
+  <int value="4" label="Failure (on write to database)"/>
+  <int value="5" label="Failure (invalid request)"/>
+</enum>
+
 <enum name="GoogleNowCardTypeId">
   <summary>
     Represents a card type ID. See cardTypeId in

@@ -46375,6 +46375,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.TileFaviconFetchStatus.Server"
+    enum="GoogleFaviconServerRequestStatus">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Mobile only. The result of fetching a favicon for a tile on the New Tab
+    Page. This is recorded for each gray MostVisited tile on the New Tab Page
+    once per impression of the tile.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.TileFaviconFetchSuccess.Popular"
     enum="BooleanSuccess">
   <owner>jkrcal@chromium.org</owner>
@@ -46387,6 +46397,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NewTabPage.TileFaviconFetchSuccess.Server"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 06/2017. Replaced by NewTabPage.TileFaviconFetchStatus.Server.
+  </obsolete>
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Mobile only. The result of fetching a favicon for a tile on the New Tab

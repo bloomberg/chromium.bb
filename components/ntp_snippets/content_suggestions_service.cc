@@ -285,8 +285,8 @@ void ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished(
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
     const ImageFetchedCallback& callback,
-    bool success) {
-  if (!success) {
+    favicon_base::GoogleFaviconServerRequestStatus status) {
+  if (status != favicon_base::GoogleFaviconServerRequestStatus::SUCCESS) {
     callback.Run(gfx::Image());
     RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;

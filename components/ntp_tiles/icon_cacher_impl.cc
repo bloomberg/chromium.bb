@@ -249,10 +249,15 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
                      weak_ptr_factory_.GetWeakPtr(), page_url));
 }
 
-void IconCacherImpl::OnMostLikelyFaviconDownloaded(const GURL& request_url,
-                                                   bool success) {
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.TileFaviconFetchSuccess.Server", success);
-  FinishRequestAndNotifyIconAvailable(request_url, success);
+void IconCacherImpl::OnMostLikelyFaviconDownloaded(
+    const GURL& request_url,
+    favicon_base::GoogleFaviconServerRequestStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.TileFaviconFetchStatus.Server", status,
+      favicon_base::GoogleFaviconServerRequestStatus::COUNT);
+  FinishRequestAndNotifyIconAvailable(
+      request_url,
+      status == favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
 }
 
 bool IconCacherImpl::StartRequest(const GURL& request_url,

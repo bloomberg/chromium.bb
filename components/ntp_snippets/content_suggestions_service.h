@@ -350,7 +350,7 @@ class ContentSuggestionsService : public KeyedService,
       int minimum_size_in_pixel,
       int desired_size_in_pixel,
       const ImageFetchedCallback& callback,
-      bool success);
+      favicon_base::GoogleFaviconServerRequestStatus status);
 
   // Whether the content suggestions feature is enabled.
   State state_;
