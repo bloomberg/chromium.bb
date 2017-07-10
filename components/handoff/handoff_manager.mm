@@ -23,20 +23,23 @@
 @interface HandoffManager ()
 
 // The active user activity.
-@property(nonatomic, retain) NSUserActivity* userActivity;
+@property(nonatomic, retain) NSUserActivity* userActivity
+    __attribute__((availability(macos, introduced=10.10)));
 
 // Whether the URL of the current tab should be exposed for Handoff.
 - (BOOL)shouldUseActiveURL;
 
 // Updates the active NSUserActivity.
-- (void)updateUserActivity;
+- (void)updateUserActivity
+    __attribute__((availability(macos, introduced = 10.10)));
 
 @end
 
 @implementation HandoffManager {
   base::mac::ObjCPropertyReleaser _propertyReleaser_HandoffManager;
   GURL _activeURL;
-  NSUserActivity* _userActivity;
+  NSUserActivity* _userActivity
+      __attribute__((availability(macos, introduced = 10.10)));
   handoff::Origin _origin;
 }
 
@@ -95,11 +98,8 @@
   // Invalidate the old user activity and make a new one.
   [self.userActivity invalidate];
 
-  Class aClass = NSClassFromString(@"NSUserActivity");
-  base::scoped_nsobject<NSUserActivity> userActivity(
-      [[aClass performSelector:@selector(alloc)]
-          performSelector:@selector(initWithActivityType:)
-               withObject:handoff::kChromeHandoffActivityType]);
+  base::scoped_nsobject<NSUserActivity> userActivity([[NSUserActivity alloc]
+      initWithActivityType:handoff::kChromeHandoffActivityType]);
   self.userActivity = userActivity;
   self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
   NSString* origin = handoff::StringFromOrigin(_origin);
@@ -110,6 +110,7 @@
 
 @end
 
+#if defined(OS_IOS)
 @implementation HandoffManager (TestingOnly)
 
 - (NSURL*)userActivityWebpageURL {
@@ -117,3 +118,4 @@
 }
 
 @end
+#endif

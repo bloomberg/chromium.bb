@@ -31,12 +31,15 @@ class PrefRegistrySyncable;
 // The active URL is defined as the URL of the most recently accessed tab. This
 // method should be called any time the active URL might have changed. This
 // method is idempotent.
-- (void)updateActiveURL:(const GURL&)url;
+- (void)updateActiveURL:(const GURL&)url
+    __attribute__((availability(macos, introduced = 10.10)));
 
 @end
 
+#if defined(OS_IOS)
 @interface HandoffManager (TestingOnly)
 - (NSURL*)userActivityWebpageURL;
 @end
+#endif
 
 #endif  // COMPONENTS_HANDOFF_HANDOFF_MANAGER_H_
