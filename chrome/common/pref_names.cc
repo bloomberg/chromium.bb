@@ -421,17 +421,6 @@ const char kWebKitEncryptedMediaEnabled[] =
 // (crbug.com/564207).
 const char kDataSaverEnabled[] = "spdy_proxy.enabled";
 
-// Boolean that is true when SafeBrowsing is enabled.
-const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
-
-// Boolean that is true when the SafeBrowsing interstitial should not allow
-// users to proceed anyway.
-const char kSafeBrowsingProceedAnywayDisabled[] =
-    "safebrowsing.proceed_anyway_disabled";
-
-// A dictionary mapping incident types to a dict of incident key:digest pairs.
-const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
-
 // Boolean that is true when the SSL interstitial should allow users to
 // proceed anyway. Otherwise, proceeding is not possible.
 const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";

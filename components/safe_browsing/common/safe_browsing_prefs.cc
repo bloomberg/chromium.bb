@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -140,18 +141,22 @@ void RecordExtendedReportingPrefChanged(
 }  // namespace
 
 namespace prefs {
-const char kSafeBrowsingExtendedReportingOptInAllowed[] =
-    "safebrowsing.extended_reporting_opt_in_allowed";
+const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingExtendedReportingEnabled[] =
     "safebrowsing.extended_reporting_enabled";
-const char kSafeBrowsingScoutReportingEnabled[] =
-    "safebrowsing.scout_reporting_enabled";
-const char kSafeBrowsingScoutGroupSelected[] =
-    "safebrowsing.scout_group_selected";
+const char kSafeBrowsingExtendedReportingOptInAllowed[] =
+    "safebrowsing.extended_reporting_opt_in_allowed";
+const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
+const char kSafeBrowsingProceedAnywayDisabled[] =
+    "safebrowsing.proceed_anyway_disabled";
 const char kSafeBrowsingSawInterstitialExtendedReporting[] =
     "safebrowsing.saw_interstitial_sber1";
 const char kSafeBrowsingSawInterstitialScoutReporting[] =
     "safebrowsing.saw_interstitial_sber2";
+const char kSafeBrowsingScoutGroupSelected[] =
+    "safebrowsing.scout_group_selected";
+const char kSafeBrowsingScoutReportingEnabled[] =
+    "safebrowsing.scout_reporting_enabled";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -353,7 +358,6 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 }
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  // TODO(lpz): Move other safe browsing prefs here from c/b/profiles/profile.cc
   registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
@@ -365,6 +369,12 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
+  registry->RegisterBooleanPref(
+      prefs::kSafeBrowsingEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
+                                false);
+  registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
 }
 
 void SetExtendedReportingPrefAndMetric(
