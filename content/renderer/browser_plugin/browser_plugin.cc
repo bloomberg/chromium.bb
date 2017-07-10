@@ -589,7 +589,7 @@ bool BrowserPlugin::CommitText(
 
   std::vector<blink::WebCompositionUnderline> std_underlines;
   for (size_t i = 0; i < underlines.size(); ++i) {
-    std_underlines.push_back(std_underlines[i]);
+    std_underlines.push_back(underlines[i]);
   }
   gfx::Range replacement_range =
       replacementRange.IsNull()
