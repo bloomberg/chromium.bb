@@ -77,12 +77,12 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public Account[] getAccountsByType(String type) {
+    public Account[] getAccountsSync() throws AccountManagerDelegateException {
         if (!hasGetAccountsPermission()) {
             return new Account[] {};
         }
         long now = SystemClock.elapsedRealtime();
-        Account[] accounts = mAccountManager.getAccountsByType(type);
+        Account[] accounts = mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
         long elapsed = SystemClock.elapsedRealtime() - now;
         recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
         if (ThreadUtils.runningOnUiThread()) {
@@ -90,11 +90,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                     "Signin.AndroidGetAccountsTimeUiThread_AccountManager", elapsed);
         }
         return accounts;
-    }
-
-    @Override
-    public Account[] getAccountsSync() throws AccountManagerDelegateException {
-        return getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
     }
 
     @Override

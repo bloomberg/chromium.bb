@@ -69,20 +69,6 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public Account[] getAccountsByType(String type) {
-        if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(type)) {
-            throw new IllegalArgumentException("Invalid account type: " + type);
-        }
-        ArrayList<Account> validAccounts = new ArrayList<>();
-        for (AccountHolder ah : mAccounts) {
-            if (type.equals(ah.getAccount().type)) {
-                validAccounts.add(ah.getAccount());
-            }
-        }
-        return validAccounts.toArray(new Account[0]);
-    }
-
-    @Override
     public Account[] getAccountsSync() throws AccountManagerDelegateException {
         return getAccountsSyncNoThrow();
     }
