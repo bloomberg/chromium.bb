@@ -121,15 +121,9 @@ PermissionRequestManager::PermissionRequestManager(
 }
 
 PermissionRequestManager::~PermissionRequestManager() {
-  if (view_ != NULL)
-    view_->SetDelegate(NULL);
-
-  for (PermissionRequest* request : requests_)
-    request->RequestFinished();
-  for (PermissionRequest* request : queued_requests_)
-    request->RequestFinished();
-  for (const auto& entry : duplicate_requests_)
-    entry.second->RequestFinished();
+  DCHECK(requests_.empty());
+  DCHECK(duplicate_requests_.empty());
+  DCHECK(queued_requests_.empty());
 }
 
 void PermissionRequestManager::AddRequest(PermissionRequest* request) {

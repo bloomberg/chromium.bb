@@ -51,13 +51,13 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
 
-    manager_.reset(new PermissionRequestManager(web_contents()));
-    prompt_factory_.reset(new MockPermissionPromptFactory(manager_.get()));
+    PermissionRequestManager::CreateForWebContents(web_contents());
+    manager_ = PermissionRequestManager::FromWebContents(web_contents());
+    prompt_factory_.reset(new MockPermissionPromptFactory(manager_));
   }
 
   void TearDown() override {
     prompt_factory_.reset();
-    manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -101,7 +101,7 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   MockPermissionRequest iframe_request_same_domain_;
   MockPermissionRequest iframe_request_other_domain_;
   MockPermissionRequest iframe_request_mic_other_domain_;
-  std::unique_ptr<PermissionRequestManager> manager_;
+  PermissionRequestManager* manager_;
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
 };
 
