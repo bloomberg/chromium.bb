@@ -43,7 +43,6 @@ void reference_idct_1d(const double *in, double *out, int size) {
   }
 }
 
-typedef void (*IdctFuncRef)(const double *in, double *out, int size);
 typedef void (*IdctFunc)(const tran_low_t *in, tran_low_t *out);
 
 class TransTestBase {
@@ -66,7 +65,7 @@ class TransTestBase {
       }
 
       fwd_txfm_(input, output);
-      fwd_txfm_ref_(ref_input, ref_output, txfm_size_);
+      reference_idct_1d(ref_input, ref_output, txfm_size_);
 
       for (int ni = 0; ni < txfm_size_; ++ni) {
         EXPECT_LE(
@@ -79,30 +78,27 @@ class TransTestBase {
   double max_error_;
   int txfm_size_;
   IdctFunc fwd_txfm_;
-  IdctFuncRef fwd_txfm_ref_;
 };
 
-typedef std::tr1::tuple<IdctFunc, IdctFuncRef, int, int> IdctParam;
+typedef std::tr1::tuple<IdctFunc, int, int> IdctParam;
 class AV1InvTxfm : public TransTestBase,
                    public ::testing::TestWithParam<IdctParam> {
  public:
   virtual void SetUp() {
     fwd_txfm_ = GET_PARAM(0);
-    fwd_txfm_ref_ = GET_PARAM(1);
-    txfm_size_ = GET_PARAM(2);
-    max_error_ = GET_PARAM(3);
+    txfm_size_ = GET_PARAM(1);
+    max_error_ = GET_PARAM(2);
   }
   virtual void TearDown() {}
 };
 
 TEST_P(AV1InvTxfm, RunInvAccuracyCheck) { RunInvAccuracyCheck(); }
 
-INSTANTIATE_TEST_CASE_P(
-    C, AV1InvTxfm,
-    ::testing::Values(IdctParam(&aom_idct4_c, &reference_idct_1d, 4, 1),
-                      IdctParam(&aom_idct8_c, &reference_idct_1d, 8, 2),
-                      IdctParam(&aom_idct16_c, &reference_idct_1d, 16, 4),
-                      IdctParam(&aom_idct32_c, &reference_idct_1d, 32, 6)));
+INSTANTIATE_TEST_CASE_P(C, AV1InvTxfm,
+                        ::testing::Values(IdctParam(&aom_idct4_c, 4, 1),
+                                          IdctParam(&aom_idct8_c, 8, 2),
+                                          IdctParam(&aom_idct16_c, 16, 4),
+                                          IdctParam(&aom_idct32_c, 32, 6)));
 
 #if CONFIG_AV1_ENCODER
 typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
