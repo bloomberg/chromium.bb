@@ -255,8 +255,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int thread_id,
     int request_id,
     int provider_id,
-    const GURL& pattern,
-    const GURL& script_url) {
+    const GURL& script_url,
+    const ServiceWorkerRegistrationOptions& options) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnRegisterServiceWorker");
   ProviderStatus provider_status;
@@ -283,26 +283,27 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
       break;
   }
 
-  if (!pattern.is_valid() || !script_url.is_valid()) {
+  if (!options.scope.is_valid() || !script_url.is_valid()) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_BAD_URL);
     return;
   }
 
   std::string error_message;
-  if (ServiceWorkerUtils::ContainsDisallowedCharacter(pattern, script_url,
+  if (ServiceWorkerUtils::ContainsDisallowedCharacter(options.scope, script_url,
                                                       &error_message)) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }
 
-  std::vector<GURL> urls = {provider_host->document_url(), pattern, script_url};
+  std::vector<GURL> urls = {provider_host->document_url(), options.scope,
+                            script_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          pattern, provider_host->topmost_frame_url(), resource_context_,
+          options.scope, provider_host->topmost_frame_url(), resource_context_,
           base::Bind(&GetWebContents, render_process_id_,
                      provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
@@ -312,18 +313,14 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
-  TRACE_EVENT_ASYNC_BEGIN2(
-      "ServiceWorker", "ServiceWorkerDispatcherHost::RegisterServiceWorker",
-      request_id, "Scope", pattern.spec(), "Script URL", script_url.spec());
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
+                           "ServiceWorkerDispatcherHost::RegisterServiceWorker",
+                           request_id, "Scope", options.scope.spec(),
+                           "Script URL", script_url.spec());
   GetContext()->RegisterServiceWorker(
-      pattern,
-      script_url,
-      provider_host,
-      base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete,
-                 this,
-                 thread_id,
-                 provider_id,
-                 request_id));
+      script_url, options, provider_host,
+      base::Bind(&ServiceWorkerDispatcherHost::RegistrationComplete, this,
+                 thread_id, provider_id, request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(

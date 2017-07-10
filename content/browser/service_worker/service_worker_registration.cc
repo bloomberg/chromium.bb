@@ -38,10 +38,10 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
 }  // namespace
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
-    const GURL& pattern,
+    const ServiceWorkerRegistrationOptions& options,
     int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : pattern_(pattern),
+    : pattern_(options.scope),
       registration_id_(registration_id),
       is_deleted_(false),
       is_uninstalling_(false),

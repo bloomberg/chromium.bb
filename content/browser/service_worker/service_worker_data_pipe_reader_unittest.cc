@@ -78,8 +78,9 @@ class ServiceWorkerDataPipeReaderTest
     helper_ = base::MakeUnique<EmbeddedWorkerTestHelper>(base::FilePath());
     mock_url_request_job_ =
         base::MakeUnique<MockServiceWorkerURLRequestJob>(this);
+    ServiceWorkerRegistrationOptions options(GURL("https://example.com/"));
     registration_ = new ServiceWorkerRegistration(
-        GURL("https://example.com/"), 1L, helper_->context()->AsWeakPtr());
+        options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());

@@ -578,8 +578,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             GetAllRegistrationsInfos(&all_registrations));
 
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
@@ -662,8 +662,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Store something.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kResource1, kVersionId, context()->AsWeakPtr());
   live_version->set_fetch_handler_existence(
@@ -790,7 +790,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Trying to update a unstored registration to active should fail.
   scoped_refptr<ServiceWorkerRegistration> unstored_registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId + 1,
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId + 1,
                                     context()->AsWeakPtr());
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             UpdateToActiveState(unstored_registration));
@@ -840,8 +841,8 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 
   // Create an unstored registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
@@ -968,8 +969,8 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
 
   // Store a registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records;
@@ -1628,8 +1629,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId1 = 1;
   const int64_t kVersionId1 = 1;
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      new ServiceWorkerRegistration(kScope1, kRegistrationId1,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope1),
+                                    kRegistrationId1, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
       live_registration1.get(), kScript1, kVersionId1, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
@@ -1647,8 +1648,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId2 = 2;
   const int64_t kVersionId2 = 2;
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      new ServiceWorkerRegistration(kScope2, kRegistrationId2,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope2),
+                                    kRegistrationId2, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
       live_registration2.get(), kScript2, kVersionId2, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
@@ -1666,8 +1667,8 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId3 = 3;
   const int64_t kVersionId3 = 3;
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      new ServiceWorkerRegistration(kScope3, kRegistrationId3,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope3),
+                                    kRegistrationId3, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
       live_registration3.get(), kScript3, kVersionId3, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
@@ -1731,8 +1732,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId1 = 1;
   const int64_t kVersionId1 = 1;
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      new ServiceWorkerRegistration(kScope1, kRegistrationId1,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope1),
+                                    kRegistrationId1, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
       live_registration1.get(), kScript1, kVersionId1, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
@@ -1751,8 +1752,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId2 = 2;
   const int64_t kVersionId2 = 2;
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      new ServiceWorkerRegistration(kScope2, kRegistrationId2,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope2),
+                                    kRegistrationId2, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
       live_registration2.get(), kScript2, kVersionId2, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
@@ -1771,8 +1772,8 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId3 = 3;
   const int64_t kVersionId3 = 3;
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      new ServiceWorkerRegistration(kScope3, kRegistrationId3,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope3),
+                                    kRegistrationId3, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
       live_registration3.get(), kScript3, kVersionId3, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
@@ -1924,8 +1925,8 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   const int64_t kRegistrationId = 1;
   const int64_t kVersionId = 1;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), kScript, kVersionId, context()->AsWeakPtr());
 
@@ -2052,8 +2053,8 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
   const int64_t kRegistrationId = 1;
   const int64_t kVersionId = 1;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), kScript, kVersionId, context()->AsWeakPtr());
 
@@ -2098,8 +2099,8 @@ TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
   const int64_t kRegistrationId = 1;
   const int64_t kVersionId = 1;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                    context()->AsWeakPtr());
+      new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                    kRegistrationId, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), kScript, kVersionId, context()->AsWeakPtr());
 

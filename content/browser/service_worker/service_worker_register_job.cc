@@ -68,11 +68,11 @@ typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    const GURL& pattern,
-    const GURL& script_url)
+    const GURL& script_url,
+    const ServiceWorkerRegistrationOptions& options)
     : context_(context),
       job_type_(REGISTRATION_JOB),
-      pattern_(pattern),
+      pattern_(options.scope),
       script_url_(script_url),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -319,8 +319,8 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
     return;
   }
 
-  set_registration(
-      new ServiceWorkerRegistration(pattern_, registration_id, context_));
+  set_registration(new ServiceWorkerRegistration(
+      ServiceWorkerRegistrationOptions(pattern_), registration_id, context_));
   AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }

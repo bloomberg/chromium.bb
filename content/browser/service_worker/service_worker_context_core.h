@@ -201,11 +201,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerProviderHost* GetProviderHostByClientID(
       const std::string& client_uuid);
 
-  // A child process of |source_process_id| may be used to run the created
-  // worker for initial installation.
   // Non-null |provider_host| must be given if this is called from a document.
-  void RegisterServiceWorker(const GURL& pattern,
-                             const GURL& script_url,
+  void RegisterServiceWorker(const GURL& script_url,
+                             const ServiceWorkerRegistrationOptions& options,
                              ServiceWorkerProviderHost* provider_host,
                              const RegistrationCallback& callback);
   void UnregisterServiceWorker(const GURL& pattern,

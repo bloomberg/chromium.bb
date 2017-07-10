@@ -102,7 +102,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     scope_ = GURL("https://host/scope/");
     script_url_ = GURL("https://host/script.js");
     registration_ = new ServiceWorkerRegistration(
-        scope_, 1L, context()->AsWeakPtr());
+        ServiceWorkerRegistrationOptions(scope_), 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), script_url_, 1L, context()->AsWeakPtr());
 

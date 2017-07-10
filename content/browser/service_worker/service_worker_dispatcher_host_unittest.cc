@@ -169,8 +169,9 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    registration_ = new ServiceWorkerRegistration(
-        scope, 1L, helper_->context()->AsWeakPtr());
+    registration_ =
+        new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(scope),
+                                      1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), script_url, 1L,
                                         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
@@ -218,9 +219,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   void SendRegister(int64_t provider_id, GURL pattern, GURL worker_url) {
+    ServiceWorkerRegistrationOptions options(pattern);
     dispatcher_host_->OnMessageReceived(
-        ServiceWorkerHostMsg_RegisterServiceWorker(
-            -1, -1, provider_id, pattern, worker_url));
+        ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, provider_id,
+                                                   worker_url, options));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -346,8 +348,9 @@ TEST_F(ServiceWorkerDispatcherHostTest,
   // find it.
   const int64_t kRegistrationId = 999;  // Dummy value
   scoped_refptr<ServiceWorkerRegistration> registration(
-      new ServiceWorkerRegistration(GURL("https://www.example.com/"),
-                                    kRegistrationId, context()->AsWeakPtr()));
+      new ServiceWorkerRegistration(
+          ServiceWorkerRegistrationOptions(GURL("https://www.example.com/")),
+          kRegistrationId, context()->AsWeakPtr()));
   Unregister(kProviderId, kRegistrationId,
              ServiceWorkerMsg_ServiceWorkerUnregistrationError::ID);
 

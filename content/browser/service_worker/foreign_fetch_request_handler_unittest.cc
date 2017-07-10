@@ -72,8 +72,9 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
 
     // Create a registration for the worker which has foreign fetch event
     // handler.
-    registration_ = new ServiceWorkerRegistration(kScope, kRegistrationId,
-                                                  context()->AsWeakPtr());
+    registration_ =
+        new ServiceWorkerRegistration(ServiceWorkerRegistrationOptions(kScope),
+                                      kRegistrationId, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), kResource1,
                                         kVersionId, context()->AsWeakPtr());
     version_->set_foreign_fetch_scopes({kScope});
@@ -185,8 +186,9 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     // Create another worker whose requests will be intercepted by the foreign
     // fetch event handler.
     scoped_refptr<ServiceWorkerRegistration> registration =
-        new ServiceWorkerRegistration(GURL("https://host/scope"), 1L,
-                                      context()->AsWeakPtr());
+        new ServiceWorkerRegistration(
+            ServiceWorkerRegistrationOptions(GURL("https://host/scope")), 1L,
+            context()->AsWeakPtr());
     scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
         registration.get(), GURL("https://host/script.js"), 1L,
         context()->AsWeakPtr());

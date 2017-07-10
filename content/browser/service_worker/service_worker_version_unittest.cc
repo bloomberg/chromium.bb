@@ -180,8 +180,7 @@ class ServiceWorkerVersionTest : public testing::Test {
 
     pattern_ = GURL("http://www.example.com/test/");
     registration_ = new ServiceWorkerRegistration(
-        pattern_,
-        1L,
+        ServiceWorkerRegistrationOptions(pattern_), 1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
