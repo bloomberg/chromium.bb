@@ -190,6 +190,62 @@ TEST_F(PasswordDetailsCollectionViewControllerTest,
                            kBlacklistedDeleteButtonItem);
 }
 
+TEST_F(PasswordDetailsCollectionViewControllerTest,
+       TestInitialization_Federated) {
+  constexpr int kFederatedSiteSection = 0;
+  constexpr int kFederatedSiteItem = 0;
+  constexpr int kFederatedCopySiteButtonItem = 1;
+
+  constexpr int kFederatedUsernameSection = 1;
+  constexpr int kFederatedUsernameItem = 0;
+  constexpr int kFederatedCopyUsernameButtonItem = 1;
+
+  constexpr int kFederatedFederationSection = 2;
+  constexpr int kFederatedFederationItem = 0;
+
+  constexpr int kFederatedDeleteSection = 3;
+  constexpr int kFederatedDeleteButtonItem = 0;
+
+  form_.password_value.clear();
+  form_.federation_origin = url::Origin(GURL("https://famous.provider.net"));
+  CreateController();
+  CheckController();
+  EXPECT_EQ(4, NumberOfSections());
+  // Site section
+  EXPECT_EQ(2, NumberOfItemsInSection(kFederatedSiteSection));
+  CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_SITE,
+                           kFederatedSiteSection);
+  PasswordDetailsItem* siteItem =
+      GetCollectionViewItem(kFederatedSiteSection, kFederatedSiteItem);
+  EXPECT_NSEQ(origin_, siteItem.text);
+  EXPECT_TRUE(siteItem.showingText);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_SITE_COPY_BUTTON,
+                           kFederatedSiteSection, kFederatedCopySiteButtonItem);
+  // Username section
+  EXPECT_EQ(2, NumberOfItemsInSection(kFederatedUsernameSection));
+  CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME,
+                           kFederatedUsernameSection);
+  PasswordDetailsItem* usernameItem =
+      GetCollectionViewItem(kFederatedUsernameSection, kFederatedUsernameItem);
+  EXPECT_NSEQ(kUsername, usernameItem.text);
+  EXPECT_TRUE(usernameItem.showingText);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON,
+                           kFederatedUsernameSection,
+                           kFederatedCopyUsernameButtonItem);
+  // Federated section
+  EXPECT_EQ(1, NumberOfItemsInSection(kFederatedFederationSection));
+  CheckSectionHeaderWithId(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION,
+                           kFederatedFederationSection);
+  PasswordDetailsItem* federationItem = GetCollectionViewItem(
+      kFederatedFederationSection, kFederatedFederationItem);
+  EXPECT_NSEQ(@"famous.provider.net", federationItem.text);
+  EXPECT_TRUE(federationItem.showingText);
+  // Delete section
+  EXPECT_EQ(1, NumberOfItemsInSection(kFederatedDeleteSection));
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON,
+                           kFederatedDeleteSection, kFederatedDeleteButtonItem);
+}
+
 struct SimplifyOriginTestData {
   GURL origin;
   NSString* expectedSimplifiedOrigin;

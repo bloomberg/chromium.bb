@@ -32,6 +32,7 @@
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -888,6 +889,72 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
       onElementWithMatcher:grey_accessibilityID(
                                @"PasswordDetailsCollectionViewController")]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  [self tapBackArrow];
+  [self tapBackArrow];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks that federated credentials have no password but show the federation.
+- (void)testFederated {
+  [self scopedEnablePasswordManagementAndViewingUI];
+
+  PasswordForm federated;
+  federated.username_value = base::ASCIIToUTF16("federated username");
+  federated.origin = GURL("https://example.com");
+  federated.signon_realm = federated.origin.spec();
+  federated.federation_origin =
+      url::Origin(GURL("https://famous.provider.net"));
+  [self savePasswordFormToStore:federated];
+
+  [self openPasswordSettings];
+
+  [[EarlGrey
+      selectElementWithMatcher:Entry(
+                                   @"https://example.com, federated username")]
+      performAction:grey_tap()];
+
+  // Check that the Site, Username, Federation and Delete Saved Password
+  // sections are there. (No scrolling for the first two, which should be high
+  // enough to always start visible.)
+  [[EarlGrey selectElementWithMatcher:SiteHeader()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:UsernameHeader()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // For federation check both the section header and content.
+  [[[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitHeader),
+                     grey_accessibilityLabel(l10n_util::GetNSString(
+                         IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION)),
+                     nullptr)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[[EarlGrey selectElementWithMatcher:grey_text(@"famous.provider.net")]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Not using DeleteButton() matcher here, because that also encodes the
+  // relative position against the password section, which is missing in this
+  // case.
+  [[[EarlGrey selectElementWithMatcher:
+                  ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+                      IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON))]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Check that the password is not present.
+  [[EarlGrey selectElementWithMatcher:PasswordHeader()]
+      assertWithMatcher:grey_nil()];
 
   [self tapBackArrow];
   [self tapBackArrow];
