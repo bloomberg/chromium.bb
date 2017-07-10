@@ -147,8 +147,10 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   RequestThrottler request_throttler_active_ntp_user_;
   RequestThrottler request_throttler_active_suggestions_consumer_;
 
-  // To make sure we only report the first trigger to UMA.
-  bool time_until_first_trigger_reported_;
+  // Variables to make sure we only report the first trigger of each kind to
+  // UMA.
+  bool time_until_first_shown_trigger_reported_;
+  bool time_until_first_startup_trigger_reported_;
 
   // We should not fetch in background before EULA gets accepted.
   std::unique_ptr<EulaState> eula_state_;

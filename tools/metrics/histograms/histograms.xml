@@ -45260,15 +45260,49 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram base="true"
+    name="NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger" units="ms">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The time since the last fetch, recorded upon the first on-shown
+    fetch trigger. The first on-shown trigger does not necessarily cause a fetch
+    (if it comes before the end of the respective scheduling interval). This
+    metric is recorded at most once after each fetch (and additionaly at most
+    once after each startup of Chrome before the next fetch). This is used to
+    understand how changing scheduling intervals will impact traffic of
+    background fetches.
+  </summary>
+</histogram>
+
+<histogram base="true"
     name="NewTabPage.ContentSuggestions.TimeUntilFirstSoftTrigger" units="ms">
+  <obsolete>
+    Deprecated as of July 2017, in favor of
+    NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger and
+    NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger.
+  </obsolete>
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Android: The time since the last fetch, recorded upon the first soft fetch
     trigger. The first soft trigger does not necessarily cause a fetch (if it
     comes before the end of the respective scheduling interval). This metric is
-    recorded at most once (per lifetime of a Chrome instance) after each fetch.
-    This is used to understand how changing scheduling intervals will impact
-    traffic of background fetches.
+    recorded at most once after each fetch (and additionaly at most once after
+    each startup of Chrome before the next fetch). This is used to understand
+    how changing scheduling intervals will impact traffic of background fetches.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger"
+    units="ms">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The time since the last fetch, recorded upon the first startup
+    fetch trigger. The first startup trigger does not necessarily cause a fetch
+    (if it comes before the end of the respective scheduling interval). This
+    metric is recorded at most once after each fetch (and additionaly at most
+    once after each startup of Chrome before the next fetch). This is used to
+    understand how changing scheduling intervals will impact traffic of
+    background fetches.
   </summary>
 </histogram>
 
@@ -97580,11 +97614,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="UserClasses" separator=".">
+  <affected-histogram
+      name="NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger"/>
   <suffix name="RareNTPUser" label="Rare NTP user"/>
   <suffix name="ActiveNTPUser" label="Active NTP user"/>
   <suffix name="ActiveSuggestionsConsumer" label="Active suggestions consumer"/>
   <affected-histogram
-      name="NewTabPage.ContentSuggestions.TimeUntilFirstSoftTrigger"/>
+      name="NewTabPage.ContentSuggestions.TimeUntilFirstSoftTrigger">
+    <obsolete>
+      Deprecated as of July 2017, in favor of
+      NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger and
+      NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram
+      name="NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger"/>
   <affected-histogram
       name="NewTabPage.ContentSuggestions.TimeUntilPersistentFetch"/>
   <affected-histogram name="NewTabPage.ContentSuggestions.TimeUntilSoftFetch"/>
