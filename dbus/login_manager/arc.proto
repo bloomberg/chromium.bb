@@ -28,5 +28,9 @@ message StartArcInstanceRequest {
   // and |scan_vendor_priv_app| are ignored when |for_login_screen| is true.
   optional bool for_login_screen = 4;
 
-  // Next ID to use: 5
+  // Option to create a server socket in session_manager.
+  // TODO(yusukes): Make this always enabled and then remove the field.
+  optional bool create_server_socket = 5;
+
+  // Next ID to use: 6
 }
