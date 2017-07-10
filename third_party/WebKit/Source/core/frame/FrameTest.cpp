@@ -27,8 +27,7 @@ class FrameTest : public ::testing::Test {
   void Navigate(const String& destinationUrl) {
     const KURL& url = KURL(NullURL(), destinationUrl);
     FrameLoadRequest request(nullptr, ResourceRequest(url),
-                             SubstituteData(SharedBuffer::Create(), "text/html",
-                                            "UTF-8", NullURL()));
+                             SubstituteData(SharedBuffer::Create()));
     GetDocument().GetFrame()->Loader().Load(request);
     blink::testing::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
