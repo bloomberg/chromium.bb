@@ -236,12 +236,12 @@ typedef std::tr1::tuple<IdctFunc, IdctFunc, int, aom_bit_depth_t>
     Idct16x16Param;
 
 void fdct16x16_ref(const int16_t *in, tran_low_t *out, int stride,
-                   FWD_TXFM_PARAM *fwd_txfm_param) {
+                   FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
   aom_fdct16x16_c(in, out, stride);
 }
 
 void idct16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
-                   const INV_TXFM_PARAM *inv_txfm_param) {
+                   const INV_TXFM_PARAM * /*inv_txfm_param*/) {
   aom_idct16x16_256_add_c(in, dest, stride);
 }
 

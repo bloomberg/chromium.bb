@@ -78,7 +78,7 @@ void reference_8x8_dct_2d(const int16_t input[kNumCoeffs],
 }
 
 void fdct8x8_ref(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM *fwd_txfm_param) {
+                 FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
   aom_fdct8x8_c(in, out, stride);
 }
 

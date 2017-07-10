@@ -41,7 +41,7 @@ typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t, int>
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t, int> Ht4x4Param;
 
 void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM *fwd_txfm_param) {
+                 FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
   aom_fdct4x4_c(in, out, stride);
 }
 
@@ -51,7 +51,7 @@ void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
 }
 
 void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
-                 FWD_TXFM_PARAM *fwd_txfm_param) {
+                 FWD_TXFM_PARAM * /*fwd_txfm_param*/) {
   av1_fwht4x4_c(in, out, stride);
 }
 
