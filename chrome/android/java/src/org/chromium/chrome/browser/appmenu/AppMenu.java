@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.view.Gravity;
@@ -26,6 +27,7 @@ import android.view.View.MeasureSpec;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageButton;
@@ -162,6 +164,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // The window layout type affects the z-index of the popup window on M+.
+            mPopup.setWindowLayoutType(WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL);
+        }
 
         boolean anchorAtBottom = isAnchorAtBottom(anchorView, visibleDisplayFrame);
         int footerHeight = 0;
