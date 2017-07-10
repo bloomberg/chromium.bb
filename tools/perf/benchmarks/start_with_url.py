@@ -31,8 +31,6 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Enabled('android')
-@benchmark.Disabled('chromeos', 'linux', 'mac', 'win')
 @benchmark.Owner(emails=['pasko@chromium.org'])
 class StartWithUrlColdTBM(_StartupPerfBenchmark):
   """Measures time to start Chrome cold with startup URLs."""
@@ -58,9 +56,6 @@ class StartWithUrlColdTBM(_StartupPerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Enabled('android')
-@benchmark.Disabled('android-reference')  # crbug.com/588786
-@benchmark.Disabled('chromeos', 'linux', 'mac', 'win')
 @benchmark.Owner(emails=['pasko@chromium.org'])
 class StartWithUrlWarmTBM(_StartupPerfBenchmark):
   """Measures stimetime to start Chrome warm with startup URLs."""
