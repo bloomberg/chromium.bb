@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/app_runtime.h"
@@ -48,7 +49,8 @@ class StateObserver;
 class StateController : public ash::mojom::TrayActionClient,
                         public session_manager::SessionManagerObserver,
                         public extensions::AppWindowRegistry::Observer,
-                        public ui::InputDeviceEventObserver {
+                        public ui::InputDeviceEventObserver,
+                        public chromeos::PowerManagerClient::Observer {
  public:
   // Returns whether the StateController is enabled - it is currently guarded by
   // a feature flag. If not enabled, |StateController| instance is not allowed
@@ -98,6 +100,10 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // ui::InputDeviceEventObserver:
   void OnStylusStateChanged(ui::StylusState state) override;
+
+  // chromeos::PowerManagerClient::Observer
+  void BrightnessChanged(int level, bool user_initiated) override;
+  void SuspendImminent() override;
 
   // Creates and registers an app window as action handler for the action on
   // Chrome OS lock screen. The ownership of the returned app window is passed
@@ -167,6 +173,9 @@ class StateController : public ash::mojom::TrayActionClient,
       session_observer_;
   ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>
       input_devices_observer_;
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_;
 
   // If set, this callback will be run when the state controller is fully
   // initialized. It can be used to throttle tests until state controller
