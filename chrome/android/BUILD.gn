@@ -861,6 +861,10 @@ chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
   apk_name = "ChromeModernPublic"
   shared_libraries = [ ":chrome" ]
 
+  if (!is_java_debug) {
+    png_to_webp = true
+  }
+
   # Always enable load_library_from_apk.
   load_library_from_apk = chromium_linker_supported
 }
