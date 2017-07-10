@@ -223,9 +223,8 @@ void GpuVideoEncodeAcceleratorHost::PostNotifyError(
     Error error,
     const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DLOG(ERROR) << "Error from " << location.function_name() << "("
-              << location.file_name() << ":" << location.line_number() << ") "
-              << message << " (error = " << error << ")";
+  DLOG(ERROR) << "Error from " << location.ToString() << ", " << message
+              << " (error = " << error << ")";
   // Post the error notification back to this thread, to avoid re-entrancy.
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuVideoEncodeAcceleratorHost::OnNotifyError,
@@ -249,10 +248,10 @@ void GpuVideoEncodeAcceleratorHost::OnRequireBitstreamBuffers(
   DVLOG(2) << __func__ << " input_count=" << input_count
            << ", input_coded_size=" << input_coded_size.ToString()
            << ", output_buffer_size=" << output_buffer_size;
-  if (client_) {
-    client_->RequireBitstreamBuffers(input_count, input_coded_size,
-                                     output_buffer_size);
-  }
+  if (!client_)
+    return;
+  client_->RequireBitstreamBuffers(input_count, input_coded_size,
+                                   output_buffer_size);
 }
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32_t frame_id) {
@@ -283,9 +282,10 @@ void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id
            << ", payload_size=" << payload_size << ", key_frame=" << key_frame;
-  if (client_)
-    client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
-                                  timestamp);
+  if (!client_)
+    return;
+  client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame,
+                                timestamp);
 }
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyError(Error error) {
