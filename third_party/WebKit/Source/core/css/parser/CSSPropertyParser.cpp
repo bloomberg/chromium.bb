@@ -1186,91 +1186,26 @@ static CSSValue* ConsumeGridTemplateAreas(CSSParserTokenRange& range) {
                                            column_count);
 }
 
-static void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
-                                          const CSSParserContext* context,
-                                          CSSValueID value_id) {
-  if (!context->IsUseCounterRecordingEnabled())
-    return;
-  switch (property) {
-    case CSSPropertyWebkitAppearance: {
-      WebFeature feature;
-      if (value_id == CSSValueNone) {
-        feature = WebFeature::kCSSValueAppearanceNone;
-      } else {
-        feature = WebFeature::kCSSValueAppearanceNotNone;
-        if (value_id == CSSValueButton)
-          feature = WebFeature::kCSSValueAppearanceButton;
-        else if (value_id == CSSValueCaret)
-          feature = WebFeature::kCSSValueAppearanceCaret;
-        else if (value_id == CSSValueCheckbox)
-          feature = WebFeature::kCSSValueAppearanceCheckbox;
-        else if (value_id == CSSValueMenulist)
-          feature = WebFeature::kCSSValueAppearanceMenulist;
-        else if (value_id == CSSValueMenulistButton)
-          feature = WebFeature::kCSSValueAppearanceMenulistButton;
-        else if (value_id == CSSValueListbox)
-          feature = WebFeature::kCSSValueAppearanceListbox;
-        else if (value_id == CSSValueRadio)
-          feature = WebFeature::kCSSValueAppearanceRadio;
-        else if (value_id == CSSValueSearchfield)
-          feature = WebFeature::kCSSValueAppearanceSearchField;
-        else if (value_id == CSSValueTextfield)
-          feature = WebFeature::kCSSValueAppearanceTextField;
-        else
-          feature = WebFeature::kCSSValueAppearanceOthers;
-      }
-      context->Count(feature);
-      break;
-    }
-
-    case CSSPropertyWebkitUserModify: {
-      switch (value_id) {
-        case CSSValueReadOnly:
-          context->Count(WebFeature::kCSSValueUserModifyReadOnly);
-          break;
-        case CSSValueReadWrite:
-          context->Count(WebFeature::kCSSValueUserModifyReadWrite);
-          break;
-        case CSSValueReadWritePlaintextOnly:
-          context->Count(WebFeature::kCSSValueUserModifyReadWritePlaintextOnly);
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-}
 
 const CSSValue* CSSPropertyParser::ParseSingleValue(
     CSSPropertyID unresolved_property,
     CSSPropertyID current_shorthand) {
   DCHECK(context_);
-  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
-  if (CSSParserFastPaths::IsKeywordPropertyID(property)) {
-    if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-            property, range_.Peek().Id(), context_->Mode()))
-      return nullptr;
-    CountKeywordOnlyPropertyUsage(property, context_, range_.Peek().Id());
-    return ConsumeIdent(range_);
-  }
 
   // Gets the parsing method for our current property from the property API.
   // If it has been implemented, we call this method, otherwise we manually
   // parse this value in the switch statement below. As we implement APIs for
   // other properties, those properties will be taken out of the switch
   // statement.
-  const CSSPropertyDescriptor& css_property_desc =
-      CSSPropertyDescriptor::Get(property);
-  if (css_property_desc.parseSingleValue) {
-    return css_property_desc.parseSingleValue(
-        range_, *context_,
-        CSSParserLocalContext(isPropertyAlias(unresolved_property)));
-  }
+  bool needs_legacy_parsing = false;
+  const CSSValue* const parsed_value =
+      CSSPropertyParserHelpers::ParseLonghandViaAPI(
+          unresolved_property, current_shorthand, *context_, range_,
+          needs_legacy_parsing);
+  if (!needs_legacy_parsing)
+    return parsed_value;
 
+  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
   switch (property) {
     case CSSPropertyMaxWidth:
     case CSSPropertyMaxHeight:

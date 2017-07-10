@@ -18,7 +18,9 @@
 #include "core/css/CSSVariableData.h"
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserLocalContext.h"
+#include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyTransformUtils.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1491,6 +1493,92 @@ CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
   return CSSPropertyTransformUtils::ConsumeTransformList(
       range, context, CSSParserLocalContext());
+}
+
+void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
+                                   const CSSParserContext& context,
+                                   CSSValueID value_id) {
+  if (!context.IsUseCounterRecordingEnabled())
+    return;
+  switch (property) {
+    case CSSPropertyWebkitAppearance: {
+      WebFeature feature;
+      if (value_id == CSSValueNone) {
+        feature = WebFeature::kCSSValueAppearanceNone;
+      } else {
+        feature = WebFeature::kCSSValueAppearanceNotNone;
+        if (value_id == CSSValueButton)
+          feature = WebFeature::kCSSValueAppearanceButton;
+        else if (value_id == CSSValueCaret)
+          feature = WebFeature::kCSSValueAppearanceCaret;
+        else if (value_id == CSSValueCheckbox)
+          feature = WebFeature::kCSSValueAppearanceCheckbox;
+        else if (value_id == CSSValueMenulist)
+          feature = WebFeature::kCSSValueAppearanceMenulist;
+        else if (value_id == CSSValueMenulistButton)
+          feature = WebFeature::kCSSValueAppearanceMenulistButton;
+        else if (value_id == CSSValueListbox)
+          feature = WebFeature::kCSSValueAppearanceListbox;
+        else if (value_id == CSSValueRadio)
+          feature = WebFeature::kCSSValueAppearanceRadio;
+        else if (value_id == CSSValueSearchfield)
+          feature = WebFeature::kCSSValueAppearanceSearchField;
+        else if (value_id == CSSValueTextfield)
+          feature = WebFeature::kCSSValueAppearanceTextField;
+        else
+          feature = WebFeature::kCSSValueAppearanceOthers;
+      }
+      context.Count(feature);
+      break;
+    }
+
+    case CSSPropertyWebkitUserModify: {
+      switch (value_id) {
+        case CSSValueReadOnly:
+          context.Count(WebFeature::kCSSValueUserModifyReadOnly);
+          break;
+        case CSSValueReadWrite:
+          context.Count(WebFeature::kCSSValueUserModifyReadWrite);
+          break;
+        case CSSValueReadWritePlaintextOnly:
+          context.Count(WebFeature::kCSSValueUserModifyReadWritePlaintextOnly);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+}
+
+const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
+                                    CSSPropertyID current_shorthand,
+                                    const CSSParserContext& context,
+                                    CSSParserTokenRange& range,
+                                    bool& needs_legacy_parsing) {
+  DCHECK(!isShorthandProperty(unresolved_property));
+  needs_legacy_parsing = false;
+  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
+  if (CSSParserFastPaths::IsKeywordPropertyID(property)) {
+    if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
+            property, range.Peek().Id(), context.Mode()))
+      return nullptr;
+    CountKeywordOnlyPropertyUsage(property, context, range.Peek().Id());
+    return ConsumeIdent(range);
+  }
+
+  const CSSPropertyDescriptor& css_property_desc =
+      CSSPropertyDescriptor::Get(property);
+  if (css_property_desc.parseSingleValue) {
+    return css_property_desc.parseSingleValue(
+        range, context,
+        CSSParserLocalContext(isPropertyAlias(unresolved_property)));
+  }
+  needs_legacy_parsing = true;
+  return nullptr;
 }
 
 }  // namespace CSSPropertyParserHelpers
