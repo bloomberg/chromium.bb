@@ -61,6 +61,7 @@ using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::ContentSettingsButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
+using chrome_test_util::SettingsMenuPrivacyButton;
 
 namespace {
 
@@ -109,11 +110,6 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
 // Matcher for the Save Passwords cell on the main Settings screen.
 id<GREYMatcher> PasswordsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_SAVE_PASSWORDS);
-}
-// Matcher for the Privacy cell on the main Settings screen.
-id<GREYMatcher> PrivacyButton() {
-  return ButtonWithAccessibilityLabelId(
-      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
 }
 // Matcher for the Send Usage Data cell on the Privacy screen.
 id<GREYMatcher> SendUsageDataButton() {
@@ -307,7 +303,7 @@ bool IsCertificateCleared() {
 // From the NTP, clears the cookies and site data via the UI.
 - (void)clearCookiesAndSiteData {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
 
   // "Browsing history", "Cookies, Site Data" and "Cached Images and Files"
@@ -326,7 +322,7 @@ bool IsCertificateCleared() {
 // From the NTP, clears the saved passwords via the UI.
 - (void)clearPasswords {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
 
   // "Browsing history", "Cookies, Site Data" and "Cached Images and Files"
@@ -817,7 +813,7 @@ bool IsCertificateCleared() {
 // Verifies the UI elements are accessible on the Privacy Settings page.
 - (void)testAccessibilityOnPrivacySettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
 }
@@ -826,7 +822,7 @@ bool IsCertificateCleared() {
 // page.
 - (void)testAccessibilityOnPrivacyHandoffSettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [[EarlGrey selectElementWithMatcher:PrivacyHandoffButton()]
       performAction:grey_tap()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -837,7 +833,7 @@ bool IsCertificateCleared() {
 // Settings page.
 - (void)testAccessibilityOnPrivacyClearBrowsingHistoryPage {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
@@ -985,7 +981,7 @@ bool IsCertificateCleared() {
 // Verifies the UI elements are accessible on the Send Usage Data page.
 - (void)testAccessibilityOnSendUsageData {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrivacyButton()];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:SendUsageDataButton()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   [self closeSubSettingsMenu];
