@@ -25,7 +25,7 @@
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
-
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -409,15 +409,18 @@ bool DrmDevice::Initialize(bool use_atomic) {
     return false;
   }
 
-  // Use atomic only if the build, kernel & flags all allow it.
-  if (use_atomic && SetCapability(DRM_CLIENT_CAP_ATOMIC, 1))
+  if (use_atomic) {
+    if (!SetCapability(DRM_CLIENT_CAP_ATOMIC, 1)) {
+      LOG(ERROR) << "Drm atomic requested but capabilities don't allow it. To "
+                    "switch to legacy page flip remove the command line flag "
+                 << switches::kEnableDrmAtomic;
+      return false;
+    }
     plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
-
-  LOG_IF(WARNING, use_atomic && !plane_manager_)
-      << "Drm atomic requested but capabilities don't allow it. Falling back "
-         "to legacy page flip.";
-  if (!plane_manager_)
+  } else {
     plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+  }
+
   if (!plane_manager_->Initialize(this)) {
     LOG(ERROR) << "Failed to initialize the plane manager for "
                << device_path_.value();
