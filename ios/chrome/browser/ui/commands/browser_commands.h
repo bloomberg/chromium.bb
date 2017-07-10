@@ -24,6 +24,12 @@
 // Reloads the current web page
 - (void)reload;
 
+// Shows the share sheet for the current page.
+- (void)sharePage;
+
+// Bookmarks the current page.
+- (void)bookmarkPage;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

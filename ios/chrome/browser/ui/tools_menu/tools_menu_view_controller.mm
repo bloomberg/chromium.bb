@@ -194,7 +194,6 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (void)setCanShowShareMenu:(BOOL)enabled {
   ToolsMenuViewToolsCell* toolsCell = [self toolsCell];
   [[toolsCell shareButton] setEnabled:enabled];
-  [self setItemEnabled:enabled withTag:IDC_SHARE_PAGE];
 }
 
 - (UIButton*)toolsButton {
@@ -473,6 +472,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [toolsCell.reloadButton removeTarget:self.dispatcher
                                 action:@selector(reload)
                       forControlEvents:UIControlEventTouchUpInside];
+  [toolsCell.starButton removeTarget:self.dispatcher
+                              action:@selector(bookmarkPage)
+                    forControlEvents:UIControlEventTouchUpInside];
+  [toolsCell.starredButton removeTarget:self.dispatcher
+                                 action:@selector(bookmarkPage)
+                       forControlEvents:UIControlEventTouchUpInside];
 }
 
 #pragma mark - Button event handling
@@ -480,20 +485,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (void)buttonPressed:(id)sender {
   int commandId = [sender tag];
   DCHECK(commandId);
-  // The bookmark command workaround is only needed for metrics; remap it
-  // to the real command for the dispatch. This is very hacky, but it will go
-  // away soon.  See crbug/228521
-  DCHECK([sender respondsToSelector:@selector(setTag:)]);
-  if (commandId == IDC_TEMP_EDIT_BOOKMARK)
-    [sender setTag:IDC_BOOKMARK_PAGE];
   // Do nothing when tapping the tools menu a second time.
   // Do not use -chromeExecuteCommand: for tags < 0 -- that is, items that have
   // been refactored to use the dispatcher.
   if (commandId != IDC_SHOW_TOOLS_MENU && commandId > 0) {
     [self chromeExecuteCommand:sender];
   }
-  if (commandId == IDC_TEMP_EDIT_BOOKMARK)
-    [sender setTag:IDC_TEMP_EDIT_BOOKMARK];
 
   // Do any metrics logging for the command, and then close the menu.
   [_delegate commandWasSelected:commandId];
@@ -598,6 +595,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
     [cell.reloadButton addTarget:self.dispatcher
                           action:@selector(reload)
                 forControlEvents:UIControlEventTouchUpInside];
+    [cell.starButton addTarget:self.dispatcher
+                        action:@selector(bookmarkPage)
+              forControlEvents:UIControlEventTouchUpInside];
+    [cell.starredButton addTarget:self.dispatcher
+                           action:@selector(bookmarkPage)
+                 forControlEvents:UIControlEventTouchUpInside];
     for (UIButton* button in [cell allButtons]) {
       [button addTarget:self
                     action:@selector(buttonPressed:)

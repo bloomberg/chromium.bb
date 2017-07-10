@@ -16,7 +16,6 @@
 #define IDC_RELOAD                                     33002
 #define IDC_NEW_TAB                                    34014
 #define IDC_FULLSCREEN                                 34030
-#define IDC_BOOKMARK_PAGE                              35000
 #define IDC_VIEW_SOURCE                                35002
 #define IDC_PRINT                                      35003
 #define IDC_FIND                                       37000
@@ -52,7 +51,6 @@
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
 #define IDC_SHOW_MAIL_COMPOSER                         40926
 #define IDC_RESET_ALL_WEBVIEWS                         40928
-#define IDC_SHARE_PAGE                                 40929
 #define IDC_BACK_FORWARD_IN_TAB_HISTORY                40930
 #define IDC_SHOW_PRIVACY_SETTINGS                      40934
 #define IDC_HIDE_SETTINGS_AND_SHOW_PRIVACY_SETTINGS    40935

@@ -12,12 +12,6 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 
-// TODO(crbug.com/228521): Remove this once the new command/metric handling is
-// implemented. This is a temporary workaround to allow metrics recording to
-// distinguish the action. The value used is in the dynamic range (<
-// IDC_MinimumLabelValue) to avoid collisions.
-#define IDC_TEMP_EDIT_BOOKMARK 3900
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -53,13 +47,13 @@
 
   int star[2][3] = TOOLBAR_IDR_TWO_STATE(STAR);
   _starButton = [self newButtonForImageIds:star
-                                 commandID:IDC_BOOKMARK_PAGE
+                                 commandID:TOOLS_BOOKMARK_ITEM
                       accessibilityLabelID:IDS_BOOKMARK_ADD_EDITOR_TITLE
                             automationName:@"Add Bookmark"];
 
   int star_pressed[2][3] = TOOLBAR_IDR_ONE_STATE(STAR_PRESSED);
   _starredButton = [self newButtonForImageIds:star_pressed
-                                    commandID:IDC_TEMP_EDIT_BOOKMARK
+                                    commandID:TOOLS_BOOKMARK_EDIT
                          accessibilityLabelID:IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK
                                automationName:@"Edit Bookmark"];
 
@@ -78,7 +72,7 @@
 
   int share[2][3] = TOOLBAR_IDR_THREE_STATE(SHARE);
   _shareButton = [self newButtonForImageIds:share
-                                  commandID:IDC_SHARE_PAGE
+                                  commandID:TOOLS_SHARE_ITEM
                        accessibilityLabelID:IDS_IOS_TOOLS_MENU_SHARE
                              automationName:@"Stop"];
   int tools[2][3] = TOOLBAR_IDR_ONE_STATE(TOOLS_PRESSED);

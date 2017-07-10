@@ -129,7 +129,7 @@
                            title:l10n_util::GetNSStringWithFixup(
                                      IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE)
                           action:^{
-                            execute(IDC_BOOKMARK_PAGE);
+                            [weakDispatcher bookmarkPage];
                           }],
       [UIKeyCommand cr_keyCommandWithInput:@"f"
                              modifierFlags:UIKeyModifierCommand

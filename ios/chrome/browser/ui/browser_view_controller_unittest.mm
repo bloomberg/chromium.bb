@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_testing.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
@@ -429,7 +430,7 @@ TEST_F(BrowserViewControllerTest,
 }
 
 // Verifies that BVC invokes -shareURL on ShareController with the correct
-// parameters in response to the IDC_SHARE_PAGE command.
+// parameters in response to the -sharePage command.
 TEST_F(BrowserViewControllerTest, TestSharePageCommandHandling) {
   GURL expectedUrl("http://www.testurl.net");
   NSString* expectedTitle = @"title";
@@ -472,12 +473,12 @@ TEST_F(BrowserViewControllerTest, TestSharePageCommandHandling) {
       shareToDelegate:bvc_
              fromRect:[bvc_ testing_shareButtonAnchorRect]
                inView:[OCMArg any]];
-  [bvc_ chromeExecuteCommand:GetCommandWithTag(IDC_SHARE_PAGE)];
+  [bvc_.dispatcher sharePage];
   EXPECT_OCMOCK_VERIFY(shareControllerMock);
 }
 
 // Verifies that BVC does not invoke -shareURL on ShareController in response
-// to the IDC_SHARE_PAGE command if tab is in the process of being closed.
+// to the |-sharePage| command if tab is in the process of being closed.
 TEST_F(BrowserViewControllerTest, TestSharePageWhenClosing) {
   GURL expectedUrl("http://www.testurl.net");
   NSString* expectedTitle = @"title";
@@ -498,7 +499,7 @@ TEST_F(BrowserViewControllerTest, TestSharePageWhenClosing) {
       shareToDelegate:bvc_
              fromRect:[bvc_ testing_shareButtonAnchorRect]
                inView:[OCMArg any]];
-  [bvc_ chromeExecuteCommand:GetCommandWithTag(IDC_SHARE_PAGE)];
+  [bvc_.dispatcher sharePage];
   EXPECT_OCMOCK_VERIFY(shareControllerMock);
 }
 
