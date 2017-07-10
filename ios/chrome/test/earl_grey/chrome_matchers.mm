@@ -95,10 +95,6 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id) {
       l10n_util::GetNSStringWithFixup(message_id));
 }
 
-id<GREYMatcher> WebViewNotContainingText(std::string text) {
-  return web::WebViewNotContainingText(std::move(text), GetCurrentWebState());
-}
-
 id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id) {
   return web::WebViewContainingBlockedImage(
       std::move(image_id), chrome_test_util::GetCurrentWebState());

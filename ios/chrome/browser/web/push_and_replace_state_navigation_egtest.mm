@@ -329,10 +329,7 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   if (pageLoaded) {
     [ChromeEarlGrey waitForWebViewContainingText:"onload"];
   } else {
-    id<GREYMatcher> pageLoadedMatcher =
-        chrome_test_util::WebViewNotContainingText("onload");
-    [[EarlGrey selectElementWithMatcher:pageLoadedMatcher]
-        assertWithMatcher:grey_notNil()];
+    [ChromeEarlGrey waitForWebViewNotContainingText:"onload"];
   }
 
   if (status != NULL) {

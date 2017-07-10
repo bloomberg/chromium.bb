@@ -24,8 +24,6 @@
 
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::WebViewNotContainingText;
-
 using web::test::HttpServer;
 
 // Tests display of error pages for bad URLs.
@@ -49,8 +47,7 @@ using web::test::HttpServer;
       assertWithMatcher:grey_notNil()];
   const std::string kError =
       l10n_util::GetStringUTF8(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey selectElementWithMatcher:WebViewNotContainingText(kError)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewNotContainingText:kError];
 }
 
 #pragma mark - tests
