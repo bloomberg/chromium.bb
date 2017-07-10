@@ -9,6 +9,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -199,8 +200,7 @@ bool Address::SetInfo(const AutofillType& type,
   // There's a good chance that this formatting is not intentional, but it's
   // also not obviously safe to just strip the newlines.
   if (storable_type == ADDRESS_HOME_STREET_ADDRESS &&
-      std::find(street_address_.begin(), street_address_.end(),
-                base::string16()) != street_address_.end()) {
+      base::ContainsValue(street_address_, base::string16())) {
     street_address_.clear();
     return false;
   }

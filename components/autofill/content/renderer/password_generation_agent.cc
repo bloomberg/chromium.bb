@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_classifier.h"
@@ -58,7 +59,7 @@ bool GetAccountCreationPasswordFields(
 }
 
 bool ContainsURL(const std::vector<GURL>& urls, const GURL& url) {
-  return std::find(urls.begin(), urls.end(), url) != urls.end();
+  return base::ContainsValue(urls, url);
 }
 
 // Calculates the signature of |form| and searches it in |forms|.
