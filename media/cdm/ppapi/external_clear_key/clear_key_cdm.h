@@ -43,6 +43,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // ClearKeyCdmInterface implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
+  void GetStatusForPolicy(uint32_t promise_id,
+                          const cdm::Policy& policy) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
                                        cdm::SessionType session_type,
                                        cdm::InitDataType init_data_type,
@@ -85,6 +87,8 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   void OnQueryOutputProtectionStatus(cdm::QueryResult result,
                                      uint32_t link_mask,
                                      uint32_t output_protection_mask) override;
+  void OnStorageId(const uint8_t* storage_id,
+                   uint32_t storage_id_size) override;
 
  private:
   // ContentDecryptionModule callbacks.
