@@ -140,9 +140,10 @@ Node* NextAtomicLeafNode(const Node& start) {
   return nullptr;
 }
 
-Node* PreviousLeafWithSameEditability(Node* node, EditableType editable_type) {
-  const bool editable = HasEditableStyle(*node, editable_type);
-  for (Node* runner = PreviousAtomicLeafNode(*node); runner;
+Node* PreviousLeafWithSameEditability(const Node& node,
+                                      EditableType editable_type) {
+  const bool editable = HasEditableStyle(node, editable_type);
+  for (Node* runner = PreviousAtomicLeafNode(node); runner;
        runner = PreviousAtomicLeafNode(*runner)) {
     if (editable == HasEditableStyle(*runner, editable_type))
       return runner;
@@ -270,12 +271,10 @@ bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
 Node* FindNodeInPreviousLine(const Node& start_node,
                              const VisiblePosition& visible_position,
                              EditableType editable_type) {
-  // TODO(editing-dev): We should make |PreviousLeafWithSameEditability()| to
-  // take |const Node&|.
-  for (Node* runner = PreviousLeafWithSameEditability(
-           const_cast<Node*>(&start_node), editable_type);
+  for (Node* runner =
+           PreviousLeafWithSameEditability(start_node, editable_type);
        runner;
-       runner = PreviousLeafWithSameEditability(runner, editable_type)) {
+       runner = PreviousLeafWithSameEditability(*runner, editable_type)) {
     if (!InSameLine(*runner, visible_position))
       return runner;
   }
@@ -295,7 +294,7 @@ Position PreviousRootInlineBoxCandidatePosition(
   Node* const previous_node =
       FindNodeInPreviousLine(*node, visible_position, editable_type);
   for (Node* runner = previous_node; runner && !runner->IsShadowRoot();
-       runner = PreviousLeafWithSameEditability(runner, editable_type)) {
+       runner = PreviousLeafWithSameEditability(*runner, editable_type)) {
     if (HighestEditableRootOfNode(*runner, editable_type) != highest_root)
       break;
 
