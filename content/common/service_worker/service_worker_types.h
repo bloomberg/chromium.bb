@@ -180,10 +180,19 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   int64_t version_id;
 };
 
+// Represents options for register():
+// https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
+struct CONTENT_EXPORT ServiceWorkerRegistrationOptions {
+  ServiceWorkerRegistrationOptions() = default;
+  explicit ServiceWorkerRegistrationOptions(const GURL& scope);
+  GURL scope;
+  // TODO(yuryu): Other values will be added as they are supported later.
+};
+
 struct CONTENT_EXPORT ServiceWorkerRegistrationObjectInfo {
   ServiceWorkerRegistrationObjectInfo();
   int handle_id;
-  GURL scope;
+  ServiceWorkerRegistrationOptions options;
   int64_t registration_id;
 };
 

@@ -334,8 +334,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
-    registration_ =
-        new ServiceWorkerRegistration(scope_, 1L, context()->AsWeakPtr());
+    registration_ = new ServiceWorkerRegistration(
+        ServiceWorkerRegistrationOptions(scope_), 1L, context()->AsWeakPtr());
     version_ =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());

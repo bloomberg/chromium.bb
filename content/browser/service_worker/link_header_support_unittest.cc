@@ -118,8 +118,9 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
     context()->AddProviderHost(std::move(host));
 
     scoped_refptr<ServiceWorkerRegistration> registration =
-        new ServiceWorkerRegistration(GURL("https://host/scope"), 1L,
-                                      context()->AsWeakPtr());
+        new ServiceWorkerRegistration(
+            ServiceWorkerRegistrationOptions(GURL("https://host/scope")), 1L,
+            context()->AsWeakPtr());
     scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
         registration.get(), GURL("https://host/script.js"), 1L,
         context()->AsWeakPtr());

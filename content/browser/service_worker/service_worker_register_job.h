@@ -48,8 +48,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      const GURL& pattern,
-      const GURL& script_url);
+      const GURL& script_url,
+      const ServiceWorkerRegistrationOptions& options);
 
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(

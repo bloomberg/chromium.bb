@@ -158,13 +158,15 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool called_1 = false;
     bool called_2 = false;
     helper_->context()->RegisterServiceWorker(
-        GURL(kPattern1), GURL(kScript1), NULL,
+        GURL(kScript1), ServiceWorkerRegistrationOptions(GURL(kPattern1)),
+        nullptr,
         base::AdaptCallbackForRepeating(
             base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
                            &sw_registration_id_1_)));
 
     helper_->context()->RegisterServiceWorker(
-        GURL(kPattern2), GURL(kScript2), NULL,
+        GURL(kScript2), ServiceWorkerRegistrationOptions(GURL(kPattern2)),
+        nullptr,
         base::AdaptCallbackForRepeating(
             base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
                            &sw_registration_id_2_)));

@@ -57,11 +57,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     context_ = helper_->context();
     script_url_ = GURL("https://www.example.com/service_worker.js");
     registration1_ = new ServiceWorkerRegistration(
-        GURL("https://www.example.com/"), 1L, context_->AsWeakPtr());
+        ServiceWorkerRegistrationOptions(GURL("https://www.example.com/")), 1L,
+        context_->AsWeakPtr());
     registration2_ = new ServiceWorkerRegistration(
-        GURL("https://www.example.com/example"), 2L, context_->AsWeakPtr());
+        ServiceWorkerRegistrationOptions(
+            GURL("https://www.example.com/example")),
+        2L, context_->AsWeakPtr());
     registration3_ = new ServiceWorkerRegistration(
-        GURL("https://other.example.com/"), 3L, context_->AsWeakPtr());
+        ServiceWorkerRegistrationOptions(GURL("https://other.example.com/")),
+        3L, context_->AsWeakPtr());
   }
 
   void TearDown() override {
@@ -248,10 +252,10 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
 
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
  public:
-  MockServiceWorkerRegistration(const GURL& pattern,
+  MockServiceWorkerRegistration(const ServiceWorkerRegistrationOptions& options,
                                 int64_t registration_id,
                                 base::WeakPtr<ServiceWorkerContextCore> context)
-      : ServiceWorkerRegistration(pattern, registration_id, context) {}
+      : ServiceWorkerRegistration(options, registration_id, context) {}
 
   void AddListener(ServiceWorkerRegistration::Listener* listener) override {
     listeners_.insert(listener);
@@ -278,8 +282,9 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
 
   // Create a mock registration before creating the provider host which is in
   // the scope.
+  ServiceWorkerRegistrationOptions options(GURL("https://cross.example.com/"));
   scoped_refptr<MockServiceWorkerRegistration> registration =
-      new MockServiceWorkerRegistration(GURL("https://cross.example.com/"), 4L,
+      new MockServiceWorkerRegistration(options, 4L,
                                         helper_->context()->AsWeakPtr());
 
   ServiceWorkerProviderHost* provider_host =

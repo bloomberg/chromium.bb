@@ -419,20 +419,16 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHostByClientID(
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(
-    const GURL& pattern,
     const GURL& script_url,
+    const ServiceWorkerRegistrationOptions& options,
     ServiceWorkerProviderHost* provider_host,
     const RegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   was_service_worker_registered_ = true;
   job_coordinator_->Register(
-      pattern,
-      script_url,
-      provider_host,
-      base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
-                 AsWeakPtr(),
-                 pattern,
-                 callback));
+      script_url, options, provider_host,
+      base::Bind(&ServiceWorkerContextCore::RegistrationComplete, AsWeakPtr(),
+                 options.scope, callback));
 }
 
 void ServiceWorkerContextCore::UpdateServiceWorker(

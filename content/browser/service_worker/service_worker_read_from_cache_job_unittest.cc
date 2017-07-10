@@ -90,9 +90,9 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     run_loop.Run();
 
     // Populate a registration in the storage.
-    registration_ =
-        new ServiceWorkerRegistration(GURL("http://example.com/scope"),
-                                      kRegistrationId, context()->AsWeakPtr());
+    registration_ = new ServiceWorkerRegistration(
+        ServiceWorkerRegistrationOptions(GURL("http://example.com/scope")),
+        kRegistrationId, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
                                         kVersionId, context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;

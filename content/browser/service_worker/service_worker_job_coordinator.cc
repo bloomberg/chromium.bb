@@ -102,14 +102,14 @@ ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
 }
 
 void ServiceWorkerJobCoordinator::Register(
-    const GURL& pattern,
     const GURL& script_url,
+    const ServiceWorkerRegistrationOptions& options,
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   std::unique_ptr<ServiceWorkerRegisterJobBase> job(
-      new ServiceWorkerRegisterJob(context_, pattern, script_url));
+      new ServiceWorkerRegisterJob(context_, script_url, options));
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
-      job_queues_[pattern].Push(std::move(job)));
+      job_queues_[options.scope].Push(std::move(job)));
   queued_job->AddCallback(callback, provider_host);
 }
 

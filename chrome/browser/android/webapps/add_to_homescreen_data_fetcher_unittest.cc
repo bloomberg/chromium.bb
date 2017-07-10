@@ -257,7 +257,8 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
   void RegisterServiceWorker(const GURL& url) {
     base::RunLoop run_loop;
     embedded_worker_test_helper_->context()->RegisterServiceWorker(
-        url, GURL(url.spec() + "/service_worker.js"), nullptr,
+        GURL(url.spec() + "/service_worker.js"),
+        content::ServiceWorkerRegistrationOptions(url), nullptr,
         base::Bind(&AddToHomescreenDataFetcherTest::OnServiceWorkerRegistered,
                    base::Unretained(this), run_loop.QuitClosure()));
   }

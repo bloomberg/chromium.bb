@@ -328,7 +328,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Register a Service Worker to get a valid registration id.
   embedded_worker_test_helper->context()->RegisterServiceWorker(
-      origin, script_url, nullptr /* provider_host */,
+      script_url, ServiceWorkerRegistrationOptions(origin),
+      nullptr /* provider_host */,
       base::Bind(&PlatformNotificationContextTest::DidRegisterServiceWorker,
                  base::Unretained(this), &service_worker_registration_id));
 

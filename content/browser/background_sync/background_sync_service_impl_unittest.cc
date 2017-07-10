@@ -163,7 +163,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateServiceWorkerRegistration() {
     bool called = false;
     embedded_worker_helper_->context()->RegisterServiceWorker(
-        GURL(kServiceWorkerPattern), GURL(kServiceWorkerScript), NULL,
+        GURL(kServiceWorkerScript),
+        ServiceWorkerRegistrationOptions(GURL(kServiceWorkerPattern)), nullptr,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &RegisterServiceWorkerCallback, &called, &sw_registration_id_)));
     base::RunLoop().RunUntilIdle();

@@ -50,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     virtual void OnSkippedWaiting(ServiceWorkerRegistration* registation) {}
   };
 
-  ServiceWorkerRegistration(const GURL& pattern,
+  ServiceWorkerRegistration(const ServiceWorkerRegistrationOptions& options,
                             int64_t registration_id,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 

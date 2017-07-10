@@ -106,9 +106,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerRegistrationOptions)
+  IPC_STRUCT_TRAITS_MEMBER(scope)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerRegistrationObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(handle_id)
-  IPC_STRUCT_TRAITS_MEMBER(scope)
+  IPC_STRUCT_TRAITS_MEMBER(options)
   IPC_STRUCT_TRAITS_MEMBER(registration_id)
 IPC_STRUCT_TRAITS_END()
 
@@ -152,8 +156,8 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_RegisterServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* provider_id */,
-                     GURL /* scope */,
-                     GURL /* script_url */)
+                     GURL /* script_url */,
+                     content::ServiceWorkerRegistrationOptions)
 
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UpdateServiceWorker,
                      int /* thread_id */,

@@ -130,8 +130,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnRegisterServiceWorker(int thread_id,
                                int request_id,
                                int provider_id,
-                               const GURL& pattern,
-                               const GURL& script_url);
+                               const GURL& script_url,
+                               const ServiceWorkerRegistrationOptions& options);
   void OnUpdateServiceWorker(int thread_id,
                              int request_id,
                              int provider_id,

@@ -112,7 +112,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   // Register service worker for payment manager.
   bool called = false;
   worker_helper_->context()->RegisterServiceWorker(
-      scope_url, sw_script_url, nullptr,
+      sw_script_url, ServiceWorkerRegistrationOptions(scope_url), nullptr,
       base::Bind(&RegisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);

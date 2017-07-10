@@ -27,8 +27,8 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerJobCoordinator();
 
-  void Register(const GURL& pattern,
-                const GURL& script_url,
+  void Register(const GURL& script_url,
+                const ServiceWorkerRegistrationOptions& options,
                 ServiceWorkerProviderHost* provider_host,
                 const ServiceWorkerRegisterJob::RegistrationCallback& callback);
 

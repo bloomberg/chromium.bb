@@ -179,7 +179,8 @@ class ServiceWorkerURLRequestJobTest
     helper_ = std::move(helper);
 
     registration_ = new ServiceWorkerRegistration(
-        GURL("https://example.com/"), 1L, helper_->context()->AsWeakPtr());
+        ServiceWorkerRegistrationOptions(GURL("https://example.com/")), 1L,
+        helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());

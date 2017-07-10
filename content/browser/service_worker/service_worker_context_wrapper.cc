@@ -277,9 +277,10 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
                             base::Bind(continuation, false));
     return;
   }
+  ServiceWorkerRegistrationOptions options(net::SimplifyUrlForRequest(pattern));
   context()->RegisterServiceWorker(
-      net::SimplifyUrlForRequest(pattern),
-      net::SimplifyUrlForRequest(script_url), NULL /* provider_host */,
+      net::SimplifyUrlForRequest(script_url), options,
+      nullptr /* provider_host */,
       base::Bind(&FinishRegistrationOnIO, continuation));
 }
 
