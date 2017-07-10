@@ -90,7 +90,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(net::kQuicYieldAfterDurationMilliseconds,
             params_.quic_packet_reader_yield_after_duration_milliseconds);
   EXPECT_FALSE(params_.quic_race_cert_verification);
-  EXPECT_FALSE(params_.quic_do_not_fragment);
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params_.quic_migrate_sessions_early);
@@ -232,17 +231,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableServerPushCancellation) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_server_push_cancellation);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicDoNotFragment) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["do_not_fragment"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_do_not_fragment);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicEstimateInitialRtt) {
