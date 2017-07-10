@@ -8,7 +8,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  host = 'https://chromium-review.googlesource.com/a'
+  host = 'https://chromium-review.googlesource.com'
   project = 'v8/v8'
 
   branch = 'test'
