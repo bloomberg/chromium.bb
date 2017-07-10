@@ -34601,6 +34601,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.SecureSchemeHasSSLStatus" enum="BooleanPresent">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    True counts the events when a https URL commits with a SSL certificate.
+    False is when the certificate is missing. This should be at 100%, anything
+    less is probably a bug.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Start.RendererBrowserDifference.Negative"
     units="ms">
   <obsolete>
