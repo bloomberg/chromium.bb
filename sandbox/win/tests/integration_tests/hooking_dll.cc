@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <windows.h>
 
-#define _DLL_EXPORTING
-#include "integration_tests_common.h"
+#define BUILDING_DLL
+#include "hooking_dll.h"
 
 // This data section creates a common area that is accessible
 // to all instances of the DLL (in every process).  They map to
@@ -24,9 +24,10 @@ bool hook_called = false;
 #pragma comment(linker, "/SECTION:.hook,RWS")
 
 namespace {
-
 HANDLE event = NULL;
 }
+
+namespace hooking_dll {
 
 void SetHook(HHOOK hook_handle) {
   hook = hook_handle;
@@ -50,14 +51,16 @@ LRESULT HookProc(int code, WPARAM w_param, LPARAM l_param) {
   return CallNextHookEx(hook, code, w_param, l_param);
 }
 
+}  // namespace hooking_dll
+
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     // The testing process should have set up this named event already
     // (if the test needs this event to be signaled).
-    event = ::OpenEventW(EVENT_MODIFY_STATE, FALSE, g_hook_event);
+    event = ::OpenEventW(EVENT_MODIFY_STATE, FALSE, hooking_dll::g_hook_event);
   }
 
-  if (reason == DLL_PROCESS_DETACH)
+  if (reason == DLL_PROCESS_DETACH && event != nullptr)
     ::CloseHandle(event);
 
   return TRUE;
