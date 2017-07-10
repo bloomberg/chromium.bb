@@ -30,6 +30,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -516,6 +517,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       tracing_manager_ = TracingManager::Create();
     else
       tracing_manager_.reset();
+    SystemTrayClient::Get()->SetPerformanceTracingIconVisible(enabled);
   }
   if (reason != REASON_PREF_CHANGED || pref_name == prefs::kTapToClickEnabled) {
     const bool enabled = tap_to_click_enabled_.GetValue();

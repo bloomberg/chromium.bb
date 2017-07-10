@@ -28,6 +28,10 @@ interface SystemTray {
   // or |active_directory_managed| is true.
   SetEnterpriseDomain(string enterprise_domain, bool active_directory_managed);
 
+  // Shows or hides an item in the system tray indicating that performance
+  // tracing is running.
+  SetPerformanceTracingIconVisible(bool visible);
+
   // Shows an icon in the system tray indicating that a software update is
   // available. Once shown the icon persists until reboot. |severity| and
   // |factory_reset_required| are used to set the icon, color, and tooltip.

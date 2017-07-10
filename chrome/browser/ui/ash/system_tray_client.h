@@ -54,6 +54,7 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // Wrappers around ash::mojom::SystemTray interface:
   void SetPrimaryTrayEnabled(bool enabled);
   void SetPrimaryTrayVisible(bool visible);
+  void SetPerformanceTracingIconVisible(bool visible);
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
