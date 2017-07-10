@@ -105,13 +105,17 @@ Polymer({
       value: function() {
         var map = new Map();
         // <if expr="use_nss_certs">
-        map.set(
-            settings.Route.CERTIFICATES.path,
-            '#manageCertificates .subpage-arrow');
+        if (settings.routes.CERTIFICATES) {
+          map.set(
+              settings.routes.CERTIFICATES.path,
+              '#manageCertificates .subpage-arrow');
+        }
         // </if>
-        map.set(
-            settings.Route.SITE_SETTINGS.path,
-            '#site-settings-subpage-trigger .subpage-arrow');
+        if (settings.routes.SITE_SETTINGS) {
+          map.set(
+              settings.routes.SITE_SETTINGS.path,
+              '#site-settings-subpage-trigger .subpage-arrow');
+        }
         return map;
       },
     },
@@ -141,7 +145,7 @@ Polymer({
   /** @protected */
   currentRouteChanged: function() {
     this.showClearBrowsingDataDialog_ =
-        settings.getCurrentRoute() == settings.Route.CLEAR_BROWSER_DATA;
+        settings.getCurrentRoute() == settings.routes.CLEAR_BROWSER_DATA;
   },
 
   /**
@@ -214,7 +218,7 @@ Polymer({
   /** @private */
   onManageCertificatesTap_: function() {
     // <if expr="use_nss_certs">
-    settings.navigateTo(settings.Route.CERTIFICATES);
+    settings.navigateTo(settings.routes.CERTIFICATES);
     // </if>
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
@@ -234,12 +238,12 @@ Polymer({
 
   /** @private */
   onSiteSettingsTap_: function() {
-    settings.navigateTo(settings.Route.SITE_SETTINGS);
+    settings.navigateTo(settings.routes.SITE_SETTINGS);
   },
 
   /** @private */
   onClearBrowsingDataTap_: function() {
-    settings.navigateTo(settings.Route.CLEAR_BROWSER_DATA);
+    settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA);
   },
 
   /** @private */

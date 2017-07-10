@@ -67,14 +67,18 @@ Polymer({
       value: function() {
         var map = new Map();
         // <if expr="not is_macosx">
-        map.set(
-            settings.Route.EDIT_DICTIONARY.path,
-            '#spellCheckCollapse .subpage-arrow');
+        if (settings.routes.EDIT_DICTIONARY) {
+          map.set(
+              settings.routes.EDIT_DICTIONARY.path,
+              '#spellCheckCollapse .subpage-arrow');
+        }
         // </if>
         // <if expr="chromeos">
-        map.set(
-            settings.Route.INPUT_METHODS.path,
-            '#inputMethodsCollapse .subpage-arrow');
+        if (settings.routes.INPUT_METHODS) {
+          map.set(
+              settings.routes.INPUT_METHODS.path,
+              '#inputMethodsCollapse .subpage-arrow');
+        }
         // </if>
         return map;
       },
@@ -169,7 +173,7 @@ Polymer({
    * @private
    */
   onManageInputMethodsTap_: function() {
-    settings.navigateTo(settings.Route.INPUT_METHODS);
+    settings.navigateTo(settings.routes.INPUT_METHODS);
   },
 
   /**
@@ -421,7 +425,7 @@ Polymer({
    * @private
    */
   onEditDictionaryTap_: function() {
-    settings.navigateTo(settings.Route.EDIT_DICTIONARY);
+    settings.navigateTo(settings.routes.EDIT_DICTIONARY);
   },
 
   /**

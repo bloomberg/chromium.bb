@@ -186,7 +186,7 @@ Polymer({
     /** @override */
     subpageRoute: {
       type: Object,
-      value: settings.Route.MANAGE_PASSWORDS,
+      value: settings.routes.MANAGE_PASSWORDS,
     },
 
     /**

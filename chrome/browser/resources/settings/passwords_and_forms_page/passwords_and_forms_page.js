@@ -18,11 +18,16 @@ Polymer({
   /** @override */
   ready: function() {
     this.focusConfig_ = new Map();
-    this.focusConfig_.set(
-        settings.Route.AUTOFILL.path, '#autofillManagerButton .subpage-arrow');
-    this.focusConfig_.set(
-        settings.Route.MANAGE_PASSWORDS.path,
-        '#passwordManagerButton .subpage-arrow');
+    if (settings.routes.AUTOFILL) {
+      this.focusConfig_.set(
+          settings.routes.AUTOFILL.path,
+          '#autofillManagerButton .subpage-arrow');
+    }
+    if (settings.routes.MANAGE_PASSWORDS) {
+      this.focusConfig_.set(
+          settings.routes.MANAGE_PASSWORDS.path,
+          '#passwordManagerButton .subpage-arrow');
+    }
   },
 
   /**
@@ -31,7 +36,7 @@ Polymer({
    * @private
    */
   onAutofillTap_: function(event) {
-    settings.navigateTo(settings.Route.AUTOFILL);
+    settings.navigateTo(settings.routes.AUTOFILL);
   },
 
   /**
@@ -40,6 +45,6 @@ Polymer({
    * @private
    */
   onPasswordsTap_: function(event) {
-    settings.navigateTo(settings.Route.MANAGE_PASSWORDS);
+    settings.navigateTo(settings.routes.MANAGE_PASSWORDS);
   },
 });

@@ -62,10 +62,10 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(newRoute, oldRoute) {
-    if (newRoute != settings.Route.FINGERPRINT) {
+    if (newRoute != settings.routes.FINGERPRINT) {
       if (this.browserProxy_)
         this.browserProxy_.endCurrentAuthentication();
-    } else if (oldRoute == settings.Route.LOCK_SCREEN) {
+    } else if (oldRoute == settings.routes.LOCK_SCREEN) {
       // Start fingerprint authentication when going from LOCK_SCREEN to
       // FINGERPRINT page.
       this.browserProxy_.startAuthentication();
@@ -166,7 +166,7 @@ Polymer({
    */
   onScreenLocked_: function(screenIsLocked) {
     if (!screenIsLocked &&
-        settings.getCurrentRoute() == settings.Route.FINGERPRINT) {
+        settings.getCurrentRoute() == settings.routes.FINGERPRINT) {
       this.onSetupFingerprintDialogClose_();
     }
   },

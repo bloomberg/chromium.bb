@@ -21,7 +21,7 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.Route.EDIT_DICTIONARY,
+      value: settings.routes.EDIT_DICTIONARY,
     },
 
     /** @private {!Array<string>} */

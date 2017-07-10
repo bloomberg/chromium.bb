@@ -226,7 +226,7 @@ Polymer({
       return;
 
     settings.navigateTo(
-        settings.Route.BASIC,
+        settings.routes.BASIC,
         query.length > 0 ?
             new URLSearchParams('search=' + encodeURIComponent(query)) :
             undefined,

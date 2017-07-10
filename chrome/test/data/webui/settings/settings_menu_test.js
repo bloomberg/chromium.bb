@@ -63,7 +63,7 @@ cr.define('settings_menu', function() {
       // search URL parameter.
       test('clearsUrlSearchParam', function() {
         var urlParams = new URLSearchParams('search=foo');
-        settings.navigateTo(settings.Route.BASIC, urlParams);
+        settings.navigateTo(settings.routes.BASIC, urlParams);
         assertEquals(
             urlParams.toString(),
             settings.getQueryParameters().toString());
@@ -75,7 +75,7 @@ cr.define('settings_menu', function() {
     suite('SettingsMenuReset', function() {
       setup(function() {
         PolymerTest.clearBody();
-        settings.navigateTo(settings.Route.RESET, '');
+        settings.navigateTo(settings.routes.RESET, '');
         settingsMenu = document.createElement('settings-menu');
         document.body.appendChild(settingsMenu);
       });
@@ -93,7 +93,7 @@ cr.define('settings_menu', function() {
         var path = new window.URL(selector.selected).pathname;
         assertEquals('/reset', path);
 
-        settings.navigateTo(settings.Route.PEOPLE, '');
+        settings.navigateTo(settings.routes.PEOPLE, '');
         Polymer.dom.flush();
 
         path = new window.URL(selector.selected).pathname;
@@ -105,7 +105,7 @@ cr.define('settings_menu', function() {
         var path = new window.URL(selector.selected).pathname;
         assertEquals('/reset', path);
 
-        settings.navigateTo(settings.Route.BASIC, '');
+        settings.navigateTo(settings.routes.BASIC, '');
         Polymer.dom.flush();
 
         // BASIC has no sub page selected.

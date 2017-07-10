@@ -175,7 +175,7 @@ Polymer({
    * @private
    */
   updatePagesShown_: function() {
-    var inAbout = settings.Route.ABOUT.contains(settings.getCurrentRoute());
+    var inAbout = settings.routes.ABOUT.contains(settings.getCurrentRoute());
     this.showPages_ = {about: inAbout, settings: !inAbout};
 
     // Calculate and set the overflow padding.
@@ -235,12 +235,13 @@ Polymer({
    * @return {(?SettingsAboutPageElement|?SettingsBasicPageElement)}
    */
   getPage_: function(route) {
-    if (settings.Route.ABOUT.contains(route)) {
+    if (settings.routes.ABOUT.contains(route)) {
       return /** @type {?SettingsAboutPageElement} */ (
           this.$$('settings-about-page'));
     }
-    if (settings.Route.BASIC.contains(route) ||
-        settings.Route.ADVANCED.contains(route)) {
+    if (settings.routes.BASIC.contains(route) ||
+        (settings.routes.ADVANCED &&
+         settings.routes.ADVANCED.contains(route))) {
       return /** @type {?SettingsBasicPageElement} */ (
           this.$$('settings-basic-page'));
     }
@@ -259,7 +260,7 @@ Polymer({
     return new Promise(function(resolve, reject) {
       setTimeout(function() {
         var whenSearchDone =
-            assert(this.getPage_(settings.Route.BASIC)).searchContents(query);
+            assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
         whenSearchDone.then(function(result) {
           resolve();
           if (result.canceled) {

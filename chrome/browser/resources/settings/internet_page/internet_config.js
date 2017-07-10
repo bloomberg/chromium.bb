@@ -193,7 +193,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    if (route != settings.Route.NETWORK_CONFIG)
+    if (route != settings.routes.NETWORK_CONFIG)
       return;
 
     this.propertiesSent_ = false;
@@ -222,7 +222,7 @@ Polymer({
 
   /** @private */
   close_: function() {
-    if (settings.getCurrentRoute() == settings.Route.NETWORK_CONFIG)
+    if (settings.getCurrentRoute() == settings.routes.NETWORK_CONFIG)
       settings.navigateToPreviousRoute();
   },
 

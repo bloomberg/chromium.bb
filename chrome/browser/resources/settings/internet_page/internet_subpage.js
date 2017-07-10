@@ -119,7 +119,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    if (route != settings.Route.INTERNET_NETWORKS) {
+    if (route != settings.routes.INTERNET_NETWORKS) {
       this.stopScanning_();
       return;
     }

@@ -46,14 +46,14 @@ Polymer({
    */
   currentRouteChanged: function(route) {
     this.showResetProfileDialog_ =
-        route == settings.Route.TRIGGERED_RESET_DIALOG ||
-        route == settings.Route.RESET_DIALOG;
+        route == settings.routes.TRIGGERED_RESET_DIALOG ||
+        route == settings.routes.RESET_DIALOG;
   },
 
   /** @private */
   onShowResetProfileDialog_: function() {
     settings.navigateTo(
-        settings.Route.RESET_DIALOG, new URLSearchParams('origin=userclick'));
+        settings.routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
   },
 
   /** @private */

@@ -64,14 +64,14 @@ var MainPageBehaviorImpl = {
     if (this.scroller) {
       // When navigating from a section to the root route, we just need to
       // scroll to the top, and can early exit afterwards.
-      if (oldRouteWasSection && newRoute == settings.Route.BASIC) {
+      if (oldRouteWasSection && newRoute == settings.routes.BASIC) {
         this.scroller.scrollTop = 0;
         return;
       }
 
       // When navigating to the About page, we need to scroll to the top, and
       // still do the rest of section management.
-      if (newRoute == settings.Route.ABOUT)
+      if (newRoute == settings.routes.ABOUT)
         this.scroller.scrollTop = 0;
     }
 
@@ -79,8 +79,8 @@ var MainPageBehaviorImpl = {
     // in-page back/forward navigations (from a section or the root page).
     // Also always scroll when coming from either the About or root page.
     var scrollToSection = !settings.lastRouteChangeWasPopstate() ||
-        oldRouteWasSection || oldRoute == settings.Route.BASIC ||
-        oldRoute == settings.Route.ABOUT;
+        oldRouteWasSection || oldRoute == settings.routes.BASIC ||
+        oldRoute == settings.routes.ABOUT;
 
     // TODO(dschuyler): This doesn't set the flag in the case of going to or
     // from the main page. It seems sensible to set the flag in those cases,
@@ -161,8 +161,8 @@ var MainPageBehaviorImpl = {
         currentSection.scrollIntoView();
       }
     } else if (
-        this.tagName == 'SETTINGS-BASIC-PAGE' &&
-        settings.Route.ADVANCED.contains(currentRoute) &&
+        this.tagName == 'SETTINGS-BASIC-PAGE' && settings.routes.ADVANCED &&
+        settings.routes.ADVANCED.contains(currentRoute) &&
         // Need to exclude routes that correspond to 'non-sectioned' children of
         // ADVANCED, otherwise tryTransitionToSection_ will recurse endlessly.
         !currentRoute.isNavigableDialog) {
@@ -298,7 +298,7 @@ var MainPageBehaviorImpl = {
     // Don't animate the collapse if we are transitioning between Basic/Advanced
     // and About, since the section won't be visible.
     var needAnimate =
-        settings.Route.ABOUT.contains(settings.getCurrentRoute()) ==
+        settings.routes.ABOUT.contains(settings.getCurrentRoute()) ==
         (section.domHost.tagName == 'SETTINGS-ABOUT-PAGE');
 
     // Animate the collapse if the section knows the original height, except

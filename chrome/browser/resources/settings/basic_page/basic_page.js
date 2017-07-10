@@ -115,7 +115,7 @@ Polymer({
   currentRouteChanged: function(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
-    if (settings.Route.ADVANCED.contains(newRoute))
+    if (settings.routes.ADVANCED && settings.routes.ADVANCED.contains(newRoute))
       this.advancedToggleExpanded = true;
 
     if (oldRoute && oldRoute.isSubpage()) {
@@ -258,7 +258,7 @@ Polymer({
    * @private
    */
   showBasicPage_: function(currentRoute, inSearchMode, hasExpandedSection) {
-    return !hasExpandedSection || settings.Route.BASIC.contains(currentRoute);
+    return !hasExpandedSection || settings.routes.BASIC.contains(currentRoute);
   },
 
   /**
@@ -272,8 +272,10 @@ Polymer({
    */
   showAdvancedPage_: function(
       currentRoute, inSearchMode, hasExpandedSection, advancedToggleExpanded) {
-    return hasExpandedSection ? settings.Route.ADVANCED.contains(currentRoute) :
-                                advancedToggleExpanded || inSearchMode;
+    return hasExpandedSection ?
+        (settings.routes.ADVANCED &&
+         settings.routes.ADVANCED.contains(currentRoute)) :
+        advancedToggleExpanded || inSearchMode;
   },
 
   /**

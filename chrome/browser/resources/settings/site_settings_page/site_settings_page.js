@@ -71,7 +71,7 @@ Polymer({
     // Populate the |focusConfig| map of the parent <settings-animated-pages>
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
-    var R = settings.Route;
+    var R = settings.routes;
     [[R.SITE_SETTINGS_COOKIES, 'cookies'],
      [R.SITE_SETTINGS_LOCATION, 'location'], [R.SITE_SETTINGS_CAMERA, 'camera'],
      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
@@ -173,6 +173,6 @@ Polymer({
    */
   onTapNavigate_: function(event) {
     var dataSet = /** @type {{route: string}} */ (event.currentTarget.dataset);
-    settings.navigateTo(settings.Route[dataSet.route]);
+    settings.navigateTo(settings.routes[dataSet.route]);
   },
 });

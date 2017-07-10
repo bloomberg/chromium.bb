@@ -137,7 +137,7 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function(newRoute) {
-    if (newRoute == settings.Route.CHANGE_PICTURE) {
+    if (newRoute == settings.routes.CHANGE_PICTURE) {
       this.browserProxy_.initialize();
 
       // This in needed because we manually clear the selectedItem_ property

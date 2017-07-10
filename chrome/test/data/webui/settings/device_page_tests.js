@@ -246,7 +246,7 @@ cr.define('device_page_tests', function() {
       settings.display.systemDisplayApi = fakeSystemDisplay;
 
       PolymerTest.clearBody();
-      settings.navigateTo(settings.Route.BASIC);
+      settings.navigateTo(settings.routes.BASIC);
 
       devicePage = document.createElement('settings-device-page');
       devicePage.prefs = getFakePrefs();
@@ -344,21 +344,21 @@ cr.define('device_page_tests', function() {
       var pointersPage;
 
       setup(function() {
-        return showAndGetDeviceSubpage(
-            'pointers', settings.Route.POINTERS).then(function(page) {
+        return showAndGetDeviceSubpage('pointers', settings.routes.POINTERS)
+            .then(function(page) {
               pointersPage = page;
             });
       });
 
       test('subpage responds to pointer attach/detach', function() {
-        assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
+        assertEquals(settings.routes.POINTERS, settings.getCurrentRoute());
         assertLT(0, pointersPage.$$('#mouse').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
         assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
         cr.webUIListenerCallback('has-touchpad-changed', false);
-        assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
+        assertEquals(settings.routes.POINTERS, settings.getCurrentRoute());
         assertLT(0, pointersPage.$$('#mouse').offsetHeight);
         assertEquals(0, pointersPage.$$('#touchpad').offsetHeight);
         assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
@@ -366,30 +366,34 @@ cr.define('device_page_tests', function() {
 
         // Wait for the transition back to the main page.
         return new Promise(function(resolve, reject) {
-          devicePage.$$('#pages').addEventListener(
-              'neon-animation-finish', resolve);
+                 devicePage.$$('#pages').addEventListener(
+                     'neon-animation-finish', resolve);
 
-          cr.webUIListenerCallback('has-mouse-changed', false);
-        }).then(function() {
-          assertEquals(settings.Route.DEVICE, settings.getCurrentRoute());
-          assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
+                 cr.webUIListenerCallback('has-mouse-changed', false);
+               })
+            .then(function() {
+              assertEquals(settings.routes.DEVICE, settings.getCurrentRoute());
+              assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
 
-          cr.webUIListenerCallback('has-touchpad-changed', true);
-          assertLT(0, devicePage.$$('#main #pointersRow').offsetHeight);
-          return showAndGetDeviceSubpage('pointers', settings.Route.POINTERS);
-        }).then(function(page) {
-          assertEquals(0, pointersPage.$$('#mouse').offsetHeight);
-          assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
-          assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
-          assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
+              cr.webUIListenerCallback('has-touchpad-changed', true);
+              assertLT(0, devicePage.$$('#main #pointersRow').offsetHeight);
+              return showAndGetDeviceSubpage(
+                  'pointers', settings.routes.POINTERS);
+            })
+            .then(function(page) {
+              assertEquals(0, pointersPage.$$('#mouse').offsetHeight);
+              assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
+              assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
+              assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
-          cr.webUIListenerCallback('has-mouse-changed', true);
-          assertEquals(settings.Route.POINTERS, settings.getCurrentRoute());
-          assertLT(0, pointersPage.$$('#mouse').offsetHeight);
-          assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
-          assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
-          assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
-        });
+              cr.webUIListenerCallback('has-mouse-changed', true);
+              assertEquals(
+                  settings.routes.POINTERS, settings.getCurrentRoute());
+              assertLT(0, pointersPage.$$('#mouse').offsetHeight);
+              assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
+              assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
+              assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
+            });
       });
 
       test('mouse', function() {
@@ -459,74 +463,77 @@ cr.define('device_page_tests', function() {
 
     test(assert(TestNames.Keyboard), function() {
       // Open the keyboard subpage.
-      return showAndGetDeviceSubpage(
-          'keyboard', settings.Route.KEYBOARD).then(function(keyboardPage) {
-        // Initially, the optional keys are hidden.
-        expectFalse(!!keyboardPage.$$('#capsLockKey'));
-        expectFalse(!!keyboardPage.$$('#diamondKey'));
+      return showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD)
+          .then(function(keyboardPage) {
+            // Initially, the optional keys are hidden.
+            expectFalse(!!keyboardPage.$$('#capsLockKey'));
+            expectFalse(!!keyboardPage.$$('#diamondKey'));
 
-        // Pretend the diamond key is available.
-        var showCapsLock = false;
-        var showDiamondKey = true;
-        cr.webUIListenerCallback(
-            'show-keys-changed', showCapsLock, showDiamondKey);
-        Polymer.dom.flush();
-        expectFalse(!!keyboardPage.$$('#capsLockKey'));
-        expectTrue(!!keyboardPage.$$('#diamondKey'));
+            // Pretend the diamond key is available.
+            var showCapsLock = false;
+            var showDiamondKey = true;
+            cr.webUIListenerCallback(
+                'show-keys-changed', showCapsLock, showDiamondKey);
+            Polymer.dom.flush();
+            expectFalse(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#diamondKey'));
 
-        // Pretend a Caps Lock key is now available.
-        showCapsLock = true;
-        cr.webUIListenerCallback(
-            'show-keys-changed', showCapsLock, showDiamondKey);
-        Polymer.dom.flush();
-        expectTrue(!!keyboardPage.$$('#capsLockKey'));
-        expectTrue(!!keyboardPage.$$('#diamondKey'));
+            // Pretend a Caps Lock key is now available.
+            showCapsLock = true;
+            cr.webUIListenerCallback(
+                'show-keys-changed', showCapsLock, showDiamondKey);
+            Polymer.dom.flush();
+            expectTrue(!!keyboardPage.$$('#capsLockKey'));
+            expectTrue(!!keyboardPage.$$('#diamondKey'));
 
-        var collapse = keyboardPage.$$('iron-collapse');
-        assertTrue(!!collapse);
-        expectTrue(collapse.opened);
+            var collapse = keyboardPage.$$('iron-collapse');
+            assertTrue(!!collapse);
+            expectTrue(collapse.opened);
 
-        expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-        expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
+            expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+            expectEquals(500, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-        // Test interaction with the settings-slider's underlying paper-slider.
-        MockInteractions.pressAndReleaseKeyOn(
-            keyboardPage.$$('#delaySlider').$$('#slider'), 37 /* left */);
-        MockInteractions.pressAndReleaseKeyOn(
-            keyboardPage.$$('#repeatRateSlider').$$('#slider'), 39 /* right */);
-        var language = devicePage.prefs.settings.language;
-        expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);
-        expectEquals(300, language.xkb_auto_repeat_interval_r2.value);
+            // Test interaction with the settings-slider's underlying
+            // paper-slider.
+            MockInteractions.pressAndReleaseKeyOn(
+                keyboardPage.$$('#delaySlider').$$('#slider'), 37 /* left */);
+            MockInteractions.pressAndReleaseKeyOn(
+                keyboardPage.$$('#repeatRateSlider').$$('#slider'),
+                39 /* right */);
+            var language = devicePage.prefs.settings.language;
+            expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);
+            expectEquals(300, language.xkb_auto_repeat_interval_r2.value);
 
-        // Test sliders change when prefs change.
-        devicePage.set(
-            'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
-        expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
-        devicePage.set(
-            'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
-            2000);
-        expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
+            // Test sliders change when prefs change.
+            devicePage.set(
+                'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
+            expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
+            devicePage.set(
+                'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
+                2000);
+            expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-        // Test sliders round to nearest value when prefs change.
-        devicePage.set(
-            'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
-        expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
-        devicePage.set(
-            'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
-        expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
+            // Test sliders round to nearest value when prefs change.
+            devicePage.set(
+                'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
+            expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
+            devicePage.set(
+                'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
+                45);
+            expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
 
-        devicePage.set(
-            'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
-            false);
-        expectFalse(collapse.opened);
+            devicePage.set(
+                'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
+                false);
+            expectFalse(collapse.opened);
 
-        // Test keyboard shortcut overlay button.
-        MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
-        expectEquals(
-            1,
-            settings.DevicePageBrowserProxyImpl.getInstance()
-                .keyboardShortcutsOverlayShown_);
-      });
+            // Test keyboard shortcut overlay button.
+            MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
+            expectEquals(
+                1,
+                settings.DevicePageBrowserProxyImpl.getInstance()
+                    .keyboardShortcutsOverlayShown_);
+          });
     });
 
     test(assert(TestNames.Display), function() {
@@ -549,100 +556,115 @@ cr.define('device_page_tests', function() {
       };
 
       var displayPage;
-      return Promise.all([
-        // Get the display sub-page.
-        showAndGetDeviceSubpage(
-            'display', settings.Route.DISPLAY).then(function(page) {
-          displayPage = page;
-        }),
-        // Wait for the initial call to getInfo.
-        fakeSystemDisplay.getInfoCalled.promise,
-      ]).then(function() {
-        // Add a display.
-        addDisplay(1);
-        fakeSystemDisplay.onDisplayChanged.callListeners();
+      return Promise
+          .all([
+            // Get the display sub-page.
+            showAndGetDeviceSubpage('display', settings.routes.DISPLAY)
+                .then(function(page) {
+                  displayPage = page;
+                }),
+            // Wait for the initial call to getInfo.
+            fakeSystemDisplay.getInfoCalled.promise,
+          ])
+          .then(function() {
+            // Add a display.
+            addDisplay(1);
+            fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return Promise.all([
-          fakeSystemDisplay.getInfoCalled.promise,
-          fakeSystemDisplay.getLayoutCalled.promise,
-        ]);
-      }).then(function() {
-        // There should be a single display which should be primary and
-        // selected. Mirroring should be disabled.
-        expectEquals(1, displayPage.displays.length);
-        expectEquals(
-            displayPage.displays[0].id, displayPage.selectedDisplay.id);
-        expectEquals(
-            displayPage.displays[0].id, displayPage.primaryDisplayId);
-        expectFalse(displayPage.showMirror_(false, displayPage.displays));
-        expectFalse(displayPage.isMirrored_(displayPage.displays));
+            return Promise.all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+            ]);
+          })
+          .then(function() {
+            // There should be a single display which should be primary and
+            // selected. Mirroring should be disabled.
+            expectEquals(1, displayPage.displays.length);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.selectedDisplay.id);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.primaryDisplayId);
+            expectFalse(displayPage.showMirror_(false, displayPage.displays));
+            expectFalse(displayPage.isMirrored_(displayPage.displays));
 
-        // Add a second display.
-        addDisplay(2);
-        fakeSystemDisplay.onDisplayChanged.callListeners();
+            // Add a second display.
+            addDisplay(2);
+            fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return Promise.all([
-          fakeSystemDisplay.getInfoCalled.promise,
-          fakeSystemDisplay.getLayoutCalled.promise,
-          new Promise(function(resolve, reject) { setTimeout(resolve); })
-        ]);
-      }).then(function() {
-        // There should be two displays, the first should be primary and
-        // selected. Mirroring should be enabled but set to false.
-        expectEquals(2, displayPage.displays.length);
-        expectEquals(
-            displayPage.displays[0].id, displayPage.selectedDisplay.id);
-        expectEquals(displayPage.displays[0].id, displayPage.primaryDisplayId);
-        expectTrue(displayPage.showMirror_(false, displayPage.displays));
-        expectFalse(displayPage.isMirrored_(displayPage.displays));
+            return Promise.all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+              new Promise(function(resolve, reject) {
+                setTimeout(resolve);
+              })
+            ]);
+          })
+          .then(function() {
+            // There should be two displays, the first should be primary and
+            // selected. Mirroring should be enabled but set to false.
+            expectEquals(2, displayPage.displays.length);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.selectedDisplay.id);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.primaryDisplayId);
+            expectTrue(displayPage.showMirror_(false, displayPage.displays));
+            expectFalse(displayPage.isMirrored_(displayPage.displays));
 
-        // Select the second display and make it primary. Also change the
-        // orientation of the second display.
-        var displayLayout = displayPage.$$('#displayLayout');
-        assertTrue(!!displayLayout);
-        var displayDiv = displayLayout.$$('#_fakeDisplayId2');
-        assertTrue(!!displayDiv);
-        MockInteractions.tap(displayDiv);
-        expectEquals(
-            displayPage.displays[1].id, displayPage.selectedDisplay.id);
+            // Select the second display and make it primary. Also change the
+            // orientation of the second display.
+            var displayLayout = displayPage.$$('#displayLayout');
+            assertTrue(!!displayLayout);
+            var displayDiv = displayLayout.$$('#_fakeDisplayId2');
+            assertTrue(!!displayDiv);
+            MockInteractions.tap(displayDiv);
+            expectEquals(
+                displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
-        displayPage.updatePrimaryDisplay_({target: {value: '0'}});
-        displayPage.onOrientationChange_({target: {value: '90'}});
-        fakeSystemDisplay.onDisplayChanged.callListeners();
+            displayPage.updatePrimaryDisplay_({target: {value: '0'}});
+            displayPage.onOrientationChange_({target: {value: '90'}});
+            fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return Promise.all([
-          fakeSystemDisplay.getInfoCalled.promise,
-          fakeSystemDisplay.getLayoutCalled.promise,
-          new Promise(function(resolve, reject) { setTimeout(resolve); })
-        ]);
-      }).then(function() {
-        // Confirm that the second display is selected, primary, and rotated.
-        expectEquals(2, displayPage.displays.length);
-        expectEquals(
-            displayPage.displays[1].id, displayPage.selectedDisplay.id);
-        expectTrue(displayPage.displays[1].isPrimary);
-        expectEquals(displayPage.displays[1].id, displayPage.primaryDisplayId);
-        expectEquals(90, displayPage.displays[1].rotation);
+            return Promise.all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+              new Promise(function(resolve, reject) {
+                setTimeout(resolve);
+              })
+            ]);
+          })
+          .then(function() {
+            // Confirm that the second display is selected, primary, and
+            // rotated.
+            expectEquals(2, displayPage.displays.length);
+            expectEquals(
+                displayPage.displays[1].id, displayPage.selectedDisplay.id);
+            expectTrue(displayPage.displays[1].isPrimary);
+            expectEquals(
+                displayPage.displays[1].id, displayPage.primaryDisplayId);
+            expectEquals(90, displayPage.displays[1].rotation);
 
-        // Mirror the displays.
-        displayPage.onMirroredTap_();
-        fakeSystemDisplay.onDisplayChanged.callListeners();
+            // Mirror the displays.
+            displayPage.onMirroredTap_();
+            fakeSystemDisplay.onDisplayChanged.callListeners();
 
-        return Promise.all([
-          fakeSystemDisplay.getInfoCalled.promise,
-          fakeSystemDisplay.getLayoutCalled.promise,
-          new Promise(function(resolve, reject) { setTimeout(resolve); })
-        ]);
-      }).then(function() {
-        // Confirm that there is now only one display and that it is primary
-        // and mirroring is enabled.
-        expectEquals(1, displayPage.displays.length);
-        expectEquals(
-            displayPage.displays[0].id, displayPage.selectedDisplay.id);
-        expectTrue(displayPage.displays[0].isPrimary);
-        expectTrue(displayPage.showMirror_(false, displayPage.displays));
-        expectTrue(displayPage.isMirrored_(displayPage.displays));
-      });
+            return Promise.all([
+              fakeSystemDisplay.getInfoCalled.promise,
+              fakeSystemDisplay.getLayoutCalled.promise,
+              new Promise(function(resolve, reject) {
+                setTimeout(resolve);
+              })
+            ]);
+          })
+          .then(function() {
+            // Confirm that there is now only one display and that it is primary
+            // and mirroring is enabled.
+            expectEquals(1, displayPage.displays.length);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.selectedDisplay.id);
+            expectTrue(displayPage.displays[0].isPrimary);
+            expectTrue(displayPage.showMirror_(false, displayPage.displays));
+            expectTrue(displayPage.isMirrored_(displayPage.displays));
+          });
     });
 
     suite(assert(TestNames.Power), function() {
@@ -692,7 +714,7 @@ cr.define('device_page_tests', function() {
         });
 
         setup(function() {
-          return showAndGetDeviceSubpage('power', settings.Route.POWER)
+          return showAndGetDeviceSubpage('power', settings.routes.POWER)
               .then(function(page) {
                 powerPage = page;
                 powerSourceRow = assert(powerPage.$$('#powerSourceRow'));
@@ -933,8 +955,8 @@ cr.define('device_page_tests', function() {
       });
 
       setup(function() {
-        return showAndGetDeviceSubpage('stylus', settings.Route.STYLUS).then(
-            function(page) {
+        return showAndGetDeviceSubpage('stylus', settings.routes.STYLUS)
+            .then(function(page) {
               stylusPage = page;
               browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
               appSelector = assert(page.$$('#menu'));
