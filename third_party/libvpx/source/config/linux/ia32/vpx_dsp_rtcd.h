@@ -1064,6 +1064,7 @@ RTCD_EXTERN void (*vpx_highbd_idct4x4_1_add)(const tran_low_t *input, uint16_t *
 
 void vpx_highbd_idct8x8_12_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 void vpx_highbd_idct8x8_12_add_sse2(const tran_low_t *input, uint16_t *dest, int stride, int bd);
+void vpx_highbd_idct8x8_12_add_sse4_1(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 RTCD_EXTERN void (*vpx_highbd_idct8x8_12_add)(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 
 void vpx_highbd_idct8x8_1_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
@@ -1072,6 +1073,7 @@ RTCD_EXTERN void (*vpx_highbd_idct8x8_1_add)(const tran_low_t *input, uint16_t *
 
 void vpx_highbd_idct8x8_64_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 void vpx_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint16_t *dest, int stride, int bd);
+void vpx_highbd_idct8x8_64_add_sse4_1(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 RTCD_EXTERN void (*vpx_highbd_idct8x8_64_add)(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 
 void vpx_highbd_iwht4x4_16_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
@@ -2426,10 +2428,12 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vpx_highbd_idct4x4_1_add = vpx_highbd_idct4x4_1_add_sse2;
     vpx_highbd_idct8x8_12_add = vpx_highbd_idct8x8_12_add_c;
     if (flags & HAS_SSE2) vpx_highbd_idct8x8_12_add = vpx_highbd_idct8x8_12_add_sse2;
+    if (flags & HAS_SSE4_1) vpx_highbd_idct8x8_12_add = vpx_highbd_idct8x8_12_add_sse4_1;
     vpx_highbd_idct8x8_1_add = vpx_highbd_idct8x8_1_add_c;
     if (flags & HAS_SSE2) vpx_highbd_idct8x8_1_add = vpx_highbd_idct8x8_1_add_sse2;
     vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_c;
     if (flags & HAS_SSE2) vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse2;
+    if (flags & HAS_SSE4_1) vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse4_1;
     vpx_highbd_lpf_horizontal_16 = vpx_highbd_lpf_horizontal_16_c;
     if (flags & HAS_SSE2) vpx_highbd_lpf_horizontal_16 = vpx_highbd_lpf_horizontal_16_sse2;
     vpx_highbd_lpf_horizontal_16_dual = vpx_highbd_lpf_horizontal_16_dual_c;
