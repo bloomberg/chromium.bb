@@ -51,14 +51,16 @@ class CONTENT_EXPORT Sandbox {
   static const char* kSandboxEnableLogging;
   static const char* kSandboxDisableDenialLogging;
   static const char* kSandboxHomedirAsLiteral;
-  static const char* kSandboxElCapOrLater;
-  static const char* kSandboxMavericks;
+  static const char* kSandboxOSVersion;
   static const char* kSandboxPermittedDir;
   static const char* kSandboxBundlePath;
   static const char* kSandboxLoggingPathAsLiteral;
   static const char* kSandboxChromeBundleId;
   static const char* kSandboxComponentPath;
   static const char* kSandboxChromePID;
+
+  // TODO(kerrnel): this is only for the legacy sandbox.
+  static const char* kSandboxElCapOrLater;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);

@@ -15,18 +15,22 @@
 (define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
 (define enable-logging "ENABLE_LOGGING")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
-(define elcap-or-later "ELCAP_OR_LATER")
-(define is-mavericks "IS_MAVERICKS")
 (define bundle-path "BUNDLE_PATH")
 (define executable-path "EXECUTABLE_PATH")
 (define chromium-pid "CHROMIUM_PID")
 (define log-file-path "LOG_FILE_PATH")
 (define bundle-id "BUNDLE_ID")
 (define component-path "COMPONENT_PATH")
+(define os-version (string->number (param "OS_VERSION")))
+
+; OS Version numbers
+(define mavericks 1009)
 
 ; Backwards compatibility for 10.9
-(define (path x) (literal x))
-(define (iokit-registry-entry-class x) (iokit-user-client-class x))
+(if (not (defined? 'path))
+  (define path literal))
+(if (not (defined? 'iokit-registry-entry-class))
+  (define iokit-registry-entry-class iokit-user-client-class))
 
 ; --enable-sandbox-logging causes the sandbox to log failures to the syslog.
 (if (param-true? disable-sandbox-denial-logging)
@@ -126,11 +130,11 @@
   (global-name "com.apple.windowserver.active"))
 
 ; MacOS dropped FontServer to replace it with the (XPC based) com.apple.fonts.
-(if (param-true? is-mavericks)
+(if (= os-version mavericks)
   (allow mach-lookup (global-name "com.apple.FontServer")))
 
 ; sysctl
-(if (param-true? is-mavericks)
+(if (= os-version mavericks)
   (allow sysctl-read)
   ; else
   (allow sysctl-read
