@@ -7,7 +7,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -32,14 +31,27 @@
 @synthesize userContentController = _userContentController;
 
 + (instancetype)defaultConfiguration {
-  auto browserState =
-      base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
-  return [[self alloc] initWithBrowserState:std::move(browserState)];
+  static CWVWebViewConfiguration* defaultConfiguration;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    auto browserState =
+        base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
+    defaultConfiguration =
+        [[self alloc] initWithBrowserState:std::move(browserState)];
+  });
+  return defaultConfiguration;
 }
 
 + (instancetype)incognitoConfiguration {
-  auto browserState = base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
-  return [[self alloc] initWithBrowserState:std::move(browserState)];
+  static CWVWebViewConfiguration* incognitoConfiguration;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    auto browserState =
+        base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
+    incognitoConfiguration =
+        [[self alloc] initWithBrowserState:std::move(browserState)];
+  });
+  return incognitoConfiguration;
 }
 
 + (void)initialize {
@@ -62,9 +74,13 @@
   return self;
 }
 
+#pragma mark - Public Methods
+
 - (BOOL)isPersistent {
   return !_browserState->IsOffTheRecord();
 }
+
+#pragma mark - Private Methods
 
 - (ios_web_view::WebViewBrowserState*)browserState {
   return _browserState.get();

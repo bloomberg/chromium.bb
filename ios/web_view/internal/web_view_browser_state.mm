@@ -8,11 +8,13 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service_factory.h"
@@ -56,8 +58,13 @@ WebViewBrowserState::WebViewBrowserState(bool off_the_record)
       JsonPrefStore::GetTaskRunnerForFile(path_,
                                           web::WebThread::GetBlockingPool());
 
-  scoped_refptr<PersistentPrefStore> user_pref_store = new JsonPrefStore(
-      path_.Append(kPreferencesFilename), sequenced_task_runner, nullptr);
+  scoped_refptr<PersistentPrefStore> user_pref_store;
+  if (off_the_record) {
+    user_pref_store = new InMemoryPrefStore();
+  } else {
+    user_pref_store = new JsonPrefStore(path_.Append(kPreferencesFilename),
+                                        sequenced_task_runner, nullptr);
+  }
 
   PrefServiceFactory factory;
   factory.set_user_prefs(user_pref_store);
