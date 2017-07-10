@@ -4,9 +4,9 @@
 
 #include "core/inspector/InspectorHighlight.h"
 
-#include "core/dom/ClientRect.h"
 #include "core/dom/PseudoElement.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/geometry/DOMRect.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
@@ -220,7 +220,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
 
   // layoutObject the getBoundingClientRect() data in the tooltip
   // to be consistent with the rulers (see http://crbug.com/262338).
-  ClientRect* bounding_box = element->getBoundingClientRect();
+  DOMRect* bounding_box = element->getBoundingClientRect();
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
 

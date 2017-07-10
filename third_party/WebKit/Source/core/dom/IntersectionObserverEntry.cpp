@@ -18,9 +18,10 @@ IntersectionObserverEntry::IntersectionObserverEntry(
     Element* target)
     : time_(time),
       intersection_ratio_(intersection_ratio),
-      bounding_client_rect_(ClientRect::Create(bounding_client_rect)),
-      root_bounds_(root_bounds ? ClientRect::Create(*root_bounds) : nullptr),
-      intersection_rect_(ClientRect::Create(intersection_rect)),
+      bounding_client_rect_(DOMRectReadOnly::FromIntRect(bounding_client_rect)),
+      root_bounds_(root_bounds ? DOMRectReadOnly::FromIntRect(*root_bounds)
+                               : nullptr),
+      intersection_rect_(DOMRectReadOnly::FromIntRect(intersection_rect)),
       target_(target),
       is_intersecting_(is_intersecting)
 

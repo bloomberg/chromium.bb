@@ -39,5 +39,5 @@ interface LayerRect {
     readonly attribute long associatedNodeOffsetX;
     readonly attribute long associatedNodeOffsetY;
     /* Rectange in the GraphicsLayer co-ordinate space */
-    readonly attribute ClientRect layerRelativeRect;
+    readonly attribute DOMRectReadOnly layerRelativeRect;
 };

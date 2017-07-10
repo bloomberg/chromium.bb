@@ -5,10 +5,10 @@
 #include "core/dom/Element.h"
 
 #include <memory>
-#include "core/dom/ClientRect.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/PaintLayer.h"
@@ -51,7 +51,7 @@ TEST_F(ElementTest,
 
   // The sticky element should remain at (0, 25) relative to the viewport due to
   // the constraints.
-  ClientRect* bounding_client_rect = sticky->getBoundingClientRect();
+  DOMRect* bounding_client_rect = sticky->getBoundingClientRect();
   EXPECT_EQ(0, bounding_client_rect->top());
   EXPECT_EQ(25, bounding_client_rect->left());
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ClientRect.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/geometry/DOMRect.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -101,7 +101,7 @@ void ScrollMetricsTest::Scroll(Element* element,
                                const WebGestureDevice device) {
   DCHECK(element);
   DCHECK(element->getBoundingClientRect());
-  ClientRect* rect = element->getBoundingClientRect();
+  DOMRect* rect = element->getBoundingClientRect();
   ScrollBeginEventBuilder scroll_begin(
       IntPoint(rect->left() + rect->width() / 2,
                rect->top() + rect->height() / 2),

@@ -11,7 +11,7 @@
 namespace blink {
 
 class Element;
-class ClientRect;
+class DOMRectReadOnly;
 class LayoutRect;
 
 class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
@@ -22,15 +22,13 @@ class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
   ResizeObserverEntry(Element* target, const LayoutRect& content_rect);
 
   Element* target() const { return target_; }
-  // FIXME(atotic): should return DOMRectReadOnly once https://crbug.com/388780
-  // lands
-  ClientRect* contentRect() const { return content_rect_; }
+  DOMRectReadOnly* contentRect() const { return content_rect_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   Member<Element> target_;
-  Member<ClientRect> content_rect_;
+  Member<DOMRectReadOnly> content_rect_;
 };
 
 }  // namespace blink

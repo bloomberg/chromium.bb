@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -24,6 +26,8 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
                                  double y,
                                  double width,
                                  double height);
+  static DOMRectReadOnly* FromIntRect(const IntRect&);
+  static DOMRectReadOnly* FromFloatRect(const FloatRect&);
   static DOMRectReadOnly* fromRect(const DOMRectInit&);
 
   double x() const { return x_; }

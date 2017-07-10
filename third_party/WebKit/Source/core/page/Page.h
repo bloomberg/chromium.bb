@@ -50,10 +50,10 @@ namespace blink {
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
-class ClientRectList;
 class ContextMenuClient;
 class ContextMenuController;
 class Document;
+class DOMRectList;
 class DragCaret;
 class DragController;
 class EditorClient;
@@ -188,7 +188,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   SmoothScrollSequencer* GetSmoothScrollSequencer();
 
-  ClientRectList* NonFastScrollableRects(const LocalFrame*);
+  DOMRectList* NonFastScrollableRects(const LocalFrame*);
 
   Settings& GetSettings() const { return *settings_; }
 

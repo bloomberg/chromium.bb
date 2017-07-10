@@ -20,6 +20,8 @@ blink_core_sources("geometry") {
     "DOMQuad.h",
     "DOMRect.cpp",
     "DOMRect.h",
+    "DOMRectList.cpp",
+    "DOMRectList.h",
     "DOMRectReadOnly.cpp",
     "DOMRectReadOnly.h",
   ]

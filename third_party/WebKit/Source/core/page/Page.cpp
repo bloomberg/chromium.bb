@@ -23,7 +23,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
-#include "core/dom/ClientRectList.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
@@ -41,6 +40,7 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/geometry/DOMRectList.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/layout/TextAutosizer.h"
@@ -229,7 +229,7 @@ const OverscrollController& Page::GetOverscrollController() const {
   return *overscroll_controller_;
 }
 
-ClientRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
+DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
   DisableCompositingQueryAsserts disabler;
   if (ScrollingCoordinator* scrolling_coordinator =
           this->GetScrollingCoordinator()) {
@@ -240,9 +240,8 @@ ClientRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
   GraphicsLayer* layer =
       frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
   if (!layer)
-    return ClientRectList::Create();
-  return ClientRectList::Create(
-      layer->PlatformLayer()->NonFastScrollableRegion());
+    return DOMRectList::Create();
+  return DOMRectList::Create(layer->PlatformLayer()->NonFastScrollableRegion());
 }
 
 void Page::SetMainFrame(Frame* main_frame) {

@@ -529,21 +529,6 @@ interface CharacterData : Node
     method replaceWith
     method substringData
     setter data
-interface ClientRect
-    attribute @@toStringTag
-    getter bottom
-    getter height
-    getter left
-    getter right
-    getter top
-    getter width
-    method constructor
-interface ClientRectList
-    attribute @@toStringTag
-    getter length
-    method @@iterator
-    method constructor
-    method item
 interface Clipboard : EventTarget
     attribute @@toStringTag
     method constructor

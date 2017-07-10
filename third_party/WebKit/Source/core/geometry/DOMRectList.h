@@ -24,14 +24,52 @@
  *
  */
 
-#include "core/dom/ClientRect.h"
+#ifndef DOMRectList_h
+#define DOMRectList_h
+
+#include "core/CoreExport.h"
+#include "core/geometry/DOMRect.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-ClientRect::ClientRect() {}
+class CORE_EXPORT DOMRectList final : public GarbageCollected<DOMRectList>,
+                                      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-ClientRect::ClientRect(const IntRect& rect) : rect_(rect) {}
+ public:
+  static DOMRectList* Create() { return new DOMRectList; }
+  static DOMRectList* Create(const Vector<FloatQuad>& quads) {
+    return new DOMRectList(quads);
+  }
 
-ClientRect::ClientRect(const FloatRect& rect) : rect_(rect) {}
+  template <typename Rects>
+  static DOMRectList* Create(const Rects& rects) {
+    return new DOMRectList(rects);
+  }
+
+  unsigned length() const;
+  DOMRect* item(unsigned index);
+
+  DECLARE_TRACE();
+
+ private:
+  DOMRectList();
+
+  template <typename Rects>
+  explicit DOMRectList(const Rects& rects) {
+    list_.ReserveInitialCapacity(rects.size());
+    for (const auto& r : rects)
+      list_.push_back(DOMRect::FromFloatRect(FloatRect(r)));
+  }
+
+  explicit DOMRectList(const Vector<FloatQuad>&);
+
+  HeapVector<Member<DOMRect>> list_;
+};
 
 }  // namespace blink
+
+#endif  // DOMRectList_h

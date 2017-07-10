@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ClientRect.h"
-#include "core/dom/ClientRectList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"
@@ -39,6 +37,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/geometry/DOMRect.h"
+#include "core/geometry/DOMRectList.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -266,9 +266,9 @@ void TouchActionTest::RunTestOnTree(
     // elements with multiple border boxes with other elements in between. Use
     // the first border box (which we can easily visualize in a browser for
     // debugging).
-    Persistent<ClientRectList> rects = element->getClientRects();
+    Persistent<DOMRectList> rects = element->getClientRects();
     ASSERT_GE(rects->length(), 0u) << failure_context;
-    Persistent<ClientRect> r = rects->item(0);
+    Persistent<DOMRect> r = rects->item(0);
     FloatRect client_float_rect =
         FloatRect(r->left(), r->top(), r->width(), r->height());
     IntRect client_rect = EnclosedIntRect(client_float_rect);

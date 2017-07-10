@@ -5,8 +5,8 @@
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 
 #include "core/InputTypeNames.h"
-#include "core/dom/ClientRect.h"
 #include "core/events/Event.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
@@ -20,7 +20,7 @@ namespace blink {
 namespace {
 
 Element* ElementFromCenter(Element& element) {
-  ClientRect* client_rect = element.getBoundingClientRect();
+  DOMRect* client_rect = element.getBoundingClientRect();
   int center_x =
       static_cast<int>((client_rect->left() + client_rect->right()) / 2);
   int center_y =

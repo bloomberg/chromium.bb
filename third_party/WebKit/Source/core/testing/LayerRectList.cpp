@@ -30,8 +30,8 @@
 
 #include "core/testing/LayerRectList.h"
 
-#include "core/dom/ClientRect.h"
 #include "core/dom/Node.h"
+#include "core/geometry/DOMRectReadOnly.h"
 #include "core/testing/LayerRect.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ void LayerRectList::Append(Node* layer_root_node,
                            const String& layer_type,
                            int layer_offset_x,
                            int layer_offset_y,
-                           ClientRect* layer_relative_rect) {
+                           DOMRectReadOnly* layer_relative_rect) {
   list_.push_back(LayerRect::Create(layer_root_node, layer_type, layer_offset_x,
                                     layer_offset_y, layer_relative_rect));
 }
