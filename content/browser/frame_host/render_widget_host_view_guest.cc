@@ -265,6 +265,16 @@ void RenderWidgetHostViewGuest::SetNeedsBeginFrames(
    platform_view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
+TouchSelectionControllerClientManager*
+RenderWidgetHostViewGuest::GetTouchSelectionControllerClientManager() {
+  RenderWidgetHostView* root_view = GetOwnerRenderWidgetHostView();
+  if (!root_view)
+    return nullptr;
+
+  // There is only ever one manager, and it's owned by the root view.
+  return root_view->GetTouchSelectionControllerClientManager();
+}
+
 void RenderWidgetHostViewGuest::SetTooltipText(
     const base::string16& tooltip_text) {
   if (guest_)

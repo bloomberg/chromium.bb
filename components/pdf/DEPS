@@ -5,4 +5,7 @@ include_rules = [
   "+third_party/skia/include",
   "+third_party/WebKit/public",
   "+ui/base",
+  "+ui/gfx",
+  "+ui/strings",
+  "+ui/touch_selection",
 ]
