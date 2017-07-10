@@ -10657,8 +10657,28 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileOmniboxRefineSuggestion">
+  <obsolete>
+    Deprecated 07/2017. Replaced by MobileOmniboxRefineSuggestion.Query and
+    MobileOmniboxRefineSuggestion.Url.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileOmniboxRefineSuggestion.Search">
+  <owner>jdonnelly@chromium.org</owner>
+  <description>
+    User used the refinement arrow in an omnibox search suggestion to copy the
+    text of the suggestion into the omnibox.
+  </description>
+</action>
+
+<action name="MobileOmniboxRefineSuggestion.Url">
+  <owner>jdonnelly@chromium.org</owner>
+  <description>
+    User used the refinement arrow in an omnibox URL suggestion to copy the text
+    of the suggestion into the omnibox.
+  </description>
 </action>
 
 <action name="MobileOmniboxSearch">
