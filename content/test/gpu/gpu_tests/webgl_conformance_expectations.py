@@ -211,8 +211,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
 
     # Win failures
-    self.Fail('conformance/glsl/bugs/angle-ambiguous-function-call.html',
-              bug=731324)
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
