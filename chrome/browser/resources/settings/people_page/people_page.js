@@ -93,22 +93,31 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(settings.Route.SYNC.path, '#sync-status .subpage-arrow');
+        if (settings.routes.SYNC)
+          map.set(settings.routes.SYNC.path, '#sync-status .subpage-arrow');
         // <if expr="not chromeos">
-        map.set(
-            settings.Route.MANAGE_PROFILE.path,
-            '#picture-subpage-trigger .subpage-arrow');
+        if (settings.routes.MANAGE_PROFILE) {
+          map.set(
+              settings.routes.MANAGE_PROFILE.path,
+              '#picture-subpage-trigger .subpage-arrow');
+        }
         // </if>
         // <if expr="chromeos">
-        map.set(
-            settings.Route.CHANGE_PICTURE.path,
-            '#picture-subpage-trigger .subpage-arrow');
-        map.set(
-            settings.Route.LOCK_SCREEN.path,
-            '#lock-screen-subpage-trigger .subpage-arrow');
-        map.set(
-            settings.Route.ACCOUNTS.path,
-            '#manage-other-people-subpage-trigger .subpage-arrow');
+        if (settings.routes.CHANGE_PICTURE) {
+          map.set(
+              settings.routes.CHANGE_PICTURE.path,
+              '#picture-subpage-trigger .subpage-arrow');
+        }
+        if (settings.routes.LOCK_SCREEN) {
+          map.set(
+              settings.routes.LOCK_SCREEN.path,
+              '#lock-screen-subpage-trigger .subpage-arrow');
+        }
+        if (settings.routes.ACCOUNTS) {
+          map.set(
+              settings.routes.ACCOUNTS.path,
+              '#manage-other-people-subpage-trigger .subpage-arrow');
+        }
         // </if>
         return map;
       },
@@ -144,9 +153,9 @@ Polymer({
   /** @protected */
   currentRouteChanged: function() {
     this.showImportDataDialog_ =
-        settings.getCurrentRoute() == settings.Route.IMPORT_DATA;
+        settings.getCurrentRoute() == settings.routes.IMPORT_DATA;
 
-    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT) {
+    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the disconnect dialog. There is another check when the sync status is
       // fetched. The dialog will be closed then the user is not signed in.
@@ -234,17 +243,17 @@ Polymer({
   /** @private */
   onPictureTap_: function() {
     // <if expr="chromeos">
-    settings.navigateTo(settings.Route.CHANGE_PICTURE);
+    settings.navigateTo(settings.routes.CHANGE_PICTURE);
     // </if>
     // <if expr="not chromeos">
-    settings.navigateTo(settings.Route.MANAGE_PROFILE);
+    settings.navigateTo(settings.routes.MANAGE_PROFILE);
     // </if>
   },
 
   // <if expr="not chromeos">
   /** @private */
   onProfileNameTap_: function() {
-    settings.navigateTo(settings.Route.MANAGE_PROFILE);
+    settings.navigateTo(settings.routes.MANAGE_PROFILE);
   },
   // </if>
 
@@ -258,14 +267,14 @@ Polymer({
     this.showDisconnectDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
 
-    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
+    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT)
       settings.navigateToPreviousRoute();
     this.fire('signout-dialog-closed');
   },
 
   /** @private */
   onDisconnectTap_: function() {
-    settings.navigateTo(settings.Route.SIGN_OUT);
+    settings.navigateTo(settings.routes.SIGN_OUT);
   },
 
   /** @private */
@@ -307,7 +316,7 @@ Polymer({
         // </if>
         // <if expr="not chromeos">
         if (this.syncStatus.domain)
-          settings.navigateTo(settings.Route.SIGN_OUT);
+          settings.navigateTo(settings.routes.SIGN_OUT);
         else {
           // Silently sign the user out without deleting their profile and
           // prompt them to sign back in.
@@ -317,13 +326,13 @@ Polymer({
         // </if>
         break;
       case settings.StatusAction.UPGRADE_CLIENT:
-        settings.navigateTo(settings.Route.ABOUT);
+        settings.navigateTo(settings.routes.ABOUT);
         break;
       case settings.StatusAction.ENTER_PASSPHRASE:
       case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
       case settings.StatusAction.NO_ACTION:
       default:
-        settings.navigateTo(settings.Route.SYNC);
+        settings.navigateTo(settings.routes.SYNC);
     }
   },
 
@@ -337,7 +346,7 @@ Polymer({
     // dialog, so prevent the end of the tap event to focus what is underneath
     // it, which takes focus from the dialog.
     e.preventDefault();
-    settings.navigateTo(settings.Route.LOCK_SCREEN);
+    settings.navigateTo(settings.routes.LOCK_SCREEN);
   },
   // </if>
 
@@ -347,7 +356,7 @@ Polymer({
     this.syncBrowserProxy_.manageOtherPeople();
     // </if>
     // <if expr="chromeos">
-    settings.navigateTo(settings.Route.ACCOUNTS);
+    settings.navigateTo(settings.routes.ACCOUNTS);
     // </if>
   },
 
@@ -364,7 +373,7 @@ Polymer({
 
   /** @private */
   onImportDataTap_: function() {
-    settings.navigateTo(settings.Route.IMPORT_DATA);
+    settings.navigateTo(settings.routes.IMPORT_DATA);
   },
 
   /** @private */

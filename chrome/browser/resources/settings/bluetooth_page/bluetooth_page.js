@@ -70,9 +70,11 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(
-            settings.Route.BLUETOOTH_DEVICES.path,
-            '#bluetoothDevices .subpage-arrow');
+        if (settings.routes.BLUETOOTH_DEVICES) {
+          map.set(
+              settings.routes.BLUETOOTH_DEVICES.path,
+              '#bluetoothDevices .subpage-arrow');
+        }
         return map;
       },
     },
@@ -212,6 +214,6 @@ Polymer({
 
   /** @private */
   openSubpage_: function() {
-    settings.navigateTo(settings.Route.BLUETOOTH_DEVICES);
+    settings.navigateTo(settings.routes.BLUETOOTH_DEVICES);
   }
 });

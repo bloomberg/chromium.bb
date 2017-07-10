@@ -240,7 +240,7 @@ Polymer({
   updateDiscovery_: function() {
     if (!this.adapterState || !this.adapterState.powered)
       return;
-    if (settings.getCurrentRoute() == settings.Route.BLUETOOTH_DEVICES)
+    if (settings.getCurrentRoute() == settings.routes.BLUETOOTH_DEVICES)
       this.startDiscovery_();
     else
       this.stopDiscovery_();

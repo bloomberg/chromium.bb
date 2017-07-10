@@ -42,7 +42,7 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.Route.SEARCH_ENGINES,
+      value: settings.routes.SEARCH_ENGINES,
     },
 
     /** @private {boolean} */

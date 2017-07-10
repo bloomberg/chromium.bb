@@ -281,7 +281,7 @@ cr.define('settings_people_page', function() {
 
       test('NavigateDirectlyToSignOutURL', function() {
         // Navigate to chrome://md-settings/signOut
-        settings.navigateTo(settings.Route.SIGN_OUT);
+        settings.navigateTo(settings.routes.SIGN_OUT);
 
         return new Promise(
             function(resolve) { peoplePage.async(resolve); }).then(function() {
@@ -303,30 +303,35 @@ cr.define('settings_people_page', function() {
       });
 
       test('Signout dialog suppressed when not signed in', function() {
-        return browserProxy.whenCalled('getSyncStatus').then(function() {
-          settings.navigateTo(settings.Route.SIGN_OUT);
-          return new Promise(function(resolve) { peoplePage.async(resolve); });
-        }).then(function() {
-          assertTrue(peoplePage.$$('#disconnectDialog').open);
+        return browserProxy.whenCalled('getSyncStatus')
+            .then(function() {
+              settings.navigateTo(settings.routes.SIGN_OUT);
+              return new Promise(function(resolve) {
+                peoplePage.async(resolve);
+              });
+            })
+            .then(function() {
+              assertTrue(peoplePage.$$('#disconnectDialog').open);
 
-          var popstatePromise = new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
+              var popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
 
-          cr.webUIListenerCallback('sync-status-changed', {
-            signedIn: false,
-          });
+              cr.webUIListenerCallback('sync-status-changed', {
+                signedIn: false,
+              });
 
-          return popstatePromise;
-        }).then(function() {
-          var popstatePromise = new Promise(function(resolve) {
-            listenOnce(window, 'popstate', resolve);
-          });
+              return popstatePromise;
+            })
+            .then(function() {
+              var popstatePromise = new Promise(function(resolve) {
+                listenOnce(window, 'popstate', resolve);
+              });
 
-          settings.navigateTo(settings.Route.SIGN_OUT);
+              settings.navigateTo(settings.routes.SIGN_OUT);
 
-          return popstatePromise;
-        });
+              return popstatePromise;
+            });
       });
 
       test('syncStatusNotActionableForManagedAccounts', function() {

@@ -20,9 +20,9 @@ suite('BannerTests', function() {
   // Tests that the reset profile banner navigates to the Reset profile dialog
   // URL when the "reset all settings" button is clicked.
   test('ResetBannerReset', function() {
-    assertNotEquals(settings.Route.RESET_DIALOG, settings.getCurrentRoute());
+    assertNotEquals(settings.routes.RESET_DIALOG, settings.getCurrentRoute());
     MockInteractions.tap(resetBanner.$.reset);
-    assertEquals(settings.Route.RESET_DIALOG, settings.getCurrentRoute());
+    assertEquals(settings.routes.RESET_DIALOG, settings.getCurrentRoute());
     assertFalse(resetBanner.$.dialog.open);
   });
 

@@ -201,7 +201,7 @@ cr.define('settings_about_page', function() {
         lifetimeBrowserProxy.reset();
         PolymerTest.clearBody();
         page = document.createElement('settings-about-page');
-        settings.navigateTo(settings.Route.ABOUT);
+        settings.navigateTo(settings.routes.ABOUT);
         document.body.appendChild(page);
         if (!cr.isChromeOS) {
           return aboutBrowserProxy.whenCalled('refreshUpdateStatus');

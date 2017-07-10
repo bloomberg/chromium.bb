@@ -163,14 +163,14 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route, oldRoute) {
-    if (route == settings.Route.INTERNET_NETWORKS) {
+    if (route == settings.routes.INTERNET_NETWORKS) {
       // Handle direct navigation to the networks page,
       // e.g. chrome://settings/internet/networks?type=WiFi
       var queryParams = settings.getQueryParameters();
       var type = queryParams.get('type');
       if (type)
         this.subpageType_ = type;
-    } else if (route == settings.Route.KNOWN_NETWORKS) {
+    } else if (route == settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
       var queryParams = settings.getQueryParameters();
@@ -178,17 +178,18 @@ Polymer({
       if (type)
         this.knownNetworksType_ = type;
     } else if (
-        route != settings.Route.INTERNET && route != settings.Route.BASIC) {
+        route != settings.routes.INTERNET && route != settings.routes.BASIC) {
       // If we are navigating to a non internet section, do not set focus.
       return;
     }
 
-    if (!settings.Route.INTERNET.contains(oldRoute))
+    if (!settings.routes.INTERNET ||
+        !settings.routes.INTERNET.contains(oldRoute))
       return;
 
     // Focus the subpage arrow where appropriate.
     var selector;
-    if (route == settings.Route.INTERNET_NETWORKS) {
+    if (route == settings.routes.INTERNET_NETWORKS) {
       // iron-list makes the correct timing to focus an item in the list
       // very complicated, and the item may not exist, so just focus the
       // entire list for now.
@@ -238,7 +239,7 @@ Polymer({
       params.append('guid', guid);
     if (name)
       params.append('name', name);
-    settings.navigateTo(settings.Route.NETWORK_CONFIG, params);
+    settings.navigateTo(settings.routes.NETWORK_CONFIG, params);
   },
 
   /**
@@ -252,7 +253,7 @@ Polymer({
     params.append('type', event.detail.Type);
     if (event.detail.Name)
       params.append('name', event.detail.Name);
-    settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
+    settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
   },
 
   /**
@@ -264,7 +265,7 @@ Polymer({
     var params = new URLSearchParams;
     params.append('type', event.detail.Type);
     this.subpageType_ = event.detail.Type;
-    settings.navigateTo(settings.Route.INTERNET_NETWORKS, params);
+    settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
   },
 
   /**
@@ -300,7 +301,7 @@ Polymer({
     var params = new URLSearchParams;
     params.append('type', event.detail.Type);
     this.knownNetworksType_ = event.detail.type;
-    settings.navigateTo(settings.Route.KNOWN_NETWORKS, params);
+    settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
   },
 
   /**
@@ -451,7 +452,7 @@ Polymer({
       params.append('name', CrOnc.getNetworkName(properties));
       params.append('showConfigure', true.toString());
 
-      settings.navigateTo(settings.Route.NETWORK_DETAIL, params);
+      settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
       return;
     }
 

@@ -60,7 +60,7 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.ACCOUNTS) {
+    if (settings.getCurrentRoute() == settings.routes.ACCOUNTS) {
       chrome.usersPrivate.getWhitelistedUsers(function(users) {
         this.setUsers_(users);
       }.bind(this));

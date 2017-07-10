@@ -140,19 +140,19 @@ Polymer({
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.getCurrentRoute() == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
   },
 
   /** @override */
   detached: function() {
-    if (settings.getCurrentRoute() == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateAwayFromPage_();
   },
 
   /** @protected */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.SYNC)
+    if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
     else
       this.onNavigateAwayFromPage_();
@@ -169,7 +169,7 @@ Polymer({
 
   /** @private */
   onNavigateToPage_: function() {
-    assert(settings.getCurrentRoute() == settings.Route.SYNC);
+    assert(settings.getCurrentRoute() == settings.routes.SYNC);
 
     if (this.unloadCallback_)
       return;
@@ -350,8 +350,8 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (settings.getCurrentRoute() == settings.Route.SYNC)
-          settings.navigateTo(settings.Route.PEOPLE);
+        if (settings.getCurrentRoute() == settings.routes.SYNC)
+          settings.navigateTo(settings.routes.PEOPLE);
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
         if (this.pageStatus_ == this.pages_.CONFIGURE && this.syncPrefs &&

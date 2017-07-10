@@ -107,9 +107,11 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(
-            settings.Route.FONTS.path,
-            '#customize-fonts-subpage-trigger .subpage-arrow');
+        if (settings.routes.FONTS) {
+          map.set(
+              settings.routes.FONTS.path,
+              '#customize-fonts-subpage-trigger .subpage-arrow');
+        }
         return map;
       },
     },
@@ -169,7 +171,7 @@ Polymer({
 
   /** @private */
   onCustomizeFontsTap_: function() {
-    settings.navigateTo(settings.Route.FONTS);
+    settings.navigateTo(settings.routes.FONTS);
   },
 
   /** @private */

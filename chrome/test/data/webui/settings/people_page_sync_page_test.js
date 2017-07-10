@@ -106,7 +106,7 @@ cr.define('settings_people_page_sync_page', function() {
 
         PolymerTest.clearBody();
         syncPage = document.createElement('settings-sync-page');
-        settings.navigateTo(settings.Route.SYNC);
+        settings.navigateTo(settings.routes.SYNC);
 
         document.body.appendChild(syncPage);
 
@@ -132,13 +132,13 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('NotifiesHandlerOfNavigation', function() {
         function testNavigateAway() {
-          settings.navigateTo(settings.Route.PEOPLE);
+          settings.navigateTo(settings.routes.PEOPLE);
           return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
         }
 
         function testNavigateBack() {
           browserProxy.resetResolver('didNavigateToSyncPage');
-          settings.navigateTo(settings.Route.SYNC);
+          settings.navigateTo(settings.routes.SYNC);
           return browserProxy.whenCalled('didNavigateToSyncPage');
         }
 
@@ -151,7 +151,7 @@ cr.define('settings_people_page_sync_page', function() {
         function testRecreate() {
           browserProxy.resetResolver('didNavigateToSyncPage');
           syncPage = document.createElement('settings-sync-page');
-          settings.navigateTo(settings.Route.SYNC);
+          settings.navigateTo(settings.routes.SYNC);
 
           document.body.appendChild(syncPage);
           return browserProxy.whenCalled('didNavigateToSyncPage');

@@ -55,7 +55,8 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route) {
-    if (settings.getCurrentRoute() != settings.Route.SITE_SETTINGS_DATA_DETAILS)
+    if (settings.getCurrentRoute() !=
+        settings.routes.SITE_SETTINGS_DATA_DETAILS)
       return;
     var site = settings.getQueryParameters().get('site');
     if (!site || site == this.site_)

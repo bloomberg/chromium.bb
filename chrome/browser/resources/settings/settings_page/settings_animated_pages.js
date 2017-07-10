@@ -66,13 +66,18 @@ Polymer({
 
     // Only handle iron-select events from neon-animatable elements and the
     // given whitelist of settings-subpage instances.
-    var whitelist = 'settings-subpage#site-settings, ' +
-        'settings-subpage[route-path=\"' +
-        settings.Route.SITE_SETTINGS_COOKIES.path + '\"]';
+    var whitelist = 'settings-subpage#site-settings';
+
+    if (settings.routes.SITE_SETTINGS_COOKIES) {
+      whitelist += ', settings-subpage[route-path=\"' +
+          settings.routes.SITE_SETTINGS_COOKIES.path + '\"]';
+    }
 
     // <if expr="chromeos">
-    whitelist += ', settings-subpage[route-path=\"' +
-        settings.Route.INTERNET_NETWORKS.path + '\"]';
+    if (settings.routes.INTERNET_NETWORKS) {
+      whitelist += ', settings-subpage[route-path=\"' +
+          settings.routes.INTERNET_NETWORKS.path + '\"]';
+    }
     // </if>
 
     if (!e.detail.item.matches('neon-animatable, ' + whitelist))

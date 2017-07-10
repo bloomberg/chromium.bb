@@ -158,7 +158,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(route, oldRoute) {
-    if (route != settings.Route.NETWORK_DETAIL) {
+    if (route != settings.routes.NETWORK_DETAIL) {
       if (this.networksChangedListener_) {
         this.networkingPrivate.onNetworksChanged.removeListener(
             this.networksChangedListener_);
@@ -185,7 +185,7 @@ Polymer({
     this.shouldShowConfigureWhenNetworkLoaded_ =
         queryParams.get('showConfigure') == 'true';
     this.wasPreviousRouteNetworkDetailPage_ =
-        oldRoute == settings.Route.NETWORK_DETAIL;
+        oldRoute == settings.routes.NETWORK_DETAIL;
     var name = queryParams.get('name') || type;
     this.networkProperties = {
       GUID: this.guid,

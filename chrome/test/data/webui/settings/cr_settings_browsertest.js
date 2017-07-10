@@ -1434,7 +1434,7 @@ GEN('#endif');
 TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
   suite('NonExistentRoutes', function() {
     test('redirect to basic', function() {
-      assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+      assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
       assertEquals('/', location.pathname);
     });
   });
@@ -1460,22 +1460,22 @@ CrSettingsRouteDynamicParametersTest.prototype = {
 TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
   suite('DynamicParameters', function() {
     test('get parameters from URL and navigation', function(done) {
-      assertEquals(settings.Route.SEARCH, settings.getCurrentRoute());
+      assertEquals(settings.routes.SEARCH, settings.getCurrentRoute());
       assertEquals('a/b', settings.getQueryParameters().get('guid'));
       assertEquals('42', settings.getQueryParameters().get('foo'));
 
       var params = new URLSearchParams();
       params.set('bar', 'b=z');
       params.set('biz', '3');
-      settings.navigateTo(settings.Route.SEARCH_ENGINES, params);
-      assertEquals(settings.Route.SEARCH_ENGINES, settings.getCurrentRoute());
+      settings.navigateTo(settings.routes.SEARCH_ENGINES, params);
+      assertEquals(settings.routes.SEARCH_ENGINES, settings.getCurrentRoute());
       assertEquals('b=z', settings.getQueryParameters().get('bar'));
       assertEquals('3', settings.getQueryParameters().get('biz'));
       assertEquals('?bar=b%3Dz&biz=3', window.location.search);
 
       window.addEventListener('popstate', function(event) {
         assertEquals('/search', settings.getCurrentRoute().path);
-        assertEquals(settings.Route.SEARCH, settings.getCurrentRoute());
+        assertEquals(settings.routes.SEARCH, settings.getCurrentRoute());
         assertEquals('a/b', settings.getQueryParameters().get('guid'));
         assertEquals('42', settings.getQueryParameters().get('foo'));
         done();

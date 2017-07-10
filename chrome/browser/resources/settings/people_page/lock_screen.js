@@ -166,7 +166,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(newRoute, oldRoute) {
-    if (newRoute == settings.Route.LOCK_SCREEN &&
+    if (newRoute == settings.routes.LOCK_SCREEN &&
         this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
       this.fingerprintBrowserProxy_.getNumFingerprints().then(
           function(numFingerprints) {
@@ -177,8 +177,8 @@ Polymer({
     if (this.shouldAskForPassword_(newRoute)) {
       this.openPasswordPromptDialog_();
     } else if (
-        newRoute != settings.Route.FINGERPRINT &&
-        oldRoute != settings.Route.FINGERPRINT) {
+        newRoute != settings.routes.FINGERPRINT &&
+        oldRoute != settings.routes.FINGERPRINT) {
       // If the user navigated away from the lock screen settings page they will
       // have to re-enter their password. An exception is if they are navigating
       // to or from the fingerprint subpage.
@@ -272,7 +272,7 @@ Polymer({
 
   /** @private */
   onEditFingerprints_: function() {
-    settings.navigateTo(settings.Route.FINGERPRINT);
+    settings.navigateTo(settings.routes.FINGERPRINT);
   },
 
   /**
@@ -281,7 +281,7 @@ Polymer({
    * @private
    */
   shouldAskForPassword_: function(route) {
-    return route == settings.Route.LOCK_SCREEN && !this.setModes_;
+    return route == settings.routes.LOCK_SCREEN && !this.setModes_;
   },
 
   /**

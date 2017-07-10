@@ -66,7 +66,7 @@ Polymer({
    */
   onOriginTap_: function(event) {
     settings.navigateTo(
-        settings.Route.SITE_SETTINGS_SITE_DETAILS,
+        settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + event.model.item.origin));
   },
 

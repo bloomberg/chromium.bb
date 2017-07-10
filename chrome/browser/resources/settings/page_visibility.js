@@ -9,11 +9,11 @@
  *   appearance: (boolean|undefined|AppearancePageVisibility),
  *   dateTime: (boolean|undefined|DateTimePageVisibility),
  *   defaultBrowser: (boolean|undefined),
- *   downloads: (undefined|DownloadsPageVisibility),
+ *   downloads: (boolean|undefined|DownloadsPageVisibility),
  *   onStartup: (boolean|undefined),
  *   passwordsAndForms: (boolean|undefined),
  *   people: (boolean|undefined),
- *   privacy: (undefined|PrivacyPageVisibility),
+ *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset:(boolean|undefined),
  * }}
  */
@@ -53,7 +53,6 @@ var DownloadsPageVisibility;
 var PrivacyPageVisibility;
 
 cr.define('settings', function() {
-
   /**
    * Dictionary defining page visibility.
    * This is only set when in guest mode. All pages are visible when not set

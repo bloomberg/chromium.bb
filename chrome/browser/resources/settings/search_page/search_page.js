@@ -75,8 +75,11 @@ Polymer({
     }.bind(this));
 
     this.focusConfig_ = new Map();
-    this.focusConfig_.set(
-        settings.Route.SEARCH_ENGINES.path, '#subpage-trigger .subpage-arrow');
+    if (settings.routes.SEARCH_ENGINES) {
+      this.focusConfig_.set(
+          settings.routes.SEARCH_ENGINES.path,
+          '#subpage-trigger .subpage-arrow');
+    }
   },
 
   /** @private */
@@ -93,7 +96,7 @@ Polymer({
 
   /** @private */
   onManageSearchEnginesTap_: function() {
-    settings.navigateTo(settings.Route.SEARCH_ENGINES);
+    settings.navigateTo(settings.routes.SEARCH_ENGINES);
   },
 
   /**

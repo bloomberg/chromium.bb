@@ -41,7 +41,7 @@ suite('SiteDataDetailsSubpage', function() {
     PolymerTest.clearBody();
     page = document.createElement('site-data-details-subpage');
     settings.navigateTo(
-        settings.Route.SITE_SETTINGS_DATA_DETAILS,
+        settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + site));
 
     document.body.appendChild(page);

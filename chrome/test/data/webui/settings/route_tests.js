@@ -89,7 +89,7 @@ suite('route', function() {
 
   test('no duplicate routes', function() {
     var paths = new Set();
-    Object.values(settings.Route).forEach(function(route) {
+    Object.values(settings.routes).forEach(function(route) {
       assertFalse(paths.has(route.path), route.path);
       paths.add(route.path);
     });
@@ -97,111 +97,135 @@ suite('route', function() {
 
   test('navigate back to parent previous route', function() {
     return testNavigateBackUsesHistory(
-        settings.Route.BASIC,
-        settings.Route.PEOPLE,
-        settings.Route.BASIC);
+        settings.routes.BASIC, settings.routes.PEOPLE, settings.routes.BASIC);
   });
 
   test('navigate back to non-ancestor shallower route', function() {
     return testNavigateBackUsesHistory(
-        settings.Route.ADVANCED,
-        settings.Route.PEOPLE,
-        settings.Route.BASIC);
+        settings.routes.ADVANCED, settings.routes.PEOPLE,
+        settings.routes.BASIC);
   });
 
   test('navigate back to sibling route', function() {
     return testNavigateBackUsesHistory(
-        settings.Route.APPEARANCE,
-        settings.Route.PEOPLE,
-        settings.Route.APPEARANCE);
+        settings.routes.APPEARANCE, settings.routes.PEOPLE,
+        settings.routes.APPEARANCE);
   });
 
   test('navigate back to parent when previous route is deeper', function() {
-    settings.navigateTo(settings.Route.SYNC);
-    settings.navigateTo(settings.Route.PEOPLE);
+    settings.navigateTo(settings.routes.SYNC);
+    settings.navigateTo(settings.routes.PEOPLE);
     settings.navigateToPreviousRoute();
-    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
   });
 
   test('navigate back to BASIC when going back from root pages', function() {
-    settings.navigateTo(settings.Route.PEOPLE);
-    settings.navigateTo(settings.Route.ADVANCED);
+    settings.navigateTo(settings.routes.PEOPLE);
+    settings.navigateTo(settings.routes.ADVANCED);
     settings.navigateToPreviousRoute();
-    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
   });
 
   test('navigateTo respects removeSearch optional parameter', function() {
     var params = new URLSearchParams('search=foo');
-    settings.navigateTo(settings.Route.BASIC, params);
+    settings.navigateTo(settings.routes.BASIC, params);
     assertEquals(params.toString(), settings.getQueryParameters().toString());
 
     settings.navigateTo(
-        settings.Route.SITE_SETTINGS, null, /* removeSearch */ false);
+        settings.routes.SITE_SETTINGS, null,
+        /* removeSearch */ false);
     assertEquals(params.toString(), settings.getQueryParameters().toString());
 
     settings.navigateTo(
-        settings.Route.SEARCH_ENGINES, null, /* removeSearch */ true);
+        settings.routes.SEARCH_ENGINES, null,
+        /* removeSearch */ true);
     assertEquals('', settings.getQueryParameters().toString());
   });
 
   test('navigateTo ADVANCED forwards to BASIC', function() {
-    settings.navigateTo(settings.Route.ADVANCED);
-    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+    settings.navigateTo(settings.routes.ADVANCED);
+    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
   });
 
   test('popstate flag works', function() {
-    settings.navigateTo(settings.Route.BASIC);
+    settings.navigateTo(settings.routes.BASIC);
     assertFalse(settings.lastRouteChangeWasPopstate());
 
-    settings.navigateTo(settings.Route.PEOPLE);
+    settings.navigateTo(settings.routes.PEOPLE);
     assertFalse(settings.lastRouteChangeWasPopstate());
 
     return whenPopState(function() {
-      window.history.back();
-    }).then(function() {
-      assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
-      assertTrue(settings.lastRouteChangeWasPopstate());
+             window.history.back();
+           })
+        .then(function() {
+          assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
+          assertTrue(settings.lastRouteChangeWasPopstate());
 
-      settings.navigateTo(settings.Route.ADVANCED);
-      assertFalse(settings.lastRouteChangeWasPopstate());
-    });
+          settings.navigateTo(settings.routes.ADVANCED);
+          assertFalse(settings.lastRouteChangeWasPopstate());
+        });
   });
 
   test('getRouteForPath trailing slashes', function() {
-    assertEquals(settings.Route.BASIC, settings.getRouteForPath('/'));
+    assertEquals(settings.routes.BASIC, settings.getRouteForPath('/'));
     assertEquals(null, settings.getRouteForPath('//'));
 
     // Simple path.
-    assertEquals(settings.Route.PEOPLE, settings.getRouteForPath('/people/'));
-    assertEquals(settings.Route.PEOPLE, settings.getRouteForPath('/people'));
+    assertEquals(settings.routes.PEOPLE, settings.getRouteForPath('/people/'));
+    assertEquals(settings.routes.PEOPLE, settings.getRouteForPath('/people'));
 
     // Path with a slash.
     assertEquals(
-        settings.Route.SITE_SETTINGS_COOKIES,
+        settings.routes.SITE_SETTINGS_COOKIES,
         settings.getRouteForPath('/content/cookies'));
     assertEquals(
-        settings.Route.SITE_SETTINGS_COOKIES,
+        settings.routes.SITE_SETTINGS_COOKIES,
         settings.getRouteForPath('/content/cookies/'));
 
     if (cr.isChromeOS) {
       // Path with a dash.
       assertEquals(
-          settings.Route.KEYBOARD,
+          settings.routes.KEYBOARD,
           settings.getRouteForPath('/keyboard-overlay'));
       assertEquals(
-          settings.Route.KEYBOARD,
+          settings.routes.KEYBOARD,
           settings.getRouteForPath('/keyboard-overlay/'));
     }
   });
 
   test('isNavigableDialog', function() {
-    assertTrue(settings.Route.CLEAR_BROWSER_DATA.isNavigableDialog);
-    assertTrue(settings.Route.IMPORT_DATA.isNavigableDialog);
-    assertTrue(settings.Route.RESET_DIALOG.isNavigableDialog);
-    assertTrue(settings.Route.SIGN_OUT.isNavigableDialog);
-    assertTrue(settings.Route.TRIGGERED_RESET_DIALOG.isNavigableDialog);
+    assertTrue(settings.routes.CLEAR_BROWSER_DATA.isNavigableDialog);
+    assertTrue(settings.routes.IMPORT_DATA.isNavigableDialog);
+    assertTrue(settings.routes.RESET_DIALOG.isNavigableDialog);
+    assertTrue(settings.routes.SIGN_OUT.isNavigableDialog);
+    assertTrue(settings.routes.TRIGGERED_RESET_DIALOG.isNavigableDialog);
 
-    assertFalse(settings.Route.PRIVACY.isNavigableDialog);
-    assertFalse(settings.Route.DEFAULT_BROWSER.isNavigableDialog);
+    assertFalse(settings.routes.PRIVACY.isNavigableDialog);
+    assertFalse(settings.routes.DEFAULT_BROWSER.isNavigableDialog);
+  });
+
+  test('pageVisibility affects route availability', function() {
+    settings.pageVisibility = {
+      advancedSettings: false,
+      appearance: false,
+      defaultBrowser: false,
+      onStartup: false,
+      passwordsAndForms: false,
+      people: false,
+      reset: false,
+    };
+
+    var router = new settings.Router();
+    var hasRoute = route => router.getRoutes().hasOwnProperty(route);
+
+    assertTrue(hasRoute('BASIC'));
+
+    assertFalse(hasRoute('ADVANCED'));
+    assertFalse(hasRoute('APPEARANCE'));
+    assertFalse(hasRoute('DEFAULT_BROWSER'));
+    assertFalse(hasRoute('ON_STARTUP'));
+    assertFalse(hasRoute('PASSWORDS'));
+    assertFalse(hasRoute('PEOPLE'));
+    assertFalse(hasRoute('RESET'));
   });
 });

@@ -81,9 +81,11 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(
-            settings.Route.DETAILED_BUILD_INFO.path,
-            '#detailed-build-info-trigger');
+        if (settings.routes.DETAILED_BUILD_INFO) {
+          map.set(
+              settings.routes.DETAILED_BUILD_INFO.path,
+              '#detailed-build-info-trigger');
+        }
         return map;
       },
     },
@@ -390,7 +392,7 @@ Polymer({
 
   /** @private */
   onDetailedBuildInfoTap_: function() {
-    settings.navigateTo(settings.Route.DETAILED_BUILD_INFO);
+    settings.navigateTo(settings.routes.DETAILED_BUILD_INFO);
   },
 
   /** @private */

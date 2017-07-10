@@ -94,7 +94,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.isTriggered_ =
-        settings.getCurrentRoute() == settings.Route.TRIGGERED_RESET_DIALOG;
+        settings.getCurrentRoute() == settings.routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
       this.browserProxy_.getTriggeredResetToolName().then(function(name) {
         this.resetRequestOrigin_ = 'triggeredreset';

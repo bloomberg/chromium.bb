@@ -131,7 +131,7 @@ Polymer({
   currentRouteChanged: function(newRoute) {
     this.proxyModified_ = false;
     this.proxy_ = this.createDefaultProxySettings_();
-    if (newRoute == settings.Route.NETWORK_DETAIL)
+    if (newRoute == settings.routes.NETWORK_DETAIL)
       this.updateProxy_();
   },
 

@@ -103,7 +103,7 @@ cr.define('settings_people_page_change_picture', function() {
         discardControlBar = changePicture.$.discardControlBar;
         assertTrue(!!discardControlBar);
 
-        changePicture.currentRouteChanged(settings.Route.CHANGE_PICTURE);
+        changePicture.currentRouteChanged(settings.routes.CHANGE_PICTURE);
 
         return browserProxy.whenCalled('initialize').then(function() {
           Polymer.dom.flush();
@@ -139,7 +139,7 @@ cr.define('settings_people_page_change_picture', function() {
         expectTrue(discardControlBar.hidden);
 
         // Ensure that the camera is deactivated if user navigates away.
-        changePicture.currentRouteChanged(settings.Route.BASIC);
+        changePicture.currentRouteChanged(settings.routes.BASIC);
         expectFalse(crCamera.cameraActive);
       });
 
@@ -160,8 +160,8 @@ cr.define('settings_people_page_change_picture', function() {
 
           // Ensure that the selection is restored after navigating away and
           // then back to the subpage.
-          changePicture.currentRouteChanged(settings.Route.BASIC);
-          changePicture.currentRouteChanged(settings.Route.CHANGE_PICTURE);
+          changePicture.currentRouteChanged(settings.routes.BASIC);
+          changePicture.currentRouteChanged(settings.routes.CHANGE_PICTURE);
           expectEquals(ChangePictureSelectionTypes.PROFILE,
                        changePicture.selectedItem_.dataset.type);
         });

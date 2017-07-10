@@ -33,6 +33,6 @@ Polymer({
   /** @private */
   onResetTap_: function() {
     this.$.dialog.close();
-    settings.navigateTo(settings.Route.RESET_DIALOG);
+    settings.navigateTo(settings.routes.RESET_DIALOG);
   },
 });

@@ -129,6 +129,6 @@ Polymer({
   },
 
   onShowLanguageInputTap_: function() {
-    settings.navigateTo(settings.Route.LANGUAGES);
+    settings.navigateTo(settings.routes.LANGUAGES);
   },
 });
