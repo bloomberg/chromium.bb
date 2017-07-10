@@ -50,6 +50,10 @@ class RulesetDealer {
   // For testing only.
   bool has_cached_ruleset() const { return !!weak_cached_ruleset_.get(); }
 
+  // Duplicates the ruleset file. This is used to pass the file to another
+  // thread.
+  base::File DuplicateRulesetFile();
+
  protected:
   bool CalledOnValidSequence() const {
     return sequence_checker_.CalledOnValidSequence();

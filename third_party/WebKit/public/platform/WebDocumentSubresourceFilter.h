@@ -13,6 +13,14 @@ class WebURL;
 
 class WebDocumentSubresourceFilter {
  public:
+  // This builder class is created on the main thread and passed to a worker
+  // thread to create the subresource filter for the worker thread.
+  class Builder {
+   public:
+    virtual ~Builder() {}
+    virtual std::unique_ptr<WebDocumentSubresourceFilter> Build() = 0;
+  };
+
   enum LoadPolicy { kAllow, kDisallow, kWouldDisallow };
 
   virtual ~WebDocumentSubresourceFilter() {}

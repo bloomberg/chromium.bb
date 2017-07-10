@@ -8,6 +8,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/loader/SubresourceFilter.h"
 #include "core/probe/CoreProbes.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerClients.h"
@@ -87,6 +88,12 @@ WorkerFetchContext::WorkerFetchContext(
           TaskRunnerHelper::Get(TaskType::kUnspecedLoading, global_scope_)) {
   web_context_->InitializeOnWorkerThread(
       loading_task_runner_->ToSingleThreadTaskRunner());
+  std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
+      web_context_->TakeSubresourceFilter();
+  if (web_filter) {
+    subresource_filter_ =
+        SubresourceFilter::Create(global_scope, std::move(web_filter));
+  }
 }
 
 KURL WorkerFetchContext::GetFirstPartyForCookies() const {
@@ -104,8 +111,7 @@ bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
 }
 
 SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
-  // TODO(horo): Implement this. (https://crbug.com/739597)
-  return nullptr;
+  return subresource_filter_.Get();
 }
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(
@@ -336,6 +342,7 @@ void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
 
 DEFINE_TRACE(WorkerFetchContext) {
   visitor->Trace(global_scope_);
+  visitor->Trace(subresource_filter_);
   visitor->Trace(resource_fetcher_);
   BaseFetchContext::Trace(visitor);
 }

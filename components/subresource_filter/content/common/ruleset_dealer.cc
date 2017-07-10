@@ -44,4 +44,8 @@ scoped_refptr<const MemoryMappedRuleset> RulesetDealer::GetRuleset() {
   return strong_ruleset_ref;
 }
 
+base::File RulesetDealer::DuplicateRulesetFile() {
+  return ruleset_file_.Duplicate();
+}
+
 }  // namespace subresource_filter
