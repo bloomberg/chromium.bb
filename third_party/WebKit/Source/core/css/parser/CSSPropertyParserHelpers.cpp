@@ -1581,6 +1581,58 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
   return nullptr;
 }
 
+bool ConsumeShorthandVia4LonghandsAPI(
+    const StylePropertyShorthand& shorthand,
+    bool important,
+    const CSSParserContext& context,
+    CSSParserTokenRange& range,
+    HeapVector<CSSProperty, 256>& properties) {
+  DCHECK_EQ(shorthand.length(), 4u);
+  const CSSPropertyID* longhands = shorthand.properties();
+  bool needs_legacy_parsing = false;
+  const CSSValue* top = ParseLonghandViaAPI(
+      longhands[0], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
+
+  if (!top)
+    return false;
+
+  const CSSValue* right = ParseLonghandViaAPI(
+      longhands[1], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
+
+  const CSSValue* bottom = nullptr;
+  const CSSValue* left = nullptr;
+  if (right) {
+    bottom = ParseLonghandViaAPI(longhands[2], shorthand.id(), context, range,
+                                 needs_legacy_parsing);
+    DCHECK(!needs_legacy_parsing);
+    if (bottom) {
+      left = ParseLonghandViaAPI(longhands[3], shorthand.id(), context, range,
+                                 needs_legacy_parsing);
+      DCHECK(!needs_legacy_parsing);
+    }
+  }
+
+  if (!right)
+    right = top;
+  if (!bottom)
+    bottom = top;
+  if (!left)
+    left = right;
+
+  AddProperty(longhands[0], shorthand.id(), *top, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(longhands[1], shorthand.id(), *right, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(longhands[2], shorthand.id(), *bottom, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(longhands[3], shorthand.id(), *left, important,
+              IsImplicitProperty::kNotImplicit, properties);
+
+  return range.AtEnd();
+}
+
 }  // namespace CSSPropertyParserHelpers
 
 }  // namespace blink
