@@ -20,8 +20,6 @@ const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUINTPTilesInternalsURL[] = "chrome://ntp-tiles-internals/";
 const char kChromeUIOfflineURL[] = "chrome://offline/";
 const char kChromeUIPhysicalWebURL[] = "chrome://physical-web/";
-const char kChromeUIPopularSitesInternalsURL[] =
-    "chrome://popular-sites-internals/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIVersionURL[] = "chrome://version/";
@@ -44,7 +42,6 @@ const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
 const char kChromeUIOfflineHost[] = "offline";
 const char kChromeUIOmahaHost[] = "omaha";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
-const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
@@ -60,8 +57,8 @@ const char* const kChromeHostURLs[] = {
     kChromeUIHistogramHost,       kChromeUINetExportHost,
     kChromeUINewTabHost,          kChromeUINTPTilesInternalsHost,
     kChromeUISignInInternalsHost, kChromeUISyncInternalsHost,
-    kChromeUIPhysicalWebHost,     kChromeUIPopularSitesInternalsHost,
-    kChromeUITermsHost,           kChromeUIVersionHost,
+    kChromeUIPhysicalWebHost,     kChromeUITermsHost,
+    kChromeUIVersionHost,
 };
 const size_t kNumberOfChromeHostURLs = arraysize(kChromeHostURLs);
 

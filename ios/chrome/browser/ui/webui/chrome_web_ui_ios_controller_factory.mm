@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
 #include "ios/chrome/browser/ui/webui/physical_web_ui.h"
-#include "ios/chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/terms_ui.h"
@@ -80,8 +79,6 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
     if (url_host == kChromeUIPhysicalWebHost)
       return &NewWebUIIOS<PhysicalWebUI>;
   }
-  if (url_host == kChromeUIPopularSitesInternalsHost)
-    return &NewWebUIIOS<PopularSitesInternalsUI>;
   if (url_host == kChromeUISignInInternalsHost)
     return &NewWebUIIOS<SignInInternalsUIIOS>;
   if (url_host == kChromeUISyncInternalsHost)
