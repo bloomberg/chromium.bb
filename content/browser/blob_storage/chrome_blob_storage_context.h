@@ -50,6 +50,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
  public:
   ChromeBlobStorageContext();
 
+  // Must be called on the UI thread.
   static ChromeBlobStorageContext* GetFor(
       BrowserContext* browser_context);
 

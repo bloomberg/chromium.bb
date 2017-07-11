@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -20,7 +21,8 @@ const char kAccessControlAllowOriginHeader[] = "access-control-allow-origin";
 class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
  public:
   BackgroundFetchCrossOriginFilterTest()
-      : source_(url::Origin(GURL(kFirstOrigin))) {}
+      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+        source_(url::Origin(GURL(kFirstOrigin))) {}
   ~BackgroundFetchCrossOriginFilterTest() override = default;
 
   // Creates a BackgroundFetchRequestInfo instance filled with the information
@@ -45,6 +47,8 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
   }
 
  protected:
+  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+
   url::Origin source_;
 
  private:

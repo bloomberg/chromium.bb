@@ -81,6 +81,8 @@ ChromeBlobStorageContext::ChromeBlobStorageContext() {}
 
 ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!context->GetUserData(kBlobStorageContextKeyName)) {
     scoped_refptr<ChromeBlobStorageContext> blob =
         new ChromeBlobStorageContext();

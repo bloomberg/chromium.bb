@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -95,6 +96,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Map of known background fetch registration ids to their associated data.
   std::map<BackgroundFetchRegistrationId, std::unique_ptr<RegistrationData>>
       registrations_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 

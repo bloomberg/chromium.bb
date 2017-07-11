@@ -51,7 +51,9 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
   DCHECK(background_fetch_context_);
 }
 
-BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() = default;
+BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void BackgroundFetchServiceImpl::Fetch(
     int64_t service_worker_registration_id,

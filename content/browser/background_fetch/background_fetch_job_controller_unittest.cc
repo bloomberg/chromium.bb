@@ -84,6 +84,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // Creates a new BackgroundFetchJobController instance.
   std::unique_ptr<BackgroundFetchJobController> CreateJobController(
       const BackgroundFetchRegistrationId& registration_id) {
+    // StoragePartition creates its own BackgroundFetchContext, but this test
+    // doesn't use that; it just uses the StoragePartition's URLRequestContext.
     StoragePartition* storage_partition =
         BrowserContext::GetDefaultStoragePartition(browser_context());
 
