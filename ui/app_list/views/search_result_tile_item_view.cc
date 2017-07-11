@@ -43,12 +43,13 @@ SearchResultTileItemView::SearchResultTileItemView(
     AppListViewDelegate* view_delegate)
     : result_container_(result_container),
       view_delegate_(view_delegate),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_play_store_app_search_enabled_(
+          features::IsPlayStoreAppSearchEnabled()) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
 
-  if (is_fullscreen_app_list_enabled_) {
+  if (is_play_store_app_search_enabled_) {
     const gfx::FontList& base_font =
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::BaseFont);
@@ -106,7 +107,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetRating(item_->rating());
   SetPrice(item_->formatted_price());
 
-  if (is_fullscreen_app_list_enabled_) {
+  if (is_play_store_app_search_enabled_) {
     const gfx::FontList& base_font =
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::BaseFont);
@@ -230,7 +231,7 @@ void SearchResultTileItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  if (!is_fullscreen_app_list_enabled_ || !item_) {
+  if (!is_play_store_app_search_enabled_ || !item_) {
     TileItemView::Layout();
     return;
   }
@@ -292,7 +293,7 @@ void SearchResultTileItemView::Layout() {
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (is_fullscreen_app_list_enabled_ && item_) {
+  if (is_play_store_app_search_enabled_ && item_) {
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
       return gfx::Size(kGridTileWidth, kGridTileHeight);
     if (item_->display_type() == SearchResult::DISPLAY_TILE)

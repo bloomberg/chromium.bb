@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_TILE_ITEM_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_TILE_ITEM_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/app_list/search_result_observer.h"
 #include "ui/app_list/views/tile_item_view.h"
@@ -73,7 +75,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   AppListViewDelegate* view_delegate_;
 
-  const bool is_fullscreen_app_list_enabled_;
+  // Whether the Play Store app search feature is enabled.
+  const bool is_play_store_app_search_enabled_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
