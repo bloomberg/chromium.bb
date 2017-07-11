@@ -176,11 +176,12 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
 
   void ExpectUkmPageDomainMetric(const internal::PageAddressInfo& page,
                                  const internal::DomainType domain_type) {
-    EXPECT_EQ(1ul, ukm_tester().sources_count());
-    const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(page.url);
+    EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+    const ukm::UkmSource* source =
+        test_ukm_recorder().GetSourceForUrl(page.url);
     EXPECT_EQ(GURL(page.url), source->url());
 
-    ukm_tester().ExpectEntry(
+    test_ukm_recorder().ExpectEntry(
         *source, internal::kUkmPageDomainEventName,
         {{internal::kUkmDomainTypeName, static_cast<int>(domain_type)}});
   }
@@ -192,9 +193,10 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
     // The page domain info UKM entry will always be created, so we expect that
     // there should be one more UKM entry than the expected number of metrics
     // entries.
-    EXPECT_EQ(expected_metrics.size() + 1, ukm_tester().entries_count());
+    EXPECT_EQ(expected_metrics.size() + 1, test_ukm_recorder().entries_count());
 
-    const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(page.url);
+    const ukm::UkmSource* source =
+        test_ukm_recorder().GetSourceForUrl(page.url);
     for (auto entry : expected_metrics) {
       std::vector<std::pair<const char*, int64_t>> metric_values = {
           {internal::kUkmResourceTypeName, entry.resource_type},
@@ -205,7 +207,7 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
         metric_values.push_back(
             {internal::kUkmPortTypeName, static_cast<int>(entry.port_type)});
       }
-      ukm_tester().ExpectEntry(
+      test_ukm_recorder().ExpectEntry(
           *source, internal::kUkmLocalNetworkRequestsEventName, metric_values);
     }
 
@@ -220,8 +222,8 @@ class LocalNetworkRequestsPageLoadMetricsObserverTest
 };
 
 TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest, NoMetrics) {
-  EXPECT_EQ(0ul, ukm_tester().sources_count());
-  EXPECT_EQ(0ul, ukm_tester().entries_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 
   // Sanity check
   ExpectNoHistograms();
@@ -715,7 +717,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest,
   }
 
   // At this point, we should still only see the domain type UKM entry.
-  EXPECT_EQ(1ul, ukm_tester().entries_count());
+  EXPECT_EQ(1ul, test_ukm_recorder().entries_count());
 
   // Close the page.
   DeleteContents();
@@ -887,7 +889,7 @@ TEST_F(LocalNetworkRequestsPageLoadMetricsObserverTest, PrivatePageFailedLoad) {
   navigation_simulator->CommitErrorPage();
 
   // Nothing should have been generated.
-  EXPECT_EQ(0ul, ukm_tester().sources_count());
-  EXPECT_EQ(0ul, ukm_tester().entries_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
   ExpectNoHistograms();
 }
