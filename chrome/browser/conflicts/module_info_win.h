@@ -78,12 +78,15 @@ struct ModuleInspectionResult {
 // useful to the ModuleDatabase.
 struct ModuleInfoData {
   // The possible types of module we are dealing with. Used as bit set values.
-
-  // These modules are or were loaded into one of chrome's process at some
-  // point.
-  static constexpr uint32_t kTypeLoadedModule = 1 << 0;
-  // These modules are registered as a shell extension.
-  static constexpr uint32_t kTypeShellExtension = 1 << 1;
+  enum ModuleType : uint32_t {
+    // These modules are or were loaded into one of chrome's process at some
+    // point.
+    kTypeLoadedModule = 1 << 0,
+    // These modules are registered as a shell extension.
+    kTypeShellExtension = 1 << 1,
+    // These modules are registered as an Input Method Editor.
+    kTypeIme = 1 << 2,
+  };
 
   ModuleInfoData();
   ~ModuleInfoData();

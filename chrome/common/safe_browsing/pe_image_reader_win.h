@@ -70,6 +70,9 @@ class PeImageReader {
   bool EnumCertificates(EnumCertificatesCallback callback,
                         void* context);
 
+  // Returns the size of the image file.
+  DWORD GetSizeOfImage();
+
  private:
   // Bits indicating what portions of the image have been validated.
   enum ValidationStages {
@@ -96,6 +99,9 @@ class PeImageReader {
 
     // Returns a pointer to the first data directory entry.
     virtual const IMAGE_DATA_DIRECTORY* GetDataDirectoryEntries() = 0;
+
+    // Returns the size of the image file.
+    virtual DWORD GetSizeOfImage() = 0;
   };
 
   template<class OPTIONAL_HEADER_TYPE>

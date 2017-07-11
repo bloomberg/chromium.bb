@@ -77,12 +77,25 @@ void ModuleDatabase::OnProcessStarted(uint32_t process_id,
 void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
                                                 uint32_t size_of_image,
                                                 uint32_t time_date_stamp) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   idle_timer_.Reset();
 
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   auto* module_info =
       FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
   module_info->second.module_types |= ModuleInfoData::kTypeShellExtension;
+}
+
+void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
+                                     uint32_t size_of_image,
+                                     uint32_t time_date_stamp) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  idle_timer_.Reset();
+
+  auto* module_info =
+      FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
+  module_info->second.module_types |= ModuleInfoData::kTypeIme;
 }
 
 void ModuleDatabase::OnModuleLoad(uint32_t process_id,

@@ -266,6 +266,8 @@ split_static_library("browser") {
     "component_updater/supervised_user_whitelist_installer.h",
     "component_updater/sw_reporter_installer_win.cc",
     "component_updater/sw_reporter_installer_win.h",
+    "conflicts/enumerate_input_method_editors_win.cc",
+    "conflicts/enumerate_input_method_editors_win.h",
     "conflicts/installed_programs_win.cc",
     "conflicts/installed_programs_win.h",
     "conflicts/module_database_observer_win.h",
