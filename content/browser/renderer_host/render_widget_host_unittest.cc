@@ -209,9 +209,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   void SetupForInputRouterTest() {
     input_router_.reset(new MockInputRouter(this));
-    legacy_widget_input_handler_ =
-        base::MakeUnique<LegacyIPCWidgetInputHandler>(
-            static_cast<LegacyInputRouterImpl*>(input_router_.get()));
+    legacy_widget_input_handler_ = nullptr;
   }
 
   MockInputRouter* mock_input_router() {
