@@ -46,15 +46,18 @@ class TestGpuImpl : public mojom::Gpu {
   }
 
   // ui::mojom::Gpu overrides:
-  void CreateVideoEncodeAccelerator(
-      media::mojom::VideoEncodeAcceleratorRequest vea_request) override {}
-
   void EstablishGpuChannel(
       const EstablishGpuChannelCallback& callback) override {
     establish_channel_callback_ = callback;
     if (!quit_closure_.is_null())
       quit_closure_.Run();
   }
+
+  void CreateJpegDecodeAccelerator(
+      media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) override {}
+
+  void CreateVideoEncodeAccelerator(
+      media::mojom::VideoEncodeAcceleratorRequest vea_request) override {}
 
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,

@@ -76,12 +76,18 @@ void GpuClient::EstablishGpuChannel(
                  callback));
 }
 
+void GpuClient::CreateJpegDecodeAccelerator(
+    media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) {
+  GpuProcessHost* host = GpuProcessHost::Get();
+  if (host)
+    host->gpu_service()->CreateJpegDecodeAccelerator(std::move(jda_request));
+}
+
 void GpuClient::CreateVideoEncodeAccelerator(
     media::mojom::VideoEncodeAcceleratorRequest vea_request) {
   GpuProcessHost* host = GpuProcessHost::Get();
-  if (!host)
-    return;
-  host->gpu_service()->CreateVideoEncodeAccelerator(std::move(vea_request));
+  if (host)
+    host->gpu_service()->CreateVideoEncodeAccelerator(std::move(vea_request));
 }
 
 void GpuClient::CreateGpuMemoryBuffer(
