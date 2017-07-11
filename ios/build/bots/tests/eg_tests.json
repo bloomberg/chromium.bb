@@ -3,6 +3,10 @@
     {
       "app": "ios_chrome_integration_egtests",
       "xctest": true
+    },
+    {
+      "app": "ios_web_shell_egtests",
+      "xctest": true
     }
   ]
 }
