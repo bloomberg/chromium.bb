@@ -356,6 +356,16 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (mDelegate.getModel().isFolderVisible(othersNodeId)) {
             mTopLevelFolders.add(othersNodeId);
         }
+
+        // Add any top-level managed and partner bookmark folders that are children of the root
+        // folder.
+        List<BookmarkId> managedAndPartnerFolderIds =
+                mDelegate.getModel().getTopLevelFolderIDs(true, false);
+        BookmarkId rootFolder = mDelegate.getModel().getRootFolderId();
+        for (BookmarkId bookmarkId : managedAndPartnerFolderIds) {
+            BookmarkId parent = mDelegate.getModel().getBookmarkById(bookmarkId).getParentId();
+            if (parent.equals(rootFolder)) mTopLevelFolders.add(bookmarkId);
+        }
     }
 
     @VisibleForTesting
