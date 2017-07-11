@@ -62,7 +62,7 @@ class AvatarButton : public views::LabelButton,
       const base::FilePath& profile_path) override;
 
   // views::WidgetObserver
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Called when |profile_| is shutting down.
   void OnProfileShutdown();
@@ -93,6 +93,8 @@ class AvatarButton : public views::LabelButton,
   gfx::ImageSkia generic_avatar_;
 
   AvatarButtonStyle button_style_;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarButton);
 };

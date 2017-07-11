@@ -173,7 +173,8 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
       error_controller_(this, profile),
       profile_(profile),
       profile_observer_(this),
-      button_style_(button_style) {
+      button_style_(button_style),
+      widget_observer_(this) {
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
@@ -330,8 +331,8 @@ void AvatarButton::NotifyClick(const ui::Event& event) {
   LabelButton::NotifyClick(event);
 
   views::Widget* bubble_widget = ProfileChooserView::GetCurrentBubbleWidget();
-  if (bubble_widget && !bubble_widget->HasObserver(this)) {
-    ProfileChooserView::GetCurrentBubbleWidget()->AddObserver(this);
+  if (bubble_widget && !widget_observer_.IsObserving(bubble_widget)) {
+    widget_observer_.Add(bubble_widget);
     AnimateInkDrop(views::InkDropState::ACTIVATED,
                    ui::LocatedEvent::FromIfValid(&event));
   }
@@ -377,8 +378,9 @@ void AvatarButton::OnProfileSupervisedUserIdChanged(
     Update();
 }
 
-void AvatarButton::OnWidgetClosing(views::Widget* widget) {
+void AvatarButton::OnWidgetDestroying(views::Widget* widget) {
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  widget_observer_.Remove(widget);
 }
 
 void AvatarButton::OnProfileShutdown() {
