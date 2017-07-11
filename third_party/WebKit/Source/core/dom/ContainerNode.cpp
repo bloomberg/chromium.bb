@@ -82,11 +82,14 @@ class DOMTreeMutationDetector {
   DOMTreeMutationDetector(const Node& node, const Node& parent)
       : node_document_(node.GetDocument()),
         parent_document_(parent.GetDocument()),
+        parent_(parent),
         original_node_document_version_(node_document_->DomTreeVersion()),
         original_parent_document_version_(parent_document_->DomTreeVersion()) {}
 
   bool HadAtMostOneDOMMutation() {
     if (node_document_->DomTreeVersion() > original_node_document_version_ + 1)
+      return false;
+    if (parent_document_ != parent_->GetDocument())
       return false;
     if (node_document_ == parent_document_)
       return true;
@@ -97,6 +100,7 @@ class DOMTreeMutationDetector {
  private:
   const Member<Document> node_document_;
   const Member<Document> parent_document_;
+  const Member<const Node> parent_;
   const uint64_t original_node_document_version_;
   const uint64_t original_parent_document_version_;
 };
