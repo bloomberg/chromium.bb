@@ -2049,6 +2049,47 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   support->EvictCurrentSurface();
 }
 
+// This test verifies that when a CompositorFrame is submitted to a new surface
+// ID, and a new display frame is generated, then the resources of the old
+// surface are returned to the appropriate client.
+TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
+  FakeCompositorFrameSinkSupportClient client;
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      CompositorFrameSinkSupport::Create(
+          &client, &manager_, kArbitraryRootFrameSinkId, kRootIsRoot,
+          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id1(7u, base::UnguessableToken::Create());
+  LocalSurfaceId local_surface_id2(8u, base::UnguessableToken::Create());
+  SurfaceId surface_id1(support->frame_sink_id(), local_surface_id1);
+  SurfaceId surface_id2(support->frame_sink_id(), local_surface_id2);
+
+  ResourceId ids[] = {11, 12, 13};
+  SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
+                                     support.get(), surface_id1);
+
+  CompositorFrame frame = aggregator_->Aggregate(surface_id1);
+
+  // Nothing should be available to be returned yet.
+  EXPECT_TRUE(client.returned_resources().empty());
+
+  // Submitting a CompositorFrame to |surface_id2| should cause the surface
+  // associated with |surface_id1| to get garbage collected.
+  SubmitCompositorFrameWithResources(NULL, 0u, true, SurfaceId(), support.get(),
+                                     surface_id2);
+
+  frame = aggregator_->Aggregate(surface_id2);
+
+  ASSERT_EQ(3u, client.returned_resources().size());
+  ResourceId returned_ids[3];
+  for (size_t i = 0; i < 3; ++i) {
+    returned_ids[i] = client.returned_resources()[i].id;
+  }
+  EXPECT_THAT(returned_ids,
+              testing::WhenSorted(testing::ElementsAreArray(ids)));
+
+  support->EvictCurrentSurface();
+}
+
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   FakeCompositorFrameSinkSupportClient client;
   std::unique_ptr<CompositorFrameSinkSupport> support =

@@ -141,8 +141,7 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   auto it = surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
     int child_id = provider_->CreateChild(
-        base::Bind(&SurfaceAggregator::UnrefResources,
-                   weak_factory_.GetWeakPtr(), surface->surface_id()));
+        base::Bind(&SurfaceAggregator::UnrefResources, surface->client()));
     provider_->SetChildNeedsSyncTokens(child_id, surface->needs_sync_tokens());
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
@@ -175,13 +174,13 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
   return full_rect;
 }
 
+// static
 void SurfaceAggregator::UnrefResources(
-    const SurfaceId& surface_id,
+    base::WeakPtr<SurfaceClient> surface_client,
     const std::vector<ReturnedResource>& resources,
     BlockingTaskRunner* main_thread_task_runner) {
-  Surface* surface = manager_->GetSurfaceForId(surface_id);
-  if (surface)
-    surface->UnrefResources(resources);
+  if (surface_client)
+    surface_client->UnrefResources(resources);
 }
 
 void SurfaceAggregator::HandleSurfaceQuad(
