@@ -395,6 +395,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",
                                     "replace_server_placeholders") == "true");
 
+  WebRuntimeFeatures::EnableResourceLoadScheduler(
+      base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

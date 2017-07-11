@@ -344,6 +344,10 @@ void WebRuntimeFeatures::EnableRenderingPipelineThrottling(bool enable) {
   RuntimeEnabledFeatures::SetRenderingPipelineThrottlingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableResourceLoadScheduler(bool enable) {
+  RuntimeEnabledFeatures::SetResourceLoadSchedulerEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
   RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }

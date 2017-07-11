@@ -1431,6 +1431,12 @@ const char kResetAppListInstallStateDescription[] =
     "set, Chrome will forget the launcher has been installed each time it "
     "starts. This is used for testing the App Launcher install flow.";
 
+const char kResourceLoadSchedulerName[] = "Use the resource load scheduler";
+
+const char kResourceLoadSchedulerDescription[] =
+    "Uses the resource load scheduler in blink to schedule and throttle "
+    "resource load requests.";
+
 #if defined(OS_CHROMEOS)
 
 const char kFirstRunUiTransitionsName[] =
