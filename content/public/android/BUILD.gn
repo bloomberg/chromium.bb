@@ -474,6 +474,7 @@ junit_binary("content_junit_tests") {
   java_files = [
     "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
     "junit/src/org/chromium/content/browser/ChildConnectionAllocatorTest.java",
+    "junit/src/org/chromium/content/browser/ChildProcessConnectionTest.java",
     "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/TestChildProcessConnection.java",

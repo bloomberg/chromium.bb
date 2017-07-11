@@ -57,6 +57,7 @@ public class SpareChildConnectionTest {
             assert mConnection == null;
             mConnection = new TestChildProcessConnection(
                     serviceName, bindAsExternalService, serviceBundle, creationParams);
+            mConnection.setPostOnServiceConnected(false);
             return mConnection;
         }
 
@@ -132,7 +133,7 @@ public class SpareChildConnectionTest {
         ChildProcessConnection connection =
                 mSpareConnection.getConnection(mWrongConnectionAllocator, mServiceCallback);
         assertNull(connection);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        ShadowLooper.runUiThreadTasks();
         verify(mServiceCallback, times(0)).onChildStarted();
         verify(mServiceCallback, times(0)).onChildStartFailed();
         verify(mServiceCallback, times(0)).onChildProcessDied(any());
@@ -153,7 +154,7 @@ public class SpareChildConnectionTest {
         // No more connections are available.
         assertTrue(mSpareConnection.isEmpty());
 
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        ShadowLooper.runUiThreadTasks();
         verify(mServiceCallback, times(1)).onChildStarted();
         verify(mServiceCallback, times(0)).onChildStartFailed();
     }
@@ -167,7 +168,7 @@ public class SpareChildConnectionTest {
         ChildProcessConnection connection =
                 mSpareConnection.getConnection(mConnectionAllocator, mServiceCallback);
         assertNotNull(connection);
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        ShadowLooper.runUiThreadTasks();
         // No callbacks are called.
         verify(mServiceCallback, times(0)).onChildStarted();
         verify(mServiceCallback, times(0)).onChildStartFailed();
