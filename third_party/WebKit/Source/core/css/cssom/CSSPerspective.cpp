@@ -5,6 +5,8 @@
 #include "core/css/cssom/CSSPerspective.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/cssom/CSSUnitValue.h"
+#include "core/geometry/DOMMatrix.h"
 
 namespace blink {
 
@@ -49,7 +51,30 @@ CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
   return new CSSPerspective(length);
 }
 
+DOMMatrix* CSSPerspective::AsMatrix() const {
+  if (!length_->IsCalculated() && ToCSSUnitValue(length_)->value() < 0) {
+    // Negative values are invalid.
+    // https://github.com/w3c/css-houdini-drafts/issues/420
+    return nullptr;
+  }
+  CSSUnitValue* length = length_->to(CSSPrimitiveValue::UnitType::kPixels);
+  if (!length) {
+    // This can happen if there are relative units. TODO(meade): How to resolve
+    // relative units here?
+    // https://github.com/w3c/css-houdini-drafts/issues/421
+    return nullptr;
+  }
+  DOMMatrix* matrix = DOMMatrix::Create();
+  matrix->perspectiveSelf(length->value());
+  return matrix;
+}
+
 CSSFunctionValue* CSSPerspective::ToCSSValue() const {
+  if (!length_->IsCalculated() && ToCSSUnitValue(length_)->value() < 0) {
+    // Negative values are invalid.
+    // https://github.com/w3c/css-houdini-drafts/issues/420
+    return nullptr;
+  }
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
   result->Append(*length_->ToCSSValue());
   return result;

@@ -277,6 +277,11 @@ DOMMatrix* DOMMatrix::skewYSelf(double sy) {
   return this;
 }
 
+DOMMatrix* DOMMatrix::perspectiveSelf(double p) {
+  matrix_->ApplyPerspective(p);
+  return this;
+}
+
 DOMMatrix* DOMMatrix::invertSelf() {
   if (matrix_->IsInvertible()) {
     matrix_ = TransformationMatrix::Create(matrix_->Inverse());

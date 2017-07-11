@@ -112,6 +112,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                                  double angle = 0);
   DOMMatrix* skewXSelf(double sx = 0);
   DOMMatrix* skewYSelf(double sy = 0);
+  DOMMatrix* perspectiveSelf(double p);
   DOMMatrix* invertSelf();
 
   DOMMatrix* setMatrixValue(const String&, ExceptionState&);
