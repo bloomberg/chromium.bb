@@ -44,7 +44,7 @@ _log = logging.getLogger(__name__)
 # FIXME: range() starts with 0 which makes if expectation checks harder
 # as PASS is 0.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, LEAK, SKIP, WONTFIX,
- SLOW, REBASELINE, NEEDS_REBASELINE, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
+ SLOW, REBASELINE, NEEDS_REBASELINE_UNUSED, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
 
 # FIXME: Perhaps these two routines should be part of the Port instead?
 BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
@@ -56,7 +56,6 @@ V8_BUG_PREFIX = 'code.google.com/p/v8/issues/detail?id='
 NAMED_BUG_PREFIX = 'Bug('
 
 MISSING_KEYWORD = 'Missing'
-NEEDS_REBASELINE_KEYWORD = 'NeedsRebaseline'
 NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
 
 
@@ -79,7 +78,6 @@ class TestExpectationParser(object):
     # FIXME: Rename these to *_KEYWORD as in MISSING_KEYWORD above, but make
     # the case studdly-caps to match the actual file contents.
     REBASELINE_MODIFIER = 'rebaseline'
-    NEEDS_REBASELINE_MODIFIER = 'needsrebaseline'
     NEEDS_MANUAL_REBASELINE_MODIFIER = 'needsmanualrebaseline'
     PASS_EXPECTATION = 'pass'
     SKIP_MODIFIER = 'skip'
@@ -170,20 +168,16 @@ class TestExpectationParser(object):
         if self.REBASELINE_MODIFIER in expectations:
             expectation_line.warnings.append('REBASELINE should only be used for running rebaseline.py. Cannot be checked in.')
 
-        if self.NEEDS_REBASELINE_MODIFIER in expectations:
-            expectation_line.warnings.append('NeedsRebaseline is deprecated; see https://crbug.com/692811')
-
-        if self.NEEDS_REBASELINE_MODIFIER in expectations or self.NEEDS_MANUAL_REBASELINE_MODIFIER in expectations:
+        if self.NEEDS_MANUAL_REBASELINE_MODIFIER in expectations:
             for test in expectation_line.matching_tests:
                 if self._port.reference_files(test):
                     text_expected_filename = self._port.expected_filename(test, '.txt')
                     if not self._port.host.filesystem.exists(text_expected_filename):
                         expectation_line.warnings.append(
-                            'A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline')
+                            'A reftest without text expectation cannot be marked as NeedsManualRebaseline')
 
         specifiers = [specifier.lower() for specifier in expectation_line.specifiers]
-        if (self.REBASELINE_MODIFIER in expectations or self.NEEDS_REBASELINE_MODIFIER in expectations) and (
-                'debug' in specifiers or 'release' in specifiers):
+        if self.REBASELINE_MODIFIER in expectations and ('debug' in specifiers or 'release' in specifiers):
             expectation_line.warnings.append('A test cannot be rebaselined for Debug/Release.')
 
     def _parse_expectations(self, expectation_line):
@@ -303,7 +297,6 @@ class TestExpectationLine(object):
         MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
-        NEEDS_REBASELINE_KEYWORD: 'NEEDSREBASELINE',
         NEEDS_MANUAL_REBASELINE_KEYWORD: 'NEEDSMANUALREBASELINE',
         'Skip': 'SKIP',
         'Slow': 'SLOW',
@@ -445,8 +438,8 @@ class TestExpectationLine(object):
 
         if 'MISSING' in expectations:
             warnings.append(
-                '"Missing" expectations are not allowed; either download new baselines '
-                '(see https://goo.gl/SHVYrZ) or use "NeedsRebaseline" expectations.')
+                '"Missing" expectations are not allowed; download new baselines '
+                '(see https://goo.gl/SHVYrZ), or as a fallback, use "NeedsManualRebaseline".')
 
         expectation_line.bugs = bugs
         expectation_line.specifiers = specifiers
@@ -885,7 +878,6 @@ class TestExpectations(object):
         'leak': LEAK,
         'missing': MISSING,
         TestExpectationParser.SKIP_MODIFIER: SKIP,
-        TestExpectationParser.NEEDS_REBASELINE_MODIFIER: NEEDS_REBASELINE,
         TestExpectationParser.NEEDS_MANUAL_REBASELINE_MODIFIER: NEEDS_MANUAL_REBASELINE,
         TestExpectationParser.WONTFIX_MODIFIER: WONTFIX,
         TestExpectationParser.SLOW_MODIFIER: SLOW,
@@ -943,10 +935,9 @@ class TestExpectations(object):
 
         if result in expected_results:
             return True
-        if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and (
-                NEEDS_REBASELINE in expected_results or NEEDS_MANUAL_REBASELINE in expected_results):
+        if result in (PASS, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, MISSING) and NEEDS_MANUAL_REBASELINE in expected_results:
             return True
-        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and (FAIL in expected_results):
+        if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in expected_results:
             return True
         if result == MISSING and test_needs_rebaselining:
             return True
@@ -1059,9 +1050,6 @@ class TestExpectations(object):
 
     def expectations(self):
         return self._expectations
-
-    def get_needs_rebaseline_failures(self):
-        return self._model.get_test_set(NEEDS_REBASELINE)
 
     def get_rebaselining_failures(self):
         return self._model.get_test_set(REBASELINE)

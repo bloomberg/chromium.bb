@@ -339,9 +339,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         # This is so we remove lines for builders that skip this test, e.g. Android skips most
         # tests and we don't want to leave stray [ Android ] lines in TestExpectations..
-        # This is only necessary for "webkit-patch rebaseline" and for rebaselining expected
-        # failures from garden-o-matic. rebaseline-expectations and auto-rebaseline will always
-        # pass the exact set of ports to rebaseline.
+        # This is only necessary for "webkit-patch rebaseline".
         for port_name in self._tool.port_factory.all_port_names():
             port = self._tool.port_factory.get(port_name)
             generic_expectations = TestExpectations(port, tests=tests, include_overrides=False)

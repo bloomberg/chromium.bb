@@ -173,7 +173,7 @@ class TestRebaseline(BaseTestCase):
             'tests': {
                 'userscripts': {
                     'first-test.html': {
-                        'expected': 'NEEDSREBASELINE',
+                        'expected': 'REBASELINE',
                         'actual': 'PASS'
                     }
                 }

@@ -285,7 +285,6 @@ class Manager(object):
     def _test_is_expected_missing(self, test_file):
         expectations = self._expectations.model().get_expectations(test_file)
         return (test_expectations.MISSING in expectations or
-                test_expectations.NEEDS_REBASELINE in expectations or
                 test_expectations.NEEDS_MANUAL_REBASELINE in expectations)
 
     def _test_is_slow(self, test_file):

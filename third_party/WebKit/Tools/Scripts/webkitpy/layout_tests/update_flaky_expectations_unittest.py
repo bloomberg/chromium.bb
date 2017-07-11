@@ -167,8 +167,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) test/b.html [ Timeout ]
             Bug(test) test/c.html [ Failure Timeout ]
             Bug(test) test/d.html [ Rebaseline ]
-            Bug(test) test/e.html [ NeedsManualRebaseline ]
-            Bug(test) test/f.html [ NeedsRebaseline ]"""
+            Bug(test) test/e.html [ NeedsManualRebaseline ]"""
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -265,9 +264,8 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         test_expectations_before = """
             # Even though the results show all passing, none of the
             # expectations are flaky so we shouldn't remove any.
-            Bug(test) test/a.html [ Failure NeedsRebaseline Pass ]
-            Bug(test) test/b.html [ Failure Pass Rebaseline ]
-            Bug(test) test/c.html [ Failure NeedsManualRebaseline Pass ]"""
+            Bug(test) test/a.html [ Failure Pass Rebaseline ]
+            Bug(test) test/b.html [ Failure NeedsManualRebaseline Pass ]"""
 
         self._define_builders({
             'WebKit Linux Trusty': {
@@ -283,7 +281,6 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             'WebKit Linux Trusty': {
                 'test/a.html': ['PASS', 'PASS'],
                 'test/b.html': ['PASS', 'PASS'],
-                'test/c.html': ['PASS', 'PASS']
             }
         }
         updated_expectations = (
