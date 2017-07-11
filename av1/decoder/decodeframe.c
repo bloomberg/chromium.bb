@@ -292,6 +292,24 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }
 
+static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
+  const int bsize = xd->mi[0]->mbmi.sb_type;
+  const struct macroblockd_plane *pd = &xd->plane[plane];
+#if CONFIG_CHROMA_SUB8X8
+  const BLOCK_SIZE plane_bsize =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#elif CONFIG_CB4X4
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+#endif
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+  const TX_SIZE tx_size = get_tx_size(plane, xd);
+  const uint8_t txh_unit = tx_size_high_unit[tx_size];
+  return row * max_blocks_wide + col * txh_unit;
+}
+
 #if CONFIG_PVQ
 static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
                                  tran_low_t *dqcoeff, int16_t *quant, int pli,
@@ -440,6 +458,7 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_LGT
     fwd_txfm_param.is_inter = is_inter_block(mbmi);
     fwd_txfm_param.dst = dst;
+    int block = get_block_idx(xd, plane, row, col);
     fwd_txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
 #endif
 
@@ -470,24 +489,6 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
   return eob;
 }
 #endif
-
-static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
-  const int bsize = xd->mi[0]->mbmi.sb_type;
-  const struct macroblockd_plane *pd = &xd->plane[plane];
-#if CONFIG_CHROMA_SUB8X8
-  const BLOCK_SIZE plane_bsize =
-      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
-  const uint8_t txh_unit = tx_size_high_unit[tx_size];
-  return row * max_blocks_wide + col * txh_unit;
-}
 
 #if CONFIG_DPCM_INTRA
 static void process_block_dpcm_vert(TX_SIZE tx_size, TX_TYPE_1D tx_type_1d,
