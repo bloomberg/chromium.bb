@@ -937,6 +937,13 @@ int TextIteratorAlgorithm<Strategy>::RangeLength(
 }
 
 template <typename Strategy>
+int TextIteratorAlgorithm<Strategy>::RangeLength(
+    const EphemeralRangeTemplate<Strategy>& range,
+    const TextIteratorBehavior& behavior) {
+  return RangeLength(range.StartPosition(), range.EndPosition(), behavior);
+}
+
+template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::IsInTextSecurityMode() const {
   return IsTextSecurityNode(GetNode());
 }

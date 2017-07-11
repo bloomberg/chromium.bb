@@ -453,10 +453,9 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Node* div_node = GetDocument().getElementById("div");
-  Range* range = Range::Create(GetDocument(), div_node, 0, div_node, 3);
+  const EphemeralRange range(Position(div_node, 0), Position(div_node, 3));
 
-  EXPECT_EQ(3, TextIterator::RangeLength(range->StartPosition(),
-                                         range->EndPosition()));
+  EXPECT_EQ(3, TextIterator::RangeLength(range));
 }
 
 TEST_F(TextIteratorTest, RangeLengthInMultilineSpan) {
@@ -478,12 +477,12 @@ TEST_F(TextIteratorTest, RangeLengthInMultilineSpan) {
   Node* text_node = span_node->firstChild();
 
   // Select the word "two", this is the last word on the line.
-  const Position start = Position(text_node, 4);
-  const Position end = Position(text_node, 7);
 
-  EXPECT_EQ(4, TextIterator::RangeLength(start, end));
+  const EphemeralRange range(Position(text_node, 4), Position(text_node, 7));
+
+  EXPECT_EQ(4, TextIterator::RangeLength(range));
   EXPECT_EQ(3, TextIterator::RangeLength(
-                   start, end,
+                   range,
                    TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior()));
 }
 

@@ -130,8 +130,7 @@ void ColdModeSpellCheckRequester::SearchForNextRootEditable() {
 void ColdModeSpellCheckRequester::InitializeForCurrentRootEditable() {
   const EphemeralRange& full_range =
       EphemeralRange::RangeOfContents(*current_root_editable_);
-  current_full_length_ = TextIterator::RangeLength(full_range.StartPosition(),
-                                                   full_range.EndPosition());
+  current_full_length_ = TextIterator::RangeLength(full_range);
 
   current_chunk_index_ = 0;
   current_chunk_start_ = full_range.StartPosition();

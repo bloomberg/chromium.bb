@@ -272,10 +272,10 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
   const TextIteratorBehavior behavior =
       TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior();
 
-  int start_index = TextIterator::RangeLength(
-      start_range->StartPosition(), start_range->EndPosition(), behavior);
-  int end_index = TextIterator::RangeLength(end_range->StartPosition(),
-                                            end_range->EndPosition(), behavior);
+  int start_index =
+      TextIterator::RangeLength(EphemeralRange(start_range), behavior);
+  int end_index =
+      TextIterator::RangeLength(EphemeralRange(end_range), behavior);
 
   VisiblePosition paragraph_start(StartOfParagraph(visible_start));
   VisiblePosition next_paragraph_start(

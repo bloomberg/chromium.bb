@@ -106,9 +106,15 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   // Computes the length of the given range using a text iterator according to
   // the specified iteration behavior. The default iteration behavior is to
   // always emit object replacement characters for replaced elements.
+  // TODO(editing-dev): We should remove start/end version of |RangeLength()|.
   static int RangeLength(
       const PositionTemplate<Strategy>& start,
       const PositionTemplate<Strategy>& end,
+      const TextIteratorBehavior& =
+          TextIteratorBehavior::DefaultRangeLengthBehavior());
+
+  static int RangeLength(
+      const EphemeralRangeTemplate<Strategy>&,
       const TextIteratorBehavior& =
           TextIteratorBehavior::DefaultRangeLengthBehavior());
 
