@@ -79,7 +79,6 @@ class ShellPortMash : public ShellPort {
   std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() override;
   std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
-  std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;

@@ -8,7 +8,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
@@ -128,10 +127,6 @@ ShellPortClassic::CreateImmersiveFullscreenController() {
 
 std::unique_ptr<KeyboardUI> ShellPortClassic::CreateKeyboardUI() {
   return KeyboardUI::Create();
-}
-
-std::unique_ptr<KeyEventWatcher> ShellPortClassic::CreateKeyEventWatcher() {
-  return base::MakeUnique<KeyEventWatcherAura>();
 }
 
 void ShellPortClassic::AddPointerWatcher(

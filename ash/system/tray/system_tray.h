@@ -159,9 +159,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   friend class SystemTrayTestApi;
   class ActivationObserver;
 
-  // Closes the bubble. Used to bind as a KeyEventWatcher::KeyEventCallback.
-  void CloseBubble(const ui::KeyEvent& key_event);
-
   // Activates the bubble and starts key navigation with the |key_event|.
   void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
 

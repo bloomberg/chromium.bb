@@ -45,7 +45,6 @@ class AcceleratorController;
 class AshWindowTreeHost;
 struct AshWindowTreeHostInitParams;
 class ImmersiveFullscreenController;
-class KeyEventWatcher;
 class KeyboardUI;
 class RootWindowController;
 class WindowCycleEventFilter;
@@ -134,8 +133,6 @@ class ASH_EXPORT ShellPort {
 
   // Creates the KeyboardUI. This is called early on.
   virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
-
-  virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
   // If |events| is PointerWatcherEventTypes::MOVES,
   // PointerWatcher::OnPointerEventObserved() is called for pointer move events.

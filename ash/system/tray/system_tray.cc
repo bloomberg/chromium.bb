@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/key_event_watcher.h"
 #include "ash/login_status.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
@@ -602,10 +601,6 @@ bool SystemTray::ShouldEnableExtraKeyboardAccessibility() {
 
 void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
-}
-
-void SystemTray::CloseBubble(const ui::KeyEvent& key_event) {
-  CloseSystemBubble();
 }
 
 void SystemTray::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
