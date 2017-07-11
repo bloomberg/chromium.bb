@@ -1369,7 +1369,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"oldPhoto", IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO},
     {"profilePhotoLoading", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO},
     {"previewAltText", IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT},
-    {"authorCredit", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_TEXT},
+    {"authorCreditText", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT},
     {"photoFlippedAccessibleText", IDS_SETTINGS_PHOTO_FLIP_ACCESSIBLE_TEXT},
     {"photoFlippedBackAccessibleText",
      IDS_SETTINGS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT},

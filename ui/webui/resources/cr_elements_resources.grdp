@@ -48,6 +48,12 @@
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR__CAMERA_JS"
                file="../../webui/resources/cr_elements/chromeos/change_picture/cr_camera.js"
                type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR_PICTURE_LIST_HTML"
+               file="../../webui/resources/cr_elements/chromeos/change_picture/cr_picture_list.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR__PICTURE_LIST_JS"
+               file="../../webui/resources/cr_elements/chromeos/change_picture/cr_picture_list.js"
+               type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR_PICTURE_PREVIEW_HTML"
                file="../../webui/resources/cr_elements/chromeos/change_picture/cr_picture_preview.html"
                type="chrome_html" />
