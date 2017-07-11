@@ -7,11 +7,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #import "ios/testing/wait_util.h"
+#include "ios/web/public/browser_state.h"
 #include "ios/web/public/service_manager_connection.h"
+#import "ios/web/shell/test/app/web_shell_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/test/echo/public/interfaces/echo.mojom.h"
+#include "services/test/user_id/public/interfaces/user_id.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,16 +37,33 @@ void OnEchoString(echo::mojom::EchoPtr echo,
   *echo_callback_called_flag = true;
 }
 
-// Waits until the callback to echo::mojom::Echo::EchoString() is invoked (as
-// signalled by that callback setting |echo_callback_called_flag| to true).
-void WaitForEchoStringCallback(bool* echo_callback_called_flag) {
+// Callback passed to user_id::mojom::UserId::GetUserId(). Verifies that the
+// passed-back user ID has the expected value and sets
+// |user_id_callback_called_flag| to true to indicate that the callback was
+// invoked. |user_id| is passed simply to ensure that our connection to the
+// UserId implementation remains alive long enough for the callback to reach
+// us.
+void OnGotUserId(user_id::mojom::UserIdPtr user_id,
+                 bool* user_id_callback_called_flag,
+                 const std::string& expected_user_id,
+                 const std::string& received_user_id) {
+  GREYAssert(expected_user_id == received_user_id,
+             @"Unexpected User ID passed to user_id callback: %s",
+             received_user_id.c_str());
+  *user_id_callback_called_flag = true;
+}
+
+// Waits until a given callback is invoked (as signalled by that callback
+// setting |callback_called_flag| to true).
+void WaitForCallback(const std::string& callback_name,
+                     bool* callback_called_flag) {
   GREYCondition* condition =
-      [GREYCondition conditionWithName:@"Wait for echo string callback"
+      [GREYCondition conditionWithName:@"Wait for callback"
                                  block:^BOOL {
-                                   return *echo_callback_called_flag;
+                                   return *callback_called_flag;
                                  }];
   GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for echo callback");
+             @"Failed waiting for %s callback", callback_name.c_str());
 }
 }
 
@@ -53,9 +73,9 @@ void WaitForEchoStringCallback(bool* echo_callback_called_flag) {
 
 @implementation ServiceManagerTestCase
 
-// Tests that it is possible to connect to an embedded service that was
-// registered by web_shell.
-- (void)testConnectionToEmbeddedService {
+// Tests that it is possible to connect to an all-users embedded service that
+// was registered by web_shell.
+- (void)testConnectionToAllUsersEmbeddedService {
   // Connect to the echo service and bind an Echo instance.
   echo::mojom::EchoPtr echo;
   web::ServiceManagerConnection* connection =
@@ -65,13 +85,33 @@ void WaitForEchoStringCallback(bool* echo_callback_called_flag) {
 
   // Call EchoString, making sure to keep our end of the connection alive
   // until the callback is received.
-  echo::mojom::Echo* raw_echo = echo.get();
-  bool echo_callback_called = false;
-  raw_echo->EchoString(kTestInput,
-                       base::BindOnce(&OnEchoString, base::Passed(&echo),
-                                      &echo_callback_called));
+  echo::mojom::Echo* rawEcho = echo.get();
+  bool echoCallbackCalled = false;
+  rawEcho->EchoString(
+      kTestInput,
+      base::BindOnce(&OnEchoString, base::Passed(&echo), &echoCallbackCalled));
 
-  WaitForEchoStringCallback(&echo_callback_called);
+  WaitForCallback("EchoString", &echoCallbackCalled);
+}
+
+// Tests that it is possible to connect to a per-user embedded service that
+// was registered by web_shell.
+- (void)testConnectionToPerUserEmbeddedService {
+  // Connect to the user ID service and bind a UserId instance.
+  user_id::mojom::UserIdPtr userID;
+  web::WebState* webState = web::shell_test_util::GetCurrentWebState();
+  web::BrowserState::GetConnectorFor(webState->GetBrowserState())
+      ->BindInterface("user_id", mojo::MakeRequest(&userID));
+
+  // Call GetUserId(), making sure to keep our end of the connection alive
+  // until the callback is received.
+  user_id::mojom::UserId* rawUserID = userID.get();
+  bool userIDCallbackCalled = false;
+  rawUserID->GetUserId(base::BindOnce(
+      &OnGotUserId, base::Passed(&userID), &userIDCallbackCalled,
+      web::BrowserState::GetServiceUserIdFor(webState->GetBrowserState())));
+
+  WaitForCallback("GetUserId", &userIDCallbackCalled);
 }
 
 @end

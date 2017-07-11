@@ -25,6 +25,7 @@ class ShellBrowserState : public BrowserState {
   bool IsOffTheRecord() const override;
   base::FilePath GetStatePath() const override;
   net::URLRequestContextGetter* GetRequestContext() override;
+  void RegisterServices(StaticServiceMap* services) override;
 
  private:
   base::FilePath path_;

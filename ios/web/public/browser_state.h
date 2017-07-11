@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_BROWSER_STATE_H_
 
 #include "base/supports_user_data.h"
+#include "services/service_manager/embedder/embedded_service_info.h"
 
 namespace base {
 class FilePath;
@@ -15,9 +16,14 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace web {
 class ActiveStateManager;
 class CertificatePolicyCache;
+class ServiceManagerConnection;
 class URLDataManagerIOS;
 class URLDataManagerIOSBackend;
 class URLRequestChromeJob;
@@ -60,8 +66,36 @@ class BrowserState : public base::SupportsUserData {
   static BrowserState* FromSupportsUserData(
       base::SupportsUserData* supports_user_data);
 
+  // Returns a Service User ID associated with this BrowserState. This ID is
+  // not persistent across runs. See
+  // services/service_manager/public/interfaces/connector.mojom. By default,
+  // this user id is randomly generated when Initialize() is called.
+  static const std::string& GetServiceUserIdFor(BrowserState* browser_state);
+
+  // Returns a Connector associated with this BrowserState, which can be used
+  // to connect to service instances bound as this user.
+  static service_manager::Connector* GetConnectorFor(
+      BrowserState* browser_state);
+
+  // Returns a ServiceManagerConnection associated with this BrowserState,
+  // which can be used to connect to service instances bound as this user.
+  static ServiceManagerConnection* GetServiceManagerConnectionFor(
+      BrowserState* browser_state);
+
+  using StaticServiceMap =
+      std::map<std::string, service_manager::EmbeddedServiceInfo>;
+
+  // Registers per-browser-state services to be loaded by the Service Manager.
+  virtual void RegisterServices(StaticServiceMap* services) {}
+
  protected:
   BrowserState();
+
+  // Makes the Service Manager aware of this BrowserState, and assigns a user
+  // ID number to it. Must be called for each BrowserState created. |path|
+  // should be the same path that would be returned by GetStatePath().
+  static void Initialize(BrowserState* browser_state,
+                         const base::FilePath& path);
 
  private:
   friend class URLDataManagerIOS;
