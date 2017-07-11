@@ -54,6 +54,10 @@ struct ClampedAddOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static V Do(T x, U y) {
+    // TODO(jschuh) Make this "constexpr if" once we're C++17.
+    if (ClampedAddFastOp<T, U>::is_supported)
+      return ClampedAddFastOp<T, U>::template Do<V>(x, y);
+
     V result;
     return CheckedAddOp<T, U>::Do(x, y, &result)
                ? result
@@ -74,6 +78,10 @@ struct ClampedSubOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static V Do(T x, U y) {
+    // TODO(jschuh) Make this "constexpr if" once we're C++17.
+    if (ClampedSubFastOp<T, U>::is_supported)
+      return ClampedSubFastOp<T, U>::template Do<V>(x, y);
+
     V result;
     return CheckedSubOp<T, U>::Do(x, y, &result)
                ? result
