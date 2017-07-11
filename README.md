@@ -41,8 +41,10 @@ varieties:
 Both types of options are set at the time CMake is run. The following example
 enables ccache and disables high bit depth:
 
+~~~
     $ cmake path/to/aom -DENABLE_CCACHE=1 -DCONFIG_HIGHBITDEPTH=0
     $ make
+~~~
 
 The available configuration options are too numerous to list here. Build system
 configuration options can be found at the top of the CMakeLists.txt file found
@@ -52,10 +54,12 @@ currently be found in the file `build/cmake/aom_config_defaults.cmake`.
 ### Dylib builds
 
 A dylib (shared object) build of the AV1 codec library can be enabled via the
-CMake built in variable BUILD\_SHARED\_LIBS:
+CMake built in variable `BUILD_SHARED_LIBS`:
 
-    $ cmake path/to/aom -D BUILD_SHARED_LIBS=1
+~~~
+    $ cmake path/to/aom -DBUILD_SHARED_LIBS=1
     $ make
+~~~
 
 This is currently only supported on non-Windows targets.
 
@@ -82,9 +86,11 @@ The toolchain files available at the time of this writing are:
 The following example demonstrates use of the x86-macos.cmake toolchain file on
 a x86\_64 MacOS host:
 
+~~~
     $ cmake path/to/aom \
       -DCMAKE_TOOLCHAIN_FILE=path/to/aom/build/cmake/toolchains/x86-macos.cmake
     $ make
+~~~
 
 To build for an unlisted target creation of a new toolchain file is the best
 solution. The existing toolchain files can be used a starting point for a new
@@ -94,8 +100,10 @@ as used in the AV1 codec build.
 As a temporary work around an unoptimized AV1 configuration that builds only C
 and C++ sources can be produced using the following commands:
 
+~~~
     $ cmake path/to/aom -DAOM_TARGET_CPU=generic
     $ make
+~~~
 
 In addition to the above it's important to note that the toolchain files
 suffixed with gcc behave differently than the others. These toolchain files
@@ -107,15 +115,19 @@ Building the AV1 codec library in Microsoft Visual Studio is supported. The
 following example demonstrates generating projects and a solution for the
 Microsoft IDE:
 
+~~~
     # This does not require a bash shell; command.exe is fine.
     $ cmake path/to/aom -G "Visual Studio 15 2017"
+~~~
 
 ### Xcode builds
 
 Building the AV1 codec library in Xcode is supported. The following example
 demonstrates generating an Xcode project:
 
+~~~
     $ cmake path/to/aom -G Xcode
+~~~
 
 ### Emscripten builds
 
@@ -165,13 +177,13 @@ appropriately using the emsdk\_env script.
 
 ### Testing basics
 
-Currently there are two types of tests in the AV1 codec repository:
+Currently there are two types of tests in the AV1 codec repository.
 
- 1. Unit tests.
- 2. Example tests.
+#### 1. Unit tests:
 
 The unit tests can be run at build time:
 
+~~~
     # Before running the make command the LIBAOM_TEST_DATA_PATH environment
     # variable should be set to avoid downloading the test files to the
     # cmake build configuration directory.
@@ -179,9 +191,13 @@ The unit tests can be run at build time:
     # Note: The AV1 CMake build creates many test targets. Running make
     # with multiple jobs will speed up the test run significantly.
     $ make runtests
+~~~
+
+#### 2. Example tests:
 
 The example tests require a bash shell and can be run in the following manner:
 
+~~~
     # See the note above about LIBAOM_TEST_DATA_PATH above.
     $ cmake path/to/aom
     $ make
@@ -190,6 +206,7 @@ The example tests require a bash shell and can be run in the following manner:
     # one at a time, which takes a while.
     $ make testdata
     $ path/to/aom/test/examples.sh --bin-path examples
+~~~
 
 ### IDE hosted tests
 
@@ -200,10 +217,12 @@ IDEs-- IDE behavior is to build all targets when selecting the build project
 options in MSVS and Xcode. To enable the test rules in IDEs the
 `ENABLE_IDE_TEST_HOSTING` variable must be enabled at CMake generation time:
 
+~~~
     # This example uses Xcode. To get a list of the generators
     # available, run cmake with the -G argument missing its
     # value.
     $ cmake path/to/aom -DENABLE_IDE_TEST_HOSTING=1 -G Xcode
+~~~
 
 ### Downloading the test data
 
@@ -211,12 +230,53 @@ The fastest and easiest way to obtain the test data is to use CMake to generate
 a build using the Unix Makefiles generator, and then to build only the testdata
 rule:
 
+~~~
     $ cmake path/to/aom -G "Unix Makefiles"
     # 28 is used because there are 28 test files as of this writing.
     $ make -j28 testdata
+~~~
 
 The above make command will only download and verify the test data.
 
+### Sharded testing
+
+The AV1 codec library unit tests are built upon gtest which supports sharding of
+test jobs. Sharded test runs can be achieved in a couple of ways.
+
+#### 1. Running test\_libaom directly:
+
+~~~
+   # Set the environment variable GTEST_TOTAL_SHARDS to 9 to run 10 test shards
+   # (GTEST shard indexing is 0 based).
+   $ export GTEST_TOTAL_SHARDS=9
+   $ for shard in $(seq 0 ${GTEST_TOTAL_SHARDS}); do \
+       [ ${shard} -lt ${GTEST_TOTAL_SHARDS} ] \
+         && GTEST_SHARD_INDEX=${shard} ./test_libaom & \
+     done
+
+~~~
+
+To create a test shard for each CPU core available on the current system set
+`GTEST_TOTAL_SHARDS` to the number of CPU cores on your system minus one.
+
+#### 2. Running the tests via the CMake build:
+
+~~~
+    # For IDE based builds, ENABLE_IDE_TEST_HOSTING must be enabled. See
+    # the IDE hosted tests section above for more information. If the IDE
+    # supports building targets concurrently tests will be sharded by default.
+
+    # For make and ninja builds the -j parameter controls the number of shards
+    # at test run time. This example will run the tests using 10 shards via
+    # make.
+    $ make -j10 runtests
+~~~
+
+The maximum number of test targets that can run concurrently is determined by
+the number of CPUs on the system where the build is configured as detected by
+CMake. A system with 24 cores can run 24 test shards using a value of 24 with
+the `-j` parameter. When CMake is unable to detect the number of cores 10 shards
+is the default maximum value.
 
 ## Coding style
 
@@ -225,9 +285,11 @@ configuration contained in the .clang-format file in the root of the repository.
 
 Before pushing changes for review you can format your code with:
 
+~~~
     # Apply clang-format to modified .c, .h and .cc files
     $ clang-format -i --style=file \
       $(git diff --name-only --diff-filter=ACMR '*.[hc]' '*.cc')
+~~~
 
 Check the .clang-format file for the version used to generate it if there is any
 difference between your local formatting and the review system.
@@ -243,4 +305,3 @@ please email aomediacodec@jointdevelopment.kavi.com for help.
 
 Bug reports can be filed in the Alliance for Open Media
 [issue tracker](https://bugs.chromium.org/p/aomedia/issues/list).
-
