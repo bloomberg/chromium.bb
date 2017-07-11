@@ -5,7 +5,10 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 #define CHROME_RENDERER_EXTENSIONS_RESOURCE_REQUEST_POLICY_H_
 
+#include <set>
+
 #include "base/macros.h"
+#include "extensions/common/extension_id.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -15,13 +18,17 @@ class WebLocalFrame;
 }
 
 namespace extensions {
-
 class Dispatcher;
+class Extension;
 
 // Encapsulates the policy for when chrome-extension:// URLs can be requested.
 class ResourceRequestPolicy {
  public:
   explicit ResourceRequestPolicy(Dispatcher* dispatcher);
+  ~ResourceRequestPolicy();
+
+  void OnExtensionLoaded(const Extension& extension);
+  void OnExtensionUnloaded(const ExtensionId& extension);
 
   // Returns true if the chrome-extension:// |resource_url| can be requested
   // from |frame_url|. In some cases this decision is made based upon how
@@ -33,6 +40,10 @@ class ResourceRequestPolicy {
 
  private:
   Dispatcher* dispatcher_;
+
+  // The set of extension IDs with any potentially web- or webview-accessible
+  // resources.
+  std::set<ExtensionId> web_accessible_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestPolicy);
 };

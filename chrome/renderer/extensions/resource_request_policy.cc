@@ -30,6 +30,30 @@ namespace extensions {
 
 ResourceRequestPolicy::ResourceRequestPolicy(Dispatcher* dispatcher)
     : dispatcher_(dispatcher) {}
+ResourceRequestPolicy::~ResourceRequestPolicy() = default;
+
+void ResourceRequestPolicy::OnExtensionLoaded(const Extension& extension) {
+  if (WebAccessibleResourcesInfo::HasWebAccessibleResources(&extension) ||
+      // Extensions below manifest version 2 had all resources accessible by
+      // default.
+      // TODO(devlin): Two things - first, we might not have any v1 extensions
+      // anymore; second, this should maybe be included in
+      // HasWebAccessibleResources().
+      extension.manifest_version() < 2 ||
+      WebviewInfo::HasWebviewAccessibleResources(
+          extension, dispatcher_->webview_partition_id()) ||
+      // Hosted app icons are accessible.
+      // TODO(devlin): Should we incorporate this into
+      // WebAccessibleResourcesInfo?
+      (extension.is_hosted_app() && !IconsInfo::GetIcons(&extension).empty())) {
+    web_accessible_ids_.insert(extension.id());
+  }
+}
+
+void ResourceRequestPolicy::OnExtensionUnloaded(
+    const ExtensionId& extension_id) {
+  web_accessible_ids_.erase(extension_id);
+}
 
 // This method does a security check whether chrome-extension:// URLs can be
 // requested by the renderer. Since this is in an untrusted process, the browser
@@ -42,13 +66,69 @@ bool ResourceRequestPolicy::CanRequestResource(
     ui::PageTransition transition_type) {
   CHECK(resource_url.SchemeIs(kExtensionScheme));
 
-  const Extension* extension =
-      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
-  if (!extension) {
-    // Allow the load in the case of a non-existent extension. We'll just get a
-    // 404 from the browser process.
+  GURL frame_url = frame->GetDocument().Url();
+
+  // The page_origin may be GURL("null") for unique origins like data URLs,
+  // but this is ok for the checks below.  We only care if it matches the
+  // current extension or has a devtools scheme.
+  GURL page_origin = url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
+
+  GURL extension_origin = resource_url.GetOrigin();
+
+  // We always allow loads in the following cases, regardless of web accessible
+  // resources:
+
+  // Empty urls (needed for some edge cases when we have empty urls).
+  if (frame_url.is_empty())
+    return true;
+
+  // Extensions requesting their own resources (frame_url check is for images,
+  // page_url check is for iframes).
+  // TODO(devlin): We should be checking the ancestor chain, not just the
+  // top-level frame. Additionally, we should be checking the security origin
+  // of the frame, to account for about:blank subframes being scripted by an
+  // extension parent (though we'll still need the frame origin check for
+  // sandboxed frames).
+  if (frame_url.GetOrigin() == extension_origin ||
+      page_origin == extension_origin) {
     return true;
   }
+
+  if (!ui::PageTransitionIsWebTriggerable(transition_type))
+    return true;
+
+  // Unreachable web page error page (to allow showing the icon of the
+  // unreachable app on this page).
+  if (frame_url == content::kUnreachableWebDataURL)
+    return true;
+
+  bool is_dev_tools = page_origin.SchemeIs(content::kChromeDevToolsScheme);
+  // Note: we check |web_accessible_ids_| (rather than first looking up the
+  // extension in the registry and checking that) to be more resistant against
+  // timing attacks. This way, determining access for an extension that isn't
+  // installed takes the same amount of time as determining access for an
+  // extension with no web accessible resources. We aren't worried about any
+  // extensions with web accessible resources, since those are inherently
+  // identifiable.
+  if (!is_dev_tools && !web_accessible_ids_.count(extension_origin.host()))
+    return false;
+
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
+  if (is_dev_tools) {
+    // Allow the load in the case of a non-existent extension. We'll just get a
+    // 404 from the browser process.
+    // TODO(devlin): Can this happen? Does devtools potentially make requests
+    // to non-existent extensions?
+    if (!extension)
+      return true;
+    // Devtools (chrome-extension:// URLs are loaded into frames of devtools to
+    // support the devtools extension APIs).
+    if (!chrome_manifest_urls::GetDevToolsPage(extension).is_empty())
+      return true;
+  }
+
+  DCHECK(extension);
 
   // Disallow loading of packaged resources for hosted apps. We don't allow
   // hybrid hosted/packaged apps. The one exception is access to icons, since
@@ -72,43 +152,15 @@ bool ResourceRequestPolicy::CanRequestResource(
       !WebviewInfo::IsResourceWebviewAccessible(
           extension, dispatcher_->webview_partition_id(),
           resource_url.path())) {
-    GURL frame_url = frame->GetDocument().Url();
-
-    // The page_origin may be GURL("null") for unique origins like data URLs,
-    // but this is ok for the checks below.  We only care if it matches the
-    // current extension or has a devtools scheme.
-    GURL page_origin = url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
-
-    // Exceptions are:
-    // - empty origin (needed for some edge cases when we have empty origins)
-    bool is_empty_origin = frame_url.is_empty();
-    // - extensions requesting their own resources (frame_url check is for
-    //     images, page_url check is for iframes)
-    bool is_own_resource = frame_url.GetOrigin() == extension->url() ||
-                           page_origin == extension->url();
-    // - devtools (chrome-extension:// URLs are loaded into frames of devtools
-    //     to support the devtools extension APIs)
-    bool is_dev_tools =
-        page_origin.SchemeIs(content::kChromeDevToolsScheme) &&
-        !chrome_manifest_urls::GetDevToolsPage(extension).is_empty();
-    bool transition_allowed =
-        !ui::PageTransitionIsWebTriggerable(transition_type);
-    // - unreachable web page error page (to allow showing the icon of the
-    //   unreachable app on this page)
-    bool is_error_page = frame_url == content::kUnreachableWebDataURL;
-
-    if (!is_empty_origin && !is_own_resource &&
-        !is_dev_tools && !transition_allowed && !is_error_page) {
-      std::string message = base::StringPrintf(
-          "Denying load of %s. Resources must be listed in the "
-          "web_accessible_resources manifest key in order to be loaded by "
-          "pages outside the extension.",
-          resource_url.spec().c_str());
-      frame->AddMessageToConsole(
-          blink::WebConsoleMessage(blink::WebConsoleMessage::kLevelError,
-                                   blink::WebString::FromUTF8(message)));
-      return false;
-    }
+    std::string message = base::StringPrintf(
+        "Denying load of %s. Resources must be listed in the "
+        "web_accessible_resources manifest key in order to be loaded by "
+        "pages outside the extension.",
+        resource_url.spec().c_str());
+    frame->AddMessageToConsole(
+        blink::WebConsoleMessage(blink::WebConsoleMessage::kLevelError,
+                                 blink::WebString::FromUTF8(message)));
+    return false;
   }
 
   return true;
