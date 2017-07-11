@@ -287,6 +287,7 @@ if (CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/aom_dsp/x86/fwd_dct32x32_impl_avx2.h"
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.h"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
@@ -312,6 +313,7 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
         "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
         "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_sse2.c"
+        "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
         "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c"
         "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c")
 
@@ -340,7 +342,6 @@ if (CONFIG_AV1_ENCODER)
     if (CONFIG_HIGHBITDEPTH)
       set(AOM_DSP_ENCODER_INTRIN_SSE2
           ${AOM_DSP_ENCODER_INTRIN_SSE2}
-          "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
           "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c")
     endif ()
   endif ()
@@ -363,7 +364,6 @@ if (CONFIG_AV1_ENCODER)
 
     set(AOM_DSP_ENCODER_INTRIN_AVX2
         ${AOM_DSP_ENCODER_INTRIN_AVX2}
-        "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
   endif ()
 
