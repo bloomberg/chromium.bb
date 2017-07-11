@@ -686,6 +686,7 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
 
   if (!PrivetPrintingEnabled()) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
   }
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   using local_discovery::ServiceDiscoverySharedClient;
@@ -884,13 +885,14 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
   std::string json_str;
-  if (!args->GetString(1, &json_str))
-    RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
+  CHECK(args->GetString(1, &json_str));
 
   std::unique_ptr<base::DictionaryValue> settings =
       GetSettingsDictionary(json_str);
-  if (!settings)
+  if (!settings) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
+    return;
+  }
 
   ReportPrintSettingsStats(*settings);
 
