@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/import/password_importer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,25 @@ TEST(PasswordCSVReaderTest, DeserializePasswords_SingleValid) {
   EXPECT_EQ(expected_origin.GetOrigin().spec(), passwords[0].signon_realm);
   EXPECT_EQ(base::UTF8ToUTF16("test@gmail.com"), passwords[0].username_value);
   EXPECT_EQ(base::UTF8ToUTF16("test1"), passwords[0].password_value);
+}
+
+TEST(PasswordCSVReaderTest, DeserializePasswords_SingleAndroid) {
+  constexpr char kCSVInput[] =
+      "Url,Username,Password\n"
+      "android://hash@com.example.android,test@gmail.com,test1\n";
+  std::vector<autofill::PasswordForm> passwords;
+  PasswordCSVReader reader;
+  EXPECT_EQ(PasswordImporter::SUCCESS,
+            reader.DeserializePasswords(kCSVInput, &passwords));
+  EXPECT_EQ(1u, passwords.size());
+  const GURL expected_origin("android://hash@com.example.android");
+
+  const autofill::PasswordForm& password = passwords.front();
+  EXPECT_EQ(expected_origin, password.origin);
+  EXPECT_EQ(expected_origin.spec(), password.signon_realm);
+  EXPECT_TRUE(IsValidAndroidFacetURI(password.signon_realm));
+  EXPECT_EQ(base::UTF8ToUTF16("test@gmail.com"), password.username_value);
+  EXPECT_EQ(base::UTF8ToUTF16("test1"), password.password_value);
 }
 
 TEST(PasswordCSVReaderTest, DeserializePasswords_TwoValid) {
