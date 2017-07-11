@@ -34388,9 +34388,33 @@ from previous Chrome versions.
   <int value="4" label="Used, relocked"/>
 </enum>
 
+<enum name="SoftwareReporterCleanerDownloadStatus">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Other failure"/>
+  <int value="2" label="Not found on server"/>
+  <int value="3" label="Failed to create temporary directory"/>
+</enum>
+
+<enum name="SoftwareReporterCleanupResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Reboot required"/>
+  <int value="2" label="Failed"/>
+</enum>
+
+<enum name="SoftwareReporterCleanupStarted">
+  <int value="0" label="From prompt dialog"/>
+  <int value="1" label="From prompt in Settings"/>
+</enum>
+
 <enum name="SoftwareReporterExperimentError">
   <int value="1" label="Bad tag"/>
   <int value="2" label="Bad parameters"/>
+</enum>
+
+<enum name="SoftwareReporterIPCDisconnected">
+  <int value="0" label="Success - no longer needed"/>
+  <int value="1" label="Connection lost while scanning"/>
+  <int value="2" label="Connection lost while waiting for user response"/>
 </enum>
 
 <enum name="SoftwareReporterLogsUploadEnabled">
@@ -34414,6 +34438,24 @@ from previous Chrome versions.
   <int value="1" label="Invalid registry key"/>
   <int value="2" label="Value not found"/>
   <int value="3" label="Value out of bounds"/>
+</enum>
+
+<enum name="SoftwareReporterNoPromptReason">
+  <int value="0" label="Behaviour not supported"/>
+  <int value="1" label="Feature not enabled"/>
+  <int value="2" label="Nothing found"/>
+  <int value="3" label="Already prompted"/>
+  <int value="4" label="Cleaner download failed"/>
+  <int value="5" label="Browser not available"/>
+  <int value="6" label="Not on idle state"/>
+  <int value="7" label="IPC connection broken"/>
+</enum>
+
+<enum name="SoftwareReporterPromptDialogResponse">
+  <int value="0" label="Accepted"/>
+  <int value="2" label="Details"/>
+  <int value="3" label="Cancelled"/>
+  <int value="4" label="Dismissed"/>
 </enum>
 
 <enum name="SpareWebContentsStatus">

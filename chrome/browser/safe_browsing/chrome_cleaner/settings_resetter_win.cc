@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/win/registry.h"
@@ -220,6 +221,7 @@ void PostCleanupSettingsResetter::TagForResetting(Profile* profile) {
   DCHECK(profile);
 
   RecordResetPending(true, profile);
+  UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.TaggedProfileForResetting", true);
 }
 
 void PostCleanupSettingsResetter::ResetTaggedProfiles(
@@ -236,6 +238,9 @@ void PostCleanupSettingsResetter::ResetTaggedProfiles(
     std::move(done_callback).Run();
     return;
   }
+
+  UMA_HISTOGRAM_EXACT_LINEAR("SoftwareReporter.PostCleanupSettingsReset",
+                             profiles_to_reset.size(), 10);
 
   // The SettingsResetter object will self-delete once |done_callback| is
   // invoked.

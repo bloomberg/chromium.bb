@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,6 +51,23 @@ base::FilePath::StringType CleanerTempDirectoryPrefix() {
       FILE_PATH_LITERAL("%" PRFilePath "%" PRFilePath "_%d_"),
       install_static::kProductPathName, FILE_PATH_LITERAL("Cleaner"),
       install_mode);
+}
+
+// These values are used to send UMA information and are replicated in the
+// histograms.xml file, so the order MUST NOT CHANGE.
+enum CleanerDownloadStatusHistogramValue {
+  CLEANER_DOWNLOAD_STATUS_SUCCEEDED = 0,
+  CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE = 1,
+  CLEANER_DOWNLOAD_STATUS_NOT_FOUND_ON_SERVER = 2,
+  CLEANER_DOWNLOAD_STATUS_FAILED_TO_CREATE_TEMP_DIR = 3,
+
+  CLEANER_DOWNLOAD_STATUS_MAX,
+};
+
+void RecordCleanerDownloadStatusHistogram(
+    CleanerDownloadStatusHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.DownloadStatus", value,
+                            CLEANER_DOWNLOAD_STATUS_MAX);
 }
 
 // Class that will attempt to download the Chrome Cleaner executable and call a
@@ -123,6 +141,8 @@ bool ChromeCleanerFetcher::CreateTemporaryDirectory() {
 
 void ChromeCleanerFetcher::OnTemporaryDirectoryCreated(bool success) {
   if (!success) {
+    RecordCleanerDownloadStatusHistogram(
+        CLEANER_DOWNLOAD_STATUS_FAILED_TO_CREATE_TEMP_DIR);
     PostCallbackAndDeleteSelf(
         base::FilePath(),
         ChromeCleanerFetchStatus::kFailedToCreateTemporaryDirectory);
@@ -166,6 +186,8 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(fetched_callback_);
 
   if (source->GetResponseCode() == net::HTTP_NOT_FOUND) {
+    RecordCleanerDownloadStatusHistogram(
+        CLEANER_DOWNLOAD_STATUS_NOT_FOUND_ON_SERVER);
     PostCallbackAndDeleteSelf(base::FilePath(),
                               ChromeCleanerFetchStatus::kNotFoundOnServer);
     return;
@@ -175,6 +197,7 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!source->GetStatus().is_success() ||
       source->GetResponseCode() != net::HTTP_OK ||
       !source->GetResponseAsFilePath(/*take_ownership=*/true, &download_path)) {
+    RecordCleanerDownloadStatusHistogram(CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE);
     PostCallbackAndDeleteSelf(base::FilePath(),
                               ChromeCleanerFetchStatus::kOtherFailure);
     return;
@@ -186,6 +209,7 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Take ownership of the scoped temp directory so it is not deleted.
   scoped_temp_dir_->Take();
 
+  RecordCleanerDownloadStatusHistogram(CLEANER_DOWNLOAD_STATUS_SUCCEEDED);
   PostCallbackAndDeleteSelf(std::move(download_path),
                             ChromeCleanerFetchStatus::kSuccess);
 }

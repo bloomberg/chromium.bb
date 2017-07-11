@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -143,6 +144,7 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
   DCHECK(
       base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature));
 
+  UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.CleanupCard", true);
   AllowJavascript();
 
   // Send the current logs upload state.
@@ -175,6 +177,8 @@ void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
   // The state is propagated to all open tabs and should be consistent.
   DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);
 
+  safe_browsing::RecordCleanupStartedHistogram(
+      safe_browsing::CLEANUP_STARTED_FROM_PROMPT_IN_SETTINGS);
   controller_->ReplyWithUserResponse(
       profile_,
       allow_logs_upload
