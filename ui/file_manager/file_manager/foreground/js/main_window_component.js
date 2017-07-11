@@ -98,13 +98,6 @@ function MainWindowComponent(
    */
   this.pressingTab_ = false;
 
-  /**
-   * The last clicked item in the file list.
-   * @type {HTMLLIElement}
-   * @private
-   */
-  this.lastClickedItem_ = null;
-
   // Register events.
   ui.listContainer.element.addEventListener(
       'keydown', this.onListKeyDown_.bind(this));
@@ -113,9 +106,9 @@ function MainWindowComponent(
   ui.listContainer.element.addEventListener(
       ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
   ui.listContainer.table.list.addEventListener(
-      'click', this.onDetailClick_.bind(this));
+      'dblclick', this.onDoubleClick_.bind(this));
   ui.listContainer.grid.addEventListener(
-      'click', this.onDetailClick_.bind(this));
+      'dblclick', this.onDoubleClick_.bind(this));
   ui.listContainer.table.list.addEventListener(
       'focus', this.onFileListFocus_.bind(this));
   ui.listContainer.grid.addEventListener(
@@ -159,12 +152,12 @@ MainWindowComponent.prototype.onFileListFocus_ = function() {
 };
 
 /**
- * Handles mouse click or tap.
+ * Handles a double click event.
  *
- * @param {Event} event The click event.
+ * @param {Event} event The dblclick event.
  * @private
  */
-MainWindowComponent.prototype.onDetailClick_ = function(event) {
+MainWindowComponent.prototype.onDoubleClick_ = function(event) {
   if (this.namingController_.isRenamingInProgress()) {
     // Don't pay attention to clicks during a rename.
     return;
@@ -172,18 +165,12 @@ MainWindowComponent.prototype.onDetailClick_ = function(event) {
 
   var listItem = this.ui_.listContainer.findListItemForNode(
       event.touchedElement || event.srcElement);
+  // It is expected that the target item should have already been selected in
+  // LiseSelectionController.handlePointerDownUp on preceding mousedown event.
   var selection = this.selectionHandler_.selection;
   if (!listItem || !listItem.selected || selection.totalCount != 1) {
     return;
   }
-
-  // React on double click, but only if both clicks hit the same item.
-  // TODO(mtomasz): Simplify it, and use a double click handler if possible.
-  var clickNumber = (this.lastClickedItem_ == listItem) ? 2 : undefined;
-  this.lastClickedItem_ = listItem;
-
-  if (event.detail != clickNumber)
-    return;
 
   var entry = selection.entries[0];
   if (entry.isDirectory) {
