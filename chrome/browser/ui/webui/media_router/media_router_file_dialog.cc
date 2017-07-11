@@ -8,6 +8,8 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/issue.h"
