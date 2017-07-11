@@ -671,8 +671,6 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
   // Pretend we are on WiFi (already done in ctor, we make it explicit here).
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(true));
-  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 8h time
-  // interval by default for shown trigger on WiFi.
 
   // Initial scheduling after being enabled.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
@@ -687,12 +685,15 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForShownTriggerOnWifi) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   signal_fetch_done.Run(Status::Success());
 
-  // Open NTP again after too short delay. This time no fetch is executed.
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  // Open NTP again after too short delay (one minute missing). UserClassifier
+  // defaults to UserClass::ACTIVE_NTP_USER - we work with the default interval
+  // for this class here. This time no fetch is executed.
+  test_clock()->Advance(base::TimeDelta::FromHours(10) -
+                        base::TimeDelta::FromMinutes(1));
   scheduler()->OnNTPOpened();
 
   // Open NTP after another delay, now together long enough to issue a fetch.
-  test_clock()->Advance(base::TimeDelta::FromHours(7));
+  test_clock()->Advance(base::TimeDelta::FromMinutes(2));
   EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnNTPOpened();
 }
