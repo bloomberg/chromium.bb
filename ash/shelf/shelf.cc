@@ -142,7 +142,9 @@ aura::Window* Shelf::GetWindow() {
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {
-  DCHECK(shelf_layout_manager_);
+  // Checks added for http://crbug.com/738011.
+  CHECK(shelf_widget_);
+  CHECK(shelf_layout_manager_);
 
   if (alignment_ == alignment)
     return;
