@@ -189,7 +189,8 @@ Polymer({
     var i = 0;
     do {
       var target = e.path[i++];
-      if (target.classList && target.classList.contains('dropdown-item')) {
+      if (target.classList && target.classList.contains('dropdown-item') &&
+          !target.disabled) {
         target.focus();
         return;
       }

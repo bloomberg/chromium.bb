@@ -174,6 +174,12 @@ suite('CrActionMenu', function() {
     assertNotEquals(items[0], menu.root.activeElement);
     assertEquals(menu, document.activeElement);
 
+    // Moving mouse on a disabled item should focus the menu.
+    items[2].setAttribute('disabled', '');
+    makeMouseoverEvent(items[2]);
+    assertNotEquals(items[2], menu.root.activeElement);
+    assertEquals(menu, document.activeElement);
+
     // Mouse movements should override keyboard focus.
     down();
     down();
