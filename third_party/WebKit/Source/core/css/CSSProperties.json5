@@ -1467,7 +1467,7 @@
       name: "image-rendering",
       inherited: true,
       field_template: "keyword",
-      keywords: ["auto", "optimize-speed", "optimize-quality", "-webkit-optimize-contrast", "pixelated"],
+      keywords: ["auto", "optimizeSpeed", "optimizeQuality", "-webkit-optimize-contrast", "pixelated"],
       default_value: "auto",
       field_group: "rare-inherited",
     },
@@ -2476,7 +2476,7 @@
       field_template: "keyword",
       getter: "GetTextAlign",
       keywords: [
-        "left", "right", "center", "justify", "webkitLeft", "webkitRight", "webkitCenter", "start", "end",
+        "left", "right", "center", "justify", "-webkit-left", "-webkit-right", "-webkit-center", "start", "end",
       ],
     },
     {
