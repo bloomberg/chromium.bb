@@ -1191,36 +1191,40 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     // for vertical writing modes).
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return position;
-    return LogicalHeight() - position;
+    DCHECK(!IsHorizontalWritingMode());
+    return frame_rect_.Width() - position;
   }
   WARN_UNUSED_RESULT LayoutPoint
   FlipForWritingMode(const LayoutPoint& position) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return position;
-    return IsHorizontalWritingMode()
-               ? LayoutPoint(position.X(), frame_rect_.Height() - position.Y())
-               : LayoutPoint(frame_rect_.Width() - position.X(), position.Y());
+    DCHECK(!IsHorizontalWritingMode());
+    return LayoutPoint(frame_rect_.Width() - position.X(), position.Y());
   }
   WARN_UNUSED_RESULT LayoutSize
   FlipForWritingMode(const LayoutSize& offset) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return offset;
+    DCHECK(!IsHorizontalWritingMode());
     return LayoutSize(frame_rect_.Width() - offset.Width(), offset.Height());
   }
   void FlipForWritingMode(LayoutRect& rect) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return;
+    DCHECK(!IsHorizontalWritingMode());
     rect.SetX(frame_rect_.Width() - rect.MaxX());
   }
   WARN_UNUSED_RESULT FloatPoint
   FlipForWritingMode(const FloatPoint& position) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return position;
+    DCHECK(!IsHorizontalWritingMode());
     return FloatPoint(frame_rect_.Width() - position.X(), position.Y());
   }
   void FlipForWritingMode(FloatRect& rect) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return;
+    DCHECK(!IsHorizontalWritingMode());
     rect.SetX(frame_rect_.Width() - rect.MaxX());
   }
 
