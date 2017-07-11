@@ -62,9 +62,11 @@ enum {
 @synthesize canGoForward = _canGoForward;
 @synthesize canGoBack = _canGoBack;
 
-- (instancetype)initWithDispatcher:
-    (id<BrowserCommands, OmniboxFocuser, UrlLoader, WebToolbarDelegate>)
-        dispatcher {
+- (instancetype)initWithDispatcher:(id<ApplicationCommands,
+                                       BrowserCommands,
+                                       OmniboxFocuser,
+                                       UrlLoader,
+                                       WebToolbarDelegate>)dispatcher {
   self = [super initWithStyle:ToolbarControllerStyleLightMode
                    dispatcher:dispatcher];
   if (self) {

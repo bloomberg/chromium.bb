@@ -13,6 +13,7 @@
 @property(nonatomic, copy) NSString* accessibilityIdentifier;
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, assign) NSInteger tag;
+@property(nonatomic, assign) SEL selector;
 @property(nonatomic, assign) BOOL active;
 @property(nonatomic, weak) ToolsMenuViewCell* tableViewCell;
 
@@ -21,6 +22,7 @@
 
 + (instancetype)menuItemWithTitle:(NSString*)title
           accessibilityIdentifier:(NSString*)accessibilityIdentifier
+                         selector:(SEL)selector
                           command:(int)commandID;
 @end
 

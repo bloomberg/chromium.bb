@@ -18,6 +18,7 @@ struct MenuItemInfo {
   int title_id;
   NSString* accessibility_id;
   int command_id;
+  SEL selector;
   int toolbar_types;
   // |visibility| is applied if a menu item is included for a given
   // |toolbar_types|. A value of 0 means the menu item is always visible for

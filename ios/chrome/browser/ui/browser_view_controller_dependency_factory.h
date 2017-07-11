@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 
 @class AlertCoordinator;
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class KeyCommandsProvider;
 @class MessageBubbleView;
@@ -67,7 +68,8 @@ extern NSString* const kBrowserViewControllerSnackbarCategory;
 newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                           urlLoader:(id<UrlLoader>)urlLoader
                     preloadProvider:(id<PreloadProvider>)preload
-                         dispatcher:(id<BrowserCommands>)dispatcher;
+                         dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                        dispatcher;
 
 // Returns a new keyboard commands coordinator to handle keyboard commands.
 - (KeyCommandsProvider*)newKeyCommandsProvider;

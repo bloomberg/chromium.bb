@@ -248,11 +248,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
     Class itemClass =
         item.item_class ? item.item_class : [ToolsMenuViewItem class];
     // Sanity check that the class is a useful one.
-    DCHECK([itemClass respondsToSelector:@selector(menuItemWithTitle:
-                                             accessibilityIdentifier:
-                                                             command:)]);
+    DCHECK([itemClass
+        respondsToSelector:@selector
+        (menuItemWithTitle:accessibilityIdentifier:selector:command:)]);
     [menu addObject:[itemClass menuItemWithTitle:title
                          accessibilityIdentifier:item.accessibility_id
+                                        selector:item.selector
                                          command:item.command_id]];
   }
 
@@ -298,6 +299,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (ToolsMenuViewItem*)createViewSourceItem {
   return [ToolsMenuViewItem menuItemWithTitle:@"View Source"
                       accessibilityIdentifier:@"View Source"
+                                     selector:nullptr
                                       command:IDC_VIEW_SOURCE];
 }
 #endif  // !defined(NDEBUG)
@@ -565,7 +567,17 @@ NS_INLINE void AnimateInViews(NSArray* views,
         ToolsMenuViewItem* menuItem = [_menuItems objectAtIndex:item];
         DCHECK([menuItem tag]);
         [_delegate commandWasSelected:[menuItem tag]];
-        [self chromeExecuteCommand:menuItem];
+        if ([menuItem tag] > 0) {
+          [self chromeExecuteCommand:menuItem];
+        } else {
+          DCHECK([menuItem selector]);
+          DCHECK([self.dispatcher respondsToSelector:[menuItem selector]]);
+// TODO(crbug.com/738881): Find a better way to call these methods.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+          [self.dispatcher performSelector:[menuItem selector]];
+#pragma clang diagnostic pop
+        }
       });
 }
 

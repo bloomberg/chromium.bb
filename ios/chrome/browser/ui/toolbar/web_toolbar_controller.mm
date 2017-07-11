@@ -371,7 +371,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                        urlLoader:(id<UrlLoader>)urlLoader
                     browserState:(ios::ChromeBrowserState*)browserState
                  preloadProvider:(id<PreloadProvider>)preloader
-                      dispatcher:(id<BrowserCommands>)dispatcher {
+                      dispatcher:
+                          (id<ApplicationCommands, BrowserCommands>)dispatcher {
   DCHECK(delegate);
   DCHECK(urlLoader);
   DCHECK(browserState);

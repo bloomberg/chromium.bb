@@ -22,7 +22,7 @@ TEST(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
-  id<BrowserCommands> dispatcher = nil;
+  id<ApplicationCommands, BrowserCommands> dispatcher = nil;
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
 
   EXPECT_NE(nil, [provider keyCommandsForConsumer:mockConsumer
@@ -34,7 +34,7 @@ TEST(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
-  id<BrowserCommands> dispatcher = nil;
+  id<ApplicationCommands, BrowserCommands> dispatcher = nil;
 
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
 
@@ -49,7 +49,7 @@ TEST(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
-  id<BrowserCommands> dispatcher = nil;
+  id<ApplicationCommands, BrowserCommands> dispatcher = nil;
 
   // No tabs.
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
@@ -72,7 +72,7 @@ TEST(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
-  id<BrowserCommands> dispatcher = nil;
+  id<ApplicationCommands, BrowserCommands> dispatcher = nil;
 
   // Not editing text.
   [[[mockConsumer expect] andReturnUnsignedInteger:1] tabsCount];

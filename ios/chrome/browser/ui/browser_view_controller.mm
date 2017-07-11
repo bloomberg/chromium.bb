@@ -95,6 +95,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -938,10 +939,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - Object lifecycle
 
-- (instancetype)initWithTabModel:(TabModel*)model
-                    browserState:(ios::ChromeBrowserState*)browserState
-               dependencyFactory:
-                   (BrowserViewControllerDependencyFactory*)factory {
+- (instancetype)
+          initWithTabModel:(TabModel*)model
+              browserState:(ios::ChromeBrowserState*)browserState
+         dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
+applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];
   if (self) {
     DCHECK(factory);
@@ -959,6 +961,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                               forSelector:@selector(chromeExecuteCommand:)];
     [_dispatcher startDispatchingToTarget:self
                               forProtocol:@protocol(BrowserCommands)];
+    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+                              forProtocol:@protocol(ApplicationCommands)];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
@@ -1000,8 +1004,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - Properties
 
-- (id<BrowserCommands>)dispatcher {
-  return static_cast<id<BrowserCommands>>(_dispatcher);
+- (id<ApplicationCommands, BrowserCommands>)dispatcher {
+  return static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
 }
 
 - (void)setActive:(BOOL)active {

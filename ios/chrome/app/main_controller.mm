@@ -362,8 +362,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
 - (void)displayCurrentBVC;
-// Shows the settings UI.
-- (void)showSettings;
 // Shows the accounts settings UI.
 - (void)showAccountsSettings;
 // Shows the Sync settings UI.
@@ -682,7 +680,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
-                                       tabModelObserver:self];
+                                       tabModelObserver:self
+                             applicationCommandEndpoint:self];
   // Ensure the main tab model is created.
   ignore_result([_browserViewWrangler mainTabModel]);
 
@@ -1382,9 +1381,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_OPEN_URL:
       [self openUrl:base::mac::ObjCCast<OpenUrlCommand>(sender)];
       break;
-    case IDC_OPTIONS:
-      [self showSettings];
-      break;
     case IDC_REPORT_AN_ISSUE: {
       dispatch_async(dispatch_get_main_queue(), ^{
         [self showReportAnIssue];
@@ -1731,10 +1727,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                    otrTabModel:self.otrTabModel
                 activeTabModel:self.currentTabModel];
     } else {
-      _tabSwitcherController = [[StackViewController alloc]
-          initWithMainTabModel:self.mainTabModel
-                   otrTabModel:self.otrTabModel
-                activeTabModel:self.currentTabModel];
+      _tabSwitcherController =
+          [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
+                                                otrTabModel:self.otrTabModel
+                                             activeTabModel:self.currentTabModel
+                                 applicationCommandEndpoint:self];
     }
   } else {
     // The StackViewController is kept in memory to avoid the performance hit of
@@ -2544,7 +2541,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:nullptr
-                                       tabModelObserver:self];
+                                       tabModelObserver:self
+                             applicationCommandEndpoint:self];
   // This is a test utility method that bypasses the ususal setup steps, so
   // verify that the main coordinator hasn't been created yet, then start it
   // via lazy initialization.

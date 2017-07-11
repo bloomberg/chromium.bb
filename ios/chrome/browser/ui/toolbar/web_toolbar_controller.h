@@ -13,6 +13,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/web/public/navigation_item_list.h"
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol PreloadProvider;
 @class Tab;
@@ -98,7 +99,8 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
                        urlLoader:(id<UrlLoader>)urlLoader
                     browserState:(ios::ChromeBrowserState*)browserState
                  preloadProvider:(id<PreloadProvider>)preloader
-                      dispatcher:(id<BrowserCommands>)dispatcher
+                      dispatcher:
+                          (id<ApplicationCommands, BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 // Called when the browser state this object was initialized with is being

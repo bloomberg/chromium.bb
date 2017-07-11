@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class PopupMenuController;
 @class PopupMenuView;
@@ -34,7 +35,7 @@
 // Delegate for the popup menu.
 @property(nonatomic, weak) id<PopupMenuDelegate> delegate;
 // Dispatcher for browser commands.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Initializes the PopupMenuController and adds its views inside of parent.
 - (id)initWithParentView:(UIView*)parent;

@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class NewTabButton;
 
 // Toolbar controller for the card stack view, adding a new tab button.
@@ -16,7 +18,8 @@
 
 @property(nonatomic, readonly) NewTabButton* openNewTabButton;
 
-- (instancetype)initWithStackViewToolbar;
+- (instancetype)initWithDispatcher:
+    (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
 @end
 

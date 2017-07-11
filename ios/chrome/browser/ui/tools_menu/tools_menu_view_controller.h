@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolsMenuConfiguration;
 
@@ -61,7 +62,7 @@ extern NSString* const kToolsMenuRequestMobileId;
 @property(nonatomic, weak) id<ToolsPopupTableDelegate> delegate;
 
 // Dispatcher for browser commands.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Initializes the Tools popup menu.
 - (void)initializeMenuWithConfiguration:(ToolsMenuConfiguration*)configuration;

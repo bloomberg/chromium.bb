@@ -28,6 +28,8 @@ typedef enum {
 - (instancetype)initWithMainCardSet:(CardSet*)mainCardSet
                          otrCardSet:(CardSet*)otrCardSet
                       activeCardSet:(CardSet*)activeCardSet
+         applicationCommandEndpoint:
+             (id<ApplicationCommands>)applicationCommandEndpoint
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

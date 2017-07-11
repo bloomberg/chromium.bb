@@ -48,7 +48,8 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
 @synthesize isCurrentPageBookmarked = _isCurrentPageBookmarked;
 
 - (instancetype)initWithConfiguration:(ToolsMenuConfiguration*)configuration
-                           dispatcher:(id<BrowserCommands>)dispatcher {
+                           dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                          dispatcher {
   DCHECK(configuration.displayView);
   self = [super initWithParentView:configuration.displayView];
   if (self) {
@@ -187,7 +188,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_NEW_TAB:
       base::RecordAction(UserMetricsAction("MobileMenuNewTab"));
       break;
-    case IDC_OPTIONS:
+    case TOOLS_SETTINGS_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuSettings"));
       break;
     case TOOLS_RELOAD_ITEM:

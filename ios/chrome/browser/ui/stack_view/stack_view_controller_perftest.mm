@@ -295,7 +295,8 @@ void StackViewControllerPerfTest::MainControllerShowTabSwitcher() {
     view_controller_ =
         [[StackViewController alloc] initWithMainTabModel:tab_model_
                                               otrTabModel:otr_tab_model_
-                                           activeTabModel:tab_model_];
+                                           activeTabModel:tab_model_
+                               applicationCommandEndpoint:nil];
   } else {
     [view_controller_ restoreInternalStateWithMainTabModel:tab_model_
                                                otrTabModel:otr_tab_model_

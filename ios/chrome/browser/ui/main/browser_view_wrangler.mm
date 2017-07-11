@@ -29,6 +29,7 @@
 @interface BrowserViewWrangler ()<TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
   __unsafe_unretained id<TabModelObserver> _tabModelObserver;
+  __weak id<ApplicationCommands> _applicationCommandEndpoint;
   BOOL _isShutdown;
 }
 
@@ -67,10 +68,13 @@
 @synthesize deviceSharingManager = _deviceSharingManager;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                    tabModelObserver:(id<TabModelObserver>)tabModelObserver {
+                    tabModelObserver:(id<TabModelObserver>)tabModelObserver
+          applicationCommandEndpoint:
+              (id<ApplicationCommands>)applicationCommandEndpoint {
   if ((self = [super init])) {
     _browserState = browserState;
     _tabModelObserver = tabModelObserver;
+    _applicationCommandEndpoint = applicationCommandEndpoint;
   }
   return self;
 }
@@ -386,9 +390,11 @@
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
           initWithBrowserState:browserState];
-  return [[BrowserViewController alloc] initWithTabModel:tabModel
-                                            browserState:browserState
-                                       dependencyFactory:factory];
+  return [[BrowserViewController alloc]
+                initWithTabModel:tabModel
+                    browserState:browserState
+               dependencyFactory:factory
+      applicationCommandEndpoint:_applicationCommandEndpoint];
 }
 
 @end

@@ -249,9 +249,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     tab_ = currentTab;
     dependencyFactory_ = factory;
     bvc_ = [[BrowserViewController alloc]
-         initWithTabModel:tabModel_
-             browserState:chrome_browser_state_.get()
-        dependencyFactory:factory];
+                  initWithTabModel:tabModel_
+                      browserState:chrome_browser_state_.get()
+                 dependencyFactory:factory
+        applicationCommandEndpoint:nil];
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =

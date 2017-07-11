@@ -374,7 +374,7 @@ enum class SnapshotViewOption {
   return _delegate;
 }
 
-- (id<BrowserCommands>)dispatcher {
+- (id<ApplicationCommands, BrowserCommands>)dispatcher {
   // TODO(crbug.com/738881) add a dispatcher instance to this class and
   // return it here when needed.
   return nil;
