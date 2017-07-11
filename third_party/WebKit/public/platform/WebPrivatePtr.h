@@ -282,6 +282,7 @@ class WebPrivatePtr {
   }
 
   bool IsNull() const { return !storage_; }
+  explicit operator bool() const { return !IsNull(); }
 
 #if INSIDE_BLINK
   template <typename U>

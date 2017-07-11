@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class WebSecurityOriginPrivate : public SecurityOrigin {};
-
 WebSecurityOrigin WebSecurityOrigin::CreateFromString(const WebString& origin) {
   return WebSecurityOrigin(SecurityOrigin::CreateFromString(origin));
 }
@@ -61,15 +59,11 @@ WebSecurityOrigin WebSecurityOrigin::CreateUnique() {
 }
 
 void WebSecurityOrigin::Reset() {
-  Assign(0);
+  private_ = nullptr;
 }
 
 void WebSecurityOrigin::Assign(const WebSecurityOrigin& other) {
-  WebSecurityOriginPrivate* p =
-      const_cast<WebSecurityOriginPrivate*>(other.private_);
-  if (p)
-    p->Ref();
-  Assign(p);
+  private_ = other.private_;
 }
 
 WebString WebSecurityOrigin::Protocol() const {
@@ -107,7 +101,7 @@ bool WebSecurityOrigin::IsUnique() const {
 bool WebSecurityOrigin::CanAccess(const WebSecurityOrigin& other) const {
   DCHECK(private_);
   DCHECK(other.private_);
-  return private_->CanAccess(other.private_);
+  return private_->CanAccess(other.private_.Get());
 }
 
 bool WebSecurityOrigin::CanRequest(const WebURL& url) const {
@@ -131,28 +125,20 @@ bool WebSecurityOrigin::CanAccessPasswordManager() const {
 }
 
 WebSecurityOrigin::WebSecurityOrigin(WTF::RefPtr<SecurityOrigin> origin)
-    : private_(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef())) {}
+    : private_(std::move(origin)) {}
 
 WebSecurityOrigin& WebSecurityOrigin::operator=(
     WTF::RefPtr<SecurityOrigin> origin) {
-  Assign(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef()));
+  private_ = std::move(origin);
   return *this;
 }
 
 WebSecurityOrigin::operator WTF::RefPtr<SecurityOrigin>() const {
-  return RefPtr<SecurityOrigin>(
-      const_cast<WebSecurityOriginPrivate*>(private_));
+  return private_.Get();
 }
 
 SecurityOrigin* WebSecurityOrigin::Get() const {
-  return private_;
-}
-
-void WebSecurityOrigin::Assign(WebSecurityOriginPrivate* p) {
-  // p is already ref'd for us by the caller
-  if (private_)
-    private_->Deref();
-  private_ = p;
+  return private_.Get();
 }
 
 void WebSecurityOrigin::GrantLoadLocalResources() const {
