@@ -219,6 +219,46 @@ void FindXCTestFilesForApplicationTargets(
   }
 }
 
+// Add all source files for indexing, both private and public.
+void AddSourceFilesToProjectForIndexing(
+    const std::vector<const Target*>& targets,
+    PBXProject* project,
+    SourceDir source_dir,
+    const BuildSettings* build_settings) {
+  std::vector<SourceFile> sources;
+  for (const Target* target : targets) {
+    for (const SourceFile& source : target->sources()) {
+      if (IsStringInOutputDir(build_settings->build_dir(), source.value()))
+        continue;
+
+      sources.push_back(source);
+    }
+
+    if (target->all_headers_public())
+      continue;
+
+    for (const SourceFile& source : target->public_headers()) {
+      if (IsStringInOutputDir(build_settings->build_dir(), source.value()))
+        continue;
+
+      sources.push_back(source);
+    }
+  }
+
+  // Sort sources to ensure determinism of the project file generation and
+  // remove duplicate reference to the source files (can happen due to the
+  // bundle_data targets).
+  std::sort(sources.begin(), sources.end());
+  sources.erase(std::unique(sources.begin(), sources.end()), sources.end());
+
+  for (const SourceFile& source : sources) {
+    std::string source_file = RebasePath(source.value(), source_dir,
+                                         build_settings->root_path_utf8());
+    project->AddSourceFileToIndexingTarget(source_file, source_file,
+                                           CompilerFlags::NONE);
+  }
+}
+
 class CollectPBXObjectsPerClassHelper : public PBXObjectVisitor {
  public:
   CollectPBXObjectsPerClassHelper() {}
@@ -419,41 +459,10 @@ void XcodeWriter::CreateProductsProject(
     TargetOsType target_os) {
   std::unique_ptr<PBXProject> main_project(
       new PBXProject("products", config_name, source_path, attributes));
+
   SourceDir source_dir("//");
-
-  // Add all source files for indexing, both private and public.
-  std::vector<SourceFile> sources;
-  for (const Target* target : all_targets) {
-    for (const SourceFile& source : target->sources()) {
-      if (IsStringInOutputDir(build_settings->build_dir(), source.value()))
-        continue;
-
-      sources.push_back(source);
-    }
-
-    if (target->all_headers_public())
-      continue;
-
-    for (const SourceFile& source : target->public_headers()) {
-      if (IsStringInOutputDir(build_settings->build_dir(), source.value()))
-        continue;
-
-      sources.push_back(source);
-    }
-  }
-
-  // Sort sources to ensure determinisn of the project file generation and
-  // remove duplicate reference to the source files (can happen due to the
-  // bundle_data targets).
-  std::sort(sources.begin(), sources.end());
-  sources.erase(std::unique(sources.begin(), sources.end()), sources.end());
-
-  for (const SourceFile& source : sources) {
-    std::string source_file = RebasePath(source.value(), source_dir,
-                                         build_settings->root_path_utf8());
-    main_project->AddSourceFileToIndexingTarget(source_file, source_file,
-                                                CompilerFlags::NONE);
-  }
+  AddSourceFilesToProjectForIndexing(all_targets, main_project.get(),
+                                     source_dir, build_settings);
 
   // Filter xctest module and application targets and find list of xctest files
   // recursively under them.
