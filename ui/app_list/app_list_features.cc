@@ -17,8 +17,8 @@ const base::Feature kEnableAnswerCardDarkRun{"EnableAnswerCardDarkRun",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableFullscreenAppList{"EnableFullscreenAppList",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnablePlaystoreAppSearch{
-    "EnablePlaystoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnablePlayStoreAppSearch{
+    "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   static const bool enabled = base::FeatureList::IsEnabled(kEnableAnswerCard);
@@ -42,9 +42,9 @@ bool IsSearchResultsNewDesignEnabled() {
          (IsAnswerCardEnabled() && !IsAnswerCardDarkRunEnabled());
 }
 
-bool IsPlaystoreAppSearchEnabled() {
+bool IsPlayStoreAppSearchEnabled() {
   static const bool enabled =
-      base::FeatureList::IsEnabled(kEnablePlaystoreAppSearch);
+      base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
   return enabled;
 }
 

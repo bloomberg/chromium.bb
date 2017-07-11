@@ -121,11 +121,14 @@ std::unique_ptr<SearchController> CreateSearchController(
   }
 
 #if defined(OS_CHROMEOS)
-  size_t playstore_api_group_id =
-      controller->AddGroup(kMaxPlayStoreResults, 1.0);
-  controller->AddProvider(playstore_api_group_id,
-                          base::MakeUnique<ArcPlayStoreSearchProvider>(
-                              kMaxPlayStoreResults, profile, list_controller));
+  if (features::IsPlayStoreAppSearchEnabled()) {
+    size_t playstore_api_group_id =
+        controller->AddGroup(kMaxPlayStoreResults, 1.0);
+    controller->AddProvider(
+        playstore_api_group_id,
+        base::MakeUnique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
+                                                     profile, list_controller));
+  }
 #endif
   return controller;
 }

@@ -5,6 +5,8 @@
 #ifndef UI_APP_LIST_VIEWS_TILE_ITEM_VIEW_H_
 #define UI_APP_LIST_VIEWS_TILE_ITEM_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"

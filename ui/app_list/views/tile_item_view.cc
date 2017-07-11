@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/tile_item_view.h"
 
+#include <utility>
+
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -66,7 +68,7 @@ TileItemView::TileItemView()
   title_->SetHandlesTooltips(false);
 
   AddChildView(icon_);
-  if (features::IsFullscreenAppListEnabled()) {
+  if (features::IsPlayStoreAppSearchEnabled()) {
     badge_ = new views::ImageView();
     badge_->set_can_process_events_within_subtree(false);
     badge_->SetVerticalAlignment(views::ImageView::LEADING);

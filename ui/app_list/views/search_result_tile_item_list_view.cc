@@ -45,8 +45,9 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
     : search_box_(search_box),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
-  if (is_fullscreen_app_list_enabled_) {
+      is_play_store_app_search_enabled_(
+          features::IsPlayStoreAppSearchEnabled()) {
+  if (is_play_store_app_search_enabled_) {
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal,
         gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
@@ -113,10 +114,10 @@ int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_TILE,
-          is_fullscreen_app_list_enabled_ ? kMaxNumSearchResultTiles
-                                          : kNumSearchResultTiles);
+          is_play_store_app_search_enabled_ ? kMaxNumSearchResultTiles
+                                            : kNumSearchResultTiles);
 
-  if (is_fullscreen_app_list_enabled_) {
+  if (is_play_store_app_search_enabled_) {
     SearchResult::ResultType previous_type = SearchResult::RESULT_UNKNOWN;
 
     for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
