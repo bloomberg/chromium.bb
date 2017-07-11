@@ -10,9 +10,9 @@ namespace blink {
 // These values map to the features which can be controlled by Feature Policy.
 //
 // Features are defined in
-// https://wicg.github.io/feature-policy/#defined-features. Many of these are
-// still under development in blink behind the featurePolicyExperimentalFeatures
-// flag, see getWebFeaturePolicyFeature().
+// https://github.com/WICG/feature-policy/blob/gh-pages/features.md. Many of
+// these are still under development in blink behind the
+// featurePolicyExperimentalFeatures flag, see getWebFeaturePolicyFeature().
 enum class WebFeaturePolicyFeature {
   kNotFound = 0,
   // Controls access to video input devices.

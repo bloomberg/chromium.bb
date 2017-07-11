@@ -30,6 +30,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
+#include "public/platform/WebFeaturePolicyFeature.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
@@ -330,6 +331,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   UseCounter::Count(*document, WebFeature::kEncryptedMediaSecureOrigin);
   UseCounter::CountCrossOriginIframe(
       *document, WebFeature::kEncryptedMediaCrossOriginIframe);
+  Deprecation::CountDeprecationFeaturePolicy(*document,
+                                             WebFeaturePolicyFeature::kEme);
 
   // 4. Let origin be the origin of document.
   //    (Passed with the execution context.)

@@ -15766,6 +15766,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2052" label="ReportUriMultipleEndpoints"/>
   <int value="2053" label="ReportUriSingleEndpoint"/>
   <int value="2054" label="V8ConstructorNonUndefinedPrimitiveReturn"/>
+  <int value="2055"
+      label="EncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe"/>
+  <int value="2056"
+      label="GeolocationDisallowedByFeaturePolicyInCrossOriginIframe"/>
+  <int value="2057"
+      label="GetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe"/>
+  <int value="2058"
+      label="GetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe"/>
+  <int value="2059"
+      label="RequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -41,6 +41,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFeaturePolicyFeature.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -151,6 +152,8 @@ void Geolocation::RecordOriginTypeAccess() const {
     UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
     UseCounter::CountCrossOriginIframe(
         *document, WebFeature::kGeolocationSecureOriginIframe);
+    Deprecation::CountDeprecationFeaturePolicy(
+        *document, WebFeaturePolicyFeature::kGeolocation);
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
@@ -165,6 +168,8 @@ void Geolocation::RecordOriginTypeAccess() const {
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
+    Deprecation::CountDeprecationFeaturePolicy(
+        *document, WebFeaturePolicyFeature::kGeolocation);
   } else {
     Deprecation::CountDeprecation(document,
                                   WebFeature::kGeolocationInsecureOrigin);
