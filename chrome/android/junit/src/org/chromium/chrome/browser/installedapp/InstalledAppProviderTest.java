@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.installedapp;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -31,9 +32,9 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /** Ensure that the InstalledAppProvider returns the correct apps. */
 @RunWith(LocalRobolectricTestRunner.class)
@@ -47,8 +48,6 @@ public class InstalledAppProviderTest {
             InstalledAppProviderImpl.ASSET_STATEMENT_NAMESPACE_WEB;
     private static final String PLATFORM_ANDROID =
             InstalledAppProviderImpl.RELATED_APP_PLATFORM_ANDROID;
-    private static final String PLATFORM_INSTANT_APP =
-            InstalledAppProviderImpl.RELATED_APP_PLATFORM_INSTANT_APP;
     private static final String PLATFORM_OTHER = "itunes";
     // Note: Android package name and origin deliberately unrelated (there is no requirement that
     // they be the same).
@@ -66,8 +65,6 @@ public class InstalledAppProviderTest {
     private static final String ORIGIN_DIFFERENT_SCHEME = "http://example.com:8000";
     private static final String ORIGIN_DIFFERENT_HOST = "https://example.org:8000";
     private static final String ORIGIN_DIFFERENT_PORT = "https://example.com:8001";
-    private static final String INSTANT_APP_URL_1 = "https://example.com/app1";
-    private static final String INSTANT_APP_URL_2 = "https://example.com/app2";
 
     private FakePackageManager mPackageManager;
     private FakeFrameUrlDelegate mFrameUrlDelegate;
@@ -98,18 +95,18 @@ public class InstalledAppProviderTest {
      * proper GMSCore calls.
      */
     private static class FakeInstantAppsHandler extends InstantAppsHandler {
-        private final Set<Pair<String, Boolean>> mRelatedApplicationSet;
+        private final List<Pair<String, Boolean>> mRelatedApplicationList;
 
         public FakeInstantAppsHandler() {
-            mRelatedApplicationSet = new HashSet<Pair<String, Boolean>>();
+            mRelatedApplicationList = new ArrayList<Pair<String, Boolean>>();
         }
 
         public void addInstantApp(String url, boolean holdback) {
-            mRelatedApplicationSet.add(Pair.create(url, holdback));
+            mRelatedApplicationList.add(Pair.create(url, holdback));
         }
 
         public void resetForTest() {
-            mRelatedApplicationSet.clear();
+            mRelatedApplicationList.clear();
         }
 
         // TODO(thildebr): When the implementation of isInstantAppAvailable is complete, we need to
@@ -117,7 +114,12 @@ public class InstalledAppProviderTest {
         // around the GMSCore functionality we need and override that here instead.
         @Override
         public boolean isInstantAppAvailable(String url, boolean checkHoldback) {
-            return mRelatedApplicationSet.contains(Pair.create(url, checkHoldback));
+            for (Pair<String, Boolean> pair : mRelatedApplicationList) {
+                if (url.startsWith(pair.first) && checkHoldback == pair.second) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -853,18 +855,18 @@ public class InstalledAppProviderTest {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null),
                 createRelatedApplication(PLATFORM_OTHER, PACKAGE_NAME_2, null),
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_3, null),
-                createRelatedApplication(PLATFORM_INSTANT_APP, null, INSTANT_APP_URL_1),
-                createRelatedApplication(PLATFORM_INSTANT_APP,
-                        InstalledAppProviderImpl.HOLDBACK_STRING, INSTANT_APP_URL_1),
-                createRelatedApplication(PLATFORM_INSTANT_APP, null, INSTANT_APP_URL_2)};
+
+                // Instant Apps:
+                createRelatedApplication(
+                        PLATFORM_ANDROID, InstalledAppProviderImpl.INSTANT_APP_ID_STRING, ORIGIN),
+                createRelatedApplication(PLATFORM_ANDROID,
+                        InstalledAppProviderImpl.INSTANT_APP_HOLDBACK_ID_STRING, ORIGIN)};
 
         setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        mFakeInstantAppsHandler.addInstantApp(ORIGIN, true);
 
-        mFakeInstantAppsHandler.addInstantApp(INSTANT_APP_URL_1, true);
-        mFakeInstantAppsHandler.addInstantApp(INSTANT_APP_URL_2, false);
-
-        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {
-                manifestRelatedApps[0], manifestRelatedApps[5], manifestRelatedApps[6]};
+        RelatedApplication[] expectedInstalledRelatedApps =
+                new RelatedApplication[] {manifestRelatedApps[0], manifestRelatedApps[5]};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }
 }
