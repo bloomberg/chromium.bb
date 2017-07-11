@@ -173,7 +173,6 @@
                   'chrome/browser/android/banners/|'\
                   'chrome/browser/banners/|'\
                   'chrome/browser/ui/android/infobars/app_banner_.*|'\
-                  'chrome/renderer/banners/|'\
                   'third_party/WebKit/public/platform/modules/app_banner/|'\
                   'third_party/WebKit/Source/modules/app_banner/',
     },
@@ -577,6 +576,9 @@
       'filepath': 'content/browser/renderer_host/input|'\
                   'content/renderer/input|'\
                   'ui/events/blink/'
+    },
+    'installable': {
+      'filepath': 'chrome/browser/installable/',
     },
     'installer': {
       'filepath': 'chrome/install(_static|er)/',
@@ -1664,7 +1666,8 @@
                     'dtrainor+watch@chromium.org'],
     'android_uma_settings': ['asvitkine+watch@chromium.org',
                              'gayane+watch@chromium.org'],
-    'android_webapk': ['zpeng+watch@chromium.org'],
+    'android_webapk': ['dominickn+watch@chromium.org',
+                       'zpeng+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['mgiuca@chromium.org',
                  'tfarina@chromium.org'],
@@ -2066,6 +2069,7 @@
                    'jsbell+idb@chromium.org'],
     'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org'],
+    'installable': ['dominickn+watch@chromium.org'],
     'installer': ['grt+watch@chromium.org',
                   'pennymac+watch@chromium.org',
                   'wfh+watch@chromium.org'],
@@ -2198,7 +2202,8 @@
                    'teravest+watch@chromium.org',
                    'tzik@chromium.org',
                    'yusukes+watch@chromium.org'],
-    'permissions': ['mlamouri+watch-permissions@chromium.org',
+    'permissions': ['dominickn+watch@chromium.org',
+                    'mlamouri+watch-permissions@chromium.org',
                     'raymes+watch@chromium.org'],
     'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
