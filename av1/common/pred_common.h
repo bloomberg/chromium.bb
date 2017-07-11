@@ -54,6 +54,13 @@ static INLINE aom_prob av1_get_pred_prob_seg_id(
   return segp->pred_probs[av1_get_pred_context_seg_id(xd)];
 }
 
+#if CONFIG_NEW_MULTISYMBOL
+static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
+    struct segmentation_probs *segp, const MACROBLOCKD *xd) {
+  return segp->pred_cdf[av1_get_pred_context_seg_id(xd)];
+}
+#endif
+
 static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;

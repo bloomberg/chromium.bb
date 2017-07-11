@@ -2509,6 +2509,14 @@ static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
 static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
   128, 128, 128
 };
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob
+    default_segment_pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)] = {
+  { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0},
+  { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0},
+  { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0}
+};
+#endif
 // clang-format on
 
 #if CONFIG_DUAL_FILTER
@@ -4860,6 +4868,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_SUPERTX
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->seg.pred_cdf, default_segment_pred_cdf);
+#endif
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
   av1_copy(fc->intra_filter_probs, default_intra_filter_probs);

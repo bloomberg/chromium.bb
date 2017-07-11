@@ -5657,6 +5657,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(inter_ext_tx_cdf)
 
   AVERAGE_TILE_CDFS(seg.tree_cdf)
+#if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(seg.pred_cdf)
+#endif
   AVERAGE_TILE_CDFS(uv_mode_cdf)
 
   AVERAGE_TILE_CDFS(partition_cdf)

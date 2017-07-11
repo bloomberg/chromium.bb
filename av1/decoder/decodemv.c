@@ -661,8 +661,13 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   if (seg->temporal_update) {
     const int ctx = av1_get_pred_context_seg_id(xd);
+#if CONFIG_NEW_MULTISYMBOL
+    aom_cdf_prob *pred_cdf = segp->pred_cdf[ctx];
+    mbmi->seg_id_predicted = aom_read_symbol(r, pred_cdf, 2, ACCT_STR);
+#else
     const aom_prob pred_prob = segp->pred_probs[ctx];
     mbmi->seg_id_predicted = aom_read(r, pred_prob, ACCT_STR);
+#endif
     if (counts) ++counts->seg.pred[ctx][mbmi->seg_id_predicted];
     if (mbmi->seg_id_predicted) {
       segment_id = predicted_segment_id;

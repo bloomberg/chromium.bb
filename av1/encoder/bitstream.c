@@ -1708,8 +1708,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   if (seg->update_map) {
     if (seg->temporal_update) {
       const int pred_flag = mbmi->seg_id_predicted;
+#if CONFIG_NEW_MULTISYMBOL
+      aom_cdf_prob *pred_cdf = av1_get_pred_cdf_seg_id(segp, xd);
+      aom_write_symbol(w, pred_flag, pred_cdf, 2);
+#else
       aom_prob pred_prob = av1_get_pred_prob_seg_id(segp, xd);
       aom_write(w, pred_flag, pred_prob);
+#endif
       if (!pred_flag) write_segment_id(w, seg, segp, segment_id);
     } else {
       write_segment_id(w, seg, segp, segment_id);
