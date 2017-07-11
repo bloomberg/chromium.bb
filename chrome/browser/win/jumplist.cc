@@ -316,10 +316,14 @@ void JumpList::InitializeTimerForUpdate() {
   if (timer_.IsRunning()) {
     // TODO(chengx): Remove the UMA histogram below after fixing crbug/733034.
     UMA_HISTOGRAM_COUNTS_10000(
-        "WinJumplist.NotificationTimeInterval",
+        "WinJumplist.NotificationTimeInterval2",
         (timer_.desired_run_time() - base::TimeTicks::Now()).InMilliseconds());
     timer_.Reset();
   } else {
+    // TODO(chengx): Remove the UMA histogram below after fixing crbug/733034.
+    // If the notification interval is larger than 3500 ms, add a "0" to the
+    // histogram so that we know how many notifications get coalesced.
+    UMA_HISTOGRAM_COUNTS_10000("WinJumplist.NotificationTimeInterval2", 0);
     // base::Unretained is safe since |this| is guaranteed to outlive timer_.
     timer_.Start(
         FROM_HERE, kDelayForJumplistUpdate,
