@@ -10,7 +10,7 @@
 
 namespace feature_engagement_tracker {
 
-// A feature for enabling a demonstration mode for In-Product Help.
+// A feature for enabling a demonstration mode for In-Product Help (IPH).
 extern const base::Feature kIPHDemoMode;
 
 // A feature to ensure all arrays can contain at least one feature.
@@ -31,6 +31,12 @@ extern const base::Feature kIPHDownloadPageScreenshotFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
+
+#if defined(OS_IOS)
+extern const base::Feature kIPHNewTabTipFeature;
+extern const base::Feature kIPHNewIncognitoTabTipFeature;
+extern const base::Feature kIPHBadgedReadingListFeature;
+#endif  // defined(OS_IOS)
 
 }  // namespace feature_engagement_tracker
 
