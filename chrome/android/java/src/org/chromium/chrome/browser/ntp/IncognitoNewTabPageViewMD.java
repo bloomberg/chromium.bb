@@ -47,8 +47,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     private TextView mLearnMore;
     private TextView[] mParagraphs;
 
-    boolean mFirstLayout = true;
-
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
     private static final int WIDE_LAYOUT_THRESHOLD_DP = 720;
@@ -136,7 +134,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
             adjustIcon();
             adjustLayout();
             adjustLearnMore();
-            mFirstLayout = false;
         }
     }
 
@@ -222,6 +219,12 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT));
             mSubtitle.setMaxWidth(dpToPx(CONTENT_WIDTH_DP));
+
+            // The bulletpoints container takes the same width as subtitle. Since the width can
+            // not be directly measured at this stage, we must calculate it manually.
+            mBulletpointsContainer.setLayoutParams(new LinearLayout.LayoutParams(
+                    dpToPx(Math.min(CONTENT_WIDTH_DP, mWidthDp - 2 * paddingHorizontalDp)),
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
         } else {
             // Large padding.
             paddingHorizontalDp = 0; // Should not be necessary on a screen this large.
@@ -231,20 +234,19 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
             mContainer.setGravity(Gravity.CENTER_HORIZONTAL);
 
             // Decide the bulletpoints orientation.
-            // TODO(msramek): The total bulletpoints width is consistently miscalculated by 10dp
-            // on the first layout run. Investigate why.
             int totalBulletpointsWidthDp = pxToDp(mBulletpointsContainer.getChildAt(0).getWidth())
                     + pxToDp(mBulletpointsContainer.getChildAt(1).getWidth())
-                    + BULLETPOINTS_HORIZONTAL_SPACING_DP + (mFirstLayout ? 10 : 0);
+                    + BULLETPOINTS_HORIZONTAL_SPACING_DP;
             bulletpointsArrangedHorizontally = totalBulletpointsWidthDp <= CONTENT_WIDTH_DP;
 
             // The subtitle width is equal to the two sets of bulletpoints if they are arranged
             // horizontally. If not, use the default CONTENT_WIDTH_DP.
-            int subtitleWidthPx = bulletpointsArrangedHorizontally
-                    ? dpToPx(totalBulletpointsWidthDp)
-                    : dpToPx(CONTENT_WIDTH_DP);
+            int contentWidthPx = bulletpointsArrangedHorizontally ? dpToPx(totalBulletpointsWidthDp)
+                                                                  : dpToPx(CONTENT_WIDTH_DP);
             mSubtitle.setLayoutParams(new LinearLayout.LayoutParams(
-                    subtitleWidthPx, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    contentWidthPx, LinearLayout.LayoutParams.WRAP_CONTENT));
+            mBulletpointsContainer.setLayoutParams(new LinearLayout.LayoutParams(
+                    contentWidthPx, LinearLayout.LayoutParams.WRAP_CONTENT));
         }
 
         // Apply the bulletpoints orientation.
