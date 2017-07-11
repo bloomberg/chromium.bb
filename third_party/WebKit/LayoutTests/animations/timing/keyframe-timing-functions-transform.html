@@ -22,28 +22,29 @@
 
     @keyframes move {
       0%   {
-        left: 0;
+        transform: translateX(0);
         animation-timing-function: ease-out;
       }
       10% {
-        left: 100px;
+        transform: translateX(100px);
         animation-timing-function: linear;
       }
       90% {
-        left: 500px;
+        transform: translateX(500px);
         animation-timing-function: ease-in;
       }
       100% {
-        left: 600px;
+        transform: translateX(600px);
       }
     }
+    
   </style>
-  <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.75, "box", "left", 300, 20],
+      [0.75, "box", "transform.4", 300, 20],
     ];
     
     runAnimationTest(expectedValues);
