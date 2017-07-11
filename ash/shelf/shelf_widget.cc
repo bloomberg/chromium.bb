@@ -219,6 +219,8 @@ bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
+  // Check added for http://crbug.com/738011.
+  CHECK(status_area_widget_);
   shelf_view_->OnShelfAlignmentChanged();
   status_area_widget_->UpdateAfterShelfAlignmentChange();
   delegate_view_->SchedulePaint();
