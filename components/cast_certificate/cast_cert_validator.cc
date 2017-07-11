@@ -13,6 +13,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "components/cast_certificate/cast_crl.h"
 #include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/certificate_policies.h"
@@ -182,8 +183,7 @@ void DetermineDeviceCertificatePolicy(
   for (const auto& cert : result_path->path.certs) {
     if (cert->has_policy_oids()) {
       const std::vector<net::der::Input>& policies = cert->policy_oids();
-      if (std::find(policies.begin(), policies.end(), AudioOnlyPolicyOid()) !=
-          policies.end()) {
+      if (base::ContainsValue(policies, AudioOnlyPolicyOid())) {
         audio_only = true;
         break;
       }

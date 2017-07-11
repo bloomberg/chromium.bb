@@ -44,10 +44,8 @@ std::vector<SkBitmap> ExtractSkBitmapsToStore(const gfx::Image& image) {
   const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
   for (size_t i = 0; i < image_reps.size(); ++i) {
     // Don't save if the scale isn't one of supported favicon scales.
-    if (std::find(favicon_scales.begin(), favicon_scales.end(),
-                  image_reps[i].scale()) == favicon_scales.end()) {
+    if (!base::ContainsValue(favicon_scales, image_reps[i].scale()))
       continue;
-    }
     bitmaps.push_back(image_reps[i].sk_bitmap());
   }
   return bitmaps;

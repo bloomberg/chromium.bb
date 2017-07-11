@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
@@ -58,13 +59,6 @@ const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
 const base::Feature kAlternateComponentUrls{"AlternateComponentUrls",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Returns true if and only if |test| is contained in |vec|.
-bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
-  if (vec.empty())
-    return 0;
-  return (std::find(vec.begin(), vec.end(), test) != vec.end());
-}
-
 // If there is an element of |vec| of the form |test|=.*, returns the right-
 // hand side of that assignment. Otherwise, returns an empty string.
 // The right-hand side may contain additional '=' characters, allowing for
@@ -101,13 +95,14 @@ ConfiguratorImpl::ConfiguratorImpl(
   std::vector<std::string> switch_values = base::SplitString(
       cmdline->GetSwitchValueASCII(switches::kComponentUpdater), ",",
       base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
-  pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
-  deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
+  fast_update_ = base::ContainsValue(switch_values, kSwitchFastUpdate);
+  pings_enabled_ = !base::ContainsValue(switch_values, kSwitchDisablePings);
+  deltas_enabled_ =
+      !base::ContainsValue(switch_values, kSwitchDisableDeltaUpdates);
 
 #if defined(OS_WIN)
   background_downloads_enabled_ =
-      !HasSwitchValue(switch_values, kSwitchDisableBackgroundDownloads);
+      !base::ContainsValue(switch_values, kSwitchDisableBackgroundDownloads);
 #else
   background_downloads_enabled_ = false;
 #endif
@@ -119,7 +114,7 @@ ConfiguratorImpl::ConfiguratorImpl(
     DCHECK(url_source_override_.is_valid());
   }
 
-  if (HasSwitchValue(switch_values, kSwitchRequestParam))
+  if (base::ContainsValue(switch_values, kSwitchRequestParam))
     extra_info_ += "testrequest=\"1\"";
 }
 
