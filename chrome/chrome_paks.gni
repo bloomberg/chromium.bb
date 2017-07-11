@@ -184,7 +184,7 @@ template("chrome_extra_paks") {
 #   output_dir [required]: Directory to output .pak files. Locale .pak files
 #       will always be place in $output_dir/locales
 #   additional_extra_paks: List of extra .pak sources for resources.pak.
-#   exclude_locale_paks: if set to true, skip chrome_repack_locales.
+#   locale_whitelist: if set, override repack_whitelist for locale .pak files.
 #   copy_data_to_bundle:
 #   deps:
 #   output_dir:
@@ -234,24 +234,26 @@ template("chrome_paks") {
     }
   }
 
-  if (!defined(invoker.exclude_locale_paks) || !invoker.exclude_locale_paks) {
-    chrome_repack_locales("${target_name}_locales") {
-      forward_variables_from(invoker,
-                             [
-                               "copy_data_to_bundle",
-                               "deps",
-                               "repack_whitelist",
-                               "visibility",
-                             ])
+  chrome_repack_locales("${target_name}_locales") {
+    forward_variables_from(invoker,
+                           [
+                             "copy_data_to_bundle",
+                             "deps",
+                             "visibility",
+                           ])
+    if (defined(invoker.locale_whitelist)) {
+      repack_whitelist = invoker.locale_whitelist
+    } else if (defined(invoker.repack_whitelist)) {
+      repack_whitelist = invoker.repack_whitelist
+    }
 
-      input_locales = locales
-      output_dir = "${invoker.output_dir}/locales"
+    input_locales = locales
+    output_dir = "${invoker.output_dir}/locales"
 
-      if (is_mac) {
-        output_locales = locales_as_mac_outputs
-      } else {
-        output_locales = locales
-      }
+    if (is_mac) {
+      output_locales = locales_as_mac_outputs
+    } else {
+      output_locales = locales
     }
   }
 
@@ -260,10 +262,8 @@ template("chrome_paks") {
     public_deps = [
       ":${target_name}_100_percent",
       ":${target_name}_extra",
+      ":${target_name}_locales",
     ]
-    if (!defined(invoker.exclude_locale_paks) || !invoker.exclude_locale_paks) {
-      public_deps += [ ":${target_name}_locales" ]
-    }
     if (enable_hidpi) {
       public_deps += [ ":${target_name}_200_percent" ]
     }

@@ -31,9 +31,16 @@ UI_BASE_EXPORT int GetCommonResourcesPackFd(
 UI_BASE_EXPORT int GetLocalePackFd(
     base::MemoryMappedFile::Region* out_region);
 
+// Returns the file descriptor and region for the secondary locale .pak file.
+UI_BASE_EXPORT int GetSecondaryLocalePackFd(
+    base::MemoryMappedFile::Region* out_region);
+
 // Tell ResourceBundle to locate locale pak files via
 // GetPathForAndroidLocalePakWithinApk rather than looking for them on disk.
 UI_BASE_EXPORT void SetLocalePaksStoredInApk(bool value);
+
+// Tell ResourceBundle to load secondary locale .pak files.
+UI_BASE_EXPORT void SetLoadSecondaryLocalePaks(bool value);
 
 // Returns the path within the apk for the given locale's .pak file, or an
 // empty string if it doesn't exist.
