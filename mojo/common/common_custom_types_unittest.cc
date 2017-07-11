@@ -71,8 +71,8 @@ class TestFilePathImpl : public TestFilePath {
 
   // TestFilePath implementation:
   void BounceFilePath(const base::FilePath& in,
-                      const BounceFilePathCallback& callback) override {
-    callback.Run(in);
+                      BounceFilePathCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
@@ -86,8 +86,8 @@ class TestUnguessableTokenImpl : public TestUnguessableToken {
 
   // TestUnguessableToken implementation:
   void BounceNonce(const base::UnguessableToken& in,
-                   const BounceNonceCallback& callback) override {
-    callback.Run(in);
+                   BounceNonceCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
@@ -100,18 +100,18 @@ class TestTimeImpl : public TestTime {
       : binding_(this, std::move(request)) {}
 
   // TestTime implementation:
-  void BounceTime(base::Time in, const BounceTimeCallback& callback) override {
-    callback.Run(in);
+  void BounceTime(base::Time in, BounceTimeCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceTimeDelta(base::TimeDelta in,
-                       const BounceTimeDeltaCallback& callback) override {
-    callback.Run(in);
+                       BounceTimeDeltaCallback callback) override {
+    std::move(callback).Run(in);
   }
 
   void BounceTimeTicks(base::TimeTicks in,
-                       const BounceTimeTicksCallback& callback) override {
-    callback.Run(in);
+                       BounceTimeTicksCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
@@ -124,20 +124,19 @@ class TestValueImpl : public TestValue {
       : binding_(this, std::move(request)) {}
 
   // TestValue implementation:
-  void BounceDictionaryValue(
-      std::unique_ptr<base::DictionaryValue> in,
-      const BounceDictionaryValueCallback& callback) override {
-    callback.Run(std::move(in));
+  void BounceDictionaryValue(std::unique_ptr<base::DictionaryValue> in,
+                             BounceDictionaryValueCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 
   void BounceListValue(std::unique_ptr<base::ListValue> in,
-                       const BounceListValueCallback& callback) override {
-    callback.Run(std::move(in));
+                       BounceListValueCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 
   void BounceValue(std::unique_ptr<base::Value> in,
-                   const BounceValueCallback& callback) override {
-    callback.Run(std::move(in));
+                   BounceValueCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 
  private:
@@ -151,8 +150,8 @@ class TestString16Impl : public TestString16 {
 
   // TestString16 implementation:
   void BounceString16(const base::string16& in,
-                      const BounceString16Callback& callback) override {
-    callback.Run(in);
+                      BounceString16Callback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
@@ -165,8 +164,8 @@ class TestFileImpl : public TestFile {
       : binding_(this, std::move(request)) {}
 
   // TestFile implementation:
-  void BounceFile(base::File in, const BounceFileCallback& callback) override {
-    callback.Run(std::move(in));
+  void BounceFile(base::File in, BounceFileCallback callback) override {
+    std::move(callback).Run(std::move(in));
   }
 
  private:
@@ -179,10 +178,9 @@ class TestTextDirectionImpl : public TestTextDirection {
       : binding_(this, std::move(request)) {}
 
   // TestTextDirection:
-  void BounceTextDirection(
-      base::i18n::TextDirection in,
-      const BounceTextDirectionCallback& callback) override {
-    callback.Run(in);
+  void BounceTextDirection(base::i18n::TextDirection in,
+                           BounceTextDirectionCallback callback) override {
+    std::move(callback).Run(in);
   }
 
  private:
