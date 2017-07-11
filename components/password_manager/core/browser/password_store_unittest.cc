@@ -998,8 +998,9 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
 }
+#endif
 
-#if !defined(OS_CHROMEOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::SequencedTaskRunnerHandle::Get(),
@@ -1062,7 +1063,6 @@ TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
 }
-#endif
 #endif
 
 }  // namespace password_manager
