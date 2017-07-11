@@ -9,6 +9,7 @@
 #import "remoting/ios/app/side_menu_items.h"
 
 #import "remoting/ios/app/app_delegate.h"
+#import "remoting/ios/app/remoting_theme.h"
 
 static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
 
@@ -48,16 +49,15 @@ static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     items = @[ @[
-      // TODO(yuweih): Add icons when crbug.com/734054 is fixed.
       [[SideMenuItem alloc]
           initWithTitle:@"Send Feedback"
-                   icon:nil
+                   icon:RemotingTheme.feedbackIcon
                  action:^{
                    [AppDelegate.instance
                        presentFeedbackFlowWithContext:kFeedbackContext];
                  }],
       [[SideMenuItem alloc] initWithTitle:@"Help"
-                                     icon:nil
+                                     icon:RemotingTheme.helpIcon
                                    action:^{
                                      NSLog(@"Tapped help");
                                    }],

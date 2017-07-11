@@ -14,6 +14,8 @@ _image_sets = [
   "action/ic_account_circle",
   "action/ic_account_circle_48pt",
   "action/ic_delete",
+  "action/ic_feedback",
+  "action/ic_help",
   "action/ic_info",
   "action/ic_lock_18pt",
   "action/ic_open_in_browser",
