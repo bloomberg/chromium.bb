@@ -14,18 +14,18 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/android/vr_shell/fps_meter.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
-#include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
-#include "chrome/browser/android/vr_shell/ui_interface.h"
-#include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
+#include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/fps_meter.h"
+#include "chrome/browser/vr/ui_interface.h"
+#include "chrome/browser/vr/ui_scene.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
@@ -209,7 +209,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
                      bool initially_web_vr,
                      bool reprojected_rendering,
                      bool daydream_support,
-                     UiScene* scene)
+                     vr::UiScene* scene)
     : web_vr_mode_(initially_web_vr),
       surfaceless_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
@@ -217,9 +217,9 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
       binding_(this),
       browser_(browser),
       scene_(scene),
-      fps_meter_(new FPSMeter()),
-      webvr_js_time_(new SlidingAverage(kWebVRSlidingAverageSize)),
-      webvr_render_time_(new SlidingAverage(kWebVRSlidingAverageSize)),
+      fps_meter_(new vr::FPSMeter()),
+      webvr_js_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
+      webvr_render_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -308,7 +308,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
                    task_runner_));
   }
 
-  input_manager_ = base::MakeUnique<UiInputManager>(scene_, this);
+  input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_, this);
 }
 
 void VrShellGl::CreateContentSurface() {
@@ -546,16 +546,16 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
 
   std::unique_ptr<GestureList> gesture_list_ptr = controller_->DetectGestures();
   GestureList& gesture_list = *gesture_list_ptr;
-  UiInputManager::ButtonState controller_button_state =
-      UiInputManager::ButtonState::UP;
+  vr::UiInputManager::ButtonState controller_button_state =
+      vr::UiInputManager::ButtonState::UP;
   DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
            controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
       << "Cannot handle a button down and up event within one frame.";
   if (touch_pending_) {
-    controller_button_state = UiInputManager::ButtonState::CLICKED;
+    controller_button_state = vr::UiInputManager::ButtonState::CLICKED;
     touch_pending_ = false;
   } else if (controller_->ButtonState(gvr::kControllerButtonClick)) {
-    controller_button_state = UiInputManager::ButtonState::DOWN;
+    controller_button_state = vr::UiInputManager::ButtonState::DOWN;
   }
   input_manager_->HandleInput(controller_direction, pointer_start_,
                               controller_button_state, gesture_list,
@@ -713,7 +713,7 @@ void VrShellGl::HandleControllerAppButtonActivity(
     // considered a regular click
     // TODO(asimjour1): We need to refactor the gesture recognition outside of
     // VrShellGl.
-    UiInterface::Direction direction = UiInterface::NONE;
+    vr::UiInterface::Direction direction = vr::UiInterface::NONE;
     gfx::Vector3dF a = controller_start_direction_;
     gfx::Vector3dF b = controller_direction;
     a.set_y(0);
@@ -722,12 +722,12 @@ void VrShellGl::HandleControllerAppButtonActivity(
       float gesture_xz_angle =
           acos(gfx::DotProduct(a, b) / a.Length() / b.Length());
       if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
-        direction =
-            gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
+        direction = gesture_xz_angle < 0 ? vr::UiInterface::LEFT
+                                         : vr::UiInterface::RIGHT;
         browser_->AppButtonGesturePerformed(direction);
       }
     }
-    if (direction == UiInterface::NONE)
+    if (direction == vr::UiInterface::NONE)
       browser_->AppButtonClicked();
   }
 }
@@ -957,7 +957,7 @@ void VrShellGl::DrawWorldElements(const gfx::Transform& head_pose) {
                  SkColorGetA(backgroundColor) / 255.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
-  std::vector<const UiElement*> elements = scene_->GetWorldElements();
+  std::vector<const vr::UiElement*> elements = scene_->GetWorldElements();
   const bool draw_reticle =
       !(scene_->is_exiting() || scene_->showing_splash_screen() ||
         ShouldDrawWebVr());
@@ -966,7 +966,7 @@ void VrShellGl::DrawWorldElements(const gfx::Transform& head_pose) {
 }
 
 void VrShellGl::DrawOverlayElements(const gfx::Transform& head_pose) {
-  std::vector<const UiElement*> elements = scene_->GetOverlayElements();
+  std::vector<const vr::UiElement*> elements = scene_->GetOverlayElements();
   if (elements.empty())
     return;
 
@@ -981,7 +981,7 @@ void VrShellGl::DrawOverlayElements(const gfx::Transform& head_pose) {
 
 void VrShellGl::DrawHeadLockedElements() {
   TRACE_EVENT0("gpu", "VrShellGl::DrawHeadLockedElements");
-  std::vector<const UiElement*> elements = scene_->GetHeadLockedElements();
+  std::vector<const vr::UiElement*> elements = scene_->GetHeadLockedElements();
 
   // Add head-locked viewports. The list gets reset to just
   // the recommended viewports (for the primary buffer) each frame.
@@ -1003,7 +1003,7 @@ void VrShellGl::DrawHeadLockedElements() {
 }
 
 void VrShellGl::DrawUiView(const gfx::Transform& head_pose,
-                           const std::vector<const UiElement*>& elements,
+                           const std::vector<const vr::UiElement*>& elements,
                            const gfx::Size& render_size,
                            int viewport_offset,
                            bool draw_reticle) {
@@ -1037,7 +1037,7 @@ void VrShellGl::DrawUiView(const gfx::Transform& head_pose,
 }
 
 void VrShellGl::DrawElements(const gfx::Transform& view_proj_matrix,
-                             const std::vector<const UiElement*>& elements,
+                             const std::vector<const vr::UiElement*>& elements,
                              bool draw_reticle) {
   if (elements.empty())
     return;
@@ -1062,31 +1062,31 @@ void VrShellGl::DrawElements(const gfx::Transform& view_proj_matrix,
 }
 
 void VrShellGl::DrawElement(const gfx::Transform& view_proj_matrix,
-                            const UiElement& element) {
+                            const vr::UiElement& element) {
   gfx::Transform transform = view_proj_matrix * element.transform();
 
   switch (element.fill()) {
-    case Fill::OPAQUE_GRADIENT: {
+    case vr::Fill::OPAQUE_GRADIENT: {
       vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
           transform, element.edge_color(), element.center_color(),
           element.computed_opacity());
       break;
     }
-    case Fill::GRID_GRADIENT: {
+    case vr::Fill::GRID_GRADIENT: {
       vr_shell_renderer_->GetGradientGridRenderer()->Draw(
           transform, element.edge_color(), element.center_color(),
           element.grid_color(), element.gridline_count(),
           element.computed_opacity());
       break;
     }
-    case Fill::CONTENT: {
+    case vr::Fill::CONTENT: {
       vr_shell_renderer_->GetExternalTexturedQuadRenderer()->Draw(
           content_texture_id_, transform, render_size_vrshell_,
           gfx::SizeF(element.size().x(), element.size().y()),
           element.computed_opacity(), element.corner_radius());
       break;
     }
-    case Fill::SELF: {
+    case vr::Fill::SELF: {
       element.Render(vr_shell_renderer_.get(), transform);
       break;
     }
@@ -1095,10 +1095,10 @@ void VrShellGl::DrawElement(const gfx::Transform& view_proj_matrix,
   }
 }
 
-std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
+std::vector<const vr::UiElement*> VrShellGl::GetElementsInDrawOrder(
     const gfx::Transform& view_matrix,
-    const std::vector<const UiElement*>& elements) {
-  std::vector<const UiElement*> sorted_elements = elements;
+    const std::vector<const vr::UiElement*>& elements) {
+  std::vector<const vr::UiElement*> sorted_elements = elements;
 
   // Sort elements primarily based on their draw phase (lower draw phase first)
   // and secondarily based on their z-axis distance (more distant first).
@@ -1107,7 +1107,7 @@ std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
   // release, and provides a consistent ordering that we can easily design
   // around.
   std::sort(sorted_elements.begin(), sorted_elements.end(),
-            [](const UiElement* first, const UiElement* second) {
+            [](const vr::UiElement* first, const vr::UiElement* second) {
               if (first->draw_phase() != second->draw_phase()) {
                 return first->draw_phase() < second->draw_phase();
               } else {

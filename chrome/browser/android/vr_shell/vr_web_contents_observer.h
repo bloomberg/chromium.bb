@@ -10,24 +10,27 @@
 
 namespace content {
 class NavigationHandle;
-}
+}  // namespace content
+
+namespace vr {
+class ToolbarHelper;
+class UiInterface;
+}  // namespace vr
 
 namespace vr_shell {
 
-class UiInterface;
 class VrShell;
-class ToolbarHelper;
 
 class CONTENT_EXPORT VrWebContentsObserver
     : public content::WebContentsObserver {
  public:
   VrWebContentsObserver(content::WebContents* web_contents,
                         VrShell* vr_shell,
-                        UiInterface* ui_interface,
-                        ToolbarHelper* toolbar);
+                        vr::UiInterface* ui_interface,
+                        vr::ToolbarHelper* toolbar);
   ~VrWebContentsObserver() override;
 
-  void SetUiInterface(UiInterface* ui_interface);
+  void SetUiInterface(vr::UiInterface* ui_interface);
 
  private:
   // WebContentsObserver implementation.
@@ -51,8 +54,8 @@ class CONTENT_EXPORT VrWebContentsObserver
 
   // This class does not own these pointers.
   VrShell* vr_shell_;
-  UiInterface* ui_interface_;
-  ToolbarHelper* toolbar_;
+  vr::UiInterface* ui_interface_;
+  vr::ToolbarHelper* toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(VrWebContentsObserver);
 };

@@ -1,0 +1,156 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/common/features.gni")
+import("//device/vr/features/features.gni")
+import("//testing/test.gni")
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
+assert(enable_vr)
+
+static_library("vr_common") {
+  sources = [
+    "animation.cc",
+    "animation.h",
+    "color_scheme.cc",
+    "color_scheme.h",
+    "easing.cc",
+    "easing.h",
+    "elements/button.cc",
+    "elements/button.h",
+    "elements/button_texture.cc",
+    "elements/button_texture.h",
+    "elements/close_button_texture.cc",
+    "elements/close_button_texture.h",
+    "elements/exclusive_screen_toast.cc",
+    "elements/exclusive_screen_toast.h",
+    "elements/exclusive_screen_toast_texture.cc",
+    "elements/exclusive_screen_toast_texture.h",
+    "elements/exit_prompt.cc",
+    "elements/exit_prompt.h",
+    "elements/exit_prompt_backplane.cc",
+    "elements/exit_prompt_backplane.h",
+    "elements/exit_prompt_texture.cc",
+    "elements/exit_prompt_texture.h",
+    "elements/exit_warning_texture.cc",
+    "elements/exit_warning_texture.h",
+    "elements/insecure_content_permanent_texture.cc",
+    "elements/insecure_content_permanent_texture.h",
+    "elements/insecure_content_transient_texture.cc",
+    "elements/insecure_content_transient_texture.h",
+    "elements/loading_indicator.cc",
+    "elements/loading_indicator.h",
+    "elements/loading_indicator_texture.cc",
+    "elements/loading_indicator_texture.h",
+    "elements/render_text_wrapper.cc",
+    "elements/render_text_wrapper.h",
+    "elements/screen_dimmer.cc",
+    "elements/screen_dimmer.h",
+    "elements/simple_textured_element.h",
+    "elements/splash_screen_icon.cc",
+    "elements/splash_screen_icon.h",
+    "elements/splash_screen_icon_texture.cc",
+    "elements/splash_screen_icon_texture.h",
+    "elements/system_indicator.cc",
+    "elements/system_indicator.h",
+    "elements/system_indicator_texture.cc",
+    "elements/system_indicator_texture.h",
+    "elements/textured_element.cc",
+    "elements/textured_element.h",
+    "elements/transience_manager.cc",
+    "elements/transience_manager.h",
+    "elements/transient_url_bar.cc",
+    "elements/transient_url_bar.h",
+    "elements/ui_element.cc",
+    "elements/ui_element.h",
+    "elements/ui_element_debug_id.h",
+    "elements/ui_texture.cc",
+    "elements/ui_texture.h",
+    "elements/url_bar.cc",
+    "elements/url_bar.h",
+    "elements/url_bar_texture.cc",
+    "elements/url_bar_texture.h",
+    "font_fallback.cc",
+    "font_fallback.h",
+    "fps_meter.cc",
+    "fps_meter.h",
+    "gltf_asset.cc",
+    "gltf_asset.h",
+    "gltf_parser.cc",
+    "gltf_parser.h",
+    "toolbar_helper.cc",
+    "toolbar_helper.h",
+    "toolbar_state.cc",
+    "toolbar_state.h",
+    "ui_browser_interface.h",
+    "ui_input_manager.cc",
+    "ui_input_manager.h",
+    "ui_interface.h",
+    "ui_scene.cc",
+    "ui_scene.h",
+    "ui_scene_manager.cc",
+    "ui_scene_manager.h",
+    "ui_unsupported_mode.h",
+  ]
+
+  deps = [
+    "//base",
+    "//cc/paint",
+    "//chrome/app:generated_resources",
+    "//components/security_state/core",
+    "//components/strings",
+    "//components/toolbar",
+    "//components/url_formatter",
+    "//components/vector_icons",
+    "//skia",
+    "//ui/base",
+    "//ui/display",
+    "//ui/gl",
+    "//ui/gl/init",
+    "//ui/vector_icons",
+  ]
+}
+
+test("vr_common_unittests") {
+  sources = [
+    "elements/close_button_texture_unittest.cc",
+    "elements/exit_prompt_unittest.cc",
+    "elements/transience_manager_unittest.cc",
+    "elements/ui_element_unittest.cc",
+    "elements/url_bar_texture_unittest.cc",
+    "fps_meter_unittest.cc",
+    "gltf_parser_unittest.cc",
+    "run_all_unittests.cc",
+    "test/paths.cc",
+    "test/paths.h",
+    "ui_scene_manager_unittest.cc",
+    "ui_scene_unittest.cc",
+  ]
+
+  deps = [
+    ":vr_common",
+    "//base/test:test_support",
+    "//components:components_tests_pak",
+    "//components/security_state/core",
+    "//components/toolbar:vector_icons",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (is_android) {
+    deps += [ "//ui/android:ui_java" ]
+  }
+
+  data = [
+    "test/data/",
+    "$root_out_dir/components_tests_resources.pak",
+  ]
+}

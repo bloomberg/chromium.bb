@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/browser/android/vr_shell/gltf_asset.h"
+#include "chrome/browser/vr/gltf_asset.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gl/gl_bindings.h"
@@ -26,8 +26,8 @@ class VrControllerModel {
   };
 
   explicit VrControllerModel(
-      std::unique_ptr<gltf::Asset> gltf_asset,
-      std::vector<std::unique_ptr<gltf::Buffer>> buffers);
+      std::unique_ptr<vr::gltf::Asset> gltf_asset,
+      std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers);
   ~VrControllerModel();
 
   const GLvoid* ElementsBuffer() const;
@@ -35,9 +35,9 @@ class VrControllerModel {
   const GLvoid* IndicesBuffer() const;
   GLenum DrawMode() const;
   GLsizeiptr IndicesBufferSize() const;
-  const gltf::Accessor* IndicesAccessor() const;
-  const gltf::Accessor* PositionAccessor() const;
-  const gltf::Accessor* TextureCoordinateAccessor() const;
+  const vr::gltf::Accessor* IndicesAccessor() const;
+  const vr::gltf::Accessor* PositionAccessor() const;
+  const vr::gltf::Accessor* TextureCoordinateAccessor() const;
   void SetBaseTexture(sk_sp<SkImage> image);
   void SetTexture(int state, sk_sp<SkImage> patch);
   sk_sp<SkImage> GetTexture(int state) const;
@@ -45,13 +45,13 @@ class VrControllerModel {
   static std::unique_ptr<VrControllerModel> LoadFromResources();
 
  private:
-  std::unique_ptr<gltf::Asset> gltf_asset_;
+  std::unique_ptr<vr::gltf::Asset> gltf_asset_;
   sk_sp<SkImage> base_texture_;
   sk_sp<SkImage> textures_[STATE_COUNT];
-  std::vector<std::unique_ptr<gltf::Buffer>> buffers_;
+  std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers_;
 
   const char* Buffer() const;
-  const gltf::Accessor* Accessor(const std::string& key) const;
+  const vr::gltf::Accessor* Accessor(const std::string& key) const;
 };
 
 }  // namespace vr_shell

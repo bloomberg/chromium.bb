@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/android/vr_shell/gltf_parser.h"
+#include "chrome/browser/vr/gltf_parser.h"
 #include "chrome/grit/browser_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -47,15 +47,14 @@ sk_sp<SkImage> LoadPng(int resource_id) {
 }  // namespace
 
 VrControllerModel::VrControllerModel(
-    std::unique_ptr<gltf::Asset> gltf_asset,
-    std::vector<std::unique_ptr<gltf::Buffer>> buffers)
-    : gltf_asset_(std::move(gltf_asset)),
-      buffers_(std::move(buffers)) {}
+    std::unique_ptr<vr::gltf::Asset> gltf_asset,
+    std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers)
+    : gltf_asset_(std::move(gltf_asset)), buffers_(std::move(buffers)) {}
 
 VrControllerModel::~VrControllerModel() = default;
 
 const GLvoid* VrControllerModel::ElementsBuffer() const {
-  const gltf::BufferView* buffer_view =
+  const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(ELEMENTS_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ARRAY_BUFFER);
   const char* buffer = Buffer();
@@ -63,14 +62,14 @@ const GLvoid* VrControllerModel::ElementsBuffer() const {
 }
 
 GLsizeiptr VrControllerModel::ElementsBufferSize() const {
-  const gltf::BufferView* buffer_view =
+  const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(ELEMENTS_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ARRAY_BUFFER);
   return buffer_view->byte_length;
 }
 
 const GLvoid* VrControllerModel::IndicesBuffer() const {
-  const gltf::BufferView* buffer_view =
+  const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(INDICES_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ELEMENT_ARRAY_BUFFER);
   const char* buffer = Buffer();
@@ -78,29 +77,29 @@ const GLvoid* VrControllerModel::IndicesBuffer() const {
 }
 
 GLsizeiptr VrControllerModel::IndicesBufferSize() const {
-  const gltf::BufferView* buffer_view =
+  const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(INDICES_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ELEMENT_ARRAY_BUFFER);
   return buffer_view->byte_length;
 }
 
 GLenum VrControllerModel::DrawMode() const {
-  const gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
+  const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
   return mesh->primitives[0]->mode;
 }
 
-const gltf::Accessor* VrControllerModel::IndicesAccessor() const {
-  const gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
+const vr::gltf::Accessor* VrControllerModel::IndicesAccessor() const {
+  const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
   return mesh->primitives[0]->indices;
 }
 
-const gltf::Accessor* VrControllerModel::PositionAccessor() const {
+const vr::gltf::Accessor* VrControllerModel::PositionAccessor() const {
   return Accessor(kPosition);
 }
 
-const gltf::Accessor* VrControllerModel::TextureCoordinateAccessor() const {
+const vr::gltf::Accessor* VrControllerModel::TextureCoordinateAccessor() const {
   return Accessor(kTexCoord);
 }
 
@@ -136,9 +135,9 @@ const char* VrControllerModel::Buffer() const {
   return buffers_[0]->data();
 }
 
-const gltf::Accessor* VrControllerModel::Accessor(
+const vr::gltf::Accessor* VrControllerModel::Accessor(
     const std::string& key) const {
-  const gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
+  const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
   auto it = mesh->primitives[0]->attributes.find(key);
   DCHECK(it != mesh->primitives[0]->attributes.begin());
@@ -147,11 +146,11 @@ const gltf::Accessor* VrControllerModel::Accessor(
 
 std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromResources() {
   TRACE_EVENT0("gpu", "VrControllerModel::LoadFromResources");
-  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
+  std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers;
   auto model_data = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_VR_SHELL_DDCONTROLLER_MODEL);
-  std::unique_ptr<gltf::Asset> asset =
-      BinaryGltfParser::Parse(model_data, &buffers);
+  std::unique_ptr<vr::gltf::Asset> asset =
+      vr::BinaryGltfParser::Parse(model_data, &buffers);
   DCHECK(asset);
 
   auto controller_model =
