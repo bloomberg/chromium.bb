@@ -205,7 +205,7 @@ int Node::GetUserData(const PortRef& port_ref,
 }
 
 int Node::ClosePort(const PortRef& port_ref) {
-  std::vector<PortName> referenced_port_names;
+  std::vector<std::unique_ptr<UserMessageEvent>> undelivered_messages;
   NodeName peer_node_name;
   PortName peer_port_name;
   uint64_t last_sequence_num = 0;
@@ -231,7 +231,7 @@ int Node::ClosePort(const PortRef& port_ref) {
 
         // If the port being closed still has unread messages, then we need to
         // take care to close those ports so as to avoid leaking memory.
-        port->message_queue.GetReferencedPorts(&referenced_port_names);
+        port->message_queue.TakeAllMessages(&undelivered_messages);
         break;
 
       default:
@@ -247,10 +247,12 @@ int Node::ClosePort(const PortRef& port_ref) {
     delegate_->ForwardEvent(peer_node_name,
                             base::MakeUnique<ObserveClosureEvent>(
                                 peer_port_name, last_sequence_num));
-    for (const auto& name : referenced_port_names) {
-      PortRef ref;
-      if (GetPort(name, &ref) == OK)
-        ClosePort(ref);
+    for (const auto& message : undelivered_messages) {
+      for (size_t i = 0; i < message->num_ports(); ++i) {
+        PortRef ref;
+        if (GetPort(message->ports()[i], &ref) == OK)
+          ClosePort(ref);
+      }
     }
   }
   return OK;
@@ -554,6 +556,9 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
         event_to_forward = base::MakeUnique<ObserveProxyAckEvent>(
             event->proxy_port_name(), port->next_sequence_num_to_send - 1);
         update_status = true;
+        DVLOG(2) << "Forwarding ObserveProxyAck from " << event->port_name()
+                 << "@" << name_ << " to " << event->proxy_port_name() << "@"
+                 << event_target_node;
       } else {
         // As a proxy ourselves, we don't know how to honor the ObserveProxy
         // event or to populate the last_sequence_num field of ObserveProxyAck.
@@ -1240,7 +1245,7 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
 
   std::vector<PortRef> ports_to_notify;
   std::vector<PortName> dead_proxies_to_broadcast;
-  std::vector<PortName> referenced_port_names;
+  std::vector<std::unique_ptr<UserMessageEvent>> undelivered_messages;
 
   {
     PortLocker::AssertNoPortsLockedOnCurrentThread();
@@ -1276,8 +1281,10 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
           // inefficient but rare.
           if (port->state != Port::kReceiving) {
             dead_proxies_to_broadcast.push_back(iter->first);
-            iter->second->message_queue.GetReferencedPorts(
-                &referenced_port_names);
+            std::vector<std::unique_ptr<UserMessageEvent>> messages;
+            iter->second->message_queue.TakeAllMessages(&messages);
+            for (auto& message : messages)
+              undelivered_messages.emplace_back(std::move(message));
           }
         }
       }
@@ -1306,11 +1313,13 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
     DestroyAllPortsWithPeer(name_, proxy_name);
   }
 
-  // Close any ports referenced by the closed proxies.
-  for (const auto& name : referenced_port_names) {
-    PortRef ref;
-    if (GetPort(name, &ref) == OK)
-      ClosePort(ref);
+  // Close any ports referenced by undelivered messages.
+  for (const auto& message : undelivered_messages) {
+    for (size_t i = 0; i < message->num_ports(); ++i) {
+      PortRef ref;
+      if (GetPort(message->ports()[i], &ref) == OK)
+        ClosePort(ref);
+    }
   }
 }
 
