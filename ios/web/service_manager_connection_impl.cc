@@ -268,7 +268,11 @@ void ServiceManagerConnection::Set(
 
 // static
 ServiceManagerConnection* ServiceManagerConnection::Get() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
+  // WebThreads are not initialized in many unit tests. These tests also by
+  // definition are not setting the global ServiceManagerConnection (since
+  // otherwise the DCHECK in the above method would fire).
+  DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
+         web::WebThread::CurrentlyOn(web::WebThread::UI));
   return g_connection_for_process.Get().get();
 }
 

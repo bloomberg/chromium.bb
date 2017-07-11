@@ -95,6 +95,8 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(const base::FilePath& path)
     : state_path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(new ChromeBrowserStateImplIOData::Handle(this)) {
+  BrowserState::Initialize(this, state_path_);
+
   otr_state_path_ = state_path_.Append(FILE_PATH_LITERAL("OTR"));
 
   bool directories_created =

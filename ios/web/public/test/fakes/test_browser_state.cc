@@ -43,7 +43,9 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
 }  // namespace
 
-TestBrowserState::TestBrowserState() : is_off_the_record_(false) {}
+TestBrowserState::TestBrowserState() : is_off_the_record_(false) {
+  BrowserState::Initialize(this, GetStatePath());
+}
 
 TestBrowserState::~TestBrowserState() {}
 

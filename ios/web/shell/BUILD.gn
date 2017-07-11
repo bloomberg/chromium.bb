@@ -44,6 +44,7 @@ service_manifest("shell_packaged_services_manifest_overlay") {
 
 service_manifest("shell_browser_manifest_overlay") {
   source = "web_shell_browser_manifest_overlay.json"
+  packaged_services = [ "//services/test/user_id:manifest" ]
 }
 
 grit("resources") {
@@ -112,6 +113,8 @@ source_set("shell") {
     "//net:extras",
     "//services/test/echo:lib",
     "//services/test/echo/public/interfaces",
+    "//services/test/user_id:lib",
+    "//services/test/user_id/public/interfaces",
     "//ui/base",
   ]
 
