@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_service_factory.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
@@ -96,8 +96,6 @@ void ArcServiceLauncher::Initialize() {
   // List in lexicographical order.
   arc_service_manager_->AddService(
       base::MakeUnique<ArcAudioBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
-      base::MakeUnique<ArcAuthService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
@@ -200,6 +198,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   // to be running at the beginning of the container run.
   // List in lexicographical order.
   ArcAccessibilityHelperBridgeFactory::GetForBrowserContext(profile);
+  ArcAuthServiceFactory::GetForBrowserContext(profile);
 
   arc_service_manager_->AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(
       arc_service_manager_->arc_bridge_service(),

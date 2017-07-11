@@ -16,12 +16,13 @@
 #include "chrome/browser/chromeos/arc/auth/arc_manual_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -134,18 +135,27 @@ class ArcAuthService::AccountInfoNotifier {
   const AccountInfoCallback account_info_callback_;
 };
 
-ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_ptr_factory_(this) {
-  arc_bridge_service()->auth()->AddObserver(this);
+ArcAuthService::ArcAuthService(Profile* profile,
+                               ArcBridgeService* arc_bridge_service)
+    : profile_(profile),
+      arc_bridge_service_(arc_bridge_service),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  arc_bridge_service_->auth()->AddObserver(this);
 }
 
 ArcAuthService::~ArcAuthService() {
-  arc_bridge_service()->auth()->RemoveObserver(this);
+  // TODO(hidehiko): Currently, the lifetime of ArcBridgeService and
+  // BrowserContextKeyedService is not nested.
+  // If ArcServiceManager::Get() returns nullptr, it is already destructed,
+  // so do not touch it.
+  if (ArcServiceManager::Get())
+    arc_bridge_service_->auth()->RemoveObserver(this);
 }
 
 void ArcAuthService::OnInstanceReady() {
   auto* instance =
-      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->auth(), Init);
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(), Init);
   DCHECK(instance);
   mojom::AuthHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
@@ -205,7 +215,7 @@ void ArcAuthService::ReportAccountCheckStatus(
 
 void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->auth(),
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
                                                OnAccountInfoReady);
   DCHECK(instance);
   instance->OnAccountInfoReady(std::move(account_info));
@@ -235,8 +245,7 @@ void ArcAuthService::GetAuthCodeAndAccountTypeDeprecated(
 void ArcAuthService::GetIsAccountManagedDeprecated(
     const GetIsAccountManagedDeprecatedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback.Run(
-      policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
+  callback.Run(policy_util::IsAccountManaged(profile_));
 }
 
 void ArcAuthService::RequestAccountInfoInternal(
@@ -247,18 +256,16 @@ void ArcAuthService::RequestAccountInfoInternal(
   DCHECK(!fetcher_);
 
   if (IsArcOptInVerificationDisabled()) {
-    notifier->Notify(
-        false /* = is_enforced */, std::string() /* auth_info */,
-        std::string() /* auth_name */, GetAccountType(),
-        policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
+    notifier->Notify(false /* = is_enforced */, std::string() /* auth_info */,
+                     std::string() /* auth_name */, GetAccountType(),
+                     policy_util::IsAccountManaged(profile_));
     return;
   }
 
   // Hereafter asynchronous operation. Remember the notifier.
   notifier_ = std::move(notifier);
 
-  Profile* profile = ArcSessionManager::Get()->profile();
-  if (profile && IsActiveDirectoryUserForProfile(profile)) {
+  if (IsActiveDirectoryUserForProfile(profile_)) {
     // For Active Directory enrolled devices, we get an enrollment token for a
     // managed Google Play account from DMServer.
     auto enrollment_token_fetcher =
@@ -276,9 +283,8 @@ void ArcAuthService::RequestAccountInfoInternal(
     auth_code_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
   } else if (base::FeatureList::IsEnabled(arc::kArcUseAuthEndpointFeature)) {
     // Optionally retrieve auth code in silent mode.
-    DCHECK(profile);
     auth_code_fetcher = base::MakeUnique<ArcBackgroundAuthCodeFetcher>(
-        profile, ArcSessionManager::Get()->auth_context());
+        profile_, ArcSessionManager::Get()->auth_context());
   } else {
     // Report that silent auth code is not activated. All other states are
     // reported in ArcBackgroundAuthCodeFetcher.
@@ -306,13 +312,8 @@ void ArcAuthService::OnEnrollmentTokenFetched(
   switch (status) {
     case ArcActiveDirectoryEnrollmentTokenFetcher::Status::SUCCESS: {
       // Save user_id to the user profile.
-      Profile* const profile = ArcSessionManager::Get()->profile();
-      if (!profile) {
-        LOG(ERROR) << "Profile is not available.";
-      } else {
-        profile->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
-                                       user_id);
-      }
+      profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
+                                      user_id);
 
       // Send enrollment token to arc.
       notifier_->Notify(true /*is_enforced*/, enrollment_token,
@@ -346,11 +347,9 @@ void ArcAuthService::OnAuthCodeFetched(bool success,
     return;
   }
 
-  notifier_->Notify(
-      !IsArcOptInVerificationDisabled(), auth_code,
-      ArcSessionManager::Get()->auth_context()->full_account_id(),
-      GetAccountType(),
-      policy_util::IsAccountManaged(ArcSessionManager::Get()->profile()));
+  notifier_->Notify(!IsArcOptInVerificationDisabled(), auth_code,
+                    ArcSessionManager::Get()->auth_context()->full_account_id(),
+                    GetAccountType(), policy_util::IsAccountManaged(profile_));
   notifier_.reset();
 }
 
