@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -13,19 +15,18 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100;
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
-    mock.setGeolocationPosition(mockLatitude,
-                                mockLongitude,
-                                mockAccuracy);
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.setGeolocationPosition(mockLatitude,
+                            mockLongitude,
+                            mockAccuracy);
 
-    var watchId = navigator.geolocation.watchPosition(function() {
-        navigator.geolocation.clearWatch(watchId);
-        finishJSTest();
-    }, function(e) {
-        navigator.geolocation.clearWatch(watchId);
-        finishJSTest();
-    });
+var watchId = navigator.geolocation.watchPosition(function() {
+    navigator.geolocation.clearWatch(watchId);
+    finishJSTest();
+}, function(e) {
+    navigator.geolocation.clearWatch(watchId);
+    finishJSTest();
 });
 
 window.jsTestIsAsync = true;

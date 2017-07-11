@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -13,44 +15,43 @@ var mockMessage = 'test';
 
 var error;
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.setGeolocationPositionUnavailableError(mockMessage);
+
+var errorCallbackInvoked = false;
+navigator.geolocation.getCurrentPosition(function(p) {
+    testFailed('Success callback invoked unexpectedly');
+    finishJSTest();
+}, function(e) {
+    if (errorCallbackInvoked) {
+        testFailed('Error callback invoked unexpectedly');
+        finishJSTest();
+    }
+    errorCallbackInvoked = true;
+
+    error = e;
+    shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
+    shouldBe('error.message', 'mockMessage');
+    debug('');
+    continueTest();
+});
+
+function continueTest() {
+    mockMessage += ' repeat';
+
     mock.setGeolocationPositionUnavailableError(mockMessage);
 
-    var errorCallbackInvoked = false;
     navigator.geolocation.getCurrentPosition(function(p) {
         testFailed('Success callback invoked unexpectedly');
         finishJSTest();
     }, function(e) {
-        if (errorCallbackInvoked) {
-            testFailed('Error callback invoked unexpectedly');
-            finishJSTest();
-        }
-        errorCallbackInvoked = true;
-
         error = e;
         shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
         shouldBe('error.message', 'mockMessage');
-        debug('');
-        continueTest();
+        finishJSTest();
     });
-
-    function continueTest() {
-        mockMessage += ' repeat';
-
-        mock.setGeolocationPositionUnavailableError(mockMessage);
-
-        navigator.geolocation.getCurrentPosition(function(p) {
-            testFailed('Success callback invoked unexpectedly');
-            finishJSTest();
-        }, function(e) {
-            error = e;
-            shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
-            shouldBe('error.message', 'mockMessage');
-            finishJSTest();
-        });
-    }
-});
+}
 
 window.jsTestIsAsync = true;
 </script>

@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -12,11 +14,9 @@ description("Tests that no timers will trigger for navigator.geolocation object 
 if (!window.testRunner)
   debug('This test can not run without testRunner');
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
+geolocationMock.setGeolocationPermission(true);
 
-    location = "../fast/events/resources/onunload-single-alert-success.html";
-});
+location = "../fast/events/resources/onunload-single-alert-success.html";
 
 document.body.onunload = function() {
     navigator.geolocation.getCurrentPosition(

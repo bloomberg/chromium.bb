@@ -1,14 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <script src="../../resources/mojo-helpers.js"></script>
+    <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+    <script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+    <script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
     <script src="geolocation-mock.js"></script>
     <script>
       function init() {
-          geolocationMock.then(mock => {
-              mock.setGeolocationPermission(false);
-              window.parent.onIframeReady()
-          });
+          geolocationMock.setGeolocationPermission(false);
+          window.parent.onIframeReady();
       }
     </script>
   </head>

@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -18,27 +20,27 @@ shouldBeTrue('now != 0');
 var t = null;
 var then = null;
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
-    mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
-    function checkPosition(p) {
-        t = p.timestamp;
-        var d = new Date();
-        then = d.getTime();
-        shouldBeTrue('t != 0');
-        shouldBeTrue('then != 0');
-        shouldBeTrue('now - 1 <= t'); // Avoid rounding errors
-        if (now - 1 > t) {
-            debug("  now - 1 = " + (now-1));
-            debug("  t = " + t);
-        }
-        shouldBeTrue('t <= then + 1'); // Avoid rounding errors
-        finishJSTest();
+function checkPosition(p) {
+    t = p.timestamp;
+    var d = new Date();
+    then = d.getTime();
+    shouldBeTrue('t != 0');
+    shouldBeTrue('then != 0');
+    shouldBeTrue('now - 1 <= t'); // Avoid rounding errors
+    if (now - 1 > t) {
+        debug("  now - 1 = " + (now-1));
+        debug("  t = " + t);
     }
+    shouldBeTrue('t <= then + 1'); // Avoid rounding errors
+    finishJSTest();
+}
 
-    navigator.geolocation.getCurrentPosition(checkPosition);
-});
+navigator.geolocation.getCurrentPosition(checkPosition);
+
 window.jsTestIsAsync = true;
 </script>
 </body>

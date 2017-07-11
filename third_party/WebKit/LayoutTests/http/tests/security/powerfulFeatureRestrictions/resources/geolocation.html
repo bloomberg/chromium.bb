@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <title>Geolocation On A Secure Origin</title>
-<script src="/js-test-resources/mojo-helpers.js"></script>
+
+<script src="/gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="/gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="/gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="/geolocation-api/js-test-resources/geolocation-mock.js"></script>
 <script>
 var mockLatitude = 51.478;
@@ -10,16 +13,15 @@ var mockAccuracy = 100.0;
 if (!window.mojo)
     console.error('This test can not run without mojo');
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
-    mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
-    navigator.geolocation.getCurrentPosition(
-        function () {
-            window.parent.postMessage({ success: true }, "*");
-        },
-        function (error) {
-            window.parent.postMessage({ message: error.message }, "*");
-        }, { maximumAge: 10000 });
-});
+navigator.geolocation.getCurrentPosition(
+    function () {
+        window.parent.postMessage({ success: true }, "*");
+    },
+    function (error) {
+        window.parent.postMessage({ message: error.message }, "*");
+    }, { maximumAge: 10000 });
 </script>

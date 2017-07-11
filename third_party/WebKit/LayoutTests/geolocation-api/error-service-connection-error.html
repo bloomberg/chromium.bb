@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -11,19 +13,18 @@ description("Tests Geolocation when the geolocation service connection fails.");
 
 var error;
 
-geolocationMock.then(mock => {
-  mock.setGeolocationPermission(true);
-  mock.rejectGeolocationConnections();
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.rejectGeolocationConnections();
 
-  navigator.geolocation.getCurrentPosition(function(p) {
-    testFailed('Success callback invoked unexpectedly');
-    finishJSTest();
-  }, function(e) {
-    error = e;
-    shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
-    shouldBe('error.message', '"Failed to start Geolocation service"');
-    finishJSTest();
-  });
+navigator.geolocation.getCurrentPosition(function(p) {
+  testFailed('Success callback invoked unexpectedly');
+  finishJSTest();
+}, function(e) {
+  error = e;
+  shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
+  shouldBe('error.message', '"Failed to start Geolocation service"');
+  finishJSTest();
 });
 
 window.jsTestIsAsync = true;

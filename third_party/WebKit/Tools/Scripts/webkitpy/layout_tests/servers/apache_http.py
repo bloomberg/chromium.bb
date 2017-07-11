@@ -63,6 +63,7 @@ class ApacheHTTP(server_base.ServerBase):
         mime_types_path = self._filesystem.join(self._port_obj.apache_config_directory(), 'mime.types')
         cert_file = self._filesystem.join(self._port_obj.apache_config_directory(), 'webkit-httpd.pem')
         inspector_sources_dir = self._port_obj.inspector_build_directory()
+        generated_sources_dir = self._port_obj.generated_sources_directory()
 
         self._access_log_path = self._filesystem.join(output_dir, 'access_log.txt')
         self._error_log_path = self._filesystem.join(output_dir, 'error_log.txt')
@@ -86,6 +87,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'PidFile %s' % self._pid_file,
             '-c', 'SSLCertificateFile "%s"' % cert_file,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
+            '-c', 'Alias /gen "%s"' % generated_sources_dir,
             '-c', 'DefaultType None',
         ]
 
