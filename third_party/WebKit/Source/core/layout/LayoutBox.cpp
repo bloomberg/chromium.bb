@@ -5729,7 +5729,7 @@ bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnWidthChange() const {
     return true;
 
   // Our fill layers are ok. Let's check border.
-  if (Style()->HasBorderDecoration() && CanRenderBorderImage())
+  if (Style()->CanRenderBorderImage())
     return true;
 
   return false;
@@ -5748,18 +5748,10 @@ bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnHeightChange() const {
     return true;
 
   // Our fill layers are ok.  Let's check border.
-  if (Style()->HasBorderDecoration() && CanRenderBorderImage())
+  if (Style()->CanRenderBorderImage())
     return true;
 
   return false;
-}
-
-bool LayoutBox::CanRenderBorderImage() const {
-  if (!Style()->HasBorderDecoration())
-    return false;
-
-  StyleImage* border_image = Style()->BorderImage().GetImage();
-  return border_image && border_image->CanRender() && border_image->IsLoaded();
 }
 
 ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {

@@ -1812,6 +1812,8 @@ class ComputedStyle : public ComputedStyleBase,
       bool include_logical_left_edge,
       bool include_logical_right_edge) const;
 
+  bool CanRenderBorderImage() const;
+
   // Float utility functions.
   bool IsFloating() const { return Floating() != EFloat::kNone; }
 
