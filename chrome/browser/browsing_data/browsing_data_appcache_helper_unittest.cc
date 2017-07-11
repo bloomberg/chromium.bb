@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -123,7 +124,14 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   ASSERT_TRUE(helper->empty());
 }
 
-TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
+// Flaky on linux. See crbug.com/740801.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define MAYBE_Delete DISABLED_Delete
+#else
+#define MAYBE_Delete Delete
+#endif
+
+TEST_F(CannedBrowsingDataAppCacheHelperTest, MAYBE_Delete) {
   GURL manifest1("http://example.com/manifest1.xml");
   GURL manifest2("http://foo.example.com/manifest2.xml");
   GURL manifest3("http://bar.example.com/manifest3.xml");
