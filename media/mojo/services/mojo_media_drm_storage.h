@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_DRM_STORAGE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_DRM_STORAGE_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +36,6 @@ class MEDIA_MOJO_EXPORT MojoMediaDrmStorage
                                ResultCB result_cb) final;
 
  private:
-  void OnResult(ResultCB result_cb, bool success);
   void OnPersistentSessionLoaded(
       LoadPersistentSessionCB load_persistent_session_cb,
       mojom::SessionDataPtr session_data);
