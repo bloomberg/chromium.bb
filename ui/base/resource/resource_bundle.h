@@ -151,6 +151,11 @@ class UI_BASE_EXPORT ResourceBundle {
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
+  // Loads a secondary locale data pack using the given file region.
+  void LoadSecondaryLocaleDataWithPakFileRegion(
+      base::File pak_file,
+      const base::MemoryMappedFile::Region& region);
+
   // Check if the .pak for the given locale exists.
   bool LocaleDataPakExists(const std::string& locale);
 
@@ -399,6 +404,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
   // Handles for data sources.
   std::unique_ptr<ResourceHandle> locale_resources_data_;
+  std::unique_ptr<ResourceHandle> secondary_locale_resources_data_;
   std::vector<std::unique_ptr<ResourceHandle>> data_packs_;
 
   // The maximum scale factor currently loaded.
