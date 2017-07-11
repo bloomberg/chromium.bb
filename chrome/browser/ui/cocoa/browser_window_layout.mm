@@ -11,6 +11,7 @@
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "chrome/common/chrome_features.h"
 
 namespace chrome {
 
@@ -24,7 +25,8 @@ bool ShouldUseFullSizeContentView() {
   // may break in a future macOS release. NSFullSizeContentViewWindowMask is a
   // new (10.10+), supported way to make the content view the full size of the
   // window without covering the controls.
-  return base::mac::IsAtLeastOS10_11();
+  return base::FeatureList::IsEnabled(features::kMacFullSizeContentView) &&
+         base::mac::IsAtLeastOS10_11();
 }
 
 }  // namespace chrome

@@ -202,6 +202,12 @@ const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
 #if defined(OS_MACOSX)
 // Enables RTL layout in macOS top chrome.
 const base::Feature kMacRTL{"MacRTL", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Uses NSFullSizeContentViewWindowMask where available instead of adding our
+// own views to the window frame. This is a temporary kill switch, it can be
+// removed once we feel okay about leaving it on.
+const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the Material Design version of chrome://bookmarks.
