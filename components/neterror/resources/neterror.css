@@ -462,13 +462,6 @@ html[subframe] body {
   }
 }
 
-@media (min-width: 600px) and (max-width: 736px) and (orientation: landscape) {
-  .offline .interstitial-wrapper {
-    margin-left: 0;
-    margin-right: 0;
-  }
-}
-
 @media (min-width: 420px) and (max-width: 736px) and
        (min-height: 240px) and (max-height: 420px) and
        (orientation:landscape) {
@@ -513,4 +506,33 @@ html[subframe] body {
   button {
     width: auto;
   }
+}
+
+.arcade-mode,
+.arcade-mode .runner-container,
+.arcade-mode .runner-canvas {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.arcade-mode #buttons,
+.arcade-mode #main-content {
+  opacity: 0;
+  overflow: hidden;
+}
+
+.arcade-mode .interstitial-wrapper {
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.arcade-mode .runner-container {
+  left: 0;
+  margin: auto;
+  right: 0;
+  top: 0;
+  transform-origin: top center;
+  transition: transform 250ms cubic-bezier(0.4, 0.0, 1, 1) .4s;
+  z-index: 2;
 }
