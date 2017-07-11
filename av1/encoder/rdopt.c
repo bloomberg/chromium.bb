@@ -2149,6 +2149,9 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int r_tx_size = tx_size_cost(cpi, x, bs, tx_size);
 
+#if CONFIG_PVQ
+  assert(tx_size >= TX_4X4);
+#endif  // CONFIG_PVQ
   assert(skip_prob > 0);
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed_bsize(bs)));

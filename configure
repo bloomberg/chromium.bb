@@ -525,11 +525,12 @@ post_process_cmdline() {
     soft_enable tempmv_signaling
 
     # Fix up experiment dependencies
-    enabled pvq && disable_feature chroma_sub8x8
-    enabled pvq && disable_feature cb4x4
+    enabled pvq && disable_feature chroma_2x2
     enabled pvq && disable_feature rect_tx
     enabled pvq && disable_feature ext_tx
     enabled pvq && disable_feature var_tx
+    enabled pvq && disable_feature highbitdepth
+    enabled pvq && disable_feature lgt
     enabled palette_throughput && soft_enable palette
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
