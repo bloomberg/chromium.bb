@@ -107,6 +107,7 @@ extern const base::Feature kLsdPermissionPrompt;
 
 #if defined(OS_MACOSX)
 extern const base::Feature kMacRTL;
+extern const base::Feature kMacFullSizeContentView;
 #endif
 
 extern const base::Feature kMaterialDesignBookmarks;
