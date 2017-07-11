@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -458,7 +459,11 @@ class TargetDomainCreateAndDeletePageTest
   }
 };
 
+#if defined(OS_WIN)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeletePageTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeletePageTest);
+#endif
 
 class TargetDomainCreateAndDeleteBrowserContextTest
     : public HeadlessAsyncDevTooledBrowserTest {
@@ -526,7 +531,12 @@ class TargetDomainCreateAndDeleteBrowserContextTest
   std::string browser_context_id_;
 };
 
+#if defined(OS_WIN)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    TargetDomainCreateAndDeleteBrowserContextTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeleteBrowserContextTest);
+#endif
 
 class TargetDomainDisposeContextFailsIfInUse
     : public HeadlessAsyncDevTooledBrowserTest {
@@ -602,7 +612,12 @@ class TargetDomainDisposeContextFailsIfInUse
   std::string page_id_;
 };
 
+#if defined(OS_WIN)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    TargetDomainDisposeContextFailsIfInUse);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainDisposeContextFailsIfInUse);
+#endif
 
 class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
                                       public target::ExperimentalObserver,
@@ -874,7 +889,11 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
   int context_closed_count_ = 0;
 };
 
+#if defined(OS_WIN)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateTwoContexts);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateTwoContexts);
+#endif
 
 class HeadlessDevToolsNavigationControlTest
     : public HeadlessAsyncDevTooledBrowserTest,

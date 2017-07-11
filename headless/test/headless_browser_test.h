@@ -94,12 +94,25 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserTest);
 };
 
+// TODO(eseckler): Make macro more sheriff-friendly.
 #define HEADLESS_ASYNC_DEVTOOLED_TEST_F(TEST_FIXTURE_NAME)               \
   IN_PROC_BROWSER_TEST_F(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
   class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define HEADLESS_ASYNC_DEVTOOLED_TEST_P(TEST_FIXTURE_NAME)               \
   IN_PROC_BROWSER_TEST_P(TEST_FIXTURE_NAME, RunAsyncTest) { RunTest(); } \
+  class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
+
+#define DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(TEST_FIXTURE_NAME)  \
+  IN_PROC_BROWSER_TEST_F(TEST_FIXTURE_NAME, DISABLED_RunAsyncTest) { \
+    RunTest();                                                       \
+  }                                                                  \
+  class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
+
+#define DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(TEST_FIXTURE_NAME)  \
+  IN_PROC_BROWSER_TEST_P(TEST_FIXTURE_NAME, DISABLED_RunAsyncTest) { \
+    RunTest();                                                       \
+  }                                                                  \
   class AsyncHeadlessBrowserTestNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 // Base class for tests that require access to a DevToolsClient. Subclasses
