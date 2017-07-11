@@ -8,10 +8,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
-#include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
-#include "ash/key_event_watcher.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
@@ -231,15 +229,6 @@ std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
     return KeyboardUI::Create();
 
   return KeyboardUIMus::Create(window_manager_->connector());
-}
-
-std::unique_ptr<KeyEventWatcher> ShellPortMash::CreateKeyEventWatcher() {
-  if (GetAshConfig() == Config::MUS)
-    return base::MakeUnique<KeyEventWatcherAura>();
-
-  // TODO: needs implementation for mus, http://crbug.com/649600.
-  NOTIMPLEMENTED();
-  return std::unique_ptr<KeyEventWatcher>();
 }
 
 void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
