@@ -24,7 +24,7 @@
 // For more details, see
 // https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/README.md
 
-#include "platform/image-decoders/png/PNGImageDecoder.cpp"
+#include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 
 namespace blink {
