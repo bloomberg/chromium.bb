@@ -78,10 +78,10 @@ class MediaEngagementContentsObserverTest
     contents_observer_->MediaStoppedPlaying(player_info, player_id);
   }
 
-  void SimulateMutedStateChange(int id, bool muted_state) {
+  void SimulateMutedStateChange(int id, bool muted) {
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
-    contents_observer_->MediaMutedStateChanged(player_id, muted_state);
+    contents_observer_->MediaMutedStatusChanged(player_id, muted);
   }
 
   void SimulateIsVisible() { contents_observer_->WasShown(); }
