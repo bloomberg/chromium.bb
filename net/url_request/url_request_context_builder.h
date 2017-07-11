@@ -53,6 +53,7 @@ namespace net {
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
+class CTPolicyEnforcer;
 class CTVerifier;
 class HttpAuthHandlerFactory;
 class HttpServerProperties;
@@ -255,6 +256,8 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   void set_ct_verifier(std::unique_ptr<CTVerifier> ct_verifier);
+  void set_ct_policy_enforcer(
+      std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer);
 
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
@@ -362,6 +365,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;
+  std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<net::ReportingPolicy> reporting_policy_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
