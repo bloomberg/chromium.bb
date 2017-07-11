@@ -176,8 +176,8 @@ EGLConfig GbmSurfaceless::GetConfig() {
   return config_;
 }
 
-void GbmSurfaceless::SetRelyOnImplicitSync(bool rely_on_implicit_sync) {
-  rely_on_implicit_sync_ = rely_on_implicit_sync;
+void GbmSurfaceless::SetRelyOnImplicitSync() {
+  rely_on_implicit_sync_ = true;
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
