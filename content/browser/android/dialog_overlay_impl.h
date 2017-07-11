@@ -23,9 +23,17 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver {
   // Registers the JNI methods for DialogOverlayImpl.
   static bool RegisterDialogOverlayImpl(JNIEnv* env);
 
+  // This may not call back into |obj| directly, but must post.  This is because
+  // |obj| is still being initialized.
   DialogOverlayImpl(const base::android::JavaParamRef<jobject>& obj,
                     const base::UnguessableToken& token);
   ~DialogOverlayImpl() override;
+
+  // Called when the java side is ready for token / dismissed callbacks.  May
+  // call back before returning.  Must guarantee that a token is eventually sent
+  // if we have one.
+  void CompleteInit(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj);
 
   // Clean up and post to delete |this| later.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

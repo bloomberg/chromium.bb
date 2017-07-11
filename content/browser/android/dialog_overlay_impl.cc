@@ -33,24 +33,37 @@ DialogOverlayImpl::DialogOverlayImpl(const JavaParamRef<jobject>& obj,
                                      const base::UnguessableToken& token)
     : token_(token), cvc_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cvc_ = GetContentViewCore();
 
   JNIEnv* env = AttachCurrentThread();
   obj_ = JavaObjectWeakGlobalRef(env, obj);
 
-  // If there's no CVC, then just post a null token immediately.
+  cvc_ = GetContentViewCore();
+  if (cvc_)
+    cvc_->AddObserver(this);
+
+  // Note that we're not allowed to call back into |obj| before it calls
+  // CompleteInit.  However, the observer won't actually call us back until the
+  // token changes.  As long as the java side calls us from the ui thread before
+  // returning, we won't send a callback before then.
+}
+
+void DialogOverlayImpl::CompleteInit(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // If there's no CVC, then notify our caller.
   if (!cvc_) {
     Java_DialogOverlayImpl_onDismissed(env, obj.obj());
     return;
   }
 
-  cvc_->AddObserver(this);
-
-  // Also send the initial token, since we'll only get changes.
+  // Send the initial token, if there is one.  The observer will notify us about
+  // changes only.
   if (ui::WindowAndroid* window = cvc_->GetWindowAndroid()) {
     ScopedJavaLocalRef<jobject> token = window->GetWindowToken();
     if (!token.is_null())
       Java_DialogOverlayImpl_onWindowToken(env, obj.obj(), token);
+    // else we will send one if we get a callback from |cvc_|.
   }
 }
 
@@ -77,8 +90,8 @@ void DialogOverlayImpl::GetCompositorOffset(
       point = view->GetLocationOfContainerViewOnScreen();
   }
 
-  Java_DialogOverlayImpl_receiveCompositorOffset(env, obj.obj(), rect.obj(),
-                                                 point.x(), point.y());
+  Java_DialogOverlayImpl_receiveCompositorOffset(env, rect.obj(), point.x(),
+                                                 point.y());
 }
 
 void DialogOverlayImpl::UnregisterForTokensIfNeeded() {
@@ -160,6 +173,15 @@ static void UnregisterSurface(
     jint surface_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_id);
+}
+
+static ScopedJavaLocalRef<jobject> LookupSurfaceForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    jint surfaceId) {
+  gl::ScopedJavaSurface surface =
+      gpu::GpuSurfaceTracker::Get()->AcquireJavaSurface(surfaceId);
+  return ScopedJavaLocalRef<jobject>(surface.j_surface());
 }
 
 }  // namespace content
