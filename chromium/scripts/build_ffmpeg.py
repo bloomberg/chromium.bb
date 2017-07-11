@@ -219,6 +219,16 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           r'(#define HAVE_POSIX_MEMALIGN [01])',
           (r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See https://crbug.com/604451 */'))
 
+
+  # Linux configs is also used on Fuchsia. They are mostly compatible with
+  # Fuchsia except that Fuchsia doesn't support sysctl(). On Linux sysctl()
+  # isn't actually used, so it's safe to set HAVE_SYSCTL to 0.
+  if target_os == 'linux':
+      RewriteFile(
+          os.path.join(config_dir, 'config.h'),
+          r'(#define HAVE_SYSCTL [01])',
+          (r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */'))
+
   # Windows linking resolves external symbols. Since generate_gn.py does not
   # need a functioning set of libraries, ignore unresolved symbols here.
   # This is especially useful here to avoid having to build a local libopus for

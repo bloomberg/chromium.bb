@@ -148,7 +148,7 @@ class SourceSetUnittest(unittest.TestCase):
                   set([SourceListCondition('x64', 'Chromium', 'linux')]))
     b_stanza = b.GenerateGnStanza()
     string.index(b_stanza, 'current_cpu == "x64"')
-    string.index(b_stanza, 'is_linux')
+    string.index(b_stanza, 'use_linux_config')
 
     # arm should just be arm.
     c = SourceSet(set(['a', 'b']),
@@ -169,7 +169,7 @@ class SourceSetUnittest(unittest.TestCase):
     e_stanza = e.GenerateGnStanza()
     string.index(e_stanza, ('is_win && current_cpu == "arm"'
         ' && ffmpeg_branding == "Chrome"'))
-    string.index(e_stanza, ('is_linux && current_cpu == "x64"'
+    string.index(e_stanza, ('use_linux_config && current_cpu == "x64"'
         ' && ffmpeg_branding == "Chromium"'))
 
   def testComplexSourceListConditions(self):

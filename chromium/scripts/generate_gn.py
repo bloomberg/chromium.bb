@@ -54,6 +54,8 @@ ffmpeg_c_sources = []
 ffmpeg_gas_sources = []
 ffmpeg_yasm_sources = []
 
+use_linux_config = is_linux || is_fuchsia
+
 """
 GN_CONDITION_BEGIN = """if (%s) {
 """
@@ -319,10 +321,13 @@ class SourceSet(object):
       else:
         target_condition = 'ffmpeg_branding == "%s"' % condition.TARGET
 
-      # Platform conditions look like:
-      #   is_mac
+      # Platform conditions look like: is_mac .
+      # Linux configuration is also used on Fuchsia, for linux config we use
+      # |use_linux_config| flag.
       if condition.PLATFORM == '*':
         platform_condition = None
+      elif condition.PLATFORM == 'linux':
+        platform_condition = 'use_linux_config'
       else:
         platform_condition = 'is_%s' % condition.PLATFORM
 

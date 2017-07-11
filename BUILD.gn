@@ -309,7 +309,7 @@ target(link_target_type, "ffmpeg_internal") {
       "-L",
       rebase_path(target_gen_dir, root_build_dir),
     ]
-    if (!is_android) {
+    if (!is_android && !is_fuchsia) {
       # OS=android requires that both -lz and -lm occur after
       # -lc++_shared on the link command line. Android link rules
       # already include -lm, and we get -lz as a transitive dependency
