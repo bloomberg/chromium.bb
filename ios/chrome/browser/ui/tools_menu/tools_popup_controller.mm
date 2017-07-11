@@ -227,7 +227,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_VIEW_SOURCE:
       // Debug only; no metric.
       break;
-    case IDC_SHOW_TOOLS_MENU:
+    case TOOLS_MENU_ITEM:
       // Do nothing when tapping the tools menu a second time.
       break;
     case IDC_SHOW_READING_LIST:

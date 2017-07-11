@@ -488,10 +488,9 @@ NS_INLINE void AnimateInViews(NSArray* views,
 - (void)buttonPressed:(id)sender {
   int commandId = [sender tag];
   DCHECK(commandId);
-  // Do nothing when tapping the tools menu a second time.
   // Do not use -chromeExecuteCommand: for tags < 0 -- that is, items that have
   // been refactored to use the dispatcher.
-  if (commandId != IDC_SHOW_TOOLS_MENU && commandId > 0) {
+  if (commandId > 0) {
     [self chromeExecuteCommand:sender];
   }
 
