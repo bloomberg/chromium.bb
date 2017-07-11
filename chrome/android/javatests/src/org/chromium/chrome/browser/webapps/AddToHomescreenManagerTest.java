@@ -177,7 +177,6 @@ public class AddToHomescreenManagerTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ChromeWebApkHost.initForTesting(false);
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mShortcutHelperDelegate = new TestShortcutHelperDelegate();
@@ -271,6 +270,9 @@ public class AddToHomescreenManagerTest {
     @Test
     @SmallTest
     @Feature("{Webapp}")
+    @CommandLineFlags.Add({ContentSwitches.DISABLE_POPUP_BLOCKING,
+            // TODO(yfriedman): Force WebApks off as this tests old A2HS behaviour.
+            "disable-field-trial-config"})
     public void testAddWebappShortcutSplashScreenIcon() throws Exception {
         try {
             // Sets the overriden factory to observer splash screen update.

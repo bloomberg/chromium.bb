@@ -83414,6 +83414,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebApk.Install.GooglePlayInstallState"
     enum="WebApkGooglePlayInstallState">
+  <obsolete>
+    Deleted in M61.
+  </obsolete>
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
