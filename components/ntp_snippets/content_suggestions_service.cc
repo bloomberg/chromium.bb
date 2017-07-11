@@ -233,6 +233,9 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     RecordFaviconFetchResult(continue_to_google_server
                                  ? FaviconFetchResult::SUCCESS_CACHED
                                  : FaviconFetchResult::SUCCESS_FETCHED);
+    // Update the time when the icon was last requested - postpone thus the
+    // automatic eviction of the favicon from the favicon database.
+    large_icon_service_->TouchIconFromGoogleServer(result.icon_url);
     return;
   }
 
