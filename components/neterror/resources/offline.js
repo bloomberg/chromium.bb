@@ -22,7 +22,7 @@ function Runner(outerContainerId, opt_config) {
   this.snackbarEl = null;
 
   this.config = opt_config || Runner.config;
-
+  // Logical dimensions of the container.
   this.dimensions = Runner.defaultDimensions;
 
   this.canvas = null;
@@ -96,6 +96,9 @@ var IS_MOBILE = /Android/.test(window.navigator.userAgent) || IS_IOS;
 /** @const */
 var IS_TOUCH_ENABLED = 'ontouchstart' in window;
 
+/** @const */
+var ARCADE_MODE_URL = 'chrome://dino/';
+
 /**
  * Default game configuration.
  * @enum {number}
@@ -121,7 +124,8 @@ Runner.config = {
   MOBILE_SPEED_COEFFICIENT: 1.2,
   RESOURCE_TEMPLATE_ID: 'audio-resources',
   SPEED: 6,
-  SPEED_DROP_COEFFICIENT: 3
+  SPEED_DROP_COEFFICIENT: 3,
+  ARCADE_MODE_TOP_POSITION_PERCENT: 0.1
 };
 
 
@@ -140,6 +144,7 @@ Runner.defaultDimensions = {
  * @enum {string}
  */
 Runner.classes = {
+  ARCADE_MODE: 'arcade-mode',
   CANVAS: 'runner-canvas',
   CONTAINER: 'runner-container',
   CRASHED: 'crashed',
@@ -224,7 +229,6 @@ Runner.events = {
   FOCUS: 'focus',
   LOAD: 'load'
 };
-
 
 Runner.prototype = {
   /**
@@ -418,6 +422,12 @@ Runner.prototype = {
         boxStyles.paddingLeft.length - 2));
 
     this.dimensions.WIDTH = this.outerContainerEl.offsetWidth - padding * 2;
+    if (this.isArcadeMode()) {
+      this.dimensions.WIDTH = Math.min(DEFAULT_WIDTH, this.dimensions.WIDTH);
+      if (this.activated) {
+        this.setArcadeModeContainerScale();
+      }
+    }
 
     // Redraw the elements back onto the canvas.
     if (this.canvas) {
@@ -486,6 +496,9 @@ Runner.prototype = {
    * Update the game status to started.
    */
   startGame: function() {
+    if (this.isArcadeMode()) {
+      this.setArcadeMode();
+    }
     this.runningTime = 0;
     this.playingIntro = false;
     this.tRex.playingIntro = false;
@@ -823,6 +836,39 @@ Runner.prototype = {
       this.invert(true);
       this.update();
     }
+  },
+
+  /**
+   * Whether the game should go into arcade mode.
+   * @return {boolean}
+   */
+  isArcadeMode: function() {
+    return document.title == ARCADE_MODE_URL;
+  },
+
+  /**
+   * Hides offline messaging for a fullscreen game only experience.
+   */
+  setArcadeMode: function() {
+    document.body.classList.add(Runner.classes.ARCADE_MODE);
+    this.setArcadeModeContainerScale();
+  },
+
+  /**
+   * Sets the scaling for arcade mode.
+   */
+  setArcadeModeContainerScale: function() {
+    var windowHeight = window.innerHeight;
+    var scaleHeight = windowHeight / this.dimensions.HEIGHT;
+    var scaleWidth = window.innerWidth / this.dimensions.WIDTH;
+    var scale = Math.max(1, Math.min(scaleHeight, scaleWidth));
+    var scaledCanvasHeight = this.dimensions.HEIGHT * scale;
+    // Positions the game container at 10% of the available vertical window
+    // height minus the game container height.
+    var translateY = Math.max(0, (windowHeight - scaledCanvasHeight) *
+        Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT);
+    this.containerEl.style.transform = 'scale(' + scale + ') translateY(' +
+        translateY + 'px)';
   },
 
   /**
