@@ -12,35 +12,35 @@ import time
 import yaml
 
 from chromite.lib import cros_logging as logging
-from infra_libs import ts_mon
+from chromite.lib import metrics
 
 logger = logging.getLogger(__name__)
 
 LAST_RUN_FILE = '/var/lib/cros_puppet/state/last_run_summary.yaml'
 
-_config_version_metric = ts_mon.GaugeMetric(
+_config_version_metric = metrics.GaugeMetric(
     'puppet/version/config',
     description='The version of the puppet configuration.'
     '  By default this is the time that the configuration was parsed')
-_puppet_version_metric = ts_mon.StringMetric(
+_puppet_version_metric = metrics.StringMetric(
     'puppet/version/puppet',
     description='Version of puppet client installed.')
-_events_metric = ts_mon.GaugeMetric(
+_events_metric = metrics.GaugeMetric(
     'puppet/events',
     description='Number of changes the puppet client made to the system in its'
     ' last run, by success or failure')
-_resources_metric = ts_mon.GaugeMetric(
+_resources_metric = metrics.GaugeMetric(
     'puppet/resources',
     description='Number of resources known by the puppet client in its last'
     ' run')
-_times_metric = ts_mon.FloatMetric(
+_times_metric = metrics.FloatMetric(
     'puppet/times',
     description='Time taken to perform various parts of the last puppet run',
-    units=ts_mon.MetricsDataUnits.SECONDS)
-_age_metric = ts_mon.FloatMetric(
+    units=metrics.MetricsDataUnits.SECONDS)
+_age_metric = metrics.FloatMetric(
     'puppet/age',
     description='Time since last run',
-    units=ts_mon.MetricsDataUnits.SECONDS)
+    units=metrics.MetricsDataUnits.SECONDS)
 
 
 class _PuppetRunSummary(object):

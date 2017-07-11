@@ -236,17 +236,20 @@ def _Metric(fn):
 # pylint: disable=unused-argument
 
 @_Metric
-def Counter(name, reset_after=False, description=None, field_spec=_MISSING):
+def CounterMetric(name, reset_after=False, description=None,
+                  field_spec=_MISSING):
   """Returns a metric handle for a counter named |name|."""
   return ts_mon.CounterMetric(name,
                               description=description, field_spec=field_spec)
+Counter = CounterMetric
 
 
 @_Metric
-def Gauge(name, reset_after=False, description=None, field_spec=_MISSING):
+def GaugeMetric(name, reset_after=False, description=None, field_spec=_MISSING):
   """Returns a metric handle for a gauge named |name|."""
   return ts_mon.GaugeMetric(name, description=description,
                             field_spec=field_spec)
+Gauge = GaugeMetric
 
 
 @_Metric
@@ -258,32 +261,38 @@ def CumulativeMetric(name, reset_after=False, description=None,
 
 
 @_Metric
-def String(name, reset_after=False, description=None, field_spec=_MISSING):
+def StringMetric(name, reset_after=False, description=None,
+                 field_spec=_MISSING):
   """Returns a metric handle for a string named |name|."""
   return ts_mon.StringMetric(name, description=description,
                              field_spec=field_spec)
+String = StringMetric
 
 
 @_Metric
-def Boolean(name, reset_after=False, description=None, field_spec=_MISSING):
+def BooleanMetric(name, reset_after=False, description=None,
+                  field_spec=_MISSING):
   """Returns a metric handle for a boolean named |name|."""
   return ts_mon.BooleanMetric(name, description=description,
                               field_spec=field_spec)
+Boolean = BooleanMetric
 
 
 @_Metric
-def Float(name, reset_after=False, description=None, field_spec=_MISSING):
+def FloatMetric(name, reset_after=False, description=None, field_spec=_MISSING):
   """Returns a metric handle for a float named |name|."""
   return ts_mon.FloatMetric(name, description=description,
                             field_spec=field_spec)
+Float = FloatMetric
 
 
 @_Metric
-def CumulativeDistribution(name, reset_after=False, description=None,
-                           field_spec=_MISSING):
+def CumulativeDistributionMetric(name, reset_after=False, description=None,
+                                 field_spec=_MISSING):
   """Returns a metric handle for a cumulative distribution named |name|."""
   return ts_mon.CumulativeDistributionMetric(name, description=description,
                                              field_spec=field_spec)
+CumulativeDistribution = CumulativeDistributionMetric
 
 
 @_Metric

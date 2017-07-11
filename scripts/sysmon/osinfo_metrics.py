@@ -11,21 +11,21 @@ import collections
 import platform
 import sys
 
-from infra_libs import ts_mon
+from chromite.lib import metrics
 
-_os_name_metric = ts_mon.StringMetric(
+_os_name_metric = metrics.StringMetric(
     'proc/os/name',
     description='OS name on the machine')
 
-_os_version_metric = ts_mon.StringMetric(
+_os_version_metric = metrics.StringMetric(
     'proc/os/version',
     description='OS version on the machine')
 
-_os_arch_metric = ts_mon.StringMetric(
+_os_arch_metric = metrics.StringMetric(
     'proc/os/arch',
     description='OS architecture on this machine')
 
-_python_arch_metric = ts_mon.StringMetric(
+_python_arch_metric = metrics.StringMetric(
     'proc/python/arch',
     description='python userland architecture on this machine')
 

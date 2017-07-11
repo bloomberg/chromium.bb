@@ -12,63 +12,65 @@ import collections
 import psutil
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import metrics
+
 from infra_libs import ts_mon
 
 logger = logging.getLogger(__name__)
 
 _BOOT_TIME = psutil.boot_time()
 
-_net_up_metric = ts_mon.CounterMetric(
+_net_up_metric = metrics.CounterMetric(
     'dev/net/bytes/up', start_time=_BOOT_TIME,
     description='Number of bytes sent on interface.',
     units=ts_mon.MetricsDataUnits.BYTES)
-_net_down_metric = ts_mon.CounterMetric(
+_net_down_metric = metrics.CounterMetric(
     'dev/net/bytes/down', start_time=_BOOT_TIME,
     description='Number of Bytes received on '
     'interface.',
-    units=ts_mon.MetricsDataUnits.BYTES)
-_net_err_up_metric = ts_mon.CounterMetric(
+    units=metrics.MetricsDataUnits.BYTES)
+_net_err_up_metric = metrics.CounterMetric(
     'dev/net/err/up', start_time=_BOOT_TIME,
     description='Total number of errors when '
     'sending (per interface).')
-_net_err_down_metric = ts_mon.CounterMetric(
+_net_err_down_metric = metrics.CounterMetric(
     'dev/net/err/down', start_time=_BOOT_TIME,
     description='Total number of errors when '
     'receiving (per interface).')
-_net_drop_up_metric = ts_mon.CounterMetric(
+_net_drop_up_metric = metrics.CounterMetric(
     'dev/net/drop/up', start_time=_BOOT_TIME,
     description='Total number of outgoing '
     'packets that have been dropped.')
-_net_drop_down_metric = ts_mon.CounterMetric(
+_net_drop_down_metric = metrics.CounterMetric(
     'dev/net/drop/down', start_time=_BOOT_TIME,
     description='Total number of incoming '
     'packets that have been dropped.')
 
-_net_bytes_metric = ts_mon.CounterMetric(
+_net_bytes_metric = metrics.CounterMetric(
     'dev/net/bytes', start_time=_BOOT_TIME,
     description='Number of bytes up/down on interface.',
-    units=ts_mon.MetricsDataUnits.BYTES)
-_net_packets_metric = ts_mon.CounterMetric(
+    units=metrics.MetricsDataUnits.BYTES)
+_net_packets_metric = metrics.CounterMetric(
     'dev/net/packets', start_time=_BOOT_TIME,
     description='Number of packets up/down on interface.',
-    units=ts_mon.MetricsDataUnits.BYTES)
-_net_errors_metric = ts_mon.CounterMetric(
+    units=metrics.MetricsDataUnits.BYTES)
+_net_errors_metric = metrics.CounterMetric(
     'dev/net/errors', start_time=_BOOT_TIME,
     description='Total number of errors up/down on interface.')
-_net_dropped_metric = ts_mon.CounterMetric(
+_net_dropped_metric = metrics.CounterMetric(
     'dev/net/dropped', start_time=_BOOT_TIME,
     description='Total number of dropped packages up/down on interface.')
 
-_net_if_isup_metric = ts_mon.BooleanMetric(
+_net_if_isup_metric = metrics.BooleanMetric(
     'dev/net/isup',
     description='Whether interface is up or down.')
-_net_if_duplex_metric = ts_mon.GaugeMetric(
+_net_if_duplex_metric = metrics.GaugeMetric(
     'dev/net/duplex',
     description='Whether interface supports full or half duplex.')
-_net_if_speed_metric = ts_mon.GaugeMetric(
+_net_if_speed_metric = metrics.GaugeMetric(
     'dev/net/speed',
     description='Network interface speed in Mb.')
-_net_if_mtu_metric = ts_mon.GaugeMetric(
+_net_if_mtu_metric = metrics.GaugeMetric(
     'dev/net/mtu',
     description='Network interface MTU in B.')
 
@@ -110,7 +112,7 @@ def _collect_net_io_duplex_counters():
                    fields=dict(direction='up', **fields))
         metric.set(getattr(counters, down_counter_name),
                    fields=dict(direction='down', **fields))
-      except ts_mon.MonitoringDecreasingValueError as ex:
+      except metrics.MonitoringDecreasingValueError as ex:
         # This normally shouldn't happen, but might if the network
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.

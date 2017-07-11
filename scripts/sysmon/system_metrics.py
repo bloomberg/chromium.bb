@@ -14,66 +14,66 @@ import time
 import psutil
 
 from chromite.lib import cros_logging as logging
-from infra_libs import ts_mon
+from chromite.lib import metrics
 
 logger = logging.getLogger(__name__)
 
 
-_cpu_count_metric = ts_mon.GaugeMetric(
+_cpu_count_metric = metrics.GaugeMetric(
     'dev/cpu/count',
     description='Number of CPU cores.')
-_cpu_time_metric = ts_mon.FloatMetric(
+_cpu_time_metric = metrics.FloatMetric(
     'dev/cpu/time',
     description='percentage of time spent by the CPU '
     'in different states.')
 
-_disk_free_metric = ts_mon.GaugeMetric(
+_disk_free_metric = metrics.GaugeMetric(
     'dev/disk/free',
     description='Available bytes on disk partition.',
-    units=ts_mon.MetricsDataUnits.BYTES)
-_disk_total_metric = ts_mon.GaugeMetric(
+    units=metrics.MetricsDataUnits.BYTES)
+_disk_total_metric = metrics.GaugeMetric(
     'dev/disk/total',
     description='Total bytes on disk partition.',
-    units=ts_mon.MetricsDataUnits.BYTES)
+    units=metrics.MetricsDataUnits.BYTES)
 
-_inodes_free_metric = ts_mon.GaugeMetric(
+_inodes_free_metric = metrics.GaugeMetric(
     'dev/inodes/free',
     description='Number of available inodes on '
     'disk partition (unix only).')
-_inodes_total_metric = ts_mon.GaugeMetric(
+_inodes_total_metric = metrics.GaugeMetric(
     'dev/inodes/total',
     description='Number of possible inodes on '
     'disk partition (unix only)')
 
-_mem_free_metric = ts_mon.GaugeMetric(
+_mem_free_metric = metrics.GaugeMetric(
     'dev/mem/free',
     description='Amount of memory available to a '
     'process (in Bytes). Buffers are considered '
     'free memory.',
-    units=ts_mon.MetricsDataUnits.BYTES)
+    units=metrics.MetricsDataUnits.BYTES)
 
-_mem_total_metric = ts_mon.GaugeMetric(
+_mem_total_metric = metrics.GaugeMetric(
     'dev/mem/total',
     description='Total physical memory in Bytes.',
-    units=ts_mon.MetricsDataUnits.BYTES)
+    units=metrics.MetricsDataUnits.BYTES)
 
 _BOOT_TIME = psutil.boot_time()
 
-_disk_read_metric = ts_mon.CounterMetric(
+_disk_read_metric = metrics.CounterMetric(
     'dev/disk/read', start_time=_BOOT_TIME,
     description='Number of Bytes read on disk.',
-    units=ts_mon.MetricsDataUnits.BYTES)
-_disk_write_metric = ts_mon.CounterMetric(
+    units=metrics.MetricsDataUnits.BYTES)
+_disk_write_metric = metrics.CounterMetric(
     'dev/disk/write', start_time=_BOOT_TIME,
     description='Number of Bytes written on disk.',
-    units=ts_mon.MetricsDataUnits.BYTES)
+    units=metrics.MetricsDataUnits.BYTES)
 
-_uptime_metric = ts_mon.GaugeMetric(
+_uptime_metric = metrics.GaugeMetric(
     'dev/uptime',
     description='Machine uptime, in seconds.',
-    units=ts_mon.MetricsDataUnits.SECONDS)
+    units=metrics.MetricsDataUnits.SECONDS)
 
-_load_average_metric = ts_mon.FloatMetric(
+_load_average_metric = metrics.FloatMetric(
     'dev/proc/load_average',
     description='Number of processes currently '
     'in the system run queue.')
@@ -84,24 +84,24 @@ _load_average_metric = ts_mon.FloatMetric(
 # drift, unusually high metrics pipeline delay, completely wrong clocks, etc).
 #
 # It is important to gather this metric right before the flush.
-_unix_time_metric = ts_mon.GaugeMetric(
+_unix_time_metric = metrics.GaugeMetric(
     'dev/unix_time',
     description='Number of milliseconds since epoch'
     ' based on local machine clock.')
 
-_os_name_metric = ts_mon.StringMetric(
+_os_name_metric = metrics.StringMetric(
     'proc/os/name',
     description='OS name on the machine')
 
-_os_version_metric = ts_mon.StringMetric(
+_os_version_metric = metrics.StringMetric(
     'proc/os/version',
     description='OS version on the machine')
 
-_os_arch_metric = ts_mon.StringMetric(
+_os_arch_metric = metrics.StringMetric(
     'proc/os/arch',
     description='OS architecture on this machine')
 
-_python_arch_metric = ts_mon.StringMetric(
+_python_arch_metric = metrics.StringMetric(
     'proc/python/arch',
     description='python userland '
     'architecture on this machine')

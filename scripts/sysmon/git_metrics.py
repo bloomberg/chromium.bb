@@ -11,7 +11,7 @@ import os
 import subprocess
 
 from chromite.lib import cros_logging as logging
-from infra_libs import ts_mon
+from chromite.lib import metrics
 
 logger = logging.getLogger(__name__)
 
@@ -63,15 +63,15 @@ class _GitMetricCollector(object):
   `metric_path` is the Monarch metric path to report to.
   """
 
-  _commit_hash_metric = ts_mon.StringMetric(
+  _commit_hash_metric = metrics.StringMetric(
       'git/hash',
       description='Current Git commit hash.')
 
-  _timestamp_metric = ts_mon.GaugeMetric(
+  _timestamp_metric = metrics.GaugeMetric(
       'git/timestamp',
       description='Current Git commit time as seconds since Unix Epoch.')
 
-  _unstaged_changes_metric = ts_mon.GaugeMetric(
+  _unstaged_changes_metric = metrics.GaugeMetric(
       'git/unstaged_changes',
       description='Unstaged Git changes.')
 

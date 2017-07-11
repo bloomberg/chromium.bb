@@ -10,14 +10,14 @@ from __future__ import print_function
 import psutil
 
 from chromite.lib import cros_logging as logging
-from infra_libs import ts_mon
+from chromite.lib import metrics
 
 logger = logging.getLogger(__name__)
 
-_count_metric = ts_mon.GaugeMetric(
+_count_metric = metrics.GaugeMetric(
     'proc/count',
     description='Number of processes currently running.')
-_cpu_percent_metric = ts_mon.GaugeMetric(
+_cpu_percent_metric = metrics.GaugeMetric(
     'proc/cpu_percent',
     description='CPU usage percent of processes.')
 
