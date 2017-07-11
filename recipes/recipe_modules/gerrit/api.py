@@ -90,7 +90,37 @@ class GerritApi(recipe_api.RecipeApi):
           'Error quering for branch of CL %s' % change)
     return changes[0]['branch']
 
-  def get_changes(self, host, query_params, start=None, limit=None, **kwargs):
+  def get_change_description(self, host, change, patchset):
+    """
+    Get the description for a given CL and patchset.
+
+    Args:
+      host: Gerrit host to query.
+      change: The change number.
+      patchset: The patchset number.
+
+    Returns:
+      The description corresponding to given CL and patchset.
+    """
+    assert int(change), change
+    assert int(patchset), patchset
+    cls = self.get_changes(
+        host,
+        query_params=[('change', str(change))],
+        o_params=['ALL_REVISIONS', 'ALL_COMMITS'],
+        limit=1)
+    cl = cls[0] if len(cls) == 1 else {'revisions': {}}
+    for ri in cl['revisions'].itervalues():
+      # TODO(tandrii): add support for patchset=='current'.
+      if str(ri['_number']) == str(patchset):
+        return ri['commit']['message']
+
+    raise self.m.step.InfraFailure(
+        'Error querying for CL description: host:%r change:%r; patchset:%r' % (
+            host, change, patchset))
+
+  def get_changes(self, host, query_params, start=None, limit=None,
+                  o_params=None, **kwargs):
     """
     Query changes for the given host.
 
@@ -101,6 +131,8 @@ class GerritApi(recipe_api.RecipeApi):
           https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
       start: How many changes to skip (starting with the most recent).
       limit: Maximum number of results to return.
+      o_params: A list of additional output specifiers, as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
     Returns:
       A list of change dicts as documented here:
           https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
@@ -116,6 +148,8 @@ class GerritApi(recipe_api.RecipeApi):
       args += ['--limit', str(limit)]
     for k, v in query_params:
       args += ['-p', '%s=%s' % (k, v)]
+    for v in (o_params or []):
+      args += ['-o', v]
 
     return self(
         kwargs.pop('name', 'changes'),

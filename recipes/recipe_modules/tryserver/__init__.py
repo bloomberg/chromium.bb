@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'gerrit',
   'git',
   'git_cl',
   'recipe_engine/context',

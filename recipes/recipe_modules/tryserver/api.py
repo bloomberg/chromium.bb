@@ -264,17 +264,19 @@ class TryserverApi(recipe_api.RecipeApi):
     git-footers documentation for more information.
     """
     if patch_text is None:
-      codereview = None
-      if not self.can_apply_issue: #pragma: no cover
-        raise recipe_api.StepFailure("Cannot get tags from gerrit yet.")
-      else:
-        codereview = 'rietveld'
-        patch = (
-            self.m.properties['rietveld'].strip('/') + '/' +
+      if self.is_gerrit_issue:
+        patch_text = self.m.gerrit.get_change_description(
+            self.m.properties['patch_gerrit_url'],
+            self.m.properties['patch_issue'],
+            self.m.properties['patch_set'])
+      elif self.can_apply_issue:
+        patch_url = (
+            self.m.properties['rietveld'].rstrip('/') + '/' +
             str(self.m.properties['issue']))
-
-      patch_text = self.m.git_cl.get_description(
-          patch=patch, codereview=codereview).stdout
+        patch_text = self.m.git_cl.get_description(
+            patch_url=patch_url, codereview='rietveld').stdout
+      else:  # pragma: no cover
+        raise recipe_api.StepFailure('Unknown patch storage.')
 
     result = self.m.python(
         'parse description', self.package_repo_resource('git_footers.py'),
@@ -286,3 +288,5 @@ class TryserverApi(recipe_api.RecipeApi):
     """Gets a specific tag from a CL description"""
     return self.get_footers(patch_text).get(tag, [])
 
+  def normalize_footer_name(self, footer):
+    return '-'.join([ word.title() for word in footer.strip().split('-') ])

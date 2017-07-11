@@ -18,9 +18,11 @@ def RunSteps(api):
   api.git_cl.upload("Do the thing foobar\nNow with emoji: 😄")
   api.git_cl.issue()
   result = api.git_cl.get_description(
-      patch='https://code.review/123', codereview='rietveld', suffix='build')
+      patch_url='https://code.review/123',
+      codereview='rietveld',
+      suffix='build')
   api.git_cl.set_description(
-      'bammmm', patch='https://code.review/123', codereview='rietveld')
+      'bammmm', patch_url='https://code.review/123', codereview='rietveld')
   api.step('echo', ['echo', result.stdout])
 
   api.git_cl.set_config('basic')

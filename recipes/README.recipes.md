@@ -312,6 +312,18 @@ Create a new branch from given project and commit
 Returns:
   the ref of the branch created
 
+&mdash; **def [get\_change\_description](/recipes/recipe_modules/gerrit/api.py#93)(self, host, change, patchset):**
+
+Get the description for a given CL and patchset.
+
+Args:
+  host: Gerrit host to query.
+  change: The change number.
+  patchset: The patchset number.
+
+Returns:
+  The description corresponding to given CL and patchset.
+
 &mdash; **def [get\_change\_destination\_branch](/recipes/recipe_modules/gerrit/api.py#68)(self, host, change, \*\*kwargs):**
 
 Get the upstream branch for a given CL.
@@ -323,7 +335,7 @@ Args:
 Returns:
   the name of the branch
 
-&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#93)(self, host, query_params, start=None, limit=None, \*\*kwargs):**
+&mdash; **def [get\_changes](/recipes/recipe_modules/gerrit/api.py#122)(self, host, query_params, start=None, limit=None, o_params=None, \*\*kwargs):**
 
 Query changes for the given host.
 
@@ -334,6 +346,8 @@ Args:
       https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
   start: How many changes to skip (starting with the most recent).
   limit: Maximum number of results to return.
+  o_params: A list of additional output specifiers, as documented here:
+      https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 Returns:
   A list of change dicts as documented here:
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
@@ -474,13 +488,15 @@ remote_name (str): the remote name to rebase from if not origin
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/git_cl/api.py#10)(self, subcmd, args, name=None, \*\*kwargs):**
 
-&mdash; **def [get\_description](/recipes/recipe_modules/git_cl/api.py#23)(self, patch=None, codereview=None, \*\*kwargs):**
+&mdash; **def [get\_description](/recipes/recipe_modules/git_cl/api.py#23)(self, patch_url=None, codereview=None, \*\*kwargs):**
 
-&mdash; **def [issue](/recipes/recipe_modules/git_cl/api.py#51)(self, \*\*kwargs):**
+DEPRECATED. Consider using gerrit.get_change_description instead.
 
-&mdash; **def [set\_description](/recipes/recipe_modules/git_cl/api.py#32)(self, description, patch=None, codereview=None, \*\*kwargs):**
+&mdash; **def [issue](/recipes/recipe_modules/git_cl/api.py#54)(self, \*\*kwargs):**
 
-&mdash; **def [upload](/recipes/recipe_modules/git_cl/api.py#44)(self, message, upload_args=None, \*\*kwargs):**
+&mdash; **def [set\_description](/recipes/recipe_modules/git_cl/api.py#34)(self, description, patch_url=None, codereview=None, \*\*kwargs):**
+
+&mdash; **def [upload](/recipes/recipe_modules/git_cl/api.py#47)(self, message, upload_args=None, \*\*kwargs):**
 ### *recipe_modules* / [gitiles](/recipes/recipe_modules/gitiles)
 
 [DEPS](/recipes/recipe_modules/gitiles/__init__.py#1): [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/url][recipe_engine/recipe_modules/url]
@@ -644,7 +660,7 @@ Returns:
   given is unknown.
 ### *recipe_modules* / [tryserver](/recipes/recipe_modules/tryserver)
 
-[DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [git](#recipe_modules-git), [git\_cl](#recipe_modules-git_cl), [rietveld](#recipe_modules-rietveld), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [gerrit](#recipe_modules-gerrit), [git](#recipe_modules-git), [git\_cl](#recipe_modules-git_cl), [rietveld](#recipe_modules-rietveld), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 #### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#16)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
@@ -682,7 +698,7 @@ TODO(tandrii): remove this doc.
 Unless you use patch_root=None, in which case old behavior is used
 which returns paths relative to checkout aka solution[0].name.
 
-&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#285)(self, tag, patch_text=None):**
+&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#287)(self, tag, patch_text=None):**
 
 Gets a specific tag from a CL description
 
@@ -712,6 +728,8 @@ Args:
   authentication: authentication scheme whenever apply_issue.py is called.
     This is only used if the patch comes from Rietveld. Possible values:
     None, 'oauth2' (see also api.rietveld.apply_issue.)
+
+&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#291)(self, footer):**
 
 &mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#203)(self):**
 
@@ -780,9 +798,9 @@ like checkout or compile), and some of these tests have failed.
 &mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#20)(api, patch_project):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit)
+[DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit), [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/gerrit/examples/full.py#10)(api):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/gerrit/examples/full.py#11)(api):**
 ### *recipes* / [git:examples/full](/recipes/recipe_modules/git/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/git/examples/full.py#5): [git](#recipe_modules-git), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]

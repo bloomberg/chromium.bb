@@ -36,6 +36,14 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
         'has_review_started': False,
         'branch': 'master',
         'subject': 'Change title',
+        'revisions': {
+            '184ebe53805e102605d11f6b143486d15c23a09c': {
+                '_number': '1',
+                'commit': {
+                    'message': 'Change commit message',
+                },
+            },
+        },
       },
     ])
 

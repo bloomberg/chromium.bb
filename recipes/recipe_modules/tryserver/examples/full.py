@@ -29,7 +29,7 @@ def RunSteps(api):
     return
 
   api.tryserver.maybe_apply_issue()
-  if api.tryserver.can_apply_issue:
+  if api.tryserver.can_apply_issue or api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
   api.tryserver.get_files_affected_by_patch(
       api.properties.get('test_patch_root'))
@@ -41,6 +41,8 @@ def RunSteps(api):
   api.tryserver.set_compile_failure_tryjob_result()
   api.tryserver.set_test_failure_tryjob_result()
   api.tryserver.set_invalid_test_results_tryjob_result()
+
+  api.tryserver.normalize_footer_name('Cr-Commit-Position')
 
   with api.tryserver.set_failure_hash():
     api.python.failing_step('fail', 'foo')
@@ -73,21 +75,6 @@ def GenTests(api):
   yield (api.test('with_rietveld_patch_new') +
          api.properties.tryserver(test_patch_root='sub/project') +
          description_step)
-
-  yield api.test('with_gerrit_patch_deprecated') + api.properties.tryserver(
-      patch_project='infra/infra',
-      gerrit='https://chromium-review.googlesource.com',
-      patch_storage='gerrit',
-      repository='https://chromium.googlesource.com/infra/infra',
-      rietveld=None,
-      **{
-        'event.change.id': 'infra%2Finfra~master~Ideadbeaf',
-        'event.change.number': 338811,
-        'event.change.url':
-          'https://chromium-review.googlesource.com/#/c/338811',
-        'event.patchSet.ref': 'refs/changes/11/338811/3',
-      }
-  )
 
   yield (api.test('with_gerrit_patch') +
          api.properties.tryserver(gerrit_project='infra/infra'))

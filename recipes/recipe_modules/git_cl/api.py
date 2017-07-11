@@ -20,20 +20,23 @@ class GitClApi(recipe_api.RecipeApi):
           name, [self.package_repo_resource('git_cl.py'), subcmd] + args,
           **kwargs)
 
-  def get_description(self, patch=None, codereview=None, **kwargs):
+  def get_description(self, patch_url=None, codereview=None, **kwargs):
+    """DEPRECATED. Consider using gerrit.get_change_description instead."""
     args = ['-d']
-    if patch or codereview:
-      assert patch and codereview, "Both patch and codereview must be provided"
+    if patch_url or codereview:
+      assert patch_url and codereview, (
+          'Both patch_url and codereview must be provided')
       args.append('--%s' % codereview)
-      args.append(patch)
+      args.append(patch_url)
 
     return self('description', args, stdout=self.m.raw_io.output(), **kwargs)
 
-  def set_description(self, description, patch=None, codereview=None, **kwargs):
+  def set_description(self, description, patch_url=None, codereview=None, **kwargs):
     args = ['-n', '-']
-    if patch or codereview:
-      assert patch and codereview, "Both patch and codereview must be provided"
-      args.append(patch)
+    if patch_url or codereview:
+      assert patch_url and codereview, (
+          'Both patch_url and codereview must be provided')
+      args.append(patch_url)
       args.append('--%s' % codereview)
 
     return self(

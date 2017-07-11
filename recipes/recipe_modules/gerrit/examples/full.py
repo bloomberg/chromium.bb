@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'gerrit'
+    'gerrit',
+    'recipe_engine/step',
 ]
 
 
@@ -32,10 +33,17 @@ def RunSteps(api):
       limit=1,
   )
 
+  api.gerrit.get_change_description(
+      host, change=123, patchset=1)
+
   api.gerrit.get_change_destination_branch(host, change=123)
 
-  api.gerrit.get_change_destination_branch(
-      host, change=123, name='missing_cl')
+  with api.step.defer_results():
+    api.gerrit.get_change_destination_branch(
+        host, change=123, name='missing_cl')
+
+    api.gerrit.get_change_description(
+        host, change=123, patchset=3)
 
 
 def GenTests(api):

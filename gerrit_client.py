@@ -67,6 +67,8 @@ def CMDbranch(parser, args):
 def CMDchanges(parser, args):
   parser.add_option('-p', '--param', dest='params', action='append',
                     help='repeatable query parameter, format: -p key=value')
+  parser.add_option('-o', '--o-param', dest='o_params', action='append',
+                    help='gerrit output parameters, e.g. ALL_REVISIONS')
   parser.add_option('--limit', dest='limit', type=int,
                     help='maximum number of results to return')
   parser.add_option('--start', dest='start', type=int,
@@ -78,8 +80,9 @@ def CMDchanges(parser, args):
   result = gerrit_util.QueryChanges(
       urlparse.urlparse(opt.host).netloc,
       list(tuple(p.split('=', 1)) for p in opt.params),
-      start=opt.start,  # Default: None
-      limit=opt.limit,  # Default: None
+      start=opt.start,        # Default: None
+      limit=opt.limit,        # Default: None
+      o_params=opt.o_params,  # Default: None
   )
   logging.info('Change query returned %d changes.', len(result))
   write_result(result, opt)
