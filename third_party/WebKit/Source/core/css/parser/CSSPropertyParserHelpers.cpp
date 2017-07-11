@@ -11,6 +11,7 @@
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
+#include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"
@@ -1631,6 +1632,49 @@ bool ConsumeShorthandVia4LonghandsAPI(
               IsImplicitProperty::kNotImplicit, properties);
 
   return range.AtEnd();
+}
+
+bool ConsumeShorthandGreedilyViaLonghandAPIs(
+    const StylePropertyShorthand& shorthand,
+    bool important,
+    const CSSParserContext& context,
+    CSSParserTokenRange& range,
+    HeapVector<CSSProperty, 256>& properties) {
+  // Existing shorthands have at most 6 longhands.
+  DCHECK_LE(shorthand.length(), 6u);
+  const CSSValue* longhands[6] = {nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, nullptr};
+  bool needs_legacy_parsing = false;
+
+  const CSSPropertyID* shorthand_properties = shorthand.properties();
+  do {
+    bool found_longhand = false;
+    for (size_t i = 0; !found_longhand && i < shorthand.length(); ++i) {
+      if (longhands[i])
+        continue;
+      longhands[i] =
+          ParseLonghandViaAPI(shorthand_properties[i], shorthand.id(), context,
+                              range, needs_legacy_parsing);
+      DCHECK(!needs_legacy_parsing);
+
+      if (longhands[i])
+        found_longhand = true;
+    }
+    if (!found_longhand)
+      return false;
+  } while (!range.AtEnd());
+
+  for (size_t i = 0; i < shorthand.length(); ++i) {
+    if (longhands[i]) {
+      AddProperty(shorthand_properties[i], shorthand.id(), *longhands[i],
+                  important, IsImplicitProperty::kNotImplicit, properties);
+    } else {
+      AddProperty(shorthand_properties[i], shorthand.id(),
+                  *CSSInitialValue::Create(), important,
+                  IsImplicitProperty::kNotImplicit, properties);
+    }
+  }
+  return true;
 }
 
 }  // namespace CSSPropertyParserHelpers

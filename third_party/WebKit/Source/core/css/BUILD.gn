@@ -548,6 +548,7 @@ blink_core_sources("css") {
     "properties/CSSShorthandPropertyAPITextDecoration.cpp",
     "properties/CSSShorthandPropertyAPIWebkitMarginCollapse.cpp",
     "properties/CSSShorthandPropertyAPIWebkitMaskBoxImage.cpp",
+    "properties/CSSShorthandPropertyAPIWebkitTextEmphasis.cpp",
     "resolver/AnimatedStyleBuilder.cpp",
     "resolver/AnimatedStyleBuilder.h",
     "resolver/CSSPropertyPriority.h",
