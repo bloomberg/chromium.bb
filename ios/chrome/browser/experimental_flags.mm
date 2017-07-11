@@ -48,6 +48,8 @@ const base::Feature kEnableSlimNavigationManager{
     "EnableSlimNavigationManager", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableThirdPartyKeyboardWorkaround{
     "EnableThirdPartyKeyboardWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIOSNTPSuggestions{"IOSNTPSuggestions",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -239,8 +241,8 @@ bool IsSuggestionsUIEnabled() {
   if (command_line->HasSwitch(switches::kDisableSuggestionsUI))
     return false;
 
-  // By default, disable it.
-  return false;
+  // Check if the Finch experiment is turned on.
+  return base::FeatureList::IsEnabled(kIOSNTPSuggestions);
 }
 
 bool IsSigninPromoEnabled() {
