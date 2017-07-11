@@ -116,6 +116,28 @@ HistoryScrollRestorationType History::ScrollRestorationInternal() const {
                       : kScrollRestorationAuto;
 }
 
+// TODO(crbug.com/394296): This is not the long-term fix to IPC flooding that we
+// need. However, it does somewhat mitigate the immediate concern of |pushState|
+// and |replaceState| DoS (assuming the renderer has not been compromised).
+bool History::ShouldThrottleStateObjectChanges() {
+  const int kStateUpdateLimit = 50;
+
+  if (state_flood_guard.count > kStateUpdateLimit) {
+    static constexpr auto kStateUpdateLimitResetInterval =
+        TimeDelta::FromSeconds(10);
+    const auto now = TimeTicks::Now();
+    if (now - state_flood_guard.last_updated > kStateUpdateLimitResetInterval) {
+      state_flood_guard.count = 0;
+      state_flood_guard.last_updated = now;
+      return false;
+    }
+    return true;
+  }
+
+  state_flood_guard.count++;
+  return false;
+}
+
 bool History::stateChanged() const {
   return last_state_object_requested_ != StateInternal();
 }
@@ -229,6 +251,9 @@ void History::StateObjectAdded(PassRefPtr<SerializedScriptValue> data,
         "' and URL '" + GetFrame()->GetDocument()->Url().ElidedString() + "'.");
     return;
   }
+
+  if (ShouldThrottleStateObjectChanges())
+    return;
 
   GetFrame()->Loader().UpdateForSameDocumentNavigation(
       full_url, kSameDocumentNavigationHistoryApi, std::move(data),
