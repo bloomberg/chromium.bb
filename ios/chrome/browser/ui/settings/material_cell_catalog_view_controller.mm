@@ -715,9 +715,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   ContentSuggestionsItem* articleItem = [[ContentSuggestionsItem alloc]
       initWithType:ItemTypeContentSuggestions
              title:@"This is an incredible article, you should read it!"
-          subtitle:@"Really, this is the best article I have ever seen, it "
-                   @"is mandatory to read it! It describes how to write "
-                   @"the best article."
                url:GURL()];
   articleItem.publisher = @"Top Publisher.com";
   return articleItem;

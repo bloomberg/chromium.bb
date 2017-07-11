@@ -22,7 +22,6 @@ class GURL;
 // to the full article. |type| is the type of the item.
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
-                    subtitle:(NSString*)subtitle
                          url:(const GURL&)url NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;

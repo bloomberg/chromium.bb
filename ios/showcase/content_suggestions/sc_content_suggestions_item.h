@@ -16,7 +16,6 @@
 @interface SCContentSuggestionsItem : CollectionViewItem<SuggestedContent>
 
 @property(nonatomic, copy) NSString* title;
-@property(nonatomic, copy) NSString* subtitle;
 @property(nonatomic, assign) BOOL hasImage;
 @property(nonatomic, copy) NSString* publisher;
 @property(nonatomic, copy) NSString* publicationDate;

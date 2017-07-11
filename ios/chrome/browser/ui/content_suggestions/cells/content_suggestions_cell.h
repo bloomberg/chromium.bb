@@ -27,10 +27,6 @@
                                              date:(NSString*)publishDate
                               offlineAvailability:(BOOL)availableOffline;
 
-// Setst the subtitle text. If |subtitle| is nil, the space taken by the
-// subtitle is removed.
-- (void)setSubtitleText:(NSString*)subtitle;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_CELL_H_
