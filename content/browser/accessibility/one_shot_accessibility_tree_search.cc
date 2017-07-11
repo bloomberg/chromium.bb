@@ -253,7 +253,7 @@ bool AccessibilityComboboxPredicate(
 
 bool AccessibilityControlPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  if (node->IsControl())
+  if (ui::IsControl(node->GetRole()))
     return true;
   if (node->HasState(ui::AX_STATE_FOCUSABLE) &&
       node->GetRole() != ui::AX_ROLE_IFRAME &&
