@@ -17,8 +17,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * Tests for bookmark bridge
  */
+@RetryOnFailure(message = "crbug.com/740786")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BookmarkBridgeTest {
     @Rule
@@ -139,7 +140,6 @@ public class BookmarkBridgeTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @DisabledTest // Timing out on the try bot. http://crbug.com/740786
     @Feature({"Bookmark"})
     public void testGetMoveDestinations() throws Throwable {
         BookmarkId folderA = mBookmarkBridge.addFolder(mMobileNode, 0, "a");
