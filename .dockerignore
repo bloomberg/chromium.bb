@@ -55,6 +55,7 @@ build-aux/texinfo.tex
 
 # /contrib/
 contrib/liblouis.elc
+contrib/braille-input.elc
 
 # /doc/
 doc/Makefile
@@ -90,18 +91,18 @@ gnulib/*.lo
 gnulib/*.la
 gnulib/Makefile
 gnulib/Makefile.in
-gnulib/arg-nonnull.h
-gnulib/c\+\+defs.h
+gnulib/alloca.h
 gnulib/dirent.h
 gnulib/errno.h
 gnulib/getopt.h
+gnulib/limits.h
 gnulib/stddef.h
+gnulib/stdint.h
 gnulib/stdio.h
 gnulib/stdlib.h
 gnulib/string.h
 gnulib/sys/
 gnulib/unistd.h
-gnulib/warn-on-use.h
 
 # /liblouis/
 liblouis/.libs
@@ -140,6 +141,7 @@ man/lou_checkyaml.1
 python/Makefile
 python/Makefile.in
 python/build
+python/setup.py
 
 # /python/louis/
 python/louis/Makefile
@@ -161,11 +163,15 @@ tests/*.trs
 tests/Makefile
 tests/Makefile.in
 tests/backtranslate
+tests/backtranslate_noUndefinedDots
+tests/backtranslate_partialTrans
 tests/backtranslate_with_letsign
 tests/capitalization
 tests/capitalized_with_sentance
 tests/capitalized_word
 tests/checkTable
+tests/check_metadata
+tests/compbrlAtCursor
 tests/emphclass
 tests/en_gb_g1_italics
 tests/findTable
@@ -176,6 +182,7 @@ tests/hyphenate_achena
 tests/hyphenate_alderen
 tests/hyphenate_straightforward
 tests/hyphenate_xxx
+tests/infiniteTranslationLoop
 tests/inpos
 tests/inpos_compbrl
 tests/inpos_match_replace
@@ -251,10 +258,10 @@ tools/gnulib/*.lo
 tools/gnulib/*.la
 tools/gnulib/Makefile
 tools/gnulib/Makefile.in
-tools/gnulib/arg-nonnull.h
-tools/gnulib/c\+\+defs.h
 tools/gnulib/errno.h
+tools/gnulib/getopt-cdefs.h
 tools/gnulib/getopt.h
+tools/gnulib/limits.h
 tools/gnulib/stddef.h
 tools/gnulib/stdint.h
 tools/gnulib/stdio.h
@@ -265,8 +272,6 @@ tools/gnulib/unistd.h
 tools/gnulib/unistr.h
 tools/gnulib/unistr/.dirstamp
 tools/gnulib/unitypes.h
-tools/gnulib/unused-parameter.h
-tools/gnulib/warn-on-use.h
 
 # /tools/gnulib/unistr/
 tools/gnulib/unistr/.libs
@@ -292,6 +297,10 @@ windows/Makefile.in
 # /windows/include
 windows/include/Makefile
 windows/include/Makefile.in
+
+# /windows/utils
+windows/utils/Makefile
+windows/utils/Makefile.in
 
 # stuff for local development
 # local/
