@@ -45,8 +45,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
     : affinity_(TextAffinity::kDownstream),
       selection_type_(kNoSelection),
       base_is_first_(true),
-      is_directional_(false),
-      granularity_(TextGranularity::kCharacter) {}
+      is_directional_(false) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
@@ -56,9 +55,8 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       extent_(selection.Extent()),
       affinity_(selection.Affinity()),
       selection_type_(kNoSelection),
-      is_directional_(selection.IsDirectional()),
-      granularity_(granularity) {
-  Validate(granularity_);
+      is_directional_(selection.IsDirectional()) {
+  Validate(granularity);
 }
 
 template <typename Strategy>
@@ -123,8 +121,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       affinity_(other.affinity_),
       selection_type_(other.selection_type_),
       base_is_first_(other.base_is_first_),
-      is_directional_(other.is_directional_),
-      granularity_(other.granularity_) {}
+      is_directional_(other.is_directional_) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::
@@ -137,7 +134,6 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
   selection_type_ = other.selection_type_;
   base_is_first_ = other.base_is_first_;
   is_directional_ = other.is_directional_;
-  granularity_ = other.granularity_;
   return *this;
 }
 
@@ -200,7 +196,6 @@ VisibleSelectionTemplate<Strategy>
 VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
   if (IsNone())
     return *this;
-  DCHECK_EQ(granularity_, TextGranularity::kWord);
   if (!IsRange())
     return *this;
   const PositionTemplate<Strategy>& new_end = SkipWhitespace(end_);
