@@ -108,7 +108,9 @@ class AffiliationService : public KeyedService {
                   const base::FilePath& db_path);
 
   // Looks up facets affiliated with the facet identified by |facet_uri|, and
-  // invokes |result_callback| with the results.
+  // invokes |result_callback| with the results. It is guaranteed that the
+  // results will contain one facet with URI equal to |facet_uri| when
+  // |result_callback| is invoked with success set to true.
   //
   // If the local cache contains fresh affiliation information for |facet_uri|,
   // the request will be served from cache. Otherwise, |cache_miss_policy|

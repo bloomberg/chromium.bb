@@ -4,7 +4,10 @@
 
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -453,7 +456,8 @@ void PasswordManagerBrowserTestBase::WaitForPasswordStore() {
       PasswordStoreFactory::GetForProfile(browser()->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS);
   PasswordStoreResultsObserver syncer;
-  password_store->GetAutofillableLoginsWithAffiliatedRealms(&syncer);
+  password_store->GetAutofillableLoginsWithAffiliationAndBrandingInformation(
+      &syncer);
   syncer.Wait();
 }
 

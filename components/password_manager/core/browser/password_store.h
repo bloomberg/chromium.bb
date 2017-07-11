@@ -199,9 +199,9 @@ class PasswordStore : protected PasswordStoreSync,
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
-  // Same as above, but also fills in |affiliated_web_realm| for Android
-  // credentials.
-  virtual void GetAutofillableLoginsWithAffiliatedRealms(
+  // Same as above, but also fills in affiliation and branding information for
+  // Android credentials.
+  virtual void GetAutofillableLoginsWithAffiliationAndBrandingInformation(
       PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are blacklist entries,
@@ -209,9 +209,9 @@ class PasswordStore : protected PasswordStoreSync,
   // consumer is destroyed.
   virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
-  // Same as above, but also fills in |affiliated_web_realm| for Android
-  // credentials.
-  virtual void GetBlacklistLoginsWithAffiliatedRealms(
+  // Same as above, but also fills in affiliation and branding information for
+  // Android credentials.
+  virtual void GetBlacklistLoginsWithAffiliationAndBrandingInformation(
       PasswordStoreConsumer* consumer);
 
   // Reports usage metrics for the database. |sync_username| and
@@ -501,17 +501,17 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   void GetAutofillableLoginsImpl(std::unique_ptr<GetLoginsRequest> request);
 
-  // Same as above, but also fills in |affiliated_web_realm| for Android
-  // credentials.
-  void GetAutofillableLoginsWithAffiliatedRealmsImpl(
+  // Same as above, but also fills in affiliation and branding information for
+  // Android credentials.
+  void GetAutofillableLoginsWithAffiliationAndBrandingInformationImpl(
       std::unique_ptr<GetLoginsRequest> request);
 
   // Finds all blacklist PasswordForms, and notifies the consumer.
   void GetBlacklistLoginsImpl(std::unique_ptr<GetLoginsRequest> request);
 
-  // Same as above, but also fills in |affiliated_web_realm| for Android
-  // credentials.
-  void GetBlacklistLoginsWithAffiliatedRealmsImpl(
+  // Same as above, but also fills in affiliation and branding information for
+  // Android credentials.
+  void GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
       std::unique_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for all sites.
@@ -520,12 +520,6 @@ class PasswordStore : protected PasswordStoreSync,
   // Notifies |request| about the stats for |origin_domain|.
   void NotifySiteStats(const GURL& origin_domain,
                        std::unique_ptr<GetLoginsRequest> request);
-
-  // Notifies |request| about the autofillable logins with affiliated web
-  // realms for Android credentials.
-  void NotifyLoginsWithAffiliatedRealms(
-      std::unique_ptr<GetLoginsRequest> request,
-      std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_forms);
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
   // the specified affiliated Android applications. That is, it finds all
@@ -539,9 +533,9 @@ class PasswordStore : protected PasswordStoreSync,
       std::unique_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
 
-  // Retrieves and fills in |affiliated_web_realm| values for Android
+  // Retrieves and fills in affiliation and branding information for Android
   // credentials in |forms|. Called on the main thread.
-  void InjectAffiliatedWebRealms(
+  void InjectAffiliationAndBrandingInformation(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       std::unique_ptr<GetLoginsRequest> request);
 

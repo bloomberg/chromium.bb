@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -91,6 +92,10 @@ class MockFacetManagerHost : public FacetManagerHost {
   void set_expected_facet_uri(const FacetURI& facet_uri) {
     expected_facet_uri_ = facet_uri;
   }
+
+  // Returns the facet URI that will be expected to appear in calls coming from
+  // the FacetManager under test.
+  const FacetURI& expected_facet_uri() const { return expected_facet_uri_; }
 
   // Sets up fake |database_content| as the canned response to be returned to
   // the FacetManager every time it calls ReadAffiliationsFromDatabase().
@@ -352,7 +357,13 @@ class FacetManagerTest : public testing::Test {
   }
 
   void ExpectConsumerSuccessCallback() {
-    mock_consumer()->ExpectSuccessWithResult(GetTestEquivalenceClass());
+    const auto equivalence_class(GetTestEquivalenceClass());
+    mock_consumer()->ExpectSuccessWithResult(equivalence_class);
+    EXPECT_THAT(
+        equivalence_class,
+        testing::Contains(testing::Field(
+            &Facet::uri, fake_facet_manager_host()->expected_facet_uri())));
+
     consumer_task_runner()->RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(mock_consumer());
   }

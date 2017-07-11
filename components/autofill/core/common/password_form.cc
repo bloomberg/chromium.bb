@@ -64,6 +64,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("was_parsed_using_autofill_predictions",
                      form.was_parsed_using_autofill_predictions);
   target->SetString("affiliated_web_realm", form.affiliated_web_realm);
+  target->SetString("app_display_name", form.app_display_name);
+  target->SetString("app_icon_url", form.app_icon_url.possibly_invalid_spec());
   target->SetBoolean("does_look_like_signup_form",
                      form.does_look_like_signup_form);
   std::ostringstream submission_event_string_stream;
@@ -134,6 +136,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          is_public_suffix_match == form.is_public_suffix_match &&
          is_affiliation_based_match == form.is_affiliation_based_match &&
          affiliated_web_realm == form.affiliated_web_realm &&
+         app_display_name == form.app_display_name &&
+         app_icon_url == form.app_icon_url &&
          does_look_like_signup_form == form.does_look_like_signup_form &&
          submission_event == form.submission_event;
 }

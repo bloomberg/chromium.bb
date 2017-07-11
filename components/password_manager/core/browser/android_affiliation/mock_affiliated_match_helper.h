@@ -5,10 +5,15 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_MOCK_AFFILIATED_MATCH_HELPER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_MOCK_AFFILIATED_MATCH_HELPER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -18,6 +23,14 @@ namespace password_manager {
 
 class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
  public:
+  // This struct mirrors the corresponding affiliation and branding information
+  // related fields from autofill::PasswordForm.
+  struct AffiliationAndBrandingInformation {
+    std::string affiliated_web_realm;
+    std::string app_display_name;
+    GURL app_icon_url;
+  };
+
   MockAffiliatedMatchHelper();
   ~MockAffiliatedMatchHelper() override;
 
@@ -35,15 +48,16 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       const PasswordStore::FormDigest& expected_android_form,
       const std::vector<std::string>& results_to_return);
 
-  void ExpectCallToInjectAffiliatedWebRealms(
-      const std::vector<std::string>& results_to_inject);
+  void ExpectCallToInjectAffiliationAndBrandingInformation(
+      const std::vector<AffiliationAndBrandingInformation>& results_to_inject);
 
  private:
   MOCK_METHOD1(OnGetAffiliatedAndroidRealmsCalled,
                std::vector<std::string>(const PasswordStore::FormDigest&));
   MOCK_METHOD1(OnGetAffiliatedWebRealmsCalled,
                std::vector<std::string>(const PasswordStore::FormDigest&));
-  MOCK_METHOD0(OnInjectAffiliatedWebRealmsCalled, std::vector<std::string>());
+  MOCK_METHOD0(OnInjectAffiliationAndBrandingInformationCalled,
+               std::vector<AffiliationAndBrandingInformation>());
 
   void GetAffiliatedAndroidRealms(
       const PasswordStore::FormDigest& observed_form,
@@ -52,7 +66,7 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       const PasswordStore::FormDigest& android_form,
       const AffiliatedRealmsCallback& result_callback) override;
 
-  void InjectAffiliatedWebRealms(
+  void InjectAffiliationAndBrandingInformation(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       const PasswordFormsCallback& result_callback) override;
 
