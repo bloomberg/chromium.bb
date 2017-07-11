@@ -548,14 +548,6 @@ base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
   return metrics::GetUploadInterval();
 }
 
-base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
-#if defined(OS_WIN)
-  return install_static::GetRegistryPath().append(L"\\StabilityMetrics");
-#else
-  return base::string16();
-#endif
-}
-
 void ChromeMetricsServiceClient::OnPluginLoadingError(
     const base::FilePath& plugin_path) {
 #if BUILDFLAG(ENABLE_PLUGINS)

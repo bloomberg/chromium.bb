@@ -384,8 +384,6 @@ class MetricsService : public base::HistogramFlattener {
 
   PrefService* local_state_;
 
-  CleanExitBeacon clean_exit_beacon_;
-
   base::ActionCallback action_callback_;
 
   // Indicate whether recording and reporting are currently happening.

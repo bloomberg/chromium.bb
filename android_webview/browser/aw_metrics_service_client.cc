@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
@@ -146,7 +147,7 @@ void AwMetricsServiceClient::InitializeWithGUID() {
                            g_client_id_guid.Get());
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
-      pref_service_, this, base::Bind(&StoreClientInfo),
+      pref_service_, this, base::string16(), base::Bind(&StoreClientInfo),
       base::Bind(&LoadClientInfo));
 
   metrics_service_.reset(new ::metrics::MetricsService(

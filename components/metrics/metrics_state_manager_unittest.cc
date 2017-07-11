@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -35,7 +36,7 @@ class MetricsStateManagerTest : public testing::Test {
 
   std::unique_ptr<MetricsStateManager> CreateStateManager() {
     return MetricsStateManager::Create(
-        &prefs_, enabled_state_provider_.get(),
+        &prefs_, enabled_state_provider_.get(), base::string16(),
         base::Bind(&MetricsStateManagerTest::MockStoreClientInfoBackup,
                    base::Unretained(this)),
         base::Bind(&MetricsStateManagerTest::LoadFakeClientInfoBackup,

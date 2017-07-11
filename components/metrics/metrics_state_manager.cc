@@ -57,12 +57,14 @@ bool MetricsStateManager::instance_exists_ = false;
 MetricsStateManager::MetricsStateManager(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
+    const base::string16& backup_registry_key,
     const StoreClientInfoCallback& store_client_info,
     const LoadClientInfoCallback& retrieve_client_info)
     : local_state_(local_state),
       enabled_state_provider_(enabled_state_provider),
       store_client_info_(store_client_info),
       load_client_info_(retrieve_client_info),
+      clean_exit_beacon_(backup_registry_key, local_state),
       low_entropy_source_(kLowEntropySourceNotSet),
       entropy_source_returned_(ENTROPY_SOURCE_NONE) {
   ResetMetricsIDsIfNecessary();
@@ -194,13 +196,14 @@ MetricsStateManager::CreateLowEntropyProvider() {
 std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
     EnabledStateProvider* enabled_state_provider,
+    const base::string16& backup_registry_key,
     const StoreClientInfoCallback& store_client_info,
     const LoadClientInfoCallback& retrieve_client_info) {
   std::unique_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
     result.reset(new MetricsStateManager(local_state, enabled_state_provider,
-                                         store_client_info,
+                                         backup_registry_key, store_client_info,
                                          retrieve_client_info));
   }
   return result;

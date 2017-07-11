@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -322,7 +323,7 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   cast_service_ = cast_service;
 
   metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
-      pref_service_, this,
+      pref_service_, this, base::string16(),
       base::Bind(&CastMetricsServiceClient::StoreClientInfo,
                  base::Unretained(this)),
       base::Bind(&CastMetricsServiceClient::LoadClientInfo,

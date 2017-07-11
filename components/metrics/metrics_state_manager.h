@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
+#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
 
 class PrefService;
@@ -49,6 +51,13 @@ class MetricsStateManager {
   // not opted in to metrics reporting.
   const std::string& client_id() const { return client_id_; }
 
+  // The CleanExitBeacon, used to determine whether the previous Chrome browser
+  // session terminated gracefully.
+  CleanExitBeacon* clean_exit_beacon() { return &clean_exit_beacon_; }
+  const CleanExitBeacon* clean_exit_beacon() const {
+    return &clean_exit_beacon_;
+  }
+
   // Forces the client ID to be generated. This is useful in case it's needed
   // before recording.
   void ForceClientIdCreation();
@@ -78,9 +87,12 @@ class MetricsStateManager {
 
   // Creates the MetricsStateManager, enforcing that only a single instance
   // of the class exists at a time. Returns NULL if an instance exists already.
+  // On Windows, |backup_registry_key| is used to store a backup of the clean
+  // exit beacon. It is ignored on other platforms.
   static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
+      const base::string16& backup_registry_key,
       const StoreClientInfoCallback& store_client_info,
       const LoadClientInfoCallback& load_client_info);
 
@@ -113,6 +125,7 @@ class MetricsStateManager {
   // that it is later retrievable by |load_client_info|.
   MetricsStateManager(PrefService* local_state,
                       EnabledStateProvider* enabled_state_provider,
+                      const base::string16& backup_registry_key,
                       const StoreClientInfoCallback& store_client_info,
                       const LoadClientInfoCallback& load_client_info);
 
@@ -164,6 +177,10 @@ class MetricsStateManager {
   // A callback run if this MetricsStateManager can't get the client id from
   // its typical location and wants to attempt loading it from this backup.
   const LoadClientInfoCallback load_client_info_;
+
+  // A beacon used to determine whether the previous Chrome browser session
+  // terminated gracefully.
+  CleanExitBeacon clean_exit_beacon_;
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;

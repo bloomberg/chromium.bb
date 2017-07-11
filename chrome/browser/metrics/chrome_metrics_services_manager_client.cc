@@ -101,6 +101,16 @@ void OnCrosMetricsReportingSettingChange() {
 }
 #endif
 
+// Returns the name of a key under HKEY_CURRENT_USER that can be used to store
+// backups of metrics data. Unused except on Windows.
+base::string16 GetRegistryBackupKey() {
+#if defined(OS_WIN)
+  return install_static::GetRegistryPath().append(L"\\StabilityMetrics");
+#else
+  return base::string16();
+#endif
+}
+
 }  // namespace
 
 
@@ -278,7 +288,7 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state_, enabled_state_provider_.get(),
+        local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
         base::Bind(&PostStoreMetricsClientInfo),
         base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }

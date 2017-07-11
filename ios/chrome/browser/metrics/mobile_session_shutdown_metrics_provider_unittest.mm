@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -147,7 +148,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
                           was_last_shutdown_clean);
   metrics_state_ = metrics::MetricsStateManager::Create(
       &local_state_, new metrics::TestEnabledStateProvider(false, false),
-      metrics::MetricsStateManager::StoreClientInfoCallback(),
+      base::string16(), metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(
       metrics_state_.get(), &metrics_client_, &local_state_));
