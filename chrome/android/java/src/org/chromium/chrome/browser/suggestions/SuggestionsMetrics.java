@@ -113,6 +113,15 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
+     * Records which tiles are available offline once the site suggestions finished loading.
+     * @param tileIndex index of a tile whose URL is available offline.
+     */
+    public static void recordTileOfflineAvailability(int tileIndex) {
+        RecordHistogram.recordEnumeratedHistogram("NewTabPage.TileOfflineAvailable", tileIndex,
+                MostVisitedSitesBridge.MAX_TILE_COUNT);
+    }
+
+    /**
      * Measures the amount of time it takes for date formatting in order to track StrictMode
      * violations.
      * See https://crbug.com/639877

@@ -85,12 +85,6 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         if (isVisible()) notifyItemChanged(0, new ViewHolder.UpdateOfflineBadgeCallback(tile));
     }
 
-    @Override
-    public void onLoadTaskAdded() {}
-
-    @Override
-    public void onLoadTaskCompleted() {}
-
     public TileGroup getTileGroup() {
         return mTileGroup;
     }
@@ -122,8 +116,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         }
 
         public void updateTiles(TileGroup tileGroup) {
-            tileGroup.renderTileViews(mLayout, /* trackLoadTasks = */ false,
-                    /* condensed = */ false);
+            tileGroup.renderTileViews(mLayout, /* condensed = */ false);
         }
 
         public void updateIconView(Tile tile) {

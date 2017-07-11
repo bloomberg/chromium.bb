@@ -472,7 +472,7 @@ public class NewTabPageTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ntpView.getTileGroup().onSwitchToForeground(); // Force the tiles to be refreshed.
+                ntpView.getTileGroup().onSwitchToForeground(false); // Force tile refresh.
             }
         });
         CriteriaHelper.pollUiThread(new Criteria("The tile grid was not updated.") {

@@ -25,7 +25,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.NativePageHost;
@@ -162,10 +161,6 @@ public class NewTabPage
                 && (url.startsWith(UrlConstants.NTP_URL) || url.startsWith("chrome://newtab"));
     }
 
-    private boolean isNtpOfflinePagesEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME);
-    }
-
     private class NewTabPageManagerImpl
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
@@ -234,6 +229,22 @@ public class NewTabPage
             if (mFakeboxDelegate == null) return false;
             return mFakeboxDelegate.isCurrentPage(NewTabPage.this);
         }
+
+        @Override
+        public void onLoadingComplete() {
+            if (mIsDestroyed) return;
+
+            long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
+            RecordHistogram.recordTimesHistogram(
+                    "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
+            mIsLoaded = true;
+            StartupMetrics.getInstance().recordOpenedNTP();
+            NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
+            // If not visible when loading completes, wait until onShown is received.
+            if (!mTab.isHidden()) recordNTPShown();
+
+            SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
+        }
     }
 
     /**
@@ -249,30 +260,11 @@ public class NewTabPage
         }
 
         @Override
-        public void onLoadingComplete(Tile[] items) {
+        public void onLoadingComplete(Tile[] tiles) {
             if (mIsDestroyed) return;
 
-            super.onLoadingComplete(items);
-
-            long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
-            RecordHistogram.recordTimesHistogram(
-                    "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
-            mIsLoaded = true;
-            StartupMetrics.getInstance().recordOpenedNTP();
-            NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
-            // If not visible when loading completes, wait until onShown is received.
-            if (!mTab.isHidden()) recordNTPShown();
-
-            if (isNtpOfflinePagesEnabled()) {
-                final int maxNumTiles = 12;
-                for (int i = 0; i < items.length; i++) {
-                    if (items[i].isOfflineAvailable()) {
-                        RecordHistogram.recordEnumeratedHistogram(
-                                "NewTabPage.TileOfflineAvailable", i, maxNumTiles);
-                    }
-                }
-            }
-            SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
+            super.onLoadingComplete(tiles);
+            mNewTabPageView.onTilesLoaded();
         }
 
         @Override
@@ -327,7 +319,7 @@ public class NewTabPage
                 // Showing the NTP is only meaningful when the page has been loaded already.
                 if (mIsLoaded) recordNTPShown();
 
-                mNewTabPageView.getTileGroup().onSwitchToForeground();
+                mNewTabPageView.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ false);
             }
 
             @Override
