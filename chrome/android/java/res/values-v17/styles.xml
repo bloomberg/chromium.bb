@@ -23,6 +23,7 @@
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorLink">@color/light_active_color</item>
         <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="android:colorAccent">@color/google_blue_500</item>
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
 
         <!--  Overriding AppCompat values -->
