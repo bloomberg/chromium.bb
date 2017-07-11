@@ -33,9 +33,8 @@ if "%1" == "force" (
 :: destroy our "python.bat" if we detect a "python_bin_reldir.txt" file
 :: present, causing us to reinstall Python.
 if exist "%WIN_TOOLS_ROOT_DIR%\python_bin_reldir.txt" (
-  del "%WIN_TOOLS_ROOT_DIR%\python.bat"
+  call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
   del "%WIN_TOOLS_ROOT_DIR%\python_bin_reldir.txt"
-  goto :PY27_INSTALL
 )
 
 if not exist "%WIN_TOOLS_ROOT_DIR%\python276_bin" goto :PY27_INSTALL
