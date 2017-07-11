@@ -47,13 +47,13 @@ struct weston_desktop_xdg_surface {
 	struct wl_event_source *add_idle;
 	struct wl_event_source *configure_idle;
 	uint32_t configure_serial;
-	struct weston_size requested_size;
+	struct weston_size pending_size;
 	struct {
 		bool maximized;
 		bool fullscreen;
 		bool resizing;
 		bool activated;
-	} requested_state, next_state, state;
+	} pending_state, next_state, state;
 	bool has_next_geometry;
 	struct weston_geometry next_geometry;
 };
@@ -92,26 +92,26 @@ weston_desktop_xdg_surface_send_configure(void *data)
 		wl_display_next_serial(weston_desktop_get_display(surface->desktop));
 
 	wl_array_init(&states);
-	if (surface->requested_state.maximized) {
+	if (surface->pending_state.maximized) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = XDG_SURFACE_STATE_MAXIMIZED;
 	}
-	if (surface->requested_state.fullscreen) {
+	if (surface->pending_state.fullscreen) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = XDG_SURFACE_STATE_FULLSCREEN;
 	}
-	if (surface->requested_state.resizing) {
+	if (surface->pending_state.resizing) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = XDG_SURFACE_STATE_RESIZING;
 	}
-	if (surface->requested_state.activated) {
+	if (surface->pending_state.activated) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = XDG_SURFACE_STATE_ACTIVATED;
 	}
 
 	xdg_surface_send_configure(surface->resource,
-				   surface->requested_size.width,
-				   surface->requested_size.height,
+				   surface->pending_size.width,
+				   surface->pending_size.height,
 				   &states,
 				   surface->configure_serial);
 
@@ -124,21 +124,21 @@ weston_desktop_xdg_surface_state_compare(struct weston_desktop_xdg_surface *surf
 	struct weston_surface *wsurface =
 		weston_desktop_surface_get_surface(surface->surface);
 
-	if (surface->requested_state.activated != surface->state.activated)
+	if (surface->pending_state.activated != surface->state.activated)
 		return false;
-	if (surface->requested_state.fullscreen != surface->state.fullscreen)
+	if (surface->pending_state.fullscreen != surface->state.fullscreen)
 		return false;
-	if (surface->requested_state.maximized != surface->state.maximized)
+	if (surface->pending_state.maximized != surface->state.maximized)
 		return false;
-	if (surface->requested_state.resizing != surface->state.resizing)
+	if (surface->pending_state.resizing != surface->state.resizing)
 		return false;
 
-	if (wsurface->width == surface->requested_size.width &&
-	    wsurface->height == surface->requested_size.height)
+	if (wsurface->width == surface->pending_size.width &&
+	    wsurface->height == surface->pending_size.height)
 		return true;
 
-	if (surface->requested_size.width == 0 &&
-	    surface->requested_size.height == 0)
+	if (surface->pending_size.width == 0 &&
+	    surface->pending_size.height == 0)
 		return true;
 
 	return false;
@@ -150,17 +150,17 @@ weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface 
 {
 	struct wl_display *display = weston_desktop_get_display(surface->desktop);
 	struct wl_event_loop *loop = wl_display_get_event_loop(display);
-	bool requested_same =
+	bool pending_same =
 		!force && weston_desktop_xdg_surface_state_compare(surface);
 
 	if (surface->configure_idle != NULL) {
-		if (!requested_same)
+		if (!pending_same)
 			return;
 
 		wl_event_source_remove(surface->configure_idle);
 		surface->configure_idle = NULL;
 	} else {
-		if (requested_same)
+		if (pending_same)
 			return;
 
 		surface->configure_idle =
@@ -176,7 +176,7 @@ weston_desktop_xdg_surface_set_maximized(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	surface->requested_state.maximized = maximized;
+	surface->pending_state.maximized = maximized;
 	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
@@ -186,7 +186,7 @@ weston_desktop_xdg_surface_set_fullscreen(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	surface->requested_state.fullscreen = fullscreen;
+	surface->pending_state.fullscreen = fullscreen;
 	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
@@ -196,7 +196,7 @@ weston_desktop_xdg_surface_set_resizing(struct weston_desktop_surface *dsurface,
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	surface->requested_state.resizing = resizing;
+	surface->pending_state.resizing = resizing;
 	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
@@ -206,7 +206,7 @@ weston_desktop_xdg_surface_set_activated(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	surface->requested_state.activated = activated;
+	surface->pending_state.activated = activated;
 	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
@@ -217,8 +217,8 @@ weston_desktop_xdg_surface_set_size(struct weston_desktop_surface *dsurface,
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	surface->requested_size.width = width;
-	surface->requested_size.height = height;
+	surface->pending_size.width = width;
+	surface->pending_size.height = height;
 
 	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
@@ -234,8 +234,8 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 	bool reconfigure = false;
 
 	if (surface->next_state.maximized || surface->next_state.fullscreen)
-		reconfigure = surface->requested_size.width != wsurface->width ||
-			      surface->requested_size.height != wsurface->height;
+		reconfigure = surface->pending_size.width != wsurface->width ||
+			      surface->pending_size.height != wsurface->height;
 
 	if (reconfigure) {
 		weston_desktop_xdg_surface_schedule_configure(surface, true);
@@ -436,7 +436,7 @@ weston_desktop_xdg_surface_protocol_ack_configure(struct wl_client *wl_client,
 	if (surface->configure_serial != serial)
 		return;
 
-	surface->next_state = surface->requested_state;
+	surface->next_state = surface->pending_state;
 }
 
 static void
