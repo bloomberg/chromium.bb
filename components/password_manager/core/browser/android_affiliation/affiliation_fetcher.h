@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_AFFILIATION_FETCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_AFFILIATION_FETCHER_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -78,6 +80,8 @@ class AffiliationFetcher : net::URLFetcherDelegate {
 
   // Parses and validates the response protocol buffer message for a list of
   // equivalence classes, stores them into |result| and returns true on success.
+  // It is guaranteed that every one of the requested Facet URIs will be a
+  // member of exactly one returned equivalence class.
   // Returns false if the response was gravely ill-formed or self-inconsistent.
   // Unknown kinds of facet URIs and new protocol buffer fields will be ignored.
   bool ParseResponse(AffiliationFetcherDelegate::Result* result) const;

@@ -241,9 +241,10 @@ void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
 }
 
-void PasswordStore::GetAutofillableLoginsWithAffiliatedRealms(
+void PasswordStore::GetAutofillableLoginsWithAffiliationAndBrandingInformation(
     PasswordStoreConsumer* consumer) {
-  Schedule(&PasswordStore::GetAutofillableLoginsWithAffiliatedRealmsImpl,
+  Schedule(&PasswordStore::
+               GetAutofillableLoginsWithAffiliationAndBrandingInformationImpl,
            consumer);
 }
 
@@ -251,9 +252,10 @@ void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
 
-void PasswordStore::GetBlacklistLoginsWithAffiliatedRealms(
+void PasswordStore::GetBlacklistLoginsWithAffiliationAndBrandingInformation(
     PasswordStoreConsumer* consumer) {
-  Schedule(&PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl,
+  Schedule(&PasswordStore::
+               GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl,
            consumer);
 }
 
@@ -555,8 +557,9 @@ void PasswordStore::GetAutofillableLoginsImpl(
   request->NotifyConsumerWithResults(std::move(obtained_forms));
 }
 
-void PasswordStore::GetAutofillableLoginsWithAffiliatedRealmsImpl(
-    std::unique_ptr<GetLoginsRequest> request) {
+void PasswordStore::
+    GetAutofillableLoginsWithAffiliationAndBrandingInformationImpl(
+        std::unique_ptr<GetLoginsRequest> request) {
   std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
   if (!FillAutofillableLogins(&obtained_forms))
     obtained_forms.clear();
@@ -564,14 +567,8 @@ void PasswordStore::GetAutofillableLoginsWithAffiliatedRealmsImpl(
   // post a request to UI thread.
   main_thread_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PasswordStore::InjectAffiliatedWebRealms, this,
+      base::Bind(&PasswordStore::InjectAffiliationAndBrandingInformation, this,
                  base::Passed(&obtained_forms), base::Passed(&request)));
-}
-
-void PasswordStore::NotifyLoginsWithAffiliatedRealms(
-    std::unique_ptr<GetLoginsRequest> request,
-    std::vector<std::unique_ptr<PasswordForm>> obtained_forms) {
-  request->NotifyConsumerWithResults(std::move(obtained_forms));
 }
 
 void PasswordStore::GetBlacklistLoginsImpl(
@@ -582,7 +579,7 @@ void PasswordStore::GetBlacklistLoginsImpl(
   request->NotifyConsumerWithResults(std::move(obtained_forms));
 }
 
-void PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl(
+void PasswordStore::GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
     std::unique_ptr<GetLoginsRequest> request) {
   std::vector<std::unique_ptr<PasswordForm>> obtained_forms;
   if (!FillBlacklistLogins(&obtained_forms))
@@ -591,7 +588,7 @@ void PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl(
   // post a request to UI thread.
   main_thread_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PasswordStore::InjectAffiliatedWebRealms, this,
+      base::Bind(&PasswordStore::InjectAffiliationAndBrandingInformation, this,
                  base::Passed(&obtained_forms), base::Passed(&request)));
 }
 
@@ -625,11 +622,11 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
   request->NotifyConsumerWithResults(std::move(results));
 }
 
-void PasswordStore::InjectAffiliatedWebRealms(
+void PasswordStore::InjectAffiliationAndBrandingInformation(
     std::vector<std::unique_ptr<PasswordForm>> forms,
     std::unique_ptr<GetLoginsRequest> request) {
   if (affiliated_match_helper_) {
-    affiliated_match_helper_->InjectAffiliatedWebRealms(
+    affiliated_match_helper_->InjectAffiliationAndBrandingInformation(
         std::move(forms),
         base::Bind(&PasswordStore::GetLoginsRequest::NotifyConsumerWithResults,
                    base::Owned(request.release())));

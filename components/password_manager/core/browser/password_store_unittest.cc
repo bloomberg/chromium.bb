@@ -79,6 +79,10 @@ constexpr const char kTestAndroidRealm3[] =
     "android://hash@com.example.three.android/";
 constexpr const char kTestUnrelatedAndroidRealm[] =
     "android://hash@com.notexample.android/";
+constexpr const char kTestAndroidName1[] = "Example Android App 1";
+constexpr const char kTestAndroidIconURL1[] = "https://example.com/icon_1.png";
+constexpr const char kTestAndroidName2[] = "Example Android App 2";
+constexpr const char kTestAndroidIconURL2[] = "https://example.com/icon_2.png";
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
@@ -813,28 +817,18 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
   }
 }
 
-TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
-  /* clang-format off */
+TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
   static const PasswordFormData kTestCredentials[] = {
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm1,
-       "", "", L"", L"", L"",
-       L"username_value_1",
-       L"", true, 1},
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm2,
-       "", "", L"", L"", L"",
-       L"username_value_2",
-       L"", true, 1},
-      {PasswordForm::SCHEME_HTML,
-       kTestAndroidRealm3,
-       "", "", L"", L"", L"",
-       L"username_value_3",
-       L"", true, 1}};
-  /* clang-format on */
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm1, "", "", L"", L"", L"",
+       L"username_value_1", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm2, "", "", L"", L"", L"",
+       L"username_value_2", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestAndroidRealm3, "", "", L"", L"", L"",
+       L"username_value_3", L"", true, 1},
+      {PasswordForm::SCHEME_HTML, kTestWebRealm1, kTestWebOrigin1, "", L"", L"",
+       L"", L"username_value_4", L"", true, 1}};
 
-  const bool kFalseTrue[] = {false, true};
-  for (bool blacklisted : kFalseTrue) {
+  for (bool blacklisted : {false, true}) {
     SCOPED_TRACE(testing::Message("use blacklisted logins: ") << blacklisted);
     scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
         base::SequencedTaskRunnerHandle::Get(),
@@ -845,44 +839,53 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
                                       base::Closure());
 
     std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-    for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+    for (const auto& test_credential : kTestCredentials) {
       all_credentials.push_back(
-          CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
-      if (blacklisted)
-        all_credentials.back()->blacklisted_by_user = true;
+          CreatePasswordFormFromDataForTesting(test_credential));
+      all_credentials.back()->blacklisted_by_user = blacklisted;
       store->AddLogin(*all_credentials.back());
       base::RunLoop().RunUntilIdle();
     }
 
     MockPasswordStoreConsumer mock_consumer;
     std::vector<std::unique_ptr<PasswordForm>> expected_results;
-    for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
-      expected_results.push_back(
-          base::MakeUnique<PasswordForm>(*all_credentials[i]));
+    for (const auto& credential : all_credentials)
+      expected_results.push_back(base::MakeUnique<PasswordForm>(*credential));
+
+    std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+        affiliation_info_for_results = {
+            {kTestWebRealm1, kTestAndroidName1, GURL(kTestAndroidIconURL1)},
+            {kTestWebRealm2, kTestAndroidName2, GURL(kTestAndroidIconURL2)},
+            {/* Pretend affiliation or branding info is unavailable. */},
+            {/* Pretend affiliation or branding info is unavailable. */}};
+
+    auto mock_helper = base::MakeUnique<MockAffiliatedMatchHelper>();
+    mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
+        affiliation_info_for_results);
+    store->SetAffiliatedMatchHelper(std::move(mock_helper));
+    for (size_t i = 0; i < expected_results.size(); ++i) {
+      expected_results[i]->affiliated_web_realm =
+          affiliation_info_for_results[i].affiliated_web_realm;
+      expected_results[i]->app_display_name =
+          affiliation_info_for_results[i].app_display_name;
+      expected_results[i]->app_icon_url =
+          affiliation_info_for_results[i].app_icon_url;
     }
-
-    MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-    store->SetAffiliatedMatchHelper(base::WrapUnique(mock_helper));
-
-    std::vector<std::string> affiliated_web_realms;
-    affiliated_web_realms.push_back(kTestWebRealm1);
-    affiliated_web_realms.push_back(kTestWebRealm2);
-    affiliated_web_realms.push_back(std::string());
-    mock_helper->ExpectCallToInjectAffiliatedWebRealms(affiliated_web_realms);
-    for (size_t i = 0; i < expected_results.size(); ++i)
-      expected_results[i]->affiliated_web_realm = affiliated_web_realms[i];
 
     EXPECT_CALL(mock_consumer,
                 OnGetPasswordStoreResultsConstRef(
                     UnorderedPasswordFormElementsAre(&expected_results)));
-    if (blacklisted)
-      store->GetBlacklistLoginsWithAffiliatedRealms(&mock_consumer);
-    else
-      store->GetAutofillableLoginsWithAffiliatedRealms(&mock_consumer);
+    if (blacklisted) {
+      store->GetBlacklistLoginsWithAffiliationAndBrandingInformation(
+          &mock_consumer);
+    } else {
+      store->GetAutofillableLoginsWithAffiliationAndBrandingInformation(
+          &mock_consumer);
+    }
 
-    // Since GetAutofillableLoginsWithAffiliatedRealms schedules a request for
-    // affiliated realms to UI thread, don't shutdown UI thread until there are
-    // no tasks in the UI queue.
+    // Since GetAutofillableLoginsWithAffiliationAndBrandingInformation
+    // schedules a request for affiliation information to UI thread, don't
+    // shutdown UI thread until there are no tasks in the UI queue.
     base::RunLoop().RunUntilIdle();
     store->ShutdownOnUIThread();
     base::RunLoop().RunUntilIdle();

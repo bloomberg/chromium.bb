@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -85,7 +86,7 @@ void AffiliatedMatchHelper::GetAffiliatedWebRealms(
   }
 }
 
-void AffiliatedMatchHelper::InjectAffiliatedWebRealms(
+void AffiliatedMatchHelper::InjectAffiliationAndBrandingInformation(
     std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
     const PasswordFormsCallback& result_callback) {
   std::vector<autofill::PasswordForm*> android_credentials;
@@ -98,30 +99,52 @@ void AffiliatedMatchHelper::InjectAffiliatedWebRealms(
   base::Closure barrier_closure =
       base::BarrierClosure(android_credentials.size(), on_get_all_realms);
   for (auto* form : android_credentials) {
+    // TODO(crbug.com/628988): Rename |GetAffiliations| to
+    // |GetAffiliationsAndBranding|.
     affiliation_service_->GetAffiliations(
         FacetURI::FromPotentiallyInvalidSpec(form->signon_realm),
         AffiliationService::StrategyOnCacheMiss::FAIL,
-        base::Bind(&AffiliatedMatchHelper::CompleteInjectAffiliatedWebRealm,
+        base::Bind(&AffiliatedMatchHelper::
+                       CompleteInjectAffiliationAndBrandingInformation,
                    weak_ptr_factory_.GetWeakPtr(), base::Unretained(form),
                    barrier_closure));
   }
 }
 
-void AffiliatedMatchHelper::CompleteInjectAffiliatedWebRealm(
+void AffiliatedMatchHelper::CompleteInjectAffiliationAndBrandingInformation(
     autofill::PasswordForm* form,
     base::Closure barrier_closure,
     const AffiliatedFacets& results,
     bool success) {
-  // If there is a number of realms, choose the first in the list.
-  if (success) {
-    for (const Facet& affiliated_facet : results) {
-      if (affiliated_facet.uri.IsValidWebFacetURI()) {
-        form->affiliated_web_realm =
-            affiliated_facet.uri.canonical_spec() + "/";
-        break;
-      }
-    }
+  if (!success) {
+    barrier_closure.Run();
+    return;
   }
+
+  const FacetURI facet_uri(
+      FacetURI::FromPotentiallyInvalidSpec(form->signon_realm));
+  DCHECK(facet_uri.IsValidAndroidFacetURI());
+
+  // Inject branding information into the form (e.g. the Play Store name and
+  // icon URL). We expect to always find a matching facet URI in the results.
+  auto facet = std::find_if(results.begin(), results.end(),
+                            [&facet_uri](const Facet& affiliated_facet) {
+                              return affiliated_facet.uri == facet_uri;
+                            });
+  DCHECK(facet != results.end());
+  form->app_display_name = facet->branding_info.name;
+  form->app_icon_url = facet->branding_info.icon_url;
+
+  // Inject the affiliated web realm into the form, if available. In case
+  // multiple web realms are available, this will always choose the first
+  // available web realm for injection.
+  auto affiliated_facet = std::find_if(
+      results.begin(), results.end(), [](const Facet& affiliated_facet) {
+        return affiliated_facet.uri.IsValidWebFacetURI();
+      });
+  if (affiliated_facet != results.end())
+    form->affiliated_web_realm = affiliated_facet->uri.canonical_spec() + "/";
+
   barrier_closure.Run();
 }
 
