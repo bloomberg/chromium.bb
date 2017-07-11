@@ -10,7 +10,8 @@
 
 namespace blink {
 
-using namespace SVGNames;
+using SVGNames::amplitudeAttr;
+using SVGNames::exponentAttr;
 
 class PropertyHandleTest : public ::testing::Test {};
 
