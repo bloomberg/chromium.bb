@@ -25,6 +25,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/image_fetcher/core/request_metadata.h"
+#include "net/base/network_change_notifier.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -372,6 +373,16 @@ void LargeIconService::
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         const favicon_base::GoogleFaviconServerCallback& callback) {
   DCHECK_LE(0, min_source_size_in_pixel);
+
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    // By exiting early when offline, we avoid caching the failure and thus
+    // allow icon fetches later when coming back online.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, favicon_base::GoogleFaviconServerRequestStatus::
+                                 FAILURE_CONNECTION_ERROR));
+    return;
+  }
 
   const GURL trimmed_page_url = TrimPageUrlForGoogleServer(page_url);
   const GURL server_request_url = GetRequestUrlForGoogleServerV2(
