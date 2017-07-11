@@ -27,6 +27,15 @@
                                              date:(NSString*)publishDate
                               offlineAvailability:(BOOL)availableOffline;
 
+// Returns the height needed by a cell contained in |width| and containing the
+// listed informations.
++ (CGFloat)heightForWidth:(CGFloat)width
+                withImage:(BOOL)hasImage
+                    title:(NSString*)title
+            publisherName:(NSString*)publisherName
+          publicationDate:(NSString*)publicationDate
+         availableOffline:(BOOL)availableOffline;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_CELL_H_

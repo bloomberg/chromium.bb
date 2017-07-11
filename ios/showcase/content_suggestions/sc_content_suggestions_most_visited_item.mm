@@ -34,4 +34,8 @@
   [cell.faviconView configureWithAttributes:self.attributes];
 }
 
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [ContentSuggestionsMostVisitedCell defaultSize].height;
+}
+
 @end

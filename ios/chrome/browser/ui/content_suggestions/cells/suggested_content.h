@@ -29,6 +29,9 @@
 // Identifier for this content.
 @property(nonatomic, strong) ContentSuggestionIdentifier* suggestionIdentifier;
 
+// The height needed by a cell configured by this item, for a |width|.
+- (CGFloat)cellHeightForWidth:(CGFloat)width;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_SUGGESTED_CONTENT_H_

@@ -33,6 +33,8 @@ const CGFloat kMinimalHeight = 48;
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [containerView addSubview:_detailTextLabel];
 
+    CGFloat margin = kMargin;
+
     [NSLayoutConstraint activateConstraints:@[
       // Total height.
       // The MDC specs ask for at least 48 pt.
@@ -42,16 +44,16 @@ const CGFloat kMinimalHeight = 48;
       // Container.
       [containerView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kMargin],
+                         constant:margin],
       [containerView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kMargin],
+                         constant:-margin],
       [containerView.topAnchor
           constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
-                                      constant:kMargin],
+                                      constant:margin],
       [containerView.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
-                                   constant:-kMargin],
+                                   constant:-margin],
       [containerView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
 
@@ -72,6 +74,18 @@ const CGFloat kMinimalHeight = 48;
     ]];
   }
   return self;
+}
+
++ (CGFloat)heightForTitleLabel:(UILabel*)titleLabel
+               detailTextLabel:(UILabel*)detailTextLabel
+                         width:(CGFloat)width {
+  CGSize sizeForLabel = CGSizeMake(width - 2 * kMargin, 500);
+
+  CGFloat cellHeight = 2 * kMargin;
+  cellHeight += [titleLabel sizeThatFits:sizeForLabel].height;
+  cellHeight += [detailTextLabel sizeThatFits:sizeForLabel].height;
+
+  return MAX(cellHeight, kMinimalHeight);
 }
 
 // Implement -layoutSubviews as per instructions in documentation for
