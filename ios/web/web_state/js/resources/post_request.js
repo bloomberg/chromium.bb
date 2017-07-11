@@ -4,6 +4,7 @@
 
 // Provides a way to implement POST requests via XMLHttpRequest.
 // Works around https://bugs.webkit.org/show_bug.cgi?id=145410 on WKWebView.
+// TODO(crbug.com/740987): Remove |post_request.js| once iOS 10 is dropped.
 
 'use strict';
 
