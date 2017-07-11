@@ -87,7 +87,6 @@ const int kTimeout = 8 * 1000;  // 8 seconds.
 
 // The handler for JavaScript messages for the about:flags page.
 class FlashDOMHandler : public WebUIMessageHandler,
-                        public CrashUploadList::Delegate,
                         public content::GpuDataManagerObserver {
  public:
   FlashDOMHandler();
@@ -95,9 +94,6 @@ class FlashDOMHandler : public WebUIMessageHandler,
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
-
-  // CrashUploadList::Delegate implementation.
-  void OnUploadListAvailable() override;
 
   // GpuDataManager::Observer implementation.
   void OnGpuInfoUpdate() override;
@@ -109,6 +105,9 @@ class FlashDOMHandler : public WebUIMessageHandler,
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
 
  private:
+  // UploadList callback.
+  void OnUploadListAvailable();
+
   // Called when we think we might have enough information to return data back
   // to the page.
   void MaybeRespondToPage();
@@ -124,7 +123,7 @@ class FlashDOMHandler : public WebUIMessageHandler,
   base::OneShotTimer timeout_;
 
   // Crash list.
-  scoped_refptr<CrashUploadList> upload_list_;
+  scoped_refptr<UploadList> upload_list_;
 
   // Whether the list of all crashes is available.
   bool crash_list_available_;
@@ -146,9 +145,10 @@ FlashDOMHandler::FlashDOMHandler()
       has_gpu_info_(false),
       has_plugin_info_(false),
       weak_ptr_factory_(this) {
-        // Request Crash data asynchronously.
-  upload_list_ = CreateCrashUploadList(this);
-  upload_list_->LoadUploadListAsynchronously();
+  // Request Crash data asynchronously.
+  upload_list_ = CreateCrashUploadList();
+  upload_list_->Load(base::BindOnce(&FlashDOMHandler::OnUploadListAvailable,
+                                    weak_ptr_factory_.GetWeakPtr()));
 
   // Watch for changes in GPUInfo.
   GpuDataManager::GetInstance()->AddObserver(this);
@@ -157,23 +157,23 @@ FlashDOMHandler::FlashDOMHandler()
   // GPU process has not run yet, this will trigger its launch.
   GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
 
-  // GPU access might not be allowed at all, which will cause us not to get a
-  // call back.
+  // GPU access might not be allowed at all, which will cause us not to
+  // get a call back.
   if (!GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
     OnGpuInfoUpdate();
 
   PluginService::GetInstance()->GetPlugins(base::Bind(
       &FlashDOMHandler::OnGotPlugins, weak_ptr_factory_.GetWeakPtr()));
 
-  // And lastly, we fire off a timer to make sure we never get stuck at the
-  // "Loading..." message.
+  // And lastly, we fire off a timer to make sure we never get stuck at
+  // the "Loading..." message.
   timeout_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeout),
                  this, &FlashDOMHandler::OnTimeout);
 }
 
 FlashDOMHandler::~FlashDOMHandler() {
   GpuDataManager::GetInstance()->RemoveObserver(this);
-  upload_list_->ClearDelegate();
+  upload_list_->CancelCallback();
 }
 
 void FlashDOMHandler::RegisterMessages() {
@@ -303,10 +303,10 @@ void FlashDOMHandler::MaybeRespondToPage() {
   bool crash_reporting_enabled =
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   if (crash_reporting_enabled) {
-    std::vector<CrashUploadList::UploadInfo> crashes;
+    std::vector<UploadList::UploadInfo> crashes;
     upload_list_->GetUploads(10, &crashes);
 
-    for (std::vector<CrashUploadList::UploadInfo>::iterator i = crashes.begin();
+    for (std::vector<UploadList::UploadInfo>::iterator i = crashes.begin();
          i != crashes.end(); ++i) {
       base::string16 crash_string(ASCIIToUTF16(i->upload_id));
       crash_string += ASCIIToUTF16(" ");

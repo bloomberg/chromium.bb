@@ -55,8 +55,7 @@ web::WebUIIOSDataSource* CreateCrashesUIHTMLSource() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // The handler for Javascript messages for the chrome://crashes/ page.
-class CrashesDOMHandler : public web::WebUIIOSMessageHandler,
-                          public CrashUploadList::Delegate {
+class CrashesDOMHandler : public web::WebUIIOSMessageHandler {
  public:
   CrashesDOMHandler();
   ~CrashesDOMHandler() override;
@@ -64,17 +63,18 @@ class CrashesDOMHandler : public web::WebUIIOSMessageHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // CrashUploadList::Delegate implemenation.
-  void OnUploadListAvailable() override;
 
  private:
+  // Crash UploadList callback.
+  void OnUploadListAvailable();
+
   // Asynchronously fetches the list of crashes. Called from JS.
   void HandleRequestCrashes(const base::ListValue* args);
 
   // Sends the recent crashes list JS.
   void UpdateUI();
 
-  scoped_refptr<CrashUploadList> upload_list_;
+  scoped_refptr<UploadList> upload_list_;
   bool list_available_;
   bool first_load_;
 
@@ -83,15 +83,16 @@ class CrashesDOMHandler : public web::WebUIIOSMessageHandler,
 
 CrashesDOMHandler::CrashesDOMHandler()
     : list_available_(false), first_load_(true) {
-  upload_list_ = ios::CreateCrashUploadList(this);
+  upload_list_ = ios::CreateCrashUploadList();
 }
 
 CrashesDOMHandler::~CrashesDOMHandler() {
-  upload_list_->ClearDelegate();
+  upload_list_->CancelCallback();
 }
 
 void CrashesDOMHandler::RegisterMessages() {
-  upload_list_->LoadUploadListAsynchronously();
+  upload_list_->Load(base::BindOnce(&CrashesDOMHandler::OnUploadListAvailable,
+                                    base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       crash::kCrashesUIRequestCrashList,
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
@@ -105,7 +106,8 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
       UpdateUI();
   } else {
     list_available_ = false;
-    upload_list_->LoadUploadListAsynchronously();
+    upload_list_->Load(base::Bind(&CrashesDOMHandler::OnUploadListAvailable,
+                                  base::Unretained(this)));
   }
 }
 

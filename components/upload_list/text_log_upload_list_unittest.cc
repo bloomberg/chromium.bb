@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/upload_list/upload_list.h"
-
-#include <stddef.h>
+#include "components/upload_list/text_log_upload_list.h"
 
 #include <string>
 
@@ -13,11 +11,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner.h"
-#include "base/threading/thread.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,14 +24,12 @@ const char kTestUploadId[] = "0123456789abcdef";
 const char kTestLocalID[] = "fedcba9876543210";
 const char kTestCaptureTime[] = "2345678901";
 
-class UploadListTest : public testing::Test,
-                       public UploadList::Delegate {
+class TextLogUploadListTest : public testing::Test {
  public:
-  UploadListTest() : worker_thread_("UploadListTest") {}
+  TextLogUploadListTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(worker_thread_.Start());
   }
 
  protected:
@@ -45,33 +39,15 @@ class UploadListTest : public testing::Test,
               0);
   }
 
-  void WaitForUploadList() {
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  // UploadList::Delegate:
-  void OnUploadListAvailable() override {
-    ASSERT_FALSE(quit_closure_.is_null());
-    quit_closure_.Run();
-  }
-
-  scoped_refptr<base::TaskRunner> task_runner() const {
-    return worker_thread_.task_runner();
-  }
-
   base::FilePath log_path() {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("uploads.log"));
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
-  base::Thread worker_thread_;
-  base::Closure quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(UploadListTest);
+  DISALLOW_COPY_AND_ASSIGN(TextLogUploadListTest);
 };
 
 // These tests test that UploadList can parse a vector of log entry strings of
@@ -80,17 +56,18 @@ class UploadListTest : public testing::Test,
 
 // Test log entry string with upload time and upload ID.
 // This is the format that crash reports are stored in.
-TEST_F(UploadListTest, ParseUploadTimeUploadId) {
+TEST_F(TextLogUploadListTest, ParseUploadTimeUploadId) {
   std::string test_entry = kTestUploadTime;
   test_entry += ",";
   test_entry.append(kTestUploadId);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -106,7 +83,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadId) {
 
 // Test log entry string with upload time, upload ID and local ID.
 // This is the old format that WebRTC logs were stored in.
-TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalId) {
+TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdLocalId) {
   std::string test_entry = kTestUploadTime;
   test_entry += ",";
   test_entry.append(kTestUploadId);
@@ -114,11 +91,12 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalId) {
   test_entry.append(kTestLocalID);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -135,7 +113,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalId) {
 // Test log entry string with upload time, upload ID and capture time.
 // This is the format that WebRTC logs that only have been uploaded only are
 // stored in.
-TEST_F(UploadListTest, ParseUploadTimeUploadIdCaptureTime) {
+TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdCaptureTime) {
   std::string test_entry = kTestUploadTime;
   test_entry += ",";
   test_entry.append(kTestUploadId);
@@ -143,11 +121,12 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdCaptureTime) {
   test_entry.append(kTestCaptureTime);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -164,18 +143,19 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdCaptureTime) {
 // Test log entry string with local ID and capture time.
 // This is the format that WebRTC logs that only are stored locally are stored
 // in.
-TEST_F(UploadListTest, ParseLocalIdCaptureTime) {
+TEST_F(TextLogUploadListTest, ParseLocalIdCaptureTime) {
   std::string test_entry = ",,";
   test_entry.append(kTestLocalID);
   test_entry += ",";
   test_entry.append(kTestCaptureTime);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -193,7 +173,7 @@ TEST_F(UploadListTest, ParseLocalIdCaptureTime) {
 // time.
 // This is the format that WebRTC logs that are stored locally and have been
 // uploaded are stored in.
-TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
+TEST_F(TextLogUploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
   std::string test_entry = kTestUploadTime;
   test_entry += ",";
   test_entry.append(kTestUploadId);
@@ -203,11 +183,12 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
   test_entry.append(kTestCaptureTime);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -221,7 +202,7 @@ TEST_F(UploadListTest, ParseUploadTimeUploadIdLocalIdCaptureTime) {
   EXPECT_STREQ(kTestCaptureTime, base::DoubleToString(time_double).c_str());
 }
 
-TEST_F(UploadListTest, ParseMultipleEntries) {
+TEST_F(TextLogUploadListTest, ParseMultipleEntries) {
   std::string test_entry;
   for (int i = 1; i <= 4; ++i) {
     test_entry.append(kTestUploadTime);
@@ -235,11 +216,12 @@ TEST_F(UploadListTest, ParseMultipleEntries) {
   }
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -255,7 +237,7 @@ TEST_F(UploadListTest, ParseMultipleEntries) {
   }
 }
 
-TEST_F(UploadListTest, ParseWithState) {
+TEST_F(TextLogUploadListTest, ParseWithState) {
   std::string test_entry;
   for (int i = 1; i <= 4; ++i) {
     test_entry.append(kTestUploadTime);
@@ -272,11 +254,12 @@ TEST_F(UploadListTest, ParseWithState) {
   }
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
-  upload_list->LoadUploadListAsynchronously();
-  WaitForUploadList();
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<UploadList::UploadInfo> uploads;
   upload_list->GetUploads(999, &uploads);
@@ -294,7 +277,7 @@ TEST_F(UploadListTest, ParseWithState) {
 }
 
 // https://crbug.com/597384
-TEST_F(UploadListTest, SimultaneousAccess) {
+TEST_F(TextLogUploadListTest, SimultaneousAccess) {
   std::string test_entry = kTestUploadTime;
   test_entry += ",";
   test_entry.append(kTestUploadId);
@@ -304,17 +287,17 @@ TEST_F(UploadListTest, SimultaneousAccess) {
   test_entry.append(kTestCaptureTime);
   WriteUploadLog(test_entry);
 
-  scoped_refptr<UploadList> upload_list =
-      new UploadList(this, log_path(), task_runner());
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
 
   // Queue up a bunch of loads, waiting only for the first one to complete.
-  // Clearing the delegate prevents the QuitClosure from being Run more than
-  // once.
+  base::RunLoop run_loop;
+  upload_list->Load(run_loop.QuitClosure());
+  run_loop.Run();
+
   for (int i = 1; i <= 20; ++i) {
-    upload_list->LoadUploadListAsynchronously();
+    upload_list->Load(base::OnceClosure());
   }
-  WaitForUploadList();
-  upload_list->ClearDelegate();
 
   // Read the list a few times to try and race one of the loads above.
   for (int i = 1; i <= 4; ++i) {

@@ -6,20 +6,18 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "components/upload_list/crash_upload_list.h"
+#include "components/upload_list/text_log_upload_list.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/web/public/web_thread.h"
 
 namespace ios {
 
-scoped_refptr<CrashUploadList> CreateCrashUploadList(
-    UploadList::Delegate* delegate) {
+scoped_refptr<UploadList> CreateCrashUploadList() {
   base::FilePath crash_dir_path;
   PathService::Get(ios::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =
       crash_dir_path.AppendASCII(CrashUploadList::kReporterLogFilename);
-  return new CrashUploadList(delegate, upload_log_path,
-                             web::WebThread::GetBlockingPool());
+  return new TextLogUploadList(upload_log_path);
 }
 
 }  // namespace ios

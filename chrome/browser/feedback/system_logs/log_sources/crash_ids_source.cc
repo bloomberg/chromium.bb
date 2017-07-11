@@ -28,7 +28,7 @@ constexpr base::TimeDelta kOneHourTimeDelta = base::TimeDelta::FromHours(1);
 
 CrashIdsSource::CrashIdsSource()
     : SystemLogsSource("CrashId"),
-      crash_upload_list_(CreateCrashUploadList(this)),
+      crash_upload_list_(CreateCrashUploadList()),
       pending_crash_list_loading_(false) {}
 
 CrashIdsSource::~CrashIdsSource() {}
@@ -42,7 +42,8 @@ void CrashIdsSource::Fetch(const SysLogsSourceCallback& callback) {
     return;
 
   pending_crash_list_loading_ = true;
-  crash_upload_list_->LoadUploadListAsynchronously();
+  crash_upload_list_->Load(base::BindOnce(
+      &CrashIdsSource::OnUploadListAvailable, base::Unretained(this)));
 }
 
 void CrashIdsSource::OnUploadListAvailable() {

@@ -5,26 +5,24 @@
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 
 #include "base/files/file.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/upload_list/text_log_upload_list.h"
 
 namespace {
 
 const char kWebRtcLogDirectory[] = "WebRTC Logs";
 const char kWebRtcLogListFilename[] = "Log List";
 
-}
+}  // namespace
 
 // static
-UploadList* WebRtcLogList::CreateWebRtcLogList(UploadList::Delegate* delegate,
-                                               Profile* profile) {
+UploadList* WebRtcLogList::CreateWebRtcLogList(Profile* profile) {
   base::FilePath log_list_path = GetWebRtcLogListFileForDirectory(
       GetWebRtcLogDirectoryForProfile(profile->GetPath()));
-  return new UploadList(delegate, log_list_path,
-                        base::CreateTaskRunnerWithTraits({base::MayBlock()}));
+  return new TextLogUploadList(log_list_path);
 }
 
 // static

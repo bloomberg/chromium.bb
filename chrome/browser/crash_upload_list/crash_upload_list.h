@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASH_UPLOAD_LIST_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/upload_list/crash_upload_list.h"
+#include "components/upload_list/upload_list.h"
 
 // Factory that creates the platform-specific implementation of the crash
-// upload list with the given callback delegate.
-scoped_refptr<CrashUploadList> CreateCrashUploadList(
-    UploadList::Delegate* delegate);
+// report upload list.
+scoped_refptr<UploadList> CreateCrashUploadList();
 
 #endif  // CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASH_UPLOAD_LIST_H_

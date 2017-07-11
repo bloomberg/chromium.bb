@@ -76,8 +76,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // The handler for Javascript messages for the chrome://webrtc-logs/ page.
-class WebRtcLogsDOMHandler : public WebUIMessageHandler,
-                             public UploadList::Delegate {
+class WebRtcLogsDOMHandler : public WebUIMessageHandler {
  public:
   explicit WebRtcLogsDOMHandler(Profile* profile);
   ~WebRtcLogsDOMHandler() override;
@@ -85,10 +84,9 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // UploadList::Delegate implemenation.
-  void OnUploadListAvailable() override;
-
  private:
+  void OnUploadListAvailable();
+
   // Asynchronously fetches the list of upload WebRTC logs. Called from JS.
   void HandleRequestWebRtcLogs(const base::ListValue* args);
 
@@ -116,15 +114,16 @@ WebRtcLogsDOMHandler::WebRtcLogsDOMHandler(Profile* profile)
           WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile->GetPath())),
       list_available_(false),
       js_request_pending_(false) {
-  upload_list_ = WebRtcLogList::CreateWebRtcLogList(this, profile);
+  upload_list_ = WebRtcLogList::CreateWebRtcLogList(profile);
 }
 
 WebRtcLogsDOMHandler::~WebRtcLogsDOMHandler() {
-  upload_list_->ClearDelegate();
+  upload_list_->CancelCallback();
 }
 
 void WebRtcLogsDOMHandler::RegisterMessages() {
-  upload_list_->LoadUploadListAsynchronously();
+  upload_list_->Load(base::BindOnce(
+      &WebRtcLogsDOMHandler::OnUploadListAvailable, base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback("requestWebRtcLogsList",
       base::Bind(&WebRtcLogsDOMHandler::HandleRequestWebRtcLogs,
