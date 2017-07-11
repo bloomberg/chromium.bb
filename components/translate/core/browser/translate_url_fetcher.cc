@@ -23,7 +23,7 @@ const int kMaxRetry = 16;
 }  // namespace
 
 TranslateURLFetcher::TranslateURLFetcher(int id)
-    : id_(id), state_(IDLE), retry_count_(0) {}
+    : id_(id), state_(IDLE), retry_count_(0), max_retry_on_5xx_(0) {}
 
 TranslateURLFetcher::~TranslateURLFetcher() {}
 
