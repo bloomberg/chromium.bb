@@ -21,6 +21,9 @@ Environment* env = new Environment();
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  std::string str = std::string(reinterpret_cast<const char*>(data), size);
+  std::size_t data_hash = std::hash<std::string>()(str);
+
   const uint8_t* ivf_payload = nullptr;
   media::IvfParser ivf_parser;
   media::IvfFileHeader ivf_file_header;
@@ -29,12 +32,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!ivf_parser.Initialize(data, size, &ivf_file_header))
     return 0;
 
+  media::Vp9Parser vp9_parser(data_hash % 2 == 1);
   // Parse until the end of stream/unsupported stream/error in stream is found.
   while (ivf_parser.ParseNextFrame(&ivf_frame_header, &ivf_payload)) {
-    // TODO(kcwu): fuzzing with parsing_compressed_header=true.
-    media::Vp9Parser vp9_parser(false);
     media::Vp9FrameHeader vp9_frame_header;
     vp9_parser.SetStream(ivf_payload, ivf_frame_header.frame_size);
+    // TODO(kcwu): further fuzzing the case of Vp9Parser::kAwaitingRefresh.
     while (vp9_parser.ParseNextFrame(&vp9_frame_header) ==
            media::Vp9Parser::kOk) {
       // Repeat until all frames processed.
