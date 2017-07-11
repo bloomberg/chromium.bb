@@ -810,8 +810,8 @@ void AppListView::SetState(AppListState new_state) {
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
   int display_height = display::Screen::GetScreen()
                            ->GetDisplayNearestView(parent_window())
-                           .work_area()
-                           .bottom();
+                           .size()
+                           .height();
 
   switch (new_state_override) {
     case PEEKING: {
