@@ -469,11 +469,12 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
       // Fragment offsets have been computed in the clipping container's
       // layer's coordinate system, but for the rest of painting we need
-      // them in the layer coordinate. So move them and the foreground rect
-      // that is also in the clipper's space.
+      // them in the layer coordinate. So move them and the
+      // foreground/background rects that are also in the clipper's space.
       LayoutSize negative_offset(-offset_to_clipper.X(),
                                  -offset_to_clipper.Y());
       for (auto& fragment : layer_fragments) {
+        fragment.background_rect.Move(negative_offset);
         fragment.foreground_rect.Move(negative_offset);
         fragment.pagination_offset.Move(negative_offset);
       }
