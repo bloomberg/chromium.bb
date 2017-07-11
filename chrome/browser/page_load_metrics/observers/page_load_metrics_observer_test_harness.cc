@@ -55,7 +55,7 @@ class TestPageLoadMetricsEmbedderInterface
 }  // namespace
 
 PageLoadMetricsObserverTestHarness::PageLoadMetricsObserverTestHarness()
-    : ChromeRenderViewHostTestHarness(), ukm_tester_(&test_ukm_recorder_) {}
+    : ChromeRenderViewHostTestHarness() {}
 
 PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 

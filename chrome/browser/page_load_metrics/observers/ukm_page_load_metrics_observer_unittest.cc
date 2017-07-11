@@ -66,8 +66,8 @@ class UkmPageLoadMetricsObserverTest
 };
 
 TEST_F(UkmPageLoadMetricsObserverTest, NoMetrics) {
-  EXPECT_EQ(0ul, ukm_tester().sources_count());
-  EXPECT_EQ(0ul, ukm_tester().entries_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().sources_count());
+  EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
@@ -94,28 +94,30 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(1ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(kTestUrl1);
+  EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_GE(ukm_tester().entries_count(), 1ul);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmPageTransition,
-                            ui::PAGE_TRANSITION_LINK);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmParseStartName, 100);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmDomContentLoadedName, 200);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmFirstPaintName, 250);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmFirstContentfulPaintName, 300);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmLoadEventName, 500);
-  EXPECT_FALSE(ukm_tester().HasMetric(*source, internal::kUkmPageLoadEventName,
-                                      internal::kUkmFirstMeaningfulPaintName));
-  EXPECT_TRUE(ukm_tester().HasMetric(*source, internal::kUkmPageLoadEventName,
-                                     internal::kUkmForegroundDurationName));
+  EXPECT_GE(test_ukm_recorder().entries_count(), 1ul);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmPageTransition,
+                                   ui::PAGE_TRANSITION_LINK);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmParseStartName, 100);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmDomContentLoadedName, 200);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmFirstPaintName, 250);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmFirstContentfulPaintName, 300);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmLoadEventName, 500);
+  EXPECT_FALSE(
+      test_ukm_recorder().HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstMeaningfulPaintName));
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmForegroundDurationName));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
@@ -132,30 +134,32 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(1ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(kTestUrl1);
+  EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_GE(ukm_tester().entries_count(), 1ul);
+  EXPECT_GE(test_ukm_recorder().entries_count(), 1ul);
 
   // Make sure that only the following metrics are logged. In particular, no
   // paint/document/etc timing metrics should be logged for failed provisional
   // loads.
-  EXPECT_EQ(5, ukm_tester().CountMetricsForEventName(
+  EXPECT_EQ(5, test_ukm_recorder().CountMetricsForEventName(
                    *source, internal::kUkmPageLoadEventName));
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmPageTransition,
-                            ui::PAGE_TRANSITION_LINK);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmEffectiveConnectionType,
-                            net::EFFECTIVE_CONNECTION_TYPE_2G);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmNetErrorCode,
-                            static_cast<int64_t>(net::ERR_TIMED_OUT) * -1);
-  EXPECT_TRUE(ukm_tester().HasMetric(*source, internal::kUkmPageLoadEventName,
-                                     internal::kUkmForegroundDurationName));
-  EXPECT_TRUE(ukm_tester().HasMetric(*source, internal::kUkmPageLoadEventName,
-                                     internal::kUkmFailedProvisionaLoadName));
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmPageTransition,
+                                   ui::PAGE_TRANSITION_LINK);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmEffectiveConnectionType,
+                                   net::EFFECTIVE_CONNECTION_TYPE_2G);
+  test_ukm_recorder().ExpectMetric(
+      *source, internal::kUkmPageLoadEventName, internal::kUkmNetErrorCode,
+      static_cast<int64_t>(net::ERR_TIMED_OUT) * -1);
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmForegroundDurationName));
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFailedProvisionaLoadName));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
@@ -172,15 +176,16 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(1ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(kTestUrl1);
+  EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_GE(ukm_tester().entries_count(), 1ul);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmFirstMeaningfulPaintName, 600);
-  EXPECT_TRUE(ukm_tester().HasMetric(*source, internal::kUkmPageLoadEventName,
-                                     internal::kUkmForegroundDurationName));
+  EXPECT_GE(test_ukm_recorder().entries_count(), 1ul);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmFirstMeaningfulPaintName, 600);
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmForegroundDurationName));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
@@ -206,30 +211,37 @@ TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(2ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source1 = ukm_tester().GetSourceForUrl(kTestUrl1);
-  const ukm::UkmSource* source2 = ukm_tester().GetSourceForUrl(kTestUrl2);
+  EXPECT_EQ(2ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source1 =
+      test_ukm_recorder().GetSourceForUrl(kTestUrl1);
+  const ukm::UkmSource* source2 =
+      test_ukm_recorder().GetSourceForUrl(kTestUrl2);
   EXPECT_EQ(GURL(kTestUrl1), source1->url());
   EXPECT_EQ(GURL(kTestUrl2), source2->url());
   EXPECT_NE(source1->id(), source2->id());
 
-  EXPECT_GE(ukm_tester().entries_count(), 2ul);
+  EXPECT_GE(test_ukm_recorder().entries_count(), 2ul);
 
-  ukm_tester().ExpectMetric(*source1, internal::kUkmPageLoadEventName,
-                            internal::kUkmFirstContentfulPaintName, 200);
-  EXPECT_FALSE(ukm_tester().HasMetric(*source2, internal::kUkmPageLoadEventName,
-                                      internal::kUkmFirstMeaningfulPaintName));
-  EXPECT_TRUE(ukm_tester().HasMetric(*source1, internal::kUkmPageLoadEventName,
-                                     internal::kUkmForegroundDurationName));
+  test_ukm_recorder().ExpectMetric(*source1, internal::kUkmPageLoadEventName,
+                                   internal::kUkmFirstContentfulPaintName, 200);
+  EXPECT_FALSE(
+      test_ukm_recorder().HasMetric(*source2, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstMeaningfulPaintName));
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source1, internal::kUkmPageLoadEventName,
+                                    internal::kUkmForegroundDurationName));
 
-  EXPECT_FALSE(ukm_tester().HasMetric(*source2, internal::kUkmPageLoadEventName,
-                                      internal::kUkmParseStartName));
-  EXPECT_FALSE(ukm_tester().HasMetric(*source2, internal::kUkmPageLoadEventName,
-                                      internal::kUkmFirstContentfulPaintName));
-  EXPECT_FALSE(ukm_tester().HasMetric(*source2, internal::kUkmPageLoadEventName,
-                                      internal::kUkmFirstMeaningfulPaintName));
-  EXPECT_TRUE(ukm_tester().HasMetric(*source2, internal::kUkmPageLoadEventName,
-                                     internal::kUkmForegroundDurationName));
+  EXPECT_FALSE(test_ukm_recorder().HasMetric(
+      *source2, internal::kUkmPageLoadEventName, internal::kUkmParseStartName));
+  EXPECT_FALSE(
+      test_ukm_recorder().HasMetric(*source2, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstContentfulPaintName));
+  EXPECT_FALSE(
+      test_ukm_recorder().HasMetric(*source2, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstMeaningfulPaintName));
+  EXPECT_TRUE(
+      test_ukm_recorder().HasMetric(*source2, internal::kUkmPageLoadEventName,
+                                    internal::kUkmForegroundDurationName));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
@@ -245,18 +257,18 @@ TEST_F(UkmPageLoadMetricsObserverTest, NetworkQualityEstimates) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(1ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(kTestUrl1);
+  EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_GE(ukm_tester().entries_count(), 1ul);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmEffectiveConnectionType,
-                            net::EFFECTIVE_CONNECTION_TYPE_3G);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmHttpRttEstimate, 100);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmTransportRttEstimate, 200);
+  EXPECT_GE(test_ukm_recorder().entries_count(), 1ul);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmEffectiveConnectionType,
+                                   net::EFFECTIVE_CONNECTION_TYPE_3G);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmHttpRttEstimate, 100);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmTransportRttEstimate, 200);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
@@ -267,12 +279,12 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageTransitionReload) {
   // Simulate closing the tab.
   DeleteContents();
 
-  EXPECT_EQ(1ul, ukm_tester().sources_count());
-  const ukm::UkmSource* source = ukm_tester().GetSourceForUrl(kTestUrl1);
+  EXPECT_EQ(1ul, test_ukm_recorder().sources_count());
+  const ukm::UkmSource* source = test_ukm_recorder().GetSourceForUrl(kTestUrl1);
   EXPECT_EQ(GURL(kTestUrl1), source->url());
 
-  EXPECT_GE(ukm_tester().entries_count(), 1ul);
-  ukm_tester().ExpectMetric(*source, internal::kUkmPageLoadEventName,
-                            internal::kUkmPageTransition,
-                            ui::PAGE_TRANSITION_RELOAD);
+  EXPECT_GE(test_ukm_recorder().entries_count(), 1ul);
+  test_ukm_recorder().ExpectMetric(*source, internal::kUkmPageLoadEventName,
+                                   internal::kUkmPageTransition,
+                                   ui::PAGE_TRANSITION_RELOAD);
 }
