@@ -2092,7 +2092,7 @@
       type_name: "ScrollBehavior",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
-      field_size: 2,
+      field_size: 2, // FIXME: Convert this to a keyword field
       default_value: "kScrollBehaviorAuto",
       default_generated_functions: ["getter", "setter"],
     },

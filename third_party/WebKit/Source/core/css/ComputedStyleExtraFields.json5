@@ -409,7 +409,7 @@
       field_template: "storage_only",
       type_name: "TextEmphasisMark",
       default_value: "TextEmphasisMark::kNone",
-      field_size: 3,
+      keywords: ["none", "auto", "dot", "circle", "double-circle", "triangle", "sesame", "custom"],
       field_group: "rare-inherited",
     },
     {
