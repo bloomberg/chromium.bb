@@ -19,9 +19,19 @@ from chromite.lib import osutils
 
 
 class Evaluator(common.OptionsChecker):
-  """Base class of performance evaluator."""
+  """Base class of performance evaluator.
 
-  REQUIRED_ARGS = ('base_dir', )
+  If reuse_eval is set, before build/deploy, bisector can call
+  CheckLastEvaluate() first to see if it has previous evaluation result to
+  skip the build.
+  """
+
+  REQUIRED_ARGS = ('base_dir', 'reuse_eval')
+
+  # If set in derived class, it means the evaluator's score's threshold
+  # that tells good from bad is predefined, e.g. binary evaluator's threshold
+  # is 0.5.
+  THRESHOLD = None
 
   def __init__(self, options):
     """Constructor.
@@ -30,10 +40,12 @@ class Evaluator(common.OptionsChecker):
       options: An argparse.Namespace to hold command line arguments. Should
         contain:
         * base_dir: Parent directory of repository folder
+        * reuse_eval: True to reuse report if available.
     """
     super(Evaluator, self).__init__(options)
     self.base_dir = options.base_dir
     self.report_base_dir = os.path.join(self.base_dir, 'reports')
+    self.reuse_eval = options.reuse_eval
     osutils.SafeMakedirs(self.report_base_dir)
 
   def Evaluate(self, remote, build_label, repeat):
@@ -56,7 +68,7 @@ class Evaluator(common.OptionsChecker):
       repeat: Run test for N times. Default 1.
 
     Returns:
-      Score object stores a list of autotest running results if report
-      available and reuse_eval is set.
-      Score() otherwise.
+      If reuse_eval is set and previous evaluation result for the build_label
+      is found, extracts and returns score from the result. Otherwise, returns
+      Score().
     """

@@ -29,15 +29,11 @@ class AutotestEvaluator(evaluator.Evaluator):
 
   After autotest done running, it grabs JSON report file and finds the metric
   to watch (currently support float value).
-
-  If reuse_eval is set, before running autotest, it checks if the previous
-  report exists. If so, just extracts metric value from it. It saves time
-  for continuing an interrupted bisect.
   """
   AUTOTEST_BASE = '/usr/local/autotest'
   AUTOTEST_CLIENT = os.path.join(AUTOTEST_BASE, 'bin/autotest_client')
   REQUIRED_ARGS = evaluator.Evaluator.REQUIRED_ARGS + (
-      'board', 'test_name', 'metric', 'metric_take_average', 'reuse_eval')
+      'board', 'test_name', 'metric', 'metric_take_average')
 
   def __init__(self, options):
     """Constructor.
@@ -51,14 +47,12 @@ class AutotestEvaluator(evaluator.Evaluator):
         * test_name: Autotest name to run.
         * metric: Metric to look up.
         * metric_take_average: If set, take average value of the metric.
-        * reuse_eval: True to reuse report if available.
     """
     super(AutotestEvaluator, self).__init__(options)
     self.board = options.board
     self.test_name = options.test_name
     self.metric = options.metric
     self.metric_take_average = options.metric_take_average
-    self.reuse_eval = options.reuse_eval
     # Used for entering chroot. Some autotest depends on CHROME_ROOT being set.
     if 'chromium_dir' in options and options.chromium_dir:
       self.chromium_dir = options.chromium_dir
@@ -212,6 +206,21 @@ class AutotestEvaluator(evaluator.Evaluator):
       return float(sum(metric_value)) / len(metric_value)
     return metric_value
 
+  def GetReportPath(self, build_label, nth_eval, repeat):
+    """Obtains report file path.
+
+    Args:
+      build_label: current build label to run the evaluation.
+      nth_eval: n-th evaluation.
+      repeat: #repeat.
+
+    Returns:
+      Report file path.
+    """
+    return os.path.join(
+        self.report_base_dir,
+        'results-chart.%s.%d-%d.json' % (build_label, nth_eval, repeat))
+
   def Evaluate(self, remote, build_label, repeat=1):
     """Runs autotest N-times on DUT and extracts the designated metric values.
 
@@ -236,9 +245,7 @@ class AutotestEvaluator(evaluator.Evaluator):
 
     score_list = []
     for nth in range(repeat):
-      report_file = os.path.join(
-          self.report_base_dir,
-          'results-chart.%s.%d-%d.json' % (build_label, nth + 1, repeat))
+      report_file = self.GetReportPath(build_label, nth + 1, repeat)
       score = self._EvaluateOnce(remote, report_file)
       if score is None:
         return common.Score()
@@ -283,9 +290,7 @@ class AutotestEvaluator(evaluator.Evaluator):
 
     score_list = []
     for nth in range(repeat):
-      report_file = os.path.join(
-          self.report_base_dir,
-          'results-chart.%s.%d-%d.json' % (build_label, nth + 1, repeat))
+      report_file = self.GetReportPath(build_label, nth + 1, repeat)
       if not os.path.isfile(report_file):
         return common.Score()
       score = self.GetAutotestMetricValue(report_file)

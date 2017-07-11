@@ -95,7 +95,7 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     self.options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, reuse_repo=True,
         good=self.GOOD_COMMIT_SHA1, bad=self.BAD_COMMIT_SHA1, remote=self.DUT,
-        eval_repeat=self.REPEAT)
+        eval_repeat=self.REPEAT, reuse_eval=False)
 
     self.evaluator = evaluator_module.Evaluator(self.options)
     self.builder = builder_module.Builder(self.options)

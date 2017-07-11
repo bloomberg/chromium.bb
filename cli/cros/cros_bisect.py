@@ -8,6 +8,7 @@ from __future__ import print_function
 
 from chromite.cros_bisect import autotest_evaluator
 from chromite.cros_bisect import git_bisector
+from chromite.cros_bisect import manual_evaluator
 from chromite.cros_bisect import simple_chrome_builder
 from chromite.cli import command
 from chromite.lib import commandline
@@ -30,7 +31,8 @@ that is close to the failure point, in particular from the corresponding branch.
 
   REPO = ('chromium', )
   BUILDER = {'chromium': simple_chrome_builder.SimpleChromeBuilder}
-  EVALUATOR = ('autotest', )
+  EVALUATOR = {'autotest': autotest_evaluator.AutotestEvaluator,
+               'manual': manual_evaluator.ManualEvaluator}
 
   @classmethod
   def AddParser(cls, parser):
@@ -57,7 +59,7 @@ that is close to the failure point, in particular from the corresponding branch.
              'Later it will support catapult git repository and even ChromeOS '
              'repositories.')
     parser.add_argument(
-        '--evaluator', default='autotest', choices=cls.EVALUATOR,
+        '--evaluator', default='autotest', choices=cls.EVALUATOR.keys(),
         help='Evaluator used to determine if a commit is good or bad. Now it '
              'supports autotest. Later it will support telemetry.')
     parser.add_argument(
@@ -128,7 +130,7 @@ that is close to the failure point, in particular from the corresponding branch.
     # Note that for the objects consuming command line options, please evaluate
     # its SanityCheckOptions() in testAddParser in cros_bisect_unittest.
     builder = self.BUILDER[self.options.repo](self.options)
-    evaluator = autotest_evaluator.AutotestEvaluator(self.options)
+    evaluator = self.EVALUATOR[self.options.evaluator](self.options)
     bisector = git_bisector.GitBisector(self.options, builder, evaluator)
     bisector.SetUp()
     bisector.Run()

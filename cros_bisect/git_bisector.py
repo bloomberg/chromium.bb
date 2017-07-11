@@ -59,11 +59,13 @@ class GitBisector(common.OptionsChecker):
     self.bad_score = None
 
     # If the distance between current commit's score and given good commit is
-    # shorter than threshold, treat the commit as good one. The threshold is set
-    # by user.
-    self.threshold = None
+    # shorter than threshold, treat the commit as good one. Its default value
+    # comes from evaluator's THRESHOLD constant. If it is None (undefined),
+    # the bisector will prompt user to input threshold after obtaining both
+    # sides' score.
+    self.threshold = evaluator.THRESHOLD
 
-    # Update in UpdateCurrentCommit().
+    # Init with empty CommitInfo. Will update in UpdateCurrentCommit().
     self.current_commit = common.CommitInfo()
 
   def SetUp(self):
@@ -170,10 +172,17 @@ class GitBisector(common.OptionsChecker):
     good_commit_info.label = 'last-known-good  '
 
     logging.notice('Obtaining score of bad commit %s', self.bad_commit)
+
     self.Git(['checkout', self.bad_commit])
     self.bad_score = self.BuildDeployEval()
     bad_commit_info = self.current_commit
     bad_commit_info.label = 'last-known-bad   '
+
+    if self.good_score == self.bad_score:
+      logging.error(
+          'Last-known-good %s should be different from last-known-bad %s',
+          self.good_score, self.bad_score)
+      return None, None
     return (good_commit_info, bad_commit_info)
 
   def GetThresholdFromUser(self):
@@ -182,6 +191,10 @@ class GitBisector(common.OptionsChecker):
     It gives user the measured last known good and bad score's statistics to
     help user determine a reasonable threshold.
     """
+    # If threshold is assigned, skip it.
+    if self.threshold is not None:
+      return True
+
     logging.notice('Good commit score mean: %.3f  STD: %.3f\n'
                    'Bad commit score mean: %.3f  STD: %.3f',
                    self.good_score.mean, self.good_score.std,
