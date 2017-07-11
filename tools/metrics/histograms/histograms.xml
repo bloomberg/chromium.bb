@@ -81124,8 +81124,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>sorin@chromium.org</owner>
   <summary>
     True if a new BITS job was created to download the url, or false, if an
-    existing job was found in the BITS queue. The metric is recorded when
-    the component updater background downloader is asked to download a CRX.
+    existing job was found in the BITS queue. The metric is recorded when the
+    component updater background downloader is asked to download a CRX.
   </summary>
 </histogram>
 
