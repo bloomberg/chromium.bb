@@ -100,13 +100,13 @@ class SQLTableBuilder {
   // Assuming that the database connected through |db| contains a table called
   // |table_name_| in a state described by version |old_version|, migrates it to
   // the current version, which must be sealed. Returns true on success.
-  bool MigrateFrom(unsigned old_version, sql::Connection* db);
+  bool MigrateFrom(unsigned old_version, sql::Connection* db) const;
 
   // If |db| connects to a database where table |table_name_| already exists,
   // this is a no-op and returns true. Otherwise, |table_name_| is created in a
   // state described by the current version known to the builder. The current
   // version must be sealed. Returns true on success.
-  bool CreateTable(sql::Connection* db);
+  bool CreateTable(sql::Connection* db) const;
 
   // Returns the comma-separated list of all column names present in the last
   // version. The last version must be sealed.
@@ -151,14 +151,15 @@ class SQLTableBuilder {
   // |table_name_| in a state described by version |old_version|, migrates it to
   // version |old_version + 1|. The current version known to the builder must be
   // at least |old_version + 1| and sealed. Returns true on success.
-  bool MigrateToNextFrom(unsigned old_version, sql::Connection* db);
+  bool MigrateToNextFrom(unsigned old_version, sql::Connection* db) const;
 
   // Assuming that the database connected through |db| contains a table called
   // |table_name_| in a state described by version |old_version|, migrates it
   // indices to version |old_version + 1|. The current version known to the
   // builder must be at least |old_version + 1| and sealed. Returns true on
   // success.
-  bool MigrateIndicesToNextFrom(unsigned old_version, sql::Connection* db);
+  bool MigrateIndicesToNextFrom(unsigned old_version,
+                                sql::Connection* db) const;
 
   // Looks up column named |name| in |columns_|. If present, returns the last
   // one.
