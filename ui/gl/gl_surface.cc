@@ -194,7 +194,7 @@ void GLSurface::WaitForSnapshotRendering() {
   // By default, just executing the SwapBuffers is normally enough.
 }
 
-void GLSurface::SetRelyOnImplicitSync(bool rely_on_implicit_sync) {
+void GLSurface::SetRelyOnImplicitSync() {
   NOTIMPLEMENTED();
 }
 
@@ -401,8 +401,8 @@ void GLSurfaceAdapter::WaitForSnapshotRendering() {
   surface_->WaitForSnapshotRendering();
 }
 
-void GLSurfaceAdapter::SetRelyOnImplicitSync(bool rely_on_implicit_sync) {
-  surface_->SetRelyOnImplicitSync(rely_on_implicit_sync);
+void GLSurfaceAdapter::SetRelyOnImplicitSync() {
+  surface_->SetRelyOnImplicitSync();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

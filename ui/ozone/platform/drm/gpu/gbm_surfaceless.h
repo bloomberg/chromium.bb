@@ -54,7 +54,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                           int height,
                           const SwapCompletionCallback& callback) override;
   EGLConfig GetConfig() override;
-  void SetRelyOnImplicitSync(bool rely_on_implicit_sync) override;
+  void SetRelyOnImplicitSync() override;
 
  protected:
   ~GbmSurfaceless() override;
