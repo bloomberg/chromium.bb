@@ -82,7 +82,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   };
 
   // Takes ownership of |ui|.
-  explicit KeyboardController(KeyboardUI* ui, KeyboardLayoutDelegate* delegate);
+  explicit KeyboardController(std::unique_ptr<KeyboardUI> ui,
+                              KeyboardLayoutDelegate* delegate);
   ~KeyboardController() override;
 
   // Returns the container for the keyboard, which is owned by

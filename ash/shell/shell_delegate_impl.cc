@@ -96,8 +96,8 @@ void ShellDelegateImpl::Exit() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
-  return new TestKeyboardUI;
+std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
+  return base::MakeUnique<TestKeyboardUI>();
 }
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
