@@ -4,10 +4,12 @@
 
 #include "media/mojo/services/mojo_media_drm_storage.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "media/base/scoped_callback_runner.h"
 
 namespace media {
 
@@ -31,8 +33,7 @@ void MojoMediaDrmStorage::Initialize(const url::Origin& origin) {
 void MojoMediaDrmStorage::OnProvisioned(ResultCB result_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->OnProvisioned(
-      base::Bind(&MojoMediaDrmStorage::OnResult, weak_factory_.GetWeakPtr(),
-                 base::Passed(&result_cb)));
+      ScopedCallbackRunner(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::SavePersistentSession(const std::string& session_id,
@@ -42,8 +43,7 @@ void MojoMediaDrmStorage::SavePersistentSession(const std::string& session_id,
   media_drm_storage_ptr_->SavePersistentSession(
       session_id,
       mojom::SessionData::New(session_data.key_set_id, session_data.mime_type),
-      base::Bind(&MojoMediaDrmStorage::OnResult, weak_factory_.GetWeakPtr(),
-                 base::Passed(&result_cb)));
+      ScopedCallbackRunner(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::LoadPersistentSession(
@@ -51,23 +51,19 @@ void MojoMediaDrmStorage::LoadPersistentSession(
     LoadPersistentSessionCB load_persistent_session_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->LoadPersistentSession(
-      session_id, base::Bind(&MojoMediaDrmStorage::OnPersistentSessionLoaded,
-                             weak_factory_.GetWeakPtr(),
-                             base::Passed(&load_persistent_session_cb)));
+      session_id,
+      ScopedCallbackRunner(
+          base::BindOnce(&MojoMediaDrmStorage::OnPersistentSessionLoaded,
+                         weak_factory_.GetWeakPtr(),
+                         base::Passed(&load_persistent_session_cb)),
+          nullptr));
 }
 
 void MojoMediaDrmStorage::RemovePersistentSession(const std::string& session_id,
                                                   ResultCB result_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->RemovePersistentSession(
-      session_id,
-      base::Bind(&MojoMediaDrmStorage::OnResult, weak_factory_.GetWeakPtr(),
-                 base::Passed(&result_cb)));
-}
-
-void MojoMediaDrmStorage::OnResult(ResultCB result_cb, bool success) {
-  DVLOG(1) << __func__ << ": success = " << success;
-  std::move(result_cb).Run(success);
+      session_id, ScopedCallbackRunner(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::OnPersistentSessionLoaded(
