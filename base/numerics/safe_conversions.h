@@ -35,6 +35,14 @@ struct CheckOnFailure {
   }
 };
 
+// Simple wrapper for statically checking if a type's range is contained.
+template <typename Dst, typename Src>
+struct IsTypeInRangeForNumericType {
+  static const bool value =
+      internal::StaticDstRangeRelationToSrcRange<Dst, Src>::value ==
+      internal::NUMERIC_RANGE_CONTAINED;
+};
+
 // checked_cast<> is analogous to static_cast<> for numeric types,
 // except that it CHECKs that the specified numeric conversion will not
 // overflow or underflow. NaN source will always trigger a CHECK.
