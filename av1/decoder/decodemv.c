@@ -318,12 +318,18 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
                                   0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                  xd,
+#endif
                                   mi);
 #else
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
       0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+      xd,
+#endif
       mi);
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   int motion_mode;
@@ -362,6 +368,9 @@ static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
 #if CONFIG_GLOBAL_MOTION
                                   0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                  xd,
+#endif
                                   mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
   if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;
@@ -2618,6 +2627,15 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 #endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
+
+#if CONFIG_WARPED_MOTION
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+    const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
+    RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
+
+    xd->block_refs[ref] = ref_buf;
+  }
+#endif
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   mbmi->motion_mode = SIMPLE_TRANSLATION;

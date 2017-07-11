@@ -569,6 +569,9 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
       0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+      xd,
+#endif
       mi);
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
@@ -600,6 +603,9 @@ static void write_ncobmc_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
 #if CONFIG_GLOBAL_MOTION
                                   0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                  xd,
+#endif
                                   mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
   if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;
@@ -2469,7 +2475,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
     xd->left_txfm_context = xd->left_txfm_context_buffer +
                             ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 #endif
-#if CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
     // write_switchable_interp_filter, which is called by pack_inter_mode_mvs.
@@ -2478,7 +2484,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
     if (!has_second_ref(&m->mbmi) && is_inter_singleref_comp_mode(m->mbmi.mode))
       xd->block_refs[1] = xd->block_refs[0];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-#endif  // CONFIG_DUAL_FILTER
+#endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
 
 #if ENC_MISMATCH_DEBUG
     // NOTE(zoeliu): For debug

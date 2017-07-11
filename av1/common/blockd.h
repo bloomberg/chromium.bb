@@ -1361,6 +1361,9 @@ static INLINE MOTION_MODE motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
     int block, const WarpedMotionParams *gm_params,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+    const MACROBLOCKD *xd,
+#endif
     const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 #if CONFIG_GLOBAL_MOTION
@@ -1379,7 +1382,8 @@ static INLINE MOTION_MODE motion_mode_allowed(
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
 #endif
 #if CONFIG_WARPED_MOTION
-    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 1)
+    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 1 &&
+        !av1_is_scaled(&(xd->block_refs[0]->sf)))
       return WARPED_CAUSAL;
     else
 #endif  // CONFIG_WARPED_MOTION
@@ -1406,11 +1410,17 @@ motion_mode_allowed_wrapper(int for_mv_search,
 #if CONFIG_GLOBAL_MOTION
                             int block, const WarpedMotionParams *gm_params,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                            const MACROBLOCKD *xd,
+#endif
                             const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   MOTION_MODE motion_mode_for_mv_search = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
       int block, const WarpedMotionParams *gm_params,
+#endif
+#if CONFIG_WARPED_MOTION
+      xd,
 #endif
       mi);
   int ncobmc_mode_allowed =
@@ -1428,6 +1438,9 @@ static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
                                             int block,
                                             const WarpedMotionParams *gm_params,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                            const MACROBLOCKD *xd,
+#endif
                                             const MODE_INFO *mi) {
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   const MOTION_MODE last_motion_mode_allowed =
@@ -1441,6 +1454,9 @@ static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
 #if CONFIG_GLOBAL_MOTION
       block, gm_params,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+      xd,
+#endif
       mi);
 #endif
   // Check that the input mode is not illegal

@@ -437,6 +437,9 @@ static INLINE void av1_make_inter_predictor(
 #if CONFIG_GLOBAL_MOTION
                            0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                           xd,
+#endif
                            mi);
 #endif  // CONFIG MOTION_VAR || CONFIG_WARPED_MOTION
 

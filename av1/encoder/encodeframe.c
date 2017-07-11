@@ -1728,18 +1728,27 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION
+        set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+#endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
         const MOTION_MODE motion_allowed =
             motion_mode_allowed_wrapper(0,
 #if CONFIG_GLOBAL_MOTION
                                         0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                        xd,
+#endif
                                         mi);
 #else
         const MOTION_MODE motion_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
             0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+            xd,
+#endif
             mi);
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_SUPERTX
@@ -1998,10 +2007,16 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, dry_run);
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
   mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_WARPED_MOTION
+  set_ref_ptrs(&cpi->common, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+#endif
   const MOTION_MODE motion_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
       0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+      xd,
+#endif
       xd->mi[0]);
   check_ncobmc = is_inter_block(mbmi) && motion_allowed >= OBMC_CAUSAL;
   if (!dry_run && check_ncobmc) {
