@@ -292,7 +292,7 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
     return true;
 
   // If it's not focusable but has a control role, then it's interesting.
-  if (IsControl())
+  if (ui::IsControl(GetRole()))
     return true;
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.

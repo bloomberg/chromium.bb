@@ -882,8 +882,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   // from its descendants.
   base::string16 value = browserAccessibility_->GetValue();
   if (browserAccessibility_->HasState(ui::AX_STATE_FOCUSABLE) &&
-      !browserAccessibility_->IsControl() &&
-      value.empty() &&
+      !IsControl(browserAccessibility_->GetRole()) && value.empty() &&
       [self internalRole] != ui::AX_ROLE_DATE_TIME &&
       [self internalRole] != ui::AX_ROLE_WEB_AREA &&
       [self internalRole] != ui::AX_ROLE_ROOT_WEB_AREA) {
@@ -1303,7 +1302,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 // internal
 - (BOOL)shouldExposeTitleUIElement {
   // VoiceOver ignores TitleUIElement if the element isn't a control.
-  if (!browserAccessibility_->IsControl())
+  if (!IsControl(browserAccessibility_->GetRole()))
     return false;
 
   ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
@@ -2506,7 +2505,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (browserAccessibility_->IsClickable())
     [actions insertObject:NSAccessibilityPressAction atIndex:0];
 
-  if (browserAccessibility_->IsMenuRelated())
+  if (IsMenuRelated(browserAccessibility_->GetRole()))
     [actions addObject:NSAccessibilityCancelAction];
 
   if ([self internalRole] == ui::AX_ROLE_SLIDER) {

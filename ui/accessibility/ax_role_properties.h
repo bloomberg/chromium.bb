@@ -26,6 +26,12 @@ AX_EXPORT bool IsContainerWithSelectableChildrenRole(ui::AXRole role);
 // Returns true if this node is a row container.
 AX_EXPORT bool IsRowContainer(ui::AXRole role);
 
+// Returns true if this node is a control.
+AX_EXPORT bool IsControl(ui::AXRole role);
+
+// Returns true if this node is a menu or related role.
+AX_EXPORT bool IsMenuRelated(ui::AXRole role);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_
