@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
 
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "ui/base/cocoa/window_size_constants.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 
 @implementation AutofillPopupBaseViewCocoa
 
@@ -131,31 +133,69 @@
 }
 
 #pragma mark -
+#pragma mark Private methods:
+
+// Returns the full frame needed by the content, which may exceed the available
+// vertical space (see clippedPopupFrame).
+- (NSRect)fullPopupFrame {
+  // Flip the y-origin back into Cocoa-land. The controller's platform-neutral
+  // coordinate space places the origin at the top-left of the first screen
+  // (e.g. 300 from the top), whereas Cocoa's coordinate space expects the
+  // origin to be at the bottom-left of this same screen (e.g. 1200 from the
+  // bottom, when including the height of the popup).
+  return gfx::ScreenRectToNSRect(popup_delegate_->popup_bounds());
+}
+
+// Returns the frame of the popup that should be displayed, which is basically
+// the bounds of the popup, clipped if there is not enough available vertical
+// space.
+- (NSRect)clippedPopupFrame {
+  NSRect clippedPopupFrame = [self fullPopupFrame];
+
+  // The y-origin of the popup may be outside the application window. If this
+  // happens, it is corrected to be at the application window's bottom edge, and
+  // the popup height is adjusted.
+  NSWindow* appWindow = [popup_delegate_->container_view() window];
+  CGFloat appWindowBottomEdge = NSMinY([appWindow frame]);
+  if (clippedPopupFrame.origin.y < appWindowBottomEdge) {
+    clippedPopupFrame.origin.y = appWindowBottomEdge;
+
+    // Both the popup frame and [appWindow frame] are in screen coordinates.
+    CGFloat dY = NSMaxY([appWindow frame]) - NSMaxY([self fullPopupFrame]);
+    clippedPopupFrame.size.height = NSHeight([appWindow frame]) - dY;
+  }
+  return clippedPopupFrame;
+}
+
+#pragma mark -
 #pragma mark Messages from AutofillPopupViewBridge:
 
 - (void)updateBoundsAndRedrawPopup {
-  NSRect frame = NSRectFromCGRect(popup_delegate_->popup_bounds().ToCGRect());
+  [[[self superview] window] setFrame:[self clippedPopupFrame] display:YES];
 
-  // Flip coordinates back into Cocoa-land.  The controller's platform-neutral
-  // coordinate space places the origin at the top-left of the first screen,
-  // whereas Cocoa's coordinate space expects the origin to be at the
-  // bottom-left of this same screen.
-  NSScreen* screen = [[NSScreen screens] firstObject];
-  frame.origin.y = NSMaxY([screen frame]) - NSMaxY(frame);
-
-  // TODO(isherman): The view should support scrolling if the popup gets too
-  // big to fit on the screen.
-  [[self window] setFrame:frame display:YES];
   [self setNeedsDisplay:YES];
 }
 
 - (void)showPopup {
+  NSRect clippedPopupFrame = [self clippedPopupFrame];
+  // The window contains a scroll view, and both are the same size, which is
+  // may be clipped at the application window's bottom edge (see
+  // clippedPopupFrame).
   NSWindow* window =
-      [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+      [[NSWindow alloc] initWithContentRect:clippedPopupFrame
                                   styleMask:NSBorderlessWindowMask
                                     backing:NSBackingStoreBuffered
                                       defer:NO];
-  [window setContentView:self];
+  base::scoped_nsobject<NSScrollView> scrollView(
+      [[NSScrollView alloc] initWithFrame:clippedPopupFrame]);
+  // Configure the scroller to have no visible border.
+  [scrollView setBorderType:NSNoBorder];
+
+  // The |window| contains the |scrollView|, which contains |self|, the full
+  // popup view (which is not clipped and may be longer than |scrollView|).
+  [self setFrame:[self fullPopupFrame]];
+  [scrollView setDocumentView:self];
+  [window setContentView:scrollView];
 
   // Telling Cocoa that the window is opaque enables some drawing optimizations.
   [window setOpaque:YES];
