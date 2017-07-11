@@ -17,6 +17,7 @@
       <div>
         <div id="route-time-controls" hidden="[[!routeStatus.canSeek]]">
           <paper-slider
+              dir="ltr"
               id="route-time-slider"
               on-change="onSeekComplete_"
               on-immediate-value-change="onSeekStart_"
@@ -51,6 +52,7 @@
           </span>
           <span id="volume-holder">
             <paper-slider
+                dir="ltr"
                 id="route-volume-slider"
                 hidden="[[!routeStatus.canSetVolume]]"
                 disabled="[[!routeStatus.canSetVolume]]"
