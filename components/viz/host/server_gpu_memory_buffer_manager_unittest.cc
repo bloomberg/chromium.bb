@@ -58,6 +58,9 @@ class TestGpuService : public ui::mojom::GpuService {
 
   void CloseChannel(int32_t client_id) override {}
 
+  void CreateVideoEncodeAccelerator(
+      media::mojom::VideoEncodeAcceleratorRequest vea_request) override {}
+
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,

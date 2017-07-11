@@ -76,6 +76,14 @@ void GpuClient::EstablishGpuChannel(
                  callback));
 }
 
+void GpuClient::CreateVideoEncodeAccelerator(
+    media::mojom::VideoEncodeAcceleratorRequest vea_request) {
+  GpuProcessHost* host = GpuProcessHost::Get();
+  if (!host)
+    return;
+  host->gpu_service()->CreateVideoEncodeAccelerator(std::move(vea_request));
+}
+
 void GpuClient::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,

@@ -6,6 +6,7 @@ module ui.mojom;
 
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/sync_token.mojom";
+import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
@@ -17,6 +18,9 @@ interface Gpu {
   EstablishGpuChannel() => (int32 client_id,
                             handle<message_pipe>? channel_handle,
                             gpu.mojom.GpuInfo gpu_info);
+
+  // Creates a new VideoEncodeAccelerator and binds it to |vea|.
+  CreateVideoEncodeAccelerator(media.mojom.VideoEncodeAccelerator& vea);
 
   // Tells the GPU service to create a new GPU memory buffer.
   CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,

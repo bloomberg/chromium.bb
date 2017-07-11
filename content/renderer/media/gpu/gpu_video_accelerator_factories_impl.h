@@ -20,6 +20,7 @@
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
+#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -55,7 +56,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
       const viz::BufferToTextureTargetMap& image_texture_targets,
-      bool enable_video_accelerator);
+      bool enable_video_accelerator,
+      media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea);
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -110,7 +112,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
       const viz::BufferToTextureTargetMap& image_texture_targets,
-      bool enable_video_accelerator);
+      bool enable_video_accelerator,
+      media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -132,6 +135,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   const bool video_accelerator_enabled_;
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
+
+  media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

@@ -20,6 +20,7 @@ mojom("interfaces") {
     "provision_fetcher.mojom",
     "renderer.mojom",
     "video_decoder.mojom",
+    "video_encode_accelerator.mojom",
   ]
 
   if (is_android) {

@@ -90,6 +90,14 @@ scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
       shared_context_provider, ui::command_buffer_metrics::MUS_CLIENT_CONTEXT));
 }
 
+void Gpu::CreateVideoEncodeAccelerator(
+    media::mojom::VideoEncodeAcceleratorRequest vea_request) {
+  DCHECK(IsMainThread());
+  if (!gpu_ || !gpu_.is_bound())
+    gpu_ = factory_.Run();
+  gpu_->CreateVideoEncodeAccelerator(std::move(vea_request));
+}
+
 void Gpu::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
   DCHECK(IsMainThread());
@@ -98,11 +106,15 @@ void Gpu::EstablishGpuChannel(
     callback.Run(std::move(channel));
     return;
   }
+
+  const bool gpu_channel_request_ongoing = !establish_callbacks_.empty();
+  // Cache |callback| but don't launch more than one EstablishGpuChannel().
   establish_callbacks_.push_back(callback);
-  if (gpu_)
+  if (gpu_channel_request_ongoing)
     return;
 
-  gpu_ = factory_.Run();
+  if (!gpu_ || !gpu_.is_bound())
+    gpu_ = factory_.Run();
   gpu_->EstablishGpuChannel(
       base::Bind(&Gpu::OnEstablishedGpuChannel, base::Unretained(this)));
 }
@@ -111,18 +123,19 @@ scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   DCHECK(IsMainThread());
   if (GetGpuChannel())
     return gpu_channel_;
+  if (!gpu_ || !gpu_.is_bound())
+    gpu_ = factory_.Run();
 
   int client_id = 0;
   mojo::ScopedMessagePipeHandle channel_handle;
   gpu::GPUInfo gpu_info;
-  gpu_ = factory_.Run();
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   if (!gpu_->EstablishGpuChannel(&client_id, &channel_handle, &gpu_info)) {
-    DLOG(WARNING)
-        << "Channel encountered error while establishing gpu channel.";
+    DLOG(WARNING) << "Encountered error while establishing gpu channel.";
     return nullptr;
   }
   OnEstablishedGpuChannel(client_id, std::move(channel_handle), gpu_info);
+
   return gpu_channel_;
 }
 
@@ -152,7 +165,6 @@ void Gpu::OnEstablishedGpuChannel(int client_id,
         &shutdown_event_, gpu_memory_buffer_manager_.get());
   }
 
-  gpu_.reset();
   auto callbacks = std::move(establish_callbacks_);
   establish_callbacks_.clear();
   for (const auto& callback : callbacks)

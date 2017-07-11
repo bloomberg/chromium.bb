@@ -14,6 +14,7 @@
 #include "cc/output/context_provider.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/child_thread_impl.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -24,6 +25,7 @@
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
@@ -53,13 +55,14 @@ GpuVideoAcceleratorFactoriesImpl::Create(
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     const viz::BufferToTextureTargetMap& image_texture_targets,
-    bool enable_video_accelerator) {
+    bool enable_video_accelerator,
+    media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
   return base::WrapUnique(new GpuVideoAcceleratorFactoriesImpl(
       std::move(gpu_channel_host), main_thread_task_runner, task_runner,
       context_provider, enable_gpu_memory_buffer_video_frames,
-      image_texture_targets, enable_video_accelerator));
+      image_texture_targets, enable_video_accelerator, std::move(unbound_vea)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
@@ -69,7 +72,8 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     const viz::BufferToTextureTargetMap& image_texture_targets,
-    bool enable_video_accelerator)
+    bool enable_video_accelerator,
+    media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
       gpu_channel_host_(std::move(gpu_channel_host)),
@@ -81,6 +85,7 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(
           RenderThreadImpl::current()->GetGpuMemoryBufferManager()),
+      unbound_vea_(std::move(unbound_vea)),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
   DCHECK(main_thread_task_runner_);
   DCHECK(gpu_channel_host_);
@@ -152,6 +157,13 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (CheckContextLost())
     return nullptr;
+
+  media::mojom::VideoEncodeAcceleratorPtr vea;
+  vea.Bind(std::move(unbound_vea_));
+  if (vea) {
+    // TODO(mcasas): Create a mojom::MojoVideoEncodeAcceleratorHost
+    // implementation and use it, https://crbug.com/736517
+  }
 
   return std::unique_ptr<media::VideoEncodeAccelerator>(
       new media::GpuVideoEncodeAcceleratorHost(

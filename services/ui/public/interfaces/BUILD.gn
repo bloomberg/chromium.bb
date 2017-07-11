@@ -33,6 +33,7 @@ mojom("interfaces") {
     ":constants",
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
+    "//media/mojo/interfaces",
     "//services/ui/public/interfaces/cursor",
     "//services/ui/public/interfaces/display",
     "//services/ui/public/interfaces/ime",

@@ -134,6 +134,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
       bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
   void CloseChannel(int32_t client_id) override;
+  void CreateVideoEncodeAccelerator(
+      media::mojom::VideoEncodeAcceleratorRequest vea_request) override;
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
