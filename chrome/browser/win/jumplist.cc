@@ -750,9 +750,6 @@ void JumpList::CreateNewJumpListAndNotifyOS(
         &recently_closed_icons_next);
   }
 
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
-
   base::ElapsedTimer add_custom_category_timer;
 
   // Update the "Most Visited" category of the JumpList if it exists.
