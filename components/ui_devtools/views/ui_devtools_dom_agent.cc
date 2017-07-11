@@ -144,8 +144,8 @@ ui_devtools::protocol::Response UIDevToolsDOMAgent::highlightNode(
 }
 
 ui_devtools::protocol::Response UIDevToolsDOMAgent::hideHighlight() {
-  if (widget_for_highlighting_ && widget_for_highlighting_->IsVisible())
-    widget_for_highlighting_->Hide();
+  if (layer_for_highlighting_ && layer_for_highlighting_->visible())
+    layer_for_highlighting_->SetVisible(false);
   return ui_devtools::protocol::Response::OK();
 }
 
@@ -191,11 +191,6 @@ void UIDevToolsDOMAgent::OnUIElementRemoved(UIElement* ui_element) {
 void UIDevToolsDOMAgent::OnUIElementBoundsChanged(UIElement* ui_element) {
   for (auto& observer : observers_)
     observer.OnNodeBoundsChanged(ui_element->node_id());
-}
-
-bool UIDevToolsDOMAgent::IsHighlightingWindow(aura::Window* window) {
-  return widget_for_highlighting_ &&
-         GetWidgetFromWindow(window) == widget_for_highlighting_.get();
 }
 
 void UIDevToolsDOMAgent::AddObserver(UIDevToolsDOMAgentObserver* observer) {
@@ -328,41 +323,25 @@ void UIDevToolsDOMAgent::RemoveDomNode(UIElement* ui_element) {
 
 void UIDevToolsDOMAgent::Reset() {
   is_building_tree_ = false;
-  widget_for_highlighting_.reset();
+  layer_for_highlighting_.reset();
   window_element_root_.reset();
   node_id_to_ui_element_.clear();
   observers_.Clear();
 }
 
-void UIDevToolsDOMAgent::InitializeHighlightingWidget() {
-  DCHECK(!widget_for_highlighting_);
-  widget_for_highlighting_.reset(new views::Widget);
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW;
-  params.name = "HighlightingWidget";
-  params.parent = root_windows()[0];
-  params.keep_on_top = true;
-  params.accept_events = false;
-  widget_for_highlighting_->Init(params);
-}
-
 void UIDevToolsDOMAgent::UpdateHighlight(
     const std::pair<aura::Window*, gfx::Rect>& window_and_bounds,
-    SkColor background,
-    SkColor border) {
-  constexpr int kBorderThickness = 1;
-  views::View* root_view = widget_for_highlighting_->GetRootView();
-  root_view->SetBorder(views::CreateSolidBorder(kBorderThickness, border));
-  root_view->SetBackground(views::CreateSolidBackground(background));
+    SkColor background) {
+  layer_for_highlighting_->SetColor(background);
+
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_and_bounds.first);
   aura::Window* root = window_and_bounds.first->GetRootWindow();
-  if (root != widget_for_highlighting_->GetNativeWindow()->GetRootWindow())
-    root->AddChild(widget_for_highlighting_->GetNativeWindow());
+  if (root->layer() != layer_for_highlighting_->parent())
+    root->layer()->Add(layer_for_highlighting_.get());
+  else
+    root->layer()->StackAtTop(layer_for_highlighting_.get());
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
@@ -371,15 +350,18 @@ void UIDevToolsDOMAgent::UpdateHighlight(
   gfx::Point origin = bounds.origin();
   screen_position_client->ConvertPointFromScreen(root, &origin);
   bounds.set_origin(origin);
-  widget_for_highlighting_->GetNativeWindow()->SetBounds(bounds);
+  layer_for_highlighting_->SetBounds(bounds);
 }
 
 ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
     std::unique_ptr<ui_devtools::protocol::DOM::HighlightConfig>
         highlight_config,
     int node_id) {
-  if (!widget_for_highlighting_)
-    InitializeHighlightingWidget();
+  if (!layer_for_highlighting_) {
+    layer_for_highlighting_.reset(
+        new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
+    layer_for_highlighting_->set_name("HighlightingLayer");
+  }
 
   std::pair<aura::Window*, gfx::Rect> window_and_bounds =
       node_id_to_ui_element_.count(node_id)
@@ -389,14 +371,12 @@ ui_devtools::protocol::Response UIDevToolsDOMAgent::HighlightNode(
   if (!window_and_bounds.first) {
     return ui_devtools::protocol::Response::Error("No node found with that id");
   }
-  SkColor border_color =
-      RGBAToSkColor(highlight_config->getBorderColor(nullptr));
   SkColor content_color =
       RGBAToSkColor(highlight_config->getContentColor(nullptr));
-  UpdateHighlight(window_and_bounds, content_color, border_color);
+  UpdateHighlight(window_and_bounds, content_color);
 
-  if (!widget_for_highlighting_->IsVisible())
-    widget_for_highlighting_->Show();
+  if (!layer_for_highlighting_->visible())
+    layer_for_highlighting_->SetVisible(true);
 
   return ui_devtools::protocol::Response::OK();
 }
