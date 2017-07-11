@@ -33,8 +33,8 @@ extern "C" {
 #define BO_USE_EXTERNAL_DISP		(1ull << 10)
 #define BO_USE_PROTECTED		(1ull << 11)
 #define BO_USE_HW_VIDEO_ENCODER		(1ull << 12)
-#define BO_USE_HW_CAMERA_WRITE		(1ull << 13)
-#define BO_USE_HW_CAMERA_READ		(1ull << 14)
+#define BO_USE_CAMERA_WRITE		(1ull << 13)
+#define BO_USE_CAMERA_READ		(1ull << 14)
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
 #define BO_USE_TEXTURE			(1ull << 17)
 

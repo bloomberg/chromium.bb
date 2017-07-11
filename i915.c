@@ -116,13 +116,13 @@ static int i915_add_combinations(struct driver *drv)
 
 	/* IPU3 camera ISP supports only NV12 output. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			       BO_USE_HW_CAMERA_READ | BO_USE_HW_CAMERA_WRITE);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
-			       BO_USE_HW_CAMERA_READ | BO_USE_HW_CAMERA_WRITE);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
 	render_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	render_flags &= ~BO_USE_SW_READ_OFTEN;
@@ -444,13 +444,13 @@ static uint32_t i915_resolve_format(uint32_t format, uint64_t usage)
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 		/* KBL camera subsystem requires NV12. */
-		if (usage & (BO_USE_HW_CAMERA_READ | BO_USE_HW_CAMERA_WRITE))
+		if (usage & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
 			return DRM_FORMAT_NV12;
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
 		/* KBL camera subsystem requires NV12. */
-		if (usage & (BO_USE_HW_CAMERA_READ | BO_USE_HW_CAMERA_WRITE))
+		if (usage & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
 			return DRM_FORMAT_NV12;
 		return DRM_FORMAT_YVU420;
 	default:
