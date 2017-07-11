@@ -612,6 +612,7 @@ class ServiceManager::Instance
     }
 #endif
     pid_ = pid;
+    service_manager_->NotifyServicePIDReceived(identity_, pid_);
   }
 
   void OnServiceLost(
@@ -976,7 +977,7 @@ void ServiceManager::OnInstanceUnreachable(Instance* instance) {
 }
 
 void ServiceManager::OnInstanceStopped(const Identity& identity) {
-  listeners_.ForAllPtrs([identity](mojom::ServiceManagerListener* listener) {
+  listeners_.ForAllPtrs([&identity](mojom::ServiceManagerListener* listener) {
     listener->OnServiceStopped(identity);
   });
   if (!instance_quit_callback_.is_null())
@@ -1026,15 +1027,22 @@ void ServiceManager::EraseInstanceIdentity(Instance* instance) {
 void ServiceManager::NotifyServiceStarted(const Identity& identity,
                                           base::ProcessId pid) {
   listeners_.ForAllPtrs(
-      [identity, pid](mojom::ServiceManagerListener* listener) {
+      [&identity, pid](mojom::ServiceManagerListener* listener) {
         listener->OnServiceStarted(identity, pid);
       });
 }
 
 void ServiceManager::NotifyServiceFailedToStart(const Identity& identity) {
+  listeners_.ForAllPtrs([&identity](mojom::ServiceManagerListener* listener) {
+    listener->OnServiceFailedToStart(identity);
+  });
+}
+
+void ServiceManager::NotifyServicePIDReceived(const Identity& identity,
+                                              base::ProcessId pid) {
   listeners_.ForAllPtrs(
-      [identity](mojom::ServiceManagerListener* listener) {
-        listener->OnServiceFailedToStart(identity);
+      [&identity, pid](mojom::ServiceManagerListener* listener) {
+        listener->OnServicePIDReceived(identity, pid);
       });
 }
 

@@ -121,6 +121,8 @@ class ServiceManager {
   void NotifyServiceStarted(const Identity& identity, base::ProcessId pid);
   void NotifyServiceFailedToStart(const Identity& identity);
 
+  void NotifyServicePIDReceived(const Identity& identity, base::ProcessId pid);
+
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,
   // and this function returns true.
