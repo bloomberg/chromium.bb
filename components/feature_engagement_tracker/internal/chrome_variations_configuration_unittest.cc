@@ -281,10 +281,13 @@ TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
 }
 
 TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidConfigKeys) {
+  base::HistogramTester histogram_tester;
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
-  foo_params["not_there_yet"] = "bogus value";
+  foo_params["not_there_yet"] = "bogus value";                // Unrecognized.
+  foo_params["still_not_there"] = "another bogus value";      // Unrecognized.
+  foo_params["x_this_is_ignored"] = "this value is ignored";  // Ignored.
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
@@ -298,6 +301,11 @@ TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidConfigKeys) {
   expected_foo.used = EventConfig("eu", Comparator(ANY, 0), 0, 360);
   expected_foo.trigger = EventConfig("et", Comparator(ANY, 0), 0, 360);
   EXPECT_EQ(expected_foo, foo);
+
+  // Exactly 2 keys should be unrecognized and not ignored.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_UNKNOWN_KEY), 2);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidEventConfigTokens) {

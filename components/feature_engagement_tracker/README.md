@@ -256,6 +256,7 @@ Format:
   "event_used": "{EventConfig}",
   "event_trigger": "{EventConfig}",
   "event_???": "{EventConfig}",
+  "x_???": "..."
  }
 ```
 
@@ -286,6 +287,20 @@ The `FeatureConfig` fields `availability`, `session_rate`, `event_used` and
         that must have been met.
     *   Name must match `/^event_[a-zA-Z0-9-_]+$/` and not be `event_used` or
         `event_trigger`.
+*   `x_???`
+    *   Any parameter starting with `x_` is ignored by the feature engagement
+        tracker.
+    *   A typical use case for this would be if there are multiple experiments
+        for the same in-product help, and you want to specify different strings
+        to use in each of them, such as:
+
+        ```
+        "x_promo_string": "IDS_MYFUN_PROMO_2"
+        ```
+
+    *   Failing to use an `x_`-prefix for parameters unrelated to the
+        `FeatureConfig` will end up being recorded as `FAILURE_UNKNOWN_KEY` in
+        the `InProductHelp.Config.ParsingEvent` histogram.
 
 **Examples**
 
