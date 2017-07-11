@@ -171,7 +171,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   // In order to avoid accidentally double tapping when moving off the edge
   // of the screen, the state will be rewritten to NoFingersDown.
   if ((type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) &&
-      FindEdgesWithinBounds(touch_event.location(), kLeavingScreenEdge) !=
+      FindEdgesWithinInset(touch_event.location(), kLeavingScreenEdge) !=
           NO_EDGE) {
     if (VLOG_on_)
       VLOG(1) << "Leaving screen";
@@ -272,11 +272,11 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
   }
 
   // If the user enters the screen from the edge then send an earcon.
-  int edge = FindEdgesWithinBounds(event.location(), kLeavingScreenEdge);
+  int edge = FindEdgesWithinInset(event.location(), kLeavingScreenEdge);
   if (edge != NO_EDGE)
     delegate_->PlayEnterScreenEarcon();
 
-  int location = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+  int location = FindEdgesWithinInset(event.location(), kSlopDistanceFromEdge);
   // If the press was at a corner, the user might go into corner passthrough
   // instead.
   bool in_a_bottom_corner =
@@ -301,7 +301,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     std::unique_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
 
-  int location = FindEdgesWithinBounds(event.location(), kMaxDistanceFromEdge);
+  int location = FindEdgesWithinInset(event.location(), kMaxDistanceFromEdge);
   bool in_a_bottom_corner =
       (location == BOTTOM_LEFT_CORNER) || (location == BOTTOM_RIGHT_CORNER);
   // If the event is from the initial press and the location is no longer in the
@@ -353,7 +353,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
               << gesture_detector_config_.minimum_swipe_velocity;
     }
     // Change to slide gesture if the slide occurred at the right edge.
-    int edge = FindEdgesWithinBounds(event.location(), kMaxDistanceFromEdge);
+    int edge = FindEdgesWithinInset(event.location(), kMaxDistanceFromEdge);
     if (edge & RIGHT_EDGE && edge != BOTTOM_RIGHT_CORNER) {
       SET_STATE(SLIDE_GESTURE);
       return InSlideGesture(event, rewritten_event);
@@ -516,7 +516,7 @@ ui::EventRewriteStatus TouchExplorationController::InCornerPassthrough(
 
   // If the first finger has left the corner, then exit passthrough.
   if (event.pointer_details().id == initial_press_->pointer_details().id) {
-    int edges = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+    int edges = FindEdgesWithinInset(event.location(), kSlopDistanceFromEdge);
     bool in_a_bottom_corner = (edges == BOTTOM_LEFT_CORNER) ||
                               (edges == BOTTOM_RIGHT_CORNER);
     if (type == ui::ET_TOUCH_MOVED && in_a_bottom_corner)
@@ -704,7 +704,7 @@ ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
 
   // Allows user to return to the edge to adjust the sound if they have left the
   // boundaries.
-  int edge = FindEdgesWithinBounds(event.location(), kSlopDistanceFromEdge);
+  int edge = FindEdgesWithinInset(event.location(), kSlopDistanceFromEdge);
   if (!(edge & RIGHT_EDGE) && (type != ui::ET_TOUCH_RELEASED)) {
     if (sound_timer_.IsRunning()) {
       sound_timer_.Stop();
@@ -842,7 +842,7 @@ void TouchExplorationController::OnPassthroughTimerFired() {
 
   gfx::Point location =
       ToRoundedPoint(touch_locations_[initial_press_->pointer_details().id]);
-  int corner = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
+  int corner = FindEdgesWithinInset(location, kSlopDistanceFromEdge);
   if (corner != BOTTOM_LEFT_CORNER && corner != BOTTOM_RIGHT_CORNER)
     return;
 
@@ -905,7 +905,7 @@ void TouchExplorationController::SideSlideControl(ui::GestureEvent* gesture) {
   // their finger along the right side of the screen. Volume is relative to
   // where they are on the right side of the screen.
   gfx::Point location = gesture->location();
-  int edge = FindEdgesWithinBounds(location, kSlopDistanceFromEdge);
+  int edge = FindEdgesWithinInset(location, kSlopDistanceFromEdge);
   if (!(edge & RIGHT_EDGE))
     return;
 
@@ -1017,32 +1017,29 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
 }
 
 gfx::Rect TouchExplorationController::GetRootWindowBoundsInScreenUnits() {
-  gfx::Point root_window_size = root_window_->bounds().bottom_right();
-  root_window_->GetHost()->ConvertDIPToScreenInPixels(&root_window_size);
+  gfx::Point root_window_size(root_window_->bounds().width(),
+                              root_window_->bounds().height());
+  root_window_->GetHost()->ConvertDIPToPixels(&root_window_size);
   return gfx::Rect(0, 0, root_window_size.x(), root_window_size.y());
 }
 
-int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
-                                                      float bounds) {
-  gfx::Rect window = GetRootWindowBoundsInScreenUnits();
-
-  float left_edge_limit = window.x() + bounds;
-  float right_edge_limit = window.right() - bounds;
-  float top_edge_limit = window.y() + bounds;
-  float bottom_edge_limit = window.bottom() - bounds;
+int TouchExplorationController::FindEdgesWithinInset(gfx::Point point,
+                                                     float inset) {
+  gfx::RectF inner_bounds(GetRootWindowBoundsInScreenUnits());
+  inner_bounds.Inset(inset, inset);
 
   // Bitwise manipulation in order to determine where on the screen the point
   // lies. If more than one bit is turned on, then it is a corner where the two
   // bit/edges intersect. Otherwise, if no bits are turned on, the point must be
   // in the center of the screen.
   int result = NO_EDGE;
-  if (point.x() < left_edge_limit)
+  if (point.x() < inner_bounds.x())
     result |= LEFT_EDGE;
-  if (point.x() > right_edge_limit)
+  if (point.x() > inner_bounds.right())
     result |= RIGHT_EDGE;
-  if (point.y() < top_edge_limit)
+  if (point.y() < inner_bounds.y())
     result |= TOP_EDGE;
-  if (point.y() > bottom_edge_limit)
+  if (point.y() > inner_bounds.bottom())
     result |= BOTTOM_EDGE;
   return result;
 }
