@@ -647,7 +647,6 @@ static const aom_cdf_prob
       { AOM_ICDF(4864), AOM_ICDF(8461), AOM_ICDF(17481), AOM_ICDF(32768), 0 },
       { AOM_ICDF(6528), AOM_ICDF(8681), AOM_ICDF(19031), AOM_ICDF(32768), 0 }
     };
-#endif
 
 static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
