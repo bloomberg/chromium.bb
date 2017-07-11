@@ -8,10 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
-namespace ukm {
-class UkmEntryBuilder;
-}
-
 // This class asynchronously fetches memory metrics for each process, and then
 // emits UMA metrics from those metrics.
 // Each instance is self-owned, and will delete itself once it has finished
@@ -38,9 +34,6 @@ class ProcessMemoryMetricsEmitter
 
  private:
   friend class base::RefCountedThreadSafe<ProcessMemoryMetricsEmitter>;
-
-  std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmBuilder(
-      const char* event_name);
 
   memory_instrumentation::mojom::CoordinatorPtr coordinator_;
 
