@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/syncable_service.h"
@@ -593,10 +594,10 @@ class PasswordStore : protected PasswordStoreSync,
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::unique_ptr<PasswordReuseDetector> reuse_detector_;
-  HashPasswordManager hash_password_manager_;
-#if !defined(OS_CHROMEOS)
-  std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
 #endif
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
+  HashPasswordManager hash_password_manager_;
 #endif
 
   bool is_propagating_password_changes_to_web_credentials_enabled_;

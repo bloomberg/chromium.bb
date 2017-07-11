@@ -28,6 +28,7 @@
 #include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/http_data_cleaner.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
@@ -58,8 +59,7 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 #endif
 
@@ -115,8 +115,7 @@ PasswordStoreFactory::PasswordStoreFactory()
           "PasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
   // from PasswordStore.
   DependsOn(SigninManagerFactory::GetInstance());

@@ -118,7 +118,7 @@ PasswordStore::PasswordStore(
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
                          PrefService* prefs) {
   ScheduleTask(base::Bind(&PasswordStore::InitOnBackgroundThread, this, flare));
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   hash_password_manager_.set_prefs(prefs);
   ScheduleTask(
       base::Bind(&PasswordStore::SaveSyncPasswordHashImpl, this,
@@ -315,7 +315,7 @@ void PasswordStore::ShutdownOnUIThread() {
   // The AffiliationService must be destroyed from the main thread.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   if (notifier_)
     notifier_->UnsubscribeFromSigninEvents();
 #endif
@@ -337,8 +337,9 @@ void PasswordStore::CheckReuse(const base::string16& input,
   ScheduleTask(base::Bind(&PasswordStore::CheckReuseImpl, this,
                           base::Passed(&check_reuse_request), input, domain));
 }
+#endif
 
-#if !defined(OS_CHROMEOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::SaveSyncPasswordHash(const base::string16& password) {
   // TODO(crbug.com/657041): Log success of saving password hash to UMA.
   hash_password_manager_.SavePasswordHash(password);
@@ -360,7 +361,6 @@ void PasswordStore::SetPasswordStoreSigninNotifier(
   notifier_ = std::move(notifier);
   notifier_->SubscribeToSigninEvents(this);
 }
-#endif
 #endif
 
 PasswordStore::~PasswordStore() {
