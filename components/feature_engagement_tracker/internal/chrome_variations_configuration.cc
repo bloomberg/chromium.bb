@@ -36,6 +36,7 @@ const char kEventConfigTriggerKey[] = "event_trigger";
 const char kEventConfigKeyPrefix[] = "event_";
 const char kSessionRateKey[] = "session_rate";
 const char kAvailabilityKey[] = "availability";
+const char kIgnoredKeyPrefix[] = "x_";
 
 const char kEventConfigDataNameKey[] = "name";
 const char kEventConfigDataComparatorKey[] = "comparator";
@@ -271,8 +272,13 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
         continue;
       }
       config.event_configs.insert(event_config);
+    } else if (base::StartsWith(key, kIgnoredKeyPrefix,
+                                base::CompareCase::INSENSITIVE_ASCII)) {
+      // Intentionally ignoring parameter using registered ignored prefix.
+      DVLOG(2) << "Ignoring unknown key when parsing config for feature "
+               << feature->name << ": " << key;
     } else {
-      DVLOG(1) << "Ignoring unknown key when parsing config for feature "
+      DVLOG(1) << "Unknown key found when parsing config for feature "
                << feature->name << ": " << key;
       stats::RecordConfigParsingEvent(
           stats::ConfigParsingEvent::FAILURE_UNKNOWN_KEY);
