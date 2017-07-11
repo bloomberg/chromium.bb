@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
@@ -119,6 +120,8 @@ int LayoutTestBrowserMain(
   CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
   CHECK(
       !browser_context_path_for_layout_tests.GetPath().MaybeAsASCII().empty());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreCertificateErrors);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kContentShellDataPath,
       browser_context_path_for_layout_tests.GetPath().MaybeAsASCII());
