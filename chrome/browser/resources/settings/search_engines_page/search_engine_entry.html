@@ -39,11 +39,6 @@
       #url-column {
         flex: 4;
       }
-
-      :host(:not([show-dots_])) paper-icon-button {
-        pointer-events: none;
-        visibility: hidden;
-      }
     </style>
 
     <template is="dom-if" if="[[showEditSearchEngineDialog_]]" restamp>
@@ -58,7 +53,7 @@
       </div>
       <div id="keyword-column"><div>[[engine.keyword]]</div></div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
-      <button is="paper-icon-button-light" class="icon-more-vert" 
+      <button is="paper-icon-button-light" class="icon-more-vert"
           on-tap="onDotsTap_" title="$i18n{moreActions}" focus-row-control
           focus-type="cr-menu-button">
       </button>

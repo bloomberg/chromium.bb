@@ -185,8 +185,10 @@ Polymer({
    *           key: (string|undefined)}} e
    */
   onInputMethodTap_: function(e) {
-    // Taps on the paper-icon-button are handled in onInputMethodOptionsTap_.
-    if (e.target.tagName == 'PAPER-ICON-BUTTON')
+    // Taps on the button are handled in onInputMethodOptionsTap_.
+    // TODO(dschuyler): The row has two operations that are not clearly
+    // delineated. crbug.com/740691
+    if (e.target.tagName == 'BUTTON')
       return;
 
     // Ignore key presses other than <Enter>.
