@@ -11,11 +11,9 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 
-#include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/memory.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 
@@ -87,36 +85,16 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
     if (mmap_error == ENOMEM)
       base::TerminateBecauseOutOfMemory(map_size);
 
-    // TODO(dcastagna): Remove the following diagnostic information and the
-    // associated crash keys once crbug.com/629521 is fixed.
     bool fd_valid = fcntl(dmabuf_fd_.get(), F_GETFD) != -1 ||
                     logging::GetLastSystemErrorCode() != EBADF;
-    int minor = -1;
-    int major = -1;
-    struct stat buf;
-    if (!fstat(dmabuf_fd_.get(), &buf)) {
-      minor = minor(buf.st_dev);
-      major = major(buf.st_dev);
-    }
-
     std::string mmap_params = base::StringPrintf(
         "(addr=nullptr, length=%zu, prot=(PROT_READ | PROT_WRITE), "
-        "flags=MAP_SHARED, fd=%d[valid=%d, minor=%d, major=%d], offset=0)",
-        map_size, dmabuf_fd_.get(), fd_valid, minor, major);
+        "flags=MAP_SHARED, fd=%d[valid=%d], offset=0)",
+        map_size, dmabuf_fd_.get(), fd_valid);
     std::string errno_str = logging::SystemErrorCodeToString(mmap_error);
-    std::unique_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateCurrentProcessMetrics());
-    std::string number_of_fds =
-        base::StringPrintf("%d", process_metrics->GetOpenFdCount());
-    base::debug::ScopedCrashKey params_crash_key("mmap_params", mmap_params);
-    base::debug::ScopedCrashKey size_crash_key("buffer_size", size.ToString());
-    base::debug::ScopedCrashKey errno_crash_key("errno", errno_str);
-    base::debug::ScopedCrashKey number_of_fds_crash_key("number_of_fds",
-                                                        number_of_fds);
     LOG(ERROR) << "Failed to mmap dmabuf; mmap_params: " << mmap_params
                << ", buffer_size: (" << size.ToString()
-               << "),  errno: " << errno_str
-               << " , number_of_fds: " << number_of_fds;
+               << "),  errno: " << errno_str;
     LOG(ERROR) << "NativePixmapHandle:";
     LOG(ERROR) << "Number of fds: " << handle.fds.size();
     LOG(ERROR) << "Number of planes: " << handle.planes.size();
