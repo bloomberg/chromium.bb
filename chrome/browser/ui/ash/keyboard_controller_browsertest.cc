@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenTwice) {
   auto* controller = keyboard::KeyboardController::GetInstance();
 
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::INITIAL);
+            keyboard::KeyboardControllerState::LOADING_EXTENSION);
   // Call ShowKeyboard twice. The second call should has no effect.
   controller->ShowKeyboard(false);
   EXPECT_EQ(controller->GetStateForTest(),
@@ -251,6 +251,16 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenTwice) {
   WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::SHOWN);
+}
+
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, StateResolvesAfterPreload) {
+  auto* controller = keyboard::KeyboardController::GetInstance();
+
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::LOADING_EXTENSION);
+  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::HIDDEN);
+  EXPECT_EQ(controller->GetStateForTest(),
+            keyboard::KeyboardControllerState::HIDDEN);
 }
 
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenAndCloseAndOpen) {

@@ -80,8 +80,10 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   controller_->GetContainerWindow()->SetBounds(new_bounds);
   SetChildBoundsDirect(keyboard_, gfx::Rect(new_bounds.size()));
 
-  if (old_bounds.height() == 0 && child->bounds().height() != 0 &&
-      controller_->show_on_resize()) {
+  const bool container_had_size = old_bounds.height() != 0;
+  const bool child_has_size = child->bounds().height() != 0;
+
+  if (!container_had_size && child_has_size && controller_->show_on_resize()) {
     // The window height is set to 0 initially or before switch to an IME in a
     // different extension. Virtual keyboard window may wait for this bounds
     // change to correctly animate in.
@@ -97,6 +99,13 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
       controller_->ShowKeyboard(false /* lock */);
     }
   } else {
+    if (!container_had_size && child_has_size &&
+        !controller_->keyboard_visible()) {
+      // When the child is layed out, the controller is not shown, but showing
+      // is not desired, this is indicative that the pre-load has completed.
+      controller_->NotifyKeyboardLoadingComplete();
+    }
+
     if (controller_->keyboard_mode() == FULL_WIDTH) {
       // We need to send out this notification only if keyboard is visible since
       // keyboard window is resized even if keyboard is hidden.

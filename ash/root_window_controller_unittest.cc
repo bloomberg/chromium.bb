@@ -913,8 +913,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   aura::Window* keyboard_window =
       keyboard::KeyboardController::GetInstance()->ui()->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
 
@@ -968,8 +966,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
   aura::Window* keyboard_window = controller->ui()->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
       root_window->bounds(), 100));
   keyboard_window->Show();
@@ -1005,8 +1001,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
 
   aura::Window* keyboard_window =
       keyboard::KeyboardController::GetInstance()->ui()->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
       root_window->bounds(), 100));
 
@@ -1055,8 +1049,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 
   const int keyboard_height = 100;
   aura::Window* keyboard_window = ui->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height));
   keyboard_window->Show();
@@ -1103,8 +1095,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
   aura::Window* keyboard_window = ui->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
       primary_root_window->bounds(), keyboard_height));
   keyboard_window->Show();
@@ -1151,8 +1141,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 
   const int keyboard_height = 200;
   aura::Window* keyboard_window = ui->GetKeyboardWindow();
-  keyboard_container->AddChild(keyboard_window);
-  keyboard_window->set_owned_by_parent(false);
   gfx::Rect keyboard_bounds = keyboard::FullWidthKeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height);
   keyboard_window->SetBounds(keyboard_bounds);

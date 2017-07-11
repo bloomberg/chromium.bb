@@ -620,6 +620,8 @@ void RootWindowController::ActivateKeyboard(
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
   parent->AddChild(keyboard_container);
+
+  keyboard_controller->LoadKeyboardUiInBackground();
 }
 
 void RootWindowController::DeactivateKeyboard(
