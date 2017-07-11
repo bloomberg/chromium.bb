@@ -91,7 +91,7 @@
       'Linux ChromiumOS Builder': 'chromeos_with_codecs_release_bot',
       'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
-      'Linux ChromiumOS Ozone Builder': 'chromeos_with_codecs_release_bot',
+      'Linux ChromiumOS Ozone Builder': 'chromeos_with_codecs_ozone_release_bot',
     },
 
     'chromium.fyi': {
@@ -204,10 +204,10 @@
       'Linux remote_run Tester': 'release_bot',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
-      'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
+      'Mojo ChromiumOS': 'chromeos_with_codecs_ozone_release_trybot',
       'Mojo Linux': 'release_trybot',
       'Mojo Windows': 'release_bot_x86_minimal_symbols',
-      'Ozone Linux': 'ozone_linux_release_bot',
+      'Ozone Linux': 'release_bot_ozone_linux',
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
@@ -258,7 +258,7 @@
       'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
       'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_release_trybot',
-      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_chromeos_release_trybot',
+      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_chromeos_ozone_release_trybot',
       'Linux GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
     },
@@ -537,7 +537,7 @@
       'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_chromeos_dbg_ng': 'chromeos_with_codecs_debug_trybot',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
-      'linux_chromium_chromeos_ozone_rel_ng': 'chromeos_with_codecs_release_trybot',
+      'linux_chromium_chromeos_ozone_rel_ng': 'chromeos_with_codecs_ozone_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
@@ -945,7 +945,7 @@
     ],
 
     'asan_lsan_chromeos_release_trybot': [
-      'asan', 'lsan', 'chromeos', 'release_trybot',
+      'asan', 'lsan', 'chromeos', 'x11_cros', 'release_trybot',
     ],
 
     'asan_lsan_edge_debug_bot': [
@@ -1013,27 +1013,35 @@
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
-      'chromeos', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
+      'chromeos', 'x11_cros', 'asan', 'lsan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'chromeos_msan_release_bot': [
-      'chromeos', 'msan', 'release_bot',
+      'chromeos', 'x11_cros', 'msan', 'release_bot',
     ],
 
     'chromeos_with_codecs_debug_bot': [
-      'chromeos_with_codecs', 'debug_bot',
+      'chromeos_with_codecs', 'x11_cros', 'debug_bot',
     ],
 
     'chromeos_with_codecs_debug_trybot': [
-      'chromeos_with_codecs', 'debug_trybot',
+      'chromeos_with_codecs', 'x11_cros', 'debug_trybot',
+    ],
+
+    'chromeos_with_codecs_ozone_release_bot': [
+      'chromeos_with_codecs', 'ozone', 'release_bot',
+    ],
+
+    'chromeos_with_codecs_ozone_release_trybot': [
+      'chromeos_with_codecs', 'ozone', 'release_trybot',
     ],
 
     'chromeos_with_codecs_release_bot': [
-      'chromeos_with_codecs', 'release_bot',
+      'chromeos_with_codecs', 'x11_cros', 'release_bot',
     ],
 
     'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot',
+      'chromeos_with_codecs', 'x11_cros', 'release_trybot',
     ],
 
     'clang_debug_trybot_x86': [
@@ -1160,7 +1168,7 @@
     ],
 
     'codesearch_gen_chromium_chromiumos_bot': [
-      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64', 'chromeos',
+      'goma', 'clang', 'shared', 'debug', 'minimal_symbols', 'x64', 'chromeos', 'ozone',
     ],
 
     'codesearch_gen_chromium_linux_bot': [
@@ -1224,8 +1232,12 @@
       'debug_trybot', 'x86',
     ],
 
+    'gpu_fyi_tests_chromeos_ozone_release_trybot': [
+      'gpu_fyi_tests', 'release_trybot', 'ozone', 'ozone_linux', 'system_gbm_libdrm',
+    ],
+
     'gpu_fyi_tests_chromeos_release_trybot': [
-      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'system_gbm_libdrm',
+      'gpu_fyi_tests', 'release_trybot', 'chromeos', 'x11_cros',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
@@ -1354,7 +1366,7 @@
     ],
 
     'official_goma_chromeos': [
-      'official', 'goma', 'chromeos',
+      'official', 'goma', 'chromeos', 'x11_cros',
     ],
 
     'official_goma_thin_lto_use_lld': [
@@ -1389,12 +1401,16 @@
       'official_optimize', 'chrome_pgo_phase_2', 'x86',
     ],
 
-    'ozone_linux_release_bot': [
-      'ozone_linux', 'release_bot',
+    'release_bot_ozone_linux': [
+      'release_bot', 'ozone', 'ozone_linux',
+    ],
+
+    'release_bot_fuchsia': [
+      'release_bot', 'fuchsia',
     ],
 
     'ozone_linux_release_trybot': [
-      'ozone_linux', 'release_trybot',
+      'release_trybot', 'ozone', 'ozone_linux',
     ],
 
     'release_afl_asan': [
@@ -1415,10 +1431,6 @@
 
     'release_bot_chrome_with_codecs': [
       'release_bot', 'chrome_with_codecs',
-    ],
-
-    'release_bot_fuchsia': [
-      'release_bot', 'fuchsia',
     ],
 
     'release_bot_mac_new_sdk': [
@@ -1837,6 +1849,11 @@
       'gn_args': 'symbol_level=0',
     },
 
+    'x11_cros': {
+      # When use_ozone=false then use_x11=true.
+      'gn_args': 'use_ozone=false',
+    },
+
     'official': {
       'mixins': ['official_optimize'],
       'gn_args': 'is_chrome_branded=true',
@@ -1850,12 +1867,16 @@
       'gn_args': 'optimize_for_fuzzing=true',
     },
 
+    'ozone': {
+      'gn_args': 'use_ozone=true',
+    },
+
     'ozone_linux': {
       'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
                   'ozone_platform="x11" '
                   'ozone_platform_x11=true ozone_platform_gbm=true '
                   'enable_package_mash_services=true use_ash=false '
-                  'use_xkbcommon=true use_ozone=true'),
+                  'use_xkbcommon=true'),
     },
 
     'fuchsia': {

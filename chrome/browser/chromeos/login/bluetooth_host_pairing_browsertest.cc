@@ -161,7 +161,7 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
   pairing_chromeos::BluetoothHostPairingController* controller_ = nullptr;
 
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_ = nullptr;
-  base::MessageLoopForUI message_loop_;
+  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingNoInputTest);
 };
