@@ -80,7 +80,7 @@ bool ApproximatelyEqual(int a, int b, int delta) {
 
 const static int kPixelDelta = 4;
 
-#define EXPECT_RECT_EQ(expected, actual)                                    \
+#define EXPECT_RECT_APPROX_EQ(expected, actual)                             \
   do {                                                                      \
     const FloatRect& actual_rect = actual;                                  \
     EXPECT_TRUE(                                                            \
@@ -109,16 +109,16 @@ TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_DefaultWritingMode) {
   const DrawingDisplayItem* drawing_display_item =
       GetDrawingForSVGTextById("target");
   AssertTextDrawingEquals(drawing_display_item, "x");
-  EXPECT_RECT_EQ(IntRect(50, 3, 15, 33),
-                 drawing_display_item->GetPaintRecordBounds());
+  EXPECT_RECT_APPROX_EQ(IntRect(50, 3, 15, 33),
+                        drawing_display_item->GetPaintRecordBounds());
 
   SelectAllText();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   drawing_display_item = GetDrawingForSVGTextById("target");
   AssertTextDrawingEquals(drawing_display_item, "x");
-  EXPECT_RECT_EQ(IntRect(50, 3, 15, 33),
-                 drawing_display_item->GetPaintRecordBounds());
+  EXPECT_RECT_APPROX_EQ(IntRect(50, 3, 15, 33),
+                        drawing_display_item->GetPaintRecordBounds());
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_WritingModeTopToBottom) {
@@ -131,8 +131,8 @@ TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_WritingModeTopToBottom) {
   const DrawingDisplayItem* drawing_display_item =
       GetDrawingForSVGTextById("target");
   AssertTextDrawingEquals(drawing_display_item, "x");
-  EXPECT_RECT_EQ(IntRect(33, 30, 34, 15),
-                 drawing_display_item->GetPaintRecordBounds());
+  EXPECT_RECT_APPROX_EQ(IntRect(33, 30, 34, 15),
+                        drawing_display_item->GetPaintRecordBounds());
 
   SelectAllText();
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -142,8 +142,8 @@ TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_WritingModeTopToBottom) {
   // enclosingIntRect() in SVGInlineTextBox::localSelectionRect().
   drawing_display_item = GetDrawingForSVGTextById("target");
   AssertTextDrawingEquals(drawing_display_item, "x");
-  EXPECT_RECT_EQ(IntRect(33, 30, 34, 16),
-                 drawing_display_item->GetPaintRecordBounds());
+  EXPECT_RECT_APPROX_EQ(IntRect(33, 30, 34, 16),
+                        drawing_display_item->GetPaintRecordBounds());
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_TextShadow) {
@@ -157,8 +157,8 @@ TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_TextShadow) {
   const DrawingDisplayItem* drawing_display_item =
       GetDrawingForSVGTextById("target");
   AssertTextDrawingEquals(drawing_display_item, "x");
-  EXPECT_RECT_EQ(IntRect(50, 3, 220, 238),
-                 drawing_display_item->GetPaintRecordBounds());
+  EXPECT_RECT_APPROX_EQ(IntRect(50, 3, 220, 238),
+                        drawing_display_item->GetPaintRecordBounds());
 }
 
 }  // namespace
