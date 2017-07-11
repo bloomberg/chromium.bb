@@ -274,11 +274,14 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
 
   const SerializedState* state = static_cast<const SerializedState*>(data);
 
+  ports::Node* node = internal::g_core->GetNodeController()->node();
   ports::PortRef port;
-  if (internal::g_core->GetNodeController()->node()->GetPort(ports[0], &port) !=
-      ports::OK) {
+  if (node->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
-  }
+
+  ports::PortStatus status;
+  if (node->GetStatus(port, &status) != ports::OK)
+    return nullptr;
 
   return new MessagePipeDispatcher(internal::g_core->GetNodeController(), port,
                                    state->pipe_id, state->endpoint);

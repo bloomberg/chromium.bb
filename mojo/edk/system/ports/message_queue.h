@@ -56,9 +56,6 @@ class MessageQueue {
   void AcceptMessage(std::unique_ptr<UserMessageEvent> message,
                      bool* has_next_message);
 
-  // Returns all of the ports referenced by messages in this message queue.
-  void GetReferencedPorts(std::vector<PortName>* ports);
-
   // Takes all messages from this queue. Used to safely destroy queued messages
   // without holding any Port lock.
   void TakeAllMessages(
