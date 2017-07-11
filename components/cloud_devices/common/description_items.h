@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 
 namespace base {
@@ -63,8 +64,7 @@ class ListCapability {
   const Option& operator[](size_t i) const { return options_[i]; }
 
   bool Contains(const Option& option) const {
-    return std::find(options_.begin(), options_.end(), option) !=
-           options_.end();
+    return base::ContainsValue(options_, option);
   }
 
   void AddOption(const Option& option) { options_.push_back(option); }
@@ -104,8 +104,7 @@ class SelectionCapability {
   const Option& operator[](size_t i) const { return options_[i]; }
 
   bool Contains(const Option& option) const {
-    return std::find(options_.begin(), options_.end(), option) !=
-           options_.end();
+    return base::ContainsValue(options_, option);
   }
 
   const Option& GetDefault() const {
