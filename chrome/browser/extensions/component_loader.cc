@@ -319,10 +319,13 @@ void ComponentLoader::AddGalleryExtension() {
 
 void ComponentLoader::AddZipArchiverExtension() {
 #if defined(OS_CHROMEOS)
+  base::FilePath resources_path;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableZipArchiverOnFileManager)) {
-    Add(IDR_ZIP_ARCHIVER_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("zip_archiver")));
+          chromeos::switches::kEnableZipArchiverOnFileManager) &&
+      PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+    AddComponentFromDir(
+        resources_path.Append(extension_misc::kZipArchiverExtensionPath),
+        extension_misc::kZipArchiverExtensionId, base::Closure());
   }
 #endif  // defined(OS_CHROMEOS)
 }

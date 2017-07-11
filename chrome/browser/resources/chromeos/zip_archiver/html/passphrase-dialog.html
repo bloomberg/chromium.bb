@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+
+<dom-module id="passphrase-dialog">
+  <template>
+    <link rel="stylesheet" href="../css/passphrase-dialog.css">
+    <!-- TODO(takise): Translation -->
+    <h3>This file is password protected</h3>
+    <paper-input-container>
+      <!-- TODO(takise): Translation -->
+      Password
+      <input is="core-input" type="password" id="input" autofocus>
+    </paper-input-container>
+    <div id="bar">
+      <paper-checkbox id="remember">
+        <!-- TODO(takise): Translation -->
+          Remember
+      </paper-checkbox>
+      <div id="buttons">
+        <paper-button on-click="cancel" id="cancelButton">
+          <!-- TODO(takise): Translation -->
+            Cancel
+        </paper-button>
+        <paper-button on-click="accept" id="acceptButton">
+          <!-- TODO(takise): Translation -->
+            Accept
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="../js/passphrase-dialog.js"></script>
+</dom-module>

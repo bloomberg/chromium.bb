@@ -8,6 +8,10 @@ config("minizip_warnings") {
   }
 }
 
+config("minizip_include_dirs") {
+  include_dirs = [ "//third_party/zlib" ]
+}
+
 static_library("minizip") {
   sources = [
     # TODO(yawano): AES part cannot be compiled in pnacl.
@@ -56,6 +60,8 @@ static_library("minizip") {
 
   configs += [ ":minizip_warnings" ]
 
+  public_configs = [ ":minizip_include_dirs" ]
+
   deps = [
     "//third_party/zlib:zlib",
   ]
@@ -63,6 +69,6 @@ static_library("minizip") {
   visibility = [
     # NOTE: Modifying visibility list requires approval from security team.
     "//testing/libfuzzer/fuzzers:*",
-    "//ui/file_manager/zip_archiver/cpp:zip_archiver_pnacl",
+    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl",
   ]
 }

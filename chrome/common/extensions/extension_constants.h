@@ -224,6 +224,10 @@ extern const char kWallpaperManagerId[];
 extern const char kWebstoreWidgetAppId[];
 // The extension id of the new ZIP unpacker extension.
 extern const char kZIPUnpackerExtensionId[];
+// The extension id of the zip archiver extension.
+extern const char kZipArchiverExtensionId[];
+// Path to preinstalled zip archiver extension.
+extern const char kZipArchiverExtensionPath[];
 #endif
 
 // What causes an extension to be installed? Used in histograms, so don't
