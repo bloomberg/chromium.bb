@@ -37,6 +37,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
     ~Config();
 
     service_manager::Connector* const connector;
+    Coordinator* coordinator_for_testing;
     const std::string service_name;
     const mojom::ProcessType process_type;
   };
@@ -45,7 +46,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
 
  private:
   friend std::default_delete<ClientProcessImpl>;  // For testing
-  friend class ClientProcessImplTest;
+  friend class MemoryTracingIntegrationTest;
 
   ClientProcessImpl(const Config& config);
   ~ClientProcessImpl() override;
