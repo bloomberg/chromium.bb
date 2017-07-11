@@ -1386,10 +1386,8 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
   ResourceLoader* loader = nullptr;
 
   {
-    // Forbids JavaScript/addClient/removeClient/revalidation until start()
+    // Forbids JavaScript/revalidation until start()
     // to prevent unintended state transitions.
-    Resource::ProhibitAddRemoveClientInScope
-        prohibit_add_remove_client_in_scope(resource);
     Resource::RevalidationStartForbiddenScope
         revalidation_start_forbidden_scope(resource);
     ScriptForbiddenIfMainThreadScope script_forbidden_scope;
@@ -1430,6 +1428,10 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
 
     StorePerformanceTimingInitiatorInformation(resource);
     resource->SetFetcherSecurityOrigin(source_origin);
+
+    // NotifyStartLoad() shouldn't cause AddClient/RemoveClient().
+    Resource::ProhibitAddRemoveClientInScope
+        prohibit_add_remove_client_in_scope(resource);
 
     resource->NotifyStartLoad();
   }
