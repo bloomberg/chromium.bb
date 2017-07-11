@@ -374,6 +374,12 @@ enum class SnapshotViewOption {
   return _delegate;
 }
 
+- (id<BrowserCommands>)dispatcher {
+  // TODO(crbug.com/738881) add a dispatcher instance to this class and
+  // return it here when needed.
+  return nil;
+}
+
 - (IBAction)chromeExecuteCommand:(id)sender {
   int command = [sender tag];
 

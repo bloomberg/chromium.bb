@@ -30,6 +30,9 @@
 // Bookmarks the current page.
 - (void)bookmarkPage;
 
+// Shows the tools menu.
+- (void)showToolsMenu;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

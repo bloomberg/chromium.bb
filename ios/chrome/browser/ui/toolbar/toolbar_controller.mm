@@ -288,7 +288,9 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
     toolsMenuButton_ =
         [[ToolbarToolsMenuButton alloc] initWithFrame:toolsMenuButtonFrame
                                                 style:style_];
-    [toolsMenuButton_ setTag:IDC_SHOW_TOOLS_MENU];
+    [toolsMenuButton_ addTarget:self.dispatcher
+                         action:@selector(showToolsMenu)
+               forControlEvents:UIControlEventTouchUpInside];
     [toolsMenuButton_
         setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
                             UIViewAutoresizingFlexibleBottomMargin];

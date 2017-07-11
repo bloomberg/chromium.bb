@@ -639,9 +639,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection;
 // Initializes the bookmark interaction controller if not already initialized.
 - (void)initializeBookmarkInteractionController;
-
-// Shows the tools menu popup.
-- (void)showToolsMenuPopup;
 // Add all delegates to the provided |tab|.
 - (void)installDelegatesForTab:(Tab*)tab;
 // Remove delegates from the provided |tab|.
@@ -3438,56 +3435,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - Showing popups
 
-- (void)showToolsMenuPopup {
-  DCHECK(_browserState);
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Record the time this menu was requested; to be stored in the configuration
-  // object.
-  NSDate* showToolsMenuPopupRequestDate = [NSDate date];
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  [[_model currentTab].webController dismissKeyboard];
-  // Dismiss Find in Page focus.
-  [self updateFindBar:NO shouldFocus:NO];
-
-  ToolsMenuConfiguration* configuration =
-      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]];
-  configuration.requestStartTime =
-      showToolsMenuPopupRequestDate.timeIntervalSinceReferenceDate;
-  if ([_model count] == 0)
-    [configuration setNoOpenedTabs:YES];
-
-  if (_isOffTheRecord)
-    [configuration setInIncognito:YES];
-
-  if (!_readingListMenuNotifier) {
-    _readingListMenuNotifier = [[ReadingListMenuNotifier alloc]
-        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                _browserState)];
-  }
-  [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
-
-  [configuration setUserAgentType:self.userAgentType];
-
-  [_toolbarController showToolsMenuPopupWithConfiguration:configuration];
-
-  ToolsPopupController* toolsPopupController =
-      [_toolbarController toolsPopupController];
-  if ([_model currentTab]) {
-    BOOL isBookmarked = _toolbarModelIOS->IsCurrentTabBookmarked();
-    [toolsPopupController setIsCurrentPageBookmarked:isBookmarked];
-    [toolsPopupController setCanShowFindBar:self.canShowFindBar];
-    [toolsPopupController setCanUseReaderMode:self.canUseReaderMode];
-    [toolsPopupController setCanShowShareMenu:self.canShowShareMenu];
-
-    if (!IsIPadIdiom())
-      [toolsPopupController setIsTabLoading:_toolbarModelIOS->IsLoading()];
-  }
-}
-
 - (void)showPageInfoPopupForView:(UIView*)sourceView {
   Tab* tab = [_model currentTab];
   DCHECK([tab navigationManager]);
@@ -4059,6 +4006,56 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                  originRect:[_toolbarController bookmarkButtonAnchorRect]];
 }
 
+- (void)showToolsMenu {
+  DCHECK(_browserState);
+  DCHECK(self.visible || self.dismissingModal);
+
+  // Record the time this menu was requested; to be stored in the configuration
+  // object.
+  NSDate* showToolsMenuPopupRequestDate = [NSDate date];
+
+  // Dismiss the omnibox (if open).
+  [_toolbarController cancelOmniboxEdit];
+  // Dismiss the soft keyboard (if open).
+  [[_model currentTab].webController dismissKeyboard];
+  // Dismiss Find in Page focus.
+  [self updateFindBar:NO shouldFocus:NO];
+
+  ToolsMenuConfiguration* configuration =
+      [[ToolsMenuConfiguration alloc] initWithDisplayView:[self view]];
+  configuration.requestStartTime =
+      showToolsMenuPopupRequestDate.timeIntervalSinceReferenceDate;
+  if ([_model count] == 0)
+    [configuration setNoOpenedTabs:YES];
+
+  if (_isOffTheRecord)
+    [configuration setInIncognito:YES];
+
+  if (!_readingListMenuNotifier) {
+    _readingListMenuNotifier = [[ReadingListMenuNotifier alloc]
+        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
+                                _browserState)];
+  }
+  [configuration setReadingListMenuNotifier:_readingListMenuNotifier];
+
+  [configuration setUserAgentType:self.userAgentType];
+
+  [_toolbarController showToolsMenuPopupWithConfiguration:configuration];
+
+  ToolsPopupController* toolsPopupController =
+      [_toolbarController toolsPopupController];
+  if ([_model currentTab]) {
+    BOOL isBookmarked = _toolbarModelIOS->IsCurrentTabBookmarked();
+    [toolsPopupController setIsCurrentPageBookmarked:isBookmarked];
+    [toolsPopupController setCanShowFindBar:self.canShowFindBar];
+    [toolsPopupController setCanUseReaderMode:self.canUseReaderMode];
+    [toolsPopupController setCanShowShareMenu:self.canShowShareMenu];
+
+    if (!IsIPadIdiom())
+      [toolsPopupController setIsTabLoading:_toolbarModelIOS->IsLoading()];
+  }
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4136,10 +4133,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     case IDC_REQUEST_MOBILE_SITE:
       [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
       break;
-    case IDC_SHOW_TOOLS_MENU: {
-      [self showToolsMenuPopup];
-      break;
-    }
     case IDC_SHOW_BOOKMARK_MANAGER: {
       if (IsIPadIdiom()) {
         [self showAllBookmarks];

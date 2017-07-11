@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -49,6 +49,9 @@
 // This delegate must be set on the tab switcher in order to drive the tab
 // switcher.
 @property(nonatomic, assign) id<TabSwitcherDelegate> delegate;
+
+// The dispatcher for browser-ish commands.
+@property(nonatomic, readonly) id<BrowserCommands> dispatcher;
 
 // Restores the internal state of the tab switcher with the given tab models,
 // which must not be nil. |activeTabModel| is the model which starts active,

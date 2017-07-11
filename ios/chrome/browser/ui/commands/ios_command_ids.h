@@ -24,7 +24,6 @@
 #define IDC_SHOW_BOOKMARK_MANAGER                      40011
 #define IDC_OPTIONS                                    40015
 #define IDC_HELP_PAGE_VIA_MENU                         40020
-#define IDC_SHOW_TOOLS_MENU                            40900
 #define IDC_TOGGLE_TAB_SWITCHER                        40901
 #define IDC_VOICE_SEARCH                               40902
 #define IDC_NEW_INCOGNITO_TAB                          40903

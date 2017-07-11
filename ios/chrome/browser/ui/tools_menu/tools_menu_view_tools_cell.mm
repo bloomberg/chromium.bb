@@ -78,7 +78,7 @@
   int tools[2][3] = TOOLBAR_IDR_ONE_STATE(TOOLS_PRESSED);
   _toolsButton =
       [self newButtonForImageIds:tools
-                       commandID:IDC_SHOW_TOOLS_MENU
+                       commandID:TOOLS_MENU_ITEM
             accessibilityLabelID:IDS_IOS_TOOLBAR_CLOSE_MENU
                   automationName:@"kToolbarToolsMenuButtonIdentifier"];
 
