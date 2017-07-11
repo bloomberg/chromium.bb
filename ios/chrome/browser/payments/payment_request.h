@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/payments/core/address_normalization_manager.h"
+#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
@@ -28,7 +30,6 @@ class RegionDataLoader;
 
 namespace payments {
 class AddressNormalizer;
-class AddressNormalizerImpl;
 class CurrencyFormatter;
 class PaymentInstrument;
 class AutofillPaymentInstrument;
@@ -119,6 +120,10 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Note: Having multiple currencies per PaymentRequest flow is not supported;
   // hence the CurrencyFormatter is cached here.
   CurrencyFormatter* GetOrCreateCurrencyFormatter();
+
+  AddressNormalizationManager* address_normalization_manager() {
+    return &address_normalization_manager_;
+  }
 
   // Adds |profile| to the list of cached profiles, updates the list of
   // available shipping and contact profiles, and returns a reference to the
@@ -264,7 +269,10 @@ class PaymentRequest : public PaymentOptionsProvider,
   __weak id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 
   // The address normalizer to use for the duration of the Payment Request.
-  AddressNormalizerImpl* address_normalizer_;
+  AddressNormalizerImpl address_normalizer_;
+
+  // Used to normalize the shipping address and the contact info.
+  AddressNormalizationManager address_normalization_manager_;
 
   // The currency formatter instance for this PaymentRequest flow.
   std::unique_ptr<CurrencyFormatter> currency_formatter_;

@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
@@ -16,13 +19,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/values.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/payments/core/address_normalization_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_prefs.h"
@@ -94,21 +94,18 @@ struct PendingPaymentResponse {
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
 
-  // Object that has a copy of web::PaymentRequest as provided by the page
-  // invoking the PaymentRequest API. Also caches credit cards and addresses
-  // provided by the _personalDataManager and manages selected ones for the
-  // current PaymentRequest flow.
-  std::unique_ptr<payments::PaymentRequest> _paymentRequest;
+  // The of map WebState to the list of payments::PaymentRequest instances
+  // maintained for that WebState.
+  std::unordered_map<web::WebState*,
+                     std::vector<std::unique_ptr<payments::PaymentRequest>>>
+      _paymentRequests;
 
-  // WebState for the tab this object is attached to.
-  web::WebState* _webState;
+  // The observer for |_activeWebState|.
+  std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
 
-  // Observer for |_webState|.
-  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
-
-  // Boolean to track if the current WebState is enabled (JS callback is set
+  // Boolean to track if the active WebState is enabled (JS callback is set
   // up).
-  BOOL _webStateEnabled;
+  BOOL _activeWebStateEnabled;
 
   // True when close has been called and the PaymentRequest coordinator has
   // been destroyed.
@@ -128,15 +125,16 @@ struct PendingPaymentResponse {
   // page does not settle the pending update promise in a timely fashion.
   NSTimer* _updateEventTimeoutTimer;
 
-  // AddressNormalizationManager used to normalize the various addresses (e.g.
-  // shipping, contact, billing).
-  std::unique_ptr<payments::AddressNormalizationManager>
-      _addressNormalizationManager;
-
   // Storage for data to return in the payment response, until we're ready to
   // send an actual PaymentResponse.
   PendingPaymentResponse _pendingPaymentResponse;
 }
+
+// YES if Payment Request is enabled on the active web state.
+@property(readonly) BOOL enabled;
+
+// The ios::ChromeBrowserState instance passed to the initializer.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
 // Object that manages JavaScript injection into the web view.
 @property(nonatomic, weak) JSPaymentRequestManager* paymentRequestJsManager;
@@ -203,16 +201,17 @@ struct PendingPaymentResponse {
 
 // Called when the relevant addresses from a Payment Request have been
 // normalized. Resolves the request promise with a PaymentResponse.
-- (void)paymentRequestAddressNormalizationDidComplete;
+- (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
+    (payments::PaymentRequest*)paymentRequest;
 
 @end
 
 @implementation PaymentRequestManager
 
-@synthesize enabled = _enabled;
 @synthesize toolbarModel = _toolbarModel;
-@synthesize webState = _webState;
 @synthesize browserState = _browserState;
+@synthesize enabled = _enabled;
+@synthesize activeWebState = _activeWebState;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -235,19 +234,30 @@ struct PendingPaymentResponse {
   return nil;
 }
 
-- (void)setWebState:(web::WebState*)webState {
-  [self disconnectWebState];
+- (void)setActiveWebState:(web::WebState*)webState {
+  [self disconnectActiveWebState];
   if (webState) {
     _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
             [webState->GetJSInjectionReceiver()
                 instanceOfClass:[JSPaymentRequestManager class]]);
-    _webState = webState;
-    _webStateObserver.reset(new web::WebStateObserverBridge(webState, self));
-    [self enableCurrentWebState];
+    _activeWebState = webState;
+    if (_paymentRequests.find(webState) == _paymentRequests.end()) {
+      _paymentRequests[webState] =
+          std::vector<std::unique_ptr<payments::PaymentRequest>>();
+    }
+    _activeWebStateObserver =
+        base::MakeUnique<web::WebStateObserverBridge>(webState, self);
+    [self enableActiveWebState];
   } else {
-    _webState = nullptr;
+    _activeWebState = nullptr;
   }
+}
+
+- (void)stopTrackingWebState:(web::WebState*)webState {
+  const auto iterator = _paymentRequests.find(webState);
+  DCHECK(iterator != _paymentRequests.end());
+  _paymentRequests.erase(iterator);
 }
 
 - (void)enablePaymentRequest:(BOOL)enabled {
@@ -267,7 +277,7 @@ struct PendingPaymentResponse {
       [self dismissUI];
     }
     _enabled = enabled;
-    [self enableCurrentWebState];
+    [self enableActiveWebState];
   }
 }
 
@@ -287,18 +297,18 @@ struct PendingPaymentResponse {
     return;
 
   _closed = YES;
-  [self disableCurrentWebState];
-  [self setWebState:nil];
+  [self disableActiveWebState];
+  [self setActiveWebState:nil];
   [self dismissUI];
 }
 
-- (void)enableCurrentWebState {
-  if (![self webState]) {
+- (void)enableActiveWebState {
+  if (!_activeWebState) {
     return;
   }
 
   if (_enabled) {
-    if (!_webStateEnabled) {
+    if (!_activeWebStateEnabled) {
       __weak PaymentRequestManager* weakSelf = self;
       auto callback = base::BindBlockArc(
           ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
@@ -306,27 +316,27 @@ struct PendingPaymentResponse {
             // |originURL| and |userIsInteracting| aren't used.
             return [weakSelf handleScriptCommand:JSON];
           });
-      [self webState]->AddScriptCommandCallback(callback, kCommandPrefix);
+      _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
 
-      _webStateEnabled = YES;
+      _activeWebStateEnabled = YES;
     }
   } else {
-    [self disableCurrentWebState];
+    [self disableActiveWebState];
   }
 }
 
-- (void)disableCurrentWebState {
-  if (_webState && _webStateEnabled) {
-    _webState->RemoveScriptCommandCallback(kCommandPrefix);
-    _webStateEnabled = NO;
+- (void)disableActiveWebState {
+  if (_activeWebState && _activeWebStateEnabled) {
+    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+    _activeWebStateEnabled = NO;
   }
 }
 
-- (void)disconnectWebState {
-  if (_webState) {
+- (void)disconnectActiveWebState {
+  if (_activeWebState) {
     _paymentRequestJsManager = nil;
-    _webStateObserver.reset();
-    [self disableCurrentWebState];
+    _activeWebStateObserver.reset();
+    [self disableActiveWebState];
   }
 }
 
@@ -359,59 +369,40 @@ struct PendingPaymentResponse {
   return NO;
 }
 
-- (void)startAddressNormalizer {
-  autofill::PersonalDataManager* personalDataManager =
-      _paymentRequest->GetPersonalDataManager();
-
-  payments::AddressNormalizer* addressNormalizer =
-      _paymentRequest->GetAddressNormalizer();
-
-  // Kickoff the process of loading the rules (which is asynchronous) for each
-  // profile's country, to get faster address normalization later.
-  for (const autofill::AutofillProfile* profile :
-       personalDataManager->GetProfilesToSuggest()) {
-    std::string countryCode =
-        base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-    if (autofill::data_util::IsValidCountryCode(countryCode)) {
-      addressNormalizer->LoadRulesForRegion(countryCode);
-    }
-  }
-
-  const std::string default_country_code =
-      autofill::AutofillCountry::CountryCodeForLocale(
-          _paymentRequest->GetApplicationLocale());
-
-  _addressNormalizationManager =
-      base::MakeUnique<payments::AddressNormalizationManager>(
-          addressNormalizer, default_country_code);
-}
-
-// Ensures that |_paymentRequest| is set to the correct value for |message|.
-// Returns YES if |_paymentRequest| was already set to the right value, or if it
-// was updated to match |message|.
-- (BOOL)createPaymentRequestFromMessage:(const base::DictionaryValue&)message {
+// Extracts a web::PaymentRequest from |message|. Returns the instance of
+// payments::PaymentRequest that corresponds to the extracted
+// web::PaymentRequest object, if one exists. Otherwise, creates and returns a
+// new one which is initialized with the web::PaymentRequest object. Returns
+// nullptr if it cannot extract a web::PaymentRequest from |message|.
+- (payments::PaymentRequest*)getOrCreatePaymentRequestFromMessage:
+    (const base::DictionaryValue&)message {
   const base::DictionaryValue* paymentRequestData;
   web::PaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
     DLOG(ERROR) << "JS message parameter 'payment_request' is missing";
-    return NO;
+    return nullptr;
   }
   if (!webPaymentRequest.FromDictionaryValue(*paymentRequestData)) {
     DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
-    return NO;
+    return nullptr;
   }
 
-  // TODO(crbug.com/711419): make sure multiple PaymentRequests can be active
-  // simultaneously.
-  if (_paymentRequest &&
-      (_paymentRequest->web_payment_request() == webPaymentRequest)) {
-    return YES;
+  const auto iterator = _paymentRequests.find(_activeWebState);
+  DCHECK(iterator != _paymentRequests.end());
+  const auto found = std::find_if(
+      iterator->second.begin(), iterator->second.end(),
+      [webPaymentRequest](
+          const std::unique_ptr<payments::PaymentRequest>& paymentRequest) {
+        return paymentRequest->web_payment_request() == webPaymentRequest;
+      });
+  if (found != iterator->second.end()) {
+    return (*found).get();
   }
 
-  _paymentRequest = base::MakeUnique<payments::PaymentRequest>(
-      webPaymentRequest, _browserState, _webState, _personalDataManager, self);
-
-  return YES;
+  iterator->second.push_back(base::MakeUnique<payments::PaymentRequest>(
+      webPaymentRequest, _browserState, _activeWebState, _personalDataManager,
+      self));
+  return iterator->second.back().get();
 }
 
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
@@ -420,27 +411,28 @@ struct PendingPaymentResponse {
   //   credit card types) against the merchant supported types and return NO
   //   if the intersection is empty.
 
-  if (![self createPaymentRequestFromMessage:message]) {
+  payments::PaymentRequest* paymentRequest =
+      [self getOrCreatePaymentRequestFromMessage:message];
+  if (!paymentRequest) {
     return NO;
   }
 
-  [self startAddressNormalizer];
-
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
-      [self webState]->GetNavigationManager()->GetVisibleItem();
+      _activeWebState->GetNavigationManager()->GetVisibleItem();
   if (navigationItem && !navigationItem->GetFavicon().image.IsEmpty())
     pageFavicon = navigationItem->GetFavicon().image.ToUIImage();
-  NSString* pageTitle = base::SysUTF16ToNSString([self webState]->GetTitle());
+  NSString* pageTitle = base::SysUTF16ToNSString(_activeWebState->GetTitle());
   NSString* pageHost =
-      base::SysUTF8ToNSString([self webState]->GetLastCommittedURL().host());
+      base::SysUTF8ToNSString(_activeWebState->GetLastCommittedURL().host());
   BOOL connectionSecure =
-      [self webState]->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
+      _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   autofill::AutofillManager* autofillManager =
-      autofill::AutofillDriverIOS::FromWebState(_webState)->autofill_manager();
+      autofill::AutofillDriverIOS::FromWebState(_activeWebState)
+          ->autofill_manager();
   _paymentRequestCoordinator = [[PaymentRequestCoordinator alloc]
       initWithBaseViewController:_baseViewController];
-  [_paymentRequestCoordinator setPaymentRequest:_paymentRequest.get()];
+  [_paymentRequestCoordinator setPaymentRequest:paymentRequest];
   [_paymentRequestCoordinator setAutofillManager:autofillManager];
   [_paymentRequestCoordinator setBrowserState:_browserState];
   [_paymentRequestCoordinator setPageFavicon:pageFavicon];
@@ -479,7 +471,9 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message {
-  if (![self createPaymentRequestFromMessage:message]) {
+  payments::PaymentRequest* paymentRequest =
+      [self getOrCreatePaymentRequestFromMessage:message];
+  if (!paymentRequest) {
     // TODO(crbug.com/602666): Reject the promise with an error of
     // "InvalidStateError" type.
     [_paymentRequestJsManager
@@ -488,21 +482,21 @@ struct PendingPaymentResponse {
     return YES;
   }
 
-  if (_paymentRequest->IsIncognito()) {
+  if (paymentRequest->IsIncognito()) {
     [_paymentRequestJsManager resolveCanMakePaymentPromiseWithValue:YES
                                                   completionHandler:nil];
     return YES;
   }
 
-  BOOL canMakePayment = _paymentRequest->CanMakePayment();
+  BOOL canMakePayment = paymentRequest->CanMakePayment();
 
   payments::CanMakePaymentQuery* canMakePaymentQuery =
       IOSCanMakePaymentQueryFactory::GetInstance()->GetForBrowserState(
           _browserState);
   DCHECK(canMakePaymentQuery);
   if (canMakePaymentQuery->CanQuery(
-          [self webState]->GetLastCommittedURL().GetOrigin(),
-          _paymentRequest->stringified_method_data())) {
+          _activeWebState->GetLastCommittedURL().GetOrigin(),
+          paymentRequest->stringified_method_data())) {
     [_paymentRequestJsManager
         resolveCanMakePaymentPromiseWithValue:canMakePayment
                             completionHandler:nil];
@@ -624,22 +618,22 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)webStateContentIsSecureHTML {
-  if (![self webState]) {
+  if (!_activeWebState) {
     return NO;
   }
 
-  if (![self toolbarModel]) {
+  if (!_toolbarModel) {
     return NO;
   }
 
   // Checks if the current page is a web view with HTML and that the
   // origin is localhost, file://, or cryptographic.
-  if (!web::IsOriginSecure([self webState]->GetLastCommittedURL()) ||
-      ![self webState]->ContentIsHTML()) {
+  if (!web::IsOriginSecure(_activeWebState->GetLastCommittedURL()) ||
+      !_activeWebState->ContentIsHTML()) {
     return NO;
   }
 
-  if (![self webState]->GetLastCommittedURL().SchemeIsCryptographic()) {
+  if (!_activeWebState->GetLastCommittedURL().SchemeIsCryptographic()) {
     // The URL has a secure origin, but is not https, so it must be local.
     // Return YES at this point, because localhost and filesystem URLS are
     // considered secure regardless of scheme.
@@ -692,36 +686,40 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   _pendingPaymentResponse.methodName = methodName;
   _pendingPaymentResponse.stringifiedDetails = stringifiedDetails;
 
-  if (_paymentRequest->request_shipping()) {
+  if (coordinator.paymentRequest->request_shipping()) {
     // TODO(crbug.com/602666): User should get here only if they have selected
     // a shipping address.
-    DCHECK(_paymentRequest->selected_shipping_profile());
+    DCHECK(coordinator.paymentRequest->selected_shipping_profile());
     _pendingPaymentResponse.shippingAddress =
-        *_paymentRequest->selected_shipping_profile();
-    _addressNormalizationManager->StartNormalizingAddress(
-        &_pendingPaymentResponse.shippingAddress);
+        *coordinator.paymentRequest->selected_shipping_profile();
+    coordinator.paymentRequest->address_normalization_manager()
+        ->StartNormalizingAddress(&_pendingPaymentResponse.shippingAddress);
   }
 
-  if (_paymentRequest->request_payer_name() ||
-      _paymentRequest->request_payer_email() ||
-      _paymentRequest->request_payer_phone()) {
+  if (coordinator.paymentRequest->request_payer_name() ||
+      coordinator.paymentRequest->request_payer_email() ||
+      coordinator.paymentRequest->request_payer_phone()) {
     // TODO(crbug.com/602666): User should get here only if they have selected
     // a contact info.
-    DCHECK(_paymentRequest->selected_contact_profile());
+    DCHECK(coordinator.paymentRequest->selected_contact_profile());
     _pendingPaymentResponse.contactAddress =
-        *_paymentRequest->selected_contact_profile();
-    _addressNormalizationManager->StartNormalizingAddress(
-        &_pendingPaymentResponse.contactAddress);
+        *coordinator.paymentRequest->selected_contact_profile();
+    coordinator.paymentRequest->address_normalization_manager()
+        ->StartNormalizingAddress(&_pendingPaymentResponse.contactAddress);
   }
 
   __weak PaymentRequestManager* weakSelf = self;
-  _addressNormalizationManager->FinalizeWithCompletionCallback(
-      base::BindBlockArc(^() {
-        [weakSelf paymentRequestAddressNormalizationDidComplete];
+  __weak PaymentRequestCoordinator* weakCoordinator = coordinator;
+  coordinator.paymentRequest->address_normalization_manager()
+      ->FinalizePendingRequestsWithCompletionCallback(base::BindBlockArc(^() {
+        [weakSelf
+            paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
+                weakCoordinator.paymentRequest];
       }));
 }
 
-- (void)paymentRequestAddressNormalizationDidComplete {
+- (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
+    (payments::PaymentRequest*)paymentRequest {
   web::PaymentResponse paymentResponse;
 
   paymentResponse.method_name =
@@ -729,39 +727,39 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
   paymentResponse.details = _pendingPaymentResponse.stringifiedDetails;
 
-  if (_paymentRequest->request_shipping()) {
+  if (paymentRequest->request_shipping()) {
     paymentResponse.shipping_address =
         payments::data_util::GetPaymentAddressFromAutofillProfile(
             _pendingPaymentResponse.shippingAddress,
-            _paymentRequest->GetApplicationLocale());
+            paymentRequest->GetApplicationLocale());
 
     web::PaymentShippingOption* shippingOption =
-        _paymentRequest->selected_shipping_option();
+        paymentRequest->selected_shipping_option();
     DCHECK(shippingOption);
     paymentResponse.shipping_option = shippingOption->id;
   }
 
-  if (_paymentRequest->request_payer_name()) {
+  if (paymentRequest->request_payer_name()) {
     paymentResponse.payer_name = _pendingPaymentResponse.contactAddress.GetInfo(
         autofill::AutofillType(autofill::NAME_FULL),
-        _paymentRequest->GetApplicationLocale());
+        paymentRequest->GetApplicationLocale());
   }
 
-  if (_paymentRequest->request_payer_email()) {
+  if (paymentRequest->request_payer_email()) {
     paymentResponse.payer_email =
         _pendingPaymentResponse.contactAddress.GetRawInfo(
             autofill::EMAIL_ADDRESS);
   }
 
-  if (_paymentRequest->request_payer_phone()) {
+  if (paymentRequest->request_payer_phone()) {
     paymentResponse.payer_phone =
         _pendingPaymentResponse.contactAddress.GetRawInfo(
             autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
-  _paymentRequest->RecordUseStats();
+  paymentRequest->RecordUseStats();
 
-  _paymentRequest->GetPrefService()->SetBoolean(
+  paymentRequest->GetPrefService()->SetBoolean(
       payments::kPaymentsFirstTransactionCompleted, true);
 
   [_paymentRequestJsManager
@@ -776,7 +774,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
              (const autofill::AutofillProfile&)shippingAddress {
   payments::PaymentAddress address =
       payments::data_util::GetPaymentAddressFromAutofillProfile(
-          shippingAddress, _paymentRequest->GetApplicationLocale());
+          shippingAddress, coordinator.paymentRequest->GetApplicationLocale());
   [_paymentRequestJsManager updateShippingAddress:address
                                 completionHandler:nil];
   [self setUnblockEventQueueTimer];
@@ -798,7 +796,14 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
   [self dismissUI];
-  [self enableCurrentWebState];
+  [self enableActiveWebState];
+
+  // The lifetime of a PaymentRequest is tied to the WebState it is associated
+  // with and the current URL. Therefore, the PaymentRequest instance should get
+  // destroyed when the WebState goes away or the user navigates to a new URL.
+  const auto iterator = _paymentRequests.find(_activeWebState);
+  DCHECK(iterator != _paymentRequests.end());
+  iterator->second.clear();
 }
 
 @end

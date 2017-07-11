@@ -1851,7 +1851,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         initWithBaseViewController:self
                       browserState:_browserState];
     [_paymentRequestManager setToolbarModel:_toolbarModelIOS.get()];
-    [_paymentRequestManager setWebState:[_model currentTab].webState];
+    [_paymentRequestManager setActiveWebState:[_model currentTab].webState];
   }
 }
 
@@ -4618,7 +4618,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   if (fg) {
     [_contextualSearchController setTab:tab];
-    [_paymentRequestManager setWebState:tab.webState];
+    [_paymentRequestManager setActiveWebState:tab.webState];
   }
 }
 
@@ -4638,7 +4638,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self updateVoiceSearchBarVisibilityAnimated:NO];
 
   [_contextualSearchController setTab:newTab];
-  [_paymentRequestManager setWebState:newTab.webState];
+  [_paymentRequestManager setActiveWebState:newTab.webState];
 
   [self tabSelected:newTab];
   DCHECK_EQ(newTab, [model currentTab]);
@@ -4701,10 +4701,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_toolbarController selectedTabChanged];
   }
 
+  [_paymentRequestManager stopTrackingWebState:tab.webState];
+
   [[UpgradeCenter sharedInstance] tabWillClose:tab.tabId];
   if ([model count] == 1) {  // About to remove the last tab.
     [_contextualSearchController setTab:nil];
-    [_paymentRequestManager setWebState:nil];
+    [_paymentRequestManager setActiveWebState:nullptr];
   }
 }
 
