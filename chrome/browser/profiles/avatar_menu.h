@@ -116,7 +116,9 @@ class AvatarMenu :
   // an item.
   void EditProfile(size_t index);
 
-  // Rebuilds the menu from the cache.
+  // Rebuilds the menu from the cache. Note: If this is done in response to the
+  // active browser changing, ActiveBrowserChanged() should be called first to
+  // update this object's internal state.
   void RebuildMenu();
 
   // Gets the number of profiles.
@@ -136,8 +138,9 @@ class AvatarMenu :
   // string will be returned.
   base::string16 GetSupervisedUserInformation() const;
 
-  // This menu is also used for the always-present Mac system menubar. If the
-  // last active browser changes, the menu will need to reference that browser.
+  // This menu is also used for the always-present Mac and Linux system menubar.
+  // If the last active browser changes, the menu will need to reference that
+  // browser.
   void ActiveBrowserChanged(Browser* browser);
 
   // Returns true if the add profile link should be shown.
