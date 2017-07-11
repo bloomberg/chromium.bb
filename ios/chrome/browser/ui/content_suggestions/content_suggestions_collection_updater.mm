@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -526,6 +527,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     CollectionViewTextItem* header =
         [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
     header.text = sectionInfo.title;
+    header.textColor = [[MDCPalette greyPalette] tint500];
     [self.collectionViewController.collectionViewModel
                        setHeader:header
         forSectionWithIdentifier:sectionIdentifier];
