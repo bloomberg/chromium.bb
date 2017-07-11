@@ -413,19 +413,16 @@ void GeolocationBrowserTest::ExpectValueFromScript(
 
 bool GeolocationBrowserTest::SetPositionAndWaitUntilUpdated(double latitude,
                                                             double longitude) {
+  content::DOMMessageQueue dom_message_queue;
+
   fake_latitude_ = latitude;
   fake_longitude_ = longitude;
   ui_test_utils::OverrideGeolocation(latitude, longitude);
 
-  // Now wait until the new position gets to the script.
-  // Control will return (a) if the update has already been received, or (b)
-  // when the update is received. This will hang if the position is never
-  // updated. Currently this expects the position to be updated once; if your
-  // test updates it repeatedly, |position_updated| (JS) needs to change to an
-  // int to count how often it's been updated.
-  std::string result =
-      RunScript(render_frame_host_, "checkIfGeopositionUpdated()");
-  return result == "geoposition-updated";
+  std::string result;
+  if (!dom_message_queue.WaitForMessage(&result))
+    return false;
+  return result == "\"geoposition-updated\"";
 }
 
 int GeolocationBrowserTest::GetRequestQueueSize(

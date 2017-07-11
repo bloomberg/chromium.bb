@@ -5829,8 +5829,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Submit the form.
   TestNavigationObserver observer(shell()->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(
-      shell(), "window.domAutomationController.send(submitForm('isubmit'))"));
+  ExecuteScriptAsync(shell(), "submitForm('isubmit')");
   observer.Wait();
 
   EXPECT_EQ(2, controller.GetEntryCount());

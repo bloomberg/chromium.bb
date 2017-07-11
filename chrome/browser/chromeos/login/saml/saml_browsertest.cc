@@ -358,16 +358,16 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SetupAuthFlowChangeListener() {
-    ASSERT_TRUE(content::ExecuteScript(
+    content::ExecuteScriptAsync(
         GetLoginUI()->GetWebContents(),
         "$('gaia-signin').gaiaAuthHost_.addEventListener('authFlowChange',"
-            "function f() {"
-              "$('gaia-signin').gaiaAuthHost_.removeEventListener("
-                  "'authFlowChange', f);"
-              "window.domAutomationController.setAutomationId(0);"
-              "window.domAutomationController.send("
-                  "$('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
-            "});"));
+        "    function f() {"
+        "      $('gaia-signin').gaiaAuthHost_.removeEventListener("
+        "          'authFlowChange', f);"
+        "      window.domAutomationController.setAutomationId(0);"
+        "      window.domAutomationController.send("
+        "          $('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
+        "    });");
   }
 
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
@@ -463,9 +463,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_SamlUI) {
 
   // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
-  ASSERT_TRUE(
-      content::ExecuteScript(GetLoginUI()->GetWebContents(),
-                             "$('gaia-navigation').$.closeButton.click();"));
+  content::ExecuteScriptAsync(GetLoginUI()->GetWebContents(),
+                              "$('gaia-navigation').$.closeButton.click();");
 
   // Auth flow should change back to Gaia.
   std::string message;

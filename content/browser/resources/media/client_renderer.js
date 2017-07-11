@@ -5,11 +5,15 @@
 var ClientRenderer = (function() {
   var ClientRenderer = function() {
     this.playerListElement = document.getElementById('player-list');
-    this.audioPropertiesTable =
-        document.getElementById('audio-property-table').querySelector('tbody');
-    this.playerPropertiesTable =
-        document.getElementById('player-property-table').querySelector('tbody');
-    this.logTable = document.getElementById('log').querySelector('tbody');
+    var audioTableElement = document.getElementById('audio-property-table');
+    if (audioTableElement)
+      this.audioPropertiesTable = audioTableElement.querySelector('tbody');
+    var playerTableElement = document.getElementById('player-property-table');
+    if (playerTableElement)
+      this.playerPropertiesTable = playerTableElement.querySelector('tbody');
+    var logElement = document.getElementById('log');
+    if (logElement)
+      this.logTable = logElement.querySelector('tbody');
     this.graphElement = document.getElementById('graphs');
     this.audioPropertyName = document.getElementById('audio-property-name');
 
@@ -23,18 +27,23 @@ var ClientRenderer = (function() {
 
     this.filterFunction = function() { return true; };
     this.filterText = document.getElementById('filter-text');
-    this.filterText.onkeyup = this.onTextChange_.bind(this);
+    if (this.filterText)
+      this.filterText.onkeyup = this.onTextChange_.bind(this);
     this.clipboardDialog = document.getElementById('clipboard-dialog');
 
     this.clipboardTextarea = document.getElementById('clipboard-textarea');
-    this.clipboardTextarea.onblur = this.hideClipboard_.bind(this);
+    if (this.clipboardTextarea)
+      this.clipboardTextarea.onblur = this.hideClipboard_.bind(this);
     var clipboardButtons = document.getElementsByClassName('copy-button');
-    for (var i = 0; i < clipboardButtons.length; i++) {
-      clipboardButtons[i].onclick = this.copyToClipboard_.bind(this);
+    if (clipboardButtons) {
+      for (var i = 0; i < clipboardButtons.length; i++) {
+        clipboardButtons[i].onclick = this.copyToClipboard_.bind(this);
+      }
     }
 
     this.saveLogButton = document.getElementById('save-log-button');
-    this.saveLogButton.onclick = this.saveLog_.bind(this);
+    if (this.saveLogButton)
+      this.saveLogButton.onclick = this.saveLog_.bind(this);
 
     this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
 

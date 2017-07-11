@@ -275,10 +275,8 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
       run_loop.Run();
   }
 
-  bool JSExecute(const std::string& expression) {
-    return content::ExecuteScript(
-        GetWebContents(),
-        "window.domAutomationController.send(!!(" + expression + "));");
+  bool JSExecute(const std::string& script) {
+    return content::ExecuteScript(GetWebContents(), script);
   }
 
   bool JSExecuteBooleanExpression(const std::string& expression) {

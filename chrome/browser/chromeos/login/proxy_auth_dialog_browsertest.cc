@@ -119,9 +119,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     ProxyAuthDialogWaiter auth_dialog_waiter;
     ASSERT_TRUE(content::ExecuteScript(oobe_ui->web_ui()->GetWebContents(),
-                                       "window.domAutomationController.send(!!("
-                                       "$('add-user-button').click()"
-                                       "));"));
+                                       "$('add-user-button').click()"));
     screen_waiter.Wait();
     auth_dialog_waiter.Wait();
     ASSERT_TRUE(auth_dialog_waiter.login_handler());

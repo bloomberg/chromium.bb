@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PopupWindowFocus) {
 
   // Focus the popup via window.focus().
   content::DOMMessageQueue queue;
-  EXPECT_TRUE(ExecuteScript(web_contents, "focusPopup()"));
+  ExecuteScriptAsync(web_contents, "focusPopup()");
 
   // Wait for main page to lose focus and for popup to gain focus.  Each event
   // will send a message, and the two messages can arrive in any order.

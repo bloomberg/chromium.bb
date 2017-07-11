@@ -207,9 +207,23 @@ RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
 // Executes the passed |script| in the specified frame with the user gesture.
-// The |script| should not invoke domAutomationController.send(); otherwise,
-// your test will hang or be flaky. If you want to extract a result, use one of
-// the below functions. Returns true on success.
+//
+// Appends |domAutomationController.send(...)| to the end of |script| and waits
+// until the response comes back (pumping the message loop while waiting).  The
+// |script| itself should not invoke domAutomationController.send(); if you want
+// to call domAutomationController.send(...) yourself and extract the result,
+// then use one of ExecuteScriptAndExtract... functions).
+//
+// Returns true on success (if the renderer responded back with the expected
+// value).  Returns false otherwise (e.g. if the script threw an exception
+// before calling the appended |domAutomationController.send(...)|, or if the
+// renderer died or if the renderer called |domAutomationController.send(...)|
+// with a malformed or unexpected value).
+//
+// See also:
+// - ExecuteScriptAsync
+// - ExecuteScriptAndExtractBool/Int/String/etc.
+// - DOMMessageQueue (to manually wait for domAutomationController.send(...))
 bool ExecuteScript(const ToRenderFrameHost& adapter,
                    const std::string& script) WARN_UNUSED_RESULT;
 
@@ -219,11 +233,18 @@ bool ExecuteScriptWithoutUserGesture(const ToRenderFrameHost& adapter,
                                      const std::string& script)
     WARN_UNUSED_RESULT;
 
-// The following methods execute the passed |script| in the specified frame with
-// the user gesture and set |result| to the value passed to
-// "window.domAutomationController.send" by the executed script. They return
-// true on success, false if the script execution failed or did not evaluate to
-// the expected type.
+// Similar to ExecuteScript above, but
+// - Doesn't modify the |script|.
+// - Kicks off execution of the |script| in the specified frame and returns
+//   immediately (without waiting for a response from the renderer and/or
+//   without checking that the script succeeded).
+void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
+                        const std::string& script);
+
+// The following methods execute the passed |script| in the specified frame and
+// sets |result| to the value passed to "window.domAutomationController.send" by
+// the executed script. They return true on success, false if the script
+// execution failed or did not evaluate to the expected type.
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    double* result) WARN_UNUSED_RESULT;
@@ -521,6 +542,7 @@ class DOMMessageQueue : public NotificationObserver,
   NotificationRegistrar registrar_;
   std::queue<std::string> message_queue_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  bool renderer_crashed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };
