@@ -44,6 +44,12 @@ Polymer({
     selectedFolder_: String,
 
     /** @private */
+    canSortFolder_: {
+      type: Boolean,
+      computed: 'computeCanSortFolder_(canChangeList_, selectedFolder_)',
+    },
+
+    /** @private */
     canChangeList_: {
       type: Boolean,
       computed:
@@ -84,8 +90,7 @@ Polymer({
 
   /** @private */
   onSortTap_: function() {
-    chrome.bookmarkManagerPrivate.sortChildren(
-        assert(this.getState().selectedFolder));
+    chrome.bookmarkManagerPrivate.sortChildren(assert(this.selectedFolder_));
     bookmarks.ToastManager.getInstance().show(
         loadTimeData.getString('toastFolderSorted'), true);
     this.closeDropdownMenu_();
@@ -95,7 +100,7 @@ Polymer({
   onAddBookmarkTap_: function() {
     var dialog =
         /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
-    dialog.showAddDialog(false, assert(this.getState().selectedFolder));
+    dialog.showAddDialog(false, assert(this.selectedFolder_));
     this.closeDropdownMenu_();
   },
 
@@ -103,7 +108,7 @@ Polymer({
   onAddFolderTap_: function() {
     var dialog =
         /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
-    dialog.showAddDialog(true, assert(this.getState().selectedFolder));
+    dialog.showAddDialog(true, assert(this.selectedFolder_));
     this.closeDropdownMenu_();
   },
 
@@ -121,7 +126,7 @@ Polymer({
 
   /** @private */
   onDeleteSelectionTap_: function() {
-    var selection = this.getState().selection.items;
+    var selection = this.selectedItems_;
     var commandManager = bookmarks.CommandManager.getInstance();
     assert(commandManager.canExecute(Command.DELETE, selection));
     commandManager.handle(Command.DELETE, selection);
@@ -156,6 +161,15 @@ Polymer({
   /** @private */
   onSearchTermChanged_: function() {
     this.searchField.setValue(this.searchTerm_ || '');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeCanSortFolder_: function() {
+    return this.canChangeList_ &&
+        this.getState().nodes[this.selectedFolder_].children.length > 0;
   },
 
   /**
