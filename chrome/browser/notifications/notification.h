@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -32,7 +33,7 @@ class Notification : public message_center::Notification {
       const GURL& origin_url,
       const std::string& tag,
       const message_center::RichNotificationData& rich_notification_data,
-      NotificationDelegate* delegate);
+      scoped_refptr<NotificationDelegate> delegate);
 
   Notification(const std::string& id, const Notification& notification);
 

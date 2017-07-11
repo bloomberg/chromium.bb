@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -165,7 +166,7 @@ class MESSAGE_CENTER_EXPORT Notification {
   // |optional_fields|: Rich data that can be used to assign more elaborate
   //                    features to notifications.
   // |delegate|: Delegate that will influence the behaviour of this notification
-  //             and receives events on its behalf.
+  //             and receives events on its behalf. May be omitted.
   Notification(NotificationType type,
                const std::string& id,
                const base::string16& title,
@@ -175,7 +176,7 @@ class MESSAGE_CENTER_EXPORT Notification {
                const GURL& origin_url,
                const NotifierId& notifier_id,
                const RichNotificationData& optional_fields,
-               NotificationDelegate* delegate);
+               scoped_refptr<NotificationDelegate> delegate);
 
   // Creates a copy of the |other| notification. The delegate, if any, will be
   // identical for both the Notification instances. The |id| of the notification

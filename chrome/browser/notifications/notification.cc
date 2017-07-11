@@ -14,7 +14,7 @@ Notification::Notification(
     const GURL& origin_url,
     const std::string& tag,
     const message_center::RichNotificationData& rich_notification_data,
-    NotificationDelegate* delegate)
+    scoped_refptr<NotificationDelegate> delegate)
     : message_center::Notification(type,
                                    delegate->id(),
                                    title,
