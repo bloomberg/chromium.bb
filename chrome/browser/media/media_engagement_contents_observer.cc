@@ -8,8 +8,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
-constexpr base::TimeDelta
-    MediaEngagementContentsObserver::kSignificantMediaPlaybackTime;
+namespace {
+
+constexpr base::TimeDelta kSignificantMediaPlaybackTime =
+    base::TimeDelta::FromSeconds(7);
+
+}  // namespace.
 
 // This is the minimum size (in px) of each dimension that a media
 // element has to be in order to be determined significant.
@@ -86,8 +90,6 @@ MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
 void MediaEngagementContentsObserver::MediaStartedPlaying(
     const MediaPlayerInfo& media_player_info,
     const MediaPlayerId& media_player_id) {
-  // TODO(mlamouri): check if:
-  // - the playback has the minimum size requirements;
   if (!media_player_info.has_audio)
     return;
 
@@ -96,12 +98,12 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
   UpdateTimer();
 }
 
-void MediaEngagementContentsObserver::MediaMutedStateChanged(
+void MediaEngagementContentsObserver::MediaMutedStatusChanged(
     const MediaPlayerId& id,
-    bool muted_state) {
-  GetPlayerState(id)->muted = muted_state;
+    bool muted) {
+  GetPlayerState(id)->muted = muted;
 
-  if (muted_state)
+  if (muted)
     MaybeRemoveSignificantPlayer(id);
   else
     MaybeInsertSignificantPlayer(id);
@@ -188,6 +190,7 @@ void MediaEngagementContentsObserver::UpdateTimer() {
   if (AreConditionsMet()) {
     if (playback_timer_->IsRunning())
       return;
+
     playback_timer_->Start(
         FROM_HERE, kSignificantMediaPlaybackTime,
         base::Bind(
