@@ -164,9 +164,6 @@ bool JumpListUpdater::CommitUpdate() {
 }
 
 bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddTasksDuration");
-
   if (!destination_list_.Get())
     return false;
 
