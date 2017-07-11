@@ -36,6 +36,7 @@ bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();
 int APP_LIST_EXPORT AnswerCardMaxWidth();
 int APP_LIST_EXPORT AnswerCardMaxHeight();
 std::string APP_LIST_EXPORT AnswerServerUrl();
+std::string APP_LIST_EXPORT AnswerServerQuerySuffix();
 
 }  // namespace features
 }  // namespace app_list
