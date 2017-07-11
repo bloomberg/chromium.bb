@@ -238,7 +238,7 @@ public class NewTabPageAdapterTest {
         // Make sure that isChromeHome() is current value set by the test, not the value saved in
         // the shared preference.
         // TODO(changwan): check if we can clear shared preferences for each test case.
-        FeatureUtilities.cacheChromeHomeEnabled();
+        FeatureUtilities.resetChromeHomeEnabledForTests();
 
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
