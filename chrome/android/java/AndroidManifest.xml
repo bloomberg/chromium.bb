@@ -260,6 +260,7 @@ by a child template that "extends" this file.
             <meta-data android:name="android.app.shortcuts"
                 android:resource="@xml/launchershortcuts" />
 
+            {{ self.supports_vr() }}
         </activity-alias>
 
         <activity android:name="org.chromium.chrome.browser.LauncherShortcutActivity"
