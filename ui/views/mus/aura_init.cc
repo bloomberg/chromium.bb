@@ -26,6 +26,7 @@
 
 #if defined(OS_LINUX)
 #include "components/font_service/public/cpp/font_loader.h"
+#include "ui/gfx/platform_font_linux.h"
 #endif
 
 namespace views {
@@ -107,11 +108,15 @@ bool AuraInit::Init(service_manager::Connector* connector,
 #if defined(OS_LINUX)
   font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
   SkFontConfigInterface::SetGlobal(font_loader_.get());
-#endif
 
-  // There is a bunch of static state in gfx::Font, by running this now,
-  // before any other apps load, we ensure all the state is set up.
-  gfx::Font();
+  // Initialize static default font, by running this now, before any other apps
+  // load, we ensure all the state is set up.
+  bool success = gfx::PlatformFontLinux::InitDefaultFont();
+
+  // If a remote service manager has shut down, initializing the font will fail.
+  if (!success)
+    return false;
+#endif  // defined(OS_LINUX)
 
   ui::InitializeInputMethodForTesting();
   return true;
