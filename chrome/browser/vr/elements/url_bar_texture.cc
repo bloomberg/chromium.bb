@@ -246,8 +246,8 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->restore();
 
   // The security chip text consumes a significant percentage of URL bar text
-  // space, so they are currently disabled (see crbug.com/734206). The offline
-  // chip is an exception, and must be shown (see crbug.com/735770).
+  // space, so it is currently disabled (see crbug.com/734206). The offline
+  // state is an exception, and must be shown (see crbug.com/735770).
   bool draw_security_chip = state_.offline_page;
 
   // Possibly draw security chip text (eg. "Not secure") next to the security
