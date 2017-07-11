@@ -370,7 +370,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   if (url.host() == safe_browsing::kChromeUISafeBrowsingHost)
-    return &NewWebUI<safe_browsing::SafeBrowsingUI>;
+    return &NewWebUI<SafeBrowsingUI>;
   if (url.host() == chrome::kChromeUISignInInternalsHost)
     return &NewWebUI<SignInInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISuggestionsHost)
