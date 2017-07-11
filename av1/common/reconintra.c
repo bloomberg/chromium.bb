@@ -2792,22 +2792,26 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
       av1_block_index_to_raster_order(tx_size, block_idx);
   const PREDICTION_MODE mode =
       (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
-  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
-                          mode, dst, dst_stride, dst, dst_stride, blk_col,
-                          blk_row, plane);
+
 #if CONFIG_CFL
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
       // Avoid computing the CfL parameters twice, if they have already been
-      // computed in the encoder_facade
+      // computed in cfl_rd_pick_alpha.
       if (!xd->cfl->are_parameters_computed)
         cfl_compute_parameters(xd, tx_size);
     }
 
     cfl_predict_block(xd, dst, pd->dst.stride, blk_row, blk_col, tx_size,
                       plane);
+
+    return;
   }
 #endif
+
+  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
+                          mode, dst, dst_stride, dst, dst_stride, blk_col,
+                          blk_row, plane);
 }
 
 void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
