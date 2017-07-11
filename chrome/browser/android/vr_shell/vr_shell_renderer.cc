@@ -376,7 +376,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           uniform vec4 u_EdgeColor;
           uniform vec4 u_GridColor;
           uniform mediump float u_Opacity;
-          uniform int u_LinesCount;
+          uniform float u_LinesCount;
 
           void main() {
             float edgeColorWeight = clamp(length(v_GridPosition), 0.0, 1.0);
@@ -384,7 +384,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
             vec4 bg_color = u_CenterColor * centerColorWeight +
                 u_EdgeColor * edgeColorWeight;
             bg_color = vec4(bg_color.xyz * bg_color.w, bg_color.w);
-            float linesCountF = float(u_LinesCount) / 2.0;
+            float linesCountF = u_LinesCount * 0.5;
             float pos_x = abs(v_GridPosition.x) * linesCountF;
             float pos_y = abs(v_GridPosition.y) * linesCountF;
             float diff_x = abs(pos_x - floor(pos_x + 0.5));
@@ -854,14 +854,14 @@ void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
                  GL_RGBA, GL_UNSIGNED_BYTE, pixmap.addr());
   }
 
-  const gltf::Accessor* accessor = model->PositionAccessor();
-  position_components_ = gltf::GetTypeComponents(accessor->type);
+  const vr::gltf::Accessor* accessor = model->PositionAccessor();
+  position_components_ = vr::gltf::GetTypeComponents(accessor->type);
   position_type_ = accessor->component_type;
   position_stride_ = accessor->byte_stride;
   position_offset_ = VOID_OFFSET(accessor->byte_offset);
 
   accessor = model->TextureCoordinateAccessor();
-  tex_coord_components_ = gltf::GetTypeComponents(accessor->type);
+  tex_coord_components_ = vr::gltf::GetTypeComponents(accessor->type);
   tex_coord_type_ = accessor->component_type;
   tex_coord_stride_ = accessor->byte_stride;
   tex_coord_offset_ = VOID_OFFSET(accessor->byte_offset);
@@ -964,7 +964,7 @@ void GradientGridRenderer::Draw(const gfx::Transform& view_proj_matrix,
 
   // Tell shader the grid size so that it can calculate the fading.
   glUniform1f(scene_radius_handle_, kHalfSize);
-  glUniform1i(lines_count_handle_, gridline_count);
+  glUniform1f(lines_count_handle_, static_cast<float>(gridline_count));
 
   // Set the edge color to the fog color so that it seems to fade out.
   SetColorUniform(edge_color_handle_, edge_color);

@@ -1074,7 +1074,7 @@
     "type": "windowed_test_launcher",
   },
   "vr_common_unittests": {
-    "label": "//chrome/browser/android/vr_shell:vr_common_unittests",
+    "label": "//chrome/browser/vr:vr_common_unittests",
     "type": "console_test_launcher",
   },
   "webapk_client_junit_tests": {

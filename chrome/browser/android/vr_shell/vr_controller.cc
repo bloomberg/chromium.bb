@@ -248,7 +248,7 @@ void VrController::UpdateTouchInfo() {
         extrapolated_touch_ < kMaxNumOfExtrapolations))) {
     extrapolated_touch_++;
     touch_position_changed_ = true;
-    // Fill the touch_info
+    // vr::Fill the touch_info
     float duration = DeltaTimeSeconds(last_timestamp_nanos_);
     touch_info_->touch_point.position.set_x(cur_touch_point_->position.x() +
                                             overall_velocity_.x() * duration);

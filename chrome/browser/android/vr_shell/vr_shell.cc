@@ -21,9 +21,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
-#include "chrome/browser/android/vr_shell/toolbar_helper.h"
-#include "chrome/browser/android/vr_shell/ui_interface.h"
-#include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
@@ -35,6 +32,9 @@
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/vr/toolbar_helper.h"
+#include "chrome/browser/vr/ui_interface.h"
+#include "chrome/browser/vr/ui_scene_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -118,7 +118,7 @@ VrShell::VrShell(JNIEnv* env,
       for_web_vr, web_vr_autopresentation_expected, in_cct,
       reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
-  toolbar_ = base::MakeUnique<ToolbarHelper>(ui_, this);
+  toolbar_ = base::MakeUnique<vr::ToolbarHelper>(ui_, this);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -578,10 +578,10 @@ void VrShell::ExitFullscreen() {
   }
 }
 
-void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
-  if (mode == UiUnsupportedMode::kUnhandledPageInfo) {
+void VrShell::ExitVrDueToUnsupportedMode(vr::UiUnsupportedMode mode) {
+  if (mode == vr::UiUnsupportedMode::kUnhandledPageInfo) {
     UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
-                              UiUnsupportedMode::kCount);
+                              vr::UiUnsupportedMode::kCount);
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_VrShellImpl_onUnhandledPageInfo(env, j_vr_shell_.obj());
     return;
@@ -592,7 +592,7 @@ void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
       base::Bind(&VrShell::ForceExitVr, weak_ptr_factory_.GetWeakPtr()),
       kExitVrDueToUnsupportedModeDelay);
   UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
-                            UiUnsupportedMode::kCount);
+                            vr::UiUnsupportedMode::kCount);
 }
 
 void VrShell::UpdateVSyncInterval(base::TimeTicks vsync_timebase,

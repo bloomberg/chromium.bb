@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
@@ -287,12 +287,12 @@ class GradientGridRenderer : public BaseQuadRenderer {
   DISALLOW_COPY_AND_ASSIGN(GradientGridRenderer);
 };
 
-class VrShellRenderer : public UiElementRenderer {
+class VrShellRenderer : public vr::UiElementRenderer {
  public:
   VrShellRenderer();
   ~VrShellRenderer() override;
 
-  // UiElementRenderer interface (exposed to UI elements).
+  // vr::UiElementRenderer interface (exposed to UI elements).
   void DrawTexturedQuad(int texture_data_handle,
                         const gfx::Transform& view_proj_matrix,
                         const gfx::RectF& copy_rect,
