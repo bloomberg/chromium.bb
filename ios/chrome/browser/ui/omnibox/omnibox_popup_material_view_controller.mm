@@ -8,6 +8,8 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
@@ -646,6 +648,15 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   NSUInteger row = [sender tag];
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
+
+  if (AutocompleteMatch::IsSearchType(match.type)) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Search"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
+  }
+
   // Make a defensive copy of |match.contents|, as CopyToOmnibox() will trigger
   // a new round of autocomplete and modify |_currentResult|.
   base::string16 contents(match.contents);
