@@ -222,6 +222,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   bool HasReceiverWithTrack(content::WebContents* tab,
                             std::string track_id) const;
   size_t GetNegotiationNeededCount(content::WebContents* tab) const;
+  // Performs garbage collection with "gc()". Requires command line switch
+  // |kJavaScriptFlags| with "--expose-gc".
+  void CollectGarbage(content::WebContents* tab) const;
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
