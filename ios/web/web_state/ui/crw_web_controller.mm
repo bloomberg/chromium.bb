@@ -565,6 +565,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // the data is passed to |_wkWebView| on main thread.
 // This is necessary because WKWebView ignores POST request body.
 // Workaround for https://bugs.webkit.org/show_bug.cgi?id=145410
+// TODO(crbug.com/740987): Remove |loadPOSTRequest:| workaround once iOS 10 is
+// dropped.
 - (WKNavigation*)loadPOSTRequest:(NSMutableURLRequest*)request;
 // Loads the HTML into the page at the given URL.
 - (void)loadHTML:(NSString*)html forURL:(const GURL&)url;
@@ -5060,6 +5062,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // As of iOS 11, WKWebView supports requests with POST data, so the
     // Javascript POST workaround only needs to be used if the OS version is
     // less than iOS 11.
+    // TODO(crbug.com/740987): Remove POST workaround once iOS 10 is dropped.
     if (!base::ios::IsRunningOnIOS11OrLater()) {
       GURL navigationURL =
           currentItem ? currentItem->GetURL() : GURL::EmptyGURL();

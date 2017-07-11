@@ -10,6 +10,8 @@
 @class CRWWKScriptMessageRouter;
 
 // Class to load POST requests in a provided web view via JavaScript.
+// TODO(crbug.com/740987): Remove |CRWJSPOSTRequestLoader| once iOS 10 is
+// dropped.
 @interface CRWJSPOSTRequestLoader : NSObject
 
 // Asynchronously loads a POST |request| in provided |webView|.
