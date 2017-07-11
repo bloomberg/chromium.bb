@@ -466,13 +466,10 @@
 
     [visualEffectWrapperView addSubview:visualEffectView_];
 
-    if (chrome::ShouldUseFullSizeContentView()) {
-      [[window contentView] addSubview:visualEffectWrapperView];
-    } else {
-      [rootView addSubview:visualEffectWrapperView
-                positioned:NSWindowBelow
-                relativeTo:nil];
-    }
+    [chrome::ShouldUseFullSizeContentView() ? [window contentView] : rootView
+        addSubview:visualEffectWrapperView
+        positioned:NSWindowBelow
+        relativeTo:nil];
 
     // Make the |tabStripBackgroundView_| a child of the NSVisualEffectView.
     [tabStripBackgroundView_ setFrame:[visualEffectView_ bounds]];
