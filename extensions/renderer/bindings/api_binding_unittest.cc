@@ -20,6 +20,7 @@
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "v8/include/v8.h"
@@ -79,6 +80,11 @@ void OnEventListenersChanged(const std::string& event_name,
                              const base::DictionaryValue* filter,
                              bool was_manual,
                              v8::Local<v8::Context> context) {}
+
+void DoNothingWithSilentRequest(
+    v8::Local<v8::Context> context,
+    const std::string& call_name,
+    const std::vector<v8::Local<v8::Value>>& arguments) {}
 
 }  // namespace
 
@@ -150,6 +156,10 @@ class APIBindingUnittest : public APIBindingTest {
     create_custom_type_ = callback;
   }
 
+  void SetOnSilentRequest(const APIBinding::OnSilentRequest& callback) {
+    on_silent_request_ = callback;
+  }
+
   void SetAvailabilityCallback(
       const BindingAccessChecker::AvailabilityCallback& callback) {
     availability_callback_ = callback;
@@ -162,6 +172,8 @@ class APIBindingUnittest : public APIBindingTest {
     }
     if (binding_hooks_delegate_)
       binding_hooks_->SetDelegate(std::move(binding_hooks_delegate_));
+    if (!on_silent_request_)
+      on_silent_request_ = base::Bind(&DoNothingWithSilentRequest);
     if (!availability_callback_)
       availability_callback_ = base::Bind(&AllowAllFeatures);
     event_handler_ = base::MakeUnique<APIEventHandler>(
@@ -173,8 +185,8 @@ class APIBindingUnittest : public APIBindingTest {
     binding_ = base::MakeUnique<APIBinding>(
         kBindingName, binding_functions_.get(), binding_types_.get(),
         binding_events_.get(), binding_properties_.get(), create_custom_type_,
-        std::move(binding_hooks_), &type_refs_, request_handler_.get(),
-        event_handler_.get(), access_checker_.get());
+        on_silent_request_, std::move(binding_hooks_), &type_refs_,
+        request_handler_.get(), event_handler_.get(), access_checker_.get());
     EXPECT_EQ(!binding_types_.get(), type_refs_.empty());
   }
 
@@ -243,6 +255,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<APIBindingHooks> binding_hooks_;
   std::unique_ptr<APIBindingHooksDelegate> binding_hooks_delegate_;
   APIBinding::CreateCustomType create_custom_type_;
+  APIBinding::OnSilentRequest on_silent_request_;
   BindingAccessChecker::AvailabilityCallback availability_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
@@ -1299,6 +1312,190 @@ TEST_F(APIBindingUnittest, HooksTemplateInitializer) {
   // Sanity check: other values should still be there.
   EXPECT_EQ("function",
             GetStringPropertyFromObject(binding_object, context, "oneString"));
+}
+
+// Test that running hooks returning different results correctly sends requests
+// or notifies of silent requests.
+TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
+  SetFunctions(
+      "[{"
+      "  'name': 'modifyArgs',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'invalidInvocation',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'throwException',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'dontHandle',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'handle',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'handleAndSendRequest',"
+      "  'parameters': []"
+      "}, {"
+      "  'name': 'handleWithArgs',"
+      "  'parameters': [{"
+      "    'name': 'first',"
+      "    'type': 'string'"
+      "  }, {"
+      "    'name': 'second',"
+      "    'type': 'integer'"
+      "  }]"
+      "}]");
+
+  using RequestResult = APIBindingHooks::RequestResult;
+
+  auto basic_handler = [](RequestResult::ResultCode code, const APISignature*,
+                          v8::Local<v8::Context> context,
+                          std::vector<v8::Local<v8::Value>>* arguments,
+                          const APITypeReferenceMap& map) {
+    return RequestResult(code);
+  };
+
+  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  hooks->AddHandler(
+      "test.modifyArgs",
+      base::Bind(basic_handler, RequestResult::ARGUMENTS_UPDATED));
+  hooks->AddHandler(
+      "test.invalidInvocation",
+      base::Bind(basic_handler, RequestResult::INVALID_INVOCATION));
+  hooks->AddHandler("test.dontHandle",
+                    base::Bind(basic_handler, RequestResult::NOT_HANDLED));
+  hooks->AddHandler("test.handle",
+                    base::Bind(basic_handler, RequestResult::HANDLED));
+  hooks->AddHandler(
+      "test.throwException",
+      base::Bind([](const APISignature*, v8::Local<v8::Context> context,
+                    std::vector<v8::Local<v8::Value>>* arguments,
+                    const APITypeReferenceMap& map) {
+        context->GetIsolate()->ThrowException(
+            gin::StringToV8(context->GetIsolate(), "some error"));
+        return RequestResult(RequestResult::THROWN);
+      }));
+  hooks->AddHandler(
+      "test.handleWithArgs",
+      base::Bind([](const APISignature*, v8::Local<v8::Context> context,
+                    std::vector<v8::Local<v8::Value>>* arguments,
+                    const APITypeReferenceMap& map) {
+        arguments->push_back(v8::Integer::New(context->GetIsolate(), 42));
+        return RequestResult(RequestResult::HANDLED);
+      }));
+
+  auto handle_and_send_request =
+      [](APIRequestHandler* handler, const APISignature*,
+         v8::Local<v8::Context> context,
+         std::vector<v8::Local<v8::Value>>* arguments,
+         const APITypeReferenceMap& map) {
+        handler->StartRequest(
+            context, "test.handleAndSendRequest",
+            base::MakeUnique<base::ListValue>(), v8::Local<v8::Function>(),
+            v8::Local<v8::Function>(), binding::RequestThread::UI);
+        return RequestResult(RequestResult::HANDLED);
+      };
+  hooks->AddHandler("test.handleAndSendRequest",
+                    base::Bind(handle_and_send_request, request_handler()));
+
+  SetHooksDelegate(std::move(hooks));
+
+  auto on_silent_request =
+      [](base::Optional<std::string>* name_out,
+         base::Optional<std::vector<std::string>>* args_out,
+         v8::Local<v8::Context> context, const std::string& call_name,
+         const std::vector<v8::Local<v8::Value>>& arguments) {
+        *name_out = call_name;
+        *args_out = std::vector<std::string>();
+        (*args_out)->reserve(arguments.size());
+        for (const auto& arg : arguments)
+          (*args_out)->push_back(V8ToString(arg, context));
+      };
+  base::Optional<std::string> silent_request;
+  base::Optional<std::vector<std::string>> request_arguments;
+  SetOnSilentRequest(
+      base::Bind(on_silent_request, &silent_request, &request_arguments));
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
+
+  auto call_api_method = [binding_object, context](
+                             base::StringPiece name,
+                             base::StringPiece string_args) {
+    v8::Local<v8::Function> call = FunctionFromString(
+        context, base::StringPrintf("(function(binding) { binding.%s(%s); })",
+                                    name.data(), string_args.data()));
+    v8::Local<v8::Value> args[] = {binding_object};
+    v8::TryCatch try_catch(context->GetIsolate());
+    // The throwException call will throw an exception; ignore it.
+    ignore_result(call->Call(context, v8::Undefined(context->GetIsolate()),
+                             arraysize(args), args));
+  };
+
+  call_api_method("modifyArgs", "");
+  ASSERT_TRUE(last_request());
+  EXPECT_EQ("test.modifyArgs", last_request()->method_name);
+  EXPECT_FALSE(silent_request);
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("invalidInvocation", "");
+  EXPECT_FALSE(last_request());
+  EXPECT_FALSE(silent_request);
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("throwException", "");
+  EXPECT_FALSE(last_request());
+  EXPECT_FALSE(silent_request);
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("dontHandle", "");
+  ASSERT_TRUE(last_request());
+  EXPECT_EQ("test.dontHandle", last_request()->method_name);
+  EXPECT_FALSE(silent_request);
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("handle", "");
+  EXPECT_FALSE(last_request());
+  ASSERT_TRUE(silent_request);
+  EXPECT_EQ("test.handle", *silent_request);
+  ASSERT_TRUE(request_arguments);
+  EXPECT_TRUE(request_arguments->empty());
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("handleAndSendRequest", "");
+  ASSERT_TRUE(last_request());
+  EXPECT_EQ("test.handleAndSendRequest", last_request()->method_name);
+  EXPECT_FALSE(silent_request);
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
+
+  call_api_method("handleWithArgs", "'str'");
+  EXPECT_FALSE(last_request());
+  ASSERT_TRUE(silent_request);
+  ASSERT_EQ("test.handleWithArgs", *silent_request);
+  ASSERT_TRUE(request_arguments);
+  EXPECT_THAT(
+      *request_arguments,
+      testing::ElementsAre("\"str\"", "42"));  // 42 was added by the handler.
+  reset_last_request();
+  silent_request.reset();
+  request_arguments.reset();
 }
 
 }  // namespace extensions

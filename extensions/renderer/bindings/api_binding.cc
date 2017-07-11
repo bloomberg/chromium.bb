@@ -179,6 +179,7 @@ APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* event_definitions,
                        const base::DictionaryValue* property_definitions,
                        const CreateCustomType& create_custom_type,
+                       const OnSilentRequest& on_silent_request,
                        std::unique_ptr<APIBindingHooks> binding_hooks,
                        APITypeReferenceMap* type_refs,
                        APIRequestHandler* request_handler,
@@ -187,6 +188,7 @@ APIBinding::APIBinding(const std::string& api_name,
     : api_name_(api_name),
       property_definitions_(property_definitions),
       create_custom_type_(create_custom_type),
+      on_silent_request_(on_silent_request),
       binding_hooks_(std::move(binding_hooks)),
       type_refs_(type_refs),
       request_handler_(request_handler),
@@ -570,6 +572,7 @@ void APIBinding::HandleCall(const std::string& name,
   bool invalid_invocation = false;
   v8::Local<v8::Function> custom_callback;
   bool updated_args = false;
+  int old_request_id = request_handler_->last_sent_request_id();
   {
     v8::TryCatch try_catch(isolate);
     APIBindingHooks::RequestResult hooks_result = binding_hooks_->RunHooks(
@@ -588,6 +591,14 @@ void APIBinding::HandleCall(const std::string& name,
       case APIBindingHooks::RequestResult::HANDLED:
         if (!hooks_result.return_value.IsEmpty())
           arguments->Return(hooks_result.return_value);
+
+        // TODO(devlin): This is a pretty simplistic implementation of this,
+        // but it's similar to the current JS logic. If we wanted to be more
+        // correct, we could create a RequestScope object that watches outgoing
+        // requests.
+        if (old_request_id == request_handler_->last_sent_request_id())
+          on_silent_request_.Run(context, name, argument_list);
+
         return;  // Our work here is done.
       case APIBindingHooks::RequestResult::ARGUMENTS_UPDATED:
         updated_args = true;  // Intentional fall-through.

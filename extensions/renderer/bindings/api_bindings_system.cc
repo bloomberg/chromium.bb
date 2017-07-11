@@ -18,6 +18,7 @@ APIBindingsSystem::APIBindingsSystem(
     const BindingAccessChecker::AvailabilityCallback& is_available,
     const APIRequestHandler::SendRequestMethod& send_request,
     const APIEventHandler::EventListenersChangedMethod& event_listeners_changed,
+    const APIBinding::OnSilentRequest& on_silent_request,
     APILastError last_error)
     : type_reference_map_(base::Bind(&APIBindingsSystem::InitializeType,
                                      base::Unretained(this))),
@@ -26,7 +27,8 @@ APIBindingsSystem::APIBindingsSystem(
       access_checker_(is_available),
       call_js_(call_js),
       call_js_sync_(call_js_sync),
-      get_api_schema_(get_api_schema) {}
+      get_api_schema_(get_api_schema),
+      on_silent_request_(on_silent_request) {}
 
 APIBindingsSystem::~APIBindingsSystem() {}
 
@@ -72,8 +74,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
       api_name, function_definitions, type_definitions, event_definitions,
       property_definitions,
       base::Bind(&APIBindingsSystem::CreateCustomType, base::Unretained(this)),
-      std::move(hooks), &type_reference_map_, &request_handler_,
-      &event_handler_, &access_checker_);
+      on_silent_request_, std::move(hooks), &type_reference_map_,
+      &request_handler_, &event_handler_, &access_checker_);
 }
 
 void APIBindingsSystem::InitializeType(const std::string& type_name) {

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 
+#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/script_context_set.h"
@@ -17,11 +18,15 @@ void IsInstalledGetterCallback(
     v8::Local<v8::String> property,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::HandleScope handle_scope(info.GetIsolate());
+  v8::Local<v8::Context> context = info.Holder()->CreationContext();
   ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(info.Holder()->CreationContext());
+      ScriptContextSet::GetContextByV8Context(context);
   DCHECK(script_context);
   auto* core =
       static_cast<AppBindingsCore*>(info.Data().As<v8::External>()->Value());
+  // Since this is more-or-less an API, log it as an API call.
+  APIActivityLogger::LogAPICall(context, "app.getIsInstalled",
+                                std::vector<v8::Local<v8::Value>>());
   info.GetReturnValue().Set(core->GetIsInstalled(script_context));
 }
 

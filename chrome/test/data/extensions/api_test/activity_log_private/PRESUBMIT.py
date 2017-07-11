@@ -15,9 +15,7 @@ import os
 def GetPathsToPrepend(input_api):
   web_dev_style_path = input_api.os_path.join(
       input_api.change.RepositoryRoot(),
-      'chrome',
-      'browser',
-      'resources')
+      'tools')
   return [input_api.PresubmitLocalPath(), web_dev_style_path]
 
 def RunWithPrependedPath(prepended_path, fn, *args):

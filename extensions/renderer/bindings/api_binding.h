@@ -52,6 +52,12 @@ class APIBinding {
       const std::string& property_name,
       const base::ListValue* property_values)>;
 
+  // Called when a request is handled without notifying the browser.
+  using OnSilentRequest =
+      base::Callback<void(v8::Local<v8::Context>,
+                          const std::string& name,
+                          const std::vector<v8::Local<v8::Value>>& arguments)>;
+
   // The callback type for handling an API call.
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
@@ -64,6 +70,7 @@ class APIBinding {
              const base::ListValue* event_definitions,
              const base::DictionaryValue* property_definitions,
              const CreateCustomType& create_custom_type,
+             const OnSilentRequest& on_silent_request,
              std::unique_ptr<APIBindingHooks> binding_hooks,
              APITypeReferenceMap* type_refs,
              APIRequestHandler* request_handler,
@@ -130,6 +137,8 @@ class APIBinding {
 
   // The callback for constructing a custom type.
   CreateCustomType create_custom_type_;
+
+  OnSilentRequest on_silent_request_;
 
   // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;

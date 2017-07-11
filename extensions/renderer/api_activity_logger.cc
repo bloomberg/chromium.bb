@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/api_activity_logger.h"
+
 #include <stddef.h>
 
 #include <string>
@@ -11,8 +13,8 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
-#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_context.h"
 
 namespace extensions {
@@ -20,28 +22,45 @@ namespace extensions {
 APIActivityLogger::APIActivityLogger(ScriptContext* context,
                                      Dispatcher* dispatcher)
     : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
-  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogEvent,
-                                       base::Unretained(this)));
-  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogAPICall,
-                                         base::Unretained(this)));
+  RouteFunction("LogEvent", base::Bind(&APIActivityLogger::LogForJS,
+                                       base::Unretained(this), EVENT));
+  RouteFunction("LogAPICall", base::Bind(&APIActivityLogger::LogForJS,
+                                         base::Unretained(this), APICALL));
 }
 
 APIActivityLogger::~APIActivityLogger() {}
 
 // static
 void APIActivityLogger::LogAPICall(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  LogInternal(APICALL, args);
+    v8::Local<v8::Context> context,
+    const std::string& call_name,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  const Dispatcher* dispatcher =
+      ExtensionsRendererClient::Get()->GetDispatcher();
+  if (!dispatcher ||  // dispatcher can be null in unittests.
+      !dispatcher->activity_logging_enabled()) {
+    return;
+  }
+
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  auto value_args = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
+  ActivityLogConverterStrategy strategy;
+  converter->SetFunctionAllowed(true);
+  converter->SetStrategy(&strategy);
+  value_args->Reserve(arguments.size());
+  // TODO(devlin): This doesn't protect against custom properties, so it might
+  // not perfectly reflect the passed arguments.
+  for (const auto& arg : arguments)
+    value_args->Append(converter->FromV8Value(arg, context));
+
+  LogInternal(APICALL, script_context->GetExtensionID(), call_name,
+              std::move(value_args), std::string());
 }
 
-// static
-void APIActivityLogger::LogEvent(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  LogInternal(EVENT, args);
-}
-
-// static
-void APIActivityLogger::LogInternal(
+void APIActivityLogger::LogForJS(
     const CallType call_type,
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_GT(args.Length(), 2);
@@ -52,38 +71,51 @@ void APIActivityLogger::LogInternal(
   if (!dispatcher_->activity_logging_enabled())
     return;
 
-  std::string ext_id = *v8::String::Utf8Value(args[0]);
-  ExtensionHostMsg_APIActionOrEvent_Params params;
-  params.api_call = *v8::String::Utf8Value(args[1]);
-  if (args.Length() == 4)  // Extras are optional.
-    params.extra = *v8::String::Utf8Value(args[3]);
-  else
-    params.extra = "";
+  v8::Isolate* isolate = args.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  // Get the array of api call arguments.
+  std::string extension_id = *v8::String::Utf8Value(args[0]);
+  std::string call_name = *v8::String::Utf8Value(args[1]);
+  std::string extra;
+  if (args.Length() == 4) {  // Extras are optional.
+    CHECK(args[3]->IsString());
+    extra = *v8::String::Utf8Value(args[3]);
+  }
+
+  // Get the array of call arguments.
+  auto arguments = base::MakeUnique<base::ListValue>();
   v8::Local<v8::Array> arg_array = v8::Local<v8::Array>::Cast(args[2]);
   if (arg_array->Length() > 0) {
+    arguments->Reserve(arg_array->Length());
     std::unique_ptr<content::V8ValueConverter> converter =
         content::V8ValueConverter::Create();
     ActivityLogConverterStrategy strategy;
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);
-    std::unique_ptr<base::ListValue> arg_list(new base::ListValue());
-    for (size_t i = 0; i < arg_array->Length(); ++i) {
-      arg_list->Set(
-          i,
-          converter->FromV8Value(arg_array->Get(i),
-                                 args.GetIsolate()->GetCurrentContext()));
-    }
-    params.arguments.Swap(arg_list.get());
+    for (size_t i = 0; i < arg_array->Length(); ++i)
+      arguments->Append(converter->FromV8Value(arg_array->Get(i), context));
   }
 
+  LogInternal(call_type, extension_id, call_name, std::move(arguments), extra);
+}
+
+// static
+void APIActivityLogger::LogInternal(const CallType call_type,
+                                    const std::string& extension_id,
+                                    const std::string& call_name,
+                                    std::unique_ptr<base::ListValue> arguments,
+                                    const std::string& extra) {
+  ExtensionHostMsg_APIActionOrEvent_Params params;
+  params.api_call = call_name;
+  params.arguments.Swap(arguments.get());
+  params.extra = extra;
   if (call_type == APICALL) {
     content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_AddAPIActionToActivityLog(ext_id, params));
+        new ExtensionHostMsg_AddAPIActionToActivityLog(extension_id, params));
   } else if (call_type == EVENT) {
     content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_AddEventToActivityLog(ext_id, params));
+        new ExtensionHostMsg_AddEventToActivityLog(extension_id, params));
   }
 }
 

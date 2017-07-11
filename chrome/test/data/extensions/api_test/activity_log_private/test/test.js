@@ -39,9 +39,11 @@ testCases.push({
                                'app_bindings', function response() { });
   },
   expected_activity: [
-    'app.GetDetails',
-    'app.GetIsInstalled',
-    'app.getInstallState'
+    // These API calls show up differently depending on whether native bindings
+    // are enabled.
+    /app\.[gG]etDetails/,
+    /app\.[gG]etIsInstalled/,
+    /app\.(getI|i)nstallState/,
   ]
 });
 testCases.push({
@@ -482,7 +484,11 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
         expectedCall = testCase.expected_activity[callIndx];
       }
       console.log('Logged:' + apiCall + ' Expected:' + expectedCall);
-      chrome.test.assertEq(expectedCall, apiCall);
+      // Allow either a RegExp or a strict string comparison.
+      if (expectedCall instanceof RegExp)
+        chrome.test.assertTrue(expectedCall.test(apiCall));
+      else
+        chrome.test.assertEq(expectedCall, apiCall);
 
       // Check that no real URLs are logged in incognito-mode tests.  Ignore
       // the initial call to windows.create opening the tab.
