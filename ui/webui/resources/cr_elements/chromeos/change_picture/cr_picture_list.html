@@ -1,0 +1,84 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="cr_picture_types.html">
+
+<dom-module id="cr-picture-list">
+  <template>
+    <style include="cr-shared-style">
+      img {
+        border-radius: 4px;
+        height: 64px;
+        margin: 8px;
+        padding: 2px;
+        vertical-align: top;
+        width: 64px;
+      }
+
+      img.iron-selected {
+        border: 2px solid var(--google-blue-500);
+        padding: 0;
+      }
+
+      iron-icon {
+        --iron-icon-fill-color: var(--google-grey-500);
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
+        border: 1px solid var(--google-grey-500);
+        border-radius: 4px;
+        margin: 8px;
+        padding: 17px;
+      }
+
+      iron-icon.iron-selected {
+        border: 2px solid var(--google-blue-500);
+        padding: 16px;
+      }
+
+      #container {
+        margin: -8px;
+        outline: none;
+      }
+    </style>
+
+    <div id="container" tabindex="0">
+      <iron-a11y-keys keys="up down left right space enter"
+          on-keys-pressed="onKeysPressed_">
+      </iron-a11y-keys>
+      <iron-selector id="selector" on-iron-activate="onIronActivate_"
+          selected-item="{{selectedItem}}" role="radiogroup">
+        <!-- Selects the camera as the picture source. -->
+        <iron-icon id="cameraImage" role="radio"
+            data-type$="[[selectionTypesEnum_.CAMERA]]"
+            icon="cr:camera-alt" title="[[takePhotoLabel]]"
+            hidden="[[!cameraPresent]]">
+        </iron-icon>
+        <!-- Selects the file picker as the picture source. -->
+        <iron-icon data-type$="[[selectionTypesEnum_.FILE]]" role="radio"
+            icon="cr:folder" title="[[chooseFileLabel]]">
+        </iron-icon>
+        <!-- Shows and selects the current profile picture. -->
+        <img id="profileImage" role="radio"
+            data-type$="[[selectionTypesEnum_.PROFILE]]"
+            src="[[profileImageUrl_]]" hidden="[[!profileImageUrl_]]"
+            title="[[profileImageLoadingLabel]]">
+        <!-- Shows and selects the previously selected ('old') picture. -->
+        <img id="oldImage" role="radio"
+            data-type$="[[selectionTypesEnum_.OLD]]"
+            src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
+            title="[[oldImageLabel]]">
+        <!-- Shows the list of available images to select from. -->
+        <template is="dom-repeat" items="[[defaultImages]]">
+          <img role="radio"
+              data-type$="[[selectionTypesEnum_.DEFAULT]]"
+              data-index$="[[index]]" src="[[item.url]]" title="[[item.title]]">
+        </template>
+      </iron-selector>
+    </div>
+  </template>
+  <script src="cr_picture_list.js"></script>
+</dom-module>

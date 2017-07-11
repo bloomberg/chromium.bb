@@ -1,18 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_list.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_preview.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_types.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../i18n_setup.html">
-<link rel="import" href="change_picture_browser_proxy.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="change_picture_browser_proxy.html">
 
 <dom-module id="settings-change-picture">
   <template>
@@ -20,50 +17,12 @@
       #container {
         -webkit-margin-start: 16px;
         align-items: flex-start;
-        outline: none;
         padding-top: 16px;
       }
 
-      #availableIcons {
-        margin: -8px;
-      }
-
-      #availableIcons img,
-      #availableIcons iron-icon {
-        border-radius: 4px;
-        margin: 8px;
-      }
-
-      #availableIcons img {
-        height: 64px;
-        padding: 2px;
-        vertical-align: top;
-        width: 64px;
-      }
-
-      #availableIcons iron-icon {
-        --iron-icon-fill-color: var(--google-grey-500);
-        --iron-icon-height: 32px;
-        --iron-icon-width: 32px;
-        border: 1px solid var(--google-grey-500);
-        padding: 17px;
-      }
-
-      #availableIcons .iron-selected {
-        border: 2px solid var(--google-blue-500);
-      }
-
-      #availableIcons img.iron-selected {
-        padding: 0;
-      }
-
-      #availableIcons iron-icon.iron-selected {
-        padding: 16px;
-      }
-
-      #authorCredit,
-      #authorCredit a {
+      #authorCredit {
         color: var(--paper-grey-600);
+        margin-top: 8px;
       }
 
       cr-picture-preview {
@@ -72,43 +31,26 @@
         width: 228px;
       }
     </style>
-    <div id="container" class="settings-box" tabindex="0">
-      <iron-a11y-keys keys="up down left right space enter"
-          on-keys-pressed="onKeysPress_">
-      </iron-a11y-keys>
-      <div id="availableIcons" class="start">
-        <iron-selector id="selector" on-iron-activate="onImageActivate_"
-            selected-item="{{selectedItem_}}" role="radiogroup">
-          <iron-icon id="cameraImage" role="radio"
-              data-type$="[[selectionTypesEnum_.CAMERA]]"
-              icon="cr:camera-alt" title="$i18n{takePhoto}"
-              hidden="[[!cameraPresent_]]">
-          </iron-icon>
-          <iron-icon data-type$="[[selectionTypesEnum_.FILE]]" role="radio"
-              icon="cr:folder" title="$i18n{chooseFile}">
-          </iron-icon>
-          <img id="profileImage" role="radio"
-              data-type$="[[selectionTypesEnum_.PROFILE]]"
-              src="[[profileImageUrl_]]" title="$i18n{profilePhotoLoading}">
-          <img id="oldImage" data-type$="[[selectionTypesEnum_.OLD]]"
-              role="radio" src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
-              title="$i18n{oldPhoto}">
-          <template is="dom-repeat" items="[[defaultImages_]]">
-            <img data-type$="[[selectionTypesEnum_.DEFAULT]]" role="radio"
-                data-index$="[[index]]" src="[[item.url]]"
-                title="[[item.title]]">
-          </template>
-        </iron-selector>
-        <template is="dom-if" if="[[isAuthorCreditShown_(selectedItem_)]]">
-          <div id="authorCredit">
-            $i18n{authorCredit}
-            [[getAuthorName_(selectedItem_, defaultImages_)]]
-            <a href="[[getAuthorWebsite_(selectedItem_, defaultImages_)]]"
-                target="_blank">
-              [[getAuthorWebsite_(selectedItem_, defaultImages_)]]
-            </a>
-          </div>
-        </template>
+    <div id="container" class="settings-box">
+      <div class="start">
+        <cr-picture-list id="pictureList"
+            camera-present="[[cameraPresent_]]"
+            default-images="[[defaultImages_]]"
+            selected-item="{{selectedItem_}}"
+            choose-file-label="$i18n{chooseFile}"
+            old-image-label="$i18n{oldPhoto}"
+            profile-image-label="$i18n{profilePhoto}"
+            profile-image-loading-label="$i18n{profilePhotoLoading}"
+            take-photo-label="$i18n{takePhoto}">
+        </cr-picture-list>
+        <div id="authorCredit"
+            hidden="[[!isAuthorCreditShown_(selectedItem_)]]">
+          [[getAuthorCredit_(selectedItem_, defaultImages_)]]
+          <a href="[[getAuthorWebsite_(selectedItem_, defaultImages_)]]"
+              target="_blank">
+            [[getAuthorWebsite_(selectedItem_, defaultImages_)]]
+          </a>
+        </div>
       </div>
       <cr-picture-preview id="picturePreview" 
           camera-present="[[cameraPresent_]]",
