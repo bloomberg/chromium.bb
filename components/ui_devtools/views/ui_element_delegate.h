@@ -30,9 +30,6 @@ class UIElementDelegate {
   // Update CSS agent when bounds change.
   virtual void OnUIElementBoundsChanged(UIElement* ui_element) = 0;
 
-  // Return |window| highlighting status.
-  virtual bool IsHighlightingWindow(aura::Window* window) = 0;
-
   DISALLOW_COPY_AND_ASSIGN(UIElementDelegate);
 };
 

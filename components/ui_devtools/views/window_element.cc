@@ -46,8 +46,6 @@ void WindowElement::OnWindowHierarchyChanging(
 void WindowElement::OnWindowHierarchyChanged(
     const aura::WindowObserver::HierarchyChangeParams& params) {
   if (window_ == params.new_parent && params.receiver == params.new_parent) {
-    if (delegate()->IsHighlightingWindow(params.target))
-      return;
     AddChild(new WindowElement(params.target, delegate(), this),
              children().empty() ? nullptr : children().back());
   }

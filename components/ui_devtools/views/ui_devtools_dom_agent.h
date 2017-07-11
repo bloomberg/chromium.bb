@@ -49,7 +49,6 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void OnUIElementReordered(UIElement* parent, UIElement* child) override;
   void OnUIElementRemoved(UIElement* ui_element) override;
   void OnUIElementBoundsChanged(UIElement* ui_element) override;
-  bool IsHighlightingWindow(aura::Window* window) override;
 
   void AddObserver(UIDevToolsDOMAgentObserver* observer);
   void RemoveObserver(UIDevToolsDOMAgentObserver* observer);
@@ -82,8 +81,7 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void InitializeHighlightingWidget();
   void UpdateHighlight(
       const std::pair<aura::Window*, gfx::Rect>& window_and_bounds,
-      SkColor background,
-      SkColor border);
+      SkColor background);
   ui_devtools::protocol::Response HighlightNode(
       std::unique_ptr<ui_devtools::protocol::DOM::HighlightConfig>
           highlight_config,
@@ -92,7 +90,7 @@ class UIDevToolsDOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   bool is_building_tree_;
   std::unique_ptr<UIElement> window_element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
-  std::unique_ptr<views::Widget> widget_for_highlighting_;
+  std::unique_ptr<ui::Layer> layer_for_highlighting_;
   std::vector<aura::Window*> root_windows_;
   base::ObserverList<UIDevToolsDOMAgentObserver> observers_;
 
