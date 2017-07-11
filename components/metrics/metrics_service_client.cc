@@ -16,10 +16,6 @@ ukm::UkmService* MetricsServiceClient::GetUkmService() {
   return nullptr;
 }
 
-base::string16 MetricsServiceClient::GetRegistryBackupKey() {
-  return base::string16();
-}
-
 bool MetricsServiceClient::IsReportingPolicyManaged() {
   return false;
 }

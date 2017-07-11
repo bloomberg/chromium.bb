@@ -215,7 +215,6 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       state_manager_(state_manager),
       client_(client),
       local_state_(local_state),
-      clean_exit_beacon_(client->GetRegistryBackupKey(), local_state),
       recording_state_(UNSET),
       test_mode_active_(false),
       state_(INITIALIZED),
@@ -301,7 +300,7 @@ int64_t MetricsService::GetMetricsReportingEnabledDate() {
 }
 
 bool MetricsService::WasLastShutdownClean() const {
-  return clean_exit_beacon_.exited_cleanly();
+  return state_manager_->clean_exit_beacon()->exited_cleanly();
 }
 
 void MetricsService::EnableRecording() {
@@ -404,7 +403,8 @@ void MetricsService::OnAppEnterBackground() {
   rotation_scheduler_->Stop();
   reporting_service_.Stop();
 
-  MarkAppCleanShutdownAndCommit(&clean_exit_beacon_, local_state_);
+  MarkAppCleanShutdownAndCommit(state_manager_->clean_exit_beacon(),
+                                local_state_);
 
   // Give providers a chance to persist histograms as part of being
   // backgrounded.
@@ -425,13 +425,13 @@ void MetricsService::OnAppEnterBackground() {
 }
 
 void MetricsService::OnAppEnterForeground() {
-  clean_exit_beacon_.WriteBeaconValue(false);
+  state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   ExecutionPhaseManager(local_state_).OnAppEnterForeground();
   StartSchedulerIfNecessary();
 }
 #else
 void MetricsService::LogNeedForCleanShutdown() {
-  clean_exit_beacon_.WriteBeaconValue(false);
+  state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   // Redundant setting to be sure we call for a clean shutdown.
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }
@@ -493,11 +493,11 @@ void MetricsService::InitializeMetricsState() {
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
   StabilityMetricsProvider provider(local_state_);
-  if (!clean_exit_beacon_.exited_cleanly()) {
+  if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
     provider.LogCrash();
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
-    clean_exit_beacon_.WriteBeaconValue(true);
+    state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
     ExecutionPhaseManager manager(local_state_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Chrome.Browser.CrashedExecutionPhase",
                                 static_cast<int>(manager.GetExecutionPhase()));
@@ -508,7 +508,7 @@ void MetricsService::InitializeMetricsState() {
   // bypassed.
   const bool is_initial_stability_log_required =
       ProvidersHaveInitialStabilityMetrics() ||
-      !clean_exit_beacon_.exited_cleanly();
+      !state_manager_->clean_exit_beacon()->exited_cleanly();
   bool has_initial_stability_log = false;
   if (is_initial_stability_log_required) {
     // If the previous session didn't exit cleanly, or if any provider
@@ -1014,7 +1014,7 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
   client_->OnLogCleanShutdown();
-  clean_exit_beacon_.WriteBeaconValue(true);
+  state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
   SetExecutionPhase(ExecutionPhase::SHUTDOWN_COMPLETE, local_state_);
   StabilityMetricsProvider(local_state_).MarkSessionEndCompleted(end_completed);
 }

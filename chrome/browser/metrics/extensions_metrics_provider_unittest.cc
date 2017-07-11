@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string16.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -109,7 +110,7 @@ TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::MetricsService::RegisterPrefs(local_state.registry());
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager(
       metrics::MetricsStateManager::Create(
-          &local_state, &enabled_state_provider,
+          &local_state, &enabled_state_provider, base::string16(),
           base::Bind(&StoreNoClientInfoBackup), base::Bind(&ReturnNoBackup)));
   TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
   extension_metrics.ProvideSystemProfileMetrics(&system_profile);
