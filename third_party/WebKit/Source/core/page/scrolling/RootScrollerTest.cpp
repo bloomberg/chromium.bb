@@ -1164,6 +1164,49 @@ TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 }
 
+// Ensure that background style is propagated to the layout view.
+TEST_P(RootScrollerTest, PropagateBackgroundToLayoutView) {
+  Initialize();
+
+  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                   "<!DOCTYPE html>"
+                                   "<style>"
+                                   "  body, html {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    margin: 0px;"
+                                   "    background-color: #ff0000;"
+                                   "  }"
+                                   "  #container {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    overflow: auto;"
+                                   "    background-color: #0000ff;"
+                                   "  }"
+                                   "</style>"
+                                   "<div id='container'>"
+                                   "  <div style='height:1000px'>test</div>"
+                                   "</div>",
+                                   base_url);
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  Document* document = MainFrame()->GetDocument();
+  ASSERT_EQ(Color(255, 0, 0),
+            document->GetLayoutView()->Style()->VisitedDependentColor(
+                CSSPropertyBackgroundColor));
+
+  Element* container = MainFrame()->GetDocument()->getElementById("container");
+  document->setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  document->setRootScroller(container);
+  MainFrameView()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(Color(0, 0, 255),
+            document->GetLayoutView()->Style()->VisitedDependentColor(
+                CSSPropertyBackgroundColor));
+}
+
 class RootScrollerHitTest : public RootScrollerTest {
  public:
   void CheckHitTestAtBottomOfScreen() {

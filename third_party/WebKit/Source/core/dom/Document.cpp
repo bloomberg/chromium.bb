@@ -1875,6 +1875,24 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
   if (isHTMLHtmlElement(documentElement()) && isHTMLBodyElement(body) &&
       !background_style->HasBackground())
     background_style = body_style.Get();
+
+  // If the page set a rootScroller, we should use its background for painting
+  // the document background.
+  Node& root_scroller = GetRootScrollerController().EffectiveRootScroller();
+  RefPtr<ComputedStyle> root_scroller_style;
+  if (this != &root_scroller) {
+    DCHECK(root_scroller.IsElementNode());
+    Element* root_scroller_element = ToElement(&root_scroller);
+    root_scroller_style = root_scroller_element->MutableComputedStyle();
+
+    if (!root_scroller_style || root_scroller_element->NeedsStyleRecalc()) {
+      root_scroller_style =
+          EnsureStyleResolver().StyleForElement(root_scroller_element);
+    }
+
+    background_style = root_scroller_style.Get();
+  }
+
   Color background_color =
       background_style->VisitedDependentColor(CSSPropertyBackgroundColor);
   FillLayer background_layers = background_style->BackgroundLayers();
