@@ -5,12 +5,17 @@
 #ifndef EXTENSIONS_RENDERER_API_ACTIVITY_LOGGER_H_
 #define EXTENSIONS_RENDERER_API_ACTIVITY_LOGGER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "extensions/common/features/feature.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class ListValue;
+}
 
 namespace extensions {
 class Dispatcher;
@@ -23,28 +28,31 @@ class APIActivityLogger : public ObjectBackedNativeHandler {
   APIActivityLogger(ScriptContext* context, Dispatcher* dispatcher);
   ~APIActivityLogger() override;
 
+  // Notifies the browser that an API method has been called, if and only if
+  // activity logging is enabled.
+  static void LogAPICall(v8::Local<v8::Context> context,
+                         const std::string& call_name,
+                         const std::vector<v8::Local<v8::Value>>& arguments);
+
  private:
   // Used to distinguish API calls & events from each other in LogInternal.
   enum CallType { APICALL, EVENT };
 
   // This is ultimately invoked in bindings.js with JavaScript arguments.
   //    arg0 - extension ID as a string
-  //    arg1 - API call name as a string
-  //    arg2 - arguments to the API call
+  //    arg1 - API method/Event name as a string
+  //    arg2 - arguments to the API call/event
   //    arg3 - any extra logging info as a string (optional)
-  void LogAPICall(const v8::FunctionCallbackInfo<v8::Value>& args);
+  // TODO(devlin): Does arg3 ever exist?
+  void LogForJS(const CallType call_type,
+                const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // This is ultimately invoked in bindings.js with JavaScript arguments.
-  //    arg0 - extension ID as a string
-  //    arg1 - Event name as a string
-  //    arg2 - Event arguments
-  //    arg3 - any extra logging info as a string (optional)
-  void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // LogAPICall and LogEvent are really the same underneath except for
-  // how they are ultimately dispatched to the log.
-  void LogInternal(const CallType call_type,
-                   const v8::FunctionCallbackInfo<v8::Value>& args);
+  // Common implementation method for sending a logging IPC.
+  static void LogInternal(const CallType call_type,
+                          const std::string& extension_id,
+                          const std::string& call_name,
+                          std::unique_ptr<base::ListValue> arguments,
+                          const std::string& extra);
 
   Dispatcher* dispatcher_;
 

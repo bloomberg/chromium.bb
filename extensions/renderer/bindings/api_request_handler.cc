@@ -106,6 +106,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
   request->method_name = method;
   request->thread = thread;
 
+  last_sent_request_id_ = request_id;
   send_request_.Run(std::move(request), context);
   return request_id;
 }

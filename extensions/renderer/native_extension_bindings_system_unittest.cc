@@ -22,6 +22,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/string_source_map.h"
+#include "extensions/renderer/test_extensions_renderer_client.h"
 #include "extensions/renderer/test_v8_extension_configuration.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -203,6 +204,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   std::unique_ptr<MockEventChangeHandler> event_change_handler_;
 
   StringSourceMap source_map_;
+  TestExtensionsRendererClient renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystemUnittest);
 };

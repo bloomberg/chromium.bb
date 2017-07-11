@@ -85,6 +85,7 @@ class APIRequestHandler {
   void InvalidateContext(v8::Local<v8::Context> context);
 
   APILastError* last_error() { return &last_error_; }
+  int last_sent_request_id() const { return last_sent_request_id_; }
 
   std::set<int> GetPendingRequestIdsForTesting() const;
 
@@ -107,6 +108,11 @@ class APIRequestHandler {
 
   // The next available request identifier.
   int next_request_id_ = 0;
+
+  // The id of the last request we sent to the browser. This can be used as a
+  // flag for whether or not a request was sent (if the last_sent_request_id_
+  // changes).
+  int last_sent_request_id_ = -1;
 
   // A map of all pending requests.
   std::map<int, PendingRequest> pending_requests_;

@@ -51,6 +51,7 @@ class APIBindingsSystem {
       const APIRequestHandler::SendRequestMethod& send_request,
       const APIEventHandler::EventListenersChangedMethod&
           event_listeners_changed,
+      const APIBinding::OnSilentRequest& on_silent_request,
       APILastError last_error);
   ~APIBindingsSystem();
 
@@ -140,6 +141,10 @@ class APIBindingsSystem {
   // The method to retrieve the DictionaryValue describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.
   GetAPISchemaMethod get_api_schema_;
+
+  // The method to call when the system silently handles an API request without
+  // notifying the browser.
+  APIBinding::OnSilentRequest on_silent_request_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingsSystem);
 };

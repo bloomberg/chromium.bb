@@ -13,6 +13,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_js_util.h"
@@ -361,6 +362,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
+          base::Bind(&APIActivityLogger::LogAPICall),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
       weak_factory_(this) {
