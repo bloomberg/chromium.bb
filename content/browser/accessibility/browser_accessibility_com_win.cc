@@ -613,7 +613,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
 }
 
 bool BrowserAccessibilityComWin::IsRangeValueSupported() {
-  switch (ia_role()) {
+  switch (MSAARole()) {
     case ROLE_SYSTEM_PROGRESSBAR:
     case ROLE_SYSTEM_SLIDER:
     case ROLE_SYSTEM_SPINBUTTON:
@@ -3401,7 +3401,7 @@ HRESULT WINAPI BrowserAccessibilityComWin::InternalQueryInterface(
     void** object) {
   BrowserAccessibilityComWin* accessibility =
       reinterpret_cast<BrowserAccessibilityComWin*>(this_ptr);
-  int32_t ia_role = accessibility->ia_role();
+  int32_t ia_role = accessibility->MSAARole();
   if (iid == IID_IAccessibleImage) {
     if (ia_role != ROLE_SYSTEM_GRAPHIC) {
       *object = NULL;
@@ -3660,8 +3660,8 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
 
   // Expose row or column header sort direction.
   int32_t sort_direction;
-  if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
-       ia_role() == ROLE_SYSTEM_ROWHEADER) &&
+  if ((MSAARole() == ROLE_SYSTEM_COLUMNHEADER ||
+       MSAARole() == ROLE_SYSTEM_ROWHEADER) &&
       owner()->GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
     switch (static_cast<ui::AXSortDirection>(sort_direction)) {
       case ui::AX_SORT_DIRECTION_NONE:
@@ -3740,7 +3740,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
   if (owner()->IsWebAreaForPresentationalIframe()) {
-    win_attributes_->ia_role = ROLE_SYSTEM_GROUPING;
     win_attributes_->ia2_role = ROLE_SYSTEM_GROUPING;
   }
 }
@@ -4920,8 +4919,6 @@ void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
 }
 
 void BrowserAccessibilityComWin::InitRoleAndState() {
-  int32_t ia_role = 0;
-  base::string16 role_name;
   int32_t ia2_role = 0;
   int32_t ia2_state = IA2_STATE_OPAQUE;
 
@@ -4966,446 +4963,149 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
 
   base::string16 html_tag = owner()->GetString16Attribute(ui::AX_ATTR_HTML_TAG);
   switch (owner()->GetRole()) {
-    case ui::AX_ROLE_ALERT:
-      ia_role = ROLE_SYSTEM_ALERT;
-      break;
-    case ui::AX_ROLE_ALERT_DIALOG:
-      ia_role = ROLE_SYSTEM_DIALOG;
-      break;
-    case ui::AX_ROLE_ANCHOR:
-      ia_role = ROLE_SYSTEM_LINK;
-      break;
-    case ui::AX_ROLE_APPLICATION:
-      ia_role = ROLE_SYSTEM_APPLICATION;
-      break;
-    case ui::AX_ROLE_ARTICLE:
-      ia_role = ROLE_SYSTEM_DOCUMENT;
-      break;
-    case ui::AX_ROLE_AUDIO:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
     case ui::AX_ROLE_BANNER:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_HEADER;
       break;
     case ui::AX_ROLE_BLOCKQUOTE:
-      role_name = html_tag;
       ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_BUSY_INDICATOR:
-      ia_role = ROLE_SYSTEM_ANIMATION;
-      break;
-    case ui::AX_ROLE_BUTTON:
-      ia_role = ROLE_SYSTEM_PUSHBUTTON;
       break;
     case ui::AX_ROLE_CANVAS:
       if (owner()->GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
-        role_name = L"canvas";
         ia2_role = IA2_ROLE_CANVAS;
-      } else {
-        ia_role = ROLE_SYSTEM_GRAPHIC;
       }
       break;
     case ui::AX_ROLE_CAPTION:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_CAPTION;
       break;
-    case ui::AX_ROLE_CELL:
-      ia_role = ROLE_SYSTEM_CELL;
-      break;
-    case ui::AX_ROLE_CHECK_BOX:
-      ia_role = ROLE_SYSTEM_CHECKBUTTON;
-      break;
     case ui::AX_ROLE_COLOR_WELL:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_COLOR_CHOOSER;
       break;
-    case ui::AX_ROLE_COLUMN:
-      ia_role = ROLE_SYSTEM_COLUMN;
-      break;
-    case ui::AX_ROLE_COLUMN_HEADER:
-      ia_role = ROLE_SYSTEM_COLUMNHEADER;
-      break;
-    case ui::AX_ROLE_COMBO_BOX:
-      ia_role = ROLE_SYSTEM_COMBOBOX;
-      break;
     case ui::AX_ROLE_COMPLEMENTARY:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_NOTE;
       break;
     case ui::AX_ROLE_CONTENT_INFO:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ui::AX_ROLE_DATE:
     case ui::AX_ROLE_DATE_TIME:
-      ia_role = ROLE_SYSTEM_DROPLIST;
       ia2_role = IA2_ROLE_DATE_EDITOR;
       break;
     case ui::AX_ROLE_DEFINITION:
-      role_name = html_tag;
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
-    case ui::AX_ROLE_DESCRIPTION_LIST:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_LIST;
-      break;
-    case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
-      ia_role = ROLE_SYSTEM_LISTITEM;
-      break;
-    case ui::AX_ROLE_DETAILS:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
-    case ui::AX_ROLE_DIALOG:
-      ia_role = ROLE_SYSTEM_DIALOG;
-      break;
-    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
-      ia_role = ROLE_SYSTEM_PUSHBUTTON;
-      break;
-    case ui::AX_ROLE_DOCUMENT:
-    case ui::AX_ROLE_ROOT_WEB_AREA:
-    case ui::AX_ROLE_WEB_AREA:
-      ia_role = ROLE_SYSTEM_DOCUMENT;
-      break;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
-      if (owner()->PlatformChildCount()) {
-        // Windows screen readers assume that IA2_ROLE_EMBEDDED_OBJECT
-        // doesn't have any children, but it may be something like a
-        // browser plugin that has a document inside.
-        ia_role = ROLE_SYSTEM_GROUPING;
-      } else {
-        ia_role = ROLE_SYSTEM_CLIENT;
+      if (!owner()->PlatformChildCount()) {
         ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
       }
       break;
     case ui::AX_ROLE_FIGCAPTION:
-      role_name = html_tag;
       ia2_role = IA2_ROLE_CAPTION;
       break;
-    case ui::AX_ROLE_FIGURE:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
-    case ui::AX_ROLE_FEED:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
     case ui::AX_ROLE_FORM:
-      role_name = L"form";
       ia2_role = IA2_ROLE_FORM;
       break;
     case ui::AX_ROLE_FOOTER:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_FOOTER;
       break;
     case ui::AX_ROLE_GENERIC_CONTAINER:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
-      role_name = html_tag.empty() ? L"div" : html_tag;
-      break;
-    case ui::AX_ROLE_GRID:
-      ia_role = ROLE_SYSTEM_TABLE;
-      break;
-    case ui::AX_ROLE_GROUP:
-      ia_role = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_HEADING:
-      role_name = html_tag;
-      if (html_tag.empty())
-        ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_HEADING;
       break;
     case ui::AX_ROLE_IFRAME:
-      ia_role = ROLE_SYSTEM_DOCUMENT;
       ia2_role = IA2_ROLE_INTERNAL_FRAME;
       break;
-    case ui::AX_ROLE_IFRAME_PRESENTATIONAL:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
-    case ui::AX_ROLE_IMAGE:
-      ia_role = ROLE_SYSTEM_GRAPHIC;
-      break;
     case ui::AX_ROLE_IMAGE_MAP:
-      role_name = html_tag;
       ia2_role = IA2_ROLE_IMAGE_MAP;
-      break;
-    case ui::AX_ROLE_IMAGE_MAP_LINK:
-      ia_role = ROLE_SYSTEM_LINK;
-      break;
-    case ui::AX_ROLE_INPUT_TIME:
-      ia_role = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_LABEL_TEXT:
     case ui::AX_ROLE_LEGEND:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_LABEL;
       break;
-    case ui::AX_ROLE_LINK:
-      ia_role = ROLE_SYSTEM_LINK;
-      break;
-    case ui::AX_ROLE_LIST:
-      ia_role = ROLE_SYSTEM_LIST;
-      break;
-    case ui::AX_ROLE_LIST_BOX:
-      ia_role = ROLE_SYSTEM_LIST;
-      break;
-    case ui::AX_ROLE_LIST_BOX_OPTION:
-      ia_role = ROLE_SYSTEM_LISTITEM;
-      break;
-    case ui::AX_ROLE_LIST_ITEM:
-      ia_role = ROLE_SYSTEM_LISTITEM;
-      break;
     case ui::AX_ROLE_MAIN:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
     case ui::AX_ROLE_MARK:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
-    case ui::AX_ROLE_MARQUEE:
-      ia_role = ROLE_SYSTEM_ANIMATION;
-      break;
-    case ui::AX_ROLE_MATH:
-      ia_role = ROLE_SYSTEM_EQUATION;
-      break;
-    case ui::AX_ROLE_MENU:
-    case ui::AX_ROLE_MENU_BUTTON:
-      ia_role = ROLE_SYSTEM_MENUPOPUP;
-      break;
-    case ui::AX_ROLE_MENU_BAR:
-      ia_role = ROLE_SYSTEM_MENUBAR;
-      break;
-    case ui::AX_ROLE_MENU_ITEM:
-      ia_role = ROLE_SYSTEM_MENUITEM;
-      break;
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
-      ia_role = ROLE_SYSTEM_MENUITEM;
       ia2_role = IA2_ROLE_CHECK_MENU_ITEM;
       break;
     case ui::AX_ROLE_MENU_ITEM_RADIO:
-      ia_role = ROLE_SYSTEM_MENUITEM;
       ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
       break;
     case ui::AX_ROLE_MENU_LIST_POPUP:
-      ia_role = ROLE_SYSTEM_LIST;
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_MENU_LIST_OPTION:
-      ia_role = ROLE_SYSTEM_LISTITEM;
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
-    case ui::AX_ROLE_METER:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_PROGRESSBAR;
-      break;
     case ui::AX_ROLE_NAVIGATION:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
       break;
     case ui::AX_ROLE_NOTE:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_NOTE;
       break;
-    case ui::AX_ROLE_OUTLINE:
-      ia_role = ROLE_SYSTEM_OUTLINE;
-      break;
     case ui::AX_ROLE_PARAGRAPH:
-      role_name = L"P";
       ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_POP_UP_BUTTON:
-      if (html_tag == L"select") {
-        ia_role = ROLE_SYSTEM_COMBOBOX;
-      } else {
-        ia_role = ROLE_SYSTEM_BUTTONMENU;
-      }
       break;
     case ui::AX_ROLE_PRE:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-      ia_role = ROLE_SYSTEM_PROGRESSBAR;
-      break;
-    case ui::AX_ROLE_RADIO_BUTTON:
-      ia_role = ROLE_SYSTEM_RADIOBUTTON;
-      break;
-    case ui::AX_ROLE_RADIO_GROUP:
-      ia_role = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_REGION:
       if (html_tag == L"section") {
-        ia_role = ROLE_SYSTEM_GROUPING;
         ia2_role = IA2_ROLE_SECTION;
-      } else {
-        ia_role = ROLE_SYSTEM_PANE;
       }
       break;
-    case ui::AX_ROLE_ROW: {
-      // Role changes depending on whether row is inside a treegrid
-      // https://www.w3.org/TR/core-aam-1.1/#role-map-row
-      ia_role =
-          IsInTreeGrid(owner()) ? ROLE_SYSTEM_OUTLINEITEM : ROLE_SYSTEM_ROW;
-      break;
-    }
-    case ui::AX_ROLE_ROW_HEADER:
-      ia_role = ROLE_SYSTEM_ROWHEADER;
-      break;
     case ui::AX_ROLE_RUBY:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
     case ui::AX_ROLE_RULER:
-      ia_role = ROLE_SYSTEM_CLIENT;
       ia2_role = IA2_ROLE_RULER;
       break;
     case ui::AX_ROLE_SCROLL_AREA:
-      ia_role = ROLE_SYSTEM_CLIENT;
       ia2_role = IA2_ROLE_SCROLL_PANE;
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
-    case ui::AX_ROLE_SCROLL_BAR:
-      ia_role = ROLE_SYSTEM_SCROLLBAR;
-      break;
     case ui::AX_ROLE_SEARCH:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_SLIDER:
-      ia_role = ROLE_SYSTEM_SLIDER;
-      break;
-    case ui::AX_ROLE_SPIN_BUTTON:
-      ia_role = ROLE_SYSTEM_SPINBUTTON;
-      break;
-    case ui::AX_ROLE_SPIN_BUTTON_PART:
-      ia_role = ROLE_SYSTEM_PUSHBUTTON;
-      break;
-    case ui::AX_ROLE_ANNOTATION:
-    case ui::AX_ROLE_LIST_MARKER:
-    case ui::AX_ROLE_STATIC_TEXT:
-      ia_role = ROLE_SYSTEM_STATICTEXT;
-      break;
-    case ui::AX_ROLE_STATUS:
-      ia_role = ROLE_SYSTEM_STATUSBAR;
-      break;
-    case ui::AX_ROLE_SPLITTER:
-      ia_role = ROLE_SYSTEM_SEPARATOR;
-      break;
-    case ui::AX_ROLE_SVG_ROOT:
-      ia_role = ROLE_SYSTEM_GRAPHIC;
       break;
     case ui::AX_ROLE_SWITCH:
-      role_name = L"switch";
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
-    case ui::AX_ROLE_TAB:
-      ia_role = ROLE_SYSTEM_PAGETAB;
-      break;
-    case ui::AX_ROLE_TABLE:
-      ia_role = ROLE_SYSTEM_TABLE;
-      break;
     case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
-      ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
       break;
-    case ui::AX_ROLE_TAB_LIST:
-      ia_role = ROLE_SYSTEM_PAGETABLIST;
-      break;
-    case ui::AX_ROLE_TAB_PANEL:
-      ia_role = ROLE_SYSTEM_PROPERTYPAGE;
-      break;
-    case ui::AX_ROLE_TERM:
-      ia_role = ROLE_SYSTEM_LISTITEM;
-      break;
     case ui::AX_ROLE_TOGGLE_BUTTON:
-      ia_role = ROLE_SYSTEM_PUSHBUTTON;
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_SEARCH_BOX:
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_ABBR:
     case ui::AX_ROLE_TIME:
-      role_name = html_tag;
-      ia_role = ROLE_SYSTEM_TEXT;
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
-    case ui::AX_ROLE_TIMER:
-      ia_role = ROLE_SYSTEM_CLOCK;
-      break;
-    case ui::AX_ROLE_TOOLBAR:
-      ia_role = ROLE_SYSTEM_TOOLBAR;
-      break;
-    case ui::AX_ROLE_TOOLTIP:
-      ia_role = ROLE_SYSTEM_TOOLTIP;
-      break;
-    case ui::AX_ROLE_TREE:
-      ia_role = ROLE_SYSTEM_OUTLINE;
-      break;
-    case ui::AX_ROLE_TREE_GRID:
-      ia_role = ROLE_SYSTEM_OUTLINE;
-      break;
-    case ui::AX_ROLE_TREE_ITEM:
-      ia_role = ROLE_SYSTEM_OUTLINEITEM;
-      break;
-    case ui::AX_ROLE_LINE_BREAK:
-      ia_role = ROLE_SYSTEM_WHITESPACE;
-      break;
-    case ui::AX_ROLE_VIDEO:
-      ia_role = ROLE_SYSTEM_GROUPING;
-      break;
-    case ui::AX_ROLE_WINDOW:
-      ia_role = ROLE_SYSTEM_WINDOW;
-      break;
-
-    // TODO(dmazzoni): figure out the proper MSAA role for all of these.
-    case ui::AX_ROLE_DIRECTORY:
-    case ui::AX_ROLE_IGNORED:
-    case ui::AX_ROLE_LOG:
-    case ui::AX_ROLE_NONE:
-    case ui::AX_ROLE_PRESENTATIONAL:
-    case ui::AX_ROLE_SLIDER_THUMB:
     default:
-      ia_role = ROLE_SYSTEM_CLIENT;
       break;
   }
 
-  // The role should always be set.
-  DCHECK(!role_name.empty() || ia_role);
+  win_attributes_->ia_role = MSAARole();
+  win_attributes_->ia_state = MSAAState();
+  win_attributes_->role_name = base::UTF8ToUTF16(StringOverrideForMSAARole());
 
   // If we didn't explicitly set the IAccessible2 role, make it the same
   // as the MSAA role.
   if (!ia2_role)
-    ia2_role = ia_role;
+    ia2_role = win_attributes_->ia_role;
 
-  win_attributes_->ia_role = ia_role;
-  win_attributes_->ia_state = MSAAState();
-  win_attributes_->role_name = role_name;
   win_attributes_->ia2_role = ia2_role;
   win_attributes_->ia2_state = ia2_state;
-}
-
-bool BrowserAccessibilityComWin::IsInTreeGrid(
-    const BrowserAccessibility* item) {
-  BrowserAccessibility* container = item->PlatformGetParent();
-  if (container && container->GetRole() == ui::AX_ROLE_GROUP) {
-    // If parent was a rowgroup, we need to look at the grandparent
-    container = container->PlatformGetParent();
-  }
-
-  if (!container) {
-    return false;
-  }
-
-  return container->GetRole() == ui::AX_ROLE_TREE_GRID;
 }
 
 BrowserAccessibilityComWin* ToBrowserAccessibilityComWin(

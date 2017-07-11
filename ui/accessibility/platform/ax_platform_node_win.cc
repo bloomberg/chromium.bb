@@ -1189,6 +1189,13 @@ STDMETHODIMP AXPlatformNodeWin::QueryService(
 // Private member functions.
 //
 int AXPlatformNodeWin::MSAARole() {
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than DOCUMENT so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (IsWebAreaForPresentationalIframe()) {
+    return ROLE_SYSTEM_GROUPING;
+  }
+
   switch (GetData().role) {
     case ui::AX_ROLE_ALERT:
       return ROLE_SYSTEM_ALERT;
@@ -1367,6 +1374,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_MENU_LIST_OPTION:
       return ROLE_SYSTEM_MENUITEM;
 
+    case ui::AX_ROLE_METER:
+      return ROLE_SYSTEM_PROGRESSBAR;
+
     case ui::AX_ROLE_NAVIGATION:
       return ROLE_SYSTEM_GROUPING;
 
@@ -1404,16 +1414,7 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_ROW: {
       // Role changes depending on whether row is inside a treegrid
       // https://www.w3.org/TR/core-aam-1.1/#role-map-row
-      auto* container = FromNativeViewAccessible(GetParent());
-      if (container && container->GetData().role == ui::AX_ROLE_GROUP) {
-        // If parent was a rowgroup, we need to look at the grandparent
-        container = FromNativeViewAccessible(container->GetParent());
-      }
-
-      if (!container)
-        return ROLE_SYSTEM_ROW;
-
-      return ROLE_SYSTEM_OUTLINEITEM;
+      return IsInTreeGrid() ? ROLE_SYSTEM_OUTLINEITEM : ROLE_SYSTEM_ROW;
     }
 
     case ui::AX_ROLE_ROW_HEADER:
@@ -1513,11 +1514,38 @@ int AXPlatformNodeWin::MSAARole() {
     case ui::AX_ROLE_WINDOW:
       return ROLE_SYSTEM_WINDOW;
 
-    // TODO(dmazzoni): figure out the proper MSAA role for roles not called out
-    // here.
-    default:
+    // TODO(dmazzoni): figure out the proper MSAA role for roles listed below.
+    case AX_ROLE_BLOCKQUOTE:
+    case AX_ROLE_BUTTON_DROP_DOWN:
+    case AX_ROLE_CARET:
+    case AX_ROLE_CLIENT:
+    case AX_ROLE_DEFINITION:
+    case AX_ROLE_DESKTOP:
+    case AX_ROLE_DIRECTORY:
+    case AX_ROLE_FIGCAPTION:
+    case AX_ROLE_FOOTER:
+    case AX_ROLE_FORM:
+    case AX_ROLE_IGNORED:
+    case AX_ROLE_IMAGE_MAP:
+    case AX_ROLE_INLINE_TEXT_BOX:
+    case AX_ROLE_LOCATION_BAR:
+    case AX_ROLE_LOG:
+    case AX_ROLE_NONE:
+    case AX_ROLE_PANE:
+    case AX_ROLE_PARAGRAPH:
+    case AX_ROLE_PRESENTATIONAL:
+    case AX_ROLE_SEAMLESS_WEB_AREA:
+    case AX_ROLE_SLIDER_THUMB:
+    case AX_ROLE_SWITCH:
+    case AX_ROLE_TAB_GROUP:
+    case AX_ROLE_TITLE_BAR:
+    case AX_ROLE_UNKNOWN:
+    case AX_ROLE_WEB_VIEW:
       return ROLE_SYSTEM_CLIENT;
   }
+
+  NOTREACHED();
+  return ROLE_SYSTEM_CLIENT;
 }
 
 std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
@@ -1562,6 +1590,19 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
   }
 
   return "";
+}
+
+bool AXPlatformNodeWin::IsWebAreaForPresentationalIframe() {
+  if (GetData().role != ui::AX_ROLE_WEB_AREA &&
+      GetData().role != ui::AX_ROLE_ROOT_WEB_AREA) {
+    return false;
+  }
+
+  auto* parent = FromNativeViewAccessible(GetParent());
+  if (!parent)
+    return false;
+
+  return parent->GetData().role == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveReadonlyState(
@@ -1889,6 +1930,19 @@ AXPlatformNodeWin* AXPlatformNodeWin::GetTargetFromChildID(
     base = nullptr;
 
   return static_cast<AXPlatformNodeWin*>(base);
+}
+
+bool AXPlatformNodeWin::IsInTreeGrid() {
+  auto* container = FromNativeViewAccessible(GetParent());
+
+  // If parent was a rowgroup, we need to look at the grandparent
+  if (container && container->GetData().role == ui::AX_ROLE_GROUP)
+    container = FromNativeViewAccessible(container->GetParent());
+
+  if (!container)
+    return false;
+
+  return container->GetData().role == ui::AX_ROLE_TREE_GRID;
 }
 
 }  // namespace ui

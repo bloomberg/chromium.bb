@@ -268,16 +268,18 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
  protected:
   AXPlatformNodeWin();
+
   int MSAAState();
+
+  int MSAARole();
+  std::string StringOverrideForMSAARole();
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 
  private:
-  int MSAARole();
-  std::string StringOverrideForMSAARole();
-
   int MSAAEvent(ui::AXEvent event);
+  bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveReadonlyState(const AXNodeData& data) const;
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 
@@ -312,6 +314,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // returns a pointer to the target object if it exists, otherwise nullptr.
   // Does not return a new reference.
   AXPlatformNodeWin* GetTargetFromChildID(const VARIANT& var_id);
+
+  // Returns true if this node is in a treegrid.
+  bool IsInTreeGrid();
 };
 
 }  // namespace ui
