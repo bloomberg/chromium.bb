@@ -4899,6 +4899,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         memcpy(&cm->global_motion[frame], &cm->global_motion[pframe],
                sizeof(WarpedMotionParams));
       } else if (ref_buf[frame] &&
+                 ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
+                 ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame)) {
         TransformationType model;
         const int64_t ref_frame_error = av1_frame_error(
