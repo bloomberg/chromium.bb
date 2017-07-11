@@ -6,17 +6,49 @@ package org.chromium.content.browser;
 
 import android.content.ComponentName;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
+import org.chromium.base.process_launcher.ICallbackInt;
+import org.chromium.base.process_launcher.IChildProcessService;
 
 /** An implementation of ChildProcessConnection that does not connect to a real service. */
 class TestChildProcessConnection extends ChildProcessConnection {
-    private static class MockChildServiceConnection
+    private static class MockServiceBinder extends IChildProcessService.Stub {
+        @Override
+        public boolean bindToCaller() {
+            return true;
+        }
+
+        @Override
+        public void setupConnection(Bundle args, ICallbackInt pidCallback, IBinder gpuCallback) {}
+
+        @Override
+        public void crashIntentionallyForTesting() {
+            throw new RuntimeException("crashIntentionallyForTesting");
+        }
+    }
+
+    private class MockChildServiceConnection
             implements ChildProcessConnection.ChildServiceConnection {
+        private final ChildProcessConnection mConnection;
         private boolean mBound;
+
+        MockChildServiceConnection(ChildProcessConnection connection) {
+            mConnection = connection;
+        }
 
         @Override
         public boolean bind() {
+            if (TestChildProcessConnection.this.mPostOnServiceConnected) {
+                LauncherThread.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO(boliu): implement a dummy service.
+                        mConnection.onServiceConnectedOnLauncherThread(new MockServiceBinder());
+                    }
+                });
+            }
             mBound = true;
             return true;
         }
@@ -35,6 +67,7 @@ class TestChildProcessConnection extends ChildProcessConnection {
     private int mPid;
     private boolean mConnected;
     private ServiceCallback mServiceCallback;
+    private boolean mPostOnServiceConnected;
 
     /**
      * Creates a mock binding corresponding to real ManagedChildProcessConnection after the
@@ -44,6 +77,7 @@ class TestChildProcessConnection extends ChildProcessConnection {
             Bundle serviceBundle, ChildProcessCreationParams creationParams) {
         super(null /* context */, serviceName, bindAsExternalService, serviceBundle,
                 creationParams);
+        mPostOnServiceConnected = true;
     }
 
     public void setPid(int pid) {
@@ -57,13 +91,14 @@ class TestChildProcessConnection extends ChildProcessConnection {
 
     @Override
     protected ChildServiceConnection createServiceConnection(int bindFlags) {
-        return new MockChildServiceConnection();
+        return new MockChildServiceConnection(this);
     }
 
     // We don't have a real service so we have to mock the connection status.
     @Override
-    public void start(boolean useStrongBinding, ServiceCallback serviceCallback) {
-        super.start(useStrongBinding, serviceCallback);
+    public void start(
+            boolean useStrongBinding, ServiceCallback serviceCallback, boolean retryOnTimeout) {
+        super.start(useStrongBinding, serviceCallback, retryOnTimeout);
         mConnected = true;
         mServiceCallback = serviceCallback;
     }
@@ -81,5 +116,9 @@ class TestChildProcessConnection extends ChildProcessConnection {
 
     public ServiceCallback getServiceCallback() {
         return mServiceCallback;
+    }
+
+    public void setPostOnServiceConnected(boolean post) {
+        mPostOnServiceConnected = post;
     }
 }

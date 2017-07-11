@@ -241,7 +241,7 @@ public class ChildConnectionAllocator {
             listener.onConnectionAllocated(this, connection);
         }
 
-        connection.start(mUseStrongBinding, serviceCallbackWrapper);
+        connection.start(mUseStrongBinding, serviceCallbackWrapper, false /* retryOnTimeout */);
         Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
                 mServiceClassName, slot);
         return connection;

@@ -357,7 +357,8 @@ public class ChildProcessLauncherTest {
                                                     connection);
                                         }
                                     }
-                                });
+                                },
+                                false /* retryOnTimeout */);
                         return connection;
                     }
                 });

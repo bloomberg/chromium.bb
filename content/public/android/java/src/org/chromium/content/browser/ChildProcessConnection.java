@@ -27,6 +27,8 @@ import javax.annotation.Nullable;
 public class ChildProcessConnection {
     private static final String TAG = "ChildProcessConn";
 
+    private static final int BIND_SERVICE_TIMEOUT_IN_MS = 10 * 1000;
+
     /**
      * Used to notify the consumer about the process start. These callbacks will be invoked before
      * the ConnectionCallbacks.
@@ -177,6 +179,11 @@ public class ChildProcessConnection {
     // call.
     private ConnectionCallback mConnectionCallback;
 
+    // Workaround bug on some android versions where bindService does not result in
+    // onServiceConnected for sandboxed services; see crbug.com/736066 for details.
+    // This is a delayed callback that will retry bindService with a delay.
+    private Runnable mOnServiceConnectedWatchDog;
+
     private IChildProcessService mService;
 
     // Set to true when the service connection callback runs. This differs from
@@ -290,7 +297,8 @@ public class ChildProcessConnection {
      * @param serviceCallback (optional) callbacks invoked when the child process starts or fails to
      * start and when the service stops.
      */
-    public void start(boolean useStrongBinding, ServiceCallback serviceCallback) {
+    public void start(
+            boolean useStrongBinding, ServiceCallback serviceCallback, boolean retryOnTimeout) {
         assert LauncherThread.runningOnLauncherThread();
         try {
             TraceEvent.begin("ChildProcessConnection.start");
@@ -300,8 +308,10 @@ public class ChildProcessConnection {
 
             mServiceCallback = serviceCallback;
 
+            resetWatchdog(useStrongBinding, serviceCallback, retryOnTimeout);
             if (!bind(useStrongBinding)) {
                 Log.e(TAG, "Failed to establish the service connection.");
+                cancelWatchDog();
                 // We have to notify the caller so that they can free-up associated resources.
                 // TODO(ppi): Can we hard-fail here?
                 notifyChildProcessDied();
@@ -349,14 +359,17 @@ public class ChildProcessConnection {
      */
     public void stop() {
         assert LauncherThread.runningOnLauncherThread();
+        cancelWatchDog();
         unbind();
         mService = null;
         mConnectionParams = null;
         notifyChildProcessDied();
     }
 
-    private void onServiceConnectedOnLauncherThread(IBinder service) {
+    @VisibleForTesting
+    public void onServiceConnectedOnLauncherThread(IBinder service) {
         assert LauncherThread.runningOnLauncherThread();
+        cancelWatchDog();
         // A flag from the parent class ensures we run the post-connection logic only once
         // (instead of once per each ChildServiceConnection).
         if (mDidOnServiceConnected) {
@@ -403,7 +416,8 @@ public class ChildProcessConnection {
         }
     }
 
-    private void onServiceDisconnectedOnLauncherThread() {
+    @VisibleForTesting
+    public void onServiceDisconnectedOnLauncherThread() {
         assert LauncherThread.runningOnLauncherThread();
         // Ensure that the disconnection logic runs only once (instead of once per each
         // ChildServiceConnection).
@@ -482,12 +496,16 @@ public class ChildProcessConnection {
     protected void unbind() {
         assert LauncherThread.runningOnLauncherThread();
         mUnbound = true;
+        unbindAll();
+        // Note that we don't update the waived bound only state here as to preserve the state when
+        // disconnected.
+    }
+
+    private void unbindAll() {
         mStrongBinding.unbind();
         mWaivedBinding.unbind();
         mModerateBinding.unbind();
         mInitialBinding.unbind();
-        // Note that we don't update the waived bound only state here as to preserve the state when
-        // disconnected.
     }
 
     public boolean isInitialBindingBound() {
@@ -603,6 +621,34 @@ public class ChildProcessConnection {
         }
     }
 
+    private void resetWatchdog(final boolean useStrongBinding,
+            final ServiceCallback serviceCallback, final boolean retryOnTimeout) {
+        assert LauncherThread.runningOnLauncherThread();
+        cancelWatchDog();
+        assert mOnServiceConnectedWatchDog == null;
+        mOnServiceConnectedWatchDog = new Runnable() {
+            @Override
+            public void run() {
+                assert mOnServiceConnectedWatchDog == this;
+                assert !mDidOnServiceConnected;
+                assert mServiceCallback == null;
+                mOnServiceConnectedWatchDog = null;
+                // TODO(boliu): Add a UMA here.
+                if (!retryOnTimeout) return;
+                unbindAll();
+                start(useStrongBinding, serviceCallback, retryOnTimeout);
+            }
+        };
+        LauncherThread.postDelayed(mOnServiceConnectedWatchDog, BIND_SERVICE_TIMEOUT_IN_MS);
+    }
+
+    private void cancelWatchDog() {
+        assert LauncherThread.runningOnLauncherThread();
+        if (mOnServiceConnectedWatchDog == null) return;
+        LauncherThread.removeCallbacks(mOnServiceConnectedWatchDog);
+        mOnServiceConnectedWatchDog = null;
+    }
+
     @VisibleForTesting
     protected ChildServiceConnection createServiceConnection(int bindFlags) {
         assert LauncherThread.runningOnLauncherThread();
@@ -621,5 +667,10 @@ public class ChildProcessConnection {
             ChildProcessCreationParams creationParams) {
         return new ChildProcessConnection(context, serviceName, bindAsExternalService,
                 serviceBundle, creationParams, false /* doBind */);
+    }
+
+    @VisibleForTesting
+    public boolean didOnServiceConnectedForTesting() {
+        return mDidOnServiceConnected;
     }
 }
