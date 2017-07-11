@@ -53,7 +53,8 @@ class JavaHomePageClient : public MostVisitedSites::HomePageClient {
   void QueryHomePageTitle(TitleCallback title_callback) override;
 
  private:
-  void OnTitleEntryFound(bool success,
+  void OnTitleEntryFound(TitleCallback title_callback,
+                         bool success,
                          const history::URLRow& row,
                          const history::VisitVector& visits);
 
@@ -62,7 +63,6 @@ class JavaHomePageClient : public MostVisitedSites::HomePageClient {
 
   // Used in loading titles.
   base::CancelableTaskTracker task_tracker_;
-  TitleCallback title_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaHomePageClient);
 };
@@ -74,48 +74,39 @@ JavaHomePageClient::JavaHomePageClient(JNIEnv* env,
   DCHECK(profile);
 }
 
-void JavaHomePageClient::QueryHomePageTitle(
-    base::OnceCallback<void(const base::Optional<base::string16>&)>
-        title_callback) {
-  if (!title_callback_.is_null()) {
-    // A finished task always has to call the callback.
-    DCHECK(task_tracker_.HasTrackedTasks());
-    // If the last callback was not called, drop it as data would be stale.
-    task_tracker_.TryCancelAll();
-  }
+void JavaHomePageClient::QueryHomePageTitle(TitleCallback title_callback) {
   DCHECK(!title_callback.is_null());
-  title_callback_ = std::move(title_callback);
   GURL url = GetHomePageUrl();
   if (url.is_empty()) {
-    std::move(title_callback_).Run(base::nullopt);
+    std::move(title_callback).Run(base::nullopt);
     return;
   }
   history::HistoryService* const history_service =
       HistoryServiceFactory::GetForProfileIfExists(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service) {
-    std::move(title_callback_).Run(base::nullopt);
+    std::move(title_callback).Run(base::nullopt);
     return;
   }
   // If the client is destroyed, the tracker will cancel this task automatically
   // and the callback will not be called. Therefore, base::Unretained works.
-  // TODO(fhorschig): Bind the title_callback_ to |OnTitleEntryFound| as soon as
-  // |QueryURL| supports base::OnceCallback.
-  history_service->QueryURL(url,
-                            /*want_visits=*/false,
-                            base::Bind(&JavaHomePageClient::OnTitleEntryFound,
-                                       base::Unretained(this)),
-                            &task_tracker_);
+  history_service->QueryURL(
+      url,
+      /*want_visits=*/false,
+      base::BindOnce(&JavaHomePageClient::OnTitleEntryFound,
+                     base::Unretained(this), std::move(title_callback)),
+      &task_tracker_);
 }
 
-void JavaHomePageClient::OnTitleEntryFound(bool success,
+void JavaHomePageClient::OnTitleEntryFound(TitleCallback title_callback,
+                                           bool success,
                                            const history::URLRow& row,
                                            const history::VisitVector& visits) {
   if (!success) {
-    std::move(title_callback_).Run(base::nullopt);
+    std::move(title_callback).Run(base::nullopt);
     return;
   }
-  std::move(title_callback_).Run(row.title());
+  std::move(title_callback).Run(row.title());
 }
 
 bool JavaHomePageClient::IsHomePageEnabled() const {
