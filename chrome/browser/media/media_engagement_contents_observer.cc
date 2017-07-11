@@ -143,6 +143,11 @@ bool MediaEngagementContentsObserver::IsSignificantPlayer(
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
   DCHECK(!significant_playback_recorded_);
 
+  // Do not record significant playback if the tab did not make
+  // a sound in the last two seconds.
+  if (!web_contents()->WasRecentlyAudible())
+    return;
+
   significant_playback_recorded_ = true;
 
   if (committed_origin_.unique())

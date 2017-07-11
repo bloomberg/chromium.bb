@@ -429,4 +429,8 @@ void TestWebContents::SaveFrameWithHeaders(const GURL& url,
   save_frame_headers_ = headers;
 }
 
+void TestWebContents::SetWasRecentlyAudible(bool audible) {
+  audio_stream_monitor()->set_was_recently_audible_for_testing(audible);
+}
+
 }  // namespace content

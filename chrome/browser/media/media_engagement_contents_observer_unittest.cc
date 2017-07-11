@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MediaEngagementContentsObserverTest
@@ -22,6 +23,8 @@ class MediaEngagementContentsObserverTest
     scoped_feature_list_.InitFromCommandLine("media-engagement", std::string());
 
     ChromeRenderViewHostTestHarness::SetUp();
+    SetContents(content::WebContentsTester::CreateTestWebContents(
+        browser_context(), nullptr));
 
     MediaEngagementService* service = MediaEngagementService::Get(profile());
     ASSERT_TRUE(service);
@@ -31,7 +34,7 @@ class MediaEngagementContentsObserverTest
     playback_timer_ = new base::MockTimer(true, false);
     contents_observer_->SetTimerForTest(base::WrapUnique(playback_timer_));
 
-    ASSERT_FALSE(GetStoredPlayerStatesCount());
+    SimulateInaudible();
   }
 
   bool IsTimerRunning() const { return playback_timer_->IsRunning(); }
@@ -123,6 +126,16 @@ class MediaEngagementContentsObserverTest
     contents_observer_->committed_origin_ = url::Origin(url);
   }
 
+  void SimulateAudible() {
+    content::WebContentsTester::For(web_contents())
+        ->SetWasRecentlyAudible(true);
+  }
+
+  void SimulateInaudible() {
+    content::WebContentsTester::For(web_contents())
+        ->SetWasRecentlyAudible(false);
+  }
+
  private:
   // contents_observer_ auto-destroys when WebContents is destroyed.
   MediaEngagementContentsObserver* contents_observer_;
@@ -175,8 +188,8 @@ TEST_F(MediaEngagementContentsObserverTest, AreConditionsMet) {
 
   web_contents()->SetAudioMuted(true);
   EXPECT_FALSE(AreConditionsMet());
-
   web_contents()->SetAudioMuted(false);
+
   SimulateIsHidden();
   EXPECT_FALSE(AreConditionsMet());
 
@@ -255,6 +268,7 @@ TEST_F(MediaEngagementContentsObserverTest,
        SignificantPlaybackRecordedWhenTimerFires) {
   SimulatePlaybackStarted(0);
   SimulateIsVisible();
+  SimulateAudible();
   web_contents()->SetAudioMuted(false);
   SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(IsTimerRunning());
@@ -271,8 +285,19 @@ TEST_F(MediaEngagementContentsObserverTest, InteractionsRecorded) {
   Navigate(url);
   ExpectScores(url, 0.0, 1, 0);
 
+  SimulateAudible();
   SimulateSignificantPlaybackTime();
   ExpectScores(url, 0.0, 1, 1);
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       SignificantPlaybackNotRecordedIfAudioSilent) {
+  SimulatePlaybackStarted(0);
+  SimulateIsVisible();
+  SimulateInaudible();
+  web_contents()->SetAudioMuted(false);
+  EXPECT_FALSE(IsTimerRunning());
+  EXPECT_FALSE(WasSignificantPlaybackRecorded());
 }
 
 TEST_F(MediaEngagementContentsObserverTest, DoNotRecordAudiolessTrack) {
