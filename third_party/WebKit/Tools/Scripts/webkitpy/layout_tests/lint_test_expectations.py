@@ -35,7 +35,6 @@ from webkitpy.common.host import Host
 from webkitpy.common import exit_codes
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port.factory import platform_options
-from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
@@ -151,11 +150,6 @@ def main(argv, _, stderr):
         host = MockHost()
     else:
         host = Host()
-
-    # Need to generate MANIFEST.json since some expectations correspond to WPT
-    # tests that aren't files and only exist in the manifest.
-    _log.info('Generating MANIFEST.json for web-platform-tests ...')
-    WPTManifest.ensure_manifest(host)
 
     try:
         exit_status = run_checks(host, options, stderr)
