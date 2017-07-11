@@ -17,13 +17,13 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/grit/content_resources.h"
@@ -38,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "skia/ext/skia_commit_hash.h"
 #include "third_party/angle/src/common/version.h"
 #include "third_party/skia/include/core/SkMilestone.h"
@@ -334,21 +335,22 @@ std::unique_ptr<base::ListValue> CompositorInfo() {
 std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
   auto gpu_memory_buffer_info = base::MakeUnique<base::ListValue>();
 
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
-      BrowserGpuMemoryBufferManager::current();
-
+  const auto native_configurations =
+      gpu::GetNativeGpuMemoryBufferConfigurations();
   for (size_t format = 0;
        format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
     std::string native_usage_support;
     for (size_t usage = 0;
          usage < static_cast<size_t>(gfx::BufferUsage::LAST) + 1; usage++) {
-      if (gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
-              static_cast<gfx::BufferFormat>(format),
-              static_cast<gfx::BufferUsage>(usage)))
+      if (base::ContainsKey(
+              native_configurations,
+              std::make_pair(static_cast<gfx::BufferFormat>(format),
+                             static_cast<gfx::BufferUsage>(usage)))) {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),
             native_usage_support.empty() ? "" : ",",
             BufferUsageToString(static_cast<gfx::BufferUsage>(usage)));
+      }
     }
     if (native_usage_support.empty())
       native_usage_support = base::StringPrintf("Software only");

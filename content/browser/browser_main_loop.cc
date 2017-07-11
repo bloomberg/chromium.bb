@@ -1475,12 +1475,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)
 
-  // Enable the GpuMemoryBuffer dump provider with IO thread affinity. Note that
-  // unregistration happens on the IO thread (See
-  // BrowserProcessSubThread::IOThreadPreCleanUp).
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      BrowserGpuMemoryBufferManager::current(), "BrowserGpuMemoryBufferManager",
-      io_thread_->task_runner());
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       tracing::GraphicsMemoryDumpProvider::GetInstance(), "AndroidGraphics",

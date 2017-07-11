@@ -53,7 +53,6 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_stream_constants.h"
@@ -806,10 +805,13 @@ void CompositorImpl::InitializeDisplay(
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.enable_color_correct_rendering =
       base::FeatureList::IsEnabled(features::kColorCorrectRendering);
+  auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
+                                        ->gpu_channel_establish_factory()
+                                        ->GetGpuMemoryBufferManager();
   display_.reset(new cc::Display(
-      viz::ServerSharedBitmapManager::current(),
-      BrowserGpuMemoryBufferManager::current(), renderer_settings,
-      frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
+      viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
+      renderer_settings, frame_sink_id_, std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   auto layer_tree_frame_sink =
@@ -819,7 +821,8 @@ void CompositorImpl::InitializeDisplay(
                 vulkan_context_provider)
           : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
-                nullptr, BrowserGpuMemoryBufferManager::current(),
+                nullptr /* worker_context_provider */,
+                gpu_memory_buffer_manager,
                 viz::ServerSharedBitmapManager::current());
 
   display_->SetVisible(true);
