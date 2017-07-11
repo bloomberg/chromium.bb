@@ -231,11 +231,11 @@ public class TabWebContentsObserver extends WebContentsObserver {
             mTab.updateTitle();
             mTab.handleDidFinishNavigation(url, pageTransition);
             mTab.setIsShowingErrorPage(isErrorPage);
-        }
 
-        observers.rewind();
-        while (observers.hasNext()) {
-            observers.next().onUrlUpdated(mTab);
+            observers.rewind();
+            while (observers.hasNext()) {
+                observers.next().onUrlUpdated(mTab);
+            }
         }
 
         FullscreenManager fullscreenManager = mTab.getFullscreenManager();
