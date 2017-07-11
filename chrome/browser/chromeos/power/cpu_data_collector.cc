@@ -203,17 +203,19 @@ void SampleCpuFreqData(
     std::vector<std::string>* cpu_freq_state_names,
     std::vector<CpuDataCollector::StateOccupancySample>* freq_samples) {
   base::Time start_time = base::Time::Now();
+  int online_cpu_count = 0;
   for (int cpu = 0; cpu < cpu_count; ++cpu) {
     CpuDataCollector::StateOccupancySample freq_sample;
     freq_sample.time_in_state.reserve(cpu_freq_state_names->size());
     freq_sample.time = base::Time::Now();
     freq_sample.cpu_online = CpuIsOnline(cpu);
+    online_cpu_count += (freq_sample.cpu_online ? 1 : 0);
     freq_samples->push_back(freq_sample);
   }
 
   if (base::PathExists(base::FilePath(kCpuFreqAllTimeInStatePath))) {
     if (!CpuDataCollector::ReadCpuFreqAllTimeInState(
-            cpu_count, base::FilePath(kCpuFreqAllTimeInStatePath),
+            online_cpu_count, base::FilePath(kCpuFreqAllTimeInStatePath),
             cpu_freq_state_names, freq_samples)) {
       freq_samples->clear();
       return;
@@ -353,7 +355,7 @@ bool CpuDataCollector::ReadCpuFreqTimeInState(
 }
 
 bool CpuDataCollector::ReadCpuFreqAllTimeInState(
-    int cpu_count,
+    int online_cpu_count,
     const base::FilePath& path,
     std::vector<std::string>* cpu_freq_state_names,
     std::vector<CpuDataCollector::StateOccupancySample>* freq_samples) {
@@ -382,7 +384,7 @@ bool CpuDataCollector::ReadCpuFreqAllTimeInState(
         base::SplitStringPiece(lines[line_num], "\t", base::TRIM_WHITESPACE,
                                base::SPLIT_WANT_NONEMPTY);
     int freq_in_khz;
-    if (array.size() != static_cast<size_t>(cpu_count) + 1 ||
+    if (array.size() != static_cast<size_t>(online_cpu_count) + 1 ||
         !base::StringToInt(array[0], &freq_in_khz)) {
       LOG(ERROR) << "Bad format at \"" << lines[line_num] << "\" in "
                  << path.value() << ". Dropping sample.";
@@ -391,11 +393,11 @@ bool CpuDataCollector::ReadCpuFreqAllTimeInState(
 
     const std::string state_name = base::IntToString(freq_in_khz / 1000);
     size_t index = EnsureInVector(state_name, cpu_freq_state_names);
-    for (int cpu = 0; cpu < cpu_count; ++cpu) {
-      // array.size() is previously checked to be equal to cpu_count+1. cpu
-      // ranges from [0,cpu_count), so cpu+1 never exceeds cpu_count and is
-      // safe.
-      if (!(*freq_samples)[cpu].cpu_online || array[cpu + 1] == "N/A") {
+    for (int cpu = 0; cpu < online_cpu_count; ++cpu) {
+      // array.size() is previously checked to be equal to online_cpu_count+1.
+      // cpu ranges from [0,online_cpu_count), so cpu+1 never exceeds
+      // online_cpu_count and is safe.
+      if (array[cpu + 1] == "N/A") {
         continue;
       }
       if (index >= (*freq_samples)[cpu].time_in_state.size())
