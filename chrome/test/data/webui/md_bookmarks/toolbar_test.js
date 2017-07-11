@@ -19,6 +19,12 @@ suite('<bookmarks-toolbar>', function() {
             createItem('2'),
             createItem('3'),
             createFolder('4', [], {unmodifiable: 'managed'}),
+            createFolder('5', []),
+            createFolder(
+                '6',
+                [
+                  createItem('61'),
+                ]),
           ])),
       selection: {
         items: new Set(),
@@ -107,5 +113,19 @@ suite('<bookmarks-toolbar>', function() {
 
     assertTrue(toolbar.$$('#addBookmarkButton').disabled);
     assertTrue(toolbar.$$('#importBookmarkButton').disabled);
+  });
+
+  test('sort button is disabled when folder is empty', function() {
+    MockInteractions.tap(toolbar.$.menuButton);
+
+    store.data.selectedFolder = '6';
+    store.notifyObservers();
+    assertTrue(toolbar.canSortFolder_);
+
+    store.data.selectedFolder = '5';
+    store.notifyObservers();
+
+    assertFalse(toolbar.canSortFolder_);
+    assertTrue(toolbar.$$('#sortButton').disabled);
   });
 });

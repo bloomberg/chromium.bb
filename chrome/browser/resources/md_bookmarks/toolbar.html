@@ -64,9 +64,10 @@
     </cr-toolbar>
     <template is="cr-lazy-render" id="dropdown">
       <dialog is="cr-action-menu" role="menu">
-        <button class="dropdown-item"
+        <button id="sortButton"
+            class="dropdown-item"
             on-tap="onSortTap_"
-            disabled="[[!canChangeList_]]"
+            disabled="[[!canSortFolder_]]"
             role="menuitem">
           $i18n{menuSort}
         </button>
