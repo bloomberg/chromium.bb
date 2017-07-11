@@ -372,9 +372,7 @@ class ChunkDemuxerTest : public ::testing::Test {
                              const std::string& codecs) {
     ChunkDemuxer::Status status = demuxer_->AddId(source_id, mime_type, codecs);
     if (status == ChunkDemuxer::kOk)
-      demuxer_->SetTracksWatcher(
-          source_id, base::Bind(&ChunkDemuxerTest::InitSegmentReceived,
-                                base::Unretained(this)));
+      demuxer_->SetTracksWatcher(source_id, init_segment_received_cb_);
     return status;
   }
 
@@ -2334,11 +2332,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
       &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "audio/webm", "vorbis"),
-            ChunkDemuxer::kOk);
-  demuxer_->SetTracksWatcher(kSourceId,
-                             base::Bind(&ChunkDemuxerTest::InitSegmentReceived,
-                                        base::Unretained(this)));
+  ASSERT_EQ(AddId(kSourceId, "audio/webm", "vorbis"), ChunkDemuxer::kOk);
 
   // Video track is unexpected per mimetype.
   EXPECT_MEDIA_LOG(InitSegmentMismatchesMimeType("Video", "vp8"));
@@ -2352,10 +2346,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
       &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "video/webm", "vp8"), ChunkDemuxer::kOk);
-  demuxer_->SetTracksWatcher(kSourceId,
-                             base::Bind(&ChunkDemuxerTest::InitSegmentReceived,
-                                        base::Unretained(this)));
+  ASSERT_EQ(AddId(kSourceId, "video/webm", "vp8"), ChunkDemuxer::kOk);
 
   // Audio track is unexpected per mimetype.
   EXPECT_MEDIA_LOG(FoundStream("video"));
@@ -2371,11 +2362,7 @@ TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
       &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "video/webm", "vorbis,vp8"),
-            ChunkDemuxer::kOk);
-  demuxer_->SetTracksWatcher(kSourceId,
-                             base::Bind(&ChunkDemuxerTest::InitSegmentReceived,
-                                        base::Unretained(this)));
+  ASSERT_EQ(AddId(kSourceId, "video/webm", "vorbis,vp8"), ChunkDemuxer::kOk);
 
   // Video track is also expected per mimetype.
   EXPECT_MEDIA_LOG(FoundStream("audio"));
@@ -2391,11 +2378,7 @@ TEST_F(ChunkDemuxerTest, VideoOnlyHeaderWithAVType) {
       &host_, CreateInitDoneCB(kNoTimestamp, CHUNK_DEMUXER_ERROR_APPEND_FAILED),
       true);
 
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "video/webm", "vorbis,vp8"),
-            ChunkDemuxer::kOk);
-  demuxer_->SetTracksWatcher(kSourceId,
-                             base::Bind(&ChunkDemuxerTest::InitSegmentReceived,
-                                        base::Unretained(this)));
+  ASSERT_EQ(AddId(kSourceId, "video/webm", "vorbis,vp8"), ChunkDemuxer::kOk);
 
   // Audio track is also expected per mimetype.
   EXPECT_MEDIA_LOG(FoundStream("video"));
@@ -3082,7 +3065,7 @@ TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
 #endif
 #endif
 
-  EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", "avc1.4D4041"), expected);
+  EXPECT_EQ(AddId("source_id", "video/mp4", "avc1.4D4041"), expected);
 }
 
 // Test codec ID's that are not compliant with RFC6381, but have been
@@ -3100,8 +3083,7 @@ TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   };
 
   for (size_t i = 0; i < arraysize(codec_ids); ++i) {
-    ChunkDemuxer::Status result =
-        demuxer_->AddId("source_id", "audio/mp4", codec_ids[i]);
+    ChunkDemuxer::Status result = AddId("source_id", "audio/mp4", codec_ids[i]);
 
     EXPECT_EQ(result, expected)
         << "Fail to add codec_id '" << codec_ids[i] << "'";
@@ -4804,8 +4786,7 @@ TEST_F(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
   expected = ChunkDemuxer::kOk;
 #endif
 
-  EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", "vp09.00.10.08"),
-            expected);
+  EXPECT_EQ(AddId("source_id", "video/mp4", "vp09.00.10.08"), expected);
 }
 
 // TODO(servolk): Add a unit test with multiple audio/video tracks using the
