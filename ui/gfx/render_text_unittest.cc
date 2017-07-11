@@ -1769,12 +1769,6 @@ TEST_P(RenderTextHarfBuzzTest, GraphemePositions) {
     { kText3, 50, 6, 6 },
   };
 
-#if defined(OS_WIN)
-  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
-
   RenderText* render_text = GetRenderText();
   for (size_t i = 0; i < arraysize(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
@@ -1794,12 +1788,6 @@ TEST_P(RenderTextHarfBuzzTest, GraphemePositions) {
 
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 TEST_P(RenderTextHarfBuzzTest, MidGraphemeSelectionBounds) {
-#if defined(OS_WIN)
-  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
-
   // Test that selection bounds may be set amid multi-character graphemes.
   const base::string16 kHindi = WideToUTF16(L"\x0915\x093f");
   const base::string16 kThai = WideToUTF16(L"\x0e08\x0e33");
@@ -1950,12 +1938,6 @@ TEST_P(RenderTextTest, EdgeSelectionModels) {
     { kRTLGrapheme, base::i18n::RIGHT_TO_LEFT },
     { kHebrewLatin, base::i18n::RIGHT_TO_LEFT },
   };
-
-#if defined(OS_WIN)
-  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
 
   RenderText* render_text = GetRenderText();
   for (size_t i = 0; i < arraysize(cases); i++) {

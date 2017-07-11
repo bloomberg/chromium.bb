@@ -4,18 +4,14 @@
 
 #include "ui/gfx/animation/animation.h"
 
-#include "base/win/windows_version.h"
-
 namespace gfx {
 
 // static
 bool Animation::ShouldRenderRichAnimation() {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    BOOL result;
-    // Get "Turn off all unnecessary animations" value.
-    if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {
-      return !!result;
-    }
+  BOOL result;
+  // Get "Turn off all unnecessary animations" value.
+  if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {
+    return !!result;
   }
   return !::GetSystemMetrics(SM_REMOTESESSION);
 }

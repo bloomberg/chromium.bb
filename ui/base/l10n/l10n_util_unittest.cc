@@ -30,10 +30,6 @@
 #include <cstdlib>
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 #if !defined(OS_MACOSX)
 #include "ui/base/test/data/resource.h"
 #endif
@@ -376,22 +372,12 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   }
 
 #if defined(OS_WIN)
-  // Amharic should be blocked unless OS is Vista or newer.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    base::i18n::SetICUDefaultLocale("am");
-    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
-    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
-    base::i18n::SetICUDefaultLocale("en-GB");
-    EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("am"));
-    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
-  } else {
-    base::i18n::SetICUDefaultLocale("am");
-    EXPECT_EQ("am", l10n_util::GetApplicationLocale(""));
-    EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
-    base::i18n::SetICUDefaultLocale("en-GB");
-    EXPECT_EQ("am", l10n_util::GetApplicationLocale("am"));
-    EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
-  }
+  base::i18n::SetICUDefaultLocale("am");
+  EXPECT_EQ("am", l10n_util::GetApplicationLocale(""));
+  EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
+  base::i18n::SetICUDefaultLocale("en-GB");
+  EXPECT_EQ("am", l10n_util::GetApplicationLocale("am"));
+  EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
 #endif  // defined(OS_WIN)
 
   // Clean up.

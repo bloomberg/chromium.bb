@@ -11,11 +11,6 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
-#if defined(OS_WIN)
-#include "base/test/scoped_task_environment.h"
-#include "base/win/windows_version.h"
-#endif
-
 namespace gfx {
 
 class AnimationTest: public testing::Test {
@@ -135,18 +130,12 @@ TEST_F(AnimationTest, DeleteFromEnd) {
 
 TEST_F(AnimationTest, ShouldRenderRichAnimation) {
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    BOOL result;
-    ASSERT_NE(
-        0, ::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0));
-    // ShouldRenderRichAnimation() should check the SPI_GETCLIENTAREAANIMATION
-    // value on Vista.
-    EXPECT_EQ(!!result, Animation::ShouldRenderRichAnimation());
-  } else {
-    // On XP, the function should check the SM_REMOTESESSION value.
-    EXPECT_EQ(!::GetSystemMetrics(SM_REMOTESESSION),
-              Animation::ShouldRenderRichAnimation());
-  }
+  BOOL result;
+  ASSERT_NE(0,
+            ::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0));
+  // ShouldRenderRichAnimation() should check the SPI_GETCLIENTAREAANIMATION
+  // value on Vista.
+  EXPECT_EQ(!!result, Animation::ShouldRenderRichAnimation());
 #else
   EXPECT_TRUE(Animation::ShouldRenderRichAnimation());
 #endif

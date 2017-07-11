@@ -16,7 +16,6 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "skia/ext/platform_canvas.h"
@@ -106,12 +105,6 @@ int ComputeAnimationProgress(int frame_width,
   double interval = static_cast<double>(animation_width) / pixels_per_second;
   double ratio = fmod(animated_seconds, interval) / interval;
   return static_cast<int>(animation_width * ratio) - object_width;
-}
-
-RECT InsetRect(const RECT* rect, int size) {
-  gfx::Rect result(*rect);
-  result.Inset(size, size);
-  return result.ToRECT();
 }
 
 // Custom scoped object for storing DC and a bitmap that was selected into it,
@@ -1365,10 +1358,7 @@ HRESULT NativeThemeWin::PaintProgressBar(
   const int kDeterminateOverlayPixelsPerSecond = 300;
   const int kDeterminateOverlayWidth = 120;
   const int kIndeterminateOverlayPixelsPerSecond =  175;
-  const int kVistaIndeterminateOverlayWidth = 120;
-  const int kXPIndeterminateOverlayWidth = 55;
-  // The thickness of the bar frame inside |value_rect|
-  const int kXPBarPadding = 3;
+  const int kIndeterminateOverlayWidth = 120;
 
   RECT bar_rect = rect.ToRECT();
   RECT value_rect = gfx::Rect(extra.value_rect_x,
@@ -1386,27 +1376,19 @@ HRESULT NativeThemeWin::PaintProgressBar(
 
   draw_theme_(handle, hdc, PP_BAR, 0, &bar_rect, NULL);
 
-  bool pre_vista = base::win::GetVersion() < base::win::VERSION_VISTA;
   int bar_width = bar_rect.right - bar_rect.left;
   if (!extra.determinate) {
     // The glossy overlay for the indeterminate progress bar has a small pause
     // after each animation. We emulate this by adding an invisible margin the
     // animation has to traverse.
     int width_with_margin = bar_width + kIndeterminateOverlayPixelsPerSecond;
-    int overlay_width = pre_vista ?
-        kXPIndeterminateOverlayWidth : kVistaIndeterminateOverlayWidth;
+    int overlay_width = kIndeterminateOverlayWidth;
     RECT overlay_rect = bar_rect;
     overlay_rect.left += ComputeAnimationProgress(
         width_with_margin, overlay_width, kIndeterminateOverlayPixelsPerSecond,
         extra.animated_seconds);
     overlay_rect.right = overlay_rect.left + overlay_width;
-    if (pre_vista) {
-      RECT shrunk_rect = InsetRect(&overlay_rect, kXPBarPadding);
-      RECT shrunk_bar_rect = InsetRect(&bar_rect, kXPBarPadding);
-      draw_theme_(handle, hdc, PP_CHUNK, 0, &shrunk_rect, &shrunk_bar_rect);
-    } else {
-      draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &bar_rect);
-    }
+    draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &bar_rect);
     return S_OK;
   }
 
@@ -1419,26 +1401,18 @@ HRESULT NativeThemeWin::PaintProgressBar(
         DTBG_MIRRORDC : 0u,
     bar_rect
   };
-  if (pre_vista) {
-    // On XP, the progress bar is chunk-style and has no glossy effect.  We need
-    // to shrink the destination rect to fit the part inside the bar with an
-    // appropriate margin.
-    RECT shrunk_value_rect = InsetRect(&value_rect, kXPBarPadding);
-    draw_theme_ex_(handle, hdc, PP_CHUNK, 0, &shrunk_value_rect,
-                   &value_draw_options);
-  } else  {
-    // On Vista or later, the progress bar part has a single-block value part
-    // and a glossy effect.  The value part has exactly same height as the bar
-    // part, so we don't need to shrink the rect.
-    draw_theme_ex_(handle, hdc, PP_FILL, 0, &value_rect, &value_draw_options);
 
-    RECT overlay_rect = value_rect;
-    overlay_rect.left += ComputeAnimationProgress(
-        bar_width, kDeterminateOverlayWidth, kDeterminateOverlayPixelsPerSecond,
-        extra.animated_seconds);
-    overlay_rect.right = overlay_rect.left + kDeterminateOverlayWidth;
-    draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &value_rect);
-  }
+  // On Vista or later, the progress bar part has a single-block value part
+  // and a glossy effect. The value part has exactly same height as the bar
+  // part, so we don't need to shrink the rect.
+  draw_theme_ex_(handle, hdc, PP_FILL, 0, &value_rect, &value_draw_options);
+
+  RECT overlay_rect = value_rect;
+  overlay_rect.left += ComputeAnimationProgress(
+      bar_width, kDeterminateOverlayWidth, kDeterminateOverlayPixelsPerSecond,
+      extra.animated_seconds);
+  overlay_rect.right = overlay_rect.left + kDeterminateOverlayWidth;
+  draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &value_rect);
   return S_OK;
 }
 
@@ -1764,9 +1738,7 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kDisabled:
           return ABS_DOWNDISABLED;
         case kHovered:
-          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
-          return base::win::GetVersion() < base::win::VERSION_VISTA ?
-              ABS_DOWNHOT : ABS_DOWNHOVER;
+          return ABS_DOWNHOVER;
         case kNormal:
           return ABS_DOWNNORMAL;
         case kPressed:
@@ -1780,9 +1752,7 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kDisabled:
           return ABS_LEFTDISABLED;
         case kHovered:
-          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
-          return base::win::GetVersion() < base::win::VERSION_VISTA ?
-              ABS_LEFTHOT : ABS_LEFTHOVER;
+          return ABS_LEFTHOVER;
         case kNormal:
           return ABS_LEFTNORMAL;
         case kPressed:
@@ -1796,9 +1766,7 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kDisabled:
           return ABS_RIGHTDISABLED;
         case kHovered:
-          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
-          return base::win::GetVersion() < base::win::VERSION_VISTA ?
-              ABS_RIGHTHOT : ABS_RIGHTHOVER;
+          return ABS_RIGHTHOVER;
         case kNormal:
           return ABS_RIGHTNORMAL;
         case kPressed:
@@ -1813,9 +1781,7 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kDisabled:
           return ABS_UPDISABLED;
         case kHovered:
-          // Mimic ScrollbarThemeChromiumWin.cpp in WebKit.
-          return base::win::GetVersion() < base::win::VERSION_VISTA ?
-              ABS_UPHOT : ABS_UPHOVER;
+          return ABS_UPHOVER;
         case kNormal:
           return ABS_UPNORMAL;
         case kPressed:
@@ -1831,9 +1797,7 @@ int NativeThemeWin::GetWindowsState(Part part,
         case kDisabled:
           return SCRBS_DISABLED;
         case kHovered:
-          // Mimic WebKit's behaviour in ScrollbarThemeChromiumWin.cpp.
-          return base::win::GetVersion() < base::win::VERSION_VISTA ?
-              SCRBS_HOT : SCRBS_HOVER;
+          return SCRBS_HOVER;
         case kNormal:
           return SCRBS_NORMAL;
         case kPressed:
