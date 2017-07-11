@@ -83,6 +83,14 @@ enum UMALinuxDistro {
   UMA_LINUX_DISTRO_FEDORA_OTHER = 10,
   UMA_LINUX_DISTRO_FEDORA_24 = 11,
   UMA_LINUX_DISTRO_FEDORA_25 = 12,
+  UMA_LINUX_DISTRO_FEDORA_26 = 13,
+  UMA_LINUX_DISTRO_DEBIAN_9 = 14,
+  UMA_LINUX_DISTRO_ARCH = 15,
+  UMA_LINUX_DISTRO_CENTOS = 16,
+  UMA_LINUX_DISTRO_ELEMENTARY = 17,
+  UMA_LINUX_DISTRO_MINT = 18,
+  UMA_LINUX_DISTRO_RHEL = 19,
+  UMA_LINUX_DISTRO_SUSE_ENTERPRISE = 20,
   // Note: Add new distros to the list above this line, and update LinuxDistro
   // in tools/metrics/histograms/enums.xml accordingly.
   UMA_LINUX_DISTRO_MAX
@@ -212,7 +220,7 @@ void RecordLinuxDistro() {
       // Format: Ubuntu YY.MM.P [LTS]
       // We are only concerned with release (YY.MM) not the patch (P).
       distro_result = UMA_LINUX_DISTRO_UBUNTU_OTHER;
-      if (distro_tokens.size() >= 3) {
+      if (distro_tokens.size() >= 2) {
         base::Version version(distro_tokens[1]);
         if (version.IsValid()) {
           if (version.CompareToWildcardString("14.04.*") == 0) {
@@ -229,7 +237,7 @@ void RecordLinuxDistro() {
     } else if (distro_tokens[0] == "openSUSE") {
       // Format: openSUSE Leap RR.R
       distro_result = UMA_LINUX_DISTRO_OPENSUSE_OTHER;
-      if (distro_tokens.size() >= 4 && distro_tokens[1] == "Leap" &&
+      if (distro_tokens.size() >= 3 && distro_tokens[1] == "Leap" &&
           distro_tokens[2] == "42.2") {
         distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_2;
       }
@@ -239,8 +247,12 @@ void RecordLinuxDistro() {
       distro_result = UMA_LINUX_DISTRO_DEBIAN_OTHER;
       if (distro_tokens.size() >= 3) {
         base::Version version(distro_tokens[2]);
-        if (version.IsValid() && version.CompareToWildcardString("8.*")) {
-          distro_result = UMA_LINUX_DISTRO_DEBIAN_8;
+        if (version.IsValid()) {
+          if (version.CompareToWildcardString("8.*")) {
+            distro_result = UMA_LINUX_DISTRO_DEBIAN_8;
+          } else if (version.CompareToWildcardString("9.*")) {
+            distro_result = UMA_LINUX_DISTRO_DEBIAN_9;
+          }
         }
       }
     } else if (distro_tokens[0] == "Fedora") {
@@ -251,8 +263,32 @@ void RecordLinuxDistro() {
           distro_result = UMA_LINUX_DISTRO_FEDORA_24;
         } else if (distro_tokens[2] == "25") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_25;
+        } else if (distro_tokens[2] == "26") {
+          distro_result = UMA_LINUX_DISTRO_FEDORA_26;
         }
       }
+    } else if (distro_tokens[0] == "Arch") {
+      // Format: Arch Linux
+      distro_result = UMA_LINUX_DISTRO_ARCH;
+    } else if (distro_tokens[0] == "CentOS") {
+      // Format: CentOS [Linux] release <version> (<codename>)
+      distro_result = UMA_LINUX_DISTRO_CENTOS;
+    } else if (distro_tokens[0] == "elementary") {
+      // Format: elementary OS <release name>
+      distro_result = UMA_LINUX_DISTRO_ELEMENTARY;
+    } else if (distro_tokens.size() >= 2 && distro_tokens[1] == "Mint") {
+      // Format: Linux Mint RR <codename>
+      distro_result = UMA_LINUX_DISTRO_MINT;
+    } else if (distro_tokens.size() >= 4 && distro_tokens[0] == "Red" &&
+               distro_tokens[1] == "Hat" && distro_tokens[2] == "Enterprise" &&
+               distro_tokens[3] == "Linux") {
+      // Format: Red Hat Enterprise Linux <variant> [release] R.P (<codename>)
+      distro_result = UMA_LINUX_DISTRO_RHEL;
+    } else if (distro_tokens.size() >= 3 && distro_tokens[0] == "SUSE" &&
+               distro_tokens[1] == "Linux" &&
+               distro_tokens[2] == "Enterprise") {
+      // Format: SUSE Linux Enterprise <variant> RR (<platform>)
+      distro_result = UMA_LINUX_DISTRO_SUSE_ENTERPRISE;
     }
   }
 
