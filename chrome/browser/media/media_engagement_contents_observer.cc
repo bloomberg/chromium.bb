@@ -39,6 +39,7 @@ void MediaEngagementContentsObserver::ClearPlayerStates() {
   for (auto const& p : player_states_)
     delete p.second;
   player_states_.clear();
+  significant_players_.clear();
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
@@ -49,9 +50,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     return;
   }
 
-  DCHECK(!playback_timer_->IsRunning());
-  DCHECK(significant_players_.empty());
-
+  playback_timer_->Stop();
   ClearPlayerStates();
 
   url::Origin new_origin(navigation_handle->GetURL());
