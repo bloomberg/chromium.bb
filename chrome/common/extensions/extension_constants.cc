@@ -76,6 +76,8 @@ const char kSpeechSynthesisExtensionId[] =
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 const char kWebstoreWidgetAppId[] = "fbjakikfhfdajcamjleinfciajelkpek";
 const char kZIPUnpackerExtensionId[] = "oedeeodfidgoollimchfdnbmhcpnklnd";
+const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
+const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
 #else
 // The extension id for the web store extension.
 const char kChromeVoxExtensionId[] =

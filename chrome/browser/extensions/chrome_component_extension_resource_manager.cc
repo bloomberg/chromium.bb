@@ -36,9 +36,6 @@ ChromeComponentExtensionResourceManager() {
     {"webstore_widget/app/icons/icon_16.png", IDR_WEBSTORE_ICON_16},
     {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
     {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
-#ifndef DISABLE_NACL
-    {"zip_archiver/zip_archiver_pnacl.pexe.js", IDR_ZIP_ARCHIVER_PEXE},
-#endif
 #endif
   };
 

@@ -1,0 +1,40 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+input,
+paper-button,
+paper-checkbox {
+  -webkit-app-region: no-drag;
+}
+
+h3 {
+  margin: 0;
+}
+
+:host {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+#bar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+#buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#acceptButton {
+  color: rgb(33, 150, 243);
+}
+
+#cancelButton {
+  color: #9e9e9e;
+}
