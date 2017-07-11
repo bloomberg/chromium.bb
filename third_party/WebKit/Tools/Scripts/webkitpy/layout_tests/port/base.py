@@ -1021,6 +1021,9 @@ class Port(object):
     def inspector_build_directory(self):
         return self._build_path('resources', 'inspector')
 
+    def generated_sources_directory(self):
+        return self._build_path('gen')
+
     def apache_config_directory(self):
         return self._path_finder.path_from_tools_scripts('apache_config')
 

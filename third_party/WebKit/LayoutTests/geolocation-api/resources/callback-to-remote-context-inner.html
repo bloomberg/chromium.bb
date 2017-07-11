@@ -2,15 +2,16 @@
 <html>
   <head>
     <script src="../../resources/js-test.js"></script>
-    <script src="../../resources/mojo-helpers.js"></script>
+    <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+    <script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+    <script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
     <script src="geolocation-mock.js"></script>
     <script>
       function init() {
-          geolocationMock.then(mock => {
-              mock.setGeolocationPermission(true);
-              mock.setGeolocationPosition(51.478, -0.166, 100);
-              window.parent.onIframeReady()
-          });
+          let mock = geolocationMock;
+          mock.setGeolocationPermission(true);
+          mock.setGeolocationPosition(51.478, -0.166, 100);
+          window.parent.onIframeReady()
       }
     </script>
   </head>

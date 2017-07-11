@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -11,21 +13,20 @@ description("Tests that when a watch times out and is cleared from the error cal
 
 var error;
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPosition(51.478, -0.166, 100.0);
+let mock = geolocationMock;
+mock.setGeolocationPosition(51.478, -0.166, 100.0);
 
-    var watchId = navigator.geolocation.watchPosition(function() {
-        testFailed('Success callback invoked unexpectedly');
-        finishJSTest();
-    }, function(e) {
-        error = e;
-        shouldBe('error.code', 'error.TIMEOUT');
-        shouldBe('error.message', '"Timeout expired"');
-        navigator.geolocation.clearWatch(watchId);
-        window.setTimeout(finishJSTest, 0);
-    }, {
-        timeout: 0
-    });
+var watchId = navigator.geolocation.watchPosition(function() {
+    testFailed('Success callback invoked unexpectedly');
+    finishJSTest();
+}, function(e) {
+    error = e;
+    shouldBe('error.code', 'error.TIMEOUT');
+    shouldBe('error.message', '"Timeout expired"');
+    navigator.geolocation.clearWatch(watchId);
+    window.setTimeout(finishJSTest, 0);
+}, {
+    timeout: 0
 });
 
 window.jsTestIsAsync = true;

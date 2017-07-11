@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -42,15 +44,14 @@ function onIframeUnloaded() {
 }
 
 
-geolocationMock.then(mock => {
-    // Prime the Geolocation instance by denying permission. This makes sure that we execute the
-    // same code path for both preemptive and non-preemptive permissions policies.
-    mock.setGeolocationPermission(false);
-    mock.setGeolocationPosition(51.478, -0.166, 100);
+// Prime the Geolocation instance by denying permission. This makes sure that we execute the
+// same code path for both preemptive and non-preemptive permissions policies.
+let mock = geolocationMock;
+mock.setGeolocationPermission(false);
+mock.setGeolocationPosition(51.478, -0.166, 100);
 
-    iframe.src = 'resources/disconnected-frame-inner.html';
-    document.body.appendChild(iframe);
-});
+iframe.src = 'resources/disconnected-frame-inner.html';
+document.body.appendChild(iframe);
 
 window.jsTestIsAsync = true;
 </script>

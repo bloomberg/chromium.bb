@@ -2,7 +2,9 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/permissions/permission.mojom.js"></script>
 <script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
@@ -17,71 +19,70 @@ var position;
 var error;
 var isPageVisible = true;
 
-geolocationMock.then(mock => {
-    mock.setGeolocationPermission(true);
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
 
-    debug("* Page is visible");
+debug("* Page is visible");
 
-    var mockLatitude = 51.478;
-    var mockLongitude = -0.166;
-    var mockAccuracy = 100.0;
+var mockLatitude = 51.478;
+var mockLongitude = -0.166;
+var mockAccuracy = 100.0;
 
-    function updatePosition() {
-        if (!window.testRunner)
-            return;
-        ++mockLatitude;
-        ++mockLongitude;
-        mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-        debug('device moved to (' + mockLatitude + ', ' + mockLongitude + ')');
+function updatePosition() {
+    if (!window.testRunner)
+        return;
+    ++mockLatitude;
+    ++mockLongitude;
+    mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
+    debug('device moved to (' + mockLatitude + ', ' + mockLongitude + ')');
+}
+
+updatePosition();
+
+var state = 0;
+
+function checkPosition(p) {
+    position = p;
+    shouldBe('position.coords.latitude', '' + mockLatitude);
+    shouldBe('position.coords.longitude', '' + mockLongitude);
+    debug('');
+}
+
+function showPageAndUpdatePosition() {
+    shouldBeFalse('isPageVisible');
+    debug('');
+    state++;
+    if (window.testRunner) {
+        debug("*Showing page");
+        testRunner.setPageVisibility("visible");
+        isPageVisible = true;
     }
-
     updatePosition();
+}
 
-    var state = 0;
-
-    function checkPosition(p) {
-        position = p;
-        shouldBe('position.coords.latitude', '' + mockLatitude);
-        shouldBe('position.coords.longitude', '' + mockLongitude);
-        debug('');
-    }
-
-    function showPageAndUpdatePosition() {
-        shouldBeFalse('isPageVisible');
-        debug('');
-        state++;
-        if (window.testRunner) {
-            debug("*Showing page");
-            testRunner.setPageVisibility("visible");
-            isPageVisible = true;
-        }
-        updatePosition();
-    }
-
-    navigator.geolocation.watchPosition(function(p) {
-        debug("Page is notified of the position change");
-        shouldBeTrue('isPageVisible');
-        state++;
-        checkPosition(p);
-        switch(state) {
-            case 2: {
-                if (window.testRunner) {
-                    debug("* Hiding page");
-                    testRunner.setPageVisibility("hidden");
-                    isPageVisible = false;
-                }
-                setTimeout(showPageAndUpdatePosition, 100);
-                break;
+navigator.geolocation.watchPosition(function(p) {
+    debug("Page is notified of the position change");
+    shouldBeTrue('isPageVisible');
+    state++;
+    checkPosition(p);
+    switch(state) {
+        case 2: {
+            if (window.testRunner) {
+                debug("* Hiding page");
+                testRunner.setPageVisibility("hidden");
+                isPageVisible = false;
             }
-            case 4:
-                finishJSTest();
-                return;
+            setTimeout(showPageAndUpdatePosition, 100);
+            break;
         }
-        updatePosition();
-    }, function(e) {
-        testFailed('Error callback invoked unexpectedly');
-        finishJSTest();
-    });
+        case 4:
+            finishJSTest();
+            return;
+    }
+    updatePosition();
+}, function(e) {
+    testFailed('Error callback invoked unexpectedly');
+    finishJSTest();
 });
 
 </script>
