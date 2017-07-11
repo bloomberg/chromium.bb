@@ -100,10 +100,12 @@ class BackgroundFetchTestBase : public ::testing::Test {
   // Returns the origin that should be used for Background Fetch tests.
   const url::Origin& origin() const { return origin_; }
 
+ protected:
+  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+
  private:
   class RespondingDownloadManager;
 
-  TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
 
   RespondingDownloadManager* download_manager_;  // owned by |browser_context_|

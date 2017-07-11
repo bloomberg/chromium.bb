@@ -202,6 +202,8 @@ class BackgroundFetchTestBase::RespondingDownloadManager
 };
 
 BackgroundFetchTestBase::BackgroundFetchTestBase()
+    // Using REAL_IO_THREAD would give better coverage for thread safety, but
+    // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
     : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
       origin_(GURL(kTestOrigin)) {}
 

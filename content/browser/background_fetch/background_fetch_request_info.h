@@ -10,7 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
@@ -27,18 +28,23 @@ class DownloadItem;
 // TODO(peter): This can likely change to have a single owner, and thus become
 // an std::unique_ptr<>, when persistent storage has been implemented.
 class CONTENT_EXPORT BackgroundFetchRequestInfo
-    : public base::RefCountedThreadSafe<BackgroundFetchRequestInfo> {
+    : public base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo> {
  public:
   BackgroundFetchRequestInfo(int request_index,
                              const ServiceWorkerFetchRequest& fetch_request);
 
   // Populates the cached state for the in-progress |download_item|.
-  void PopulateDownloadState(DownloadItem* download_item,
-                             DownloadInterruptReason download_interrupt_reason);
+  void PopulateDownloadStateOnUI(
+      DownloadItem* download_item,
+      DownloadInterruptReason download_interrupt_reason);
+
+  void SetDownloadStatePopulated();
 
   // Populates the response portion of this object from the information made
   // available in the |download_item|.
-  void PopulateResponseFromDownloadItem(DownloadItem* download_item);
+  void PopulateResponseFromDownloadItemOnUI(DownloadItem* download_item);
+
+  void SetResponseDataPopulated();
 
   // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }
@@ -73,7 +79,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   const base::Time& GetResponseTime() const;
 
  private:
-  friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
+  friend class base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo>;
+  friend class base::DeleteHelper<BackgroundFetchRequestInfo>;
   friend class BackgroundFetchCrossOriginFilterTest;
 
   ~BackgroundFetchRequestInfo();
@@ -104,6 +111,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   base::FilePath file_path_;
   int64_t file_size_ = 0;
   base::Time response_time_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestInfo);
 };

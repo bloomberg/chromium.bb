@@ -48,15 +48,23 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
         registration_id_(registration_id),
         browser_context_(browser_context),
         request_context_(std::move(request_context)),
-        weak_ptr_factory_(this) {}
+        weak_ptr_factory_(this) {
+    // Although the Core lives only on the UI thread, it is constructed on IO.
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  }
 
   ~Core() final {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     for (const auto& pair : downloads_)
       pair.first->RemoveObserver(this);
   }
 
-  // Returns a weak pointer that can be used to talk to |this|.
-  base::WeakPtr<Core> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
+  // Returns a weak pointer that can be used to talk to |this|. Must only be
+  // called on the UI thread, unless the Core is guaranteed not to be destroyed
+  // in parallel with this call.
+  base::WeakPtr<Core> GetWeakPtrOnUI() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // Starts fetching the |request| with the download manager.
   void StartRequest(
@@ -124,7 +132,11 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
 
     switch (download_item->GetState()) {
       case DownloadItem::DownloadState::COMPLETE:
-        request->PopulateResponseFromDownloadItem(download_item);
+        request->PopulateResponseFromDownloadItemOnUI(download_item);
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&BackgroundFetchRequestInfo::SetResponseDataPopulated,
+                       request));
         download_item->RemoveObserver(this);
 
         // Inform the host about |host| having completed.
@@ -171,7 +183,11 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     DCHECK_EQ(interrupt_reason, DOWNLOAD_INTERRUPT_REASON_NONE);
     DCHECK(download_item);
 
-    request->PopulateDownloadState(download_item, interrupt_reason);
+    request->PopulateDownloadStateOnUI(download_item, interrupt_reason);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BackgroundFetchRequestInfo::SetDownloadStatePopulated,
+                   request));
 
     // TODO(peter): The above two DCHECKs are assumptions our implementation
     // currently makes, but are not fit for production. We need to handle such
@@ -233,11 +249,16 @@ BackgroundFetchJobController::BackgroundFetchJobController(
   ui_core_.reset(new Core(weak_ptr_factory_.GetWeakPtr(), registration_id,
                           browser_context, std::move(request_context)));
 
-  // Get a WeakPtr over which we can talk to the |ui_core_|.
-  ui_core_ptr_ = ui_core_->GetWeakPtr();
+  // Get a WeakPtr over which we can talk to the |ui_core_|. Normally it would
+  // be unsafe to obtain a weak pointer on the IO thread from a factory that
+  // lives on the UI thread, but it's ok in this constructor since the Core
+  // can't be destroyed before this constructor finishes.
+  ui_core_ptr_ = ui_core_->GetWeakPtrOnUI();
 }
 
-BackgroundFetchJobController::~BackgroundFetchJobController() = default;
+BackgroundFetchJobController::~BackgroundFetchJobController() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+};
 
 void BackgroundFetchJobController::Start(
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
@@ -284,6 +305,7 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
 void BackgroundFetchJobController::DidGetNextRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_LE(pending_completed_file_acknowledgements_, 1);
   pending_completed_file_acknowledgements_--;
 

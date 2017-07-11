@@ -65,9 +65,14 @@ void RecordFailureResult(ServiceWorkerMetrics::EventType event,
 
 BackgroundFetchEventDispatcher::BackgroundFetchEventDispatcher(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
-    : service_worker_context_(service_worker_context) {}
+    : service_worker_context_(service_worker_context) {
+  // Constructed on the UI thread, then lives on the IO thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
-BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() = default;
+BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
     const BackgroundFetchRegistrationId& registration_id,
