@@ -27,6 +27,7 @@ class BookmarkModel;
 @class BookmarkHomeWaitingView;
 @class BookmarkNavigationBar;
 @class BookmarkMenuItem;
+@class BookmarkPromoController;
 
 // Class to navigate the bookmark hierarchy, needs subclassing for tablet /
 // handset case.
@@ -92,6 +93,11 @@ class BookmarkModel;
 
 // The active collection view that corresponds to primaryMenuItem.
 - (UIView<BookmarkHomePrimaryView>*)primaryView;
+
+// The controller managing the display of the promo cell and the promo view
+// controller.
+@property(nonatomic, strong, readonly)
+    BookmarkPromoController* bookmarkPromoController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_HOME_VIEW_CONTROLLER_H_

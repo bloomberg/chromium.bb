@@ -52,8 +52,7 @@ using bookmarks::BookmarkNode;
     BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
     BookmarkModelBridgeObserver,
-    BookmarkPanelViewDelegate,
-    BookmarkPromoControllerDelegate> {
+    BookmarkPanelViewDelegate> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 }
@@ -89,11 +88,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 @property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 // The view controller to present when editing the current folder.
 @property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
-#pragma mark Specific to this class.
-
-// The controller managing the display of the promo cell and the promo view
-// controller.
-@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 
 #pragma mark View loading and switching
 // This method should be called at most once in the life-cycle of the
@@ -201,8 +195,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 @synthesize folderSelector = _folderSelector;
 @synthesize folderEditor = _folderEditor;
 
-@synthesize bookmarkPromoController = _bookmarkPromoController;
-
 @synthesize delegate = _delegate;
 @synthesize editIndexPaths = _editIndexPaths;
 @synthesize editing = _editing;
@@ -216,11 +208,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
     [self resetEditNodes];
 
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
-    // It is important to initialize the promo controller with the browser state
-    // passed in, as it could be incognito.
-    _bookmarkPromoController =
-        [[BookmarkPromoController alloc] initWithBrowserState:browserState
-                                                     delegate:self];
   }
   return self;
 }
@@ -1069,13 +1056,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   }
   [self.delegate bookmarkHomeHandsetViewControllerWantsDismissal:self
                                                  navigationToUrl:url];
-}
-
-#pragma mark - BookmarkPromoControllerDelegate
-
-- (void)promoStateChanged:(BOOL)promoEnabled {
-  [self.folderView
-      promoStateChangedAnimated:self.folderView == [self primaryView]];
 }
 
 - (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell {
