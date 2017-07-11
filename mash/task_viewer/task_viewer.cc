@@ -203,6 +203,8 @@ class TaskViewerContents
     }
     NOTREACHED();
   }
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {}
 
   bool ContainsIdentity(const service_manager::Identity& identity) const {
     for (auto& it : instances_) {

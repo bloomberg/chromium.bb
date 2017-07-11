@@ -154,6 +154,13 @@ class ServiceManagerTest : public test::ServiceTest,
     service_failed_to_start_callback_ = callback;
   }
 
+  using ServicePIDReceivedCallback =
+      base::Callback<void(const service_manager::Identity&, uint32_t pid)>;
+  void set_service_pid_received_callback(
+      const ServicePIDReceivedCallback& callback) {
+    service_pid_received_callback_ = callback;
+  }
+
   void StartTarget() {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
@@ -256,6 +263,11 @@ class ServiceManagerTest : public test::ServiceTest,
       }
     }
   }
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {
+    if (!service_pid_received_callback_.is_null())
+      service_pid_received_callback_.Run(identity, pid);
+  }
 
   void OnConnectionCompleted(mojom::ConnectResult, const Identity&) {}
 
@@ -266,6 +278,7 @@ class ServiceManagerTest : public test::ServiceTest,
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
   ServiceStartedCallback service_started_callback_;
   ServiceFailedToStartCallback service_failed_to_start_callback_;
+  ServicePIDReceivedCallback service_pid_received_callback_;
   base::Process target_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
@@ -318,6 +331,16 @@ void OnServiceFailedToStartCallback(
   continuation.Run();
 }
 
+void OnServicePIDReceivedCallback(std::string* service_name,
+                                  uint32_t* serivce_pid,
+                                  const base::Closure& continuation,
+                                  const service_manager::Identity& identity,
+                                  uint32_t pid) {
+  *service_name = identity.name();
+  *serivce_pid = pid;
+  continuation.Run();
+}
+
 // Tests that creating connecting to a singleton packaged service work.
 TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
   AddListenerAndWaitForApplications();
@@ -360,6 +383,28 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
     EXPECT_FALSE(failed_to_start);
     EXPECT_EQ(1, start_count);
     EXPECT_EQ("service_manager_unittest_singleton", service_name);
+  }
+}
+
+TEST_F(ServiceManagerTest, PIDReceivedCallback) {
+  AddListenerAndWaitForApplications();
+
+  {
+    base::RunLoop loop;
+    std::string service_name;
+    uint32_t pid = 0u;
+    set_service_pid_received_callback(
+        base::BindRepeating(&OnServicePIDReceivedCallback, &service_name, &pid,
+                            loop.QuitClosure()));
+    bool failed_to_start = false;
+    set_service_failed_to_start_callback(base::BindRepeating(
+        &OnServiceFailedToStartCallback, &failed_to_start, loop.QuitClosure()));
+
+    connector()->StartService("service_manager_unittest_embedder");
+    loop.Run();
+    EXPECT_FALSE(failed_to_start);
+    EXPECT_EQ("service_manager_unittest_embedder", service_name);
+    EXPECT_NE(pid, 0u);
   }
 }
 

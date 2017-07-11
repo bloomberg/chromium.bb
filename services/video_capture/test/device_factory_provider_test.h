@@ -34,6 +34,8 @@ class ServiceManagerListenerImpl
                         uint32_t pid) override {}
   void OnServiceFailedToStart(
       const service_manager::Identity& identity) override {}
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {}
 
   MOCK_METHOD1(OnServiceStopped,
                void(const service_manager::Identity& identity));

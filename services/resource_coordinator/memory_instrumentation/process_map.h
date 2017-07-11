@@ -50,6 +50,8 @@ class ProcessMap : public service_manager::mojom::ServiceManagerListener {
   void OnServiceStarted(const Identity&, uint32_t pid) override;
   void OnServiceFailedToStart(const Identity&) override;
   void OnServiceStopped(const Identity&) override;
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override;
 
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
   std::map<Identity, base::ProcessId> instances_;

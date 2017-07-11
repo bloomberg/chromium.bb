@@ -55,6 +55,9 @@ void ProcessMap::OnServiceStopped(const service_manager::Identity& identity) {
   instances_.erase(identity);
 }
 
+void ProcessMap::OnServicePIDReceived(const service_manager::Identity& identity,
+                                      uint32_t pid) {}
+
 base::ProcessId ProcessMap::GetProcessId(
     const service_manager::Identity& identity) const {
   auto it = instances_.find(identity);

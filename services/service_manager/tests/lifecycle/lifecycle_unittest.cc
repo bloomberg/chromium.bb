@@ -110,6 +110,15 @@ class InstanceState : public mojom::ServiceManagerListener {
       destruction_loop_ = nullptr;
     }
   }
+  void OnServicePIDReceived(const service_manager::Identity& identity,
+                            uint32_t pid) override {
+    for (auto& instance : instances_) {
+      if (instance.second.identity == identity) {
+        instance.second.pid = pid;
+        break;
+      }
+    }
+  }
 
   // All currently running instances.
   std::map<std::string, Instance> instances_;
