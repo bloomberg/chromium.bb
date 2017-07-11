@@ -153,7 +153,7 @@ Polymer({
   selectImage_: function(image) {
     switch (image.dataset.type) {
       case CrPicture.SelectionTypes.CAMERA:
-        /** CrPicturePreviewElement */ (this.$.picturePreview).takePhoto();
+        /** CrPicturePaneElement */ (this.$.picturePane).takePhoto();
         break;
       case CrPicture.SelectionTypes.FILE:
         this.browserProxy_.chooseFile();

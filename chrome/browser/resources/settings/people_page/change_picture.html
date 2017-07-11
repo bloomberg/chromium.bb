@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_list.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_preview.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/change_picture/cr_picture_types.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_list.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_pane.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_picture_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -25,7 +25,7 @@
         margin-top: 8px;
       }
 
-      cr-picture-preview {
+      cr-picture-pane {
         -webkit-margin-end: 10px;
         flex-shrink: 0;
         width: 228px;
@@ -52,7 +52,7 @@
           </a>
         </div>
       </div>
-      <cr-picture-preview id="picturePreview" 
+      <cr-picture-pane id="picturePane"
           camera-present="[[cameraPresent_]]",
           image-src="[[getImageSrc_(selectedItem_)]]"
           image-type="[[getImageType_(selectedItem_)]]"
@@ -60,7 +60,7 @@
           flip-photo-label="$i18n{flipPhoto}"
           preview-alt-text="$i18n{previewAltText}"
           take-photo-label="$i18n{takePhoto}">
-      </cr-picture-preview>
+      </cr-picture-pane>
     </div>
   </template>
   <script src="change_picture.js"></script>

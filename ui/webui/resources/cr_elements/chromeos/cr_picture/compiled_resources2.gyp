@@ -21,7 +21,7 @@
         'cr_camera',
         'cr_picture_types',
       ],
-      'target_name': 'cr_picture_preview',
+      'target_name': 'cr_picture_pane',
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

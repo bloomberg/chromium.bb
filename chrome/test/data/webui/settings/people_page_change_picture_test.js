@@ -82,7 +82,7 @@ cr.define('settings_people_page_change_picture', function() {
     suite('ChangePictureTests', function() {
       var changePicture = null;
       var browserProxy = null;
-      var crPicturePreview = null;
+      var crPicturePane = null;
       var crPictureList = null;
 
       suiteSetup(function() {
@@ -98,8 +98,8 @@ cr.define('settings_people_page_change_picture', function() {
         changePicture = document.createElement('settings-change-picture');
         document.body.appendChild(changePicture);
 
-        crPicturePreview = changePicture.$$('cr-picture-preview');
-        assertTrue(!!crPicturePreview);
+        crPicturePane = changePicture.$$('cr-picture-pane');
+        assertTrue(!!crPicturePane);
 
         crPictureList = changePicture.$$('cr-picture-list');
         assertTrue(!!crPictureList);
@@ -121,9 +121,9 @@ cr.define('settings_people_page_change_picture', function() {
         return new Promise(function(resolve) {
           changePicture.async(resolve);
         }).then(function() {
-          var camera = crPicturePreview.$$('#camera');
-          expectFalse(crPicturePreview.cameraPresent);
-          expectFalse(crPicturePreview.cameraActive_);
+          var camera = crPicturePane.$$('#camera');
+          expectFalse(crPicturePane.cameraPresent);
+          expectFalse(crPicturePane.cameraActive_);
           expectFalse(!!camera && camera.hidden);
 
           cr.webUIListenerCallback('camera-presence-changed', true);
@@ -132,9 +132,9 @@ cr.define('settings_people_page_change_picture', function() {
             changePicture.async(resolve);
           });
         }).then(function() {
-          var camera = crPicturePreview.$$('#camera');
-          expectTrue(crPicturePreview.cameraPresent);
-          expectFalse(crPicturePreview.cameraActive_);
+          var camera = crPicturePane.$$('#camera');
+          expectTrue(crPicturePane.cameraPresent);
+          expectFalse(crPicturePane.cameraActive_);
           expectFalse(!!camera && camera.hidden);
 
           var cameraImage = crPictureList.$.cameraImage;
@@ -144,12 +144,12 @@ cr.define('settings_people_page_change_picture', function() {
             changePicture.async(resolve);
           });
         }).then(function() {
-          var camera = crPicturePreview.$$('#camera');
-          expectTrue(crPicturePreview.cameraActive_);
+          var camera = crPicturePane.$$('#camera');
+          expectTrue(crPicturePane.cameraActive_);
           assertTrue(!!camera && !camera.hidden);
           expectEquals(CrPicture.SelectionTypes.CAMERA,
                        changePicture.selectedItem_.dataset.type);
-          var discard = crPicturePreview.$$('#discard');
+          var discard = crPicturePane.$$('#discard');
           expectTrue(!discard || discard.hidden);
 
           // Ensure that the camera is deactivated if user navigates away.
@@ -158,7 +158,7 @@ cr.define('settings_people_page_change_picture', function() {
             changePicture.async(resolve);
           });
         }).then(function() {
-          expectFalse(crPicturePreview.cameraActive_);
+          expectFalse(crPicturePane.cameraActive_);
         });
       });
 
@@ -174,8 +174,8 @@ cr.define('settings_people_page_change_picture', function() {
 
           expectEquals(CrPicture.SelectionTypes.PROFILE,
                        changePicture.selectedItem_.dataset.type);
-          expectFalse(crPicturePreview.cameraActive_);
-          var discard = crPicturePreview.$$('#discard');
+          expectFalse(crPicturePane.cameraActive_);
+          var discard = crPicturePane.$$('#discard');
           expectTrue(!discard || discard.hidden);
 
           // Ensure that the selection is restored after navigating away and
@@ -200,8 +200,8 @@ cr.define('settings_people_page_change_picture', function() {
         expectEquals(CrPicture.SelectionTypes.OLD,
                      changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
-        expectFalse(crPicturePreview.cameraActive_);
-        var discard = crPicturePreview.$$('#discard');
+        expectFalse(crPicturePane.cameraActive_);
+        var discard = crPicturePane.$$('#discard');
         assertTrue(!!discard);
         expectFalse(discard.hidden);
       });
@@ -220,8 +220,8 @@ cr.define('settings_people_page_change_picture', function() {
               expectEquals(CrPicture.SelectionTypes.DEFAULT,
                            changePicture.selectedItem_.dataset.type);
               expectEquals(firstDefaultImage, changePicture.selectedItem_);
-              expectFalse(crPicturePreview.cameraActive_);
-              var discard = crPicturePreview.$$('#discard');
+              expectFalse(crPicturePane.cameraActive_);
+              var discard = crPicturePane.$$('#discard');
               expectTrue(!discard || discard.hidden);
 
               // Now verify that arrow keys actually select the new image.
@@ -250,7 +250,7 @@ cr.define('settings_people_page_change_picture', function() {
           expectEquals(CrPicture.SelectionTypes.OLD,
                        changePicture.selectedItem_.dataset.type);
 
-          var discardButton = crPicturePreview.$$('#discard button');
+          var discardButton = crPicturePane.$$('#discard button');
           assertTrue(!!discardButton);
           MockInteractions.tap(discardButton);
 
