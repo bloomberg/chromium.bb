@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 71 tests; 60 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 65 tests; 54 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS RTCPeerConnection.length 
 PASS new RTCPeerConnection() 
 PASS new RTCPeerConnection(null) 
@@ -46,12 +46,6 @@ PASS new RTCPeerConnection({ iceTransportPolicy: "invalid" })
 PASS new RTCPeerConnection({ iceTransportPolicy: "none" }) 
 FAIL new RTCPeerConnection({ iceTransports: "invalid" }) Failed to construct 'RTCPeerConnection': The provided value 'invalid' is not a valid enum value of type RTCIceTransportPolicy.
 FAIL new RTCPeerConnection({ iceTransports: "none" }) Failed to construct 'RTCPeerConnection': The provided value 'none' is not a valid enum value of type RTCIceTransportPolicy.
-PASS new RTCPeerConnection({ bundlePolicy: null }) 
-PASS new RTCPeerConnection({ bundlePolicy: undefined }) 
-PASS new RTCPeerConnection({ bundlePolicy: "balanced" }) 
-PASS new RTCPeerConnection({ bundlePolicy: "max-compat" }) 
-PASS new RTCPeerConnection({ bundlePolicy: "max-bundle" }) 
-PASS new RTCPeerConnection({ bundlePolicy: "invalid" }) 
 PASS new RTCPeerConnection({ rtcpMuxPolicy: null }) 
 PASS new RTCPeerConnection({ rtcpMuxPolicy: undefined }) 
 PASS new RTCPeerConnection({ rtcpMuxPolicy: "negotiate" }) 

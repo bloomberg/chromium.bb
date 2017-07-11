@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL existence and properties of DOMException assert_equals: prototype of self's property "DOMException" is not Error expected function "function Error() { [native code] }" but got function "function () { [native code] }"
-FAIL existence and properties of DOMException.prototype assert_equals: class string of DOMException.prototype expected "[object DOMExceptionPrototype]" but got "[object DOMException]"
-FAIL existence of name and code properties on DOMException.prototype assert_false: DOMException.prototype should not have an own "name" property. expected false got true
-PASS existence and properties of exception interface prototype object's "constructor" property 
-Harness: the test ran to completion.
-

@@ -14,5 +14,6 @@ PASS PerformanceNavigationTiming interface: attribute loadEventStart
 PASS PerformanceNavigationTiming interface: attribute loadEventEnd 
 PASS PerformanceNavigationTiming interface: attribute type 
 PASS PerformanceNavigationTiming interface: attribute redirectCount 
+FAIL PerformanceNavigationTiming interface: operation toJSON() undefined PerformanceEntry not found (inherited by PerformanceResourceTiming)
 Harness: the test ran to completion.
 
