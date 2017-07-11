@@ -5527,12 +5527,10 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 // Produce the filtered ARF frame.
 #if CONFIG_BGSPRITE
         int bgsprite_ret = av1_background_sprite(cpi, arf_src_index);
-        if (bgsprite_ret != EXIT_SUCCESS) {
-          av1_temporal_filter(cpi, arf_src_index);
-        }
-#else
-        av1_temporal_filter(cpi, arf_src_index);
+        // Do temporal filter if bgsprite not generated.
+        if (bgsprite_ret != 0)
 #endif  // CONFIG_BGSPRITE
+          av1_temporal_filter(cpi, arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer);
         force_src_buffer = &cpi->alt_ref_buffer;
       }

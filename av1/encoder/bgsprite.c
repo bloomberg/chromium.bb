@@ -231,11 +231,12 @@ static YuvPixel qselect(YuvPixel arr[], int left, int right, int k) {
 
 // Stitches images together to create ARF and stores it in 'panorama'.
 static void stitch_images(YV12_BUFFER_CONFIG **const frames,
-                          const int num_frames, const double **const params,
-                          const int *const x_min, const int *const x_max,
-                          const int *const y_min, const int *const y_max,
-                          int pano_x_min, int pano_x_max, int pano_y_min,
-                          int pano_y_max, YV12_BUFFER_CONFIG *panorama) {
+                          const int num_frames, const int center_idx,
+                          const double **const params, const int *const x_min,
+                          const int *const x_max, const int *const y_min,
+                          const int *const y_max, int pano_x_min,
+                          int pano_x_max, int pano_y_min, int pano_y_max,
+                          YV12_BUFFER_CONFIG *panorama) {
   const int width = pano_x_max - pano_x_min + 1;
   const int height = pano_y_max - pano_y_min + 1;
 
@@ -344,11 +345,11 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
     }
   }
 
-  // NOTE(toddnguyen): Right now the ARF in the cpi struct is fixed size at the
-  // same size as the frames. For now, we crop the generated panorama.
+  // NOTE(toddnguyen): Right now the ARF in the cpi struct is fixed size at
+  // the same size as the frames. For now, we crop the generated panorama.
   assert(panorama->y_width < width && panorama->y_height < height);
-  const int crop_x_offset = (width - panorama->y_width) / 2;
-  const int crop_y_offset = (height - panorama->y_height) / 2;
+  const int crop_x_offset = x_min[center_idx] + x_offset;
+  const int crop_y_offset = y_min[center_idx] + y_offset;
 
 #if CONFIG_HIGHBITDEPTH
   if (panorama->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -470,16 +471,42 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
     0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
   };
 
+  const int frames_after_arf =
+      av1_lookahead_depth(cpi->lookahead) - distance - 1;
+  int frames_fwd = (cpi->oxcf.arnr_max_frames - 1) >> 1;
+  int frames_bwd;
+
+  // Define the forward and backwards filter limits for this arnr group.
+  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
+  if (frames_fwd > distance) frames_fwd = distance;
+  frames_bwd = frames_fwd;
+
+#if CONFIG_EXT_REFS
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW) {
+    cpi->alt_ref_buffer = av1_lookahead_peek(cpi->lookahead, distance)->img;
+    cpi->is_arf_filter_off[gf_group->arf_update_idx[gf_group->index]] = 1;
+    frames_fwd = 0;
+    frames_bwd = 0;
+  } else {
+    cpi->is_arf_filter_off[gf_group->arf_update_idx[gf_group->index]] = 0;
+  }
+#endif  // CONFIG_EXT_REFS
+
+  const int start_frame = distance + frames_fwd;
+  const int frames_to_stitch = frames_bwd + 1 + frames_fwd;
+
   // Get frames to be included in background sprite.
-  frames[0] = cpi->source;
-  for (int frame = 0; frame < distance; ++frame) {
-    struct lookahead_entry *buf = av1_lookahead_peek(cpi->lookahead, frame);
-    frames[frame + 1] = &buf->img;
+  for (int frame = 0; frame < frames_to_stitch; ++frame) {
+    const int which_buffer = start_frame - frame;
+    struct lookahead_entry *buf =
+        av1_lookahead_peek(cpi->lookahead, which_buffer);
+    frames[frames_to_stitch - 1 - frame] = &buf->img;
   }
 
   // Allocate empty arrays for parameters between frames.
-  double **params = aom_malloc((distance + 1) * sizeof(*params));
-  for (int i = 0; i < distance + 1; ++i) {
+  double **params = aom_malloc(frames_to_stitch * sizeof(*params));
+  for (int i = 0; i < frames_to_stitch; ++i) {
     params[i] = aom_malloc(sizeof(identity_params));
     memcpy(params[i], identity_params, sizeof(identity_params));
   }
@@ -488,7 +515,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   // params[i] will have the transform from frame[i] to frame[i-1].
   // params[0] will have the identity matrix because it has no previous frame.
   TransformationType model = AFFINE;
-  for (int frame = 0; frame < distance; ++frame) {
+  for (int frame = 0; frame < frames_to_stitch - 1; ++frame) {
     const int global_motion_ret = compute_global_motion_feature_based(
         model, frames[frame + 1], frames[frame],
 #if CONFIG_HIGHBITDEPTH
@@ -498,7 +525,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
 
     // Quit if global motion had an error.
     if (global_motion_ret == 0) {
-      for (int i = 0; i < distance + 1; ++i) {
+      for (int i = 0; i < frames_to_stitch; ++i) {
         aom_free(params[i]);
       }
       aom_free(params);
@@ -507,7 +534,7 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   }
 
   // Compound the transformation parameters.
-  for (int i = 1; i < distance + 1; ++i) {
+  for (int i = 1; i < frames_to_stitch; ++i) {
     multiply_params(params[i - 1], params[i], params[i]);
   }
 
@@ -516,31 +543,18 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   int pano_x_min = INT_MAX;
   int pano_y_max = INT_MIN;
   int pano_y_min = INT_MAX;
-  int *x_max = aom_malloc((distance + 1) * sizeof(*x_max));
-  int *x_min = aom_malloc((distance + 1) * sizeof(*x_min));
-  int *y_max = aom_malloc((distance + 1) * sizeof(*y_max));
-  int *y_min = aom_malloc((distance + 1) * sizeof(*y_min));
+  int *x_max = aom_malloc(frames_to_stitch * sizeof(*x_max));
+  int *x_min = aom_malloc(frames_to_stitch * sizeof(*x_min));
+  int *y_max = aom_malloc(frames_to_stitch * sizeof(*y_max));
+  int *y_min = aom_malloc(frames_to_stitch * sizeof(*y_min));
 
   find_limits(cpi->initial_width, cpi->initial_height,
-              (const double **const)params, distance + 1, x_min, x_max, y_min,
-              y_max, &pano_x_min, &pano_x_max, &pano_y_min, &pano_y_max);
+              (const double **const)params, frames_to_stitch, x_min, x_max,
+              y_min, y_max, &pano_x_min, &pano_x_max, &pano_y_min, &pano_y_max);
 
-  // Estimate center image based on frame limits.
-  const double pano_center_x = (pano_x_max + pano_x_min) / 2;
-  const double pano_center_y = (pano_y_max + pano_y_min) / 2;
-  double nearest_distance = DBL_MAX;
-  int center_idx = -1;
-  for (int i = 0; i < distance + 1; ++i) {
-    const double image_center_x = (x_max[i] + x_min[i]) / 2;
-    const double image_center_y = (y_max[i] + y_min[i]) / 2;
-    const double distance_from_center = pow(pano_center_x - image_center_x, 2) +
-                                        pow(pano_center_y + image_center_y, 2);
-    if (distance_from_center < nearest_distance) {
-      center_idx = i;
-      nearest_distance = distance_from_center;
-    }
-  }
-  assert(center_idx != -1);
+  // Center panorama on the ARF.
+  const int center_idx = frames_fwd;
+  assert(center_idx >= 0 && center_idx < frames_to_stitch);
 
   // Recompute transformations to adjust to center image.
   // Invert center image's transform.
@@ -548,22 +562,23 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   invert_params(params[center_idx], inverse);
 
   // Multiply the inverse to all transformation parameters.
-  for (int i = 0; i < distance + 1; ++i) {
+  for (int i = 0; i < frames_to_stitch; ++i) {
     multiply_params(inverse, params[i], params[i]);
   }
 
   // Recompute frame limits for new adjusted center.
   find_limits(cpi->initial_width, cpi->initial_height,
-              (const double **const)params, distance + 1, x_min, x_max, y_min,
-              y_max, &pano_x_min, &pano_x_max, &pano_y_min, &pano_y_max);
+              (const double **const)params, frames_to_stitch, x_min, x_max,
+              y_min, y_max, &pano_x_min, &pano_x_max, &pano_y_min, &pano_y_max);
 
   // Stitch Images.
-  stitch_images(frames, distance + 1, (const double **const)params, x_min,
-                x_max, y_min, y_max, pano_x_min, pano_x_max, pano_y_min,
-                pano_y_max, &cpi->alt_ref_buffer);
+  stitch_images(frames, frames_to_stitch, center_idx,
+                (const double **const)params, x_min, x_max, y_min, y_max,
+                pano_x_min, pano_x_max, pano_y_min, pano_y_max,
+                &cpi->alt_ref_buffer);
 
   // Free memory.
-  for (int i = 0; i < distance + 1; ++i) {
+  for (int i = 0; i < frames_to_stitch; ++i) {
     aom_free(params[i]);
   }
   aom_free(params);
