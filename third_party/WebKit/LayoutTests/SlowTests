@@ -179,8 +179,8 @@ crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.
 crbug.com/311482 virtual/threaded/animations/prefixed/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
 crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
-crbug.com/664857 virtual/threaded/animations/transform-responsive-neutral-keyframe.html [ Slow ]
-crbug.com/669911 virtual/threaded/animations/zoom-responsive-transform-animation.html [ Slow ]
+crbug.com/664857 virtual/threaded/animations/responsive/transform-responsive-neutral-keyframe.html [ Slow ]
+crbug.com/669911 virtual/threaded/animations/responsive/zoom-responsive-transform-animation.html [ Slow ]
 
 crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 
