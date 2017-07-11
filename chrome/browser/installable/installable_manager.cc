@@ -69,40 +69,15 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
 
-struct InstallableManager::ManifestProperty {
-  InstallableStatusCode error = NO_ERROR_DETECTED;
-  GURL url;
-  content::Manifest manifest;
-  bool fetched = false;
-};
+InstallableManager::IconProperty::IconProperty()
+    : error(NO_ERROR_DETECTED), url(), icon(), fetched(false) {}
 
-struct InstallableManager::ValidManifestProperty {
-  InstallableStatusCode error = NO_ERROR_DETECTED;
-  bool is_valid = false;
-  bool fetched = false;
-};
+InstallableManager::IconProperty::IconProperty(IconProperty&& other) = default;
 
-struct InstallableManager::ServiceWorkerProperty {
-  InstallableStatusCode error = NO_ERROR_DETECTED;
-  bool has_worker = false;
-  bool fetched = false;
-};
+InstallableManager::IconProperty::~IconProperty() {}
 
-struct InstallableManager::IconProperty {
-  IconProperty() :
-    error(NO_ERROR_DETECTED), url(), icon(), fetched(false) { }
-  IconProperty(IconProperty&& other) = default;
-  IconProperty& operator=(IconProperty&& other) = default;
-
-  InstallableStatusCode error = NO_ERROR_DETECTED;
-  GURL url;
-  std::unique_ptr<SkBitmap> icon;
-  bool fetched;
-
- private:
-  // This class contains a std::unique_ptr and therefore must be move-only.
-  DISALLOW_COPY_AND_ASSIGN(IconProperty);
-};
+InstallableManager::IconProperty& InstallableManager::IconProperty::operator=(
+    InstallableManager::IconProperty&& other) = default;
 
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

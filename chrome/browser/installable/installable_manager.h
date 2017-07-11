@@ -137,8 +137,8 @@ class InstallableManager
   // at all if a service worker is never registered).
   //
   // Calls requesting data that is already fetched will return the cached data.
-  void GetData(const InstallableParams& params,
-               const InstallableCallback& callback);
+  virtual void GetData(const InstallableParams& params,
+                       const InstallableCallback& callback);
 
   // Called via AppBannerManagerAndroid to record metrics on how often the
   // installable check is completed when the menu or add to homescreen menu item
@@ -153,8 +153,10 @@ class InstallableManager
   virtual void OnWaitingForServiceWorker() {}
 
  private:
+  friend class AddToHomescreenDataFetcherTest;
   friend class InstallableManagerBrowserTest;
   friend class InstallableManagerUnitTest;
+  friend class TestInstallableManager;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManagerBeginsInEmptyState);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest, CheckWebapp);
@@ -166,10 +168,41 @@ class InstallableManager
   using Task = std::pair<InstallableParams, InstallableCallback>;
   using IconParams = std::tuple<int, int, content::Manifest::Icon::IconPurpose>;
 
-  struct ManifestProperty;
-  struct ValidManifestProperty;
-  struct ServiceWorkerProperty;
-  struct IconProperty;
+  struct ManifestProperty {
+    InstallableStatusCode error = NO_ERROR_DETECTED;
+    GURL url;
+    content::Manifest manifest;
+    bool fetched = false;
+  };
+
+  struct ValidManifestProperty {
+    InstallableStatusCode error = NO_ERROR_DETECTED;
+    bool is_valid = false;
+    bool fetched = false;
+  };
+
+  struct ServiceWorkerProperty {
+    InstallableStatusCode error = NO_ERROR_DETECTED;
+    bool has_worker = false;
+    bool is_waiting = false;
+    bool fetched = false;
+  };
+
+  struct IconProperty {
+    IconProperty();
+    IconProperty(IconProperty&& other);
+    ~IconProperty();
+    IconProperty& operator=(IconProperty&& other);
+
+    InstallableStatusCode error;
+    GURL url;
+    std::unique_ptr<SkBitmap> icon;
+    bool fetched;
+
+   private:
+    // This class contains a std::unique_ptr and therefore must be move-only.
+    DISALLOW_COPY_AND_ASSIGN(IconProperty);
+  };
 
   // Returns an IconParams object that queries for a primary icon conforming to
   // the primary icon size parameters in |params|.
