@@ -290,6 +290,7 @@ EXPERIMENT_LIST="
     pvq
     cfl
     xiphrc
+    dct_only
     cb4x4
     chroma_2x2
     chroma_sub8x8
