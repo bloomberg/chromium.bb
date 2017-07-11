@@ -227,6 +227,14 @@ function hasReceiverWithTrack(trackId) {
   returnToTest('ok-receiver-with-track-not-found');
 }
 
+/**
+ * Invokes the GC and returns "ok-gc".
+ */
+function collectGarbage() {
+  gc();
+  returnToTest('ok-gc');
+}
+
 // Internals.
 
 /** @private */

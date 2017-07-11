@@ -691,3 +691,7 @@ size_t WebRtcTestBase::GetNegotiationNeededCount(
   EXPECT_TRUE(base::StringToSizeT(result.substr(24), &count));
   return count;
 }
+
+void WebRtcTestBase::CollectGarbage(content::WebContents* tab) const {
+  EXPECT_EQ("ok-gc", ExecuteJavascript("collectGarbage()", tab));
+}

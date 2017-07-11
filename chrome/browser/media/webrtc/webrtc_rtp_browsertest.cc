@@ -24,6 +24,8 @@ class WebRtcRtpBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "RTCRtpSender");
+    // Required by |CollectGarbage|.
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
  protected:
@@ -67,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, GetReceivers) {
   VerifyRtpReceivers(right_tab_, 6);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
+                       DISABLED_AddAndRemoveTracksWithoutStream) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
@@ -92,6 +95,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
   EXPECT_NE("null", audio_track_id);
   EXPECT_EQ("null", video_stream_id);
   EXPECT_NE("null", video_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_FALSE(
       HasLocalStreamWithTrack(left_tab_, audio_stream_id, audio_track_id));
   EXPECT_FALSE(
@@ -112,12 +116,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
 
   // Remove first track.
   RemoveTrack(left_tab_, audio_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(3u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_TRUE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 1);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, kUndefined, audio_track_id));
   EXPECT_TRUE(HasRemoteStreamWithTrack(right_tab_, kUndefined, video_track_id));
@@ -127,12 +133,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, AddAndRemoveTracksWithoutStream) {
 
   // Remove second track.
   RemoveTrack(left_tab_, video_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(4u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 0);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, kUndefined, audio_track_id));
   EXPECT_FALSE(
@@ -165,6 +173,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
   EXPECT_NE("null", video_stream_id);
   EXPECT_NE("null", video_track_id);
   EXPECT_EQ(audio_stream_id, video_stream_id);
+  CollectGarbage(left_tab_);
   // TODO(hbos): When |getLocalStreams| is updated to return the streams of all
   // senders, not just |addStream|-streams, then this will be EXPECT_TRUE.
   // https://crbug.com/738918
@@ -187,12 +196,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 
   // Remove first track.
   RemoveTrack(left_tab_, audio_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(3u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_TRUE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 1);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, audio_stream_id, audio_track_id));
   EXPECT_TRUE(
@@ -203,12 +214,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 
   // Remove second track.
   RemoveTrack(left_tab_, video_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(4u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 0);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, audio_stream_id, audio_track_id));
   EXPECT_FALSE(
@@ -219,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
-                       AddAndRemoveTracksWithIndividualStreams) {
+                       DISABLED_AddAndRemoveTracksWithIndividualStreams) {
   StartServerAndOpenTabs();
 
   SetupPeerconnectionWithoutLocalStream(left_tab_);
@@ -241,6 +254,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
   EXPECT_NE("null", video_stream_id);
   EXPECT_NE("null", video_track_id);
   EXPECT_NE(audio_stream_id, video_stream_id);
+  CollectGarbage(left_tab_);
   // TODO(hbos): When |getLocalStreams| is updated to return the streams of all
   // senders, not just |addStream|-streams, then this will be EXPECT_TRUE.
   // https://crbug.com/738918
@@ -263,12 +277,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 
   // Remove first track.
   RemoveTrack(left_tab_, audio_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(3u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_TRUE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 1);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, audio_stream_id, audio_track_id));
   EXPECT_TRUE(
@@ -279,12 +295,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
 
   // Remove second track.
   RemoveTrack(left_tab_, video_track_id);
+  CollectGarbage(left_tab_);
   EXPECT_EQ(4u, GetNegotiationNeededCount(left_tab_));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, audio_track_id));
   EXPECT_FALSE(HasSenderWithTrack(left_tab_, video_track_id));
   VerifyRtpSenders(left_tab_, 0);
   // Re-negotiate call, sets remote description again.
   NegotiateCall(left_tab_, right_tab_);
+  CollectGarbage(right_tab_);
   EXPECT_FALSE(
       HasRemoteStreamWithTrack(right_tab_, audio_stream_id, audio_track_id));
   EXPECT_FALSE(
