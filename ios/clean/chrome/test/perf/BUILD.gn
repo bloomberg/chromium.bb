@@ -11,7 +11,7 @@ import("//ios/third_party/earl_grey/ios_eg_test.gni")
 tweak_info_plist("info_plist") {
   info_plists = [
     "//ios/chrome/app/resources/Info.plist",
-    "//ios/chrome/app/resources/ChromeAddition+Info.plist",
+    "//ios/chrome/app/resources/EarlGreyAddition+Info.plist",
   ]
   if (ios_chrome_info_plist_additions != []) {
     info_plists += ios_chrome_info_plist_additions
@@ -55,6 +55,8 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
+  _eg_main_application_delegate = "MainApplicationDelegate"
+
   extra_substitutions = [
     "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
     "CHROMIUM_SHORT_NAME=$target_name",
@@ -62,6 +64,7 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
     "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
     "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
     "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
+    "EG_MAIN_APPLICATION_DELEGATE=$_eg_main_application_delegate",
     "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
   ]
 
