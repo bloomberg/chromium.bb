@@ -1,5 +1,5 @@
-{% import 'fields/base.tmpl' as base %}
-{% from 'fields/field.tmpl' import getter_expression, setter_expression %}
+{% import 'templates/fields/base.tmpl' as base %}
+{% from 'templates/fields/field.tmpl' import getter_expression, setter_expression %}
 
 {% macro decl_public_methods(field) -%}
 {{base.decl_initial_method(field)}}

@@ -47,13 +47,13 @@ class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
             (self.class_name + '.h'): self.generate_header,
         }
 
-    @template_expander.use_jinja(class_name + '.cpp.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.cpp.tmpl')
     def generate_implementation(self):
         return {
             'features': self._features,
         }
 
-    @template_expander.use_jinja(class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,

@@ -20,7 +20,7 @@ class UnitTrieWriter(json5_generator.Writer):
             'CSSPrimitiveValueUnitTrie.cpp': self.generate_implementation
         }
 
-    @template_expander.use_jinja('CSSPrimitiveValueUnitTrie.cpp.tmpl')
+    @template_expander.use_jinja('templates/CSSPrimitiveValueUnitTrie.cpp.tmpl')
     def generate_implementation(self):
         return {
             'length_tries': trie_builder.trie_list_by_str_length(self._units)

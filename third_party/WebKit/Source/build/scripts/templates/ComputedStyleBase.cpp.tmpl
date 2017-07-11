@@ -1,6 +1,6 @@
-{% from 'macros.tmpl' import license %}
-{% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, fieldwise_copy, fieldwise_diff %}
-{% from 'fields/group.tmpl' import define_field_group_class %}
+{% from 'templates/macros.tmpl' import license, print_if %}
+{% from 'templates/fields/field.tmpl' import encode, getter_expression, setter_expression, fieldwise_copy, fieldwise_diff %}
+{% from 'templates/fields/group.tmpl' import define_field_group_class %}
 {{license()}}
 
 #include "core/ComputedStyleBase.h"

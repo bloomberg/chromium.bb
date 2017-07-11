@@ -75,7 +75,7 @@ class MakeSettingsWriter(json5_generator.Writer):
             'settings': self.json5_file.name_dictionaries,
         }
 
-    @template_expander.use_jinja('SettingsMacros.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/SettingsMacros.h.tmpl', filters=filters)
     def generate_macros(self):
         return self._template_context
 

@@ -95,11 +95,11 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
             assert metadata == self.tags_json5_file.metadata[name].strip('"'), 'Both files must have the same %s.' % name
         return metadata
 
-    @template_expander.use_jinja('MakeQualifiedNames.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/MakeQualifiedNames.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja('MakeQualifiedNames.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/MakeQualifiedNames.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return self._template_context
 

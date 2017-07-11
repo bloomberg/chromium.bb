@@ -71,11 +71,11 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         for tag in tags:
             tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallback_interface)
 
-    @template_expander.use_jinja("ElementTypeHelpers.h.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/ElementTypeHelpers.h.tmpl", filters=filters)
     def generate_helper_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("ElementTypeHelpers.cpp.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/ElementTypeHelpers.cpp.tmpl", filters=filters)
     def generate_helper_implementation(self):
         return self._template_context
 

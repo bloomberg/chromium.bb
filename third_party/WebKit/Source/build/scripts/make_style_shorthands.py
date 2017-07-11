@@ -60,14 +60,14 @@ class StylePropertyShorthandWriter(css_properties.CSSProperties):
                 key=lambda property: (-len(property['longhand_property_ids']), property['name'])
             )
 
-    @template_expander.use_jinja('StylePropertyShorthand.cpp.tmpl')
+    @template_expander.use_jinja('templates/StylePropertyShorthand.cpp.tmpl')
     def generate_style_property_shorthand_cpp(self):
         return {
             'properties': self._properties,
             'longhands_dictionary': self._longhand_dictionary,
         }
 
-    @template_expander.use_jinja('StylePropertyShorthand.h.tmpl')
+    @template_expander.use_jinja('templates/StylePropertyShorthand.h.tmpl')
     def generate_style_property_shorthand_h(self):
         return {
             'properties': self._properties,

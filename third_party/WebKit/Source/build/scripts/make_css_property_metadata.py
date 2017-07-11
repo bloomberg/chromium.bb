@@ -26,7 +26,7 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
             property_value['supports_percentage'] = (
                 'Percent' in property_value['typedom_types'])
 
-    @template_expander.use_jinja('CSSPropertyMetadata.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/CSSPropertyMetadata.cpp.tmpl', filters=filters)
     def generate_css_property_metadata_cpp(self):
         return {
             'properties_including_aliases': self._properties_including_aliases,
