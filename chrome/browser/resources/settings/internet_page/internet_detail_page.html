@@ -198,7 +198,9 @@
         <div class="settings-box single-column stretch">
           <network-property-list
               fields="[[getInfoFields_(networkProperties)]]"
-              property-dict="[[networkProperties]]">
+              edit-field-types="[[getInfoEditFieldTypes_(networkProperties)]]"
+              property-dict="[[networkProperties]]"
+              on-property-change="onNetworkPropertyChange_">
           </network-property-list>
         </div>
       </template>
