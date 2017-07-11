@@ -379,7 +379,7 @@ INSTANTIATE_TEST_CASE_P(SSSE3, QuantizeTest,
 // TODO(any):
 //  The following test does not pass yet
 const QuantizeParam kQ32x32ParamArraySSSE3[] = { make_tuple(
-    av1_quantize_fp_32x32_c, av1_quantize_fp_32x32_ssse3, TX_32X32, TYPE_FP,
+    &av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_ssse3, TX_32X32, TYPE_FP,
     AOM_BITS_8) };
 INSTANTIATE_TEST_CASE_P(DISABLED_SSSE3, QuantizeTest,
                         ::testing::ValuesIn(kQ32x32ParamArraySSSE3));
