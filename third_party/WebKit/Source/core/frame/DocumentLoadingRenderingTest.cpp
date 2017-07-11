@@ -16,8 +16,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 class DocumentLoadingRenderingTest : public SimTest {};
 
 TEST_F(DocumentLoadingRenderingTest,
@@ -218,7 +216,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded) {
   // Replace the stylesheet by changing href.
   auto* element = GetDocument().getElementById("link");
   EXPECT_NE(nullptr, element);
-  element->setAttribute(hrefAttr, "second.css");
+  element->setAttribute(HTMLNames::hrefAttr, "second.css");
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
 
   second_css_resource.Complete("body { color: red; }");
