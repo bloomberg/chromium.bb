@@ -284,6 +284,7 @@ void NGInlineNode::CollectInlines() {
   MutableData().is_bidi_enabled_ =
       !Data().text_content_.IsEmpty() &&
       !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
+  MutableData().is_empty_inline_ = builder.IsEmptyInline();
 }
 
 void NGInlineNode::SegmentText() {
@@ -374,6 +375,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
 
   NGFragmentBuilder container_builder(
       NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
+  container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
   NGLineBreaker line_breaker(node, space.Get(), &container_builder);
   NGLineInfo line_info;

@@ -38,6 +38,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     NGFragmentBuilder container_builder(
         NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
+    container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
     NGLineBreaker line_breaker(node, space.Get(), &container_builder);
     Vector<NGInlineItemResults> lines;
