@@ -986,7 +986,6 @@ static_library("extensions") {
       configs += [ "//build/config/linux/dbus" ]
     }
     deps += [
-      "//chrome/browser/resources/chromeos/zip_archiver",
       "//components/chrome_apps",
       "//components/constrained_window",
       "//components/drive",
@@ -1001,6 +1000,9 @@ static_library("extensions") {
       "//ui/file_manager",
       "//ui/views/",
     ]
+    if (enable_nacl) {
+      deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
+    }
   } else {
     sources += [
       "api/easy_unlock_private/easy_unlock_private_crypto_delegate_stub.cc",
