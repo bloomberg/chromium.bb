@@ -77,10 +77,12 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 PerformanceResourceTiming::PerformanceResourceTiming(
     const String& name,
     const String& entry_type,
+    double time_origin,
     double start_time,
     double duration,
     PerformanceServerTimingVector& serverTiming)
     : PerformanceEntry(name, entry_type, start_time, duration),
+      time_origin_(time_origin),
       serverTiming_(serverTiming) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() {}

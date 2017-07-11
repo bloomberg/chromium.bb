@@ -101,11 +101,15 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const String& name,
                             const String& entry_type,
+                            double time_origin,
                             double start_time,
                             double duration,
                             PerformanceServerTimingVector&);
   virtual AtomicString AlpnNegotiatedProtocol() const;
   virtual AtomicString ConnectionInfo() const;
+
+ protected:
+  double TimeOrigin() const { return time_origin_; }
 
  private:
   PerformanceResourceTiming(const ResourceTimingInfo&,
