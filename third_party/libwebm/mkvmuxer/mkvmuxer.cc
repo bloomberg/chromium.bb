@@ -1708,6 +1708,7 @@ const char Tracks::kVorbisCodecId[] = "A_VORBIS";
 const char Tracks::kVp8CodecId[] = "V_VP8";
 const char Tracks::kVp9CodecId[] = "V_VP9";
 const char Tracks::kVp10CodecId[] = "V_VP10";
+const char Tracks::kAV1CodecId[] = "V_AV1";
 const char Tracks::kWebVttCaptionsId[] = "D_WEBVTT/CAPTIONS";
 const char Tracks::kWebVttDescriptionsId[] = "D_WEBVTT/DESCRIPTIONS";
 const char Tracks::kWebVttMetadataId[] = "D_WEBVTT/METADATA";
@@ -4163,15 +4164,15 @@ bool Segment::WriteFramesLessThan(uint64_t timestamp) {
 }
 
 bool Segment::DocTypeIsWebm() const {
-  const int kNumCodecIds = 9;
+  const int kNumCodecIds = 10;
 
   // TODO(vigneshv): Tweak .clang-format.
   const char* kWebmCodecIds[kNumCodecIds] = {
       Tracks::kOpusCodecId,          Tracks::kVorbisCodecId,
       Tracks::kVp8CodecId,           Tracks::kVp9CodecId,
-      Tracks::kVp10CodecId,          Tracks::kWebVttCaptionsId,
-      Tracks::kWebVttDescriptionsId, Tracks::kWebVttMetadataId,
-      Tracks::kWebVttSubtitlesId};
+      Tracks::kVp10CodecId,          Tracks::kAV1CodecId,
+      Tracks::kWebVttCaptionsId,     Tracks::kWebVttDescriptionsId,
+      Tracks::kWebVttMetadataId,     Tracks::kWebVttSubtitlesId};
 
   const int num_tracks = static_cast<int>(tracks_.track_entries_size());
   for (int track_index = 0; track_index < num_tracks; ++track_index) {

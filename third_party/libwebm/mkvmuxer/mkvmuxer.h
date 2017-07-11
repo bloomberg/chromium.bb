@@ -874,6 +874,7 @@ class Tracks {
   static const char kVp8CodecId[];
   static const char kVp9CodecId[];
   static const char kVp10CodecId[];
+  static const char kAV1CodecId[];
   static const char kWebVttCaptionsId[];
   static const char kWebVttDescriptionsId[];
   static const char kWebVttMetadataId[];
