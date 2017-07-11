@@ -27,6 +27,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/win/scoped_co_mem.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
@@ -397,9 +399,11 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 
 BackgroundDownloader::BackgroundDownloader(
     std::unique_ptr<CrxDownloader> successor,
-    net::URLRequestContextGetter* context_getter,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : CrxDownloader(task_runner, std::move(successor)),
+    net::URLRequestContextGetter* context_getter)
+    : CrxDownloader(std::move(successor)),
+      com_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       context_getter_(context_getter),
       git_cookie_bits_manager_(0),
       git_cookie_job_(0) {}
@@ -417,21 +421,21 @@ void BackgroundDownloader::StartTimer() {
 
 void BackgroundDownloader::OnTimer() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner()->PostTask(
+  com_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundDownloader::OnDownloading, base::Unretained(this)));
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&BackgroundDownloader::BeginDownload,
-                                     base::Unretained(this), url));
+  com_task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&BackgroundDownloader::BeginDownload,
+                                        base::Unretained(this), url));
 }
 
 // Called one time when this class is asked to do a download.
 void BackgroundDownloader::BeginDownload(const GURL& url) {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   download_start_time_ = base::TimeTicks::Now();
   job_stuck_begin_time_ = download_start_time_;
@@ -477,7 +481,7 @@ HRESULT BackgroundDownloader::BeginDownloadHelper(const GURL& url) {
 
 // Called any time the timer fires.
 void BackgroundDownloader::OnDownloading() {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   HRESULT hr = UpdateInterfacePointers();
   if (FAILED(hr)) {
@@ -542,7 +546,7 @@ void BackgroundDownloader::OnDownloading() {
 // Completes the BITS download, picks up the file path of the response, and
 // notifies the CrxDownloader. The function should be called only once.
 void BackgroundDownloader::EndDownload(HRESULT error) {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
   const base::TimeDelta download_time =
@@ -677,7 +681,7 @@ bool BackgroundDownloader::OnStateTransferring() {
 
 HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
                                            ComPtr<IBackgroundCopyJob>* job) {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   size_t num_jobs = 0;
   GetBackgroundDownloaderJobCount(&num_jobs);
@@ -812,7 +816,7 @@ HRESULT BackgroundDownloader::CompleteJob() {
 }
 
 HRESULT BackgroundDownloader::UpdateInterfacePointers() {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   bits_manager_ = nullptr;
   job_ = nullptr;
@@ -841,7 +845,7 @@ void BackgroundDownloader::ResetInterfacePointers() {
 }
 
 HRESULT BackgroundDownloader::ClearGit() {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
 
   ResetInterfacePointers();
 
@@ -864,7 +868,7 @@ HRESULT BackgroundDownloader::ClearGit() {
 
 HRESULT BackgroundDownloader::GetBackgroundDownloaderJobCount(
     size_t* num_jobs) {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(bits_manager_);
 
   std::vector<ComPtr<IBackgroundCopyJob>> jobs;
@@ -879,7 +883,7 @@ HRESULT BackgroundDownloader::GetBackgroundDownloaderJobCount(
 }
 
 void BackgroundDownloader::CleanupStaleJobs() {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(com_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(bits_manager_);
 
   static base::Time last_sweep;

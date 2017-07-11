@@ -277,13 +277,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -440,13 +438,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -676,13 +672,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -945,13 +939,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -1234,13 +1226,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -1507,13 +1497,11 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -1757,13 +1745,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -1979,13 +1965,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -2126,13 +2110,11 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -2290,13 +2272,11 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -2380,13 +2360,11 @@ TEST_F(UpdateClientTest, EmptyIdList) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -2434,14 +2412,12 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return nullptr;
     }
 
    private:
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
     ~FakeCrxDownloader() override {}
 
     void DoStartDownload(const GURL& url) override {}
@@ -2562,13 +2538,11 @@ TEST_F(UpdateClientTest, RetryAfter) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -2803,13 +2777,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -2972,13 +2944,11 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
@@ -3097,13 +3067,11 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override {
@@ -3241,13 +3209,11 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        net::URLRequestContextGetter* context_getter,
-        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+        net::URLRequestContextGetter* context_getter) {
       return base::MakeUnique<FakeCrxDownloader>();
     }
 
-    FakeCrxDownloader()
-        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    FakeCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }

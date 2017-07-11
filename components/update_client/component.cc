@@ -452,8 +452,7 @@ void Component::StateDownloadingDiff::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->RequestContext(),
-      update_context.blocking_task_runner);
+      update_context.config->RequestContext());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
@@ -519,8 +518,7 @@ void Component::StateDownloading::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->RequestContext(),
-      update_context.blocking_task_runner);
+      update_context.config->RequestContext());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(

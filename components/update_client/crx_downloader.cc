@@ -11,7 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #if defined(OS_WIN)
@@ -39,26 +40,22 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 // which uses the BITS service.
 std::unique_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
-    net::URLRequestContextGetter* context_getter,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    net::URLRequestContextGetter* context_getter) {
   std::unique_ptr<CrxDownloader> url_fetcher_downloader(
       std::unique_ptr<CrxDownloader>(new UrlFetcherDownloader(
-          std::unique_ptr<CrxDownloader>(), context_getter, task_runner)));
+          std::unique_ptr<CrxDownloader>(), context_getter)));
 #if defined(OS_WIN)
   if (is_background_download) {
     return std::unique_ptr<CrxDownloader>(new BackgroundDownloader(
-        std::move(url_fetcher_downloader), context_getter, task_runner));
+        std::move(url_fetcher_downloader), context_getter));
   }
 #endif
 
   return url_fetcher_downloader;
 }
 
-CrxDownloader::CrxDownloader(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    std::unique_ptr<CrxDownloader> successor)
-    : task_runner_(task_runner),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+CrxDownloader::CrxDownloader(std::unique_ptr<CrxDownloader> successor)
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       successor_(std::move(successor)) {}
 
 CrxDownloader::~CrxDownloader() {}
@@ -107,8 +104,8 @@ void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
   if (error != CrxDownloaderError::NONE) {
     Result result;
     result.error = static_cast<int>(error);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(download_callback, result));
+    main_task_runner()->PostTask(FROM_HERE,
+                                 base::Bind(download_callback, result));
     return;
   }
 
@@ -127,8 +124,11 @@ void CrxDownloader::OnDownloadComplete(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!result.error)
-    task_runner()->PostTask(
+
+    base::PostTaskWithTraits(
         FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::Bind(&CrxDownloader::VerifyResponse, base::Unretained(this),
                    is_handled, result, download_metrics));
   else
@@ -152,7 +152,6 @@ void CrxDownloader::OnDownloadProgress(const Result& result) {
 void CrxDownloader::VerifyResponse(bool is_handled,
                                    Result result,
                                    DownloadMetrics download_metrics) {
-  DCHECK(task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(0, result.error);
   DCHECK_EQ(0, download_metrics.error);
   DCHECK(is_handled);
