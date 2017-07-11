@@ -527,6 +527,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyPositionUtils.h",
     "properties/CSSPropertyShapeUtils.cpp",
     "properties/CSSPropertyShapeUtils.h",
+    "properties/CSSPropertyTextDecorationLineUtils.cpp",
+    "properties/CSSPropertyTextDecorationLineUtils.h",
     "properties/CSSPropertyTransformUtils.cpp",
     "properties/CSSPropertyTransformUtils.h",
     "properties/CSSPropertyTransitionPropertyUtils.cpp",

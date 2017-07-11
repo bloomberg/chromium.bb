@@ -4,4 +4,15 @@
 
 #include "core/css/properties/CSSPropertyAPITextDecorationLine.h"
 
-namespace blink {}  // namespace blink
+#include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
+
+namespace blink {
+
+const CSSValue* CSSPropertyAPITextDecorationLine::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext&,
+    const CSSParserLocalContext&) {
+  return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(range);
+}
+
+}  // namespace blink

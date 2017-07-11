@@ -45,6 +45,7 @@
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
+#include "core/css/properties/CSSPropertyTextDecorationLineUtils.h"
 #include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
 #include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 #include "core/frame/UseCounter.h"
@@ -565,28 +566,6 @@ static CSSValue* ConsumeFilter(CSSParserTokenRange& range,
     }
     list->Append(*filter_value);
   } while (!range.AtEnd());
-  return list;
-}
-
-static CSSValue* ConsumeTextDecorationLine(CSSParserTokenRange& range) {
-  CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
-    return ConsumeIdent(range);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  while (true) {
-    CSSIdentifierValue* ident =
-        ConsumeIdent<CSSValueBlink, CSSValueUnderline, CSSValueOverline,
-                     CSSValueLineThrough>(range);
-    if (!ident)
-      break;
-    if (list->HasValue(*ident))
-      return nullptr;
-    list->Append(*ident);
-  }
-
-  if (!list->length())
-    return nullptr;
   return list;
 }
 
@@ -1269,10 +1248,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeFilter(range_, context_);
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
-    // fallthrough
-    case CSSPropertyWebkitTextDecorationsInEffect:
-    case CSSPropertyTextDecorationLine:
-      return ConsumeTextDecorationLine(range_);
+      return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
+          range_);
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
