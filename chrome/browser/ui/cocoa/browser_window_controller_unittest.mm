@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -761,7 +762,13 @@ TEST_F(BrowserWindowControllerTest, UsesAutoLayout) {
   // view's frame and autoresizing mask.
   // TODO(sdy): Turn back on (or remove) after investigating a performance
   // regression: https://crbug.com/706931
-  EXPECT_EQ(0u, [[[controller_ chromeContentView] constraints] count]);
+  if (chrome::ShouldUseFullSizeContentView()) {
+    // FramedBrowserWindow relies on Auto Layout to position the window buttons
+    // when using a full size content view.
+    EXPECT_NE(0u, [[[controller_ chromeContentView] constraints] count]);
+  } else {
+    EXPECT_EQ(0u, [[[controller_ chromeContentView] constraints] count]);
+  }
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
