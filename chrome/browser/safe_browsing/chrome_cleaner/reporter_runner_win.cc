@@ -496,6 +496,8 @@ void DisplaySRTPrompt(base::FilePath download_path,
   //               re-display it.  Improve this. http://crbug.com/460295
   if (fetch_status == ChromeCleanerFetchStatus::kNotFoundOnServer) {
     RecordSRTPromptHistogram(SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
+    RecordPromptNotShownWithReasonHistogram(
+        NO_PROMPT_REASON_CLEANER_DOWNLOAD_FAILED);
     return;
   }
 
@@ -504,8 +506,11 @@ void DisplaySRTPrompt(base::FilePath download_path,
   // reporter. We can't use other ways of finding a browser because we don't
   // have a profile.
   Browser* browser = chrome::FindLastActive();
-  if (!browser)
+  if (!browser) {
+    RecordPromptNotShownWithReasonHistogram(
+        NO_PROMPT_REASON_BROWSER_NOT_AVAILABLE);
     return;
+  }
 
   Profile* profile = browser->profile();
   DCHECK(profile);
@@ -588,8 +593,10 @@ void ScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
   ChromeCleanerController* cleaner_controller =
       ChromeCleanerController::GetInstance();
 
-  if (cleaner_controller->state() != ChromeCleanerController::State::kIdle)
+  if (cleaner_controller->state() != ChromeCleanerController::State::kIdle) {
+    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOT_ON_IDLE_STATE);
     return;
+  }
 
   cleaner_controller->Scan(reporter_invocation);
   DCHECK_EQ(ChromeCleanerController::State::kScanning,
@@ -624,6 +631,7 @@ void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
       local_state && local_state->GetBoolean(prefs::kSwReporterPendingPrompt);
   if (!incoming_seed.empty() && incoming_seed == old_seed && !pending_prompt) {
     RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
+    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_ALREADY_PROMPTED);
     return;
   }
 
@@ -771,6 +779,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
     if (!finished_invocation.BehaviourIsSupported(
             SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT)) {
+      RecordPromptNotShownWithReasonHistogram(
+          NO_PROMPT_REASON_BEHAVIOUR_NOT_SUPPORTED);
       return;
     }
 
@@ -779,12 +789,15 @@ class ReporterRunner : public chrome::BrowserListObserver {
       // Knowing about disabled field trial is more important than reporter not
       // finding anything to remove, so check this case first.
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
+      RecordPromptNotShownWithReasonHistogram(
+          NO_PROMPT_REASON_FEATURE_NOT_ENABLED);
       return;
     }
 
     if (exit_code != chrome_cleaner::kSwReporterPostRebootCleanupNeeded &&
         exit_code != chrome_cleaner::kSwReporterCleanupNeeded) {
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_NEEDED);
+      RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOTHING_FOUND);
       return;
     }
 

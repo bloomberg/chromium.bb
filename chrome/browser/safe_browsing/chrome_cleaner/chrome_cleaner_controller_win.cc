@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -49,6 +51,26 @@ ChromeCleanerController* g_controller = nullptr;
 // https://crbug.com/727956
 constexpr int kRebootRequiredExitCode = 15;
 constexpr int kRebootNotRequiredExitCode = 0;
+
+// These values are used to send UMA information and are replicated in the
+// histograms.xml file, so the order MUST NOT CHANGE.
+enum CleanupResultHistogramValue {
+  CLEANUP_RESULT_SUCCEEDED = 0,
+  CLEANUP_RESULT_REBOOT_REQUIRED = 1,
+  CLEANUP_RESULT_FAILED = 2,
+
+  CLEANUP_RESULT_MAX,
+};
+
+// These values are used to send UMA information and are replicated in the
+// histograms.xml file, so the order MUST NOT CHANGE.
+enum IPCDisconnectedHistogramValue {
+  IPC_DISCONNECTED_SUCCESS = 0,
+  IPC_DISCONNECTED_LOST_WHILE_SCANNING = 1,
+  IPC_DISCONNECTED_LOST_USER_PROMPTED = 2,
+
+  IPC_DISCONNECTED_MAX,
+};
 
 // Attempts to change the Chrome Cleaner binary's suffix to ".exe". Will return
 // an empty FilePath on failure. Should be called on a sequence with traits
@@ -100,7 +122,27 @@ ChromeCleanerController::IdleReason IdleReasonWhenConnectionClosedTooSoon(
              : ChromeCleanerController::IdleReason::kConnectionLost;
 }
 
+void RecordCleanerLogsAcceptanceHistogram(bool logs_accepted) {
+  UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.CleanerLogsAcceptance",
+                        logs_accepted);
+}
+
+void RecordCleanupResultHistogram(CleanupResultHistogramValue result) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.CleanupResult", result,
+                            CLEANUP_RESULT_MAX);
+}
+
+void RecordIPCDisconnectedHistogram(IPCDisconnectedHistogramValue error) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.IPCDisconnected", error,
+                            IPC_DISCONNECTED_MAX);
+}
+
 }  // namespace
+
+void RecordCleanupStartedHistogram(CleanupStartedHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.CleanupStarted", value,
+                            CLEANUP_STARTED_MAX);
+}
 
 ChromeCleanerControllerDelegate::ChromeCleanerControllerDelegate() = default;
 
@@ -231,12 +273,14 @@ void ChromeCleanerController::ReplyWithUserResponse(
     case UserResponse::kAcceptedWithLogs:
       acceptance = PromptAcceptance::ACCEPTED_WITH_LOGS;
       SetLogsEnabled(true);
+      RecordCleanerLogsAcceptanceHistogram(true);
       new_state = State::kCleaning;
       delegate_->TagForResetting(profile);
       break;
     case UserResponse::kAcceptedWithoutLogs:
       acceptance = PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
       SetLogsEnabled(false);
+      RecordCleanerLogsAcceptanceHistogram(false);
       new_state = State::kCleaning;
       delegate_->TagForResetting(profile);
       break;
@@ -264,6 +308,7 @@ void ChromeCleanerController::Reboot() {
   if (state() != State::kRebootRequired)
     return;
 
+  UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.Cleaner.RebootResponse", true);
   InitiateReboot();
 }
 
@@ -329,6 +374,8 @@ void ChromeCleanerController::OnChromeCleanerFetchedAndVerified(
   if (executable_path.empty()) {
     idle_reason_ = IdleReason::kScanningFailed;
     SetStateAndNotifyObservers(State::kIdle);
+    RecordPromptNotShownWithReasonHistogram(
+        NO_PROMPT_REASON_CLEANER_DOWNLOAD_FAILED);
     return;
   }
 
@@ -391,9 +438,12 @@ void ChromeCleanerController::OnPromptUser(
                                              PromptAcceptance::DENIED));
     idle_reason_ = IdleReason::kScanningFoundNothing;
     SetStateAndNotifyObservers(State::kIdle);
+    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOTHING_FOUND);
     return;
   }
 
+  UMA_HISTOGRAM_COUNTS_1000("SoftwareReporter.NumberOfFilesToDelete",
+                            files_to_delete->size());
   files_to_delete_ = std::move(files_to_delete);
   prompt_user_callback_ = std::move(prompt_user_callback);
   SetStateAndNotifyObservers(State::kInfected);
@@ -405,6 +455,14 @@ void ChromeCleanerController::OnConnectionClosed() {
   DCHECK_NE(State::kRebootRequired, state());
 
   if (state() == State::kScanning || state() == State::kInfected) {
+    if (state() == State::kScanning) {
+      RecordPromptNotShownWithReasonHistogram(
+          NO_PROMPT_REASON_IPC_CONNECTION_BROKEN);
+      RecordIPCDisconnectedHistogram(IPC_DISCONNECTED_LOST_WHILE_SCANNING);
+    } else {
+      RecordIPCDisconnectedHistogram(IPC_DISCONNECTED_LOST_USER_PROMPTED);
+    }
+
     idle_reason_ = IdleReasonWhenConnectionClosedTooSoon(state());
     SetStateAndNotifyObservers(State::kIdle);
     return;
@@ -416,6 +474,7 @@ void ChromeCleanerController::OnConnectionClosed() {
   //   Cleaner process since communication via Mojo is complete and only the
   //   exit code of the process is of any use to us (for deciding whether we
   //   need to reboot).
+  RecordIPCDisconnectedHistogram(IPC_DISCONNECTED_SUCCESS);
 }
 
 void ChromeCleanerController::OnCleanerProcessDone(
@@ -432,27 +491,26 @@ void ChromeCleanerController::OnCleanerProcessDone(
   DCHECK_NE(ChromeCleanerRunner::LaunchStatus::kLaunchFailed,
             process_status.launch_status);
 
-  if (process_status.launch_status !=
+  if (process_status.launch_status ==
       ChromeCleanerRunner::LaunchStatus::kSuccess) {
-    idle_reason_ = IdleReason::kCleaningFailed;
-    SetStateAndNotifyObservers(State::kIdle);
-    return;
+    if (process_status.exit_code == kRebootRequiredExitCode) {
+      RecordCleanupResultHistogram(CLEANUP_RESULT_REBOOT_REQUIRED);
+      SetStateAndNotifyObservers(State::kRebootRequired);
+      return;
+    }
+
+    if (process_status.exit_code == kRebootNotRequiredExitCode) {
+      RecordCleanupResultHistogram(CLEANUP_RESULT_SUCCEEDED);
+      delegate_->ResetTaggedProfiles(
+          g_browser_process->profile_manager()->GetLoadedProfiles(),
+          base::BindOnce(&ChromeCleanerController::OnSettingsResetCompleted,
+                         base::Unretained(this)));
+      ResetCleanerDataAndInvalidateWeakPtrs();
+      return;
+    }
   }
 
-  if (process_status.exit_code == kRebootRequiredExitCode) {
-    SetStateAndNotifyObservers(State::kRebootRequired);
-    return;
-  }
-
-  if (process_status.exit_code == kRebootNotRequiredExitCode) {
-    delegate_->ResetTaggedProfiles(
-        g_browser_process->profile_manager()->GetLoadedProfiles(),
-        base::BindOnce(&ChromeCleanerController::OnSettingsResetCompleted,
-                       base::Unretained(this)));
-    ResetCleanerDataAndInvalidateWeakPtrs();
-    return;
-  }
-
+  RecordCleanupResultHistogram(CLEANUP_RESULT_FAILED);
   idle_reason_ = IdleReason::kCleaningFailed;
   SetStateAndNotifyObservers(State::kIdle);
 }

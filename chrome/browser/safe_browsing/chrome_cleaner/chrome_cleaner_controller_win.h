@@ -23,6 +23,18 @@ class Profile;
 
 namespace safe_browsing {
 
+// These values are used to send UMA information and are replicated in the
+// histograms.xml file, so the order MUST NOT CHANGE.
+enum CleanupStartedHistogramValue {
+  CLEANUP_STARTED_FROM_PROMPT_DIALOG = 0,
+  CLEANUP_STARTED_FROM_PROMPT_IN_SETTINGS = 1,
+
+  CLEANUP_STARTED_MAX,
+};
+
+// Records a SoftwareReporter.CleanupStarted histogram.
+void RecordCleanupStartedHistogram(CleanupStartedHistogramValue value);
+
 // Delegate class that provides services to the ChromeCleanerController class
 // and can be overridden by tests via
 // SetChromeCleanerControllerDelegateForTesting().

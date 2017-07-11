@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -40,6 +42,23 @@ Browser* FindBrowserForDialog() {
   return nullptr;
 }
 
+// These values are used to send UMA information and are replicated in the
+// histograms.xml file, so the order MUST NOT CHANGE.
+enum PromptDialogResponseHistogramValue {
+  PROMPT_DIALOG_RESPONSE_ACCEPTED = 0,
+  PROMPT_DIALOG_RESPONSE_DETAILS = 1,
+  PROMPT_DIALOG_RESPONSE_CANCELLED = 2,
+  PROMPT_DIALOG_RESPONSE_DISMISSED = 3,
+
+  PROMPT_DIALOG_RESPONSE_MAX,
+};
+
+void RecordPromptDialogResponseHistogram(
+    PromptDialogResponseHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.PromptDialogResponse", value,
+                            PROMPT_DIALOG_RESPONSE_MAX);
+}
+
 }  // namespace
 
 ChromeCleanerDialogControllerImpl::ChromeCleanerDialogControllerImpl(
@@ -60,6 +79,9 @@ void ChromeCleanerDialogControllerImpl::DialogShown() {}
 void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
   DCHECK(browser_);
 
+  RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_ACCEPTED);
+  RecordCleanupStartedHistogram(CLEANUP_STARTED_FROM_PROMPT_DIALOG);
+
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(),
       logs_enabled
@@ -72,6 +94,8 @@ void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
 void ChromeCleanerDialogControllerImpl::Cancel() {
   DCHECK(browser_);
 
+  RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_CANCELLED);
+
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(), ChromeCleanerController::UserResponse::kDenied);
   OnInteractionDone();
@@ -80,6 +104,8 @@ void ChromeCleanerDialogControllerImpl::Cancel() {
 void ChromeCleanerDialogControllerImpl::Close() {
   DCHECK(browser_);
 
+  RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DISMISSED);
+
   cleaner_controller_->ReplyWithUserResponse(
       browser_->profile(), ChromeCleanerController::UserResponse::kDismissed);
   OnInteractionDone();
@@ -87,6 +113,8 @@ void ChromeCleanerDialogControllerImpl::Close() {
 
 void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
     bool logs_enabled) {
+  RecordPromptDialogResponseHistogram(PROMPT_DIALOG_RESPONSE_DETAILS);
+
   cleaner_controller_->SetLogsEnabled(logs_enabled);
   OpenSettingsPage(browser_);
   OnInteractionDone();
@@ -124,11 +152,14 @@ void ChromeCleanerDialogControllerImpl::OnInfected(
     // TODO(alito): Register with chrome::BrowserListObserver to get notified
     // later if a suitable browser window becomes available to show the
     // prompt. http://crbug.com/734677
+    RecordPromptNotShownWithReasonHistogram(
+        NO_PROMPT_REASON_BROWSER_NOT_AVAILABLE);
     OnInteractionDone();
     return;
   }
 
   chrome::ShowChromeCleanerPrompt(browser_, this);
+  RecordPromptShownHistogram();
   dialog_shown_ = true;
 }
 
