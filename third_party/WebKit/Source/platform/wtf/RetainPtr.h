@@ -29,10 +29,6 @@
 #include <type_traits>
 #include <utility>
 
-#if USE(CF)
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 #ifdef __OBJC__
 #import <Foundation/Foundation.h>
 #endif

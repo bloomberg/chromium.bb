@@ -34,13 +34,6 @@
  * present or not */
 #define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE && HAVE_##WTF_FEATURE)
 
-/* ==== Policy decision macros: these define policy choices for a particular
- * port. ==== */
-
-/* USE() - use a particular third-party library or optional OS service */
-#define USE(WTF_FEATURE) \
-  (defined WTF_USE_##WTF_FEATURE && WTF_USE_##WTF_FEATURE)
-
 /* There is an assumption in the project that either OS_WIN or OS_POSIX is
  * set. */
 #if !defined(OS_WIN) && !defined(OS_POSIX)

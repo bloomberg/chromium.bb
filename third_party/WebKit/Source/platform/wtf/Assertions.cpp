@@ -45,11 +45,7 @@
 #include "platform/wtf/Threading.h"
 
 #if defined(OS_MACOSX)
-#include <AvailabilityMacros.h>
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-#define WTF_USE_APPLE_SYSTEM_LOG 1
 #include <asl.h>
-#endif
 #endif  // defined(OS_MACOSX)
 
 #if defined(COMPILER_MSVC)
@@ -72,7 +68,7 @@
 
 PRINTF_FORMAT(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args) {
-#if defined(OS_MACOSX) && USE(APPLE_SYSTEM_LOG)
+#if defined(OS_MACOSX)
   va_list copyOfArgs;
   va_copy(copyOfArgs, args);
   asl_vlog(0, 0, ASL_LEVEL_NOTICE, format, copyOfArgs);

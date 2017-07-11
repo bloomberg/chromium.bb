@@ -26,9 +26,7 @@
 // FFTFrame implementation using FFmpeg's RDFT algorithm,
 // suitable for use on Windows and Linux.
 
-#include "platform/wtf/build_config.h"
-
-#if USE(WEBAUDIO_FFMPEG)
+#if defined(WTF_USE_WEBAUDIO_FFMPEG)
 
 #include "platform/audio/FFTFrame.h"
 
@@ -163,4 +161,4 @@ RDFTContext* FFTFrame::ContextForSize(unsigned fft_size, int trans) {
 
 }  // namespace blink
 
-#endif  // USE(WEBAUDIO_FFMPEG)
+#endif  // defined(WTF_USE_WEBAUDIO_FFMPEG)

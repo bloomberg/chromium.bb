@@ -26,7 +26,8 @@
 
 #include "platform/wtf/DynamicAnnotations.h"
 
-#if USE(DYNAMIC_ANNOTATIONS) && !USE(DYNAMIC_ANNOTATIONS_NOIMPL)
+#if defined(WTF_USE_DYNAMIC_ANNOTATIONS) && \
+    !defined(WTF_USE_DYNAMIC_ANNOTATIONS_NOIMPL)
 
 // Identical code folding(-Wl,--icf=all) countermeasures.
 // This makes all Annotate* functions different, which prevents the linker from
@@ -57,4 +58,5 @@ void WTFAnnotateHappensAfter(const char*, int, const volatile void*) {
   DYNAMIC_ANNOTATIONS_IMPL
 }
 
-#endif  // USE(DYNAMIC_ANNOTATIONS) && !USE(DYNAMIC_ANNOTATIONS_NOIMPL)
+#endif  // defined(WTF_USE_DYNAMIC_ANNOTATIONS) &&
+        // !defined(WTF_USE_DYNAMIC_ANNOTATIONS_NOIMPL)

@@ -60,7 +60,7 @@ TEST_F(ImageQualityControllerTest, ImageRenderingPixelated) {
                 LayoutSize(), FrameTime(obj)));
 }
 
-#if !USE(LOW_QUALITY_IMAGE_INTERPOLATION)
+#if !defined(WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION)
 
 class TestImageAnimated : public Image {
  public:

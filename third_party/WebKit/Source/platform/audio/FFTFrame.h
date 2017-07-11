@@ -40,9 +40,9 @@
 
 #if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
-#elif USE(WEBAUDIO_OPENMAX_DL_FFT)
+#elif defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
 #include <dl/sp/api/omxSP.h>
-#elif USE(WEBAUDIO_FFMPEG)
+#elif defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #endif
 
@@ -108,13 +108,13 @@ class PLATFORM_EXPORT FFTFrame {
   static FFTSetup* fft_setups_;
   FFTSetup fft_setup_;
   DSPSplitComplex frame_;
-#elif USE(WEBAUDIO_FFMPEG)
+#elif defined(WTF_USE_WEBAUDIO_FFMPEG)
   static RDFTContext* ContextForSize(unsigned fft_size, int trans);
   RDFTContext* forward_context_;
   RDFTContext* inverse_context_;
   float* GetUpToDateComplexData();
   AudioFloatArray complex_data_;
-#elif USE(WEBAUDIO_OPENMAX_DL_FFT)
+#elif defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
   static OMXFFTSpec_R_F32* ContextForSize(unsigned log2fft_size);
   OMXFFTSpec_R_F32* forward_context_;
   OMXFFTSpec_R_F32* inverse_context_;

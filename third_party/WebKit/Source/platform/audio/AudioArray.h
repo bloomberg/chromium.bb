@@ -62,7 +62,7 @@ class AudioArray {
 
     unsigned initial_size = sizeof(T) * n;
 
-#if USE(WEBAUDIO_FFMPEG) || USE(WEBAUDIO_OPENMAX_DL_FFT)
+#if defined(WTF_USE_WEBAUDIO_FFMPEG) || defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
     const size_t kAlignment = 32;
 #else
     const size_t kAlignment = 16;

@@ -174,7 +174,7 @@
 #include "public/web/WebWindowFeatures.h"
 #include "web/WebDevToolsAgentImpl.h"
 
-#if USE(DEFAULT_RENDER_THEME)
+#if defined(WTF_USE_DEFAULT_RENDER_THEME)
 #include "core/layout/LayoutThemeDefault.h"
 #endif
 
@@ -3596,7 +3596,7 @@ void WebViewImpl::SetSelectionColors(unsigned active_background_color,
                                      unsigned active_foreground_color,
                                      unsigned inactive_background_color,
                                      unsigned inactive_foreground_color) {
-#if USE(DEFAULT_RENDER_THEME)
+#if defined(WTF_USE_DEFAULT_RENDER_THEME)
   LayoutThemeDefault::SetSelectionColors(
       active_background_color, active_foreground_color,
       inactive_background_color, inactive_foreground_color);
