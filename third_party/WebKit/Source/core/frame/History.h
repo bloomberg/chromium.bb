@@ -33,6 +33,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -102,7 +103,13 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   SerializedScriptValue* StateInternal() const;
   HistoryScrollRestorationType ScrollRestorationInternal() const;
 
+  bool ShouldThrottleStateObjectChanges();
+
   RefPtr<SerializedScriptValue> last_state_object_requested_;
+  struct {
+    int count;
+    TimeTicks last_updated;
+  } state_flood_guard;
 };
 
 }  // namespace blink
