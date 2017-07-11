@@ -24,6 +24,7 @@ aggregate_vector_icons("toolbar_vector_icons") {
     "https_valid.icon",
     "https_valid_in_chip.1x.icon",
     "https_valid_in_chip.icon",
+    "offline_pin.icon",
     "product.1x.icon",
     "product.icon",
     "star_active.icon",

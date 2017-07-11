@@ -79,6 +79,9 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
   if (icon_override)
     return *icon_override;
 
+  if (IsOfflinePage())
+    return toolbar::kOfflinePinIcon;
+
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
@@ -121,6 +124,9 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
 }
 
 base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
+  if (IsOfflinePage())
+    return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
+
   switch (GetSecurityLevel(false)) {
     case security_state::HTTP_SHOW_WARNING:
       return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
