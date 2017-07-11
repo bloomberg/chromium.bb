@@ -40,21 +40,19 @@ namespace update_client {
 class BackgroundDownloader : public CrxDownloader {
  protected:
   friend class CrxDownloader;
-  BackgroundDownloader(
-      std::unique_ptr<CrxDownloader> successor,
-      net::URLRequestContextGetter* context_getter,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  BackgroundDownloader(std::unique_ptr<CrxDownloader> successor,
+                       net::URLRequestContextGetter* context_getter);
   ~BackgroundDownloader() override;
 
  private:
   // Overrides for CrxDownloader.
   void DoStartDownload(const GURL& url) override;
 
-  // Called asynchronously on the |task_runner_| at different stages during
+  // Called asynchronously on the |com_task_runner_| at different stages during
   // the download. |OnDownloading| can be called multiple times.
-  // |EndDownload| switches the execution flow from the |task_runner_| to the
-  // main thread. Accessing any data members of this object from the
-  // |task_runner_| after calling |EndDownload| is unsafe.
+  // |EndDownload| switches the execution flow from the |com_task_runner_| to
+  // the main thread. Accessing any data members of this object from the
+  // |com_task_runner_| after calling |EndDownload| is unsafe.
   void BeginDownload(const GURL& url);
   void OnDownloading();
   void EndDownload(HRESULT hr);
@@ -127,6 +125,9 @@ class BackgroundDownloader : public CrxDownloader {
 
   // Ensures that we are running on the same thread we created the object on.
   base::ThreadChecker thread_checker_;
+
+  // Executes blocking COM calls to BITS.
+  scoped_refptr<base::SequencedTaskRunner> com_task_runner_;
 
   net::URLRequestContextGetter* context_getter_;
 

@@ -12,6 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/update_client/utils.h"
 #include "net/base/load_flags.h"
@@ -23,9 +25,8 @@ namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
-    net::URLRequestContextGetter* context_getter,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : CrxDownloader(task_runner, std::move(successor)),
+    net::URLRequestContextGetter* context_getter)
+    : CrxDownloader(std::move(successor)),
       context_getter_(context_getter),
       downloaded_bytes_(-1),
       total_bytes_(-1) {}
@@ -65,6 +66,7 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
             }
           }
         })");
+
   url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this,
                                          traffic_annotation);
   url_fetcher_->SetRequestContext(context_getter_);
@@ -72,7 +74,10 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
                              net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DISABLE_CACHE);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SaveResponseToTemporaryFile(task_runner());
+  url_fetcher_->SaveResponseToTemporaryFile(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
 

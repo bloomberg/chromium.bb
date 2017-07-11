@@ -16,10 +16,6 @@
 #include "components/update_client/crx_downloader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
@@ -32,10 +28,8 @@ class UrlFetcherDownloader : public CrxDownloader,
                              public net::URLFetcherDelegate {
  protected:
   friend class CrxDownloader;
-  UrlFetcherDownloader(
-      std::unique_ptr<CrxDownloader> successor,
-      net::URLRequestContextGetter* context_getter,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  UrlFetcherDownloader(std::unique_ptr<CrxDownloader> successor,
+                       net::URLRequestContextGetter* context_getter);
   ~UrlFetcherDownloader() override;
 
  private:

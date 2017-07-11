@@ -86,10 +86,8 @@ class CrxDownloader {
   // bytes is not guaranteed to monotonically increment over time.
   using ProgressCallback = base::Callback<void(const Result& result)>;
 
-  using Factory = std::unique_ptr<CrxDownloader> (*)(
-      bool,
-      net::URLRequestContextGetter*,
-      const scoped_refptr<base::SequencedTaskRunner>&);
+  using Factory =
+      std::unique_ptr<CrxDownloader> (*)(bool, net::URLRequestContextGetter*);
 
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
@@ -98,8 +96,7 @@ class CrxDownloader {
   // code such as file IO operations.
   static std::unique_ptr<CrxDownloader> Create(
       bool is_background_download,
-      net::URLRequestContextGetter* context_getter,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+      net::URLRequestContextGetter* context_getter);
   virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);
@@ -119,8 +116,7 @@ class CrxDownloader {
   const std::vector<DownloadMetrics> download_metrics() const;
 
  protected:
-  CrxDownloader(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-                std::unique_ptr<CrxDownloader> successor);
+  explicit CrxDownloader(std::unique_ptr<CrxDownloader> successor);
 
   // Handles the fallback in the case of multiple urls and routing of the
   // download to the following successor in the chain. Derived classes must call
@@ -140,10 +136,6 @@ class CrxDownloader {
   // Returns the url which is currently being downloaded from.
   GURL url() const;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
-    return task_runner_;
-  }
-
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() const {
     return main_task_runner_;
   }
@@ -160,9 +152,6 @@ class CrxDownloader {
                            const DownloadMetrics& download_metrics);
 
   base::ThreadChecker thread_checker_;
-
-  // Executes blocking operations such as file I/O.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to post callbacks to the main thread.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

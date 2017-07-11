@@ -183,22 +183,12 @@ bool ChromeConfigurator::EnabledCupSigning() const {
   return configurator_impl_.EnabledCupSigning();
 }
 
-// Returns a task runner to run blocking tasks. The task runner continues to run
-// after the browser shuts down, until the OS terminates the process. This
-// imposes certain requirements for the code using the task runner, such as
-// not accessing any global browser state while the code is running.
+// Returns a task runner to run blocking tasks.
 scoped_refptr<base::SequencedTaskRunner>
 ChromeConfigurator::GetSequencedTaskRunner() const {
-  constexpr base::TaskTraits traits = {
-      base::MayBlock(), base::TaskPriority::BACKGROUND,
-      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
-#if defined(OS_WIN)
-  // Use the COM STA task runner as the Windows background downloader requires
-  // COM initialization.
-  return base::CreateCOMSTATaskRunnerWithTraits(traits);
-#else
-  return base::CreateSequencedTaskRunnerWithTraits(traits);
-#endif
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 PrefService* ChromeConfigurator::GetPrefService() const {
