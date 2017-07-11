@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -132,6 +133,7 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
+    @DisabledTest // Timing out on the try bot. http://crbug.com/740786
     public void testGetChildIDs() throws Throwable {
         BookmarkId folderA = mBookmarkModel.addFolder(mMobileNode, 0, "fa");
         HashSet<BookmarkId> expectedChildren = new HashSet<>();
