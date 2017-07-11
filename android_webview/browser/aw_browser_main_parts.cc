@@ -9,7 +9,6 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_result_codes.h"
-#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -135,13 +134,15 @@ int AwBrowserMainParts::PreCreateThreads() {
     }
   }
 
-  if (AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled()) {
-    base::FilePath safe_browsing_dir;
-    if (PathService::Get(android_webview::DIR_SAFE_BROWSING,
-                         &safe_browsing_dir)) {
-      if (!base::PathExists(safe_browsing_dir))
-        base::CreateDirectory(safe_browsing_dir);
-    }
+  // We need to create the safe browsing specific directory even if the
+  // AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled() is false
+  // initially, because safe browsing can be enabled later at runtime
+  // on a per-webview basis.
+  base::FilePath safe_browsing_dir;
+  if (PathService::Get(android_webview::DIR_SAFE_BROWSING,
+                       &safe_browsing_dir)) {
+    if (!base::PathExists(safe_browsing_dir))
+      base::CreateDirectory(safe_browsing_dir);
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
