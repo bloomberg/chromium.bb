@@ -56,6 +56,11 @@ void GpuClient::EstablishGpuChannel(
                  weak_factory_.GetWeakPtr(), callback));
 }
 
+void GpuClient::CreateVideoEncodeAccelerator(
+    media::mojom::VideoEncodeAcceleratorRequest vea_request) {
+  NOTIMPLEMENTED();
+}
+
 void GpuClient::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
