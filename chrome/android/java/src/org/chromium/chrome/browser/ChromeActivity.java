@@ -2214,8 +2214,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onExitVr() {}
 
     /**
-     * Whether this Activity supports moving a {@link Tab} to the
-     * {@link FullscreenWebContentsActivity} when it enters fullscreen.
+     * Whether this Activity supports moving a {@link Tab} to the {@link FullscreenActivity} when it
+     * enters fullscreen.
      */
     public boolean supportsFullscreenActivity() {
         return false;

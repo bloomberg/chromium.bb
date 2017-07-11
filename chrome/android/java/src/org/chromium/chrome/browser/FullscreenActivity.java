@@ -25,8 +25,11 @@ import org.chromium.content_public.browser.WebContentsObserver;
 
 /**
  * An Activity used to display fullscreen WebContents.
+ *
+ * This Activity used to be called FullscreenWebContentsActivity and extended FullScreenActivity.
+ * When FullScreenActivity was renamed to SingleTabActivity, this was changed to FullscreenActivity.
  */
-public class FullscreenWebContentsActivity extends SingleTabActivity {
+public class FullscreenActivity extends SingleTabActivity {
     private static final String TAG = "FullWebConActivity";
 
     private WebContentsObserver mWebContentsObserver;
@@ -120,12 +123,12 @@ public class FullscreenWebContentsActivity extends SingleTabActivity {
         Activity activity = tab.getActivity();
 
         if (enableFullscreen) {
-            // Send to the FullscreenWebContentsActivity.
-            intent.setClass(tab.getActivity(), FullscreenWebContentsActivity.class);
+            // Send to the FullscreenActivity.
+            intent.setClass(tab.getActivity(), FullscreenActivity.class);
 
             intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
             // In multiwindow mode we want both activities to be able to launch independent
-            // FullscreenWebContentsActivity's.
+            // FullscreenActivity's.
             intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         } else {
             // Send back to the Activity it came from.
@@ -140,9 +143,8 @@ public class FullscreenWebContentsActivity extends SingleTabActivity {
             }
 
             ChromeActivity tabActivity = tab.getActivity();
-            if (tabActivity instanceof FullscreenWebContentsActivity) {
-                FullscreenWebContentsActivity fullscreenActivity =
-                        (FullscreenWebContentsActivity) tabActivity;
+            if (tabActivity instanceof FullscreenActivity) {
+                FullscreenActivity fullscreenActivity = (FullscreenActivity) tabActivity;
                 if (fullscreenActivity.mWebContentsObserver != null) {
                     fullscreenActivity.mWebContentsObserver.destroy();
                     fullscreenActivity.mWebContentsObserver = null;
