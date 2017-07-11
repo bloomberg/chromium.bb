@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/ServiceWorker/#service-worker-interface
+// https://w3c.github.io/ServiceWorker/#serviceworker-interface
 
 enum ServiceWorkerState {
     "installing",
@@ -43,7 +43,7 @@ enum ServiceWorkerState {
     DependentLifetime
 ] interface ServiceWorker : EventTarget {
 
-    [PostMessage, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
+    [PostMessage, RaisesException] void postMessage(any message, optional sequence<object> transfer);
 
     readonly attribute USVString scriptURL;
     readonly attribute ServiceWorkerState  state;
