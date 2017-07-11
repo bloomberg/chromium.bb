@@ -23,9 +23,6 @@ public interface SuggestionsSource extends DestructionObserver {
         /** Called when a category has a new list of content suggestions. */
         void onNewSuggestions(@CategoryInt int category);
 
-        /** Called when a request for additional suggestions completed. */
-        void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions);
-
         /** Called when a category changed its status. */
         void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int newStatus);
 
@@ -93,8 +90,10 @@ public interface SuggestionsSource extends DestructionObserver {
      * Fetches new suggestions.
      * @param category the category to fetch new suggestions for.
      * @param displayedSuggestionIds ids of suggestions already known and that we want to keep.
+     * @param callback The callback to run with the received suggestions.
      */
-    void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds);
+    void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds,
+            Callback<List<SnippetArticle>> callback);
 
     /**
      * Fetches suggestions related to the provided URL.

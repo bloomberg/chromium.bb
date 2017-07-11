@@ -128,18 +128,7 @@ public class SectionList
 
         SuggestionsSection section = mSections.get(category);
         section.setStatus(status);
-        section.updateSuggestions(mUiDelegate.getSuggestionsSource());
-    }
-
-    @Override
-    public void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
-        @CategoryStatus
-        int status = mUiDelegate.getSuggestionsSource().getCategoryStatus(category);
-        if (!canProcessSuggestions(category, status)) return;
-
-        SuggestionsSection section = mSections.get(category);
-        section.setStatus(status);
-        section.appendSuggestions(suggestions, /* userRequested = */ true);
+        section.updateSuggestions();
     }
 
     @Override
