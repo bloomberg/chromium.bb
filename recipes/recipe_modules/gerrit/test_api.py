@@ -38,3 +38,6 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
         'subject': 'Change title',
       },
     ])
+
+  def get_empty_changes_response_data(self):
+    return self._make_gerrit_response_json([])

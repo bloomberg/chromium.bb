@@ -32,6 +32,12 @@ def RunSteps(api):
       limit=1,
   )
 
+  api.gerrit.get_change_destination_branch(host, change=123)
+
+  api.gerrit.get_change_destination_branch(
+      host, change=123, name='missing_cl')
+
+
 def GenTests(api):
   yield (
       api.test('basic')
@@ -42,5 +48,9 @@ def GenTests(api):
       + api.step_data(
           'gerrit get_gerrit_branch',
           api.gerrit.make_gerrit_get_branch_response_data()
+      )
+      + api.step_data(
+          'gerrit missing_cl',
+          api.gerrit.get_empty_changes_response_data()
       )
   )

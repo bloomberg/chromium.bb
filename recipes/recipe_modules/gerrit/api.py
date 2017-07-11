@@ -44,6 +44,8 @@ class GerritApi(recipe_api.RecipeApi):
     ref = step_result.json.output.get('ref')
     return ref
 
+  # TODO(machenbach): Rename to get_revision? And maybe above to
+  # create_ref?
   def get_gerrit_branch(self, host, project, branch, **kwargs):
     """
     Get a branch from given project and commit
@@ -62,6 +64,31 @@ class GerritApi(recipe_api.RecipeApi):
     step_result = self(step_name, args, **kwargs)
     revision = step_result.json.output.get('revision')
     return revision
+
+  def get_change_destination_branch(self, host, change, **kwargs):
+    """
+    Get the upstream branch for a given CL.
+
+    Args:
+      host: Gerrit host to query.
+      change: The change number.
+
+    Returns:
+      the name of the branch
+    """
+    assert int(change)
+    kwargs.setdefault('name', 'get_change_destination_branch')
+    changes = self.get_changes(
+        host,
+        [('change', change)],
+        limit=1,
+        **kwargs
+    )
+    if not changes or 'branch' not in changes[0]:
+      self.m.step.active_result.presentation.status = self.m.step.EXCEPTION
+      raise self.m.step.InfraFailure(
+          'Error quering for branch of CL %s' % change)
+    return changes[0]['branch']
 
   def get_changes(self, host, query_params, start=None, limit=None, **kwargs):
     """
@@ -91,7 +118,7 @@ class GerritApi(recipe_api.RecipeApi):
       args += ['-p', '%s=%s' % (k, v)]
 
     return self(
-        'changes',
+        kwargs.pop('name', 'changes'),
         args,
         step_test_data=lambda: self.test_api.get_changes_response_data(),
         **kwargs
