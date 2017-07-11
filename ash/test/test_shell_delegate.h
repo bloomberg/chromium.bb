@@ -45,7 +45,7 @@ class TestShellDelegate : public ShellDelegate {
   void PreInit() override;
   void PreShutdown() override;
   void Exit() override;
-  keyboard::KeyboardUI* CreateKeyboardUI() override;
+  std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void ShelfInit() override;
   void ShelfShutdown() override;
   void OpenUrlFromArc(const GURL& url) override;

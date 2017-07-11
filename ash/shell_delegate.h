@@ -87,8 +87,8 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
-  // Create a shell-specific keyboard::KeyboardUI
-  virtual keyboard::KeyboardUI* CreateKeyboardUI() = 0;
+  // Create a shell-specific keyboard::KeyboardUI.
+  virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
 
   // Opens the |url| in a new browser tab.
   virtual void OpenUrlFromArc(const GURL& url) = 0;

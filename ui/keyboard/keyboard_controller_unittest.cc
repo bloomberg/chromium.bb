@@ -214,7 +214,6 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         number_of_calls_(0),
-        ui_(nullptr),
         keyboard_closed_(false) {}
   ~KeyboardControllerTest() override {}
 
@@ -232,9 +231,11 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
     aura_test_helper_->SetUp(context_factory, context_factory_private);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
-    ui_ = new TestKeyboardUI(aura_test_helper_->host()->GetInputMethod());
     layout_delegate_.reset(new TestKeyboardLayoutDelegate());
-    controller_.reset(new KeyboardController(ui_, layout_delegate_.get()));
+    controller_.reset(
+        new KeyboardController(base::MakeUnique<TestKeyboardUI>(
+                                   aura_test_helper_->host()->GetInputMethod()),
+                               layout_delegate_.get()));
     controller()->AddObserver(this);
 
     if (!GetParam()) {
@@ -254,7 +255,7 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
   }
 
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
-  KeyboardUI* ui() { return ui_; }
+  KeyboardUI* ui() { return controller_->ui(); }
   KeyboardController* controller() { return controller_.get(); }
 
   void ShowKeyboard() {
@@ -288,9 +289,9 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
     input_method->SetFocusedTextInputClient(client);
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       input_method->ShowImeIfNeeded();
-      if (ui_->GetKeyboardWindow()->bounds().height() == 0) {
+      if (controller_->ui()->GetKeyboardWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
-        ui_->GetKeyboardWindow()->SetBounds(
+        controller_->ui()->GetKeyboardWindow()->SetBounds(
             FullWidthKeyboardBoundsFromRootBounds(
                 root_window()->bounds(), kDefaultVirtualKeyboardHeight));
       }
@@ -302,7 +303,7 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
   }
 
   bool ShouldEnableInsets(aura::Window* window) {
-    aura::Window* keyboard_window = ui_->GetKeyboardWindow();
+    aura::Window* keyboard_window = controller_->ui()->GetKeyboardWindow();
     return (keyboard_window->GetRootWindow() == window->GetRootWindow() &&
             keyboard::IsKeyboardOverscrollEnabled() &&
             keyboard_window->IsVisible() &&
@@ -318,7 +319,6 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
  private:
   int number_of_calls_;
   gfx::Rect notified_bounds_;
-  KeyboardUI* ui_;
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<KeyboardController> controller_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;

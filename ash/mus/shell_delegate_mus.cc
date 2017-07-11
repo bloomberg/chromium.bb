@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/gfx/image/image.h"
+#include "ui/keyboard/keyboard_ui.h"
 
 #if defined(USE_OZONE)
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
@@ -70,7 +71,7 @@ void ShellDelegateMus::Exit() {
   NOTIMPLEMENTED();
 }
 
-keyboard::KeyboardUI* ShellDelegateMus::CreateKeyboardUI() {
+std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMus::CreateKeyboardUI() {
   NOTIMPLEMENTED();
   return nullptr;
 }

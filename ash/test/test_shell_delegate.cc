@@ -87,8 +87,8 @@ void TestShellDelegate::Exit() {
   num_exit_requests_++;
 }
 
-keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
-  return new TestKeyboardUI;
+std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
+  return base::MakeUnique<TestKeyboardUI>();
 }
 
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
