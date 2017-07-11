@@ -80,4 +80,7 @@ blink_modules_sources("webdatabase") {
   } else if (is_posix) {
     sources += [ "sqlite/SQLiteFileSystemPosix.cpp" ]
   }
+
+  # Expose chromium_sqlite3_* functions from Chromium's patched SQLite.
+  defines = [ "CHROMIUM_SQLITE_INTERNALS" ]  # So that sqlite3.h is not included without this set.
 }
