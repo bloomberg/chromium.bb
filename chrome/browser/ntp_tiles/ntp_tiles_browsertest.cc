@@ -19,6 +19,7 @@ namespace ntp_tiles {
 namespace {
 
 using testing::Contains;
+using testing::Not;
 
 std::string PrintTile(const std::string& title,
                       const std::string& url,
@@ -100,6 +101,30 @@ IN_PROC_BROWSER_TEST_F(NTPTilesTest, LoadURL) {
   NTPTilesVector tiles = waiter.WaitForTiles();
   EXPECT_THAT(tiles, Contains(MatchesTile("OK", page_url.spec().c_str(),
                                           TileSource::TOP_SITES)));
+}
+
+// Tests that after navigating to a URL with a server redirect, ntp tiles will
+// include the correct URL.
+IN_PROC_BROWSER_TEST_F(NTPTilesTest, ServerRedirect) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL final_url = embedded_test_server()->GetURL("/defaultresponse");
+  GURL first_url =
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec());
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), first_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  MostVisitedSitesWaiter waiter;
+  most_visited_sites_->SetMostVisitedURLsObserver(&waiter, /*num_sites=*/8);
+
+  NTPTilesVector tiles = waiter.WaitForTiles();
+
+  // TopSites uses the start of the redirect chain, so verify the first URL
+  // is listed, but not the final URL.
+  EXPECT_THAT(tiles, Contains(MatchesTile("", first_url.spec().c_str(),
+                                          TileSource::TOP_SITES)));
+  EXPECT_THAT(tiles, Not(Contains(MatchesTile("", final_url.spec().c_str(),
+                                              TileSource::TOP_SITES))));
 }
 
 }  // namespace ntp_tiles
