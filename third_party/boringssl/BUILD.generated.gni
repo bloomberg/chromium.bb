@@ -360,6 +360,7 @@ ssl_sources = [
   "src/ssl/ssl_session.c",
   "src/ssl/ssl_stat.c",
   "src/ssl/ssl_transcript.c",
+  "src/ssl/ssl_versions.c",
   "src/ssl/ssl_x509.c",
   "src/ssl/t1_enc.c",
   "src/ssl/t1_lib.c",
