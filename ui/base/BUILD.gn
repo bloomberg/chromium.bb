@@ -377,6 +377,14 @@ component("base") {
     sources -= [ "touch/touch_device_util.cc" ]
   }
 
+  if (is_fuchsia) {
+    sources += [
+      "clipboard/clipboard_fuchsia.cc",
+      "clipboard/clipboard_fuchsia.h",
+      "resource/resource_bundle_fuchsia.cc",
+    ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
