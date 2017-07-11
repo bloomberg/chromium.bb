@@ -70,7 +70,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
 #if defined(OS_WIN)
     const FORMATETC& ToFormatEtc() const { return data_; }
-#elif defined(USE_AURA) || defined(OS_ANDROID)
+#elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
     const std::string& ToString() const { return data_; }
 #elif defined(OS_MACOSX)
     NSString* ToNSString() const { return data_; }
@@ -96,7 +96,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     explicit FormatType(UINT native_format);
     FormatType(UINT native_format, LONG index);
     FORMATETC data_;
-#elif defined(USE_AURA) || defined(OS_ANDROID)
+#elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
     explicit FormatType(const std::string& native_format);
     std::string data_;
 #elif defined(OS_MACOSX)
