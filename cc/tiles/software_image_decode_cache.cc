@@ -34,10 +34,6 @@ using base::trace_event::MemoryDumpLevelOfDetail;
 namespace cc {
 namespace {
 
-// The largest single high quality image to try and process. Images above this
-// size will drop down to medium quality.
-const size_t kMaxHighQualityImageSizeBytes = 64 * 1024 * 1024;
-
 // The number of entries to keep around in the cache. This limit can be breached
 // if more items are locked. That is, locked items ignore this limit.
 // Depending on the memory state of the system, we limit the amount of items
@@ -454,8 +450,8 @@ SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
         return GetSubrectImageDecode(key, draw_image.paint_image());
       return GetOriginalSizeImageDecode(key, std::move(image));
     case kMedium_SkFilterQuality:
-    case kHigh_SkFilterQuality:
       return GetScaledImageDecode(key, draw_image.paint_image());
+    case kHigh_SkFilterQuality:
     default:
       NOTREACHED();
       return nullptr;
@@ -736,8 +732,7 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
   }
   SkPixmap scaled_pixmap(scaled_info, scaled_pixels->data(),
                          scaled_info.minRowBytes());
-  DCHECK(key.filter_quality() == kHigh_SkFilterQuality ||
-         key.filter_quality() == kMedium_SkFilterQuality);
+  DCHECK(key.filter_quality() == kMedium_SkFilterQuality);
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeCache::ScaleImage - scale pixels");
@@ -928,62 +923,57 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
   // Note that the scale is still unchanged and the target size is now a
   // function of the new src_rect.
   const gfx::Rect& src_rect = GetSrcRect(image);
+
+  // Start with the exact target size. However, this will be adjusted below to
+  // be either a mip level, the original size, or a subrect size. This is done
+  // to keep memory accounting correct.
   gfx::Size target_size(
       SkScalarRoundToInt(std::abs(src_rect.width() * scale.width())),
       SkScalarRoundToInt(std::abs(src_rect.height() * scale.height())));
 
-  // Start with the quality that was requested.
+  // If the target size is empty, then we'll be skipping the decode anyway, so
+  // the filter quality doesn't matter. Early out instead.
+  if (target_size.IsEmpty()) {
+    return ImageDecodeCacheKey(image.image()->uniqueID(), src_rect, target_size,
+                               image.target_color_space(), kLow_SkFilterQuality,
+                               true /* can_use_original_decode */,
+                               false /* should_use_subrect */);
+  }
+
+  // Start with the given filter quality.
   SkFilterQuality quality = image.filter_quality();
 
-  // If we're not going to do a scale, we can use low filter quality. Note that
-  // checking if the sizes are the same is better than checking if scale is 1.f,
-  // because even non-1 scale can result in the same (rounded) width/height.
-  // If either dimension is a downscale, and the quality is not None (in which
-  // case we need to preserve the pixelated scale), then use mipmaps (medium
-  // filter quality).
-  if (target_size.width() == src_rect.width() &&
-      target_size.height() == src_rect.height()) {
+  int mip_level = MipMapUtil::GetLevelForSize(src_rect.size(), target_size);
+  // If any of the following conditions hold, then use at most low filter
+  // quality and adjust the target size to match the original image:
+  // - Quality is none: We need a pixelated image, so we can't upgrade it.
+  // - Format is RGBA_4444: Skia doesn't support scaling these, so use low
+  //   filter quality.
+  // - Mip level is 0: The required mip is the original image, so just use low
+  //   filter quality.
+  // - Matrix is not decomposable: There's perspective on this image and we
+  //   can't determine the size, so use the original.
+  if (quality == kNone_SkFilterQuality || format == viz::RGBA_4444 ||
+      mip_level == 0 || !image.matrix_is_decomposable()) {
     quality = std::min(quality, kLow_SkFilterQuality);
-  } else if (quality != kNone_SkFilterQuality &&
-             (target_size.width() < src_rect.width() ||
-              target_size.height() < src_rect.height())) {
+    // Update the size to be the original image size.
+    target_size = gfx::Size(image.image()->width(), image.image()->height());
+  } else {
     quality = kMedium_SkFilterQuality;
+    // Update the target size to be a mip level size.
+    SkSize mip_scale_adjustment =
+        MipMapUtil::GetScaleAdjustmentForLevel(src_rect.size(), mip_level);
+    target_size.set_width(src_rect.width() * mip_scale_adjustment.width());
+    target_size.set_height(src_rect.height() * mip_scale_adjustment.height());
   }
 
-  // Skia doesn't scale an viz::RGBA_4444 format, so always use the original
-  // decode.
-  if (format == viz::RGBA_4444)
-    quality = std::min(quality, kLow_SkFilterQuality);
-
-  // Drop from high to medium if the the matrix we applied wasn't decomposable,
-  // or if the scaled image will be too large.
-  if (quality == kHigh_SkFilterQuality) {
-    if (!image.matrix_is_decomposable()) {
-      quality = kMedium_SkFilterQuality;
-    } else {
-      base::CheckedNumeric<size_t> size = 4u;
-      size *= target_size.width();
-      size *= target_size.height();
-      if (size.ValueOrDefault(std::numeric_limits<size_t>::max()) >
-          kMaxHighQualityImageSizeBytes) {
-        quality = kMedium_SkFilterQuality;
-      }
-    }
-  }
-
-  // Drop from medium to low if the matrix we applied wasn't decomposable or if
-  // we're enlarging the image in both dimensions.
-  if (quality == kMedium_SkFilterQuality) {
-    if (!image.matrix_is_decomposable() ||
-        (scale.width() >= 1.f && scale.height() >= 1.f)) {
-      quality = kLow_SkFilterQuality;
-    }
-  }
-
+  // Now the quality is fixed, determine the other parameters we need.
   bool can_use_original_size_decode =
       quality == kLow_SkFilterQuality || quality == kNone_SkFilterQuality;
-
   bool should_use_subrect = false;
+
+  // If the original image is large, we might want to do a subrect instead if
+  // the subrect would be kMemoryRatioToSubrect times smaller.
   if (can_use_original_size_decode &&
       (image.image()->width() >= kMinDimensionToSubrect ||
        image.image()->height() >= kMinDimensionToSubrect)) {
@@ -998,29 +988,16 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
     checked_src_rect_size *= src_rect.height();
     size_t src_rect_size = checked_src_rect_size.ValueOrDefault(
         std::numeric_limits<size_t>::max());
+
+    // If the sizes are such that we get good savings by subrecting, then do
+    // that. Also update the target size to be the src rect size since that's
+    // the rect we want to use.
     if (original_size > kMemoryThresholdToSubrect &&
         src_rect_size <= original_size * kMemoryRatioToSubrect) {
       should_use_subrect = true;
       can_use_original_size_decode = false;
-    }
-  }
-
-  // If we're going to use the original decode, then the target size should be
-  // the full image size, since that will allow for proper memory accounting.
-  // Note we skip the decode if the target size is empty altogether, so don't
-  // update the target size in that case.
-  if (!target_size.IsEmpty()) {
-    if (should_use_subrect)
       target_size = src_rect.size();
-    else if (can_use_original_size_decode)
-      target_size = gfx::Size(image.image()->width(), image.image()->height());
-  }
-
-  if (quality == kMedium_SkFilterQuality && !target_size.IsEmpty()) {
-    SkSize mip_target_size =
-        MipMapUtil::GetScaleAdjustmentForSize(src_rect.size(), target_size);
-    target_size.set_width(src_rect.width() * mip_target_size.width());
-    target_size.set_height(src_rect.height() * mip_target_size.height());
+    }
   }
 
   return ImageDecodeCacheKey(image.image()->uniqueID(), src_rect, target_size,

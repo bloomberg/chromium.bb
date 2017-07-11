@@ -83,15 +83,33 @@ TEST(SoftwareImageDecodeCacheTest,
   DrawImage draw_image(CreatePaintImage(image),
                        SkIRect::MakeWH(image->width(), image->height()),
                        kLow_SkFilterQuality,
-                       CreateMatrix(SkSize::Make(0.5f, 1.5f), is_decomposable),
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
                        DefaultColorSpace());
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(50, key.target_size().width());
+  EXPECT_EQ(50, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_size_decode());
+  EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityDropsToLowIfMipLevel0) {
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  bool is_decomposable = true;
+  DrawImage draw_image(
+      CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
+      kMedium_SkFilterQuality,
+      CreateMatrix(SkSize::Make(0.75f, 0.75f), is_decomposable),
+      DefaultColorSpace());
+
+  auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(100, key.target_size().width());
   EXPECT_EQ(100, key.target_size().height());
-  EXPECT_FALSE(key.can_use_original_size_decode());
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
@@ -156,16 +174,16 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQuality) {
 
   DrawImage draw_image(
       CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
-      quality, CreateMatrix(SkSize::Make(0.5f, 1.5f), is_decomposable),
+      quality, CreateMatrix(SkSize::Make(0.5f, 0.4f), is_decomposable),
       DefaultColorSpace());
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(quality, key.filter_quality());
-  EXPECT_EQ(100, key.target_size().width());
-  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_EQ(50, key.target_size().width());
+  EXPECT_EQ(50, key.target_size().height());
   EXPECT_FALSE(key.can_use_original_size_decode());
-  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
+  EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityDropToLowIfEnlarging) {
@@ -304,7 +322,7 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt1_0cale) {
   EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
 }
 
-TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_75Scale) {
+TEST(SoftwareImageDecodeCacheTest, ImageKeyLowQualityAt0_75Scale) {
   sk_sp<SkImage> image = CreateImage(500, 200);
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
@@ -316,10 +334,10 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_75Scale) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
   EXPECT_EQ(image->uniqueID(), key.image_id());
-  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(500, key.target_size().width());
   EXPECT_EQ(200, key.target_size().height());
-  EXPECT_FALSE(key.can_use_original_size_decode());
+  EXPECT_TRUE(key.can_use_original_size_decode());
   EXPECT_EQ(500u * 200u * 4u, key.locked_bytes());
 }
 
@@ -400,26 +418,6 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyMediumQualityAt0_01Scale) {
 }
 
 TEST(SoftwareImageDecodeCacheTest,
-     ImageKeyPartialDowscalesDropsHighQualityToMedium) {
-  sk_sp<SkImage> image = CreateImage(100, 100);
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  DrawImage draw_image(
-      CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
-      quality, CreateMatrix(SkSize::Make(0.5f, 1.5f), is_decomposable),
-      DefaultColorSpace());
-
-  auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
-  EXPECT_EQ(image->uniqueID(), key.image_id());
-  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(100, key.target_size().width());
-  EXPECT_EQ(100, key.target_size().height());
-  EXPECT_FALSE(key.can_use_original_size_decode());
-  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
-}
-
-TEST(SoftwareImageDecodeCacheTest,
      ImageKeyFullDowscalesDropsHighQualityToMedium) {
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
@@ -439,7 +437,7 @@ TEST(SoftwareImageDecodeCacheTest,
   EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
 }
 
-TEST(SoftwareImageDecodeCacheTest, ImageKeyDowscalesHighQuality) {
+TEST(SoftwareImageDecodeCacheTest, ImageKeyUpscaleIsLowQuality) {
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -451,11 +449,11 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyDowscalesHighQuality) {
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
   EXPECT_EQ(image->uniqueID(), key.image_id());
-  EXPECT_EQ(quality, key.filter_quality());
-  EXPECT_EQ(250, key.target_size().width());
-  EXPECT_EQ(150, key.target_size().height());
-  EXPECT_FALSE(key.can_use_original_size_decode());
-  EXPECT_EQ(250u * 150u * 4u, key.locked_bytes());
+  EXPECT_EQ(kLow_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_TRUE(key.can_use_original_size_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
@@ -468,16 +466,16 @@ TEST(SoftwareImageDecodeCacheTest, ImageKeyHighQualityDropToMediumIfTooLarge) {
   // become low.
   DrawImage draw_image(
       CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
-      quality, CreateMatrix(SkSize::Make(0.9f, 2.f), is_decomposable),
+      quality, CreateMatrix(SkSize::Make(0.45f, 0.45f), is_decomposable),
       DefaultColorSpace());
 
   auto key = ImageDecodeCacheKey::FromDrawImage(draw_image, viz::RGBA_8888);
   EXPECT_EQ(image->uniqueID(), key.image_id());
   EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
-  EXPECT_EQ(4555, key.target_size().width());
-  EXPECT_EQ(2048, key.target_size().height());
+  EXPECT_EQ(2277, key.target_size().width());
+  EXPECT_EQ(1024, key.target_size().height());
   EXPECT_FALSE(key.can_use_original_size_decode());
-  EXPECT_EQ(4555u * 2048u * 4u, key.locked_bytes());
+  EXPECT_EQ(2277u * 1024u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeCacheTest,
