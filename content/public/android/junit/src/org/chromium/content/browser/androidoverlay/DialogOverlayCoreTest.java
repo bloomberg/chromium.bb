@@ -14,6 +14,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.WindowManager;
 
 // TODO(liberato): prior to M, this was ...policy.impl.PhoneWindow
 import com.android.internal.policy.PhoneWindow;
@@ -44,6 +45,9 @@ public class DialogOverlayCoreTest {
 
     AndroidOverlayConfig mConfig = new AndroidOverlayConfig();
 
+    // Should we request a panel?
+    boolean mAsPanel;
+
     // DialogCore under test.
     DialogOverlayCore mCore;
 
@@ -68,10 +72,16 @@ public class DialogOverlayCoreTest {
         public MyPhoneWindowShadow() {}
 
         private SurfaceHolder.Callback2 mCallback;
+        private WindowManager.LayoutParams mLayoutParams;
 
         @Implementation
         public void takeSurface(SurfaceHolder.Callback2 callback) {
             mCallback = callback;
+        }
+
+        @Implementation
+        public void setAttributes(WindowManager.LayoutParams layoutParams) {
+            mLayoutParams = layoutParams;
         }
     }
 
@@ -102,9 +112,11 @@ public class DialogOverlayCoreTest {
         mConfig.rect.y = 1;
         mConfig.rect.width = 2;
         mConfig.rect.height = 3;
+    }
 
+    public void createOverlay() {
         mCore = new DialogOverlayCore();
-        mCore.initialize(mActivity, mConfig, mHost);
+        mCore.initialize(mActivity, mConfig, mHost, mAsPanel);
         mDialog = mCore.getDialog();
 
         // Nothing should be called yet.
@@ -125,6 +137,11 @@ public class DialogOverlayCoreTest {
     // Return the SurfaceHolder callback that was provided to takeSurface(), if any.
     SurfaceHolder.Callback2 holderCallback() {
         return ((MyPhoneWindowShadow) Shadows.shadowOf(mDialog.getWindow())).mCallback;
+    }
+
+    // Return the LayoutPararms that was most recently provided to the dialog.
+    WindowManager.LayoutParams layoutParams() {
+        return ((MyPhoneWindowShadow) Shadows.shadowOf(mDialog.getWindow())).mLayoutParams;
     }
 
     /**
@@ -205,6 +222,7 @@ public class DialogOverlayCoreTest {
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testReleaseImmediately() {
         // Release the overlay.  |mCore| shouldn't notify us, since we released it.
+        createOverlay();
         mCore.release();
         checkOverlayDidntCall();
         checkDialogIsNotShown();
@@ -214,6 +232,7 @@ public class DialogOverlayCoreTest {
     @Test
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testTokenThenRelease() {
+        createOverlay();
         mCore.onWindowToken(mWindowToken);
         checkDialogIsShown();
 
@@ -229,6 +248,7 @@ public class DialogOverlayCoreTest {
     @Test
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testSurfaceThenRelease() {
+        createOverlay();
         sendTokenAndSurface();
 
         mCore.release();
@@ -241,6 +261,7 @@ public class DialogOverlayCoreTest {
     @Test
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testSurfaceThenDestroy() {
+        createOverlay();
         sendTokenAndSurface();
 
         // Destroy the surface.
@@ -258,6 +279,7 @@ public class DialogOverlayCoreTest {
     @Test
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testChangeWindowToken() {
+        createOverlay();
         sendTokenAndSurface();
 
         // Change the window token.
@@ -270,11 +292,36 @@ public class DialogOverlayCoreTest {
     @Test
     @Config(shadows = {MyPhoneWindowShadow.class})
     public void testLoseWindowToken() {
+        createOverlay();
         sendTokenAndSurface();
 
         // Remove the window token.
         mCore.onWindowToken(null);
 
         checkOverlayWasDestroyed();
+    }
+
+    // Test that the layout params reflect TYPE_APPLICATION_MEDIA, and that it its geometry matches
+    // what we requested.
+    @Test
+    @Config(shadows = {MyPhoneWindowShadow.class})
+    public void testOverlayTypeAndGeometry() {
+        createOverlay();
+        mCore.onWindowToken(mWindowToken);
+        assertEquals(WindowManager.LayoutParams.TYPE_APPLICATION_MEDIA, layoutParams().type);
+        assertEquals(mConfig.rect.x, layoutParams().x);
+        assertEquals(mConfig.rect.y, layoutParams().y);
+        assertEquals(mConfig.rect.width, layoutParams().width);
+        assertEquals(mConfig.rect.height, layoutParams().height);
+    }
+
+    // Test that the layout params reflect TYPE_APPLICATION_PANEL when we request it.
+    @Test
+    @Config(shadows = {MyPhoneWindowShadow.class})
+    public void testOverlayAsPanel() {
+        mAsPanel = true;
+        createOverlay();
+        mCore.onWindowToken(mWindowToken);
+        assertEquals(layoutParams().type, WindowManager.LayoutParams.TYPE_APPLICATION_PANEL);
     }
 }
