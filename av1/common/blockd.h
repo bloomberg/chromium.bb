@@ -1345,15 +1345,15 @@ static INLINE int check_num_overlappable_neighbors(const MB_MODE_INFO *mbmi) {
 #endif
 
 static INLINE MOTION_MODE motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
     int block, const WarpedMotionParams *gm_params,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
     const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
   const TransformationType gm_type = gm_params[mbmi->ref_frame[0]].wmtype;
   if (is_global_mv_block(mi, block, gm_type)) return SIMPLE_TRANSLATION;
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_EXT_INTER
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME &&
@@ -1390,13 +1390,13 @@ static INLINE NCOBMC_MODE ncobmc_mode_allowed_bsize(BLOCK_SIZE bsize) {
 
 static INLINE MOTION_MODE
 motion_mode_allowed_wrapper(int for_mv_search,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                             int block, const WarpedMotionParams *gm_params,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                             const MODE_INFO *mi) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   MOTION_MODE motion_mode_for_mv_search = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
       int block, const WarpedMotionParams *gm_params,
 #endif
       mi);
@@ -1411,23 +1411,23 @@ motion_mode_allowed_wrapper(int for_mv_search,
 #endif
 
 static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                                             int block,
                                             const WarpedMotionParams *gm_params,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                                             const MODE_INFO *mi) {
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   const MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                                   block, gm_params,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                                   mi);
 #else
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
       block, gm_params,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
       mi);
 #endif
   // Check that the input mode is not illegal

@@ -560,15 +560,15 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                                   0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                                   mi);
 #else
   MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
       0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
       mi);
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
@@ -597,9 +597,9 @@ static void write_ncobmc_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                                   0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                                   mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
   if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;

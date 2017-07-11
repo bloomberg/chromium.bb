@@ -7880,15 +7880,15 @@ static int64_t motion_mode_rd(
   // check if this mode is beneficial after all the mv's in the current
   // superblock are selected.
   last_motion_mode_allowed = motion_mode_allowed_wrapper(1,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                                                          0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                                                          mi);
 #else
   last_motion_mode_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
       0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
       mi);
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   base_mbmi = *mbmi;
@@ -10910,9 +10910,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
         MODE_INFO *const mi = xd->mi[0];
         const MOTION_MODE motion_allowed = motion_mode_allowed(
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
             0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
             mi);
         if (motion_allowed == WARPED_CAUSAL)
           *returnrate_nocoef -= cpi->motion_mode_cost[bsize][mbmi->motion_mode];
@@ -11444,11 +11444,8 @@ PALETTE_EXIT:
       ) {
 #if CONFIG_WARPED_MOTION || CONFIG_MOTION_VAR
     // Correct the motion mode for ZEROMV
-    const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
-#if SEPARATE_GLOBAL_MOTION
-        0, xd->global_motion,
-#endif  // SEPARATE_GLOBAL_MOTION
-        xd->mi[0]);
+    const MOTION_MODE last_motion_mode_allowed =
+        motion_mode_allowed(0, xd->global_motion, xd->mi[0]);
     if (mbmi->motion_mode > last_motion_mode_allowed)
       mbmi->motion_mode = last_motion_mode_allowed;
 #endif  // CONFIG_WARPED_MOTION || CONFIG_MOTION_VAR

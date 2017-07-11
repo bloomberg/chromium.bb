@@ -341,8 +341,8 @@ static INLINE int allow_warp(const MODE_INFO *const mi,
 #if CONFIG_GLOBAL_MOTION && CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR
   // When both are enabled, warped will take priority. The global parameters
   // will only be used to compute projection samples to find the warped model.
-  // Note that, if SEPARATE_GLOBAL_MOTION is enabled and a block chooses
-  // global, it will not be possible to select WARPED_CAUSAL.
+  // Note that when a block chooses global, it will not be possible to
+  // select WARPED_CAUSAL.
   if (warp_types->local_warp_allowed) {
     memcpy(final_warp_params, &mbmi->wm_params[0], sizeof(*final_warp_params));
     return 1;
@@ -434,9 +434,9 @@ static INLINE void av1_make_inter_predictor(
 // Make sure the selected motion mode is valid for this configuration
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   assert_motion_mode_valid(mi->mbmi.motion_mode,
-#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#if CONFIG_GLOBAL_MOTION
                            0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+#endif  // CONFIG_GLOBAL_MOTION
                            mi);
 #endif  // CONFIG MOTION_VAR || CONFIG_WARPED_MOTION
 
