@@ -4,12 +4,12 @@
 
 /**
  * @fileoverview
- * 'cr-picture-preview' is a Polymer element used to show either a profile
+ * 'cr-picture-pane' is a Polymer element used to show either a profile
  * picture or a camera image preview.
  */
 
 Polymer({
-  is: 'cr-picture-preview',
+  is: 'cr-picture-pane',
 
   properties: {
     /** Whether the camera is present / available */
