@@ -103,6 +103,13 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_METHOD0(OnSignInStateChanged, void());
 };
 
+class FakeOfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  ConnectionType GetCurrentConnectionType() const override {
+    return NetworkChangeNotifier::CONNECTION_NONE;
+  }
+};
+
 }  // namespace
 
 class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
@@ -888,6 +895,24 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   // Foreground the browser again after a very long delay. Again, no fetch is
   // executed for neither Foregrounded, nor ColdStart.
   test_clock()->Advance(base::TimeDelta::FromHours(100000));
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldIgnoreSignalsWhenOffline) {
+  // Simulate being offline. NetworkChangeNotifier is a singleton, thus, this
+  // instance is actually globally accessible (from the static function
+  // NetworkChangeNotifier::IsOffline() that is called from the scheduler).
+  FakeOfflineNetworkChangeNotifier fake;
+
+  // Activating the provider should schedule the persistent background fetches.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
+  scheduler()->OnProviderActivated();
+
+  // All signals are ignored because of being offline.
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
+  scheduler()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnNTPOpened();
   scheduler()->OnBrowserForegrounded();
   scheduler()->OnBrowserColdStart();
 }
