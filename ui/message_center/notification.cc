@@ -68,7 +68,7 @@ Notification::Notification(NotificationType type,
                            const GURL& origin_url,
                            const NotifierId& notifier_id,
                            const RichNotificationData& optional_fields,
-                           NotificationDelegate* delegate)
+                           scoped_refptr<NotificationDelegate> delegate)
     : type_(type),
       id_(id),
       title_(title),
@@ -81,7 +81,7 @@ Notification::Notification(NotificationType type,
       optional_fields_(optional_fields),
       shown_as_popup_(false),
       is_read_(false),
-      delegate_(delegate) {}
+      delegate_(std::move(delegate)) {}
 
 Notification::Notification(const std::string& id, const Notification& other)
     : type_(other.type_),
