@@ -28,9 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Expose chromium_sqlite3_* functions from Chromium's patched SQLite.
-#define CHROMIUM_SQLITE_INTERNALS
-
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
 #include "public/platform/Platform.h"
