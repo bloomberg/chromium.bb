@@ -10,26 +10,19 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
 
-namespace base {
-class SequencedTaskRunner;
-class TaskRunner;
-}
-
-// Loads and parses an upload list text file of the format
-// upload_time,upload_id[,local_id[,capture_time[,state]]]
-// upload_time,upload_id[,local_id[,capture_time[,state]]]
-// etc.
-// where each line represents an upload. |upload_time| and |capture_time| are in
-// Unix time. |state| is an int in the range of UploadInfo::State. Must be used
-// from the UI thread. The loading and parsing is done on a blocking pool task
-// runner. A line may or may not contain |local_id|, |capture_time|, and
-// |state|.
+// An UploadList is an abstraction over a list of client-side data files that
+// are uploaded to a server. The UploadList allows accessing the UploadInfo
+// for these files, usually to display in a UI.
+//
+// The UploadList loads the information asynchronously and notifies the
+// client that requested the information when it is available.
 class UploadList : public base::RefCountedThreadSafe<UploadList> {
  public:
   struct UploadInfo {
@@ -71,74 +64,52 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
     base::string16 file_size;
   };
 
-  class Delegate {
-   public:
-    // Invoked when the upload list has been loaded. Will be called on the
-    // UI thread.
-    virtual void OnUploadListAvailable() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   // Creates a new upload list with the given callback delegate.
-  UploadList(Delegate* delegate,
-             const base::FilePath& upload_log_path,
-             scoped_refptr<base::TaskRunner> task_runner);
+  UploadList();
 
   // Starts loading the upload list. OnUploadListAvailable will be called when
-  // loading is complete.
-  void LoadUploadListAsynchronously();
+  // loading is complete. If this is called twice, the second |callback| will
+  // overwrite the previously supplied one, and the first will not be called.
+  void Load(base::OnceClosure callback);
+
+  // Clears any callback specified in Load().
+  void CancelCallback();
 
   // Asynchronously requests a user triggered upload.
-  void RequestSingleCrashUploadAsync(const std::string& local_id);
-
-  // Clears the delegate, so that any outstanding asynchronous load will not
-  // call the delegate on completion.
-  void ClearDelegate();
+  void RequestSingleUploadAsync(const std::string& local_id);
 
   // Populates |uploads| with the |max_count| most recent uploads,
   // in reverse chronological order.
-  // Must be called only after OnUploadListAvailable has been called.
+  // Must be called only after a Load() callback has been received.
   void GetUploads(size_t max_count, std::vector<UploadInfo>* uploads);
 
  protected:
   virtual ~UploadList();
 
+  // Returns the TaskTraits that should be used for LoadUploadList() and
+  // RequestSingleUpload().
+  virtual base::TaskTraits LoadingTaskTraits() = 0;
+
   // Reads the upload log and stores the entries in |uploads|.
-  virtual void LoadUploadList(std::vector<UploadInfo>* uploads);
+  virtual std::vector<UploadInfo> LoadUploadList() = 0;
 
   // Requests a user triggered upload for a crash report with a given id.
-  virtual void RequestSingleCrashUpload(const std::string& local_id);
-
-  const base::FilePath& upload_log_path() const;
+  virtual void RequestSingleUpload(const std::string& local_id);
 
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
 
-  // Manages the background thread work for LoadUploadListAsynchronously().
-  void PerformLoadAndNotifyDelegate(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
-
-  // Calls the delegate's callback method, if there is a delegate. Stores
-  // the newly loaded |uploads| into |uploads_| on the delegate's task runner.
-  void SetUploadsAndNotifyDelegate(std::vector<UploadInfo> uploads);
-
-  // Parses upload log lines, converting them to UploadInfo entries.
-  void ParseLogEntries(const std::vector<std::string>& log_entries,
-                       std::vector<UploadInfo>* uploads);
+  // When LoadUploadList() finishes, the results are reported in |uploads|
+  // and the |callback_| is run.
+  void OnLoadComplete(const std::vector<UploadInfo>& uploads);
 
   // Ensures that this class' thread unsafe state is only accessed from the
   // sequence that owns this UploadList.
   base::SequenceChecker sequence_checker_;
 
+  base::OnceClosure callback_;
+
   std::vector<UploadInfo> uploads_;
-
-  Delegate* delegate_;
-
-  const base::FilePath upload_log_path_;
-
-  const scoped_refptr<base::TaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadList);
 };

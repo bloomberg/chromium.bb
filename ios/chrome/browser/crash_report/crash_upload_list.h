@@ -6,14 +6,13 @@
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_UPLOAD_LIST_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/upload_list/crash_upload_list.h"
+#include "components/upload_list/upload_list.h"
 
 namespace ios {
 
 // Factory that creates the platform-specific implementation of the crash
 // upload list with the given callback delegate.
-scoped_refptr<CrashUploadList> CreateCrashUploadList(
-    UploadList::Delegate* delegate);
+scoped_refptr<UploadList> CreateCrashUploadList();
 
 }  // namespace ios
 

@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -80,15 +79,16 @@ UploadList::UploadInfo::State ReportUploadStateToUploadInfoState(
 
 }  // namespace
 
-CrashUploadListCrashpad::CrashUploadListCrashpad(
-    Delegate* delegate,
-    scoped_refptr<base::TaskRunner> task_runner)
-    : CrashUploadList(delegate, base::FilePath(), std::move(task_runner)) {}
+CrashUploadListCrashpad::CrashUploadListCrashpad() = default;
 
-CrashUploadListCrashpad::~CrashUploadListCrashpad() {}
+CrashUploadListCrashpad::~CrashUploadListCrashpad() = default;
 
-void CrashUploadListCrashpad::LoadUploadList(
-    std::vector<UploadList::UploadInfo>* uploads) {
+base::TaskTraits CrashUploadListCrashpad::LoadingTaskTraits() {
+  return {base::MayBlock(), base::TaskPriority::BACKGROUND,
+          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+}
+
+std::vector<UploadList::UploadInfo> CrashUploadListCrashpad::LoadUploadList() {
   std::vector<crash_reporter::Report> reports;
 #if defined(OS_WIN)
   // On Windows, we only link crash client into chrome.exe (not the dlls), and
@@ -100,16 +100,17 @@ void CrashUploadListCrashpad::LoadUploadList(
   crash_reporter::GetReports(&reports);
 #endif
 
+  std::vector<UploadInfo> uploads;
   for (const crash_reporter::Report& report : reports) {
-    uploads->push_back(
+    uploads.push_back(
         UploadInfo(report.remote_id, base::Time::FromTimeT(report.upload_time),
                    report.local_id, base::Time::FromTimeT(report.capture_time),
                    ReportUploadStateToUploadInfoState(report.state)));
   }
+  return uploads;
 }
 
-void CrashUploadListCrashpad::RequestSingleCrashUpload(
-    const std::string& local_id) {
+void CrashUploadListCrashpad::RequestSingleUpload(const std::string& local_id) {
 #if defined(OS_WIN)
   // On Windows, crash reporting is handled by chrome_elf.dll, that's why we
   // can't call crash_reporter::RequestSingleCrashUpload directly.

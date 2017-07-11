@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOG_LIST_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_LOG_LIST_H_
 
-#include "components/upload_list/upload_list.h"
+#include "base/files/file_path.h"
 
 class Profile;
+class UploadList;
 
 class WebRtcLogList {
  public:
   // Creates the upload list with the given callback delegate for a
   // profile. The upload list loads and parses a text file list of WebRTC
   // logs stored locally and/or uploaded.
-  static UploadList* CreateWebRtcLogList(UploadList::Delegate* delegate,
-                                         Profile* profile);
+  static UploadList* CreateWebRtcLogList(Profile* profile);
 
   // Get the file path for the log directory for a profile.
   static base::FilePath GetWebRtcLogDirectoryForProfile(

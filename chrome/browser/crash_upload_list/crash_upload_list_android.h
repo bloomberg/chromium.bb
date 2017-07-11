@@ -6,27 +6,24 @@
 #define CHROME_BROWSER_CRASH_UPLOAD_LIST_CRASH_UPLOAD_LIST_ANDROID_H_
 
 #include "base/macros.h"
-#include "components/upload_list/crash_upload_list.h"
+#include "components/upload_list/text_log_upload_list.h"
 
 namespace base {
 class FilePath;
-class TaskRunner;
 }
 
-// A CrashUploadList that retrieves the list of uploaded reports from the
-// Android crash reporter.
-class CrashUploadListAndroid : public CrashUploadList {
+// An UploadList that retrieves the list of crash reports available on the
+// client. This uses both the Breakpad text log format, as well as inspecting
+// the un-uploaded Minidump directory, managed by the MinidumpUploadService.
+class CrashUploadListAndroid : public TextLogUploadList {
  public:
-  CrashUploadListAndroid(Delegate* delegate,
-                         const base::FilePath& upload_log_path,
-                         scoped_refptr<base::TaskRunner> task_runner);
+  CrashUploadListAndroid(const base::FilePath& upload_log_path);
 
  protected:
   ~CrashUploadListAndroid() override;
 
-  // Called on a blocking pool thread.
-  void LoadUploadList(std::vector<UploadInfo>* uploads) override;
-  void RequestSingleCrashUpload(const std::string& local_id) override;
+  std::vector<UploadInfo> LoadUploadList() override;
+  void RequestSingleUpload(const std::string& local_id) override;
 
  private:
   void LoadUnsuccessfulUploadList(std::vector<UploadInfo>* uploads);
