@@ -381,9 +381,9 @@ HeadlessBrowserContext::Builder::SetProductNameAndVersion(
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetProxyServer(
-    const net::HostPortPair& proxy_server) {
-  options_->proxy_server_ = proxy_server;
+HeadlessBrowserContext::Builder::SetProxyConfig(
+    std::unique_ptr<net::ProxyConfig> proxy_config) {
+  options_->proxy_config_ = std::move(proxy_config);
   return *this;
 }
 
