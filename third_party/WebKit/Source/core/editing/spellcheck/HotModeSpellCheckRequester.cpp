@@ -68,8 +68,7 @@ EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
                                              const Position& position) {
   // Check everything in |editable| if its total length is short.
   const EphemeralRange& full_range = EphemeralRange::RangeOfContents(editable);
-  const int full_length = TextIterator::RangeLength(full_range.StartPosition(),
-                                                    full_range.EndPosition());
+  const int full_length = TextIterator::RangeLength(full_range);
   // TODO(xiaochengh): There is no need to check if |full_length <= 2|, since
   // we don't consider two characters as misspelled. However, a lot of layout
   // tests depend on "zz" as misspelled, which should be changed.
@@ -79,8 +78,7 @@ EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
   // Otherwise, if |position| is in a short paragraph, check the paragraph.
   const EphemeralRange& paragraph_range =
       ExpandToParagraphBoundary(EphemeralRange(position));
-  const int paragraph_length = TextIterator::RangeLength(
-      paragraph_range.StartPosition(), paragraph_range.EndPosition());
+  const int paragraph_length = TextIterator::RangeLength(paragraph_range);
   if (paragraph_length <= kHotModeChunkSize)
     return paragraph_range;
 

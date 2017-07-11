@@ -77,8 +77,7 @@ void TextCheckingParagraph::InvalidateParagraphRangeValues() {
 
 int TextCheckingParagraph::RangeLength() const {
   DCHECK(checking_range_.IsNotNull());
-  return TextIterator::RangeLength(ParagraphRange().StartPosition(),
-                                   ParagraphRange().EndPosition());
+  return TextIterator::RangeLength(ParagraphRange());
 }
 
 EphemeralRange TextCheckingParagraph::ParagraphRange() const {
@@ -130,17 +129,16 @@ const String& TextCheckingParagraph::GetText() const {
 int TextCheckingParagraph::CheckingStart() const {
   DCHECK(checking_range_.IsNotNull());
   if (checking_start_ == -1)
-    checking_start_ = TextIterator::RangeLength(OffsetAsRange().StartPosition(),
-                                                OffsetAsRange().EndPosition());
+    checking_start_ = TextIterator::RangeLength(OffsetAsRange());
   return checking_start_;
 }
 
 int TextCheckingParagraph::CheckingEnd() const {
   DCHECK(checking_range_.IsNotNull());
-  if (checking_end_ == -1)
-    checking_end_ = CheckingStart() +
-                    TextIterator::RangeLength(CheckingRange().StartPosition(),
-                                              CheckingRange().EndPosition());
+  if (checking_end_ == -1) {
+    checking_end_ =
+        CheckingStart() + TextIterator::RangeLength(CheckingRange());
+  }
   return checking_end_;
 }
 
