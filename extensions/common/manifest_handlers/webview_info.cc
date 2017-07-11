@@ -86,6 +86,22 @@ bool WebviewInfo::IsResourceWebviewAccessible(
   return false;
 }
 
+// static
+bool WebviewInfo::HasWebviewAccessibleResources(
+    const Extension& extension,
+    const std::string& partition_id) {
+  const WebviewInfo* webview_info = static_cast<const WebviewInfo*>(
+      extension.GetManifestData(keys::kWebviewAccessibleResources));
+  if (!webview_info)
+    return false;
+
+  for (const auto& item : webview_info->partition_items_) {
+    if (item->Matches(partition_id))
+      return true;
+  }
+  return false;
+}
+
 void WebviewInfo::AddPartitionItem(std::unique_ptr<PartitionItem> item) {
   partition_items_.push_back(std::move(item));
 }

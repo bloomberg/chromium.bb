@@ -136,6 +136,16 @@ extensions::Dispatcher* ChromeExtensionsRendererClient::GetDispatcher() {
   return extension_dispatcher_.get();
 }
 
+void ChromeExtensionsRendererClient::OnExtensionLoaded(
+    const extensions::Extension& extension) {
+  resource_request_policy_->OnExtensionLoaded(extension);
+}
+
+void ChromeExtensionsRendererClient::OnExtensionUnloaded(
+    const extensions::ExtensionId& extension_id) {
+  resource_request_policy_->OnExtensionUnloaded(extension_id);
+}
+
 void ChromeExtensionsRendererClient::RenderThreadStarted() {
   content::RenderThread* thread = content::RenderThread::Get();
   extension_dispatcher_delegate_.reset(

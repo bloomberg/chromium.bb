@@ -1073,6 +1073,8 @@ void Dispatcher::OnLoaded(
       extension->permissions_data()->SetPolicyHostRestrictions(
           param.policy_blocked_hosts, param.policy_allowed_hosts);
     }
+
+    ExtensionsRendererClient::Get()->OnExtensionLoaded(*extension);
   }
 
   // Update the available bindings for all contexts. These may have changed if
@@ -1173,6 +1175,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
     NOTREACHED();
     return;
   }
+
+  ExtensionsRendererClient::Get()->OnExtensionUnloaded(id);
 
   active_extension_ids_.erase(id);
 
