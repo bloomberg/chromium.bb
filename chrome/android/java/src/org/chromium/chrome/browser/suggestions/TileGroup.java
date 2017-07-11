@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -37,6 +38,7 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,7 +70,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         void setMostVisitedSitesObserver(MostVisitedSites.Observer observer, int maxResults);
 
         /**
-         * Called when the NTP has completely finished loading (all views will be inflated
+         * Called when the tile group has completely finished loading (all views will be inflated
          * and any dependent resources will have been loaded).
          * @param tiles The tiles owned by the {@link TileGroup}. Used to record metrics.
          */
@@ -107,16 +109,34 @@ public class TileGroup implements MostVisitedSites.Observer {
          * @param tile The tile for which the visibility of the offline badge has changed.
          */
         void onTileOfflineBadgeVisibilityChanged(Tile tile);
+    }
+
+    /**
+     * Constants used to track the current operations on the group and notify the {@link Delegate}
+     * when the expected sequence of potentially asynchronous operations is complete.
+     */
+    @VisibleForTesting
+    @IntDef({TileTask.FETCH_DATA, TileTask.SCHEDULE_ICON_FETCH, TileTask.FETCH_ICON})
+    @interface TileTask {
+        /**
+         * An event that should result in new data being loaded happened.
+         * Can be an asynchronous task, spanning from when the {@link Observer} is registered to
+         * when the initial load completes.
+         */
+        int FETCH_DATA = 1;
 
         /**
-         * Called when an asynchronous loading task has started.
+         * New tile data has been loaded and we are expecting the related icons to be fetched.
+         * Can be an asynchronous task, as we rely on it being triggered by the embedder, some time
+         * after {@link Observer#onTileDataChanged()} is called.
          */
-        void onLoadTaskAdded();
+        int SCHEDULE_ICON_FETCH = 2;
 
         /**
-         * Called when an asynchronous loading task has completed.
+         * The icon for a tile is being fetched.
+         * Asynchronous task, that is started for each icon that needs to be loaded.
          */
-        void onLoadTaskCompleted();
+        int FETCH_ICON = 3;
     }
 
     private static final String TAG = "TileGroup";
@@ -130,6 +150,15 @@ public class TileGroup implements MostVisitedSites.Observer {
     private final ContextMenuManager mContextMenuManager;
     private final Delegate mTileGroupDelegate;
     private final Observer mObserver;
+
+    /**
+     * Tracks the tasks currently in flight.
+     *
+     * We only care about which ones are pending, not their order, and we can have multiple tasks
+     * pending of the same type. Hence exposing the type as Collection rather than List or Set.
+     */
+    private final Collection<Integer> mPendingTasks = new ArrayList<>();
+
     private final int mTitleLinesCount;
     private final int mMinIconSize;
     private final int mDesiredIconSize;
@@ -259,7 +288,7 @@ public class TileGroup implements MostVisitedSites.Observer {
      * @param maxResults The maximum number of sites to retrieve.
      */
     public void startObserving(int maxResults) {
-        mObserver.onLoadTaskAdded();
+        addTask(TileTask.FETCH_DATA);
         mTileGroupDelegate.setMostVisitedSitesObserver(this, maxResults);
     }
 
@@ -267,10 +296,9 @@ public class TileGroup implements MostVisitedSites.Observer {
      * Renders tile views in the given {@link TileGridLayout}, reusing existing tile views where
      * possible because view inflation and icon loading are slow.
      * @param parent The layout to render the tile views into.
-     * @param trackLoadTasks Whether to track load tasks.
      * @param condensed Whether to use a condensed layout.
      */
-    public void renderTileViews(ViewGroup parent, boolean trackLoadTasks, boolean condensed) {
+    public void renderTileViews(ViewGroup parent, boolean condensed) {
         // Map the old tile views by url so they can be reused later.
         Map<String, TileView> oldTileViews = new HashMap<>();
         int childCount = parent.getChildCount();
@@ -286,13 +314,16 @@ public class TileGroup implements MostVisitedSites.Observer {
         for (Tile tile : mTiles) {
             TileView tileView = oldTileViews.get(tile.getUrl());
             if (tileView == null) {
-                tileView = buildTileView(tile, parent, trackLoadTasks, condensed);
+                tileView = buildTileView(tile, parent, condensed);
             } else {
                 tileView.updateIfDataChanged(tile);
             }
 
             parent.addView(tileView);
         }
+
+        // Icon fetch scheduling was done when building the tile views.
+        if (isLoadTracked()) removeTask(TileTask.SCHEDULE_ICON_FETCH);
     }
 
     public Tile[] getTiles() {
@@ -303,30 +334,35 @@ public class TileGroup implements MostVisitedSites.Observer {
         return mHasReceivedData;
     }
 
-    /** To be called when the view displaying the tile group becomes visible. */
-    public void onSwitchToForeground() {
+    /**
+     * To be called when the view displaying the tile group becomes visible.
+     * @param trackLoadTask whether the delegate should be notified that the load is completed
+     *                      through {@link Delegate#onLoadingComplete(Tile[])}.
+     */
+    public void onSwitchToForeground(boolean trackLoadTask) {
+        if (trackLoadTask) addTask(TileTask.FETCH_DATA);
         if (mPendingTiles != null) loadTiles();
+        if (trackLoadTask) removeTask(TileTask.FETCH_DATA);
     }
 
     /**
      * Inflates a new tile view, initializes it, and loads an icon for it.
      * @param tile The tile that holds the data to populate the new tile view.
      * @param parentView The parent of the new tile view.
-     * @param trackLoadTask Whether to track a load task.
      * @param condensed Whether to use a condensed layout.
      * @return The new tile view.
      */
     @VisibleForTesting
-    TileView buildTileView(
-            Tile tile, ViewGroup parentView, boolean trackLoadTask, boolean condensed) {
+    TileView buildTileView(Tile tile, ViewGroup parentView, boolean condensed) {
         TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
                                     .inflate(R.layout.tile_view, parentView, false);
         tileView.initialize(tile, mTitleLinesCount, condensed);
 
+        if (isLoadTracked()) addTask(TileTask.FETCH_ICON);
+
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
-        LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile.getUrl(), trackLoadTask);
-        if (trackLoadTask) mObserver.onLoadTaskAdded();
+        LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile.getUrl(), isLoadTracked());
         loadWhitelistIcon(tile, iconCallback);
 
         TileInteractionDelegate delegate = new TileInteractionDelegate(tile.getUrl());
@@ -389,8 +425,11 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         if (countChanged) mObserver.onTileCountChanged();
+
+        if (isLoadTracked()) addTask(TileTask.SCHEDULE_ICON_FETCH);
         mObserver.onTileDataChanged();
-        if (isInitialLoad) mObserver.onLoadTaskCompleted();
+
+        if (isInitialLoad) removeTask(TileTask.FETCH_DATA);
     }
 
     /** @return A tile matching the provided URL, or {@code null} if none is found. */
@@ -400,6 +439,32 @@ public class TileGroup implements MostVisitedSites.Observer {
             if (tile.getUrl().equals(url)) return tile;
         }
         return null;
+    }
+
+    private void addTask(@TileTask int task) {
+        mPendingTasks.add(task);
+    }
+
+    private void removeTask(@TileTask int task) {
+        boolean removedTask = mPendingTasks.remove(Integer.valueOf(task));
+        assert removedTask;
+
+        if (mPendingTasks.isEmpty()) mTileGroupDelegate.onLoadingComplete(getTiles());
+    }
+
+    /**
+     * @return Whether the current load is being tracked. Unrequested task tracking updates should
+     * not be sent, as it would cause calling {@link Delegate#onLoadingComplete(Tile[])} at the
+     * wrong moment.
+     */
+    private boolean isLoadTracked() {
+        return mPendingTasks.contains(TileTask.FETCH_DATA)
+                || mPendingTasks.contains(TileTask.SCHEDULE_ICON_FETCH);
+    }
+
+    @VisibleForTesting
+    boolean isTaskPending(@TileTask int task) {
+        return mPendingTasks.contains(task);
     }
 
     private class LargeIconCallbackImpl implements LargeIconCallback {
@@ -440,7 +505,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             }
 
             // This call needs to be made after the tiles are completely initialised, for UMA.
-            if (mTrackLoadTask) mObserver.onLoadTaskCompleted();
+            if (mTrackLoadTask) removeTask(TileTask.FETCH_ICON);
         }
     }
 

@@ -13,6 +13,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -89,7 +90,9 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
 
     @Override
     public void onLoadingComplete(Tile[] tiles) {
-        assert !mIsDestroyed;
+        // This method is called after network calls complete. It could happen after the suggestions
+        // surface is destroyed.
+        if (mIsDestroyed) return;
 
         for (int i = 0; i < tiles.length; i++) {
             mMostVisitedSites.recordTileImpression(
@@ -97,6 +100,14 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         }
 
         mMostVisitedSites.recordPageImpression(tiles.length);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
+            for (int i = 0; i < tiles.length; i++) {
+                if (tiles[i].isOfflineAvailable()) {
+                    SuggestionsMetrics.recordTileOfflineAvailability(i);
+                }
+            }
+        }
     }
 
     @Override
