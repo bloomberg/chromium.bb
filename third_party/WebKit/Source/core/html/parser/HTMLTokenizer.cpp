@@ -36,10 +36,6 @@
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/text/Unicode.h"
 
-// Please don't use DEFINE_STATIC_LOCAL in this file. The HTMLTokenizer is used
-// from multiple threads and DEFINE_STATIC_LOCAL isn't threadsafe.
-#undef DEFINE_STATIC_LOCAL
-
 namespace blink {
 
 using namespace HTMLNames;
