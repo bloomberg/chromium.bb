@@ -131,11 +131,38 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     CSSParserTokenRange&,
                                     bool& needs_legacy_parsing);
 
+// ConsumeShorthandVia4LonghandsAPI and ConsumeShorthandGreedilyViaLonghandAPIs
+// are based on CSSPropertyParsers' Consume4Values and ConsumeShorthandGreedily.
+// They both delegate parsing of a shorthand property to its respective longhand
+// components. The difference is the functions in this Helpers file expect
+// component longhands to have API implementations already.
+// Consume4Values and ConsumeShorthandGreedily will be deprecated soon, when
+// shorthand properties are ribbonised (i.e. have their own APIs). Until then,
+// there is a slight code duplication between the two versions for the following
+// reasons:
+// 1. An alternative to code duplicate is to have the old Consume*
+//    (e.g. ConsumeShorthandGreedily) call the new Consume*
+//    (e.g. ConsumeShorthandGreedilyViaLonghandAPIs). However, the
+//    new Consume* expects ALL component longhands to have APIs and will parse
+///   all longhands via their APIs. In order to parse shorthands, where some
+//    component longhands do not have APIs, the new Consume* will need to return
+//    to the old Consume* which longhands have no APIs and thus are not parsed.
+//    The old Consume* will then have to parse these longhands separately.
+//    Hence there's added code complexity with little code reduction.
+// 2. All shorthand properties will have APIs soon, hence such code duplication
+//    is temporary only.
 bool ConsumeShorthandVia4LonghandsAPI(const StylePropertyShorthand&,
                                       bool important,
                                       const CSSParserContext&,
                                       CSSParserTokenRange&,
                                       HeapVector<CSSProperty, 256>& properties);
+
+bool ConsumeShorthandGreedilyViaLonghandAPIs(
+    const StylePropertyShorthand&,
+    bool important,
+    const CSSParserContext&,
+    CSSParserTokenRange&,
+    HeapVector<CSSProperty, 256>& properties);
 
 // Template implementations are at the bottom of the file for readability.
 

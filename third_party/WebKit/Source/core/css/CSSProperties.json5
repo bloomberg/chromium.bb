@@ -3924,6 +3924,8 @@
     {
       name: "-webkit-text-emphasis",
       longhands: ["-webkit-text-emphasis-style", "-webkit-text-emphasis-color"],
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-text-stroke",

@@ -2356,8 +2356,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeShorthandGreedily(textDecorationShorthand(), important);
     case CSSPropertyPadding:
       return Consume4Values(paddingShorthand(), important);
-    case CSSPropertyWebkitTextEmphasis:
-      return ConsumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     case CSSPropertyOutline:
       return ConsumeShorthandGreedily(outlineShorthand(), important);
     case CSSPropertyWebkitBorderStart:
