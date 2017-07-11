@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/i18n.h"
-#include "base/win/windows_version.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/win/screen_win.h"
@@ -45,23 +44,6 @@ void AdjustLogFont(const base::string16& font_family,
     memcpy(logfont->lfFaceName, font_family.data(), name_len * sizeof(WORD));
     logfont->lfFaceName[name_len] = 0;
   }
-}
-
-bool IsFontPresent(const wchar_t* font_name) {
-  HFONT hfont = CreateFont(12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                           font_name);
-  if (hfont == NULL)
-    return false;
-  HDC dc = GetDC(0);
-  HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont));
-  WCHAR actual_font_name[LF_FACESIZE];
-  int size_ret = GetTextFace(dc, LF_FACESIZE, actual_font_name);
-  SelectObject(dc, oldFont);
-  DeleteObject(hfont);
-  ReleaseDC(0, dc);
-  // We don't have to worry about East Asian fonts with locale-dependent
-  // names here.
-  return (size_ret != 0) && wcscmp(font_name, actual_font_name) == 0;
 }
 
 class OverrideLocaleHolder {
@@ -107,13 +89,7 @@ void HWNDSetRTLLayout(HWND hwnd) {
 }
 
 bool IsLocaleSupportedByOS(const std::string& locale) {
-  // Block Amharic on Windows XP unless 'Abyssinica SIL' font is present.
-  // On Win XP, no Ethiopic/Amahric font is availabel out of box. We hard-coded
-  // 'Abyssinica SIL' in the resource bundle to use in the UI. Check
-  // for its presence to determine whether or not to support Amharic UI on XP.
-  return (base::win::GetVersion() >= base::win::VERSION_VISTA ||
-      !base::LowerCaseEqualsASCII(locale, "am") ||
-      IsFontPresent(L"Abyssinica SIL"));
+  return true;
 }
 
 bool NeedOverrideDefaultUIFont(base::string16* override_font_family,
@@ -123,19 +99,9 @@ bool NeedOverrideDefaultUIFont(base::string16* override_font_family,
   // the default Windows fonts are too small to be legible.  For those
   // locales, IDS_UI_FONT_FAMILY is set to an actual font family to
   // use while for other locales, it's set to 'default'.
-
-  // XP and Vista or later have different font size issues and
-  // we need separate ui font specifications.
-  int ui_font_family_id = IDS_UI_FONT_FAMILY;
-  int ui_font_size_scaler_id = IDS_UI_FONT_SIZE_SCALER;
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    ui_font_family_id = IDS_UI_FONT_FAMILY_XP;
-    ui_font_size_scaler_id = IDS_UI_FONT_SIZE_SCALER_XP;
-  }
-
-  base::string16 ui_font_family = GetStringUTF16(ui_font_family_id);
+  base::string16 ui_font_family = GetStringUTF16(IDS_UI_FONT_FAMILY);
   int scaler100;
-  if (!base::StringToInt(l10n_util::GetStringUTF16(ui_font_size_scaler_id),
+  if (!base::StringToInt(l10n_util::GetStringUTF16(IDS_UI_FONT_SIZE_SCALER),
                          &scaler100))
     return false;
 

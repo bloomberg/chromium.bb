@@ -24,10 +24,6 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 #define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(base::ASCIIToUTF16(ascii), utf16)
 
 namespace {
@@ -153,12 +149,6 @@ TEST_F(TextfieldModelTest, EditString_SimpleRTL) {
 }
 
 TEST_F(TextfieldModelTest, EditString_ComplexScript) {
-  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
-  bool on_windows_xp = false;
-#if defined(OS_WIN)
-  on_windows_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
-#endif
-
   TextfieldModel model(NULL);
 
   // Append two Hindi strings.
@@ -168,30 +158,29 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   EXPECT_EQ(base::WideToUTF16(
       L"\x0915\x093f\x0915\x094d\x0915\x0915\x094d\x092e\x094d"), model.text());
 
-  if (!on_windows_xp) {
-    // Ensure the cursor cannot be placed in the middle of a grapheme.
-    MoveCursorTo(model, 1);
-    EXPECT_EQ(0U, model.GetCursorPosition());
+  // Ensure the cursor cannot be placed in the middle of a grapheme.
+  MoveCursorTo(model, 1);
+  EXPECT_EQ(0U, model.GetCursorPosition());
 
-    MoveCursorTo(model, 2);
-    EXPECT_EQ(2U, model.GetCursorPosition());
-    model.InsertChar('a');
-    EXPECT_EQ(base::WideToUTF16(
-        L"\x0915\x093f\x0061\x0915\x094d\x0915\x0915\x094d\x092e\x094d"),
-        model.text());
+  MoveCursorTo(model, 2);
+  EXPECT_EQ(2U, model.GetCursorPosition());
+  model.InsertChar('a');
+  EXPECT_EQ(
+      base::WideToUTF16(
+          L"\x0915\x093f\x0061\x0915\x094d\x0915\x0915\x094d\x092e\x094d"),
+      model.text());
 
-    // ReplaceChar will replace the whole grapheme.
-    model.ReplaceChar('b');
-    // TODO(xji): temporarily disable in platform Win since the complex script
-    // characters turned into empty square due to font regression. So, not able
-    // to test 2 characters belong to the same grapheme.
+  // ReplaceChar will replace the whole grapheme.
+  model.ReplaceChar('b');
+// TODO(xji): temporarily disable in platform Win since the complex script
+// characters turned into empty square due to font regression. So, not able
+// to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
-    EXPECT_EQ(base::WideToUTF16(
-        L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
-        model.text());
+  EXPECT_EQ(base::WideToUTF16(
+                L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
+            model.text());
 #endif
-    EXPECT_EQ(4U, model.GetCursorPosition());
-  }
+  EXPECT_EQ(4U, model.GetCursorPosition());
 
   // Delete should delete the whole grapheme.
   MoveCursorTo(model, 0);
@@ -214,12 +203,10 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   MoveCursorTo(model, 0);
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  if (!on_windows_xp) {
-    MoveCursorTo(model, 1);
-    EXPECT_EQ(0U, model.GetCursorPosition());
-    MoveCursorTo(model, 3);
-    EXPECT_EQ(3U, model.GetCursorPosition());
-  }
+  MoveCursorTo(model, 1);
+  EXPECT_EQ(0U, model.GetCursorPosition());
+  MoveCursorTo(model, 3);
+  EXPECT_EQ(3U, model.GetCursorPosition());
 
   // TODO(asvitkine): Temporarily disable the following check on Windows. It
   // seems Windows treats "\x0D38\x0D4D\x0D15" as a single grapheme.

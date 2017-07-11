@@ -165,10 +165,6 @@ void InitializeTsfForInputScopes() {
   if (!g_get_proc_done) {
     g_get_proc_done = true;
 
-    // For stability reasons, we do not support Windows XP.
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return;
-
     HMODULE module = NULL;
     if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"msctf.dll",
         &module)) {

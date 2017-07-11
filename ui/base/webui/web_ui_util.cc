@@ -160,12 +160,7 @@ void AppendWebUiCssTextDefaults(std::string* html) {
 }
 
 std::string GetFontFamily() {
-  std::string font_family = l10n_util::GetStringUTF8(
-#if defined(OS_WIN)
-      base::win::GetVersion() < base::win::VERSION_VISTA ?
-          IDS_WEB_FONT_FAMILY_XP :
-#endif
-          IDS_WEB_FONT_FAMILY);
+  std::string font_family = l10n_util::GetStringUTF8(IDS_WEB_FONT_FAMILY);
 
 // TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
 // into Ozone: crbug.com/320050
@@ -178,12 +173,7 @@ std::string GetFontFamily() {
 }
 
 std::string GetFontSize() {
-  return l10n_util::GetStringUTF8(
-#if defined(OS_WIN)
-      base::win::GetVersion() < base::win::VERSION_VISTA ?
-          IDS_WEB_FONT_SIZE_XP :
-#endif
-          IDS_WEB_FONT_SIZE);
+  return l10n_util::GetStringUTF8(IDS_WEB_FONT_SIZE);
 }
 
 std::string GetTextDirection() {
