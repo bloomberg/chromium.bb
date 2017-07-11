@@ -15,23 +15,24 @@ namespace blink {
 
 // All sizes are measured in device independent pixels.
 struct WebDeviceEmulationParams {
-  // For mobile, |screenSize| and |viewPosition| are used.
-  // For desktop, screen size and view position are preserved.
+  // For mobile, |screen_size| and |view_position| are used.
+  // For desktop, |screen_size| and |view_position| are preserved.
   enum ScreenPosition { kDesktop, kMobile, kScreenPositionLast = kMobile };
 
   ScreenPosition screen_position;
 
-  // Emulated screen size. Used with |screenPosition == Mobile|.
+  // Emulated screen size. Typically full / physical size of the device screen
+  // in DIP. Used with |screen_position == Mobile|.
   WebSize screen_size;
 
-  // Position of view on the screen. Used with |screenPosition == Mobile|.
+  // Position of view on the screen. Used with |screen_position == Mobile|.
   WebPoint view_position;
-
-  // If zero, the original device scale factor is preserved.
-  float device_scale_factor;
 
   // Emulated view size. Empty size means no override.
   WebSize view_size;
+
+  // If zero, the original device scale factor is preserved.
+  float device_scale_factor;
 
   // Whether emulated view should be scaled down if necessary to fit into
   // available space.

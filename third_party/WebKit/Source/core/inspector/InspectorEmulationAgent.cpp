@@ -28,10 +28,6 @@ namespace EmulationAgentState {
 static const char kScriptExecutionDisabled[] = "scriptExecutionDisabled";
 static const char kTouchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char kEmulatedMedia[] = "emulatedMedia";
-static const char kForcedViewportEnabled[] = "forcedViewportEnabled";
-static const char kForcedViewportX[] = "forcedViewportX";
-static const char kForcedViewportY[] = "forcedViewportY";
-static const char kForcedViewportScale[] = "forcedViewportScale";
 static const char kDefaultBackgroundColorOverrideRGBA[] =
     "defaultBackgroundColorOverrideRGBA";
 }
@@ -63,14 +59,6 @@ void InspectorEmulationAgent::Restore() {
   String emulated_media;
   state_->getString(EmulationAgentState::kEmulatedMedia, &emulated_media);
   setEmulatedMedia(emulated_media);
-  if (state_->booleanProperty(EmulationAgentState::kForcedViewportEnabled,
-                              false)) {
-    forceViewport(
-
-        state_->doubleProperty(EmulationAgentState::kForcedViewportX, 0),
-        state_->doubleProperty(EmulationAgentState::kForcedViewportY, 0),
-        state_->doubleProperty(EmulationAgentState::kForcedViewportScale, 1));
-  }
   auto rgba_value =
       state_->get(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA);
   if (rgba_value) {
@@ -88,33 +76,7 @@ Response InspectorEmulationAgent::disable() {
   setTouchEmulationEnabled(false, Maybe<String>());
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
-  resetViewport();
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
-  return Response::OK();
-}
-
-Response InspectorEmulationAgent::forceViewport(double x,
-                                                double y,
-                                                double scale) {
-  if (x < 0 || y < 0)
-    return Response::Error("Coordinates must be non-negative");
-
-  if (scale <= 0)
-    return Response::Error("Scale must be positive");
-
-  state_->setBoolean(EmulationAgentState::kForcedViewportEnabled, true);
-  state_->setDouble(EmulationAgentState::kForcedViewportX, x);
-  state_->setDouble(EmulationAgentState::kForcedViewportY, y);
-  state_->setDouble(EmulationAgentState::kForcedViewportScale, scale);
-
-  GetWebViewBase()->GetDevToolsEmulator()->ForceViewport(WebFloatPoint(x, y),
-                                                         scale);
-  return Response::OK();
-}
-
-Response InspectorEmulationAgent::resetViewport() {
-  state_->setBoolean(EmulationAgentState::kForcedViewportEnabled, false);
-  GetWebViewBase()->GetDevToolsEmulator()->ResetViewport();
   return Response::OK();
 }
 

@@ -28,6 +28,10 @@ namespace gfx {
 class Image;
 }  // namespace gfx
 
+namespace blink {
+struct WebDeviceEmulationParams;
+}
+
 namespace content {
 
 class DevToolsAgentHostImpl;
@@ -38,11 +42,13 @@ class WebContentsImpl;
 
 namespace protocol {
 
+class EmulationHandler;
+
 class PageHandler : public DevToolsDomainHandler,
                     public Page::Backend,
                     public NotificationObserver {
  public:
-  PageHandler();
+  explicit PageHandler(EmulationHandler* handler);
   ~PageHandler() override;
 
   static std::vector<PageHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -126,10 +132,13 @@ class PageHandler : public DevToolsDomainHandler,
                               const base::Time& timestamp,
                               const std::string& data);
 
-  void ScreenshotCaptured(std::unique_ptr<CaptureScreenshotCallback> callback,
-                          const std::string& format,
-                          int quality,
-                          const gfx::Image& image);
+  void ScreenshotCaptured(
+      std::unique_ptr<CaptureScreenshotCallback> callback,
+      const std::string& format,
+      int quality,
+      const gfx::Size& original_view_size,
+      const blink::WebDeviceEmulationParams& original_params,
+      const gfx::Image& image);
 
   // NotificationObserver overrides.
   void Observe(int type,
@@ -157,6 +166,7 @@ class PageHandler : public DevToolsDomainHandler,
   std::map<int, PageNavigationThrottle*> navigation_throttles_;
 
   RenderFrameHostImpl* host_;
+  EmulationHandler* emulation_handler_;
   std::unique_ptr<Page::Frontend> frontend_;
   NotificationRegistrar registrar_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
