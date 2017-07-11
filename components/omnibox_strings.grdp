@@ -32,6 +32,9 @@
   <message name="IDS_DANGEROUS_VERBOSE_STATE" desc="Text for the Dangerous Omnibox Verbose State. Displayed when the current page fails the malware check.">
     Dangerous
   </message>
+  <message name="IDS_OFFLINE_VERBOSE_STATE" desc="Text for the Offline Omnibox Verbose state. Displayed when the current page is loaded from a previously-downloaded cache.">
+    Offline
+  </message>
   <if expr="is_ios">
     <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
       Search or type URL

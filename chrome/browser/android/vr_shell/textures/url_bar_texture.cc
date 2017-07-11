@@ -58,6 +58,13 @@ SkColor GetSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
   }
 }
 
+SkColor GetSecurityChipColor(SecurityLevel level,
+                             bool offline_page,
+                             const ColorScheme& color_scheme) {
+  return offline_page ? color_scheme.url_emphasized
+                      : GetSchemeColor(level, color_scheme);
+}
+
 void setEmphasis(vr_shell::RenderTextWrapper* render_text,
                  bool emphasis,
                  const gfx::Range& range,
@@ -81,7 +88,6 @@ UrlBarTexture::UrlBarTexture(
     bool web_vr,
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : has_back_button_(!web_vr),
-      has_security_chip_(false),
       failure_callback_(failure_callback) {}
 
 UrlBarTexture::~UrlBarTexture() = default;
@@ -220,8 +226,8 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   // Site security state icon.
   left_edge += kFieldSpacing;
-  if (state_.security_level != security_state::NONE &&
-      state_.vector_icon != nullptr) {
+  if ((state_.security_level != security_state::NONE || state_.offline_page) &&
+      state_.vector_icon != nullptr && state_.should_display_url) {
     gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconSize / 2,
                            kSecurityIconSize, kSecurityIconSize);
     canvas->save();
@@ -230,7 +236,8 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     float icon_scale = kSecurityIconSize / GetDefaultSizeOfVectorIcon(icon);
     canvas->scale(icon_scale, icon_scale);
     PaintVectorIcon(&gfx_canvas, icon,
-                    GetSchemeColor(state_.security_level, color_scheme()));
+                    GetSecurityChipColor(state_.security_level,
+                                         state_.offline_page, color_scheme()));
     canvas->restore();
 
     security_hit_region_ = icon_region;
@@ -239,14 +246,21 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
   canvas->restore();
 
-  // Draw security chip text (eg. "Not secure") next to the security icon.
-  if (has_security_chip_ && state_.should_display_url) {
+  // The security chip text consumes a significant percentage of URL bar text
+  // space, so they are currently disabled (see crbug.com/734206). The offline
+  // chip is an exception, and must be shown (see crbug.com/735770).
+  bool draw_security_chip = state_.offline_page;
+
+  // Possibly draw security chip text (eg. "Not secure") next to the security
+  // icon.
+  if (draw_security_chip && state_.should_display_url) {
     float chip_max_width = kWidth - left_edge - kUrlRightMargin;
     gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(chip_max_width),
                           ToPixels(kHeight));
 
     int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
-    SkColor chip_color = GetSchemeColor(state_.security_level, color_scheme());
+    SkColor chip_color = GetSecurityChipColor(
+        state_.security_level, state_.offline_page, color_scheme());
     const base::string16& chip_text = state_.secure_verbose_text;
     DCHECK(!chip_text.empty());
 
@@ -300,6 +314,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                               const gfx::Rect& bounds) {
   url::Parsed parsed;
+
   const base::string16 text = url_formatter::FormatUrl(
       state_.gurl, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::NORMAL,
       &parsed, nullptr, nullptr);
