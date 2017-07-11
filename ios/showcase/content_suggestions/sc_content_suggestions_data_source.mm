@@ -88,7 +88,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     case ContentSuggestionsSectionReadingList: {
       SCContentSuggestionsItem* suggestion = [self article];
       suggestion.title = [[self class] titleReadingListItem];
-      suggestion.subtitle = nil;
       suggestion.hasImage = NO;
       suggestion.suggestionIdentifier.sectionInfo = self.readingListSection;
       return @[ suggestion ];
@@ -231,7 +230,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   SCContentSuggestionsItem* suggestion =
       [[SCContentSuggestionsItem alloc] initWithType:0];
   suggestion.title = @"Title";
-  suggestion.subtitle = @"Subtitle for this greeeeeaaaaaat suggestion!";
   suggestion.publisher = @"Publisher of the new";
   suggestion.hasImage = YES;
   suggestion.publicationDate = [self randomDate];

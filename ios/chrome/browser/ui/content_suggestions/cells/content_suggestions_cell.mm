@@ -56,10 +56,6 @@ const CGFloat kAnimationDuration = 0.3;
 @property(nonatomic, strong) NSLayoutConstraint* imageSize;
 // Constraint for the distance between the texts and the image.
 @property(nonatomic, strong) NSLayoutConstraint* imageTitleSpacing;
-// Constraint for the vertical distance between the title and the subtitle.
-@property(nonatomic, strong) NSLayoutConstraint* titleSubtitleSpacing;
-// Label for the subtitle.
-@property(nonatomic, readonly, strong) UILabel* subtitleLabel;
 
 // Applies the constraints on the elements. Called in the init.
 - (void)applyConstraints;
@@ -69,7 +65,6 @@ const CGFloat kAnimationDuration = 0.3;
 @implementation ContentSuggestionsCell
 
 @synthesize titleLabel = _titleLabel;
-@synthesize subtitleLabel = _subtitleLabel;
 @synthesize imageContainer = _imageContainer;
 @synthesize noImageIcon = _noImageIcon;
 @synthesize additionalInformationLabel = _additionalInformationLabel;
@@ -78,13 +73,11 @@ const CGFloat kAnimationDuration = 0.3;
 @synthesize imageSize = _imageSize;
 @synthesize imageTitleSpacing = _imageTitleSpacing;
 @synthesize displayImage = _displayImage;
-@synthesize titleSubtitleSpacing = _titleSubtitleSpacing;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _subtitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _imageContainer = [[UIView alloc] initWithFrame:CGRectZero];
     _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
     _additionalInformationLabel = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -92,9 +85,6 @@ const CGFloat kAnimationDuration = 0.3;
     _faviconView = [[FaviconViewNew alloc] init];
 
     _titleLabel.numberOfLines = 2;
-    _subtitleLabel.numberOfLines = 2;
-    [_subtitleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                      forAxis:UILayoutConstraintAxisVertical];
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                    forAxis:UILayoutConstraintAxisVertical];
 
@@ -105,14 +95,12 @@ const CGFloat kAnimationDuration = 0.3;
     _imageContainer.translatesAutoresizingMaskIntoConstraints = NO;
     _noImageIcon.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _additionalInformationLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_imageContainer];
     [self.contentView addSubview:_titleLabel];
-    [self.contentView addSubview:_subtitleLabel];
     [self.contentView addSubview:_additionalInformationLabel];
     [self.contentView addSubview:_faviconView];
 
@@ -127,11 +115,9 @@ const CGFloat kAnimationDuration = 0.3;
         setTintColor:[UIColor colorWithWhite:kNoImageIconWhite alpha:1]];
 
     _titleLabel.font = [MDCTypography subheadFont];
-    _subtitleLabel.font = [MDCTypography body1Font];
     _additionalInformationLabel.font = [MDCTypography captionFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
 
-    _subtitleLabel.textColor = [[MDCPalette greyPalette] tint700];
     _additionalInformationLabel.textColor = [[MDCPalette greyPalette] tint700];
 
     [self applyConstraints];
@@ -186,15 +172,6 @@ const CGFloat kAnimationDuration = 0.3;
   self.additionalInformationLabel.attributedText = additionInformation;
 }
 
-- (void)setSubtitleText:(NSString*)subtitle {
-  self.subtitleLabel.text = subtitle;
-  if (subtitle.length > 0) {
-    self.titleSubtitleSpacing.constant = kSmallSpacing;
-  } else {
-    self.titleSubtitleSpacing.constant = 0;
-  }
-}
-
 - (void)setDisplayImage:(BOOL)displayImage {
   if (displayImage) {
     self.imageTitleSpacing.constant = kStandardSpacing;
@@ -213,7 +190,6 @@ const CGFloat kAnimationDuration = 0.3;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.titleLabel.text = nil;
-  [self setSubtitleText:nil];
   self.displayImage = NO;
 }
 
@@ -235,8 +211,6 @@ const CGFloat kAnimationDuration = 0.3;
 
   self.titleLabel.preferredMaxLayoutWidth =
       parentWidth - 2 * kStandardSpacing - offset;
-  self.subtitleLabel.preferredMaxLayoutWidth =
-      parentWidth - 2 * kStandardSpacing - offset;
   self.additionalInformationLabel.preferredMaxLayoutWidth =
       parentWidth - kFaviconSize - kSmallSpacing - 2 * kStandardSpacing;
 
@@ -253,9 +227,6 @@ const CGFloat kAnimationDuration = 0.3;
   _imageTitleSpacing = [_imageContainer.leadingAnchor
       constraintEqualToAnchor:_titleLabel.trailingAnchor
                      constant:kStandardSpacing];
-  _titleSubtitleSpacing =
-      [_subtitleLabel.topAnchor constraintEqualToAnchor:_titleLabel.bottomAnchor
-                                               constant:kSmallSpacing];
 
   [NSLayoutConstraint activateConstraints:@[
     // Image.
@@ -263,29 +234,26 @@ const CGFloat kAnimationDuration = 0.3;
     [_imageContainer.widthAnchor
         constraintEqualToAnchor:_imageContainer.heightAnchor],
     [_imageContainer.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
+    [_imageContainer.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
+                                 constant:-kStandardSpacing],
 
     // Text.
-    _imageTitleSpacing, _titleSubtitleSpacing,
-    [_titleLabel.trailingAnchor
-        constraintEqualToAnchor:_subtitleLabel.trailingAnchor],
+    _imageTitleSpacing,
 
     // Additional Information.
     [_additionalInformationLabel.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
-                                    constant:kStandardSpacing],
-    [_additionalInformationLabel.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
-                                    constant:kStandardSpacing],
+        constraintEqualToAnchor:_titleLabel.bottomAnchor
+                       constant:kStandardSpacing],
+    [_additionalInformationLabel.trailingAnchor
+        constraintEqualToAnchor:_titleLabel.trailingAnchor],
     [_additionalInformationLabel.bottomAnchor
         constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
                                  constant:-kStandardSpacing],
 
     // Favicon.
     [_faviconView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
-                                    constant:kStandardSpacing],
-    [_faviconView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
                                     constant:kStandardSpacing],
     [_faviconView.centerYAnchor
         constraintEqualToAnchor:_additionalInformationLabel.centerYAnchor],
@@ -311,14 +279,12 @@ const CGFloat kAnimationDuration = 0.3;
       @[
         @"H:|-(space)-[title]",
         @"H:[image]-(space)-|",
-        @"H:|-(space)-[text]",
         @"V:|-(space)-[title]",
-        @"H:|-(space)-[favicon]-(small)-[additional]-(space)-|",
+        @"H:|-(space)-[favicon]-(small)-[additional]",
       ],
       @{
         @"image" : _imageContainer,
         @"title" : _titleLabel,
-        @"text" : _subtitleLabel,
         @"additional" : _additionalInformationLabel,
         @"favicon" : _faviconView,
       },

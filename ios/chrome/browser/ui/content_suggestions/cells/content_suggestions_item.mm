@@ -21,7 +21,6 @@
 
 @interface ContentSuggestionsItem ()
 
-@property(nonatomic, copy) NSString* subtitle;
 // Used to check if the image has already been fetched. There is no way to
 // discriminate between failed image download and nonexitent image. The
 // suggestion tries to download the image only once.
@@ -36,7 +35,6 @@
 @implementation ContentSuggestionsItem
 
 @synthesize title = _title;
-@synthesize subtitle = _subtitle;
 @synthesize image = _image;
 @synthesize URL = _URL;
 @synthesize publisher = _publisher;
@@ -52,13 +50,11 @@
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
-                    subtitle:(NSString*)subtitle
                          url:(const GURL&)url {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [ContentSuggestionsCell class];
     _title = [title copy];
-    _subtitle = [subtitle copy];
     _URL = url;
   }
   return self;
@@ -73,7 +69,6 @@
   }
   [cell.faviconView configureWithAttributes:self.attributes];
   cell.titleLabel.text = self.title;
-  [cell setSubtitleText:self.subtitle];
   cell.displayImage = self.hasImage;
   [cell setContentImage:self.image animated:self.firstTimeWithImage];
   self.firstTimeWithImage = NO;
@@ -124,8 +119,7 @@
       base::SysNSStringToUTF16(self.title),
       base::SysNSStringToUTF16(self.publisher),
       base::SysNSStringToUTF16([self relativeDate]),
-      base::SysNSStringToUTF16(offlineAvailability),
-      base::SysNSStringToUTF16(self.subtitle));
+      base::SysNSStringToUTF16(offlineAvailability));
 }
 
 @end

@@ -47,7 +47,6 @@ ContentSuggestionsItem* ConvertSuggestion(
   ContentSuggestionsItem* suggestion = [[ContentSuggestionsItem alloc]
       initWithType:0
              title:base::SysUTF16ToNSString(contentSuggestion.title())
-          subtitle:base::SysUTF16ToNSString(contentSuggestion.snippet_text())
                url:contentSuggestion.url()];
 
   suggestion.publisher =
