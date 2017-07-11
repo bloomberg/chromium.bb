@@ -90,6 +90,18 @@ function TaskController(
    */
   this.tasks_ = null;
 
+  /**
+   * Entries that are used to generate FileTasks returned by this.tasks_.
+   * @private {!Array<!Entry>}
+   */
+  this.tasksEntries_ = [];
+
+  /**
+   * Selected entries from the last time onSelectionChanged_ was called.
+   * @private {!Array<!Entry>}
+   */
+  this.lastSelectedEntries_ = [];
+
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
   this.selectionHandler_.addEventListener(
@@ -262,20 +274,23 @@ TaskController.prototype.getMimeType_ = function(entry) {
  * @private
  */
 TaskController.prototype.onSelectionChanged_ = function() {
-  this.tasks_ = null;
   var selection = this.selectionHandler_.selection;
   // Caller of update context menu task items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
-    // Show disabled items for position calculation of the menu. They will be
-    // overridden in this.updateFileSelectionAsync().
-    this.updateContextMenuTaskItems_(
-        [TaskController.createTemporaryDisabledTaskItem_()]);
+    // Compare entries while ignoring changes inside directories.
+    if (!util.isSameEntries(this.lastSelectedEntries_, selection.entries)) {
+      // Show disabled items for position calculation of the menu. They will be
+      // overridden in this.updateTasks_().
+      this.updateContextMenuTaskItems_(
+          [TaskController.createTemporaryDisabledTaskItem_()]);
+    }
   } else {
     // Update context menu.
     this.updateContextMenuTaskItems_([]);
   }
+  this.lastSelectedEntries_ = selection.entries;
 };
 
 /**
@@ -298,30 +313,38 @@ TaskController.prototype.updateTasks_ = function() {
   } else {
     this.ui_.taskMenuButton.hidden = true;
   }
-}
+};
 
 /**
  * @return {!Promise<!FileTasks>}
  * @public
  */
 TaskController.prototype.getFileTasks = function() {
-  if (this.tasks_)
-    return this.tasks_;
-
   var selection = this.selectionHandler_.selection;
-  return selection.computeAdditional(this.metadataModel_).then(
-      function() {
-        if (this.selectionHandler_.selection !== selection)
+  if (this.tasks_ && util.isSameEntries(this.tasksEntries_, selection.entries))
+    return this.tasks_;
+  this.tasksEntries_ = selection.entries;
+  this.tasks_ =
+      selection.computeAdditional(this.metadataModel_).then(function() {
+        if (this.selectionHandler_.selection !== selection) {
+          if (util.isSameEntries(this.tasksEntries_, selection.entries))
+            this.tasks_ = null;
           return Promise.reject();
-        return FileTasks.create(
-            this.volumeManager_, this.metadataModel_, this.directoryModel_,
-            this.ui_, selection.entries, assert(selection.mimeTypes)).
-            then(function(tasks) {
-              if (this.selectionHandler_.selection !== selection)
+        }
+        return FileTasks
+            .create(
+                this.volumeManager_, this.metadataModel_, this.directoryModel_,
+                this.ui_, selection.entries, assert(selection.mimeTypes))
+            .then(function(tasks) {
+              if (this.selectionHandler_.selection !== selection) {
+                if (util.isSameEntries(this.tasksEntries_, selection.entries))
+                  this.tasks_ = null;
                 return Promise.reject();
+              }
               return tasks;
             }.bind(this));
       }.bind(this));
+  return this.tasks_;
 };
 
 /**
