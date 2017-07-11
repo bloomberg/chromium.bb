@@ -533,8 +533,6 @@ class TestPort(Port):
             VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
             VirtualTestSuite(prefix='references_use_default_args', base='passes/reftest.html',
                              args=['--virtual-arg'], references_use_default_args=True),
-            VirtualTestSuite(prefix='virtual_wpt', base='external/wpt', args=['--virtual-arg']),
-            VirtualTestSuite(prefix='virtual_wpt_dom', base='external/wpt/dom', args=['--virtual-arg']),
         ]
 
 
