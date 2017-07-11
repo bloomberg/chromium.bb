@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -26,8 +27,9 @@ namespace {
 const CGFloat kMenuWidth = 264;
 }
 
-@interface BookmarkHomeViewController ()
+@interface BookmarkHomeViewController ()<BookmarkPromoControllerDelegate>
 // Read / write declaration of read only properties.
+@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 @property(nonatomic, strong) BookmarkCollectionView* folderView;
@@ -40,6 +42,7 @@ const CGFloat kMenuWidth = 264;
 
 @implementation BookmarkHomeViewController
 
+@synthesize bookmarkPromoController = _bookmarkPromoController;
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
 @synthesize folderView = _folderView;
@@ -66,6 +69,11 @@ const CGFloat kMenuWidth = 264;
     _loader = loader;
 
     _bookmarks = ios::BookmarkModelFactory::GetForBrowserState(browserState);
+    // It is important to initialize the promo controller with the browser state
+    // passed in, as it could be incognito.
+    _bookmarkPromoController =
+        [[BookmarkPromoController alloc] initWithBrowserState:browserState
+                                                     delegate:self];
   }
   return self;
 }
@@ -148,6 +156,13 @@ const CGFloat kMenuWidth = 264;
 
 - (CGFloat)menuWidth {
   return kMenuWidth;
+}
+
+#pragma mark - BookmarkPromoControllerDelegate
+
+- (void)promoStateChanged:(BOOL)promoEnabled {
+  [self.folderView
+      promoStateChangedAnimated:self.folderView == [self primaryView]];
 }
 
 @end

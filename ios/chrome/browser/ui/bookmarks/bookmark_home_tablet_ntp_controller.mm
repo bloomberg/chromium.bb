@@ -60,8 +60,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
-    BookmarkModelBridgeObserver,
-    BookmarkPromoControllerDelegate> {
+    BookmarkModelBridgeObserver> {
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 
@@ -112,9 +111,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 // The view controller to present when editing the current folder.
 @property(nonatomic, strong)
     BookmarkFolderEditorViewController* folderEditor;  // FIX
-// The controller managing the display of the promo cell and the promo view
-// controller.
-@property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 
 #pragma mark Specific to this class.
 
@@ -221,7 +217,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @synthesize editViewController = _editViewController;
 @synthesize folderSelector = _folderSelector;
 @synthesize folderEditor = _folderEditor;
-@synthesize bookmarkPromoController = _bookmarkPromoController;
 
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -232,11 +227,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   if (self) {
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
     _editIndexPaths = [[NSMutableArray alloc] init];
-    // It is important to initialize the promo controller with the browser state
-    // passed in, as it could be incognito.
-    _bookmarkPromoController =
-        [[BookmarkPromoController alloc] initWithBrowserState:browserState
-                                                     delegate:self];
   }
   return self;
 }
@@ -1112,13 +1102,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 - (void)bookmarkModelRemovedAllNodes {
   // All non-permanent nodes have been removed.
   [self setEditing:NO animated:YES];
-}
-
-#pragma mark - BookmarkPromoControllerDelegate
-
-- (void)promoStateChanged:(BOOL)promoEnabled {
-  [self.folderView
-      promoStateChangedAnimated:self.folderView == [self primaryView]];
 }
 
 - (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell {
