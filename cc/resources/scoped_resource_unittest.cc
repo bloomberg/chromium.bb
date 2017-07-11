@@ -19,7 +19,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
       TestContextProvider::Create();
   ASSERT_TRUE(context_provider->BindToCurrentThread());
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(context_provider.get(),
@@ -40,7 +40,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
       TestContextProvider::Create();
   ASSERT_TRUE(context_provider->BindToCurrentThread());
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(context_provider.get(),
@@ -64,7 +64,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
       TestContextProvider::Create();
   ASSERT_TRUE(context_provider->BindToCurrentThread());
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(context_provider.get(),

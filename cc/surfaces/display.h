@@ -30,6 +30,10 @@ namespace gfx {
 class Size;
 }
 
+namespace viz {
+class SharedBitmapManager;
+}
+
 namespace cc {
 
 class DirectRenderer;
@@ -37,7 +41,6 @@ class DisplayClient;
 class OutputSurface;
 class RendererSettings;
 class ResourceProvider;
-class SharedBitmapManager;
 class SoftwareRenderer;
 class TextureMailboxDeleter;
 
@@ -49,7 +52,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
-  Display(SharedBitmapManager* bitmap_manager,
+  Display(viz::SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
@@ -98,7 +101,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void UpdateRootSurfaceResourcesLocked();
   void DidLoseContextProvider();
 
-  SharedBitmapManager* const bitmap_manager_;
+  viz::SharedBitmapManager* const bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const RendererSettings settings_;
 

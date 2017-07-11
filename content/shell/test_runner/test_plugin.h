@@ -151,7 +151,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   gpu::gles2::GLES2Interface* gl_;
   GLuint color_texture_;
   cc::TextureMailbox texture_mailbox_;
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap_;
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
   bool mailbox_changed_;
   GLuint framebuffer_;
   Scene scene_;

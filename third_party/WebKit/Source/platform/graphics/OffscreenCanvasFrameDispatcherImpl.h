@@ -8,9 +8,9 @@
 #include <memory>
 #include "cc/ipc/compositor_frame_sink.mojom-blink.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_id.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   struct FrameResource {
     RefPtr<StaticBitmapImage> image_;
-    std::unique_ptr<cc::SharedBitmap> shared_bitmap_;
+    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
     GLuint texture_id_ = 0;
     GLuint image_id_ = 0;
     bool spare_lock_ = true;

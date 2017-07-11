@@ -13,16 +13,16 @@ namespace cc {
 
 namespace {
 
-class OwnedSharedBitmap : public SharedBitmap {
+class OwnedSharedBitmap : public viz::SharedBitmap {
  public:
   OwnedSharedBitmap(std::unique_ptr<base::SharedMemory> shared_memory,
-                    const SharedBitmapId& id)
-      : SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
+                    const viz::SharedBitmapId& id)
+      : viz::SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
         shared_memory_(std::move(shared_memory)) {}
 
   ~OwnedSharedBitmap() override {}
 
-  // SharedBitmap:
+  // viz::SharedBitmap:
   base::SharedMemoryHandle GetSharedMemoryHandle() const override {
     return shared_memory_->handle();
   }
@@ -31,12 +31,12 @@ class OwnedSharedBitmap : public SharedBitmap {
   std::unique_ptr<base::SharedMemory> shared_memory_;
 };
 
-class UnownedSharedBitmap : public SharedBitmap {
+class UnownedSharedBitmap : public viz::SharedBitmap {
  public:
-  UnownedSharedBitmap(uint8_t* pixels, const SharedBitmapId& id)
-      : SharedBitmap(pixels, id) {}
+  UnownedSharedBitmap(uint8_t* pixels, const viz::SharedBitmapId& id)
+      : viz::SharedBitmap(pixels, id) {}
 
-  // SharedBitmap:
+  // viz::SharedBitmap:
   base::SharedMemoryHandle GetSharedMemoryHandle() const override {
     return base::SharedMemoryHandle();
   }
@@ -48,19 +48,19 @@ TestSharedBitmapManager::TestSharedBitmapManager() {}
 
 TestSharedBitmapManager::~TestSharedBitmapManager() {}
 
-std::unique_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
-    const gfx::Size& size) {
+std::unique_ptr<viz::SharedBitmap>
+TestSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
   base::AutoLock lock(lock_);
   std::unique_ptr<base::SharedMemory> memory(new base::SharedMemory);
   memory->CreateAndMapAnonymous(size.GetArea() * 4);
-  SharedBitmapId id = SharedBitmap::GenerateId();
+  viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
   return base::MakeUnique<OwnedSharedBitmap>(std::move(memory), id);
 }
 
-std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
-    const gfx::Size&,
-    const SharedBitmapId& id) {
+std::unique_ptr<viz::SharedBitmap>
+TestSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
+                                               const viz::SharedBitmapId& id) {
   base::AutoLock lock(lock_);
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;

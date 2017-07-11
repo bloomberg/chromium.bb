@@ -17,7 +17,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
@@ -30,6 +29,7 @@
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/surface_aggregator_test_helpers.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -1963,7 +1963,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
 
  protected:
   FrameSinkManager manager_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
 };

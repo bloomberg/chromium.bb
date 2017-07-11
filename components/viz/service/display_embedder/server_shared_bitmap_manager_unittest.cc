@@ -28,45 +28,45 @@ class ServerSharedBitmapManagerTest : public testing::Test {
 TEST_F(ServerSharedBitmapManagerTest, TestCreate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  SharedBitmapId id = SharedBitmap::GenerateId();
 
   SharedBitmapAllocationNotifierImpl notifier(manager());
   base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
   notifier.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
-  std::unique_ptr<cc::SharedBitmap> large_bitmap;
+  std::unique_ptr<SharedBitmap> large_bitmap;
   large_bitmap = manager()->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
   EXPECT_TRUE(large_bitmap.get() == NULL);
 
-  std::unique_ptr<cc::SharedBitmap> very_large_bitmap;
+  std::unique_ptr<SharedBitmap> very_large_bitmap;
   very_large_bitmap =
       manager()->GetSharedBitmapFromId(gfx::Size(1, (1 << 30) | 1), id);
   EXPECT_TRUE(very_large_bitmap.get() == NULL);
 
-  std::unique_ptr<cc::SharedBitmap> negative_size_bitmap;
+  std::unique_ptr<SharedBitmap> negative_size_bitmap;
   negative_size_bitmap =
       manager()->GetSharedBitmapFromId(gfx::Size(-1, 1024), id);
   EXPECT_TRUE(negative_size_bitmap.get() == NULL);
 
-  cc::SharedBitmapId id2 = cc::SharedBitmap::GenerateId();
-  std::unique_ptr<cc::SharedBitmap> invalid_bitmap;
+  SharedBitmapId id2 = SharedBitmap::GenerateId();
+  std::unique_ptr<SharedBitmap> invalid_bitmap;
   invalid_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id2);
   EXPECT_TRUE(invalid_bitmap.get() == NULL);
 
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), 4), 0);
 
-  std::unique_ptr<cc::SharedBitmap> large_bitmap2;
+  std::unique_ptr<SharedBitmap> large_bitmap2;
   large_bitmap2 = manager()->GetSharedBitmapFromId(gfx::Size(1024, 1024), id);
   EXPECT_TRUE(large_bitmap2.get() == NULL);
 
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap2;
+  std::unique_ptr<SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager()->GetSharedBitmapFromId(bitmap_size, id);
   EXPECT_TRUE(shared_bitmap2->pixels() == shared_bitmap->pixels());
   shared_bitmap2.reset();
@@ -86,14 +86,14 @@ TEST_F(ServerSharedBitmapManagerTest, TestCreate) {
 TEST_F(ServerSharedBitmapManagerTest, ServiceDestroyed) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  SharedBitmapId id = SharedBitmap::GenerateId();
 
   // This outlives the SharedBitmapAllocationNotifier.
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<SharedBitmap> shared_bitmap;
 
   {
     SharedBitmapAllocationNotifierImpl notifier(manager());
@@ -107,7 +107,7 @@ TEST_F(ServerSharedBitmapManagerTest, ServiceDestroyed) {
   }
   EXPECT_EQ(0u, manager()->AllocatedBitmapCount());
 
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap2;
+  std::unique_ptr<SharedBitmap> shared_bitmap2;
   shared_bitmap2 = manager()->GetSharedBitmapFromId(bitmap_size, id);
   EXPECT_FALSE(!!shared_bitmap2);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
@@ -117,11 +117,11 @@ TEST_F(ServerSharedBitmapManagerTest, ServiceDestroyed) {
 TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  SharedBitmapId id = SharedBitmap::GenerateId();
 
   SharedBitmapAllocationNotifierImpl notifier(manager());
 
@@ -134,7 +134,7 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
 
   notifier.ChildAllocatedSharedBitmap(size_in_bytes, bitmap2->handle(), id);
 
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(bitmap_size, id);
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
@@ -145,19 +145,19 @@ TEST_F(ServerSharedBitmapManagerTest, AddDuplicate) {
 TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
   gfx::Size bitmap_size(1, 1);
   size_t size_in_bytes;
-  EXPECT_TRUE(cc::SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
+  EXPECT_TRUE(SharedBitmap::SizeInBytes(bitmap_size, &size_in_bytes));
   std::unique_ptr<base::SharedMemory> bitmap(new base::SharedMemory());
   auto shared_memory_guid = bitmap->handle().GetGUID();
   bitmap->CreateAndMapAnonymous(size_in_bytes);
   memset(bitmap->memory(), 0xff, size_in_bytes);
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  SharedBitmapId id = SharedBitmap::GenerateId();
 
   SharedBitmapAllocationNotifierImpl notifier(manager());
 
   base::SharedMemoryHandle handle = bitmap->handle().Duplicate();
   notifier.ChildAllocatedSharedBitmap(size_in_bytes, handle, id);
 
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<SharedBitmap> shared_bitmap;
   shared_bitmap = manager()->GetSharedBitmapFromId(gfx::Size(1, 1), id);
   EXPECT_EQ(shared_bitmap->GetSharedMemoryHandle().GetGUID(),
             shared_memory_guid);

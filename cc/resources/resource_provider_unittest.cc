@@ -19,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
@@ -29,6 +28,7 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,13 +73,13 @@ static void ReleaseCallback(
 }
 
 static void SharedBitmapReleaseCallback(
-    std::unique_ptr<SharedBitmap> bitmap,
+    std::unique_ptr<viz::SharedBitmap> bitmap,
     const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {}
 
 static void ReleaseSharedBitmapCallback(
-    std::unique_ptr<SharedBitmap> shared_bitmap,
+    std::unique_ptr<viz::SharedBitmap> shared_bitmap,
     bool* release_called,
     gpu::SyncToken* release_sync_token,
     bool* lost_resource_result,
@@ -91,11 +91,11 @@ static void ReleaseSharedBitmapCallback(
   *lost_resource_result = lost_resource;
 }
 
-static std::unique_ptr<SharedBitmap> CreateAndFillSharedBitmap(
-    SharedBitmapManager* manager,
+static std::unique_ptr<viz::SharedBitmap> CreateAndFillSharedBitmap(
+    viz::SharedBitmapManager* manager,
     const gfx::Size& size,
     uint32_t value) {
-  std::unique_ptr<SharedBitmap> shared_bitmap =
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap =
       manager->AllocateSharedBitmap(size);
   CHECK(shared_bitmap);
   uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_bitmap->pixels());
@@ -511,7 +511,7 @@ class ResourceProviderTest
                                    sync_token->GetData());
       EXPECT_TRUE(sync_token->HasData());
 
-      std::unique_ptr<SharedBitmap> shared_bitmap;
+      std::unique_ptr<viz::SharedBitmap> shared_bitmap;
       std::unique_ptr<SingleReleaseCallbackImpl> callback =
           SingleReleaseCallbackImpl::Create(base::Bind(
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
@@ -521,10 +521,10 @@ class ResourceProviderTest
           std::move(callback));
     } else {
       gfx::Size size(64, 64);
-      std::unique_ptr<SharedBitmap> shared_bitmap(
+      std::unique_ptr<viz::SharedBitmap> shared_bitmap(
           CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, 0));
 
-      SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
+      viz::SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
       std::unique_ptr<SingleReleaseCallbackImpl> callback =
           SingleReleaseCallbackImpl::Create(base::Bind(
               ReleaseSharedBitmapCallback, base::Passed(&shared_bitmap),
@@ -1421,9 +1421,9 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->CopyToResource(id2, data2, size);
 
-  std::unique_ptr<SharedBitmap> shared_bitmap(CreateAndFillSharedBitmap(
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap(CreateAndFillSharedBitmap(
       shared_bitmap_manager_.get(), gfx::Size(1, 1), 0));
-  SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
+  viz::SharedBitmap* shared_bitmap_ptr = shared_bitmap.get();
   ResourceId id3 = child_resource_provider_->CreateResourceFromTextureMailbox(
       TextureMailbox(shared_bitmap_ptr, gfx::Size(1, 1)),
       SingleReleaseCallbackImpl::Create(base::Bind(
@@ -2970,7 +2970,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
 
   gfx::Size size(64, 64);
   const uint32_t kBadBeef = 0xbadbeef;
-  std::unique_ptr<SharedBitmap> shared_bitmap(
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap(
       CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
 
   std::unique_ptr<ResourceProvider> resource_provider(

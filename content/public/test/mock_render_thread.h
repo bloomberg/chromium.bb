@@ -71,7 +71,7 @@ class MockRenderThread : public RenderThread {
   void RecordComputedAction(const std::string& action) override;
   std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
-  cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  viz::SharedBitmapManager* GetSharedBitmapManager() override;
   void RegisterExtension(v8::Extension* extension) override;
   void ScheduleIdleHandler(int64_t initial_delay_ms) override;
   void IdleHandler() override;

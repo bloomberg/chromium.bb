@@ -132,7 +132,7 @@ class MockMailboxCallback {
                     const gpu::SyncToken& sync_token,
                     bool lost_resource));
   MOCK_METHOD3(Release2,
-               void(SharedBitmap* shared_bitmap,
+               void(viz::SharedBitmap* shared_bitmap,
                     const gpu::SyncToken& sync_token,
                     bool lost_resource));
   MOCK_METHOD4(ReleaseImpl,
@@ -141,14 +141,14 @@ class MockMailboxCallback {
                     bool lost_resource,
                     BlockingTaskRunner* main_thread_task_runner));
   MOCK_METHOD4(ReleaseImpl2,
-               void(SharedBitmap* shared_bitmap,
+               void(viz::SharedBitmap* shared_bitmap,
                     const gpu::SyncToken& sync_token,
                     bool lost_resource,
                     BlockingTaskRunner* main_thread_task_runner));
 };
 
 struct CommonMailboxObjects {
-  explicit CommonMailboxObjects(SharedBitmapManager* manager)
+  explicit CommonMailboxObjects(viz::SharedBitmapManager* manager)
       : mailbox_name1_(MailboxFromChar('1')),
         mailbox_name2_(MailboxFromChar('2')),
         sync_token1_(gpu::CommandBufferNamespace::GPU_IO,
@@ -201,7 +201,7 @@ struct CommonMailboxObjects {
   TextureMailbox mailbox3_;
   gpu::SyncToken sync_token1_;
   gpu::SyncToken sync_token2_;
-  std::unique_ptr<SharedBitmap> shared_bitmap_;
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
 };
 
 class TextureLayerTest : public testing::Test {

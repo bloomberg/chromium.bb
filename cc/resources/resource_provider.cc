@@ -24,9 +24,9 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/resources/shared_bitmap_manager.h"
 #include "cc/resources/transferable_resource.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -226,7 +226,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
 }
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
-                                     SharedBitmap* bitmap,
+                                     viz::SharedBitmap* bitmap,
                                      const gfx::Size& size,
                                      Origin origin,
                                      GLenum filter)
@@ -269,7 +269,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
     shared_bitmap_id = bitmap->id();
 }
 
-ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
+ResourceProvider::Resource::Resource(const viz::SharedBitmapId& bitmap_id,
                                      const gfx::Size& size,
                                      Origin origin,
                                      GLenum filter)
@@ -411,7 +411,7 @@ ResourceProvider::Settings::Settings(
 
 ResourceProvider::ResourceProvider(
     ContextProvider* compositor_context_provider,
-    SharedBitmapManager* shared_bitmap_manager,
+    viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     bool delegated_sync_points_required,
@@ -649,7 +649,7 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
                                           const gfx::ColorSpace& color_space) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::unique_ptr<SharedBitmap> bitmap =
+  std::unique_ptr<viz::SharedBitmap> bitmap =
       shared_bitmap_manager_->AllocateSharedBitmap(size);
   uint8_t* pixels = bitmap->pixels();
   DCHECK(pixels);
@@ -681,7 +681,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                      viz::RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
-    SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
+    viz::SharedBitmap* shared_bitmap = mailbox.shared_bitmap();
     uint8_t* pixels = shared_bitmap->pixels();
     DCHECK(pixels);
     resource = InsertResource(
@@ -978,7 +978,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
   if (!resource->pixels && resource->has_shared_bitmap_id &&
       shared_bitmap_manager_) {
-    std::unique_ptr<SharedBitmap> bitmap =
+    std::unique_ptr<viz::SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
             resource->size, resource->shared_bitmap_id);
     if (bitmap) {
@@ -2123,7 +2123,7 @@ bool ResourceProvider::OnMemoryDump(
         break;
       case RESOURCE_TYPE_BITMAP:
         DCHECK(resource.has_shared_bitmap_id);
-        guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
+        guid = viz::GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
         if (resource.shared_bitmap) {
           shared_memory_guid =
               resource.shared_bitmap->GetSharedMemoryHandle().GetGUID();

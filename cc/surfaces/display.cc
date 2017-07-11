@@ -33,7 +33,7 @@
 
 namespace cc {
 
-Display::Display(SharedBitmapManager* bitmap_manager,
+Display::Display(viz::SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
                  const FrameSinkId& frame_sink_id,

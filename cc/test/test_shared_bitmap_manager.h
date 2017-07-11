@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace base {
 class SharedMemory;
@@ -16,21 +16,21 @@ class SharedMemory;
 
 namespace cc {
 
-class TestSharedBitmapManager : public SharedBitmapManager {
+class TestSharedBitmapManager : public viz::SharedBitmapManager {
  public:
   TestSharedBitmapManager();
   ~TestSharedBitmapManager() override;
 
-  std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
+  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override;
 
-  std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
+  std::unique_ptr<viz::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
-      const SharedBitmapId& id) override;
+      const viz::SharedBitmapId& id) override;
 
  private:
   base::Lock lock_;
-  std::map<SharedBitmapId, base::SharedMemory*> bitmap_map_;
+  std::map<viz::SharedBitmapId, base::SharedMemory*> bitmap_map_;
 };
 
 }  // namespace cc

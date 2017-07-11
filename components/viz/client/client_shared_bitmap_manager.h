@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "cc/ipc/shared_bitmap_allocation_notifier.mojom.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
 namespace viz {
@@ -21,7 +21,7 @@ namespace viz {
 // A SharedBitmapManager implementation for use outside of the display
 // compositor's process. This implementation supports SharedBitmaps that
 // can be transported over process boundaries to the display compositor.
-class ClientSharedBitmapManager : public cc::SharedBitmapManager {
+class ClientSharedBitmapManager : public SharedBitmapManager {
  public:
   explicit ClientSharedBitmapManager(
       scoped_refptr<
@@ -29,19 +29,19 @@ class ClientSharedBitmapManager : public cc::SharedBitmapManager {
           shared_bitmap_allocation_notifier);
   ~ClientSharedBitmapManager() override;
 
-  // cc::SharedBitmapManager implementation.
-  std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  // SharedBitmapManager implementation.
+  std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override;
-  std::unique_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
+  std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size&,
-      const cc::SharedBitmapId&) override;
+      const SharedBitmapId&) override;
 
-  std::unique_ptr<cc::SharedBitmap> GetBitmapForSharedMemory(
+  std::unique_ptr<SharedBitmap> GetBitmapForSharedMemory(
       base::SharedMemory* mem);
 
  private:
   void NotifyAllocatedSharedBitmap(base::SharedMemory* memory,
-                                   const cc::SharedBitmapId& id);
+                                   const SharedBitmapId& id);
 
   scoped_refptr<
       cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr>

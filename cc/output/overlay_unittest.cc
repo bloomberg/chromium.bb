@@ -448,7 +448,7 @@ class OverlayTest : public testing::Test {
   scoped_refptr<TestContextProvider> provider_;
   std::unique_ptr<OutputSurfaceType> output_surface_;
   FakeOutputSurfaceClient client_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<OverlayProcessor> overlay_processor_;
   gfx::Rect damage_rect_;
@@ -479,7 +479,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   output_surface.BindToClient(&client);
   output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(provider.get(), shared_bitmap_manager.get());

@@ -59,8 +59,8 @@
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
-#include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -529,7 +529,7 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  virtual std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  virtual std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const WebSize& size) {
     return nullptr;
   }

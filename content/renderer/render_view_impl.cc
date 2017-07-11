@@ -2346,9 +2346,9 @@ bool RenderViewImpl::DidTapMultipleTargets(
     case TAP_MULTIPLE_TARGETS_STRATEGY_POPUP: {
       gfx::Size canvas_size =
           gfx::ScaleToCeiledSize(zoom_rect.size(), new_total_scale);
-      cc::SharedBitmapManager* manager =
+      viz::SharedBitmapManager* manager =
           RenderThreadImpl::current()->shared_bitmap_manager();
-      std::unique_ptr<cc::SharedBitmap> shared_bitmap =
+      std::unique_ptr<viz::SharedBitmap> shared_bitmap =
           manager->AllocateSharedBitmap(canvas_size);
       CHECK(!!shared_bitmap);
       {
@@ -2381,7 +2381,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
       Send(new ViewHostMsg_ShowDisambiguationPopup(
           GetRoutingID(), physical_window_zoom_rect, canvas_size,
           shared_bitmap->id()));
-      cc::SharedBitmapId id = shared_bitmap->id();
+      viz::SharedBitmapId id = shared_bitmap->id();
       disambiguation_bitmaps_[id] = shared_bitmap.release();
       handled = true;
       break;
@@ -2479,7 +2479,7 @@ void RenderViewImpl::DisableAutoResizeForTesting(const gfx::Size& new_size) {
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(
-    const cc::SharedBitmapId& id) {
+    const viz::SharedBitmapId& id) {
   BitmapMap::iterator it = disambiguation_bitmaps_.find(id);
   DCHECK(it != disambiguation_bitmaps_.end());
   delete it->second;

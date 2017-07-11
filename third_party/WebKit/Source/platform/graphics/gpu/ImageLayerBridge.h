@@ -10,7 +10,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Heap.h"
 
-namespace cc {
+namespace viz {
 class SharedBitmap;
 }
 
@@ -40,7 +40,7 @@ class PLATFORM_EXPORT ImageLayerBridge
                           const gpu::SyncToken&,
                           bool lost_resource);
 
-  void MailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
+  void MailboxReleasedSoftware(std::unique_ptr<viz::SharedBitmap>,
                                const IntSize&,
                                const gpu::SyncToken&,
                                bool lost_resource);
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   DEFINE_INLINE_TRACE() {}
 
  private:
-  std::unique_ptr<cc::SharedBitmap> CreateOrRecycleBitmap();
+  std::unique_ptr<viz::SharedBitmap> CreateOrRecycleBitmap();
 
   RefPtr<StaticBitmapImage> image_;
   std::unique_ptr<WebExternalTextureLayer> layer_;
@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   // Shared memory bitmaps that were released by the compositor and can be used
   // again by this ImageLayerBridge.
   struct RecycledBitmap {
-    std::unique_ptr<cc::SharedBitmap> bitmap;
+    std::unique_ptr<viz::SharedBitmap> bitmap;
     IntSize size;
   };
   Vector<RecycledBitmap> recycled_bitmaps_;

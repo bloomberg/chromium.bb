@@ -8,7 +8,7 @@
 #include <unordered_set>
 
 #include "cc/ipc/shared_bitmap_allocation_notifier.mojom.h"
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/service/viz_service_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -27,17 +27,17 @@ class VIZ_SERVICE_EXPORT SharedBitmapAllocationNotifierImpl
 
   // cc::mojom::SharedBitmapAllocationNotifier overrides:
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
-                               const cc::SharedBitmapId& id) override;
-  void DidDeleteSharedBitmap(const cc::SharedBitmapId& id) override;
+                               const SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 
   void ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
-                                  const cc::SharedBitmapId& id);
+                                  const SharedBitmapId& id);
 
  private:
   ServerSharedBitmapManager* const manager_;
   mojo::AssociatedBinding<cc::mojom::SharedBitmapAllocationNotifier> binding_;
-  std::unordered_set<cc::SharedBitmapId, cc::SharedBitmapIdHash> owned_bitmaps_;
+  std::unordered_set<SharedBitmapId, SharedBitmapIdHash> owned_bitmaps_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmapAllocationNotifierImpl);
 };

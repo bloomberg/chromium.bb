@@ -109,7 +109,7 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
     scoped_refptr<cc::ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    cc::SharedBitmapManager* shared_bitmap_manager,
+    viz::SharedBitmapManager* shared_bitmap_manager,
     int routing_id,
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,

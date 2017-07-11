@@ -26,8 +26,8 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
@@ -662,7 +662,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUnlockMouse();
   void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                  const gfx::Size& size,
-                                 const cc::SharedBitmapId& id);
+                                 const viz::SharedBitmapId& id);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);

@@ -22,10 +22,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace cc {
-class SharedBitmapManager;
-}
-
 namespace IPC {
 class MessageFilter;
 class SyncChannel;
@@ -34,6 +30,10 @@ class SyncMessageFilter;
 
 namespace v8 {
 class Extension;
+}
+
+namespace viz {
+class SharedBitmapManager;
 }
 
 namespace content {
@@ -77,7 +77,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) = 0;
 
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
+  virtual viz::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Registers the given V8 extension with WebKit.
   virtual void RegisterExtension(v8::Extension* extension) = 0;

@@ -24,7 +24,7 @@ static constexpr FrameSinkId kLayerTreeFrameSinkId(1, 1);
 TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-    SharedBitmapManager* shared_bitmap_manager,
+    viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,

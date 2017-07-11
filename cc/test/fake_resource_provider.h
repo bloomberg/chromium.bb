@@ -18,7 +18,7 @@ class FakeResourceProvider : public ResourceProvider {
  public:
   static std::unique_ptr<FakeResourceProvider> Create(
       ContextProvider* context_provider,
-      SharedBitmapManager* shared_bitmap_manager) {
+      viz::SharedBitmapManager* shared_bitmap_manager) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.buffer_to_texture_target_map =
@@ -30,7 +30,7 @@ class FakeResourceProvider : public ResourceProvider {
 
   static std::unique_ptr<FakeResourceProvider> Create(
       ContextProvider* context_provider,
-      SharedBitmapManager* shared_bitmap_manager,
+      viz::SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
@@ -43,7 +43,7 @@ class FakeResourceProvider : public ResourceProvider {
 
  private:
   FakeResourceProvider(ContextProvider* context_provider,
-                       SharedBitmapManager* shared_bitmap_manager,
+                       viz::SharedBitmapManager* shared_bitmap_manager,
                        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                        BlockingTaskRunner* blocking_main_thread_task_runner,
                        bool delegated_sync_points_required,

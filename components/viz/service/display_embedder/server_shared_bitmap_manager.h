@@ -8,11 +8,12 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -25,7 +26,7 @@ class BitmapData;
 // malloc/free, but can only be used in the same process as the display
 // compositor.
 class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
-    : public cc::SharedBitmapManager,
+    : public NON_EXPORTED_BASE(SharedBitmapManager),
       public base::trace_event::MemoryDumpProvider {
  public:
   ServerSharedBitmapManager();
@@ -33,12 +34,12 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
 
   static ServerSharedBitmapManager* current();
 
-  // cc::SharedBitmapManager implementation.
-  std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  // SharedBitmapManager implementation.
+  std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override;
-  std::unique_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
+  std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
-      const cc::SharedBitmapId&) override;
+      const SharedBitmapId&) override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -46,21 +47,21 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
 
   size_t AllocatedBitmapCount() const;
 
-  void FreeSharedMemoryFromMap(const cc::SharedBitmapId& id);
+  void FreeSharedMemoryFromMap(const SharedBitmapId& id);
 
  private:
   friend class SharedBitmapAllocationNotifierImpl;
 
   bool ChildAllocatedSharedBitmap(size_t buffer_size,
                                   const base::SharedMemoryHandle& handle,
-                                  const cc::SharedBitmapId& id);
-  void ChildDeletedSharedBitmap(const cc::SharedBitmapId& id);
+                                  const SharedBitmapId& id);
+  void ChildDeletedSharedBitmap(const SharedBitmapId& id);
 
   mutable base::Lock lock_;
 
-  std::unordered_map<cc::SharedBitmapId,
+  std::unordered_map<SharedBitmapId,
                      scoped_refptr<BitmapData>,
-                     cc::SharedBitmapIdHash>
+                     SharedBitmapIdHash>
       handle_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerSharedBitmapManager);

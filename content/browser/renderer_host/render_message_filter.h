@@ -19,7 +19,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/render_message_filter.mojom.h"

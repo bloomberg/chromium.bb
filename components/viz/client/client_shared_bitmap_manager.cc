@@ -21,15 +21,15 @@ namespace viz {
 
 namespace {
 
-class ClientSharedBitmap : public cc::SharedBitmap {
+class ClientSharedBitmap : public SharedBitmap {
  public:
   ClientSharedBitmap(
       scoped_refptr<
           cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr>
           shared_bitmap_allocation_notifier,
       base::SharedMemory* shared_memory,
-      const cc::SharedBitmapId& id)
-      : cc::SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
+      const SharedBitmapId& id)
+      : SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()), id),
         shared_bitmap_allocation_notifier_(
             std::move(shared_bitmap_allocation_notifier)) {}
 
@@ -38,7 +38,7 @@ class ClientSharedBitmap : public cc::SharedBitmap {
           cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr>
           shared_bitmap_allocation_notifier,
       std::unique_ptr<base::SharedMemory> shared_memory_holder,
-      const cc::SharedBitmapId& id)
+      const SharedBitmapId& id)
       : ClientSharedBitmap(std::move(shared_bitmap_allocation_notifier),
                            shared_memory_holder.get(),
                            id) {
@@ -49,7 +49,7 @@ class ClientSharedBitmap : public cc::SharedBitmap {
     (*shared_bitmap_allocation_notifier_)->DidDeleteSharedBitmap(id());
   }
 
-  // cc::SharedBitmap:
+  // SharedBitmap:
   base::SharedMemoryHandle GetSharedMemoryHandle() const override {
     if (!shared_memory_holder_)
       return base::SharedMemoryHandle();
@@ -118,14 +118,14 @@ ClientSharedBitmapManager::ClientSharedBitmapManager(
 
 ClientSharedBitmapManager::~ClientSharedBitmapManager() {}
 
-std::unique_ptr<cc::SharedBitmap>
-ClientSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
+std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::AllocateSharedBitmap(
+    const gfx::Size& size) {
   TRACE_EVENT2("renderer", "ClientSharedBitmapManager::AllocateSharedBitmap",
                "width", size.width(), "height", size.height());
   size_t memory_size;
-  if (!cc::SharedBitmap::SizeInBytes(size, &memory_size))
+  if (!SharedBitmap::SizeInBytes(size, &memory_size))
     return nullptr;
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
+  SharedBitmapId id = SharedBitmap::GenerateId();
   std::unique_ptr<base::SharedMemory> memory =
       AllocateSharedMemory(memory_size);
   if (!memory || !memory->Map(memory_size))
@@ -141,17 +141,17 @@ ClientSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
       shared_bitmap_allocation_notifier_, std::move(memory), id);
 }
 
-std::unique_ptr<cc::SharedBitmap>
-ClientSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
-                                                 const cc::SharedBitmapId&) {
+std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::GetSharedBitmapFromId(
+    const gfx::Size&,
+    const SharedBitmapId&) {
   NOTREACHED();
   return nullptr;
 }
 
-std::unique_ptr<cc::SharedBitmap>
+std::unique_ptr<SharedBitmap>
 ClientSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
-  cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
-  NotifyAllocatedSharedBitmap(mem, cc::SharedBitmap::GenerateId());
+  SharedBitmapId id = SharedBitmap::GenerateId();
+  NotifyAllocatedSharedBitmap(mem, SharedBitmap::GenerateId());
   return base::MakeUnique<ClientSharedBitmap>(
       shared_bitmap_allocation_notifier_, mem, id);
 }
@@ -160,7 +160,7 @@ ClientSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
 // allocated. Caller keeps ownership of |memory|.
 void ClientSharedBitmapManager::NotifyAllocatedSharedBitmap(
     base::SharedMemory* memory,
-    const cc::SharedBitmapId& id) {
+    const SharedBitmapId& id) {
   base::SharedMemoryHandle handle_to_send =
       base::SharedMemory::DuplicateHandle(memory->handle());
   if (!base::SharedMemory::IsHandleValid(handle_to_send)) {

@@ -15,7 +15,7 @@
 #include "cc/ipc/cc_param_traits.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/date_time_suggestion.h"
@@ -557,7 +557,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
 // An acknowledgement to ViewHostMsg_ShowDisambiguationPopup to notify the
 // renderer process to release the magnified image.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
-                    cc::SharedBitmapId /* id */)
+                    viz::SharedBitmapId /* id */)
 
 // If the ViewHostMsg_ShowDisambiguationPopup resulted in the user tapping
 // inside the popup, instruct the renderer to generate a synthetic tap at that
@@ -826,7 +826,7 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
                     gfx::Rect, /* Border of touched targets */
                     gfx::Size, /* Size of zoomed image */
-                    cc::SharedBitmapId /* id */)
+                    viz::SharedBitmapId /* id */)
 
 // Message sent from renderer to the browser when the element that is focused
 // has been touched. A bool is passed in this message which indicates if the

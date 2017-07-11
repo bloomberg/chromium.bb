@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/texture_layer.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -268,7 +268,7 @@ void TestPlugin::UpdateGeometry(
     gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
     texture_mailbox_ = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
   } else {
-    std::unique_ptr<cc::SharedBitmap> bitmap =
+    std::unique_ptr<viz::SharedBitmap> bitmap =
         delegate_->GetSharedBitmapManager()->AllocateSharedBitmap(
             gfx::Rect(rect_).size());
     if (!bitmap) {
@@ -292,7 +292,7 @@ bool TestPlugin::IsPlaceholder() {
 static void IgnoreReleaseCallback(const gpu::SyncToken& sync_token, bool lost) {
 }
 
-static void ReleaseSharedMemory(std::unique_ptr<cc::SharedBitmap> bitmap,
+static void ReleaseSharedMemory(std::unique_ptr<viz::SharedBitmap> bitmap,
                                 const gpu::SyncToken& sync_token,
                                 bool lost) {}
 
