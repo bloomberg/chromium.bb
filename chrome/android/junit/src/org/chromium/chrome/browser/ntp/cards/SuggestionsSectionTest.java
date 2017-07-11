@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.UpdateLayoutParamsCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -53,6 +52,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
+import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -79,13 +79,24 @@ public class SuggestionsSectionTest {
     private NodeParent mParent;
     @Mock
     private SuggestionsUiDelegate mUiDelegate;
+
+    private FakeSuggestionsSource mSuggestionsSource;
+
     private FakeOfflinePageBridge mBridge;
 
     @Before
     public void setUp() {
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
+
         mBridge = new FakeOfflinePageBridge();
+
+        mSuggestionsSource = spy(new FakeSuggestionsSource());
+        mSuggestionsSource.setStatusForCategory(TEST_CATEGORY_ID, CategoryStatus.AVAILABLE);
+        when(mUiDelegate.getSuggestionsSource()).thenReturn(mSuggestionsSource);
+        when(mUiDelegate.getNavigationDelegate())
+                .thenReturn(mock(SuggestionsNavigationDelegate.class));
+        when(mUiDelegate.getEventReporter()).thenReturn(mock(SuggestionsEventReporter.class));
 
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
@@ -322,8 +333,8 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testOfflineStatusIgnoredIfDetached() {
         final int suggestionCount = 2;
-        final List<SnippetArticle> suggestions = createDummySuggestions(suggestionCount,
-                TEST_CATEGORY_ID);
+        final List<SnippetArticle> suggestions =
+                mSuggestionsSource.createAndSetSuggestions(suggestionCount, TEST_CATEGORY_ID);
         assertNull(suggestions.get(0).getOfflinePageOfflineId());
         assertNull(suggestions.get(1).getOfflinePageOfflineId());
 
@@ -427,11 +438,12 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testUpdateSectionReplacesSuggestions() {
-        SuggestionsSection section =
-                createSectionWithSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID));
+        SuggestionsSection section = createSectionWithSuggestions(
+                mSuggestionsSource.createAndSetSuggestions(4, TEST_CATEGORY_ID));
         assertEquals(4, section.getSuggestionsCount());
 
-        section.updateSuggestions(createSourceFor(createDummySuggestions(3, TEST_CATEGORY_ID)));
+        mSuggestionsSource.createAndSetSuggestions(3, TEST_CATEGORY_ID);
+        section.updateSuggestions();
         verify(mParent).onItemRangeRemoved(section, 1, 4);
         verify(mParent).onItemRangeInserted(section, 1, 3);
         assertEquals(3, section.getSuggestionsCount());
@@ -450,11 +462,12 @@ public class SuggestionsSectionTest {
         params.put("ignore_updates_for_existing_suggestions", "true");
         CardsVariationParameters.setTestVariationParams(params);
 
-        SuggestionsSection section =
-                createSectionWithSuggestions(createDummySuggestions(4, TEST_CATEGORY_ID));
+        SuggestionsSection section = createSectionWithSuggestions(
+                mSuggestionsSource.createAndSetSuggestions(4, TEST_CATEGORY_ID));
         assertEquals(4, section.getSuggestionsCount());
 
-        section.updateSuggestions(createSourceFor(createDummySuggestions(3, TEST_CATEGORY_ID)));
+        mSuggestionsSource.createAndSetSuggestions(3, TEST_CATEGORY_ID);
+        section.updateSuggestions();
         verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
         verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
         assertEquals(4, section.getSuggestionsCount());
@@ -468,7 +481,8 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testUpdateSectionDoesNotReplaceFirstSuggestionWhenSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
+        List<SnippetArticle> snippets =
+                mSuggestionsSource.createAndSetSuggestions(4, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
@@ -479,9 +493,8 @@ public class SuggestionsSectionTest {
         bindViewHolders(section, 1, 2);
 
         List<SnippetArticle> newSnippets =
-                createDummySuggestions(3, TEST_CATEGORY_ID, "new");
-        // Copy the list when passing to the section - it may alter it but we later need it.
-        section.updateSuggestions(createSourceFor(new ArrayList<>(newSnippets)));
+                mSuggestionsSource.createAndSetSuggestions(3, TEST_CATEGORY_ID, "new");
+        section.updateSuggestions();
         verify(mParent).onItemRangeRemoved(section, 2, 3);
         verify(mParent).onItemRangeInserted(section, 2, 2);
         assertEquals(3, section.getSuggestionsCount());
@@ -502,7 +515,8 @@ public class SuggestionsSectionTest {
     @Test
     @Feature({"Ntp"})
     public void testUpdateSectionDoesNotReplaceFirstTwoSuggestionWhenSeen() {
-        List<SnippetArticle> snippets = createDummySuggestions(4, TEST_CATEGORY_ID, "old");
+        List<SnippetArticle> snippets =
+                mSuggestionsSource.createAndSetSuggestions(4, TEST_CATEGORY_ID, "old");
         // Copy the list when passing to the section - it may alter it but we later need it.
         SuggestionsSection section =
                 createSectionWithSuggestions(new ArrayList<>(snippets));
@@ -513,9 +527,8 @@ public class SuggestionsSectionTest {
         bindViewHolders(section, 1, 3);
 
         List<SnippetArticle> newSnippets =
-                createDummySuggestions(3, TEST_CATEGORY_ID, "new");
-        // Copy the list when passing to the section - it may alter it but we later need it.
-        section.updateSuggestions(createSourceFor(new ArrayList<>(newSnippets)));
+                mSuggestionsSource.createAndSetSuggestions(3, TEST_CATEGORY_ID, "new");
+        section.updateSuggestions();
         verify(mParent).onItemRangeRemoved(section, 3, 2);
         verify(mParent).onItemRangeInserted(section, 3, 1);
         assertEquals(3, section.getSuggestionsCount());
@@ -545,7 +558,8 @@ public class SuggestionsSectionTest {
         // Indices in section are off-by-one (index 0 is the header).
         bindViewHolders(section, 1, 3);
 
-        section.updateSuggestions(createSourceFor(createDummySuggestions(1, TEST_CATEGORY_ID)));
+        mSuggestionsSource.createAndSetSuggestions(1, TEST_CATEGORY_ID);
+        section.updateSuggestions();
         // Even though the new list has just one suggestion, we need to keep the two seen ones
         // around.
         verify(mParent).onItemRangeRemoved(section, 3, 2);
@@ -583,7 +597,9 @@ public class SuggestionsSectionTest {
 
         assertEquals(1, section.getSuggestionsCount());
 
-        section.updateSuggestions(createSourceFor(createDummySuggestions(4, TEST_CATEGORY_ID)));
+        mSuggestionsSource.setSuggestionsForCategory(
+                TEST_CATEGORY_ID, createDummySuggestions(4, TEST_CATEGORY_ID));
+        section.updateSuggestions();
         // We do not touch the current list if all has been seen.
         verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
         verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
@@ -606,7 +622,9 @@ public class SuggestionsSectionTest {
         // Bind all the suggestions - indicate that they are being viewed.
         bindViewHolders(section);
 
-        section.updateSuggestions(createSourceFor(createDummySuggestions(3, TEST_CATEGORY_ID)));
+        mSuggestionsSource.setSuggestionsForCategory(
+                TEST_CATEGORY_ID, createDummySuggestions(3, TEST_CATEGORY_ID));
+        section.updateSuggestions();
         verify(mParent, never()).onItemRangeRemoved(any(TreeNode.class), anyInt(), anyInt());
         verify(mParent, never()).onItemRangeInserted(any(TreeNode.class), anyInt(), anyInt());
 
@@ -635,9 +653,9 @@ public class SuggestionsSectionTest {
         assertEquals(snippets, getSuggestions(section));
 
         // Try to replace them with another list. Should have no effect.
-        List<SnippetArticle> newSnippets =
-                createDummySuggestions(5, TEST_CATEGORY_ID, "new");
-        section.updateSuggestions(createSourceFor(newSnippets));
+        mSuggestionsSource.setSuggestionsForCategory(
+                TEST_CATEGORY_ID, createDummySuggestions(5, TEST_CATEGORY_ID, "new"));
+        section.updateSuggestions();
 
         // All previous snippets should be in place.
         assertEquals(snippets, getSuggestions(section));
@@ -775,34 +793,19 @@ public class SuggestionsSectionTest {
         return new OfflinePageItem(url, offlineId, "", "", "", 0, 0, 0, 0);
     }
 
-    private SuggestionsSource createSourceFor(List<SnippetArticle> suggestions) {
-        SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
-
-        // Here we don't bother checking the category id bacause section should not manipulate
-        // multiple category ids anyway.
-        when(suggestionsSource.getSuggestionsForCategory(anyInt())).thenReturn(suggestions);
-
-        return suggestionsSource;
-    }
-
-    private static void verifyAction(
+    private void verifyAction(
             SuggestionsSection section, @ContentSuggestionsAdditionalAction int action) {
-        SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
-        SuggestionsUiDelegate manager = mock(SuggestionsUiDelegate.class);
-        SuggestionsNavigationDelegate navDelegate = mock(SuggestionsNavigationDelegate.class);
-        when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
-        when(manager.getNavigationDelegate()).thenReturn(navDelegate);
-        when(manager.getEventReporter()).thenReturn(mock(SuggestionsEventReporter.class));
-
         if (action != ContentSuggestionsAdditionalAction.NONE) {
-            section.getActionItemForTesting().performAction(manager);
+            section.getActionItemForTesting().performAction(mUiDelegate);
         }
 
         verify(section.getCategoryInfo(),
                 (action == ContentSuggestionsAdditionalAction.VIEW_ALL ? times(1) : never()))
-                .performViewAllAction(navDelegate);
-        verify(suggestionsSource,
+                .performViewAllAction(mUiDelegate.getNavigationDelegate());
+
+        // noinspection unchecked -- See https://crbug.com/740162 for rationale.
+        verify(mUiDelegate.getSuggestionsSource(),
                 (action == ContentSuggestionsAdditionalAction.FETCH ? times(1) : never()))
-                .fetchSuggestions(anyInt(), any(String[].class));
+                .fetchSuggestions(anyInt(), any(String[].class), any(Callback.class));
     }
 }

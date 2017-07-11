@@ -180,8 +180,9 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
-    public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds) {
-        nativeFetch(mNativeSnippetsBridge, category, displayedSuggestionIds);
+    public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds,
+            Callback<List<SnippetArticle>> callback) {
+        nativeFetch(mNativeSnippetsBridge, category, displayedSuggestionIds, callback);
     }
 
     @CalledByNative
@@ -232,11 +233,6 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
-        if (mObserver != null) mObserver.onMoreSuggestions(category, suggestions);
-    }
-
-    @CalledByNative
     private void onCategoryStatusChanged(@CategoryInt int category, @CategoryStatus int newStatus) {
         if (mObserver != null) mObserver.onCategoryStatusChanged(category, newStatus);
     }
@@ -273,8 +269,8 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeFetchSuggestionFavicon(long nativeNTPSnippetsBridge, int category,
             String idWithinCategory, int minimumSizePx, int desiredSizePx,
             Callback<Bitmap> callback);
-    private native void nativeFetch(
-            long nativeNTPSnippetsBridge, int category, String[] knownSuggestions);
+    private native void nativeFetch(long nativeNTPSnippetsBridge, int category,
+            String[] knownSuggestions, Callback<List<SnippetArticle>> callback);
     private native void nativeFetchContextualSuggestions(
             long nativeNTPSnippetsBridge, String url, Callback<List<SnippetArticle>> callback);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,

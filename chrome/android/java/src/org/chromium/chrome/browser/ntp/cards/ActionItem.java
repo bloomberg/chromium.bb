@@ -80,9 +80,7 @@ public class ActionItem extends OptionalLeaf {
                     // TODO(jkrcal): Implement in the backend instead. See https://crbug.com/728570
                     uiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
                 } else {
-                    uiDelegate.getSuggestionsSource().fetchSuggestions(mCategoryInfo.getCategory(),
-                            mParentSection.getDisplayedSuggestionIds());
-                    mParentSection.onFetchStarted();
+                    mParentSection.fetchSuggestions();
                 }
                 return;
             case ContentSuggestionsAdditionalAction.NONE:

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.test.util.browser.suggestions;
 
+import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
+
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
@@ -64,6 +66,31 @@ public class FakeSuggestionsSource implements SuggestionsSource {
         // Copy the suggestions list so that it can't be modified anymore.
         mSuggestions.put(category, new ArrayList<>(suggestions));
         if (mObserver != null) mObserver.onNewSuggestions(category);
+    }
+
+    /**
+     * Creates and sets the suggestions to be returned for a given category.
+     * @return The suggestions created.
+     * @see ContentSuggestionsTestUtils#createDummySuggestions(int, int)
+     * @see #setSuggestionsForCategory(int, List)
+     */
+    public List<SnippetArticle> createAndSetSuggestions(int count, @CategoryInt int category) {
+        List<SnippetArticle> suggestions = createDummySuggestions(count, category);
+        setSuggestionsForCategory(category, suggestions);
+        return suggestions;
+    }
+
+    /**
+     * Creates and sets the suggestions to be returned for a given category.
+     * @return The suggestions created.
+     * @see ContentSuggestionsTestUtils#createDummySuggestions(int, int, String)
+     * @see #setSuggestionsForCategory(int, List)
+     */
+    public List<SnippetArticle> createAndSetSuggestions(
+            int count, @CategoryInt int category, String suffix) {
+        List<SnippetArticle> suggestions = createDummySuggestions(count, category, suffix);
+        setSuggestionsForCategory(category, suggestions);
+        return suggestions;
     }
 
     /**
@@ -193,9 +220,8 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
-    public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds) {
-        throw new UnsupportedOperationException();
-    }
+    public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds,
+            Callback<List<SnippetArticle>> callback) {}
 
     @Override
     public void fetchContextualSuggestions(String url, Callback<List<SnippetArticle>> callback) {

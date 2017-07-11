@@ -40,6 +40,7 @@ public class SuggestionsSection extends InnerNode {
     private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflineModelObserver mOfflineModelObserver;
+    private final SuggestionsSource mSuggestionsSource;
 
     // Children
     private final SectionHeader mHeader;
@@ -87,9 +88,10 @@ public class SuggestionsSection extends InnerNode {
             SuggestionsCategoryInfo info) {
         mDelegate = delegate;
         mCategoryInfo = info;
+        mSuggestionsSource = uiDelegate.getSuggestionsSource();
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(uiDelegate, ranker, info);
+        mSuggestionsList = new SuggestionsList(mSuggestionsSource, ranker, info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mMoreButton = new ActionItem(this, ranker);
         mProgressIndicator = new ProgressItem();
@@ -104,14 +106,13 @@ public class SuggestionsSection extends InnerNode {
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
-        // TODO(crbug.com/677672): Replace by SuggestionSource when it handles destruction.
-        private final SuggestionsUiDelegate mUiDelegate;
+        private final SuggestionsSource mSuggestionsSource;
         private final SuggestionsRanker mSuggestionsRanker;
         private final SuggestionsCategoryInfo mCategoryInfo;
 
-        public SuggestionsList(SuggestionsUiDelegate uiDelegate, SuggestionsRanker ranker,
+        public SuggestionsList(SuggestionsSource suggestionsSource, SuggestionsRanker ranker,
                 SuggestionsCategoryInfo categoryInfo) {
-            mUiDelegate = uiDelegate;
+            mSuggestionsSource = suggestionsSource;
             mSuggestionsRanker = ranker;
             mCategoryInfo = categoryInfo;
         }
@@ -194,8 +195,7 @@ public class SuggestionsSection extends InnerNode {
         @Override
         public void dismissItem(int position, Callback<String> itemRemovedCallback) {
             checkIndex(position);
-            SuggestionsSource suggestionsSource = mUiDelegate.getSuggestionsSource();
-            if (suggestionsSource == null) {
+            if (!isAttached()) {
                 // It is possible for this method to be called after the NewTabPage has had
                 // destroy() called. This can happen when
                 // NewTabPageRecyclerView.dismissWithAnimation() is called and the animation ends
@@ -205,7 +205,7 @@ public class SuggestionsSection extends InnerNode {
             }
 
             SnippetArticle suggestion = remove(position);
-            suggestionsSource.dismissSuggestion(suggestion);
+            mSuggestionsSource.dismissSuggestion(suggestion);
             itemRemovedCallback.onResult(suggestion.mTitle);
         }
 
@@ -355,10 +355,8 @@ public class SuggestionsSection extends InnerNode {
      * effect if changing the list of suggestions is not allowed (e.g. because the user has already
      * seen the suggestions). In that case, the section will be flagged as stale.
      * (see {@link #isDataStale()})
-     *
-     * @param suggestionsSource The source used to fetch the new suggestions.
      */
-    public void updateSuggestions(SuggestionsSource suggestionsSource) {
+    public void updateSuggestions() {
         if (mDelegate.isResetAllowed()) clearData();
         if (!canUpdateSuggestions()) {
             mIsDataStale = true;
@@ -368,7 +366,7 @@ public class SuggestionsSection extends InnerNode {
         }
 
         List<SnippetArticle> suggestions =
-                suggestionsSource.getSuggestionsForCategory(getCategory());
+                mSuggestionsSource.getSuggestionsForCategory(getCategory());
         Log.d(TAG, "Received %d new suggestions for category %d, had %d previously.",
                 suggestions.size(), getCategory(), mSuggestionsList.getItemCount());
 
@@ -455,8 +453,19 @@ public class SuggestionsSection extends InnerNode {
         return true;
     }
 
-    /** Lets the {@link SuggestionsSection} know when a suggestion fetch has been started. */
-    public void onFetchStarted() {
+    /** Fetches additional suggestions only for this section. */
+    public void fetchSuggestions() {
+        mSuggestionsSource.fetchSuggestions(mCategoryInfo.getCategory(),
+                getDisplayedSuggestionIds(), new Callback<List<SnippetArticle>>() {
+                    @Override
+                    public void onResult(List<SnippetArticle> additionalSuggestions) {
+                        if (!isAttached()) return; // The section has been dismissed.
+
+                        mProgressIndicator.setVisible(false);
+                        appendSuggestions(additionalSuggestions, /* userRequested = */ true);
+                    }
+                });
+
         mProgressIndicator.setVisible(true);
     }
 

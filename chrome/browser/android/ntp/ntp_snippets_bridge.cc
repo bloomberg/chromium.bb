@@ -323,7 +323,9 @@ void NTPSnippetsBridge::Fetch(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint j_category_id,
-    const JavaParamRef<jobjectArray>& j_displayed_suggestions) {
+    const JavaParamRef<jobjectArray>& j_displayed_suggestions,
+    const JavaParamRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
   std::vector<std::string> known_suggestion_ids;
   AppendJavaStringArrayToStringVector(env, j_displayed_suggestions,
                                       &known_suggestion_ids);
@@ -334,7 +336,7 @@ void NTPSnippetsBridge::Fetch(
       std::set<std::string>(known_suggestion_ids.begin(),
                             known_suggestion_ids.end()),
       base::Bind(&NTPSnippetsBridge::OnSuggestionsFetched,
-                 weak_ptr_factory_.GetWeakPtr(), category));
+                 weak_ptr_factory_.GetWeakPtr(), callback, category));
 }
 
 void NTPSnippetsBridge::FetchContextualSuggestions(
@@ -456,14 +458,14 @@ void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
 }
 
 void NTPSnippetsBridge::OnSuggestionsFetched(
+    const ScopedJavaGlobalRef<jobject>& callback,
     Category category,
     ntp_snippets::Status status,
     std::vector<ContentSuggestion> suggestions) {
   // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
   JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onMoreSuggestions(
-      env, bridge_, category.id(),
-      ToJavaSuggestionList(env, category, suggestions));
+  RunCallbackAndroid(callback,
+                     ToJavaSuggestionList(env, category, suggestions));
 }
 
 // static
