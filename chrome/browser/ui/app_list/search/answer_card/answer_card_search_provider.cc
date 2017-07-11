@@ -85,7 +85,9 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
 
   // Lifetime of |prefixed_query| should be longer than the one of
   // |replacements|.
-  base::string16 prefixed_query(base::UTF8ToUTF16("q=") + query);
+  base::string16 prefixed_query(
+      base::UTF8ToUTF16("q=") + query +
+      base::UTF8ToUTF16(features::AnswerServerQuerySuffix()));
   GURL::ReplacementsW replacements;
   replacements.SetQueryStr(prefixed_query);
   current_request_url_ = answer_server_url_.ReplaceComponents(replacements);

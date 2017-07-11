@@ -64,5 +64,10 @@ std::string AnswerServerUrl() {
   return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
 }
 
+std::string AnswerServerQuerySuffix() {
+  return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard,
+                                                "QuerySuffix");
+}
+
 }  // namespace features
 }  // namespace app_list
