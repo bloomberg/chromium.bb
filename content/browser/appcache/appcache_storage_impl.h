@@ -38,7 +38,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   void Initialize(
       const base::FilePath& cache_directory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread);
   void Disable();
   bool is_disabled() const { return is_disabled_; }
@@ -156,7 +156,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // This class operates primarily on the IO thread, but schedules
   // its DatabaseTasks on the db thread. Separately, the disk_cache uses
   // the cache thread.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
 
   // Structures to keep track of DatabaseTasks that are in-flight.

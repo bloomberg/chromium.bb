@@ -18,10 +18,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
@@ -179,13 +179,15 @@ class AppCacheRequestHandlerTest : public testing::Test {
   };
 
   static void SetUpTestCase() {
+    scoped_task_environment_.reset(new base::test::ScopedTaskEnvironment);
     io_thread_.reset(new base::Thread("AppCacheRequestHandlerTest Thread"));
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
   }
 
   static void TearDownTestCase() {
-    io_thread_.reset(NULL);
+    io_thread_.reset();
+    scoped_task_environment_.reset();
   }
 
   // Test harness --------------------------------------------------
@@ -1085,10 +1087,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
   std::unique_ptr<AppCacheURLRequestJob> job_;
 
   static std::unique_ptr<base::Thread> io_thread_;
+  static std::unique_ptr<base::test::ScopedTaskEnvironment>
+      scoped_task_environment_;
 };
 
 // static
 std::unique_ptr<base::Thread> AppCacheRequestHandlerTest::io_thread_;
+std::unique_ptr<base::test::ScopedTaskEnvironment>
+    AppCacheRequestHandlerTest::scoped_task_environment_;
 
 TEST_F(AppCacheRequestHandlerTest, MainResource_Miss) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Miss);
