@@ -51,13 +51,6 @@ namespace {
 
 using DelegateObserver = content::PresentationServiceDelegate::Observer;
 
-// Returns the unique identifier for the supplied RenderFrameHost.
-RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
-  int render_process_id = render_frame_host->GetProcess()->GetID();
-  int render_frame_id = render_frame_host->GetRoutingID();
-  return RenderFrameHostId(render_process_id, render_frame_id);
-}
-
 // Gets the last committed URL for the render frame specified by
 // |render_frame_host_id|.
 url::Origin GetLastCommittedURLForFrame(
@@ -383,9 +376,6 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrls(
     const std::vector<GURL>& default_presentation_urls,
     content::DefaultPresentationConnectionCallback callback) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  if (!IsMainFrame(render_frame_host_id))
-    return;
-
   if (default_presentation_urls.empty()) {
     ClearDefaultPresentationRequest();
     return;
@@ -740,13 +730,6 @@ void PresentationServiceDelegateImpl::ClearDefaultPresentationRequest() {
   default_presentation_request_.reset();
   for (auto& observer : default_presentation_request_observers_)
     observer.OnDefaultPresentationRemoved();
-}
-
-// TODO(imcheng): Move this check to PresentationServiceImpl.
-bool PresentationServiceDelegateImpl::IsMainFrame(
-    const RenderFrameHostId& render_frame_host_id) const {
-  RenderFrameHost* main_frame = web_contents_->GetMainFrame();
-  return main_frame && GetRenderFrameHostId(main_frame) == render_frame_host_id;
 }
 
 MediaRoute::Id PresentationServiceDelegateImpl::GetRouteId(
