@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
+#include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -93,7 +94,7 @@ std::string EncodeSkBitmap(const SkBitmap& image,
 
 }  // namespace
 
-PageHandler::PageHandler()
+PageHandler::PageHandler(EmulationHandler* emulation_handler)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
       enabled_(false),
       screencast_enabled_(false),
@@ -109,7 +110,10 @@ PageHandler::PageHandler()
       navigation_throttle_enabled_(false),
       next_navigation_id_(0),
       host_(nullptr),
-      weak_factory_(this) {}
+      emulation_handler_(emulation_handler),
+      weak_factory_(this) {
+  DCHECK(emulation_handler_);
+}
 
 PageHandler::~PageHandler() {
 }
@@ -358,13 +362,37 @@ void PageHandler::CaptureScreenshot(
     return;
   }
 
+  RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
+  bool emulation_enabled = emulation_handler_->device_emulation_enabled();
+  gfx::Size original_view_size =
+      emulation_enabled ? widget_host->GetView()->GetViewBounds().size()
+                        : gfx::Size();
+  blink::WebDeviceEmulationParams original_params =
+      emulation_handler_->GetDeviceEmulationParams();
+
+  if (emulation_enabled && from_surface.fromMaybe(true)) {
+    blink::WebDeviceEmulationParams modified_params = original_params;
+    gfx::Size emulated_view_size = modified_params.view_size;
+    if (!modified_params.view_size.width)
+      emulated_view_size = original_view_size;
+
+    double dpfactor = modified_params.device_scale_factor /
+                      widget_host->GetView()->current_device_scale_factor();
+    modified_params.scale = dpfactor;
+    modified_params.view_size.width = emulated_view_size.width();
+    modified_params.view_size.height = emulated_view_size.height();
+    emulation_handler_->SetDeviceEmulationParams(modified_params);
+    widget_host->GetView()->SetSize(
+        gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));
+  }
+
   std::string screenshot_format = format.fromMaybe(kPng);
   int screenshot_quality = quality.fromMaybe(kDefaultScreenshotQuality);
 
-  host_->GetRenderWidgetHost()->GetSnapshotFromBrowser(
+  widget_host->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback)), screenshot_format,
-                 screenshot_quality),
+                 screenshot_quality, original_view_size, original_params),
       from_surface.fromMaybe(true));
 }
 
@@ -643,7 +671,15 @@ void PageHandler::ScreenshotCaptured(
     std::unique_ptr<CaptureScreenshotCallback> callback,
     const std::string& format,
     int quality,
+    const gfx::Size& original_view_size,
+    const blink::WebDeviceEmulationParams& original_emulation_params,
     const gfx::Image& image) {
+  if (original_view_size.width()) {
+    RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
+    widget_host->GetView()->SetSize(original_view_size);
+    emulation_handler_->SetDeviceEmulationParams(original_emulation_params);
+  }
+
   if (image.IsEmpty()) {
     callback->sendFailure(Response::Error("Unable to capture screenshot"));
     return;

@@ -37,8 +37,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   ~InspectorEmulationAgent() override;
 
   // protocol::Dispatcher::EmulationCommandHandler implementation.
-  protocol::Response forceViewport(double x, double y, double scale) override;
-  protocol::Response resetViewport() override;
   protocol::Response resetPageScaleFactor() override;
   protocol::Response setPageScaleFactor(double) override;
   protocol::Response setScriptExecutionDisabled(bool value) override;
