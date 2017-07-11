@@ -51,6 +51,10 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // Returns whether the items contain any Bidi controls.
   bool HasBidiControls() const { return has_bidi_controls_; }
 
+  // Returns if the inline node has no content. For example:
+  // <span></span> or <span><float></float></span>.
+  bool IsEmptyInline() const { return is_empty_inline_; }
+
   // Append a string.
   // When appending, spaces are collapsed according to CSS Text, The white space
   // processing rules
@@ -110,6 +114,7 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
+  bool is_empty_inline_ = true;
 
   void AppendWithWhiteSpaceCollapsing(const String&,
                                       unsigned start,

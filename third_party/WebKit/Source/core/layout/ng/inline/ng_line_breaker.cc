@@ -220,9 +220,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  should_create_line_box_ = true;
 
-  if (!should_create_line_box_)
-    SetShouldCreateLineBox();
   LayoutUnit available_width = AvailableWidth();
 
   // If the start offset is at the item boundary, try to add the entire item.
@@ -330,9 +329,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Length(), 1u);
-
-  if (!should_create_line_box_)
-    SetShouldCreateLineBox();
+  should_create_line_box_ = true;
 
   UChar character = node_.Text()[item.StartOffset()];
   if (character == kNewlineCharacter) {
@@ -354,9 +351,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
-
-  if (!should_create_line_box_)
-    SetShouldCreateLineBox();
+  should_create_line_box_ = true;
 
   NGBlockNode node = NGBlockNode(ToLayoutBox(item.GetLayoutObject()));
   const ComputedStyle& style = node.Style();
@@ -483,8 +478,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
       // Force to create a box, because such inline boxes affect line heights.
       item_result->needs_box_when_empty =
           item_result->inline_size || item_result->margins.inline_start;
-      if (item_result->needs_box_when_empty && !should_create_line_box_)
-        SetShouldCreateLineBox();
+      should_create_line_box_ |= item_result->needs_box_when_empty;
     }
   }
   SetCurrentStyle(style);
@@ -508,8 +502,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
 
     item_result->needs_box_when_empty =
         item_result->inline_size || item_result->margins.inline_end;
-    if (item_result->needs_box_when_empty && !should_create_line_box_)
-      SetShouldCreateLineBox();
+    should_create_line_box_ |= item_result->needs_box_when_empty;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());
   SetCurrentStyle(item.GetLayoutObject()->Parent()->StyleRef());
@@ -598,28 +591,6 @@ void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
   MoveToNextOf(item_results->back());
   DCHECK_LT(item_index_, node_.Items().size());
   line_info->SetIsLastLine(false);
-}
-
-void NGLineBreaker::SetShouldCreateLineBox() {
-  DCHECK(!should_create_line_box_);
-  should_create_line_box_ = true;
-
-  // We resolve the BFC-offset of the container if this line has a line box.
-  // A line box prevents collapsing margins between boxes before and after,
-  // but not all lines create line boxes.
-  //
-  // If this line just has a float we place it in the unpositioned float list
-  // which will be positioned later.
-  if (!container_builder_->BfcOffset()) {
-    LayoutUnit container_bfc_block_offset =
-        constraint_space_->BfcOffset().block_offset +
-        constraint_space_->MarginStrut().Sum();
-    MaybeUpdateFragmentBfcOffset(*constraint_space_, container_bfc_block_offset,
-                                 container_builder_);
-    PositionPendingFloats(container_bfc_block_offset, container_builder_,
-                          constraint_space_);
-    UpdateAvailableWidth();
-  }
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {

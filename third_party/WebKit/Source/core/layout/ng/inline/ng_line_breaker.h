@@ -82,8 +82,6 @@ class CORE_EXPORT NGLineBreaker {
   void HandleOverflow(NGLineInfo*);
   void Rewind(NGLineInfo*, unsigned new_end);
 
-  void SetShouldCreateLineBox();
-
   void SetCurrentStyle(const ComputedStyle&);
   bool IsFirstBreakOpportunity(unsigned, const NGInlineItemResults&) const;
 

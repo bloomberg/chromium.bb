@@ -37,6 +37,11 @@ struct CORE_EXPORT NGInlineNodeData {
 
   unsigned is_bidi_enabled_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
+
+  // We use this flag to determine if the inline node is empty, and will
+  // produce a single zero block-size line box. If the node has text, atomic
+  // inlines, open/close tags with margins/border/padding this will be false.
+  unsigned is_empty_inline_ : 1;
 };
 
 }  // namespace blink

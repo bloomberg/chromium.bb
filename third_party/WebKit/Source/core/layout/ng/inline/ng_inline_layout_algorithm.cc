@@ -412,6 +412,17 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // border and padding of the container block.
   content_size_ = LayoutUnit();
 
+  // Check if we can resolve the BFC offset.
+  if (!Node().IsEmptyInline()) {
+    DCHECK(!container_builder_.BfcOffset());
+    LayoutUnit bfc_block_offset = constraint_space_->BfcOffset().block_offset +
+                                  constraint_space_->MarginStrut().Sum();
+    MaybeUpdateFragmentBfcOffset(*constraint_space_, bfc_block_offset,
+                                 &container_builder_);
+    PositionPendingFloats(bfc_block_offset, &container_builder_,
+                          constraint_space_);
+  }
+
   NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
                              BreakToken());
   NGLineInfo line_info;
