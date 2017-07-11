@@ -104,9 +104,9 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     private boolean mOldChromeHomeFlagValue;
 
     protected void beforeStartingActivity() {
-        // TODO(dgn,mdjones): Chrome restarts when the ChromeHome feature flag value changes. That
-        // crashes the test so we need to manually set the preference to match the flag before
-        // staring Chrome.
+        // Chrome relies on a shared preference to determine if the ChromeHome feature is enabled
+        // during start up, so we need to manually set the preference to enable ChromeHome before
+        // starting Chrome.
         ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
         mOldChromeHomeFlagValue = prefManager.isChromeHomeEnabled();
         prefManager.setChromeHomeEnabled(true);
