@@ -298,7 +298,7 @@ bool PresentationServiceImpl::RunAndEraseReconnectPresentationMojoCallback(
 void PresentationServiceImpl::SetDefaultPresentationUrls(
     const std::vector<GURL>& presentation_urls) {
   DVLOG(2) << "SetDefaultPresentationUrls";
-  if (!controller_delegate_)
+  if (!controller_delegate_ || !is_main_frame_)
     return;
 
   if (default_presentation_urls_ == presentation_urls)

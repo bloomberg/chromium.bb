@@ -334,8 +334,6 @@ TEST_F(PresentationServiceDelegateImplTest, AddListenerForInvalidUrl) {
   EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(0);
 }
 
-// TODO(imcheng): Add a test to set default presentation URL in a different
-// RenderFrameHost and verify that it is ignored.
 TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
   EXPECT_FALSE(delegate_impl_->HasDefaultPresentationRequest());
 

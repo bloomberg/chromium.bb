@@ -228,11 +228,6 @@ class PresentationServiceDelegateImpl
   // |default_presentation_started_callback_|.
   void ClearDefaultPresentationRequest();
 
-  // Returns |true| if the given frame is the main frame of the associated
-  // WebContents.
-  // NOTE: This method will be removed in an upcoming patch.
-  bool IsMainFrame(const RenderFrameHostId& render_frame_host_id) const;
-
   // Returns the ID of the route corresponding to |presentation_id| in the given
   // frame, or empty if no such route exist.
   MediaRoute::Id GetRouteId(const RenderFrameHostId& render_frame_host_id,

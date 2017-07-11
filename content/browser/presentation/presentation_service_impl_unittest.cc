@@ -459,6 +459,23 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(PresentationServiceImplTest,
+       SetDefaultPresentationUrlsNoopsOnNonMainFrame) {
+  RenderFrameHost* rfh = main_rfh();
+  RenderFrameHostTester* rfh_tester = RenderFrameHostTester::For(rfh);
+  rfh = rfh_tester->AppendChild("subframe");
+
+  EXPECT_CALL(mock_delegate_, RemoveObserver(_, _)).Times(1);
+  EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
+  service_impl_.reset(
+      new PresentationServiceImpl(rfh, contents(), &mock_delegate_, nullptr));
+
+  EXPECT_CALL(mock_delegate_,
+              SetDefaultPresentationUrls(_, _, presentation_urls_, _))
+      .Times(0);
+  service_impl_->SetDefaultPresentationUrls(presentation_urls_);
+}
+
 TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
   PresentationInfo connection(presentation_url1_, kPresentationId);
   PresentationConnectionStateChangedCallback state_changed_cb;

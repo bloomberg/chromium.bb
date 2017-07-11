@@ -94,6 +94,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       OtherRenderFrameDeleted);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, DelegateFails);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           SetDefaultPresentationUrlsNoopsOnNonMainFrame);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionStateChange);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionClose);
