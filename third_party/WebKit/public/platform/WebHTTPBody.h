@@ -44,7 +44,6 @@
 namespace blink {
 
 class EncodedFormData;
-class WebHTTPBodyPrivate;
 
 class WebHTTPBody {
  public:
@@ -61,8 +60,8 @@ class WebHTTPBody {
 
   ~WebHTTPBody() { Reset(); }
 
-  WebHTTPBody() : private_(0) {}
-  WebHTTPBody(const WebHTTPBody& b) : private_(0) { Assign(b); }
+  WebHTTPBody() {}
+  WebHTTPBody(const WebHTTPBody& b) { Assign(b); }
   WebHTTPBody& operator=(const WebHTTPBody& b) {
     Assign(b);
     return *this;
@@ -112,10 +111,9 @@ class WebHTTPBody {
 #endif
 
  private:
-  BLINK_PLATFORM_EXPORT void Assign(WebHTTPBodyPrivate*);
   BLINK_PLATFORM_EXPORT void EnsureMutable();
 
-  WebHTTPBodyPrivate* private_;
+  WebPrivatePtr<EncodedFormData> private_;
 };
 
 }  // namespace blink

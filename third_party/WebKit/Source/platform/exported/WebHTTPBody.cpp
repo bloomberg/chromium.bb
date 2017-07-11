@@ -35,21 +35,16 @@
 
 namespace blink {
 
-class WebHTTPBodyPrivate : public EncodedFormData {};
-
 void WebHTTPBody::Initialize() {
-  Assign(static_cast<WebHTTPBodyPrivate*>(EncodedFormData::Create().LeakRef()));
+  private_ = EncodedFormData::Create();
 }
 
 void WebHTTPBody::Reset() {
-  Assign(0);
+  private_ = nullptr;
 }
 
 void WebHTTPBody::Assign(const WebHTTPBody& other) {
-  WebHTTPBodyPrivate* p = const_cast<WebHTTPBodyPrivate*>(other.private_);
-  if (p)
-    p->Ref();
-  Assign(p);
+  private_ = other.private_;
 }
 
 size_t WebHTTPBody::ElementCount() const {
@@ -158,28 +153,21 @@ void WebHTTPBody::SetContainsPasswordData(bool contains_password_data) {
 }
 
 WebHTTPBody::WebHTTPBody(RefPtr<EncodedFormData> data)
-    : private_(static_cast<WebHTTPBodyPrivate*>(data.LeakRef())) {}
+    : private_(std::move(data)) {}
 
 WebHTTPBody& WebHTTPBody::operator=(RefPtr<EncodedFormData> data) {
-  DCHECK(static_cast<WebHTTPBodyPrivate*>(data.LeakRef()));
+  private_ = std::move(data);
   return *this;
 }
 
 WebHTTPBody::operator RefPtr<EncodedFormData>() const {
-  return private_;
-}
-
-void WebHTTPBody::Assign(WebHTTPBodyPrivate* p) {
-  // p is already ref'd for us by the caller
-  if (private_)
-    private_->Deref();
-  private_ = p;
+  return private_.Get();
 }
 
 void WebHTTPBody::EnsureMutable() {
   DCHECK(!IsNull());
   if (!private_->HasOneRef())
-    Assign(static_cast<WebHTTPBodyPrivate*>(private_->Copy().LeakRef()));
+    private_ = private_->Copy();
 }
 
 }  // namespace blink
