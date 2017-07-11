@@ -56,6 +56,11 @@ void GpuClient::EstablishGpuChannel(
                  weak_factory_.GetWeakPtr(), callback));
 }
 
+void GpuClient::CreateJpegDecodeAccelerator(
+    media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) {
+  gpu_service_->CreateJpegDecodeAccelerator(std::move(jda_request));
+}
+
 void GpuClient::CreateVideoEncodeAccelerator(
     media::mojom::VideoEncodeAcceleratorRequest vea_request) {
   NOTIMPLEMENTED();

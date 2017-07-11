@@ -8,6 +8,7 @@ import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
+import "media/gpu/mojo/jpeg_decoder.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
@@ -23,6 +24,9 @@ interface GpuService {
   // Tells the GPU process to close the channel identified by |client_id|.
   // If no channel can be identified, do nothing.
   CloseChannel(int32 client_id);
+
+  // Creates a new JpegDecodeAccelerator and binds it to |jda|.
+  CreateJpegDecodeAccelerator(media.mojom.GpuJpegDecodeAccelerator& jda);
 
   // Creates a new VideoEncodeAccelerator and binds it to |vea|.
   CreateVideoEncodeAccelerator(media.mojom.VideoEncodeAccelerator& vea);
