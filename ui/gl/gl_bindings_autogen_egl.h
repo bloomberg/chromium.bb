@@ -134,6 +134,25 @@ typedef EGLBoolean(GL_BINDING_CALL* eglPostSubBufferNVProc)(EGLDisplay dpy,
                                                             EGLint y,
                                                             EGLint width,
                                                             EGLint height);
+typedef EGLint(GL_BINDING_CALL* eglProgramCacheGetAttribANGLEProc)(
+    EGLDisplay dpy,
+    EGLenum attrib);
+typedef void(GL_BINDING_CALL* eglProgramCachePopulateANGLEProc)(
+    EGLDisplay dpy,
+    const void* key,
+    EGLint keysize,
+    const void* binary,
+    EGLint binarysize);
+typedef void(GL_BINDING_CALL* eglProgramCacheQueryANGLEProc)(
+    EGLDisplay dpy,
+    EGLint index,
+    void* key,
+    EGLint* keysize,
+    void* binary,
+    EGLint* binarysize);
+typedef EGLint(GL_BINDING_CALL* eglProgramCacheResizeANGLEProc)(EGLDisplay dpy,
+                                                                EGLint limit,
+                                                                EGLenum mode);
 typedef EGLenum(GL_BINDING_CALL* eglQueryAPIProc)(void);
 typedef EGLBoolean(GL_BINDING_CALL* eglQueryContextProc)(EGLDisplay dpy,
                                                          EGLContext ctx,
@@ -210,6 +229,7 @@ typedef EGLint(GL_BINDING_CALL* eglWaitSyncKHRProc)(EGLDisplay dpy,
 struct ExtensionsEGL {
   bool b_EGL_EXT_platform_base;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
+  bool b_EGL_ANGLE_program_cache_control;
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_stream_producer_d3d_texture_nv12;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
@@ -264,6 +284,10 @@ struct ProcsEGL {
   eglInitializeProc eglInitializeFn;
   eglMakeCurrentProc eglMakeCurrentFn;
   eglPostSubBufferNVProc eglPostSubBufferNVFn;
+  eglProgramCacheGetAttribANGLEProc eglProgramCacheGetAttribANGLEFn;
+  eglProgramCachePopulateANGLEProc eglProgramCachePopulateANGLEFn;
+  eglProgramCacheQueryANGLEProc eglProgramCacheQueryANGLEFn;
+  eglProgramCacheResizeANGLEProc eglProgramCacheResizeANGLEFn;
   eglQueryAPIProc eglQueryAPIFn;
   eglQueryContextProc eglQueryContextFn;
   eglQueryStreamKHRProc eglQueryStreamKHRFn;
@@ -400,6 +424,22 @@ class GL_EXPORT EGLApi {
                                           EGLint y,
                                           EGLint width,
                                           EGLint height) = 0;
+  virtual EGLint eglProgramCacheGetAttribANGLEFn(EGLDisplay dpy,
+                                                 EGLenum attrib) = 0;
+  virtual void eglProgramCachePopulateANGLEFn(EGLDisplay dpy,
+                                              const void* key,
+                                              EGLint keysize,
+                                              const void* binary,
+                                              EGLint binarysize) = 0;
+  virtual void eglProgramCacheQueryANGLEFn(EGLDisplay dpy,
+                                           EGLint index,
+                                           void* key,
+                                           EGLint* keysize,
+                                           void* binary,
+                                           EGLint* binarysize) = 0;
+  virtual EGLint eglProgramCacheResizeANGLEFn(EGLDisplay dpy,
+                                              EGLint limit,
+                                              EGLenum mode) = 0;
   virtual EGLenum eglQueryAPIFn(void) = 0;
   virtual EGLBoolean eglQueryContextFn(EGLDisplay dpy,
                                        EGLContext ctx,
@@ -509,6 +549,14 @@ class GL_EXPORT EGLApi {
 #define eglInitialize ::gl::g_current_egl_context->eglInitializeFn
 #define eglMakeCurrent ::gl::g_current_egl_context->eglMakeCurrentFn
 #define eglPostSubBufferNV ::gl::g_current_egl_context->eglPostSubBufferNVFn
+#define eglProgramCacheGetAttribANGLE \
+  ::gl::g_current_egl_context->eglProgramCacheGetAttribANGLEFn
+#define eglProgramCachePopulateANGLE \
+  ::gl::g_current_egl_context->eglProgramCachePopulateANGLEFn
+#define eglProgramCacheQueryANGLE \
+  ::gl::g_current_egl_context->eglProgramCacheQueryANGLEFn
+#define eglProgramCacheResizeANGLE \
+  ::gl::g_current_egl_context->eglProgramCacheResizeANGLEFn
 #define eglQueryAPI ::gl::g_current_egl_context->eglQueryAPIFn
 #define eglQueryContext ::gl::g_current_egl_context->eglQueryContextFn
 #define eglQueryStreamKHR ::gl::g_current_egl_context->eglQueryStreamKHRFn

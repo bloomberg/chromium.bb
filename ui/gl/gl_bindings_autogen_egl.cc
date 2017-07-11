@@ -83,6 +83,10 @@ void DriverEGL::InitializeStaticBindings() {
   fn.eglMakeCurrentFn =
       reinterpret_cast<eglMakeCurrentProc>(GetGLProcAddress("eglMakeCurrent"));
   fn.eglPostSubBufferNVFn = 0;
+  fn.eglProgramCacheGetAttribANGLEFn = 0;
+  fn.eglProgramCachePopulateANGLEFn = 0;
+  fn.eglProgramCacheQueryANGLEFn = 0;
+  fn.eglProgramCacheResizeANGLEFn = 0;
   fn.eglQueryAPIFn =
       reinterpret_cast<eglQueryAPIProc>(GetGLProcAddress("eglQueryAPI"));
   fn.eglQueryContextFn = reinterpret_cast<eglQueryContextProc>(
@@ -145,6 +149,8 @@ void DriverEGL::InitializeExtensionBindings() {
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       extensions.find("EGL_ANGLE_d3d_share_handle_client_buffer ") !=
       std::string::npos;
+  ext.b_EGL_ANGLE_program_cache_control =
+      extensions.find("EGL_ANGLE_program_cache_control ") != std::string::npos;
   ext.b_EGL_ANGLE_query_surface_pointer =
       extensions.find("EGL_ANGLE_query_surface_pointer ") != std::string::npos;
   ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 =
@@ -224,6 +230,30 @@ void DriverEGL::InitializeExtensionBindings() {
   if (ext.b_EGL_NV_post_sub_buffer) {
     fn.eglPostSubBufferNVFn = reinterpret_cast<eglPostSubBufferNVProc>(
         GetGLProcAddress("eglPostSubBufferNV"));
+  }
+
+  if (ext.b_EGL_ANGLE_program_cache_control) {
+    fn.eglProgramCacheGetAttribANGLEFn =
+        reinterpret_cast<eglProgramCacheGetAttribANGLEProc>(
+            GetGLProcAddress("eglProgramCacheGetAttribANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_program_cache_control) {
+    fn.eglProgramCachePopulateANGLEFn =
+        reinterpret_cast<eglProgramCachePopulateANGLEProc>(
+            GetGLProcAddress("eglProgramCachePopulateANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_program_cache_control) {
+    fn.eglProgramCacheQueryANGLEFn =
+        reinterpret_cast<eglProgramCacheQueryANGLEProc>(
+            GetGLProcAddress("eglProgramCacheQueryANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_program_cache_control) {
+    fn.eglProgramCacheResizeANGLEFn =
+        reinterpret_cast<eglProgramCacheResizeANGLEProc>(
+            GetGLProcAddress("eglProgramCacheResizeANGLE"));
   }
 
   if (ext.b_EGL_KHR_stream) {
@@ -499,6 +529,36 @@ EGLBoolean EGLApiBase::eglPostSubBufferNVFn(EGLDisplay dpy,
                                             EGLint width,
                                             EGLint height) {
   return driver_->fn.eglPostSubBufferNVFn(dpy, surface, x, y, width, height);
+}
+
+EGLint EGLApiBase::eglProgramCacheGetAttribANGLEFn(EGLDisplay dpy,
+                                                   EGLenum attrib) {
+  return driver_->fn.eglProgramCacheGetAttribANGLEFn(dpy, attrib);
+}
+
+void EGLApiBase::eglProgramCachePopulateANGLEFn(EGLDisplay dpy,
+                                                const void* key,
+                                                EGLint keysize,
+                                                const void* binary,
+                                                EGLint binarysize) {
+  driver_->fn.eglProgramCachePopulateANGLEFn(dpy, key, keysize, binary,
+                                             binarysize);
+}
+
+void EGLApiBase::eglProgramCacheQueryANGLEFn(EGLDisplay dpy,
+                                             EGLint index,
+                                             void* key,
+                                             EGLint* keysize,
+                                             void* binary,
+                                             EGLint* binarysize) {
+  driver_->fn.eglProgramCacheQueryANGLEFn(dpy, index, key, keysize, binary,
+                                          binarysize);
+}
+
+EGLint EGLApiBase::eglProgramCacheResizeANGLEFn(EGLDisplay dpy,
+                                                EGLint limit,
+                                                EGLenum mode) {
+  return driver_->fn.eglProgramCacheResizeANGLEFn(dpy, limit, mode);
 }
 
 EGLenum EGLApiBase::eglQueryAPIFn(void) {
@@ -883,6 +943,42 @@ EGLBoolean TraceEGLApi::eglPostSubBufferNVFn(EGLDisplay dpy,
                                              EGLint height) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglPostSubBufferNV")
   return egl_api_->eglPostSubBufferNVFn(dpy, surface, x, y, width, height);
+}
+
+EGLint TraceEGLApi::eglProgramCacheGetAttribANGLEFn(EGLDisplay dpy,
+                                                    EGLenum attrib) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglProgramCacheGetAttribANGLE")
+  return egl_api_->eglProgramCacheGetAttribANGLEFn(dpy, attrib);
+}
+
+void TraceEGLApi::eglProgramCachePopulateANGLEFn(EGLDisplay dpy,
+                                                 const void* key,
+                                                 EGLint keysize,
+                                                 const void* binary,
+                                                 EGLint binarysize) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglProgramCachePopulateANGLE")
+  egl_api_->eglProgramCachePopulateANGLEFn(dpy, key, keysize, binary,
+                                           binarysize);
+}
+
+void TraceEGLApi::eglProgramCacheQueryANGLEFn(EGLDisplay dpy,
+                                              EGLint index,
+                                              void* key,
+                                              EGLint* keysize,
+                                              void* binary,
+                                              EGLint* binarysize) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglProgramCacheQueryANGLE")
+  egl_api_->eglProgramCacheQueryANGLEFn(dpy, index, key, keysize, binary,
+                                        binarysize);
+}
+
+EGLint TraceEGLApi::eglProgramCacheResizeANGLEFn(EGLDisplay dpy,
+                                                 EGLint limit,
+                                                 EGLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglProgramCacheResizeANGLE")
+  return egl_api_->eglProgramCacheResizeANGLEFn(dpy, limit, mode);
 }
 
 EGLenum TraceEGLApi::eglQueryAPIFn(void) {
@@ -1438,6 +1534,54 @@ EGLBoolean DebugEGLApi::eglPostSubBufferNVFn(EGLDisplay dpy,
                  << ", " << width << ", " << height << ")");
   EGLBoolean result =
       egl_api_->eglPostSubBufferNVFn(dpy, surface, x, y, width, height);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLint DebugEGLApi::eglProgramCacheGetAttribANGLEFn(EGLDisplay dpy,
+                                                    EGLenum attrib) {
+  GL_SERVICE_LOG("eglProgramCacheGetAttribANGLE"
+                 << "(" << dpy << ", " << attrib << ")");
+  EGLint result = egl_api_->eglProgramCacheGetAttribANGLEFn(dpy, attrib);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+void DebugEGLApi::eglProgramCachePopulateANGLEFn(EGLDisplay dpy,
+                                                 const void* key,
+                                                 EGLint keysize,
+                                                 const void* binary,
+                                                 EGLint binarysize) {
+  GL_SERVICE_LOG("eglProgramCachePopulateANGLE"
+                 << "(" << dpy << ", " << static_cast<const void*>(key) << ", "
+                 << keysize << ", " << static_cast<const void*>(binary) << ", "
+                 << binarysize << ")");
+  egl_api_->eglProgramCachePopulateANGLEFn(dpy, key, keysize, binary,
+                                           binarysize);
+}
+
+void DebugEGLApi::eglProgramCacheQueryANGLEFn(EGLDisplay dpy,
+                                              EGLint index,
+                                              void* key,
+                                              EGLint* keysize,
+                                              void* binary,
+                                              EGLint* binarysize) {
+  GL_SERVICE_LOG("eglProgramCacheQueryANGLE"
+                 << "(" << dpy << ", " << index << ", "
+                 << static_cast<const void*>(key) << ", "
+                 << static_cast<const void*>(keysize) << ", "
+                 << static_cast<const void*>(binary) << ", "
+                 << static_cast<const void*>(binarysize) << ")");
+  egl_api_->eglProgramCacheQueryANGLEFn(dpy, index, key, keysize, binary,
+                                        binarysize);
+}
+
+EGLint DebugEGLApi::eglProgramCacheResizeANGLEFn(EGLDisplay dpy,
+                                                 EGLint limit,
+                                                 EGLenum mode) {
+  GL_SERVICE_LOG("eglProgramCacheResizeANGLE"
+                 << "(" << dpy << ", " << limit << ", " << mode << ")");
+  EGLint result = egl_api_->eglProgramCacheResizeANGLEFn(dpy, limit, mode);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
