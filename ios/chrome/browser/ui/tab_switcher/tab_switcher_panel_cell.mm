@@ -214,18 +214,21 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   return self;
 }
 
+#pragma mark - Public properties
+
+- (UIImage*)snapshot {
+  return _snapshot.image;
+}
+
+- (void)setSnapshot:(UIImage*)snapshot {
+  _snapshot.image = snapshot;
+}
+
 - (UIView*)topBar {
   return _topBar;
 }
 
-- (UIImage*)screenshot {
-  return [_snapshot image];
-}
-
-- (void)setSnapshot:(UIImage*)image {
-  DCHECK(!ImageHasAlphaChannel(image));
-  [_snapshot setImage:image];
-}
+#pragma mark - Public methods
 
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize {
   [_titleLabel setText:tab.title];
@@ -273,6 +276,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   [_titleLabel setBackgroundColor:topBarBackgroundColor];
   [_snapshot setBackgroundColor:snapshotBackgroundColor];
 }
+
+#pragma mark -
 
 - (void)snapshotPressed {
   [self.delegate cellPressed:self];

@@ -23,12 +23,10 @@
 
 @interface TestTabCell : TabCollectionTabCell
 @property(nonatomic) UILabel* titleLabel;
-@property(nonatomic) TabSwitcherButton* snapshotButton;
 @end
 
 @implementation TestTabCell
 @dynamic titleLabel;
-@dynamic snapshotButton;
 @end
 
 class TabCollectionTabCellTest : public PlatformTest {
@@ -69,7 +67,7 @@ TEST_F(TabCollectionTabCellTest, TestSnapshotMissing) {
         callback(nil);
       });
   [cell_ configureCell:item_ snapshotCache:snapshotCache_];
-  EXPECT_EQ(nil, [cell_.snapshotButton imageForState:UIControlStateNormal]);
+  EXPECT_EQ(nil, cell_.snapshot);
 }
 
 // Tests that -configureCell: updates the cell's snapshot from the cache.
@@ -82,9 +80,8 @@ TEST_F(TabCollectionTabCellTest, TestSnapshotUpdated) {
         callback(snapshot_);
       });
   [cell_ configureCell:item_ snapshotCache:snapshotCache_];
-  UIImage* cellImage =
-      [cell_.snapshotButton imageForState:UIControlStateNormal];
-  EXPECT_TRUE(ui::test::uiimage_utils::UIImagesAreEqual(snapshot_, cellImage));
+  EXPECT_TRUE(
+      ui::test::uiimage_utils::UIImagesAreEqual(snapshot_, cell_.snapshot));
 }
 
 // Tests that asynchronous snapshot retrieval does not set the image after
@@ -100,5 +97,5 @@ TEST_F(TabCollectionTabCellTest, TestPrepareForReuse) {
         callback(snapshot_);
       });
   [cell_ configureCell:item_ snapshotCache:snapshotCache_];
-  EXPECT_EQ(nil, [cell_.snapshotButton imageForState:UIControlStateNormal]);
+  EXPECT_EQ(nil, cell_.snapshot);
 }
