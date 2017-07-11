@@ -22,6 +22,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -224,18 +225,14 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     source_texture = gl->CreateAndConsumeTextureCHROMIUM(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
   }
-  GrBackendTextureDesc desc;
-  desc.fFlags = kNone_GrBackendTextureFlag;
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fWidth = video_frame->coded_size().width();
-  desc.fHeight = video_frame->coded_size().height();
-  desc.fConfig = kRGBA_8888_GrPixelConfig;
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
   source_texture_info.fTarget = GL_TEXTURE_2D;
-  desc.fTextureHandle =
-      skia::GrGLTextureInfoToGrBackendObject(source_texture_info);
-  return SkImage::MakeFromAdoptedTexture(context_3d.gr_context, desc);
+  GrBackendTexture source_backend_texture(
+      video_frame->coded_size().width(), video_frame->coded_size().height(),
+      kRGBA_8888_GrPixelConfig, source_texture_info);
+  return SkImage::MakeFromAdoptedTexture(
+      context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin);
 }
 
 }  // anonymous namespace
