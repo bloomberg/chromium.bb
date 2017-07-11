@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,23 +28,20 @@ class GuestViewManagerTest : public content::RenderViewHostTestHarness {
 
   std::unique_ptr<WebContents> CreateWebContents() {
     return std::unique_ptr<WebContents>(
-        WebContentsTester::CreateTestWebContents(&browser_context_, NULL));
+        WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
   }
 
  private:
-  content::TestBrowserContext browser_context_;
-
   DISALLOW_COPY_AND_ASSIGN(GuestViewManagerTest);
 };
 
 }  // namespace
 
 TEST_F(GuestViewManagerTest, AddRemove) {
-  content::TestBrowserContext browser_context;
   std::unique_ptr<GuestViewManagerDelegate> delegate(
       new GuestViewManagerDelegate());
   std::unique_ptr<TestGuestViewManager> manager(
-      new TestGuestViewManager(&browser_context, std::move(delegate)));
+      new TestGuestViewManager(browser_context(), std::move(delegate)));
 
   std::unique_ptr<WebContents> web_contents1(CreateWebContents());
   std::unique_ptr<WebContents> web_contents2(CreateWebContents());
