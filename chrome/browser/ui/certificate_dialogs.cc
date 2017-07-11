@@ -14,17 +14,14 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
-using content::WebContents;
 
 namespace {
 
@@ -34,12 +31,6 @@ void WriterCallback(const base::FilePath& path, const std::string& data) {
     LOG(ERROR) << "Writing " << path.value() << " ("
                << data.size() << "B) returned " << bytes_written;
   }
-}
-
-void WriteFileOnFileThread(const base::FilePath& path,
-                           const std::string& data) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(&WriterCallback, path, data));
 }
 
 std::string WrapAt64(const std::string &str) {
@@ -67,7 +58,7 @@ std::string GetBase64String(net::X509Certificate::OSCertHandle cert) {
 
 class Exporter : public ui::SelectFileDialog::Listener {
  public:
-  Exporter(WebContents* web_contents,
+  Exporter(content::WebContents* web_contents,
            gfx::NativeWindow parent,
            net::X509Certificate::OSCertHandles::iterator certs_begin,
            net::X509Certificate::OSCertHandles::iterator certs_end);
@@ -86,7 +77,7 @@ class Exporter : public ui::SelectFileDialog::Listener {
   net::X509Certificate::OSCertHandles cert_chain_list_;
 };
 
-Exporter::Exporter(WebContents* web_contents,
+Exporter::Exporter(content::WebContents* web_contents,
                    gfx::NativeWindow parent,
                    net::X509Certificate::OSCertHandles::iterator certs_begin,
                    net::X509Certificate::OSCertHandles::iterator certs_end)
@@ -153,8 +144,10 @@ void Exporter::FileSelected(const base::FilePath& path, int index,
       break;
   }
 
-  if (!data.empty())
-    WriteFileOnFileThread(path, data);
+  if (!data.empty()) {
+    base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
+                             base::BindOnce(&WriterCallback, path, data));
+  }
 
   delete this;
 }
@@ -198,7 +191,7 @@ void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
       parent, params);
 }
 
-void ShowCertExportDialog(WebContents* web_contents,
+void ShowCertExportDialog(content::WebContents* web_contents,
                           gfx::NativeWindow parent,
                           const scoped_refptr<net::X509Certificate>& cert) {
   net::X509Certificate::OSCertHandles cert_chain;
