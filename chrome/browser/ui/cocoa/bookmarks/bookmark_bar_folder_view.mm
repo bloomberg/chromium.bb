@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
@@ -213,6 +214,11 @@ using bookmarks::BookmarkNode;
     [dropIndicator_ removeFromSuperview];
     dropIndicator_.reset();
   }
+}
+
+- (void)drawRect:(NSRect)rect {
+  [[BookmarkBarFolderWindowContentView backgroundColor] set];
+  NSRectFill([self bounds]);
 }
 
 @end
