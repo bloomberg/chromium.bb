@@ -51,7 +51,8 @@ bool ExecuteScriptInBackgroundPageNoWait(Profile* profile,
     ADD_FAILURE() << "Extension " << extension_id << " has no background page.";
     return false;
   }
-  return content::ExecuteScript(host->host_contents(), script);
+  content::ExecuteScriptAsync(host->host_contents(), script);
+  return true;
 }
 
 void CreateAndInitializeLocalCache() {

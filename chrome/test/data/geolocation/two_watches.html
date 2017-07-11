@@ -32,11 +32,6 @@
       sendString('request-callback-success');
     }
 
-    function checkIfGeopositionUpdated() {
-      if (position_updated)
-        sendString('geoposition-updated');
-    }
-
     // This will be triggered twice:
     //  1. When the permission request is approved, it will receive an initial
     //     value. At this point, the callback does not directly notify success

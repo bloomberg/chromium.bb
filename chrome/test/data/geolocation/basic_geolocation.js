@@ -52,10 +52,6 @@ function geoStartWithSyncResponse() {
             {maximumAge:600000, timeout:100000, enableHighAccuracy:true});
   sendString('requested');
 }
-function checkIfGeopositionUpdated() {
-  if (position_updated)
-    sendString('geoposition-updated');
-}
 function geoGetLastPositionLatitude() {
   return "" + last_position.coords.latitude;
 }

@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -69,8 +70,7 @@ static const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
 static const char kTestFormString[] =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
-    " <input type=\"text\" id=\"firstname\""
-    "        onfocus=\"domAutomationController.send(true)\"><br>"
+    " <input type=\"text\" id=\"firstname\"><br>"
     "<label for=\"lastname\">Last name:</label>"
     " <input type=\"text\" id=\"lastname\"><br>"
     "<label for=\"address1\">Address line 1:</label>"
@@ -120,8 +120,7 @@ static const char kTestEventFormString[] =
     "</script>"
     "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
-    " <input type=\"text\" id=\"firstname\""
-    "        onfocus=\"domAutomationController.send(true)\"><br>"
+    " <input type=\"text\" id=\"firstname\"><br>"
     "<label for=\"lastname\">Last name:</label>"
     " <input type=\"text\" id=\"lastname\""
     " onfocus=\"inputfocus = true\" onkeydown=\"inputkeydown = true\""
@@ -359,27 +358,25 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
   void FocusFieldByName(const std::string& name) {
     bool result = false;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetRenderViewHost(),
-        "if (document.readyState === 'complete')"
-        "  document.getElementById('" + name + "').focus();"
-        "else"
-        "  domAutomationController.send(false);",
-        &result));
+    std::string script = base::StringPrintf(
+        R"( function onFocusHandler(e) {
+              e.target.removeEventListener(e.type, arguments.callee);
+              domAutomationController.send(true);
+            }
+            if (document.readyState === 'complete') {
+              var target = document.getElementById('%s');
+              target.addEventListener('focus', onFocusHandler);
+              target.focus();
+            } else {
+              domAutomationController.send(false);
+            })",
+        name.c_str());
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderViewHost(),
+                                                     script, &result));
     ASSERT_TRUE(result);
   }
 
-  void FocusFirstNameField() {
-    bool result = false;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetRenderViewHost(),
-        "if (document.readyState === 'complete')"
-        "  document.getElementById('firstname').focus();"
-        "else"
-        "  domAutomationController.send(false);",
-        &result));
-    ASSERT_TRUE(result);
-  }
+  void FocusFirstNameField() { FocusFieldByName("firstname"); }
 
   // Simulates a click on the middle of the DOM element with the given |id|.
   void ClickElementWithId(const std::string& id) {
@@ -795,8 +792,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
       browser(),
       GURL(std::string(kDataURIPrefix) +
            "<form action=\"http://www.example.com/\" method=\"POST\">"
-           "  <input list=\"dl\" type=\"search\" id=\"firstname\""
-           "         onfocus=\"domAutomationController.send(true)\"><br>"
+           "  <input list=\"dl\" type=\"search\" id=\"firstname\"><br>"
            "  <datalist id=\"dl\">"
            "  <option value=\"Adam\"></option>"
            "  <option value=\"Bob\"></option>"

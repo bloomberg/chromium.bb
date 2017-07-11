@@ -2195,11 +2195,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the iframe itself to about:blank using a script executing in its
   // own context. It should stay in the same SiteInstance as before, not the
   // parent one.
-  std::string script(
-      "window.domAutomationController.send("
-      "window.location.href = 'about:blank');");
   TestFrameNavigationObserver frame_observer(child);
-  EXPECT_TRUE(ExecuteScript(child, script));
+  ExecuteScriptAsync(child, "window.location.href = 'about:blank';");
   frame_observer.Wait();
   EXPECT_EQ(about_blank_url, child->current_url());
 
@@ -5456,14 +5453,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
       "  domAutomationController.send('%s-lost-focus');"
       "});";
   std::string script = base::StringPrintf(kSetupFocusEvents, "main", "main");
-  EXPECT_TRUE(ExecuteScript(shell(), script));
+  ExecuteScriptAsync(shell(), script);
   script = base::StringPrintf(kSetupFocusEvents, "child1", "child1");
-  EXPECT_TRUE(ExecuteScript(child1, script));
+  ExecuteScriptAsync(child1, script);
   script = base::StringPrintf(kSetupFocusEvents, "child2", "child2");
-  EXPECT_TRUE(ExecuteScript(child2, script));
+  ExecuteScriptAsync(child2, script);
 
   // Execute window.focus on the B subframe from the A main frame.
-  EXPECT_TRUE(ExecuteScript(root, "frames[0].focus()"));
+  ExecuteScriptAsync(root, "frames[0].focus()");
 
   // Helper to wait for two specified messages to arrive on the specified
   // DOMMessageQueue, assuming that the two messages can arrive in any order.
@@ -5493,7 +5490,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
 
   // Now, execute window.focus on the C subframe from A main frame.  This
   // checks that we can shift focus from one remote frame to another.
-  EXPECT_TRUE(ExecuteScript(root, "frames[1].focus()"));
+  ExecuteScriptAsync(root, "frames[1].focus()");
 
   // Wait for the two subframes (B and C) to fire blur and focus events.
   wait_for_two_messages(&msg_queue, "\"child1-lost-focus\"",
@@ -5503,7 +5500,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
   EXPECT_EQ(child2, root->frame_tree()->GetFocusedFrame());
 
   // window.focus the main frame from the C subframe.
-  EXPECT_TRUE(ExecuteScript(child2, "parent.focus()"));
+  ExecuteScriptAsync(child2, "parent.focus()");
 
   // Wait for the C subframe to blur and main frame to focus.
   wait_for_two_messages(&msg_queue, "\"child2-lost-focus\"",
@@ -5647,8 +5644,6 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
         "scroll_div = document.getElementById('scrollable_div');"
         "scroll_div.addEventListener('wheel', wheel_handler);"
         "scroll_div.addEventListener('scroll', scroll_handler);"
-        "domAutomationController.setAutomationId(0);"
-        "domAutomationController.send('wheel handler installed');"
         "document.body.style.background = 'black';";
 
     content::DOMMessageQueue msg_queue;
@@ -7853,10 +7848,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Have the child frame navigate its parent to its SiteInstance.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  std::string script = base::StringPrintf(
-      "window.domAutomationController.send("
-      "parent.location = '%s');",
-      b_url.spec().c_str());
+  std::string script =
+      base::StringPrintf("parent.location = '%s';", b_url.spec().c_str());
 
   // Ensure the child has received a user gesture, so that it has permission
   // to framebust.

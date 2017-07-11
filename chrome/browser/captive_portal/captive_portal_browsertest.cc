@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -893,6 +895,48 @@ void AddHstsHost(net::URLRequestContextGetter* context_getter,
   transport_security_state->AddHSTS(host, expiry, include_subdomains);
 }
 
+// Helper for waiting for a change of the active tab.
+// Users can wait for the change via WaitForActiveTabChange method.
+// DCHECKs ensure that only one change happens during the lifetime of a
+// TabActivationWaiter instance.
+class TabActivationWaiter : public TabStripModelObserver {
+ public:
+  explicit TabActivationWaiter(TabStripModel* tab_strip_model)
+      : number_of_unconsumed_active_tab_changes_(0), scoped_observer_(this) {
+    scoped_observer_.Add(tab_strip_model);
+  }
+
+  void WaitForActiveTabChange() {
+    if (number_of_unconsumed_active_tab_changes_ == 0) {
+      // Wait until TabStripModelObserver::ActiveTabChanged will get called.
+      message_loop_runner_ = new content::MessageLoopRunner;
+      message_loop_runner_->Run();
+    }
+
+    // "consume" one tab activation event.
+    DCHECK_EQ(1, number_of_unconsumed_active_tab_changes_);
+    number_of_unconsumed_active_tab_changes_--;
+  }
+
+  // TabStripModelObserver overrides.
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override {
+    number_of_unconsumed_active_tab_changes_++;
+    DCHECK_EQ(1, number_of_unconsumed_active_tab_changes_);
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  int number_of_unconsumed_active_tab_changes_;
+  ScopedObserver<TabStripModel, TabActivationWaiter> scoped_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabActivationWaiter);
+};
+
 }  // namespace
 
 class CaptivePortalBrowserTest : public InProcessBrowserTest {
@@ -1536,8 +1580,8 @@ void CaptivePortalBrowserTest::NavigateLoginTab(Browser* browser,
   ASSERT_TRUE(IsLoginTab(browser->tab_strip_model()->GetActiveWebContents()));
 
   // Do the navigation.
-  EXPECT_TRUE(content::ExecuteScript(tab_strip_model->GetActiveWebContents(),
-                                     "submitForm()"));
+  content::ExecuteScriptAsync(tab_strip_model->GetActiveWebContents(),
+                              "submitForm()");
 
   portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
@@ -1582,8 +1626,8 @@ void CaptivePortalBrowserTest::Login(Browser* browser,
   ASSERT_TRUE(IsLoginTab(tab_strip_model->GetWebContentsAt(login_tab_index)));
 
   // Trigger a navigation.
-  EXPECT_TRUE(content::ExecuteScript(tab_strip_model->GetActiveWebContents(),
-                                     "submitForm()"));
+  content::ExecuteScriptAsync(tab_strip_model->GetActiveWebContents(),
+                              "submitForm()");
 
   portal_observer.WaitForResults(1);
 
@@ -1624,8 +1668,8 @@ void CaptivePortalBrowserTest::LoginCertError(Browser* browser) {
   ASSERT_TRUE(IsLoginTab(tab_strip_model->GetWebContentsAt(login_tab_index)));
 
   // Trigger a navigation.
-  EXPECT_TRUE(content::ExecuteScript(tab_strip_model->GetActiveWebContents(),
-                                     "submitForm()"));
+  content::ExecuteScriptAsync(tab_strip_model->GetActiveWebContents(),
+                              "submitForm()");
 
   // The captive portal tab navigation will trigger a captive portal check,
   // and reloading the original tab will bring up the interstitial page again,
@@ -1977,8 +2021,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
-  EXPECT_TRUE(
-      content::ExecuteScript(rfh, kClickConnectButtonJS));
+  {
+    TabActivationWaiter tab_activation_waiter(tab_strip_model);
+    content::ExecuteScriptAsync(rfh, kClickConnectButtonJS);
+    tab_activation_waiter.WaitForActiveTabChange();
+  }
   EXPECT_EQ(login_tab_index, tab_strip_model->active_index());
 
   // For completeness, close the login tab and try clicking |Connect| again.
@@ -1990,8 +2037,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
       tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0));
   destroyed_watcher.Wait();
   MultiNavigationObserver navigation_observer;
-  EXPECT_TRUE(
-      content::ExecuteScript(rfh, kClickConnectButtonJS));
+  content::ExecuteScriptAsync(rfh, kClickConnectButtonJS);
   navigation_observer.WaitForNavigations(1);
   EXPECT_EQ(login_tab_index, tab_strip_model->active_index());
 

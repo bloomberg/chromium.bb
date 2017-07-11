@@ -42,7 +42,7 @@ void DomAutomationController::Install(RenderFrame* render_frame,
 }
 
 DomAutomationController::DomAutomationController(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame), automation_id_(MSG_ROUTING_NONE) {}
+    : RenderFrameObserver(render_frame) {}
 
 DomAutomationController::~DomAutomationController() {}
 
@@ -84,9 +84,6 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
   if (!render_frame())
     return false;
 
-  if (automation_id_ == MSG_ROUTING_NONE)
-    return false;
-
   std::string json;
   JSONStringValueSerializer serializer(&json);
   std::unique_ptr<base::Value> value;
@@ -112,7 +109,6 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
   bool succeeded = Send(new FrameHostMsg_DomOperationResponse(
       routing_id(), json));
 
-  automation_id_ = MSG_ROUTING_NONE;
   return succeeded;
 }
 
@@ -120,12 +116,9 @@ bool DomAutomationController::SendJSON(const std::string& json) {
   if (!render_frame())
     return false;
 
-  if (automation_id_ == MSG_ROUTING_NONE)
-    return false;
   bool result = Send(new FrameHostMsg_DomOperationResponse(
       routing_id(), json));
 
-  automation_id_ = MSG_ROUTING_NONE;
   return result;
 }
 
@@ -138,7 +131,6 @@ bool DomAutomationController::SendWithId(int automation_id,
 }
 
 bool DomAutomationController::SetAutomationId(int automation_id) {
-  automation_id_ = automation_id;
   return true;
 }
 
