@@ -101,7 +101,9 @@ def AddToManifest(manifest_file, target_name, source, mapper):
 
 
 def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
-                gtest_repeat, test_launcher_filter_file, dry_run):
+                gtest_repeat, test_launcher_batch_limit,
+                test_launcher_filter_file, test_launcher_jobs,
+                single_process_tests, dry_run):
   with open(runtime_deps_path) as f:
     lines = f.readlines()
 
@@ -133,11 +135,14 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
   autorun_file.write('#!/bin/sh\n')
   autorun_file.write('/system/' + os.path.basename(test_name))
   autorun_file.write(' --test-launcher-retry-limit=0')
+
   if int(os.environ.get('CHROME_HEADLESS', 0)) != 0:
     # When running on bots (without KVM) execution is quite slow. The test
     # launcher times out a subprocess after 45s which can be too short. Make the
     # timeout twice as long.
     autorun_file.write(' --test-launcher-timeout=90000')
+  if single_process_tests:
+    autorun_file.write(' --single-process-tests')
   if test_launcher_filter_file:
     test_launcher_filter_file = os.path.normpath(
             os.path.join(output_directory, test_launcher_filter_file))
@@ -147,6 +152,12 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
                        filter_file_on_device)
     target_source_pairs.append(
         [filter_file_on_device, test_launcher_filter_file])
+  if test_launcher_batch_limit:
+    autorun_file.write(' --test-launcher-batch-limit=%d' %
+                       test_launcher_batch_limit)
+  if test_launcher_jobs:
+    autorun_file.write(' --test-launcher-jobs=%d' %
+                       test_launcher_jobs)
   if gtest_filter:
     autorun_file.write(' --gtest_filter=' + gtest_filter)
   if gtest_repeat:
@@ -210,18 +221,32 @@ def main():
                       type=os.path.realpath,
                       help='Name of the the test')
   parser.add_argument('--gtest_filter',
-                      help='GTest filter to use in place of any default')
+                      help='GTest filter to use in place of any default.')
   parser.add_argument('--gtest_repeat',
-                      help='GTest repeat value to use')
+                      help='GTest repeat value to use.')
+  parser.add_argument('--single-process-tests', action='store_true',
+                      default=False,
+                      help='Runs the tests and the launcher in the same '
+                      'process. Useful for debugging.')
+  parser.add_argument('--test-launcher-batch-limit',
+                      type=int,
+                      help='Sets the limit of test batch to run in a single '
+                      'process.')
   parser.add_argument('--test-launcher-filter-file',
-                      help='Pass filter file through to target process')
+                      type=os.path.realpath,
+                      help='Pass filter file through to target process.')
+  parser.add_argument('--test-launcher-jobs',
+                      type=int,
+                      help='Sets the number of parallel test jobs.')
   parser.add_argument('--test_launcher_summary_output',
                       help='Currently ignored for 2-sided roll.')
   args = parser.parse_args()
 
   bootfs = BuildBootfs(args.output_directory, args.runtime_deps_path,
                        args.test_name, args.gtest_filter, args.gtest_repeat,
-                       args.test_launcher_filter_file, args.dry_run)
+                       args.test_launcher_batch_limit,
+                       args.test_launcher_filter_file, args.test_launcher_jobs,
+                       args.single_process_tests, args.dry_run)
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
 
