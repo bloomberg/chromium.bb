@@ -50,6 +50,8 @@ source_set("common_source_set") {
     "session_reconnect_view.mm",
     "side_menu_items.h",
     "side_menu_items.mm",
+    "user_status_presenter.h",
+    "user_status_presenter.mm",
   ]
 
   deps = [
