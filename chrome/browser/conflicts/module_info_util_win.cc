@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
 namespace {
 
@@ -218,21 +219,6 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
   certificate_info->subject = subject;
 }
 
-// Helper function to get a value at a specific offset in a buffer. Also does
-// bounds checking.
-template <typename T>
-bool GetValueAtOffset(const char* buffer,
-                      uint64_t offset,
-                      const size_t buffer_size,
-                      T* result) {
-  // Bounds checking.
-  if (offset + sizeof(T) >= buffer_size)
-    return false;
-
-  memcpy(result, &buffer[offset], sizeof(T));
-  return true;
-}
-
 }  // namespace
 
 // ModuleDatabase::CertificateInfo ---------------------------------------------
@@ -317,41 +303,20 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
   // the file in a well-formed dll.
   constexpr size_t kPageSize = 4096;
 
-  char buffer[kPageSize];
-  int bytes_read = file.Read(0, buffer, kPageSize);
+  // Note: base::MakeUnique() is explicitly avoided because it does value-
+  //       initialization on arrays, which is not needed in this case.
+  auto buffer = std::unique_ptr<uint8_t[]>(new uint8_t[kPageSize]);
+  int bytes_read =
+      file.Read(0, reinterpret_cast<char*>(buffer.get()), kPageSize);
   if (bytes_read == -1)
     return false;
 
-  // Get NT header offset.
-  uint64_t nt_header_offset = offsetof(IMAGE_DOS_HEADER, e_lfanew);
-
-  LONG e_lfanew = 0;
-  if (!GetValueAtOffset(buffer, nt_header_offset, bytes_read, &e_lfanew))
+  safe_browsing::PeImageReader pe_image_reader;
+  if (!pe_image_reader.Initialize(buffer.get(), bytes_read))
     return false;
 
-  // Check magic signature.
-  uint64_t nt_signature_offset =
-      e_lfanew + offsetof(IMAGE_NT_HEADERS, Signature);
+  *size_of_image = pe_image_reader.GetSizeOfImage();
+  *time_date_stamp = pe_image_reader.GetCoffFileHeader()->TimeDateStamp;
 
-  DWORD nt_signature = 0;
-  if (!GetValueAtOffset(buffer, nt_signature_offset, bytes_read, &nt_signature))
-    return false;
-
-  if (nt_signature != IMAGE_NT_SIGNATURE)
-    return false;
-
-  // Get SizeOfImage.
-  uint64_t size_of_image_offset = e_lfanew +
-                                  offsetof(IMAGE_NT_HEADERS, OptionalHeader) +
-                                  offsetof(IMAGE_OPTIONAL_HEADER, SizeOfImage);
-  if (!GetValueAtOffset(buffer, size_of_image_offset, bytes_read,
-                        size_of_image))
-    return false;
-
-  // Get TimeDateStamp.
-  uint64_t time_date_stamp_offset = e_lfanew +
-                                    offsetof(IMAGE_NT_HEADERS, FileHeader) +
-                                    offsetof(IMAGE_FILE_HEADER, TimeDateStamp);
-  return GetValueAtOffset(buffer, time_date_stamp_offset, bytes_read,
-                          time_date_stamp);
+  return true;
 }

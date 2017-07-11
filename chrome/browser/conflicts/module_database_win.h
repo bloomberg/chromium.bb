@@ -84,6 +84,12 @@ class ModuleDatabase {
                                   uint32_t size_of_image,
                                   uint32_t time_date_stamp);
 
+  // Indicates that a new registered input method editor was found. Must be
+  // called in the same sequence as |task_runner_|.
+  void OnImeEnumerated(const base::FilePath& path,
+                       uint32_t size_of_image,
+                       uint32_t time_date_stamp);
+
   // Indicates that a module has been loaded. The data passed to this function
   // is taken as gospel, so if it originates from a remote process it should be
   // independently validated first. (In practice, see ModuleEventSinkImpl for
