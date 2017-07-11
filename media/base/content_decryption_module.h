@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "url/gurl.h"
@@ -25,7 +26,6 @@ class Time;
 namespace media {
 
 class CdmContext;
-struct CdmKeyInformation;
 struct ContentDecryptionModuleTraits;
 
 template <typename... T>
@@ -33,6 +33,8 @@ class CdmPromiseTemplate;
 
 typedef CdmPromiseTemplate<std::string> NewSessionCdmPromise;
 typedef CdmPromiseTemplate<> SimpleCdmPromise;
+typedef CdmPromiseTemplate<CdmKeyInformation::KeyStatus> KeyStatusCdmPromise;
+
 typedef std::vector<std::unique_ptr<CdmKeyInformation>> CdmKeysInfo;
 
 // Type of license required when creating/loading a session.
@@ -53,6 +55,18 @@ enum class CdmMessageType {
   LICENSE_RENEWAL,
   LICENSE_RELEASE,
   MESSAGE_TYPE_MAX = LICENSE_RELEASE
+};
+
+enum class HdcpVersion {
+  kHdcpVersionNone,
+  kHdcpVersion1_0,
+  kHdcpVersion1_1,
+  kHdcpVersion1_2,
+  kHdcpVersion1_3,
+  kHdcpVersion1_4,
+  kHdcpVersion2_0,
+  kHdcpVersion2_1,
+  kHdcpVersion2_2
 };
 
 // An interface that represents the Content Decryption Module (CDM) in the
@@ -87,6 +101,13 @@ class MEDIA_EXPORT ContentDecryptionModule
   virtual void SetServerCertificate(
       const std::vector<uint8_t>& certificate,
       std::unique_ptr<SimpleCdmPromise> promise) = 0;
+
+  // Gets the key status if there's a hypothetical key that requires the
+  // |min_hdcp_version|. Resolve the |promise| with the key status after the
+  // operation completes. Reject the |promise| if this operation is not
+  // supported or unexpected error happened.
+  virtual void GetStatusForPolicy(HdcpVersion min_hdcp_version,
+                                  std::unique_ptr<KeyStatusCdmPromise> promise);
 
   // Creates a session with |session_type|. Then generates a request with the
   // |init_data_type| and |init_data|.

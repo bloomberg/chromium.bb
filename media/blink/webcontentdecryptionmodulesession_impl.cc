@@ -19,6 +19,7 @@
 #include "media/base/key_systems.h"
 #include "media/base/limits.h"
 #include "media/blink/cdm_result_promise.h"
+#include "media/blink/cdm_result_promise_helper.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/json_web_key.h"
@@ -61,31 +62,6 @@ convertMessageType(CdmMessageType message_type) {
   NOTREACHED();
   return blink::WebContentDecryptionModuleSession::Client::MessageType::
       kLicenseRequest;
-}
-
-blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
-    media::CdmKeyInformation::KeyStatus status) {
-  switch (status) {
-    case media::CdmKeyInformation::USABLE:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::kUsable;
-    case media::CdmKeyInformation::INTERNAL_ERROR:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::kInternalError;
-    case media::CdmKeyInformation::EXPIRED:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::kExpired;
-    case media::CdmKeyInformation::OUTPUT_RESTRICTED:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::
-          kOutputRestricted;
-    case media::CdmKeyInformation::OUTPUT_DOWNSCALED:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::
-          kOutputDownscaled;
-    case media::CdmKeyInformation::KEY_STATUS_PENDING:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::kStatusPending;
-    case media::CdmKeyInformation::RELEASED:
-      return blink::WebEncryptedMediaKeyInformation::KeyStatus::kReleased;
-  }
-
-  NOTREACHED();
-  return blink::WebEncryptedMediaKeyInformation::KeyStatus::kInternalError;
 }
 
 CdmSessionType convertSessionType(
@@ -501,7 +477,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
     auto& key_info = keys_info[i];
     keys[i].SetId(blink::WebData(reinterpret_cast<char*>(&key_info->key_id[0]),
                                  key_info->key_id.size()));
-    keys[i].SetStatus(convertStatus(key_info->status));
+    keys[i].SetStatus(ConvertCdmKeyStatus(key_info->status));
     keys[i].SetSystemCode(key_info->system_code);
 
     // Sparse histogram macro does not cache the histogram, so it's safe to use

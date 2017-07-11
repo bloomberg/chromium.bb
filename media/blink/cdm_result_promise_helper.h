@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -35,6 +36,9 @@ ConvertCdmExceptionToResultForUMA(CdmPromise::Exception exception_code);
 
 MEDIA_BLINK_EXPORT blink::WebContentDecryptionModuleException
 ConvertCdmException(CdmPromise::Exception exception_code);
+
+MEDIA_BLINK_EXPORT blink::WebEncryptedMediaKeyInformation::KeyStatus
+ConvertCdmKeyStatus(media::CdmKeyInformation::KeyStatus key_status);
 
 MEDIA_BLINK_EXPORT void ReportCdmResultUMA(const std::string& uma_name,
                                            CdmResultForUMA result);

@@ -69,6 +69,12 @@ void CdmSessionAdapter::SetServerCertificate(
   cdm_->SetServerCertificate(certificate, std::move(promise));
 }
 
+void CdmSessionAdapter::GetStatusForPolicy(
+    HdcpVersion min_hdcp_version,
+    std::unique_ptr<KeyStatusCdmPromise> promise) {
+  cdm_->GetStatusForPolicy(min_hdcp_version, std::move(promise));
+}
+
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
   return new WebContentDecryptionModuleSessionImpl(this);
 }
