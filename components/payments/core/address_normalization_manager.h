@@ -33,11 +33,12 @@ class AddressNormalizationManager {
 
   ~AddressNormalizationManager();
 
-  // Stops accepting normalization requests. If all the address normalization
-  // requests have already completed, |completion_callback| will be called
-  // before this method returns. Otherwise, it will be called as soon as the
-  // last pending request completes.
-  void FinalizeWithCompletionCallback(base::OnceClosure completion_callback);
+  // Stops accepting normalization requests until all pending requests complete.
+  // If all the address normalization requests have already completed,
+  // |completion_callback| will be called before this method returns. Otherwise,
+  // it will be called as soon as the last pending request completes.
+  void FinalizePendingRequestsWithCompletionCallback(
+      base::OnceClosure completion_callback);
 
   // Normalizes the address in |profile|. This may or may not happen
   // asynchronously. On completion, the address in |profile| will be updated

@@ -10,12 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_instrument.h"
@@ -65,10 +65,14 @@ PaymentRequest::PaymentRequest(
       web_state_(web_state),
       personal_data_manager_(personal_data_manager),
       payment_request_ui_delegate_(payment_request_ui_delegate),
-      address_normalizer_(new AddressNormalizerImpl(
+      address_normalizer_(
           GetAddressInputSource(
               personal_data_manager_->GetURLRequestContextGetter()),
-          GetAddressInputStorage())),
+          GetAddressInputStorage()),
+      address_normalization_manager_(
+          &address_normalizer_,
+          autofill::AutofillCountry::CountryCodeForLocale(
+              GetApplicationContext()->GetApplicationLocale())),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_payment_method_(nullptr),
@@ -110,6 +114,17 @@ PaymentRequest::PaymentRequest(
                    });
   if (first_complete_payment_method != payment_methods_.end())
     selected_payment_method_ = *first_complete_payment_method;
+
+  // Kickoff the process of loading the rules (which is asynchronous) for each
+  // profile's country, to get faster address normalization later.
+  for (const autofill::AutofillProfile* profile :
+       personal_data_manager_->GetProfilesToSuggest()) {
+    std::string countryCode =
+        base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+    if (autofill::data_util::IsValidCountryCode(countryCode)) {
+      address_normalizer_.LoadRulesForRegion(countryCode);
+    }
+  }
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -144,7 +159,7 @@ void PaymentRequest::DoFullCardRequest(
 }
 
 AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
-  return address_normalizer_;
+  return &address_normalizer_;
 }
 
 autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {

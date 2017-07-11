@@ -23,7 +23,7 @@ class AddressNormalizationManagerTest : public testing::Test {
   }
 
   void Finalize() {
-    manager_->FinalizeWithCompletionCallback(
+    manager_->FinalizePendingRequestsWithCompletionCallback(
         base::BindOnce(&AddressNormalizationManagerTest::CompletionCallback,
                        base::Unretained(this)));
   }
