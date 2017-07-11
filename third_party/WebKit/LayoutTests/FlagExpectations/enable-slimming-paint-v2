@@ -1623,7 +1623,7 @@ crbug.com/157218 compositing/overflow/border-radius-on-two-ancestors-composited-
 # transforms/transform-overflow.html
 
 # Subpixel adjustments due to differences in compositing
-crbug.com/589265 animations/animated-filter-svg-element.html [ Failure Crash ]
+crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure Crash ]
 crbug.com/589265 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/589265 fast/forms/number/number-appearance-spinbutton-layer.html [ Failure ]
 crbug.com/589265 fast/layers/add-layer-with-nested-stacking.html [ Failure ]
@@ -1634,7 +1634,7 @@ crbug.com/589265 svg/custom/non-opaque-filters.svg [ Failure ]
 crbug.com/589265 svg/custom/root-container-opacity-clip-viewBox.svg [ Failure ]
 crbug.com/589265 svg/foreignObject/filter.html [ Failure ]
 crbug.com/589265 svg/text/text-layout-crash.html [ Failure ]
-crbug.com/589265 virtual/threaded/animations/animated-filter-svg-element.html [ Failure Crash ]
+crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure Crash ]
 
 # Some work remains to fully support composited animation and scrolling.
 crbug.com/702350 transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
