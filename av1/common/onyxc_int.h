@@ -109,6 +109,10 @@ typedef struct {
   MV_REF *mvs;
   int mi_rows;
   int mi_cols;
+  // Width and height give the size of the buffer (before any upscaling, unlike
+  // the sizes that can be derived from the buf structure)
+  int width;
+  int height;
 #if CONFIG_GLOBAL_MOTION
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
 #endif  // CONFIG_GLOBAL_MOTION
@@ -505,6 +509,35 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
   *idx = new_idx;
 
   bufs[new_idx].ref_count++;
+}
+
+#if CONFIG_TEMPMV_SIGNALING
+// Returns 1 if this frame might use mvs from some previous frame. This
+// function doesn't consider whether prev_frame is actually suitable (see
+// frame_can_use_prev_frame_mvs for that)
+static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
+  return !cm->error_resilient_mode && !cm->intra_only;
+}
+
+// Returns 1 if this frame really can use MVs from some previous frame.
+static INLINE int frame_can_use_prev_frame_mvs(const AV1_COMMON *cm) {
+  return (frame_might_use_prev_frame_mvs(cm) && cm->last_show_frame &&
+          cm->prev_frame && !cm->prev_frame->intra_only &&
+          cm->width == cm->prev_frame->width &&
+          cm->height == cm->prev_frame->height);
+}
+#endif
+
+static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
+  if (buf->mvs == NULL || buf->mi_rows < cm->mi_rows ||
+      buf->mi_cols < cm->mi_cols) {
+    aom_free(buf->mvs);
+    buf->mi_rows = cm->mi_rows;
+    buf->mi_cols = cm->mi_cols;
+    CHECK_MEM_ERROR(
+        cm, buf->mvs,
+        (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
+  }
 }
 
 #if CONFIG_VAR_REFS

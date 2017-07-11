@@ -3468,15 +3468,9 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, int buffer_idx) {
   assert(buffer_idx != INVALID_IDX);
   RefCntBuffer *const new_fb_ptr = &cm->buffer_pool->frame_bufs[buffer_idx];
-  if (new_fb_ptr->mvs == NULL || new_fb_ptr->mi_rows < cm->mi_rows ||
-      new_fb_ptr->mi_cols < cm->mi_cols) {
-    aom_free(new_fb_ptr->mvs);
-    CHECK_MEM_ERROR(cm, new_fb_ptr->mvs,
-                    (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols,
-                                         sizeof(*new_fb_ptr->mvs)));
-    new_fb_ptr->mi_rows = cm->mi_rows;
-    new_fb_ptr->mi_cols = cm->mi_cols;
-  }
+  ensure_mv_buffer(new_fb_ptr, cm);
+  new_fb_ptr->width = cm->width;
+  new_fb_ptr->height = cm->height;
 }
 
 void av1_scale_references(AV1_COMP *cpi) {

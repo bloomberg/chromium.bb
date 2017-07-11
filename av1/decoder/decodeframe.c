@@ -3132,15 +3132,6 @@ static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
-static void resize_mv_buffer(AV1_COMMON *cm) {
-  aom_free(cm->cur_frame->mvs);
-  cm->cur_frame->mi_rows = cm->mi_rows;
-  cm->cur_frame->mi_cols = cm->mi_cols;
-  CHECK_MEM_ERROR(cm, cm->cur_frame->mvs,
-                  (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols,
-                                       sizeof(*cm->cur_frame->mvs)));
-}
-
 static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
 #if CONFIG_SIZE_LIMIT
   if (width > DECODE_WIDTH_LIMIT || height > DECODE_HEIGHT_LIMIT)
@@ -3167,10 +3158,10 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
     cm->width = width;
     cm->height = height;
   }
-  if (cm->cur_frame->mvs == NULL || cm->mi_rows > cm->cur_frame->mi_rows ||
-      cm->mi_cols > cm->cur_frame->mi_cols) {
-    resize_mv_buffer(cm);
-  }
+
+  ensure_mv_buffer(cm->cur_frame, cm);
+  cm->cur_frame->width = cm->width;
+  cm->cur_frame->height = cm->height;
 }
 
 static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
@@ -4572,9 +4563,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_PALETTE || CONFIG_INTRABC
     if (cm->intra_only) cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #endif  // CONFIG_PALETTE || CONFIG_INTRABC
-#if CONFIG_TEMPMV_SIGNALING
-    if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
-#endif
     if (cm->error_resilient_mode) {
       cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
     } else {
@@ -4663,9 +4651,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
       cm->interp_filter = read_frame_interp_filter(rb);
 #if CONFIG_TEMPMV_SIGNALING
-      if (!cm->error_resilient_mode) {
+      if (frame_might_use_prev_frame_mvs(cm))
         cm->use_prev_frame_mvs = aom_rb_read_bit(rb);
-      }
+      else
+        cm->use_prev_frame_mvs = 0;
 #endif
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
@@ -5333,16 +5322,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_TEMPMV_SIGNALING
-  if (cm->use_prev_frame_mvs) {
-    assert(!cm->error_resilient_mode && cm->prev_frame);
-#if CONFIG_FRAME_SUPERRES
-    assert(cm->width == cm->last_width && cm->height == cm->last_height);
-#else
-    assert(cm->width == last_fb_ref_buf->buf->y_crop_width &&
-           cm->height == last_fb_ref_buf->buf->y_crop_height);
-#endif  // CONFIG_FRAME_SUPERRES
-    assert(!cm->prev_frame->intra_only);
-  }
+  if (cm->use_prev_frame_mvs) assert(frame_can_use_prev_frame_mvs(cm));
 #else
   cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
 #if CONFIG_FRAME_SUPERRES
