@@ -117,7 +117,7 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(s);
   }
 
-  void EchoTextureMailbox(const TextureMailbox& t,
+  void EchoTextureMailbox(const viz::TextureMailbox& t,
                           EchoTextureMailboxCallback callback) override {
     std::move(callback).Run(t);
   }
@@ -477,7 +477,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
   const uint32_t target = 3;
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
-  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+  viz::TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
   base::RunLoop run_loop;
   auto callback = base::Bind(CopyOutputRequestCallback, run_loop.QuitClosure(),
                              gfx::Size());
@@ -565,7 +565,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
       CopyOutputResultCallback, run_loop.QuitClosure(), sync_token, is_lost));
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
-  TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
+  viz::TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
 
   auto input = CopyOutputResult::CreateTextureResult(size, texture_mailbox,
                                                      std::move(callback));
@@ -578,7 +578,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   EXPECT_TRUE(output->HasTexture());
   EXPECT_EQ(size, output->size());
 
-  TextureMailbox out_mailbox;
+  viz::TextureMailbox out_mailbox;
   std::unique_ptr<SingleReleaseCallback> out_callback;
   output->TakeTexture(&out_mailbox, &out_callback);
   EXPECT_EQ(mailbox, out_mailbox.mailbox());
@@ -1116,8 +1116,8 @@ TEST_F(StructTraitsTest, TextureMailbox) {
 
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
-  TextureMailbox input(mailbox, sync_token, texture_target, size_in_pixels,
-                       is_overlay_candidate, secure_output_only);
+  viz::TextureMailbox input(mailbox, sync_token, texture_target, size_in_pixels,
+                            is_overlay_candidate, secure_output_only);
   input.set_nearest_neighbor(nearest_neighbor);
   input.set_color_space(color_space);
 #if defined(OS_ANDROID)
@@ -1126,7 +1126,7 @@ TEST_F(StructTraitsTest, TextureMailbox) {
 #endif
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  TextureMailbox output;
+  viz::TextureMailbox output;
   proxy->EchoTextureMailbox(input, &output);
 
   EXPECT_EQ(mailbox, output.mailbox());

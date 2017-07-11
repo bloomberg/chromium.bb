@@ -251,7 +251,7 @@ std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
 }
 
 bool DrawingBuffer::PrepareTextureMailbox(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   ScopedStateRestorer scoped_state_restorer(this);
   bool force_gpu_result = false;
@@ -260,7 +260,7 @@ bool DrawingBuffer::PrepareTextureMailbox(
 }
 
 bool DrawingBuffer::PrepareTextureMailboxInternal(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback,
     bool force_gpu_result) {
   DCHECK(state_restorer_);
@@ -296,7 +296,7 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
 }
 
 bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
@@ -317,7 +317,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
                         op);
   }
 
-  *out_mailbox = cc::TextureMailbox(bitmap.get(), size_);
+  *out_mailbox = viz::TextureMailbox(bitmap.get(), size_);
   out_mailbox->set_color_space(color_space_);
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -337,7 +337,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
 }
 
 bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
   if (web_gl_version_ > kWebGL1) {
@@ -395,7 +395,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
   {
     bool is_overlay_candidate = color_buffer_for_mailbox->image_id != 0;
     bool secure_output_only = false;
-    *out_mailbox = cc::TextureMailbox(
+    *out_mailbox = viz::TextureMailbox(
         color_buffer_for_mailbox->mailbox,
         color_buffer_for_mailbox->produce_sync_token,
         color_buffer_for_mailbox->parameters.target, gfx::Size(size_),
@@ -468,7 +468,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   // grContext().
   GrContext* gr_context = ContextProvider()->GetGrContext();
 
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   bool success = false;
   if (gr_context) {

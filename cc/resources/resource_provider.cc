@@ -312,7 +312,8 @@ ResourceProvider::Resource::Resource(const viz::SharedBitmapId& bitmap_id,
 
 ResourceProvider::Resource::Resource(Resource&& other) = default;
 
-void ResourceProvider::Resource::SetMailbox(const TextureMailbox& mailbox) {
+void ResourceProvider::Resource::SetMailbox(
+    const viz::TextureMailbox& mailbox) {
   mailbox_ = mailbox;
   if (IsGpuResourceType(type)) {
     synchronization_state_ =
@@ -664,7 +665,7 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size,
 }
 
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
     bool read_lock_fences_enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -709,7 +710,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
 }
 
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
   return CreateResourceFromTextureMailbox(
       mailbox, std::move(release_callback_impl), false);
@@ -1539,9 +1540,9 @@ void ResourceProvider::ReceiveFromChild(
                              TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
                              it->format));
       resource->buffer_format = it->buffer_format;
-      resource->SetMailbox(TextureMailbox(it->mailbox_holder.mailbox,
-                                          it->mailbox_holder.sync_token,
-                                          it->mailbox_holder.texture_target));
+      resource->SetMailbox(viz::TextureMailbox(
+          it->mailbox_holder.mailbox, it->mailbox_holder.sync_token,
+          it->mailbox_holder.texture_target));
       resource->read_lock_fences_enabled = it->read_lock_fences_enabled;
       resource->is_overlay_candidate = it->is_overlay_candidate;
 #if defined(OS_ANDROID)
@@ -1698,7 +1699,7 @@ void ResourceProvider::CreateMailboxAndBindResource(
     gl->ProduceTextureDirectCHROMIUM(resource->gl_id,
                                      mailbox_holder.texture_target,
                                      mailbox_holder.mailbox.name);
-    resource->SetMailbox(TextureMailbox(mailbox_holder));
+    resource->SetMailbox(viz::TextureMailbox(mailbox_holder));
     resource->SetLocallyUsed();
   }
 

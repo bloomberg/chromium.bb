@@ -5,7 +5,7 @@
 #include "cc/output/copy_output_result.h"
 
 #include "base/logging.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 
 namespace cc {
 
@@ -18,7 +18,7 @@ CopyOutputResult::CopyOutputResult(std::unique_ptr<SkBitmap> bitmap)
 
 CopyOutputResult::CopyOutputResult(
     const gfx::Size& size,
-    const TextureMailbox& texture_mailbox,
+    const viz::TextureMailbox& texture_mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback)
     : size_(size),
       texture_mailbox_(texture_mailbox),
@@ -36,12 +36,12 @@ std::unique_ptr<SkBitmap> CopyOutputResult::TakeBitmap() {
 }
 
 void CopyOutputResult::TakeTexture(
-    TextureMailbox* texture_mailbox,
+    viz::TextureMailbox* texture_mailbox,
     std::unique_ptr<SingleReleaseCallback>* release_callback) {
   *texture_mailbox = texture_mailbox_;
   *release_callback = std::move(release_callback_);
 
-  texture_mailbox_ = TextureMailbox();
+  texture_mailbox_ = viz::TextureMailbox();
 }
 
 }  // namespace cc

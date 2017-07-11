@@ -5,7 +5,7 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,7 @@ class DrawingBufferSoftwareRenderingTest : public Test {
 };
 
 TEST_F(DrawingBufferSoftwareRenderingTest, BitmapRecycling) {
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
@@ -105,7 +105,7 @@ TEST_F(DrawingBufferSoftwareRenderingTest, BitmapRecycling) {
 
 TEST_F(DrawingBufferSoftwareRenderingTest, FramebufferBinding) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   IntSize initial_size(kInitialWidth, kInitialHeight);
   GLint drawBinding = 0, readBinding = 0;

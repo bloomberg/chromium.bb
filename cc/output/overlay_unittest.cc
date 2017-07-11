@@ -29,13 +29,13 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -263,9 +263,9 @@ std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
 ResourceId CreateResource(ResourceProvider* resource_provider,
                           const gfx::Size& size,
                           bool is_overlay_candidate) {
-  TextureMailbox mailbox =
-      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
-                     size, is_overlay_candidate, false);
+  viz::TextureMailbox mailbox =
+      viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                          GL_TEXTURE_2D, size, is_overlay_candidate, false);
   std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 

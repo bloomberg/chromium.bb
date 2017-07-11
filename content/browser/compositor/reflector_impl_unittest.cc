@@ -169,7 +169,7 @@ class ReflectorImplTest : public testing::Test {
   void TearDown() override {
     if (reflector_)
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
-    cc::TextureMailbox mailbox;
+    viz::TextureMailbox mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> release;
     if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release)) {
       release->Run(gpu::SyncToken(), false);

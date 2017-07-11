@@ -26,8 +26,8 @@
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/CrossThreadFunctional.h"
@@ -244,7 +244,7 @@ class Canvas2DLayerBridgeTest : public Test {
     // GL frames for the compositor or not, so fail to generate frames.
     gl.SetIsContextLost(true);
 
-    cc::TextureMailbox texture_mailbox;
+    viz::TextureMailbox texture_mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> release_callback;
     EXPECT_FALSE(
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
@@ -272,7 +272,7 @@ class Canvas2DLayerBridgeTest : public Test {
     // restore while the GPU process is down.
     bridge->RestoreSurface();
 
-    cc::TextureMailbox texture_mailbox;
+    viz::TextureMailbox texture_mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> release_callback;
     EXPECT_FALSE(
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
@@ -290,7 +290,7 @@ class Canvas2DLayerBridgeTest : public Test {
           Canvas2DLayerBridge::kForceAccelerationForTesting,
           CanvasColorParams())));
 
-      cc::TextureMailbox texture_mailbox;
+      viz::TextureMailbox texture_mailbox;
       std::unique_ptr<cc::SingleReleaseCallback> release_callback;
       EXPECT_TRUE(
           bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
@@ -305,7 +305,7 @@ class Canvas2DLayerBridgeTest : public Test {
       std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
           WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
-      cc::TextureMailbox texture_mailbox;
+      viz::TextureMailbox texture_mailbox;
       std::unique_ptr<cc::SingleReleaseCallback> release_callback;
 
       {
@@ -1224,7 +1224,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
 
   // Test prepareMailbox while hibernating
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   EXPECT_FALSE(
       bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
@@ -1284,7 +1284,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_TRUE(bridge->CheckSurfaceValid());
 
   // Test prepareMailbox while background rendering
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   EXPECT_FALSE(
       bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
@@ -1306,7 +1306,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
   std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider =
       WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
 
   {

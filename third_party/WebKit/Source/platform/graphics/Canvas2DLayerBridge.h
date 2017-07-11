@@ -28,7 +28,7 @@
 
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBufferSurface.h"
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   ~Canvas2DLayerBridge() override;
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(cc::TextureMailbox* out_mailbox,
+  bool PrepareTextureMailbox(viz::TextureMailbox* out_mailbox,
                              std::unique_ptr<cc::SingleReleaseCallback>*
                                  out_release_callback) override;
 
@@ -216,7 +216,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
   // mailbox was successfully prepared. |mailbox| is an out parameter only
   // populated on success.
-  bool PrepareIOSurfaceMailboxFromImage(SkImage*, cc::TextureMailbox*);
+  bool PrepareIOSurfaceMailboxFromImage(SkImage*, viz::TextureMailbox*);
 
   // Creates an IOSurface-backed texture. Returns an ImageInfo, which is empty
   // on failure. The caller takes ownership of both the texture and the image.
@@ -234,7 +234,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
 
   // Returns whether the mailbox was successfully prepared from the SkImage.
   // The mailbox is an out parameter only populated on success.
-  bool PrepareMailboxFromImage(sk_sp<SkImage>, cc::TextureMailbox*);
+  bool PrepareMailboxFromImage(sk_sp<SkImage>, viz::TextureMailbox*);
 
   // Resets Skia's texture bindings. This method should be called after
   // changing texture bindings.

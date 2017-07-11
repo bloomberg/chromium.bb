@@ -4,8 +4,8 @@
 
 #include "platform/graphics/gpu/ImageLayerBridge.h"
 
-#include "cc/resources/texture_mailbox.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -65,7 +65,7 @@ void ImageLayerBridge::Dispose() {
 }
 
 bool ImageLayerBridge::PrepareTextureMailbox(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   if (disposed_)
     return false;
@@ -80,8 +80,8 @@ bool ImageLayerBridge::PrepareTextureMailbox(
 
   if (image_->IsTextureBacked()) {
     image_->EnsureMailbox();
-    *out_mailbox = cc::TextureMailbox(image_->GetMailbox(),
-                                      image_->GetSyncToken(), GL_TEXTURE_2D);
+    *out_mailbox = viz::TextureMailbox(image_->GetMailbox(),
+                                       image_->GetSyncToken(), GL_TEXTURE_2D);
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedGpu,
                           WrapWeakPersistent(this), image_);
     *out_release_callback = cc::SingleReleaseCallback::Create(
@@ -107,7 +107,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
         return false;
     }
 
-    *out_mailbox = cc::TextureMailbox(
+    *out_mailbox = viz::TextureMailbox(
         bitmap.get(), gfx::Size(image_->width(), image_->height()));
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedSoftware,
                           WrapWeakPersistent(this), base::Passed(&bitmap),

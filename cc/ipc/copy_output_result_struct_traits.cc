@@ -84,7 +84,7 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
   // constructor of cc::CopyOutputResult.
   gfx::Size size;
   auto bitmap = base::MakeUnique<SkBitmap>();
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
 
   if (!data.ReadSize(&size))

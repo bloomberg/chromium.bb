@@ -18,13 +18,13 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/paths.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "testing/perf/perf_test.h"
 
 namespace cc {
@@ -324,7 +324,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
                                    gpu::CommandBufferId::FromUnsafeValue(1),
                                    next_fence_sync_);
     next_sync_token.SetVerifyFlush();
-    TextureMailbox mailbox(gpu_mailbox, next_sync_token, GL_TEXTURE_2D);
+    viz::TextureMailbox mailbox(gpu_mailbox, next_sync_token, GL_TEXTURE_2D);
     next_fence_sync_++;
 
     tab_contents_->SetTextureMailbox(mailbox, std::move(callback));
@@ -348,7 +348,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
   }
 
   void CleanUpAndEndTestOnMainThread() {
-    tab_contents_->SetTextureMailbox(TextureMailbox(), nullptr);
+    tab_contents_->SetTextureMailbox(viz::TextureMailbox(), nullptr);
     // ReleaseMailbox will end the test when we get the last mailbox back.
   }
 

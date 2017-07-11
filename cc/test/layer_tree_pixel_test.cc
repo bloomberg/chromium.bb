@@ -16,7 +16,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/software_output_device.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -24,6 +23,7 @@
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
 
@@ -134,7 +134,7 @@ void LayerTreePixelTest::EndTest() {
   // Drop TextureMailboxes on the main thread so that they can be cleaned up and
   // the pending callbacks will fire.
   for (size_t i = 0; i < texture_layers_.size(); ++i) {
-    texture_layers_[i]->SetTextureMailbox(TextureMailbox(), nullptr);
+    texture_layers_[i]->SetTextureMailbox(viz::TextureMailbox(), nullptr);
   }
 
   TryEndTest();
@@ -225,7 +225,7 @@ void LayerTreePixelTest::SetupTree() {
 
 std::unique_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
     const gfx::Size& size,
-    const TextureMailbox& texture_mailbox) {
+    const viz::TextureMailbox& texture_mailbox) {
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture())
     return nullptr;

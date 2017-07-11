@@ -50,7 +50,7 @@ void TextureLayer::ClearClient() {
 }
 
 void TextureLayer::ClearTexture() {
-  SetTextureMailbox(TextureMailbox(), nullptr);
+  SetTextureMailbox(viz::TextureMailbox(), nullptr);
 }
 
 std::unique_ptr<LayerImpl> TextureLayer::CreateLayerImpl(
@@ -116,7 +116,7 @@ void TextureLayer::SetBlendBackgroundColor(bool blend) {
 }
 
 void TextureLayer::SetTextureMailboxInternal(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback,
     bool requires_commit,
     bool allow_mailbox_reuse) {
@@ -146,7 +146,7 @@ void TextureLayer::SetTextureMailboxInternal(
 }
 
 void TextureLayer::SetTextureMailbox(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback) {
   bool requires_commit = true;
   bool allow_mailbox_reuse = false;
@@ -183,7 +183,7 @@ bool TextureLayer::HasDrawableContent() const {
 bool TextureLayer::Update() {
   bool updated = Layer::Update();
   if (client_) {
-    TextureMailbox mailbox;
+    viz::TextureMailbox mailbox;
     std::unique_ptr<SingleReleaseCallback> release_callback;
     if (client_->PrepareTextureMailbox(&mailbox, &release_callback)) {
       // Already within a commit, no need to do another one immediately.
@@ -218,7 +218,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   if (needs_set_mailbox_) {
-    TextureMailbox texture_mailbox;
+    viz::TextureMailbox texture_mailbox;
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl;
     if (holder_ref_) {
       TextureMailboxHolder* holder = holder_ref_->holder();
@@ -243,7 +243,7 @@ TextureLayer::TextureMailboxHolder::MainThreadReference::
 }
 
 TextureLayer::TextureMailboxHolder::TextureMailboxHolder(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback)
     : internal_references_(0),
       mailbox_(mailbox),
@@ -257,7 +257,7 @@ TextureLayer::TextureMailboxHolder::~TextureMailboxHolder() {
 
 std::unique_ptr<TextureLayer::TextureMailboxHolder::MainThreadReference>
 TextureLayer::TextureMailboxHolder::Create(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback) {
   return base::MakeUnique<MainThreadReference>(
       new TextureMailboxHolder(mailbox, std::move(release_callback)));
@@ -289,7 +289,7 @@ void TextureLayer::TextureMailboxHolder::InternalRelease() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!--internal_references_) {
     release_callback_->Run(sync_token_, is_lost_);
-    mailbox_ = TextureMailbox();
+    mailbox_ = viz::TextureMailbox();
     release_callback_ = nullptr;
   }
 }

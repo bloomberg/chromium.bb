@@ -15,9 +15,9 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/resources/texture_mailbox.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -559,7 +559,7 @@ void PepperGraphics2DHost::ReleaseCallback(
 }
 
 bool PepperGraphics2DHost::PrepareTextureMailbox(
-    cc::TextureMailbox* mailbox,
+    viz::TextureMailbox* mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!texture_mailbox_modified_)
     return false;
@@ -584,7 +584,7 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
          viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
   image_data_->Unmap();
 
-  *mailbox = cc::TextureMailbox(shared_bitmap.get(), pixel_image_size);
+  *mailbox = viz::TextureMailbox(shared_bitmap.get(), pixel_image_size);
   *release_callback = cc::SingleReleaseCallback::Create(
       base::Bind(&PepperGraphics2DHost::ReleaseCallback,
                  this->AsWeakPtr(),

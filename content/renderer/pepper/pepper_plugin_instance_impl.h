@@ -25,7 +25,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
@@ -202,14 +202,14 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void ScrollRect(int dx, int dy, const gfx::Rect& rect);
 
   // Commit the texture mailbox to the screen.
-  void CommitTextureMailbox(const cc::TextureMailbox& texture_mailbox);
+  void CommitTextureMailbox(const viz::TextureMailbox& texture_mailbox);
 
   // Passes the committed texture to |texture_layer_| and marks it as in use.
   void PassCommittedTextureToTextureLayer();
 
   // Callback when the compositor is finished consuming the committed texture.
   void FinishedConsumingCommittedTexture(
-      const cc::TextureMailbox& texture_mailbox,
+      const viz::TextureMailbox& texture_mailbox,
       scoped_refptr<PPB_Graphics3D_Impl> graphics_3d,
       const gpu::SyncToken& sync_token,
       bool is_lost);
@@ -551,7 +551,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // cc::TextureLayerClient implementation.
   bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      viz::TextureMailbox* mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
 
   // RenderFrameObserver
@@ -722,25 +722,25 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Each time CommitTextureMailbox() is called, this instance is given
   // ownership
-  // of a cc::TextureMailbox. This instance always needs to hold on to the most
-  // recently committed cc::TextureMailbox, since UpdateLayer() might require
+  // of a viz::TextureMailbox. This instance always needs to hold on to the most
+  // recently committed viz::TextureMailbox, since UpdateLayer() might require
   // it.
-  // Since it is possible for a cc::TextureMailbox to be passed to
+  // Since it is possible for a viz::TextureMailbox to be passed to
   // texture_layer_ more than once, a reference counting mechanism is necessary
-  // to ensure that a cc::TextureMailbox isn't returned until all copies of it
+  // to ensure that a viz::TextureMailbox isn't returned until all copies of it
   // have been released by texture_layer_.
   //
-  // This method should be called each time a cc::TextureMailbox is passed to
+  // This method should be called each time a viz::TextureMailbox is passed to
   // |texture_layer_|. It increments an internal reference count.
-  void IncrementTextureReferenceCount(const cc::TextureMailbox& mailbox);
+  void IncrementTextureReferenceCount(const viz::TextureMailbox& mailbox);
 
   // This method should be called each time |texture_layer_| finishes consuming
-  // a cc::TextureMailbox. It decrements an internal reference count. Returns
+  // a viz::TextureMailbox. It decrements an internal reference count. Returns
   // whether the last reference was removed.
-  bool DecrementTextureReferenceCount(const cc::TextureMailbox& mailbox);
+  bool DecrementTextureReferenceCount(const viz::TextureMailbox& mailbox);
 
-  // Whether a given cc::TextureMailbox is in use by |texture_layer_|.
-  bool IsTextureInUse(const cc::TextureMailbox& mailbox) const;
+  // Whether a given viz::TextureMailbox is in use by |texture_layer_|.
+  bool IsTextureInUse(const viz::TextureMailbox& mailbox) const;
 
   RenderFrameImpl* render_frame_;
   scoped_refptr<PluginModule> module_;
@@ -967,7 +967,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The most recently committed texture. This is kept around in case the layer
   // needs to be regenerated.
-  cc::TextureMailbox committed_texture_;
+  viz::TextureMailbox committed_texture_;
 
   // The Graphics3D that produced the most recently committed texture.
   scoped_refptr<PPB_Graphics3D_Impl> committed_texture_graphics_3d_;
@@ -975,10 +975,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   gpu::SyncToken committed_texture_consumed_sync_token_;
 
   // Holds the number of references |texture_layer_| has to any given
-  // cc::TextureMailbox.
+  // viz::TextureMailbox.
   // We expect there to be no more than 10 textures in use at a time. A
   // std::vector will have better performance than a std::map.
-  using TextureMailboxRefCount = std::pair<cc::TextureMailbox, int>;
+  using TextureMailboxRefCount = std::pair<viz::TextureMailbox, int>;
   std::vector<TextureMailboxRefCount> texture_ref_counts_;
 
   bool initialized_;
