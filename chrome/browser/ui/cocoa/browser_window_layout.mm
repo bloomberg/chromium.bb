@@ -18,18 +18,13 @@ namespace chrome {
 const CGFloat kTabStripHeight = 37;
 
 bool ShouldUseFullSizeContentView() {
-  // Chrome has added a subview above the window's content view, which the
-  // Appkit warns about at runtime. This was done to make sure that window
-  // buttons are always displayed above the content. Presumably, doing so may
-  // break in a future macOS release. Using NSFullSizeContentViewWindowMask
-  // makes window buttons displayed inside the titlebar, so they are not covered
-  // by the content view.
-  // TODO(crbug.com/666415): This should return base::mac::IsAtLeastOS10_11()
-  // once we are satisfied there are no regressions when doing this. The concern
-  // is that by making the browser view hierarchy a child view of NSThemeFrame
-  // rather than a sibling, the views are exposed to autolayout in new ways that
-  // may cause performance regressions and layout glitches.
-  return false;
+  // Chrome historically added a subview to the window's frame view
+  // (window.contentView.superview), which AppKit warns about at runtime. This
+  // stopped the window buttons from being covered by the content view. This
+  // may break in a future macOS release. NSFullSizeContentViewWindowMask is a
+  // new (10.10+), supported way to make the content view the full size of the
+  // window without covering the controls.
+  return base::mac::IsAtLeastOS10_11();
 }
 
 }  // namespace chrome
