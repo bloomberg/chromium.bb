@@ -49,9 +49,7 @@ ClientSession::ClientSession(
     const DesktopEnvironmentOptions& desktop_environment_options,
     const base::TimeDelta& max_duration,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
-    const std::vector<HostExtension*>& extensions,
-    const std::vector<protocol::DataChannelManager::NameCallbackPair>&
-        data_channel_callbacks)
+    const std::vector<HostExtension*>& extensions)
     : event_handler_(event_handler),
       connection_(std::move(connection)),
       client_jid_(connection_->session()->jid()),
@@ -75,11 +73,6 @@ ClientSession::ClientSession(
 
   // Create a manager for the configured extensions, if any.
   extension_manager_.reset(new HostExtensionSessionManager(extensions, this));
-
-  for (const auto& callback : data_channel_callbacks) {
-    data_channel_manager_.RegisterCreateHandlerCallback(callback.first,
-                                                        callback.second);
-  }
 
 #if defined(OS_WIN)
   // LocalInputMonitorWin filters out an echo of the injected input before it
@@ -414,6 +407,13 @@ uint32_t ClientSession::desktop_session_id() const {
 ClientSessionControl* ClientSession::session_control() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return this;
+}
+
+void ClientSession::RegisterCreateHandlerCallbackForTesting(
+    const std::string& prefix,
+    protocol::DataChannelManager::CreateHandlerCallback constructor) {
+  data_channel_manager_.RegisterCreateHandlerCallback(
+      prefix, std::move(constructor));
 }
 
 void ClientSession::SetEventTimestampsSourceForTests(

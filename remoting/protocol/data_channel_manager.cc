@@ -20,7 +20,7 @@ void DataChannelManager::RegisterCreateHandlerCallback(
     CreateHandlerCallback constructor) {
   DCHECK(!prefix.empty());
   DCHECK(constructor);
-  constructors_.push_back(std::make_pair(prefix, constructor));
+  constructors_.push_back(std::make_pair(prefix, std::move(constructor)));
 }
 
 bool DataChannelManager::OnIncomingDataChannel(

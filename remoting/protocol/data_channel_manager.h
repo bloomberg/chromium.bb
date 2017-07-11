@@ -24,8 +24,6 @@ class DataChannelManager final {
       const std::string& name,
       std::unique_ptr<MessagePipe> pipe)>;
 
-  using NameCallbackPair = std::pair<std::string, CreateHandlerCallback>;
-
   DataChannelManager();
   ~DataChannelManager();
 
@@ -40,7 +38,7 @@ class DataChannelManager final {
                              std::unique_ptr<MessagePipe> pipe);
 
  private:
-  std::vector<NameCallbackPair> constructors_;
+  std::vector<std::pair<std::string, CreateHandlerCallback>> constructors_;
 };
 
 }  // namespace protocol
