@@ -474,8 +474,8 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
 
 void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
-  gl::GLImageDXGI* image_dxgi =
-      gl::GLImageDXGI::FromGLImage(params.image[0].get());
+  gl::GLImageDXGIBase* image_dxgi =
+      gl::GLImageDXGIBase::FromGLImage(params.image[0].get());
   gl::GLImageMemory* y_image_memory = nullptr;
   gl::GLImageMemory* uv_image_memory = nullptr;
   if (params.image.size() >= 2) {
@@ -557,9 +557,13 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   base::win::ScopedComPtr<ID3D11Texture2D> input_texture;
   UINT input_level;
+  base::win::ScopedComPtr<IDXGIKeyedMutex> keyed_mutex;
   if (image_dxgi) {
     input_texture = image_dxgi->texture();
     input_level = (UINT)image_dxgi->level();
+    if (!input_texture)
+      return;
+    input_texture.CopyTo(keyed_mutex.GetAddressOf());
     staging_texture_.Reset();
   } else {
     DCHECK(y_image_memory);
@@ -624,6 +628,19 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   }
 
   {
+    if (keyed_mutex) {
+      // The producer may still be using this texture for a short period of
+      // time, so wait long enough to hopefully avoid glitches. For example,
+      // all levels of the texture share the same keyed mutex, so if the
+      // hardware decoder acquired the mutex to decode into a different array
+      // level then it still may block here temporarily.
+      const int kMaxSyncTimeMs = 1000;
+      HRESULT hr = keyed_mutex->AcquireSync(0, kMaxSyncTimeMs);
+      if (FAILED(hr)) {
+        DLOG(ERROR) << "Error acquiring keyed mutex: " << std::hex << hr;
+        return;
+      }
+    }
     D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
     in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
     in_desc.Texture2D.ArraySlice = input_level;
@@ -652,6 +669,10 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
                                            out_view_.Get(), 0, 1, &stream);
     CHECK(SUCCEEDED(hr));
+    if (keyed_mutex) {
+      HRESULT hr = keyed_mutex->ReleaseSync(0);
+      DCHECK(SUCCEEDED(hr));
+    }
   }
 
   if (first_present) {

@@ -5,6 +5,7 @@
 #include <d3d11.h>
 
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_handle.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
@@ -12,12 +13,12 @@ typedef void* EGLStreamKHR;
 
 namespace gl {
 
-class GL_EXPORT GLImageDXGI : public GLImage {
+class GL_EXPORT GLImageDXGIBase : public GLImage {
  public:
-  GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream);
+  GLImageDXGIBase(const gfx::Size& size);
 
   // Safe downcast. Returns nullptr on failure.
-  static GLImageDXGI* FromGLImage(GLImage* image);
+  static GLImageDXGIBase* FromGLImage(GLImage* image);
 
   // GLImage implementation.
   gfx::Size GetSize() override;
@@ -39,21 +40,32 @@ class GL_EXPORT GLImageDXGI : public GLImage {
                     const std::string& dump_name) override;
   Type GetType() const override;
 
-  void SetTexture(const base::win::ScopedComPtr<ID3D11Texture2D>& texture,
-                  size_t level);
-
   base::win::ScopedComPtr<ID3D11Texture2D> texture() { return texture_; }
   size_t level() const { return level_; }
 
  protected:
-  ~GLImageDXGI() override;
+  ~GLImageDXGIBase() override;
 
   gfx::Size size_;
 
-  EGLStreamKHR stream_;
-
   base::win::ScopedComPtr<ID3D11Texture2D> texture_;
   size_t level_ = 0;
+};
+
+class GL_EXPORT GLImageDXGI : public GLImageDXGIBase {
+ public:
+  GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream);
+
+  // GLImage implementation.
+  bool BindTexImage(unsigned target) override;
+
+  void SetTexture(const base::win::ScopedComPtr<ID3D11Texture2D>& texture,
+                  size_t level);
+
+ protected:
+  ~GLImageDXGI() override;
+
+  EGLStreamKHR stream_;
 };
 
 // This copies to a new texture on bind.
@@ -85,5 +97,19 @@ class GL_EXPORT CopyingGLImageDXGI : public GLImageDXGI {
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
   base::win::ScopedComPtr<ID3D11Texture2D> decoder_copy_texture_;
   base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view_;
+};
+
+class GL_EXPORT GLImageDXGIHandle : public GLImageDXGIBase {
+ public:
+  GLImageDXGIHandle(const gfx::Size& size,
+                    base::win::ScopedHandle handle,
+                    uint32_t level);
+
+  bool Initialize();
+
+ protected:
+  ~GLImageDXGIHandle() override;
+
+  base::win::ScopedHandle handle_;
 };
 }

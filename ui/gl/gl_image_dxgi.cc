@@ -4,64 +4,75 @@
 
 #include "ui/gl/gl_image_dxgi.h"
 
+#include <d3d11_1.h>
+
 #include "third_party/khronos/EGL/egl.h"
 #include "third_party/khronos/EGL/eglext.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
 
-GLImageDXGI::GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream)
-    : size_(size), stream_(stream) {}
+GLImageDXGIBase::GLImageDXGIBase(const gfx::Size& size) : size_(size) {}
 
 // static
-GLImageDXGI* GLImageDXGI::FromGLImage(GLImage* image) {
+GLImageDXGIBase* GLImageDXGIBase::FromGLImage(GLImage* image) {
   if (!image || image->GetType() != Type::DXGI_IMAGE)
     return nullptr;
-  return static_cast<GLImageDXGI*>(image);
+  return static_cast<GLImageDXGIBase*>(image);
 }
 
-gfx::Size GLImageDXGI::GetSize() {
+gfx::Size GLImageDXGIBase::GetSize() {
   return size_;
 }
 
-unsigned GLImageDXGI::GetInternalFormat() {
+unsigned GLImageDXGIBase::GetInternalFormat() {
   return GL_BGRA_EXT;
 }
 
+bool GLImageDXGIBase::BindTexImage(unsigned target) {
+  return false;
+}
+
+void GLImageDXGIBase::ReleaseTexImage(unsigned target) {}
+
+bool GLImageDXGIBase::CopyTexImage(unsigned target) {
+  return false;
+}
+
+bool GLImageDXGIBase::CopyTexSubImage(unsigned target,
+                                      const gfx::Point& offset,
+                                      const gfx::Rect& rect) {
+  return false;
+}
+
+bool GLImageDXGIBase::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                           int z_order,
+                                           gfx::OverlayTransform transform,
+                                           const gfx::Rect& bounds_rect,
+                                           const gfx::RectF& crop_rect) {
+  return false;
+}
+
+void GLImageDXGIBase::Flush() {}
+
+void GLImageDXGIBase::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                   uint64_t process_tracing_id,
+                                   const std::string& dump_name) {}
+
+GLImage::Type GLImageDXGIBase::GetType() const {
+  return Type::DXGI_IMAGE;
+}
+
+GLImageDXGIBase::~GLImageDXGIBase() {}
+
+GLImageDXGI::GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream)
+    : GLImageDXGIBase(size), stream_(stream) {}
+
 bool GLImageDXGI::BindTexImage(unsigned target) {
   return true;
-}
-
-void GLImageDXGI::ReleaseTexImage(unsigned target) {}
-
-bool GLImageDXGI::CopyTexImage(unsigned target) {
-  return false;
-}
-
-bool GLImageDXGI::CopyTexSubImage(unsigned target,
-                                  const gfx::Point& offset,
-                                  const gfx::Rect& rect) {
-  return false;
-}
-
-bool GLImageDXGI::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                       int z_order,
-                                       gfx::OverlayTransform transform,
-                                       const gfx::Rect& bounds_rect,
-                                       const gfx::RectF& crop_rect) {
-  return false;
-}
-
-void GLImageDXGI::Flush() {}
-
-void GLImageDXGI::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                               uint64_t process_tracing_id,
-                               const std::string& dump_name) {}
-
-GLImage::Type GLImageDXGI::GetType() const {
-  return Type::DXGI_IMAGE;
 }
 
 void GLImageDXGI::SetTexture(
@@ -191,5 +202,35 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
 }
 
 CopyingGLImageDXGI::~CopyingGLImageDXGI() {}
+
+GLImageDXGIHandle::GLImageDXGIHandle(const gfx::Size& size,
+                                     base::win::ScopedHandle handle,
+                                     uint32_t level)
+    : GLImageDXGIBase(size), handle_(std::move(handle)) {
+  level_ = level;
+}
+
+bool GLImageDXGIHandle::Initialize() {
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device)
+    return false;
+
+  base::win::ScopedComPtr<ID3D11Device1> d3d11_device1;
+  if (FAILED(d3d11_device.CopyTo(d3d11_device1.GetAddressOf())))
+    return false;
+
+  if (FAILED(d3d11_device1->OpenSharedResource1(
+          handle_.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
+    return false;
+  }
+  D3D11_TEXTURE2D_DESC desc;
+  texture_->GetDesc(&desc);
+  if (desc.Format != DXGI_FORMAT_NV12 || desc.ArraySize <= level_)
+    return false;
+  return true;
+}
+
+GLImageDXGIHandle::~GLImageDXGIHandle() {}
 
 }  // namespace gl
