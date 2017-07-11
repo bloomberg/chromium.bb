@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/feedback_private/single_log_source_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/system_logs/single_debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 
 namespace extensions {
@@ -13,6 +14,7 @@ namespace {
 
 namespace feedback_private = api::feedback_private;
 
+using system_logs::SingleDebugDaemonLogSource;
 using system_logs::SingleLogFileLogSource;
 using system_logs::SystemLogsSource;
 
@@ -33,6 +35,12 @@ std::unique_ptr<SystemLogsSource> SingleLogSourceFactory::CreateSingleLogSource(
     case feedback_private::LOG_SOURCE_UILATEST:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
           SingleLogFileLogSource::SupportedSource::kUiLatest);
+    case feedback_private::LOG_SOURCE_DRMMODETEST:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SingleDebugDaemonLogSource::SupportedSource::kModetest);
+    case feedback_private::LOG_SOURCE_LSUSB:
+      return base::MakeUnique<system_logs::SingleDebugDaemonLogSource>(
+          SingleDebugDaemonLogSource::SupportedSource::kLsusb);
     case feedback_private::LOG_SOURCE_NONE:
     default:
       NOTREACHED() << "Unknown log source type.";
