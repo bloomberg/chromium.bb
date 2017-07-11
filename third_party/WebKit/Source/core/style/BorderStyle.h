@@ -37,9 +37,7 @@ class BorderStyle {
   friend class ComputedStyle;
 
  public:
-  BorderStyle()
-      : style_(static_cast<unsigned>(EBorderStyle::kNone)),
-        is_auto_(kOutlineIsAutoOff) {}
+  BorderStyle() : style_(static_cast<unsigned>(EBorderStyle::kNone)) {}
 
   bool NonZero() const {
     return (style_ != static_cast<unsigned>(EBorderStyle::kNone));
@@ -64,14 +62,8 @@ class BorderStyle {
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   void SetStyle(EBorderStyle style) { style_ = static_cast<unsigned>(style); }
 
-  OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
-  void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }
-
  protected:
   unsigned style_ : 4;  // EBorderStyle
-
-  // This is only used by OutlineValue but moved here to keep the bits packed.
-  unsigned is_auto_ : 1;  // OutlineIsAuto
 };
 
 }  // namespace blink
