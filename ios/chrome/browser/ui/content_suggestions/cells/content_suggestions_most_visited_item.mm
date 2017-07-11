@@ -50,4 +50,8 @@
              : ntp_tiles::TileVisualType::ICON_COLOR;
 }
 
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [ContentSuggestionsMostVisitedCell defaultSize].height;
+}
+
 @end

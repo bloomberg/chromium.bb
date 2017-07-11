@@ -49,4 +49,13 @@
   return self.title;
 }
 
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [self.cellClass heightForWidth:width
+                              withImage:self.hasImage
+                                  title:self.title
+                          publisherName:self.publisher
+                        publicationDate:self.publicationDate
+                       availableOffline:self.availableOffline];
+}
+
 @end

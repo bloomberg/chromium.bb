@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -360,18 +361,16 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item =
+  CSCollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   UIEdgeInsets inset = [self collectionView:collectionView
                                      layout:collectionView.collectionViewLayout
                      insetForSectionAtIndex:indexPath.section];
   UIEdgeInsets contentInset = self.collectionView.contentInset;
+  CGFloat width = CGRectGetWidth(collectionView.bounds) - inset.left -
+                  inset.right - contentInset.left - contentInset.right;
 
-  return [MDCCollectionViewCell
-      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
-                                 inset.left - inset.right - contentInset.left -
-                                 contentInset.right
-                         forItem:item];
+  return [item cellHeightForWidth:width];
 }
 
 #pragma mark - MDCCollectionViewEditingDelegate

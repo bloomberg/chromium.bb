@@ -50,6 +50,10 @@ const int kLinkColorRGB = 0x5595FE;
   [cell setText:self.text];
 }
 
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [self.cellClass heightForWidth:width withText:self.text];
+}
+
 @end
 
 #pragma mark - ContentSuggestionsWhatsNewCell
@@ -73,10 +77,6 @@ const int kLinkColorRGB = 0x5595FE;
   if (self) {
     _iconView = [[UIImageView alloc] init];
     _promoLabel = [[UILabel alloc] init];
-    _promoLabel.font =
-        [[MDCTypography fontLoader] regularFontOfSize:kLabelFontSize];
-    _promoLabel.textColor = UIColorFromRGB(kTextColorRGB, 1.0);
-    _promoLabel.numberOfLines = 0;
     _containerView = [[UIView alloc] init];
 
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -117,6 +117,45 @@ const int kLinkColorRGB = 0x5595FE;
 }
 
 - (void)setText:(NSString*)text {
+  [[self class] configureLabel:self.promoLabel withText:text];
+}
+
++ (CGFloat)heightForWidth:(CGFloat)width withText:(NSString*)text {
+  UILabel* label = [[UILabel alloc] init];
+  [self configureLabel:label withText:text];
+  CGSize sizeForLabel = CGSizeMake(width - kLabelIconMargin - kIconSize, 500);
+
+  return 2 * kLabelMargin + [label sizeThatFits:sizeForLabel].height;
+}
+
+#pragma mark UIView
+
+// Implements -layoutSubviews as per instructions in documentation for
+// +[MDCCollectionViewCell cr_preferredHeightForWidth:forItem:].
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+  // Adjust the text label preferredMaxLayoutWidth when the parent's width
+  // changes, for instance on screen rotation.
+  CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
+
+  self.promoLabel.preferredMaxLayoutWidth =
+      parentWidth - kIconSize - kLabelIconMargin;
+
+  // Re-layout with the new preferred width to allow the label to adjust its
+  // height.
+  [super layoutSubviews];
+}
+
+#pragma mark Private
+
+// Configures the |promoLabel| with the |text|.
++ (void)configureLabel:(UILabel*)promoLabel withText:(NSString*)text {
+  promoLabel.font =
+      [[MDCTypography fontLoader] regularFontOfSize:kLabelFontSize];
+  promoLabel.textColor = UIColorFromRGB(kTextColorRGB, 1.0);
+  promoLabel.numberOfLines = 0;
+
   NSRange linkRange;
   NSString* strippedText = ParseStringWithLink(text, &linkRange);
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(linkRange.location));
@@ -145,26 +184,7 @@ const int kLinkColorRGB = 0x5595FE;
                          value:style
                          range:NSMakeRange(0, strLength)];
 
-  [self.promoLabel setAttributedText:attributedText];
-}
-
-#pragma mark UIView
-
-// Implements -layoutSubviews as per instructions in documentation for
-// +[MDCCollectionViewCell cr_preferredHeightForWidth:forItem:].
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  // Adjust the text label preferredMaxLayoutWidth when the parent's width
-  // changes, for instance on screen rotation.
-  CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
-
-  self.promoLabel.preferredMaxLayoutWidth =
-      parentWidth - kIconSize - kLabelIconMargin;
-
-  // Re-layout with the new preferred width to allow the label to adjust its
-  // height.
-  [super layoutSubviews];
+  [promoLabel setAttributedText:attributedText];
 }
 
 @end

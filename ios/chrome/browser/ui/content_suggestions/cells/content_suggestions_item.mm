@@ -85,6 +85,15 @@
     self.firstTimeWithImage = YES;
 }
 
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [self.cellClass heightForWidth:width
+                              withImage:self.hasImage
+                                  title:self.title
+                          publisherName:self.publisher
+                        publicationDate:[self relativeDate]
+                       availableOffline:self.availableOffline];
+}
+
 #pragma mark - Private
 
 // Returns the date of publication relative to now.

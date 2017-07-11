@@ -84,10 +84,6 @@ const CGFloat kAnimationDuration = 0.3;
     _contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _faviconView = [[FaviconViewNew alloc] init];
 
-    _titleLabel.numberOfLines = 2;
-    [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                   forAxis:UILayoutConstraintAxisVertical];
-
     _contentImageView.contentMode = UIViewContentModeScaleAspectFill;
     _contentImageView.clipsToBounds = YES;
     _contentImageView.hidden = YES;
@@ -114,8 +110,8 @@ const CGFloat kAnimationDuration = 0.3;
     [_noImageIcon
         setTintColor:[UIColor colorWithWhite:kNoImageIconWhite alpha:1]];
 
-    _titleLabel.font = [MDCTypography subheadFont];
-    _additionalInformationLabel.font = [MDCTypography captionFont];
+    [[self class] configureTitleLabel:_titleLabel];
+    _additionalInformationLabel.font = [[self class] additionalInformationFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
 
     _additionalInformationLabel.textColor = [[MDCPalette greyPalette] tint700];
@@ -149,27 +145,10 @@ const CGFloat kAnimationDuration = 0.3;
 - (void)setAdditionalInformationWithPublisherName:(NSString*)publisherName
                                              date:(NSString*)date
                               offlineAvailability:(BOOL)availableOffline {
-  NSString* publisherString = AdjustStringForLocaleDirection(
-      [NSString stringWithFormat:@"%@ - %@ ", publisherName, date]);
-
-  NSMutableAttributedString* additionInformation =
-      [[NSMutableAttributedString alloc] initWithString:publisherString
-                                             attributes:nil];
-
-  if (availableOffline) {
-    NSTextAttachment* offlineIcon = [[NSTextAttachment alloc] init];
-    offlineIcon.image = [[UIImage imageNamed:kOfflineIconName]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    offlineIcon.bounds = CGRectMake(
-        0, (_additionalInformationLabel.font.xHeight - kOfflineIconSize) / 2,
-        kOfflineIconSize, kOfflineIconSize);
-
-    [additionInformation
-        appendAttributedString:[NSAttributedString
-                                   attributedStringWithAttachment:offlineIcon]];
-  }
-
-  self.additionalInformationLabel.attributedText = additionInformation;
+  self.additionalInformationLabel.attributedText =
+      [[self class] attributedStringForPublisher:publisherName
+                                            date:date
+                                availableOffline:availableOffline];
 }
 
 - (void)setDisplayImage:(BOOL)displayImage {
@@ -183,6 +162,35 @@ const CGFloat kAnimationDuration = 0.3;
     self.imageContainer.hidden = YES;
   }
   _displayImage = displayImage;
+}
+
++ (CGFloat)heightForWidth:(CGFloat)width
+                withImage:(BOOL)hasImage
+                    title:(NSString*)title
+            publisherName:(NSString*)publisherName
+          publicationDate:(NSString*)publicationDate
+         availableOffline:(BOOL)availableOffline {
+  UILabel* titleLabel = [[UILabel alloc] init];
+  [self configureTitleLabel:titleLabel];
+  titleLabel.text = title;
+
+  UILabel* additionalInfoLabel = [[UILabel alloc] init];
+  additionalInfoLabel.font = [self additionalInformationFont];
+  additionalInfoLabel.attributedText =
+      [self attributedStringForPublisher:publisherName
+                                    date:publicationDate
+                        availableOffline:availableOffline];
+
+  CGSize sizeForLabels =
+      CGSizeMake(width - [self labelMarginWithImage:hasImage], 500);
+
+  CGFloat labelHeight = 3 * kStandardSpacing;
+  labelHeight += [titleLabel sizeThatFits:sizeForLabels].height;
+  labelHeight += [additionalInfoLabel sizeThatFits:sizeForLabels].height;
+
+  CGFloat minimalHeight = hasImage ? kImageSize : 0;
+  minimalHeight += 2 * kStandardSpacing;
+  return MAX(minimalHeight, labelHeight);
 }
 
 #pragma mark - UICollectionViewCell
@@ -204,13 +212,8 @@ const CGFloat kAnimationDuration = 0.3;
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.bounds);
 
-  CGFloat offset = 0;
-  if (self.displayImage) {
-    offset = kImageSize + kStandardSpacing;
-  }
-
   self.titleLabel.preferredMaxLayoutWidth =
-      parentWidth - 2 * kStandardSpacing - offset;
+      parentWidth - [[self class] labelMarginWithImage:self.displayImage];
   self.additionalInformationLabel.preferredMaxLayoutWidth =
       parentWidth - kFaviconSize - kSmallSpacing - 2 * kStandardSpacing;
 
@@ -290,6 +293,49 @@ const CGFloat kAnimationDuration = 0.3;
       },
       @{ @"space" : @(kStandardSpacing),
          @"small" : @(kSmallSpacing) });
+}
+
+// Configures the |titleLabel|.
++ (void)configureTitleLabel:(UILabel*)titleLabel {
+  titleLabel.font = [MDCTypography subheadFont];
+  titleLabel.numberOfLines = 2;
+}
+
+// Returns the font used to display the additional informations.
++ (UIFont*)additionalInformationFont {
+  return [MDCTypography captionFont];
+}
+
+// Returns the margin for the labels, depending if the cell |hasImage|.
++ (CGFloat)labelMarginWithImage:(BOOL)hasImage {
+  CGFloat offset = hasImage ? kImageSize + kStandardSpacing : 0;
+  return 2 * kStandardSpacing + offset;
+}
+
+// Returns the attributed string to be displayed.
++ (NSAttributedString*)attributedStringForPublisher:(NSString*)publisherName
+                                               date:(NSString*)date
+                                   availableOffline:(BOOL)availableOffline {
+  NSString* publisherString = AdjustStringForLocaleDirection(
+      [NSString stringWithFormat:@"%@ - %@ ", publisherName, date]);
+
+  NSMutableAttributedString* additionInformation =
+      [[NSMutableAttributedString alloc] initWithString:publisherString
+                                             attributes:nil];
+
+  if (availableOffline) {
+    NSTextAttachment* offlineIcon = [[NSTextAttachment alloc] init];
+    offlineIcon.image = [[UIImage imageNamed:kOfflineIconName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    offlineIcon.bounds = CGRectMake(
+        0, ([self additionalInformationFont].xHeight - kOfflineIconSize) / 2,
+        kOfflineIconSize, kOfflineIconSize);
+
+    [additionInformation
+        appendAttributedString:[NSAttributedString
+                                   attributedStringWithAttachment:offlineIcon]];
+  }
+  return additionInformation;
 }
 
 @end
