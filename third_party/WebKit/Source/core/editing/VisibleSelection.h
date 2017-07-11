@@ -182,8 +182,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // Non-directional ignores m_baseIsFirst and selection always extends on shift
   // + arrow key.
   bool is_directional_ : 1;
-
-  TextGranularity granularity_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
