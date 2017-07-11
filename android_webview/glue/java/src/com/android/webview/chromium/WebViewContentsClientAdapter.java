@@ -257,7 +257,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
-    private static class WebResourceRequestImpl implements WebResourceRequest {
+    protected static class WebResourceRequestImpl implements WebResourceRequest {
         private final AwWebResourceRequest mRequest;
 
         public WebResourceRequestImpl(AwWebResourceRequest request) {
