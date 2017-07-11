@@ -101,7 +101,13 @@ namespace feedbackPrivate {
     messages,
 
     // Latest Chrome OS UI logs.
-    uiLatest
+    uiLatest,
+
+    // Info about display connectors and connected displays from DRM subsystem.
+    drmModetest,
+
+    // USB device list and connectivity graph.
+    lsusb
   };
 
   // Input parameters for a readLogSource() call.
