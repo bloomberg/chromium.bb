@@ -257,8 +257,7 @@ class MinidumpMemoryRegion : public MinidumpObject,
   bool hexdump_;
   unsigned int hexdump_width_;
 
-  // The largest memory region that will be read from a minidump.  The
-  // default is 1MB.
+  // The largest memory region that will be read from a minidump.
   static uint32_t max_bytes_;
 
   // Base address and size of the memory region, and its position in the

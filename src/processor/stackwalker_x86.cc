@@ -659,15 +659,13 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack* stack,
   if (!new_frame.get())
     return NULL;
 
-  // Treat an instruction address of 0 as end-of-stack.
-  if (new_frame->context.eip == 0)
+  // Should we terminate the stack walk? (end-of-stack or broken invariant)
+  if (TerminateWalk(new_frame->context.eip,
+                    new_frame->context.esp,
+                    last_frame->context.esp,
+                    frames.size() == 1)) {
     return NULL;
-
-  // If the new stack pointer is at a lower address than the old, then
-  // that's clearly incorrect. Treat this as end-of-stack to enforce
-  // progress and avoid infinite loops.
-  if (new_frame->context.esp <= last_frame->context.esp)
-    return NULL;
+  }
 
   // new_frame->context.eip is the return address, which is the instruction
   // after the CALL that caused us to arrive at the callee. Set

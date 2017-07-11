@@ -130,6 +130,14 @@ StackFrame* StackwalkerPPC::GetCallerFrame(const CallStack* stack,
                             StackFramePPC::CONTEXT_VALID_GPR1;
   frame->trust = StackFrame::FRAME_TRUST_FP;
 
+  // Should we terminate the stack walk? (end-of-stack or broken invariant)
+  if (TerminateWalk(instruction,
+                    stack_pointer,
+                    last_frame->context.gpr[1],
+                    stack->frames()->size() == 1)) {
+    return NULL;
+  }
+
   // frame->context.srr0 is the return address, which is one instruction
   // past the branch that caused us to arrive at the callee.  Set
   // frame_ppc->instruction to four less than that.  Since all ppc

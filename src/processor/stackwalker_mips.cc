@@ -272,16 +272,11 @@ StackFrame* StackwalkerMIPS::GetCallerFrame(const CallStack* stack,
     return NULL;
   }
 
-  // Treat an instruction address of 0 as end-of-stack.
-  if (new_frame->context.epc == 0) {
-    return NULL;
-  }
-
-  // If the new stack pointer is at a lower address than the old, then
-  // that's clearly incorrect. Treat this as end-of-stack to enforce
-  // progress and avoid infinite loops.
-  if (new_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP] <
-      last_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP]) {
+  // Should we terminate the stack walk? (end-of-stack or broken invariant)
+  if (TerminateWalk(new_frame->context.epc,
+                    new_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP],
+                    last_frame->context.iregs[MD_CONTEXT_MIPS_REG_SP],
+                    frames.size() == 1)) {
     return NULL;
   }
 

@@ -132,7 +132,7 @@ TEST_F(MicrodumpProcessorTest, TestProcess_MissingSymbols) {
   ASSERT_EQ("arm64", state.system_info()->cpu);
   ASSERT_EQ("OS 64 VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(1U, state.threads()->size());
-  ASSERT_EQ(12U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(11U, state.threads()->at(0)->frames()->size());
 
   ASSERT_EQ("",
             state.threads()->at(0)->frames()->at(0)->function_name);
@@ -205,7 +205,7 @@ TEST_F(MicrodumpProcessorTest, TestProcessX86) {
   ASSERT_EQ("x86", state.system_info()->cpu);
   ASSERT_EQ("asus/WW_Z00A/Z00A:5.0/LRX21V/2.19.40.22_20150627_5104_user:user/"
       "release-keys", state.system_info()->os_version);
-  ASSERT_EQ(56U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(17U, state.threads()->at(0)->frames()->size());
   ASSERT_EQ("libc.so",
             state.threads()->at(0)->frames()->at(0)->module->debug_file());
   // TODO(mmandlis): Get symbols for the test X86 microdump and test function

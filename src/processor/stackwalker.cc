@@ -60,10 +60,15 @@ namespace google_breakpad {
 
 const int Stackwalker::kRASearchWords = 40;
 
-uint32_t Stackwalker::max_frames_ = 1024;
+// This default is just a sanity check: a large enough value
+// that allow capturing unbounded recursion traces, yet provide a
+// guardrail against stack walking bugs. The stack walking invariants
+// guarantee that the unwinding process is strictly monotonic and
+// practically bounded by the size of the stack memory range.
+uint32_t Stackwalker::max_frames_ = 1 << 20;  // 1M
 bool Stackwalker::max_frames_set_ = false;
 
-uint32_t Stackwalker::max_frames_scanned_ = 1024;
+uint32_t Stackwalker::max_frames_scanned_ = 1 << 14;  // 16k
 
 Stackwalker::Stackwalker(const SystemInfo* system_info,
                          MemoryRegion* memory,
@@ -234,7 +239,7 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
                                              context->GetContextSPARC(),
                                              memory, modules, frame_symbolizer);
       break;
- 
+
     case MD_CONTEXT_MIPS:
     case MD_CONTEXT_MIPS64:
       cpu_stackwalker = new StackwalkerMIPS(system_info,
@@ -253,7 +258,7 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
                                            frame_symbolizer);
       break;
     }
-    
+
     case MD_CONTEXT_ARM64:
       cpu_stackwalker = new StackwalkerARM64(system_info,
                                              context->GetContextARM64(),
@@ -271,7 +276,33 @@ Stackwalker* Stackwalker::StackwalkerForCPU(
   return cpu_stackwalker;
 }
 
-bool Stackwalker::InstructionAddressSeemsValid(uint64_t address) {
+// CONSIDER: check stack alignment?
+bool Stackwalker::TerminateWalk(uint64_t caller_ip,
+                                uint64_t caller_sp,
+                                uint64_t callee_sp,
+                                bool first_unwind) const {
+  // Treat an instruction address less than 4k as end-of-stack.
+  // (using InstructionAddressSeemsValid() here is very tempting,
+  // but we need to handle JITted code)
+  if (caller_ip < (1 << 12)) {
+    return true;
+  }
+
+  // NOTE: The stack address range is implicitly checked
+  //   when the stack memory is accessed.
+
+  // The stack pointer should monotonically increase. For first unwind
+  // we allow caller_sp == callee_sp to account for architectures where
+  // the return address is stored in a register (so it's possible to have
+  // leaf functions which don't move the stack pointer)
+  if (first_unwind ? (caller_sp < callee_sp) : (caller_sp <= callee_sp)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool Stackwalker::InstructionAddressSeemsValid(uint64_t address) const {
   StackFrame frame;
   frame.instruction = address;
   StackFrameSymbolizer::SymbolizerResult symbolizer_result =

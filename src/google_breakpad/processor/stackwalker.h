@@ -126,7 +126,15 @@ class Stackwalker {
   // * This address is within a loaded module for which we have symbols,
   //   and falls inside a function in that module.
   // Returns false otherwise.
-  bool InstructionAddressSeemsValid(uint64_t address);
+  bool InstructionAddressSeemsValid(uint64_t address) const;
+
+  // Checks whether we should stop the stack trace.
+  // (either we reached the end-of-stack or we detected a
+  //  broken callstack invariant)
+  bool TerminateWalk(uint64_t caller_ip,
+                     uint64_t caller_sp,
+                     uint64_t callee_sp,
+                     bool first_unwind) const;
 
   // The default number of words to search through on the stack
   // for a return address.
@@ -217,6 +225,13 @@ class Stackwalker {
   // the caller.  |stack_scan_allowed| controls whether stack scanning is
   // an allowable frame-recovery method, since it is desirable to be able to
   // disable stack scanning in performance-critical use cases.
+  //
+  // CONSIDER: a way to differentiate between:
+  //  - full stack traces
+  //  - explicitly truncated traces (max_frames_)
+  //  - stopping after max scanned frames
+  //  - failed stack walk (breaking one of the stack walk invariants)
+  //
   virtual StackFrame* GetCallerFrame(const CallStack* stack,
                                      bool stack_scan_allowed) = 0;
 
