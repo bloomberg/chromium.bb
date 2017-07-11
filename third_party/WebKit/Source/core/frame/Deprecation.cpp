@@ -11,6 +11,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "public/platform/WebFeaturePolicyFeature.h"
 
 namespace {
 
@@ -68,6 +69,18 @@ String replacedWillBeRemoved(const char* feature,
       "%s is deprecated and will be removed in %s. Please use %s instead. See "
       "https://www.chromestatus.com/features/%s for more details.",
       feature, milestoneString(milestone), replacement, details);
+}
+
+String DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+    const char* function,
+    const char* allow_string,
+    Milestone milestone) {
+  return String::Format(
+      "%s usage in cross-origin iframes is deprecated and will be disabled in "
+      "%s. To continue to use this feature, it must be enabled by the "
+      "embedding document using Feature Policy, e.g. "
+      "<iframe allow=\"%s\" ...>. See https://goo.gl/EuHzyv for more details.",
+      function, milestoneString(milestone), allow_string);
 }
 
 }  // anonymous namespace
@@ -178,6 +191,58 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
   if (!frame)
     return;
   CountDeprecationCrossOriginIframe(frame, feature);
+}
+
+void Deprecation::CountDeprecationFeaturePolicy(
+    const Document& document,
+    WebFeaturePolicyFeature feature) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return;
+
+  // If the feature is allowed, don't log a warning.
+  if (frame->IsFeatureEnabled(feature))
+    return;
+
+  // If the feature is disabled, log a warning but only if the request is from a
+  // cross-origin iframe. Ideally we would check here if the feature is actually
+  // disabled due to the parent frame's policy (as opposed to the current frame
+  // disabling the feature on itself) but that can't happen right now anyway
+  // (until the general syntax is shipped) and this is also a good enough
+  // approximation for deprecation messages.
+  switch (feature) {
+    case WebFeaturePolicyFeature::kEme:
+      CountDeprecationCrossOriginIframe(
+          frame,
+          WebFeature::
+              kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe);
+      break;
+    case WebFeaturePolicyFeature::kGeolocation:
+      CountDeprecationCrossOriginIframe(
+          frame,
+          WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe);
+      break;
+    case WebFeaturePolicyFeature::kMicrophone:
+      CountDeprecationCrossOriginIframe(
+          frame,
+          WebFeature::
+              kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe);
+      break;
+    case WebFeaturePolicyFeature::kCamera:
+      CountDeprecationCrossOriginIframe(
+          frame,
+          WebFeature::
+              kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe);
+      break;
+    case WebFeaturePolicyFeature::kMidiFeature:
+      CountDeprecationCrossOriginIframe(
+          frame,
+          WebFeature::
+              kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 String Deprecation::DeprecationMessage(WebFeature feature) {
@@ -449,6 +514,25 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "is deprecated, and is planned to be removed in %s. Please refer to "
           "https://goo.gl/EGXzpw for possible migration paths.",
           milestoneString(M65));
+    case WebFeature::
+        kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
+      return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+          "requestMediaKeySystemAccess", "encrypted-media", M63);
+    case WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe:
+      return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+          "getCurrentPosition and watchPosition", "geolocation", M63);
+    case WebFeature::
+        kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe:
+      return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+          "getUserMedia (microphone)", "microphone", M63);
+    case WebFeature::
+        kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe:
+      return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+          "getUserMedia (camera)", "camera", M63);
+    case WebFeature::
+        kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe:
+      return DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
+          "requestMIDIAccess", "midi", M63);
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

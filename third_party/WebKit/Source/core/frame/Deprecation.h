@@ -14,6 +14,7 @@
 namespace blink {
 
 class LocalFrame;
+enum class WebFeaturePolicyFeature;
 
 class CORE_EXPORT Deprecation {
   DISALLOW_NEW();
@@ -47,6 +48,9 @@ class CORE_EXPORT Deprecation {
   // have script access into the top level document.
   static void CountDeprecationCrossOriginIframe(const LocalFrame*, WebFeature);
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
+
+  static void CountDeprecationFeaturePolicy(const Document&,
+                                            WebFeaturePolicyFeature);
   static String DeprecationMessage(WebFeature);
 
   // Note: this is only public for tests.

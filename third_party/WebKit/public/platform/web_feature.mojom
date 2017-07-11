@@ -1590,6 +1590,11 @@ enum WebFeature {
   kReportUriMultipleEndpoints = 2052,
   kReportUriSingleEndpoint = 2053,
   kV8ConstructorNonUndefinedPrimitiveReturn = 2054,
+  kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe = 2055,
+  kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe = 2056,
+  kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe = 2057,
+  kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe = 2058,
+  kRequestMIDIAccessDisallowedByFeaturePolicyInCrossOriginIframe = 2059,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
