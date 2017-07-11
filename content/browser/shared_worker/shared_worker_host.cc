@@ -202,6 +202,8 @@ void SharedWorkerHost::AllowFileSystem(
 void SharedWorkerHost::AllowFileSystemResponse(
     std::unique_ptr<IPC::Message> reply_msg,
     bool allowed) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   WorkerProcessHostMsg_RequestFileSystemAccessSync::WriteReplyParams(
       reply_msg.get(),
       allowed);

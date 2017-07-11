@@ -880,6 +880,13 @@ bool SecurityOriginHasExtensionBackgroundPermission(
              APIPermission::kBackground) &&
          process_map->Contains(extension->id(), opener_render_process_id);
 }
+
+void InvokeCallbackOnThread(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::Callback<void(bool)> callback,
+    bool result) {
+  task_runner->PostTask(FROM_HERE, base::Bind(std::move(callback), result));
+}
 #endif
 
 }  // namespace
@@ -2070,9 +2077,11 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
       base::BindOnce(
           &ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread,
           it->first, it->second, url, allow,
-          base::Bind(&ChromeContentBrowserClient::FileSystemAccessed,
-                     weak_factory_.GetWeakPtr(), url, render_frames,
-                     callback)));
+          base::Bind(
+              &ChromeContentBrowserClient::FileSystemAccessed,
+              weak_factory_.GetWeakPtr(), url, render_frames,
+              base::Bind(&InvokeCallbackOnThread,
+                         base::SequencedTaskRunnerHandle::Get(), callback))));
 }
 
 void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
