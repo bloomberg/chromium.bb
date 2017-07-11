@@ -9,10 +9,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/log/write_to_file_net_log_observer.h"
+#include "net/log/net_log.h"
 
 namespace base {
 class FilePath;
+}
+
+namespace net {
+class FileNetLogObserver;
 }
 
 namespace headless {
@@ -23,7 +27,7 @@ class HeadlessNetLog : public net::NetLog {
   ~HeadlessNetLog() override;
 
  private:
-  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessNetLog);
 };
