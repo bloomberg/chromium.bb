@@ -28,8 +28,11 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
     ScriptState* script_state,
     CustomElementRegistry* registry,
     const v8::Local<v8::Value>& constructor) {
-  auto private_id =
-      script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  // TODO(yukishiino): Remove this check when crbug.com/583429 is fixed.
+  if (UNLIKELY(!per_context_data))
+    return nullptr;
+  auto private_id = per_context_data->GetPrivateCustomElementDefinitionId();
   v8::Local<v8::Value> id_value;
   if (!constructor.As<v8::Object>()
            ->GetPrivate(script_state->GetContext(), private_id)
