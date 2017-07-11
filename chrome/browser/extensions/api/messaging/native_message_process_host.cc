@@ -197,10 +197,6 @@ NativeMessageProcessHost::task_runner() const {
   return task_runner_;
 }
 
-void NativeMessageProcessHost::ReadNowForTesting() {
-  DoRead();
-}
-
 void NativeMessageProcessHost::WaitRead() {
   if (closed_)
     return;

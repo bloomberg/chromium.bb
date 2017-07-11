@@ -18,6 +18,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -114,7 +115,7 @@ class NativeMessagingTest : public ::testing::Test,
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void TearDown() override {
-    if (native_message_host_.get()) {
+    if (native_message_host_) {
       BrowserThread::DeleteSoon(
           BrowserThread::IO, FROM_HERE, native_message_host_.release());
     }
@@ -184,26 +185,33 @@ class NativeMessagingTest : public ::testing::Test,
 // Read a single message from a local file.
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   base::FilePath temp_output_file = temp_dir_.GetPath().AppendASCII("output");
+#if defined(OS_WIN)
   base::FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
   ASSERT_FALSE(temp_input_file.empty());
-
   std::unique_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::Create(temp_input_file, temp_output_file);
+#else   // defined(OS_WIN)
+  base::PlatformFile pipe_handles[2];
+  ASSERT_EQ(0, pipe(pipe_handles));
+  base::File read_file(pipe_handles[0]);
+  std::string formatted_message = FormatMessage(kTestMessage);
+  ASSERT_GT(base::GetPageSize(), formatted_message.size());
+  ASSERT_TRUE(base::WriteFileDescriptor(
+      pipe_handles[1], formatted_message.data(), formatted_message.size()));
+  base::File write_file(pipe_handles[1]);
+  std::unique_ptr<NativeProcessLauncher> launcher =
+      FakeLauncher::CreateWithPipeInput(std::move(read_file), temp_output_file);
+#endif  // defined(OS_WIN)
   native_message_host_ = NativeMessageProcessHost::CreateWithLauncher(
       ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
       std::move(launcher));
+  ASSERT_TRUE(last_message_.empty());
   native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
-  run_loop_.reset(new base::RunLoop());
-  run_loop_->RunUntilIdle();
 
-  if (last_message_.empty()) {
-    run_loop_.reset(new base::RunLoop());
-    std::unique_ptr<NativeMessageProcessHost> native_message_process_host_(
-        static_cast<NativeMessageProcessHost*>(native_message_host_.release()));
-    native_message_process_host_->ReadNowForTesting();
-    run_loop_->Run();
-  }
+  ASSERT_TRUE(native_message_host_);
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
   EXPECT_EQ(kTestMessage, last_message_);
 }
 
@@ -241,7 +249,7 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
       ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
       std::move(launcher));
   native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  ASSERT_TRUE(native_message_host_);
   base::RunLoop().RunUntilIdle();
 
   native_message_host_->OnMessage(kTestMessage);
@@ -272,7 +280,7 @@ TEST_F(NativeMessagingTest, EchoConnect) {
       false,
       &error_message);
   native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  ASSERT_TRUE(native_message_host_);
 
   native_message_host_->OnMessage("{\"text\": \"Hello.\"}");
   run_loop_.reset(new base::RunLoop());
@@ -315,7 +323,7 @@ TEST_F(NativeMessagingTest, UserLevel) {
       true,
       &error_message);
   native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  ASSERT_TRUE(native_message_host_);
 
   native_message_host_->OnMessage("{\"text\": \"Hello.\"}");
   run_loop_.reset(new base::RunLoop());
@@ -336,7 +344,7 @@ TEST_F(NativeMessagingTest, DisallowUserLevel) {
       false,
       &error_message);
   native_message_host_->Start(this);
-  ASSERT_TRUE(native_message_host_.get());
+  ASSERT_TRUE(native_message_host_);
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 

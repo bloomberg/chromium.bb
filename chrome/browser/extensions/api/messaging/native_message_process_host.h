@@ -55,10 +55,6 @@ class NativeMessageProcessHost : public NativeMessageHost {
   void Start(Client* client) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
-  // Try and read a single message from |read_file_|. This should only be called
-  // in unittests when you know there is data in the file.
-  void ReadNowForTesting();
-
  private:
   NativeMessageProcessHost(const std::string& source_extension_id,
                            const std::string& native_host_name,
