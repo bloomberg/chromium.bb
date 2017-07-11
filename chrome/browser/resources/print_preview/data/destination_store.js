@@ -12,10 +12,12 @@ cr.define('print_preview', function() {
    *     destinations.
    * @param {!print_preview.UserInfo} userInfo User information repository.
    * @param {!print_preview.AppState} appState Application state.
+   * @param {!WebUIListenerTracker} listenerTracker Tracker for WebUI listeners
+   *     added in DestinationStore constructor.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function DestinationStore(nativeLayer, userInfo, appState) {
+  function DestinationStore(nativeLayer, userInfo, appState, listenerTracker) {
     cr.EventTarget.call(this);
 
     /**
@@ -178,6 +180,8 @@ cr.define('print_preview', function() {
         loadTimeData.getBoolean('useSystemDefaultPrinter');
 
     this.reset_();
+
+    this.addWebUIEventListeners_(listenerTracker);
   }
 
   /**
@@ -549,8 +553,9 @@ cr.define('print_preview', function() {
      * |listenerTracker|. |listenerTracker| is responsible for removing the
      * listeners when necessary.
      * @param {!WebUIListenerTracker} listenerTracker
+     * @private
      */
-    addWebUIEventListeners: function(listenerTracker) {
+    addWebUIEventListeners_: function(listenerTracker) {
       listenerTracker.add(
           'privet-printer-added', this.onPrivetPrinterAdded_.bind(this));
       listenerTracker.add(
@@ -879,6 +884,7 @@ cr.define('print_preview', function() {
      *     to set.
      */
     setCloudPrintInterface: function(cloudPrintInterface) {
+      assert(this.cloudPrintInterface_ == null);
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
           this.cloudPrintInterface_,

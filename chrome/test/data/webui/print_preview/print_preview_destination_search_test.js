@@ -128,7 +128,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       invitationStore_ = new print_preview.InvitationStore();
       destinationStore_ = new print_preview.DestinationStore(
           nativeLayer_, new print_preview.UserInfo(),
-          new print_preview.AppState());
+          new print_preview.AppState(), new WebUIListenerTracker());
       userInfo_ = new print_preview.UserInfo();
 
       destinationSearch_ = new print_preview.DestinationSearch(

@@ -14,11 +14,14 @@ cr.define('print_preview', function() {
    * @param {!print_preview.NativeLayer} nativeLayer Used to communicate to
    *     Chromium's preview rendering system.
    * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+   * @param {!WebUIListenerTracker} listenerTracker Tracker for the WebUI
+   *     listeners added in the PreviewGenerator constructor.
    * @constructor
    * @extends {cr.EventTarget}
    */
   function PreviewGenerator(
-      destinationStore, printTicketStore, nativeLayer, documentInfo) {
+      destinationStore, printTicketStore, nativeLayer, documentInfo,
+      listenerTracker) {
     cr.EventTarget.call(this);
 
     /**
@@ -135,6 +138,8 @@ cr.define('print_preview', function() {
      * @private
      */
     this.selectedDestination_ = null;
+
+    this.addWebUIEventListeners_(listenerTracker);
   }
 
   /**
@@ -166,8 +171,9 @@ cr.define('print_preview', function() {
      * |listenerTracker|. |listenerTracker| is responsible for removing the
      * listeners when necessary.
      * @param {!WebUIListenerTracker} listenerTracker
+     * @private
      */
-    addWebUIEventListeners: function(listenerTracker) {
+    addWebUIEventListeners_: function(listenerTracker) {
       listenerTracker.add(
           'page-count-ready', this.onPageCountReady_.bind(this));
       listenerTracker.add(

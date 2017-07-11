@@ -344,7 +344,7 @@ cr.define('print_preview', function() {
       if (this.checkPluginCompatibility_()) {
         this.previewGenerator_ = new print_preview.PreviewGenerator(
             this.destinationStore_, this.printTicketStore_, this.nativeLayer_,
-            this.documentInfo_);
+            this.documentInfo_, this.listenerTracker);
         this.tracker.add(
             this.previewGenerator_,
             print_preview.PreviewGenerator.EventType.PREVIEW_START,
@@ -357,7 +357,6 @@ cr.define('print_preview', function() {
             this.previewGenerator_,
             print_preview.PreviewGenerator.EventType.DOCUMENT_READY,
             this.onDocumentReady_.bind(this));
-        this.previewGenerator_.addWebUIEventListeners(this.listenerTracker);
       } else {
         this.showCustomMessage(loadTimeData.getString('noPlugin'));
       }
