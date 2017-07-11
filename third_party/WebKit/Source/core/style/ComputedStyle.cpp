@@ -1096,6 +1096,14 @@ FloatRoundedRect ComputedStyle::GetRoundedInnerBorderFor(
   return rounded_rect;
 }
 
+bool ComputedStyle::CanRenderBorderImage() const {
+  if (!HasBorderDecoration())
+    return false;
+
+  StyleImage* border_image = BorderImage().GetImage();
+  return border_image && border_image->CanRender() && border_image->IsLoaded();
+}
+
 static bool AllLayersAreFixed(const FillLayer& layer) {
   for (const FillLayer* curr_layer = &layer; curr_layer;
        curr_layer = curr_layer->Next()) {
