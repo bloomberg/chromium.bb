@@ -102,20 +102,9 @@ public class BottomSheetContentController extends BottomNavigationView
         public void onSheetClosed() {
             if (mSelectedItemId != 0 && mSelectedItemId != R.id.action_home) {
                 showBottomSheetContent(R.id.action_home);
+            } else {
+                clearBottomSheetContents();
             }
-
-            Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
-                    mBottomSheetContents.entrySet().iterator();
-            while (contentIterator.hasNext()) {
-                Entry<Integer, BottomSheetContent> entry = contentIterator.next();
-                if (entry.getKey() == R.id.action_home || entry.getKey() == INCOGNITO_HOME_ID) {
-                    continue;
-                }
-
-                entry.getValue().destroy();
-                contentIterator.remove();
-            }
-
             // TODO(twellington): determine a policy for destroying the
             //                    SuggestionsBottomSheetContent.
         }
@@ -124,11 +113,16 @@ public class BottomSheetContentController extends BottomNavigationView
         public void onSheetContentChanged(BottomSheetContent newContent) {
             if (mBottomSheet.isSheetOpen()) announceBottomSheetContentSelected();
 
-            if (!mShouldOpenSheetOnNextContentChange) return;
+            if (mShouldOpenSheetOnNextContentChange) {
+                mShouldOpenSheetOnNextContentChange = false;
+                if (!mBottomSheet.isSheetOpen()) {
+                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+                }
+                return;
+            }
 
-            mShouldOpenSheetOnNextContentChange = false;
-            if (!mBottomSheet.isSheetOpen()) {
-                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+            if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK) {
+                clearBottomSheetContents();
             }
         }
 
@@ -353,5 +347,19 @@ public class BottomSheetContentController extends BottomNavigationView
         //                    recently. Replace this custom implementation with that method after
         //                    the support library is rolled.
         return mSelectedItemId;
+    }
+
+    public void clearBottomSheetContents() {
+        Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
+                mBottomSheetContents.entrySet().iterator();
+        while (contentIterator.hasNext()) {
+            Entry<Integer, BottomSheetContent> entry = contentIterator.next();
+            if (entry.getKey() == R.id.action_home || entry.getKey() == INCOGNITO_HOME_ID) {
+                continue;
+            }
+
+            entry.getValue().destroy();
+            contentIterator.remove();
+        }
     }
 }
