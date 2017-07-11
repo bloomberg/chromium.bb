@@ -192,8 +192,14 @@ class DiceBrowserTest : public InProcessBrowserTest,
         browser()->profile());
   }
 
+  // Returns the account tracker service.
   AccountTrackerService* GetAccountTrackerService() {
     return AccountTrackerServiceFactory::GetForProfile(browser()->profile());
+  }
+
+  // Returns the signin manager.
+  SigninManager* GetSigninManager() {
+    return SigninManagerFactory::GetForProfile(browser()->profile());
   }
 
   // Returns the account ID associated with kMainEmail, kMainGaiaID.
@@ -211,8 +217,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
   // Signin with a main account and add token for a secondary account.
   void SetupSignedInAccounts() {
     // Signin main account.
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(browser()->profile());
+    SigninManager* signin_manager = GetSigninManager();
     signin_manager->StartSignInWithRefreshToken(
         "refresh_token", kMainGaiaID, kMainEmail, "password",
         SigninManager::OAuthTokenFetchedCallback());
@@ -221,9 +226,9 @@ class DiceBrowserTest : public InProcessBrowserTest,
 
     // Add a token for a secondary account.
     std::string secondary_account_id =
-        GetAccountTrackerService()->SeedAccountInfo(kSecondaryEmail,
-                                                    kSecondaryGaiaID);
-    GetTokenService()->UpdateCredentials(kSecondaryEmail, "other_token");
+        GetAccountTrackerService()->SeedAccountInfo(kSecondaryGaiaID,
+                                                    kSecondaryEmail);
+    GetTokenService()->UpdateCredentials(secondary_account_id, "other_token");
     ASSERT_TRUE(
         GetTokenService()->RefreshTokenIsAvailable(secondary_account_id));
   }
@@ -295,6 +300,35 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
   EXPECT_TRUE(token_requested_);
   EXPECT_TRUE(refresh_token_available_);
   EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  // Sync should not be enabled.
+  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
+}
+
+// Checks that re-auth on Gaia triggers the fetch for a refresh token.
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Reauth) {
+  // Start from a signed-in state.
+  SetupSignedInAccounts();
+
+  // Navigate to Gaia and sign in again with the main account.
+  NavigateToURL(kSigninURL);
+
+  // Check that the Dice request header was sent.
+  std::string header_value;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_EQ(base::StringPrintf(
+                "client_id=%s",
+                GaiaUrls::GetInstance()->oauth2_chrome_client_id().c_str()),
+            header_value);
+
+  // Check that the token was requested and added to the token service.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(token_requested_);
+  EXPECT_TRUE(refresh_token_available_);
+  EXPECT_EQ(GetMainAccountID(),
+            GetSigninManager()->GetAuthenticatedAccountId());
 }
 
 // Checks that the Dice signout flow works and deletes all tokens.
@@ -306,9 +340,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutMainAccount) {
   SignOutWithDice(kMainAccount);
 
   // Check that the user is signed out and all tokens are deleted.
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(browser()->profile());
-  EXPECT_TRUE(signin_manager->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
   EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
@@ -325,9 +357,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutSecondaryAccount) {
 
   // Check that the user is still signed in from main account, but secondary
   // token is deleted.
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(browser()->profile());
-  EXPECT_EQ(GetMainAccountID(), signin_manager->GetAuthenticatedAccountId());
+  EXPECT_EQ(GetMainAccountID(),
+            GetSigninManager()->GetAuthenticatedAccountId());
   EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
@@ -342,9 +373,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   SignOutWithDice(kAllAccounts);
 
   // Check that the user is signed out and all tokens are deleted.
-  SigninManager* signin_manager =
-      SigninManagerFactory::GetForProfile(browser()->profile());
-  EXPECT_TRUE(signin_manager->GetAuthenticatedAccountId().empty());
+  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
   EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
