@@ -900,6 +900,10 @@ bool TestLauncher::Init() {
   results_tracker_.AddGlobalTag("OS_FREEBSD");
 #endif
 
+#if defined(OS_FUCHSIA)
+  results_tracker_.AddGlobalTag("OS_FUCHSIA");
+#endif
+
 #if defined(OS_IOS)
   results_tracker_.AddGlobalTag("OS_IOS");
 #endif
