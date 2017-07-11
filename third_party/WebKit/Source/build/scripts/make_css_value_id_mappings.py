@@ -17,7 +17,7 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
             'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
         }
 
-    @template_expander.use_jinja('CSSValueIDMappingsGenerated.h.tmpl')
+    @template_expander.use_jinja('templates/CSSValueIDMappingsGenerated.h.tmpl')
     def generate_css_value_mappings(self):
         mappings = {}
         include_paths = set()

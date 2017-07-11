@@ -170,7 +170,7 @@ class EventFactoryWriter(json5_generator.Writer):
             'includes': '\n'.join(self._headers_header_includes(self.json5_file.name_dictionaries)),
         }
 
-    @template_expander.use_jinja('EventFactory.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
             'namespace': self.namespace,

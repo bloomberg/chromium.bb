@@ -56,15 +56,15 @@ class MakeInternalSettingsWriter(json5_generator.Writer):
             'settings': self.json5_file.name_dictionaries,
         }
 
-    @template_expander.use_jinja('InternalSettingsGenerated.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/InternalSettingsGenerated.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja('InternalSettingsGenerated.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/InternalSettingsGenerated.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return self._template_context
 
-    @template_expander.use_jinja('InternalSettingsGenerated.idl.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/InternalSettingsGenerated.idl.tmpl', filters=filters)
     def generate_idl(self):
         return self._template_context
 

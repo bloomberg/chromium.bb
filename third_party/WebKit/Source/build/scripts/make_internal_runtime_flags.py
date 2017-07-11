@@ -47,14 +47,14 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
                          (self.class_name + '.h'): self.generate_header,
                         }
 
-    @template_expander.use_jinja(class_name + '.idl.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.idl.tmpl')
     def generate_idl(self):
         return {
             'features': self._features,
             'standard_features': self._standard_features,
         }
 
-    @template_expander.use_jinja(class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,

@@ -84,11 +84,11 @@ class MakeNamesWriter(json5_generator.Writer):
             'in_files': self.json5_file.file_paths,
         }
 
-    @template_expander.use_jinja("MakeNames.h.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/MakeNames.h.tmpl", filters=filters)
     def generate_header(self):
         return self._template_context
 
-    @template_expander.use_jinja("MakeNames.cpp.tmpl", filters=filters)
+    @template_expander.use_jinja("templates/MakeNames.cpp.tmpl", filters=filters)
     def generate_implementation(self):
         return self._template_context
 

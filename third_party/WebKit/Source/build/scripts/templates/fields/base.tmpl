@@ -1,4 +1,4 @@
-{% from 'fields/field.tmpl' import encode, decode, const_ref, nonconst_ref, getter_expression, setter_expression, set_if_changed %}
+{% from 'templates/fields/field.tmpl' import encode, decode, const_ref, nonconst_ref, getter_expression, setter_expression, set_if_changed %}
 
 {% macro decl_initial_method(field) -%}
 inline static {{field.type_name}} {{field.initial_method_name}}() {

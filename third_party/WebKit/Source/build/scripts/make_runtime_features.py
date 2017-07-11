@@ -71,11 +71,11 @@ class RuntimeFeatureWriter(json5_generator.Writer):
             'standard_features': self._standard_features,
         }
 
-    @template_expander.use_jinja(class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
     def generate_header(self):
         return self._template_inputs()
 
-    @template_expander.use_jinja(class_name + '.cpp.tmpl')
+    @template_expander.use_jinja('templates/' + class_name + '.cpp.tmpl')
     def generate_implementation(self):
         return self._template_inputs()
 
