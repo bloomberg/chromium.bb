@@ -723,7 +723,7 @@ void BlinkTestRunner::ResetPermissions() {
   Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
 }
 
-cc::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
+viz::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
   return RenderThread::Get()->GetSharedBitmapManager();
 }
 

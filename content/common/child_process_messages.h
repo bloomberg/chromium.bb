@@ -14,7 +14,7 @@
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "cc/resources/shared_bitmap_manager.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
 #include "gpu/command_buffer/common/sync_token.h"

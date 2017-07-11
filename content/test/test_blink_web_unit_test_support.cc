@@ -203,7 +203,7 @@ blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
   return blink::WebString::FromUTF8("test_runner/0.0.0.0");
 }
 
-std::unique_ptr<cc::SharedBitmap>
+std::unique_ptr<viz::SharedBitmap>
 TestBlinkWebUnitTestSupport::AllocateSharedBitmap(const blink::WebSize& size) {
   return shared_bitmap_manager_
       ->AllocateSharedBitmap(gfx::Size(size.width, size.height));

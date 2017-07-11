@@ -2145,11 +2145,11 @@ void RenderWidgetHostImpl::OnUnlockMouse() {
 void RenderWidgetHostImpl::OnShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const gfx::Size& size,
-    const cc::SharedBitmapId& id) {
+    const viz::SharedBitmapId& id) {
   DCHECK(!rect_pixels.IsEmpty());
   DCHECK(!size.IsEmpty());
 
-  std::unique_ptr<cc::SharedBitmap> bitmap =
+  std::unique_ptr<viz::SharedBitmap> bitmap =
       viz::ServerSharedBitmapManager::current()->GetSharedBitmapFromId(size,
                                                                        id);
   if (!bitmap) {

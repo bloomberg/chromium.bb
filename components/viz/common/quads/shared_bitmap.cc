@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,13 +14,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 
-namespace cc {
+namespace viz {
 
 SharedBitmap::SharedBitmap(uint8_t* pixels, const SharedBitmapId& id)
     : pixels_(pixels), id_(id) {}
 
-SharedBitmap::~SharedBitmap() {
-}
+SharedBitmap::~SharedBitmap() {}
 
 // static
 bool SharedBitmap::SizeInBytes(const gfx::Size& size, size_t* size_in_bytes) {
@@ -78,4 +77,4 @@ base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(
       base::StringPrintf("sharedbitmap-x-process/%s", bitmap_id_hex.c_str()));
 }
 
-}  // namespace cc
+}  // namespace viz

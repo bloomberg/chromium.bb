@@ -85,7 +85,7 @@ class SoftwareRendererTest : public testing::Test {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<SoftwareRenderer> renderer_;
 };

@@ -22,7 +22,7 @@ LayerTreeFrameSink::LayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    SharedBitmapManager* shared_bitmap_manager)
+    viz::SharedBitmapManager* shared_bitmap_manager)
     : context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),

@@ -77,7 +77,7 @@ class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
 
 class SharedBitmapManagerAllocationCounter : public TestSharedBitmapManager {
  public:
-  std::unique_ptr<SharedBitmap> AllocateSharedBitmap(
+  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override {
     ++allocation_count_;
     return TestSharedBitmapManager::AllocateSharedBitmap(size);

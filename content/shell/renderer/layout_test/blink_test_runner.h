@@ -150,7 +150,7 @@ class BlinkTestRunner : public RenderViewObserver,
       blink::WebMediaStream* stream) override;
   bool AddMediaStreamAudioSourceAndTrack(
       blink::WebMediaStream* stream) override;
-  cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  viz::SharedBitmapManager* GetSharedBitmapManager() override;
   void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
       const base::Callback<void(bool)>& callback) override;

@@ -418,7 +418,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
@@ -529,7 +529,7 @@ class GLRendererShaderTest : public GLRendererTest {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
@@ -658,7 +658,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -694,7 +694,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -728,7 +728,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -772,7 +772,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -809,7 +809,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
       FakeOutputSurface::CreateOffscreen(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -868,7 +868,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -952,7 +952,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -1040,7 +1040,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -1115,7 +1115,7 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -1215,7 +1215,7 @@ class GLRendererSkipTest : public GLRendererTest {
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
@@ -1287,7 +1287,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
       FakeOutputSurface::Create3d());
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -1697,7 +1697,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
   FakeOutputSurfaceClient output_surface_client_;
   OutputSurfaceMockContext* context_ = nullptr;
   std::unique_ptr<StrictMock<MockOutputSurface>> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
@@ -1767,7 +1767,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       FakeOutputSurface::Create3d());
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),
@@ -1932,7 +1932,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(output_surface->context_provider(),

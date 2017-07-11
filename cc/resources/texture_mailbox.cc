@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 
 namespace cc {
 
@@ -62,7 +62,7 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
   DCHECK(!is_overlay_candidate || !size_in_pixels.IsEmpty());
 }
 
-TextureMailbox::TextureMailbox(SharedBitmap* shared_bitmap,
+TextureMailbox::TextureMailbox(viz::SharedBitmap* shared_bitmap,
                                const gfx::Size& size_in_pixels)
     : shared_bitmap_(shared_bitmap),
       size_in_pixels_(size_in_pixels),
@@ -75,7 +75,7 @@ TextureMailbox::TextureMailbox(SharedBitmap* shared_bitmap,
       nearest_neighbor_(false) {
   // If an embedder of cc gives an invalid TextureMailbox, we should crash
   // here to identify the offender.
-  CHECK(SharedBitmap::VerifySizeInBytes(size_in_pixels_));
+  CHECK(viz::SharedBitmap::VerifySizeInBytes(size_in_pixels_));
 }
 
 TextureMailbox::~TextureMailbox() {}
@@ -96,7 +96,7 @@ bool TextureMailbox::Equals(const TextureMailbox& other) const {
 size_t TextureMailbox::SharedMemorySizeInBytes() const {
   // UncheckedSizeInBytes is okay because we VerifySizeInBytes in the
   // constructor and the field is immutable.
-  return SharedBitmap::UncheckedSizeInBytes(size_in_pixels_);
+  return viz::SharedBitmap::UncheckedSizeInBytes(size_in_pixels_);
 }
 
 }  // namespace cc

@@ -1319,7 +1319,7 @@ RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
   return ChildThreadImpl::AllocateSharedMemory(size);
 }
 
-cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
+viz::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
   return shared_bitmap_manager();
 }
 

@@ -31,11 +31,11 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/return_callback.h"
-#include "cc/resources/shared_bitmap.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -52,10 +52,13 @@ class GLES2Interface;
 }
 }
 
-namespace cc {
-class BlockingTaskRunner;
+namespace viz {
 class SharedBitmap;
 class SharedBitmapManager;
+}  // namespace viz
+
+namespace cc {
+class BlockingTaskRunner;
 class TextureIdAllocator;
 
 // This class is not thread-safe and can only be called from the thread it was
@@ -82,7 +85,7 @@ class CC_EXPORT ResourceProvider
   };
 
   ResourceProvider(ContextProvider* compositor_context_provider,
-                   SharedBitmapManager* shared_bitmap_manager,
+                   viz::SharedBitmapManager* shared_bitmap_manager,
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    bool delegated_sync_points_required,
@@ -590,11 +593,11 @@ class CC_EXPORT ResourceProvider
              ResourceType type,
              viz::ResourceFormat format);
     Resource(uint8_t* pixels,
-             SharedBitmap* bitmap,
+             viz::SharedBitmap* bitmap,
              const gfx::Size& size,
              Origin origin,
              GLenum filter);
-    Resource(const SharedBitmapId& bitmap_id,
+    Resource(const viz::SharedBitmapId& bitmap_id,
              const gfx::Size& size,
              Origin origin,
              GLenum filter);
@@ -677,8 +680,8 @@ class CC_EXPORT ResourceProvider
     // correspond to buffer_format (e.g: A resouce that was created from a YUV
     // buffer could be seen as RGB from the compositor/GL.)
     viz::ResourceFormat format;
-    SharedBitmapId shared_bitmap_id;
-    SharedBitmap* shared_bitmap;
+    viz::SharedBitmapId shared_bitmap_id;
+    viz::SharedBitmap* shared_bitmap;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     gfx::ColorSpace color_space;
 
@@ -783,7 +786,7 @@ class CC_EXPORT ResourceProvider
   } const settings_;
 
   ContextProvider* compositor_context_provider_;
-  SharedBitmapManager* shared_bitmap_manager_;
+  viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_context_provider_;

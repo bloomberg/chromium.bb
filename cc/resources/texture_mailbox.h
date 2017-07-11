@@ -17,13 +17,15 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace viz {
+class SharedBitmap;
+}
+
 namespace cc {
 
 namespace mojom {
 class TextureMailboxDataView;
 }
-
-class SharedBitmap;
 
 // TODO(skaslev, danakj) Rename this class more apropriately since now it
 // can hold a shared memory resource as well as a texture mailbox.
@@ -41,7 +43,8 @@ class CC_EXPORT TextureMailbox {
                  const gfx::Size& size_in_pixels,
                  bool is_overlay_candidate,
                  bool secure_output_only);
-  TextureMailbox(SharedBitmap* shared_bitmap, const gfx::Size& size_in_pixels);
+  TextureMailbox(viz::SharedBitmap* shared_bitmap,
+                 const gfx::Size& size_in_pixels);
 
   ~TextureMailbox();
 
@@ -81,7 +84,7 @@ class CC_EXPORT TextureMailbox {
   // This is valid if allow_overlau() or IsSharedMemory() is true.
   gfx::Size size_in_pixels() const { return size_in_pixels_; }
 
-  SharedBitmap* shared_bitmap() const { return shared_bitmap_; }
+  viz::SharedBitmap* shared_bitmap() const { return shared_bitmap_; }
   size_t SharedMemorySizeInBytes() const;
 
 #if defined(OS_ANDROID)
@@ -103,7 +106,7 @@ class CC_EXPORT TextureMailbox {
                                    TextureMailbox>;
 
   gpu::MailboxHolder mailbox_holder_;
-  SharedBitmap* shared_bitmap_;
+  viz::SharedBitmap* shared_bitmap_;
   gfx::Size size_in_pixels_;
   bool is_overlay_candidate_;
 #if defined(OS_ANDROID)

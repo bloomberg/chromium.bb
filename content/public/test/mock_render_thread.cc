@@ -195,7 +195,7 @@ MockRenderThread::HostAllocateSharedMemoryBuffer(size_t buffer_size) {
   return std::unique_ptr<base::SharedMemory>(shared_buf.release());
 }
 
-cc::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {
+viz::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {
   return &shared_bitmap_manager_;
 }
 

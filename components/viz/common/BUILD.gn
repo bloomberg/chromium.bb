@@ -13,6 +13,8 @@ source_set("common") {
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
     "quads/resource_format.h",
+    "quads/shared_bitmap.cc",
+    "quads/shared_bitmap.h",
     "resources/buffer_to_texture_target_map.cc",
     "resources/buffer_to_texture_target_map.h",
     "resources/platform_color.h",
@@ -20,6 +22,7 @@ source_set("common") {
     "resources/resource_format_utils.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
+    "resources/shared_bitmap_manager.h",
   ]
 
   deps = [

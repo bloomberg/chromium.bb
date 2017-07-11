@@ -18,6 +18,7 @@
 namespace viz {
 
 class LocalSurfaceIdProvider;
+class SharedBitmapManager;
 
 class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
                                  public cc::mojom::CompositorFrameSinkClient,
@@ -27,7 +28,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
       scoped_refptr<cc::ContextProvider> context_provider,
       scoped_refptr<cc::ContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      cc::SharedBitmapManager* shared_bitmap_manager,
+      SharedBitmapManager* shared_bitmap_manager,
       std::unique_ptr<cc::SyntheticBeginFrameSource>
           synthetic_begin_frame_source,
       cc::mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,

@@ -193,7 +193,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateSharedOffscreenGraphicsContext3DProvider() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const blink::WebSize& size) override;
   blink::WebCompositorSupport* CompositorSupport() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;

@@ -3245,7 +3245,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
 
   for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
     notifier.ChildAllocatedSharedBitmap(1, base::SharedMemoryHandle(),
-                                        cc::SharedBitmap::GenerateId());
+                                        viz::SharedBitmap::GenerateId());
   }
 
   // Hiding this last bitmap should evict all but two frames.

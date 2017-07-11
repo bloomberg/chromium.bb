@@ -1041,7 +1041,7 @@ class LayerTreeHostContextTestDontUseLostResources
   bool lost_context_;
 
   scoped_refptr<TestContextProvider> child_context_provider_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> child_resource_provider_;
 
   scoped_refptr<VideoFrame> color_video_frame_;

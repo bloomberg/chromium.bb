@@ -11,6 +11,7 @@ include_rules = [
     "-bindings",
     "+cc",
     "-cc/blink",
+    "+components/viz/common/quads",
     "-core",
     "-modules",
     # TODO(toyoshim): Remove following media/midi direct dependency in public

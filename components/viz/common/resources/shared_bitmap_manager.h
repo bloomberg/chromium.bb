@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
-#define CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
+#ifndef COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_
+#define COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/cc_export.h"
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT SharedBitmapManager {
+class SharedBitmapManager {
  public:
   SharedBitmapManager() {}
   virtual ~SharedBitmapManager() {}
@@ -29,6 +28,6 @@ class CC_EXPORT SharedBitmapManager {
   DISALLOW_COPY_AND_ASSIGN(SharedBitmapManager);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_RESOURCES_SHARED_BITMAP_MANAGER_H_
+#endif  // COMPONENTS_VIZ_COMMON_RESOURCES_SHARED_BITMAP_MANAGER_H_

@@ -34,13 +34,13 @@ class WebURLResponse;
 class WebView;
 }
 
-namespace cc {
-class SharedBitmapManager;
-}
-
 namespace device {
 class MotionData;
 class OrientationData;
+}
+
+namespace viz {
+class SharedBitmapManager;
 }
 
 namespace test_runner {
@@ -268,7 +268,7 @@ class WebTestDelegate {
   virtual bool AddMediaStreamAudioSourceAndTrack(
       blink::WebMediaStream* stream) = 0;
 
-  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
+  virtual viz::SharedBitmapManager* GetSharedBitmapManager() = 0;
 
   // Causes the beforeinstallprompt event to be sent to the renderer.
   // |event_platforms| are the platforms to be sent with the event. Once the

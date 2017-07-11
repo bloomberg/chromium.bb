@@ -34,7 +34,7 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "cc/resources/shared_bitmap.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -234,7 +234,7 @@ bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
   return !want_alpha_channel_ && rgb_emulation;
 }
 
-std::unique_ptr<cc::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
+std::unique_ptr<viz::SharedBitmap> DrawingBuffer::CreateOrRecycleBitmap() {
   auto it = std::remove_if(
       recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
       [this](const RecycledBitmap& bitmap) { return bitmap.size != size_; });
@@ -299,7 +299,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
     cc::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
-  std::unique_ptr<cc::SharedBitmap> bitmap = CreateOrRecycleBitmap();
+  std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
   if (!bitmap)
     return false;
 
@@ -449,7 +449,7 @@ void DrawingBuffer::MailboxReleasedGpu(RefPtr<ColorBuffer> color_buffer,
 }
 
 void DrawingBuffer::MailboxReleasedSoftware(
-    std::unique_ptr<cc::SharedBitmap> bitmap,
+    std::unique_ptr<viz::SharedBitmap> bitmap,
     const IntSize& size,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {

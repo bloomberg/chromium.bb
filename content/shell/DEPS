@@ -29,6 +29,7 @@ include_rules = [
   "+components/crash",
   "+components/url_formatter",
   "+components/network_session_configurator/common",
+  "+components/viz/common/resources",
 ]
 
 specific_include_rules = {

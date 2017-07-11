@@ -15,9 +15,9 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -546,7 +546,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
 }
 
 void PepperGraphics2DHost::ReleaseCallback(
-    std::unique_ptr<cc::SharedBitmap> bitmap,
+    std::unique_ptr<viz::SharedBitmap> bitmap,
     const gfx::Size& bitmap_size,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
@@ -565,7 +565,7 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
     return false;
   // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  std::unique_ptr<cc::SharedBitmap> shared_bitmap;
+  std::unique_ptr<viz::SharedBitmap> shared_bitmap;
   if (cached_bitmap_) {
     if (cached_bitmap_size_ == pixel_image_size)
       shared_bitmap = std::move(cached_bitmap_);
@@ -580,9 +580,8 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
   if (!shared_bitmap)
     return false;
   void* src = image_data_->Map();
-  memcpy(shared_bitmap->pixels(),
-         src,
-         cc::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
+  memcpy(shared_bitmap->pixels(), src,
+         viz::SharedBitmap::CheckedSizeInBytes(pixel_image_size));
   image_data_->Unmap();
 
   *mailbox = cc::TextureMailbox(shared_bitmap.get(), pixel_image_size);

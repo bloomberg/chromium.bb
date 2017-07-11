@@ -17,6 +17,7 @@ source_set("client") {
     "//cc",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
+    "//components/viz/common",
     "//mojo/public/cpp/bindings",
   ]
 }

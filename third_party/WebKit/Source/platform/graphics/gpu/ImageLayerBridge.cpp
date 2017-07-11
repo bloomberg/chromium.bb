@@ -4,8 +4,8 @@
 
 #include "platform/graphics/gpu/ImageLayerBridge.h"
 
-#include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -87,7 +87,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
     *out_release_callback = cc::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   } else {
-    std::unique_ptr<cc::SharedBitmap> bitmap = CreateOrRecycleBitmap();
+    std::unique_ptr<viz::SharedBitmap> bitmap = CreateOrRecycleBitmap();
     if (!bitmap)
       return false;
 
@@ -123,7 +123,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
   return true;
 }
 
-std::unique_ptr<cc::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
+std::unique_ptr<viz::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
   auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
                            [this](const RecycledBitmap& bitmap) {
                              return bitmap.size != image_->Size();
@@ -161,7 +161,7 @@ void ImageLayerBridge::MailboxReleasedGpu(RefPtr<StaticBitmapImage> image,
 }
 
 void ImageLayerBridge::MailboxReleasedSoftware(
-    std::unique_ptr<cc::SharedBitmap> bitmap,
+    std::unique_ptr<viz::SharedBitmap> bitmap,
     const IntSize& size,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {

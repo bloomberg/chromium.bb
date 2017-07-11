@@ -41,7 +41,7 @@ class ResourcePoolTest : public testing::Test {
   }
 
   scoped_refptr<TestContextProvider> context_provider_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;

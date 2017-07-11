@@ -22,12 +22,15 @@ class SharedMemory;
 
 namespace cc {
 class Layer;
-class SharedBitmap;
 }  // namespace cc
 
 namespace gpu {
 struct SyncToken;
 }  // namespace gpu
+
+namespace viz {
+class SharedBitmap;
+}
 
 namespace content {
 
@@ -59,7 +62,7 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
  private:
   void ImageReleased(int32_t id,
                      std::unique_ptr<base::SharedMemory> shared_memory,
-                     std::unique_ptr<cc::SharedBitmap> bitmap,
+                     std::unique_ptr<viz::SharedBitmap> bitmap,
                      const gpu::SyncToken& sync_token,
                      bool is_lost);
   void ResourceReleased(int32_t id,

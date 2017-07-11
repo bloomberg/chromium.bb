@@ -66,7 +66,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebThread* CurrentThread() override;
 
-  std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmap(
+  std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const blink::WebSize& size) override;
 
   void GetPluginList(bool refresh,

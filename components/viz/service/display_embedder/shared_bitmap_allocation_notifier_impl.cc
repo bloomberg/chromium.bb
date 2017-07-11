@@ -25,7 +25,7 @@ void SharedBitmapAllocationNotifierImpl::Bind(
 
 void SharedBitmapAllocationNotifierImpl::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
-    const cc::SharedBitmapId& id) {
+    const SharedBitmapId& id) {
   base::SharedMemoryHandle memory_handle;
   size_t size;
   MojoResult result = mojo::UnwrapSharedMemoryHandle(
@@ -35,7 +35,7 @@ void SharedBitmapAllocationNotifierImpl::DidAllocateSharedBitmap(
 }
 
 void SharedBitmapAllocationNotifierImpl::DidDeleteSharedBitmap(
-    const cc::SharedBitmapId& id) {
+    const SharedBitmapId& id) {
   manager_->ChildDeletedSharedBitmap(id);
   owned_bitmaps_.erase(id);
 }
@@ -43,7 +43,7 @@ void SharedBitmapAllocationNotifierImpl::DidDeleteSharedBitmap(
 void SharedBitmapAllocationNotifierImpl::ChildAllocatedSharedBitmap(
     size_t buffer_size,
     const base::SharedMemoryHandle& handle,
-    const cc::SharedBitmapId& id) {
+    const SharedBitmapId& id) {
   if (manager_->ChildAllocatedSharedBitmap(buffer_size, handle, id))
     owned_bitmaps_.insert(id);
 }

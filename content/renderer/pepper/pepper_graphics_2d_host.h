@@ -22,7 +22,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
-class SharedBitmap;
 class SingleReleaseCallback;
 class TextureMailbox;
 }
@@ -33,6 +32,10 @@ class Rect;
 
 namespace gpu {
 struct SyncToken;
+}
+
+namespace viz {
+class SharedBitmap;
 }
 
 namespace content {
@@ -171,7 +174,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
                                      gfx::Rect* op_rect,
                                      gfx::Point* delta);
 
-  void ReleaseCallback(std::unique_ptr<cc::SharedBitmap> bitmap,
+  void ReleaseCallback(std::unique_ptr<viz::SharedBitmap> bitmap,
                        const gfx::Size& bitmap_size,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
@@ -216,7 +219,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   // This is a bitmap that was recently released by the compositor and may be
   // used to transfer bytes to the compositor again.
-  std::unique_ptr<cc::SharedBitmap> cached_bitmap_;
+  std::unique_ptr<viz::SharedBitmap> cached_bitmap_;
   gfx::Size cached_bitmap_size_;
 
   friend class PepperGraphics2DHostTest;

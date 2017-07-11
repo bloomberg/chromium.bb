@@ -192,7 +192,7 @@ void PepperCompositorHost::ViewInitiatedPaint() {
 void PepperCompositorHost::ImageReleased(
     int32_t id,
     std::unique_ptr<base::SharedMemory> shared_memory,
-    std::unique_ptr<cc::SharedBitmap> bitmap,
+    std::unique_ptr<viz::SharedBitmap> bitmap,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   bitmap.reset();
@@ -314,7 +314,7 @@ void PepperCompositorHost::UpdateLayer(
       DCHECK_EQ(rv, PP_TRUE);
       DCHECK_EQ(desc.stride, desc.size.width * 4);
       DCHECK_EQ(desc.format, PP_IMAGEDATAFORMAT_RGBA_PREMUL);
-      std::unique_ptr<cc::SharedBitmap> bitmap =
+      std::unique_ptr<viz::SharedBitmap> bitmap =
           RenderThreadImpl::current()
               ->shared_bitmap_manager()
               ->GetBitmapForSharedMemory(image_shm.get());
