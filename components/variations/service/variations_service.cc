@@ -632,6 +632,13 @@ VariationsService::GetClientFilterableStateForVersion(
   state->form_factor = GetCurrentFormFactor();
   state->platform = ClientFilterableState::GetCurrentPlatform();
   state->hardware_class = GetHardwareClass();
+#if defined(OS_ANDROID)
+  // This is set on Android only currently, because the IsLowEndDevice() API
+  // on other platforms has no intrinsic meaning outside of a field trial that
+  // controls its value. Since this is before server-side field trials are
+  // evaluated, that field trial would not be able to apply for this case.
+  state->is_low_end_device = base::SysInfo::IsLowEndDevice();
+#endif
   state->session_consistency_country = GetLatestCountry();
   state->permanent_consistency_country = LoadPermanentConsistencyCountry(
       version, state->session_consistency_country);

@@ -206,7 +206,7 @@ message Study {
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 15
+  // Next tag: 16
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -300,6 +300,10 @@ message Study {
     // |country| is specified. Mutually exclusive with |country|.
     // Ex: ["in", "us"]
     repeated string exclude_country = 11;
+
+    // Specifies whether the config should apply to low-end devices only. This
+    // is currently only supported on Android.
+    optional bool is_low_end_device = 15;
   }
 
   // Filtering criteria for this study. A study that is filtered out for a given
