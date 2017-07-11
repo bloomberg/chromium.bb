@@ -833,8 +833,16 @@ mojom("offscreen_canvas_mojo_bindings") {
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
 }
 
+# Note that this intentionally depends on the generator target of the mojom
+# target instead of the mojom target itself directly. This is to ensure that the
+# dependencies are header-only and don't link against any bindings code.
 group("generate_mojo_bindings") {
   deps = [
+    # It's important to generate both the regular and the Blink variants. The
+    # Blink public API exposes a number of Mojo interfaces; omitting it will
+    # cause non-deterministic compile failures for code that uses the regular
+    # variant of the generated files.
+    ":mojo_bindings__generator",
     ":mojo_bindings_blink__generator",
     ":offscreen_canvas_mojo_bindings_blink__generator",
   ]
