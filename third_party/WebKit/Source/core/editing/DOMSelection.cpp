@@ -436,23 +436,23 @@ void DOMSelection::modify(const String& alter_string,
 
   TextGranularity granularity;
   if (DeprecatedEqualIgnoringCase(granularity_string, "character"))
-    granularity = kCharacterGranularity;
+    granularity = TextGranularity::kCharacter;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "word"))
-    granularity = kWordGranularity;
+    granularity = TextGranularity::kWord;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "sentence"))
-    granularity = kSentenceGranularity;
+    granularity = TextGranularity::kSentence;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "line"))
-    granularity = kLineGranularity;
+    granularity = TextGranularity::kLine;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraph"))
-    granularity = kParagraphGranularity;
+    granularity = TextGranularity::kParagraph;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "lineboundary"))
-    granularity = kLineBoundary;
+    granularity = TextGranularity::kLineBoundary;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "sentenceboundary"))
-    granularity = kSentenceBoundary;
+    granularity = TextGranularity::kSentenceBoundary;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "paragraphboundary"))
-    granularity = kParagraphBoundary;
+    granularity = TextGranularity::kParagraphBoundary;
   else if (DeprecatedEqualIgnoringCase(granularity_string, "documentboundary"))
-    granularity = kDocumentBoundary;
+    granularity = TextGranularity::kDocumentBoundary;
   else
     return;
 

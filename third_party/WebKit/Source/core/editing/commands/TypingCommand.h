@@ -61,11 +61,12 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   static void DeleteSelection(Document&, Options = 0);
   static void DeleteKeyPressed(Document&,
                                Options,
-                               TextGranularity = kCharacterGranularity);
-  static void ForwardDeleteKeyPressed(Document&,
-                                      EditingState*,
-                                      Options = 0,
-                                      TextGranularity = kCharacterGranularity);
+                               TextGranularity = TextGranularity::kCharacter);
+  static void ForwardDeleteKeyPressed(
+      Document&,
+      EditingState*,
+      Options = 0,
+      TextGranularity = TextGranularity::kCharacter);
   static void InsertText(Document&,
                          const String&,
                          Options,
@@ -114,7 +115,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       ETypingCommand command,
       const String& text = "",
       Options options = 0,
-      TextGranularity granularity = kCharacterGranularity) {
+      TextGranularity granularity = TextGranularity::kCharacter) {
     return new TypingCommand(document, command, text, options, granularity,
                              kTextCompositionNone);
   }
@@ -125,7 +126,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                                Options options,
                                TextCompositionType composition_type) {
     return new TypingCommand(document, command, text, options,
-                             kCharacterGranularity, composition_type);
+                             TextGranularity::kCharacter, composition_type);
   }
 
   TypingCommand(Document&,

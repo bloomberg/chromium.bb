@@ -46,7 +46,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
       selection_type_(kNoSelection),
       base_is_first_(true),
       is_directional_(false),
-      granularity_(kCharacterGranularity) {}
+      granularity_(TextGranularity::kCharacter) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
@@ -200,7 +200,7 @@ VisibleSelectionTemplate<Strategy>
 VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
   if (IsNone())
     return *this;
-  DCHECK_EQ(granularity_, kWordGranularity);
+  DCHECK_EQ(granularity_, TextGranularity::kWord);
   if (!IsRange())
     return *this;
   const PositionTemplate<Strategy>& new_end = SkipWhitespace(end_);
@@ -244,10 +244,10 @@ static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
   DCHECK(passed_start.IsNotNull());
 
   switch (granularity) {
-    case kCharacterGranularity:
+    case TextGranularity::kCharacter:
       // Don't do any expansion.
       return passed_start.GetPosition();
-    case kWordGranularity: {
+    case TextGranularity::kWord: {
       // General case: Select the word the caret is positioned inside of.
       // If the caret is on the word boundary, select the word according to
       // |wordSide|.
@@ -268,27 +268,27 @@ static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
       return StartOfWord(visible_start, kRightWordIfOnBoundary)
           .DeepEquivalent();
     }
-    case kSentenceGranularity:
+    case TextGranularity::kSentence:
       return StartOfSentence(CreateVisiblePosition(passed_start))
           .DeepEquivalent();
-    case kLineGranularity:
+    case TextGranularity::kLine:
       return StartOfLine(CreateVisiblePosition(passed_start)).DeepEquivalent();
-    case kLineBoundary:
+    case TextGranularity::kLineBoundary:
       return StartOfLine(CreateVisiblePosition(passed_start)).DeepEquivalent();
-    case kParagraphGranularity: {
+    case TextGranularity::kParagraph: {
       const VisiblePositionTemplate<Strategy> pos =
           CreateVisiblePosition(passed_start);
       if (IsStartOfLine(pos) && IsEndOfEditableOrNonEditableContent(pos))
         return StartOfParagraph(PreviousPositionOf(pos)).DeepEquivalent();
       return StartOfParagraph(pos).DeepEquivalent();
     }
-    case kDocumentBoundary:
+    case TextGranularity::kDocumentBoundary:
       return StartOfDocument(CreateVisiblePosition(passed_start))
           .DeepEquivalent();
-    case kParagraphBoundary:
+    case TextGranularity::kParagraphBoundary:
       return StartOfParagraph(CreateVisiblePosition(passed_start))
           .DeepEquivalent();
-    case kSentenceBoundary:
+    case TextGranularity::kSentenceBoundary:
       return StartOfSentence(CreateVisiblePosition(passed_start))
           .DeepEquivalent();
   }
@@ -317,10 +317,10 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
   DCHECK(passed_end.IsNotNull());
 
   switch (granularity) {
-    case kCharacterGranularity:
+    case TextGranularity::kCharacter:
       // Don't do any expansion.
       return passed_end.GetPosition();
-    case kWordGranularity: {
+    case TextGranularity::kWord: {
       // General case: Select the word the caret is positioned inside of.
       // If the caret is on the word boundary, select the word according to
       // |wordSide|.
@@ -367,9 +367,9 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
         return word_end.DeepEquivalent();
       return next.DeepEquivalent();
     }
-    case kSentenceGranularity:
+    case TextGranularity::kSentence:
       return EndOfSentence(CreateVisiblePosition(passed_end)).DeepEquivalent();
-    case kLineGranularity: {
+    case TextGranularity::kLine: {
       const VisiblePositionTemplate<Strategy> end =
           EndOfLine(CreateVisiblePosition(passed_end));
       if (!IsEndOfParagraph(end))
@@ -381,9 +381,9 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
         return end.DeepEquivalent();
       return next.DeepEquivalent();
     }
-    case kLineBoundary:
+    case TextGranularity::kLineBoundary:
       return EndOfLine(CreateVisiblePosition(passed_end)).DeepEquivalent();
-    case kParagraphGranularity: {
+    case TextGranularity::kParagraph: {
       const VisiblePositionTemplate<Strategy> visible_paragraph_end =
           EndOfParagraph(CreateVisiblePosition(passed_end));
 
@@ -414,11 +414,11 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
         return visible_paragraph_end.DeepEquivalent();
       return next.DeepEquivalent();
     }
-    case kDocumentBoundary:
+    case TextGranularity::kDocumentBoundary:
       return EndOfDocument(CreateVisiblePosition(passed_end)).DeepEquivalent();
-    case kParagraphBoundary:
+    case TextGranularity::kParagraphBoundary:
       return EndOfParagraph(CreateVisiblePosition(passed_end)).DeepEquivalent();
-    case kSentenceBoundary:
+    case TextGranularity::kSentenceBoundary:
       return EndOfSentence(CreateVisiblePosition(passed_end)).DeepEquivalent();
   }
   NOTREACHED();

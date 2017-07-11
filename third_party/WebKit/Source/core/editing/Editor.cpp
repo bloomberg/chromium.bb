@@ -377,7 +377,7 @@ bool Editor::SmartInsertDeleteEnabled() const {
 
 bool Editor::CanSmartCopyOrDelete() const {
   return SmartInsertDeleteEnabled() &&
-         GetFrame().Selection().Granularity() == kWordGranularity;
+         GetFrame().Selection().Granularity() == TextGranularity::kWord;
 }
 
 bool Editor::IsSelectTrailingWhitespaceEnabled() const {

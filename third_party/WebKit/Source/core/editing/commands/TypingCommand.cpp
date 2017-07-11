@@ -194,7 +194,7 @@ void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
 void TypingCommand::DeleteKeyPressed(Document& document,
                                      Options options,
                                      TextGranularity granularity) {
-  if (granularity == kCharacterGranularity) {
+  if (granularity == TextGranularity::kCharacter) {
     LocalFrame* frame = document.GetFrame();
     if (TypingCommand* last_typing_command =
             LastTypingCommandIfStillOpenForTyping(frame)) {
@@ -224,7 +224,7 @@ void TypingCommand::ForwardDeleteKeyPressed(Document& document,
                                             TextGranularity granularity) {
   // FIXME: Forward delete in TextEdit appears to open and close a new typing
   // command.
-  if (granularity == kCharacterGranularity) {
+  if (granularity == TextGranularity::kCharacter) {
     LocalFrame* frame = document.GetFrame();
     if (TypingCommand* last_typing_command =
             LastTypingCommandIfStillOpenForTyping(frame)) {
@@ -727,9 +727,11 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
       selection_modifier.Modify(FrameSelection::kAlterationExtend,
                                 kDirectionBackward, granularity);
       if (kill_ring && selection_modifier.Selection().IsCaret() &&
-          granularity != kCharacterGranularity)
+          granularity != TextGranularity::kCharacter) {
         selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionBackward, kCharacterGranularity);
+                                  kDirectionBackward,
+                                  TextGranularity::kCharacter);
+      }
 
       const VisiblePosition& visible_start(EndingSelection().VisibleStart());
       const VisiblePosition& previous_position =
@@ -801,7 +803,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
       selection_to_delete = selection_modifier.Selection();
 
-      if (granularity == kCharacterGranularity &&
+      if (granularity == TextGranularity::kCharacter &&
           selection_to_delete.End().ComputeContainerNode() ==
               selection_to_delete.Start().ComputeContainerNode() &&
           selection_to_delete.End().ComputeOffsetInContainerNode() -
@@ -890,9 +892,11 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
       selection_modifier.Modify(FrameSelection::kAlterationExtend,
                                 kDirectionForward, granularity);
       if (kill_ring && selection_modifier.Selection().IsCaret() &&
-          granularity != kCharacterGranularity)
+          granularity != TextGranularity::kCharacter) {
         selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionForward, kCharacterGranularity);
+                                  kDirectionForward,
+                                  TextGranularity::kCharacter);
+      }
 
       Position downstream_end =
           MostForwardCaretPosition(EndingSelection().End());
@@ -926,11 +930,13 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
 
       // deleting to end of paragraph when at end of paragraph needs to merge
       // the next paragraph (if any)
-      if (granularity == kParagraphBoundary &&
+      if (granularity == TextGranularity::kParagraphBoundary &&
           selection_modifier.Selection().IsCaret() &&
-          IsEndOfParagraph(selection_modifier.Selection().VisibleEnd()))
+          IsEndOfParagraph(selection_modifier.Selection().VisibleEnd())) {
         selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionForward, kCharacterGranularity);
+                                  kDirectionForward,
+                                  TextGranularity::kCharacter);
+      }
 
       selection_to_delete = selection_modifier.Selection();
       if (!StartingSelection().IsRange() ||

@@ -82,7 +82,7 @@ SelectionInDOMTree CharacterGranularityStrategy::UpdateExtent(
 
 DirectionGranularityStrategy::DirectionGranularityStrategy()
     : state_(StrategyState::kCleared),
-      granularity_(kCharacterGranularity),
+      granularity_(TextGranularity::kCharacter),
       offset_(0) {}
 
 DirectionGranularityStrategy::~DirectionGranularityStrategy() {}
@@ -93,7 +93,7 @@ SelectionStrategy DirectionGranularityStrategy::GetType() const {
 
 void DirectionGranularityStrategy::Clear() {
   state_ = StrategyState::kCleared;
-  granularity_ = kCharacterGranularity;
+  granularity_ = TextGranularity::kCharacter;
   offset_ = 0;
   diff_extent_point_from_extent_position_ = IntSize();
 }
@@ -137,7 +137,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
   bool vertical_change = new_offset_location.Y() != old_extent_location.Y();
   if (vertical_change) {
     offset_ = 0;
-    granularity_ = kCharacterGranularity;
+    granularity_ = TextGranularity::kCharacter;
     new_offset_extent_point = extent_point;
     new_offset_extent_position =
         VisiblePositionForContentsPoint(extent_point, frame);
@@ -169,7 +169,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
   bool this_move_shrunk_selection;
   if (new_offset_extent_position.DeepEquivalent() ==
       old_offset_extent_position.DeepEquivalent()) {
-    if (granularity_ == kCharacterGranularity)
+    if (granularity_ == TextGranularity::kCharacter)
       return selection.AsSelection();
 
     // If we are in Word granularity, we cannot exit here, since we may pass
@@ -203,7 +203,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
                                         ? SearchDirection::kSearchForward
                                         : SearchDirection::kSearchBackwards,
                                     BoundAdjust::kNextBoundIfOnBound);
-      granularity_ = kCharacterGranularity;
+      granularity_ = TextGranularity::kCharacter;
     } else {
       // Calculate the word boundary based on |oldExtentWithGranularity|.
       // If selection was shrunk in the last update and the extent is now
@@ -234,13 +234,13 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
         !extent_base_order_switched && !selection_expanded;
 
     if (expanded_beyond_word_boundary)
-      granularity_ = kWordGranularity;
+      granularity_ = TextGranularity::kWord;
     else if (this_move_shrunk_selection)
-      granularity_ = kCharacterGranularity;
+      granularity_ = TextGranularity::kCharacter;
   }
 
   VisiblePosition new_selection_extent = new_offset_extent_position;
-  if (granularity_ == kWordGranularity) {
+  if (granularity_ == TextGranularity::kWord) {
     // Determine the bounds of the word where the extent is located.
     // Set the selection extent to one of the two bounds depending on
     // whether the extent is passed the middle of the word.

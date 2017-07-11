@@ -30,12 +30,12 @@ namespace blink {
 
 // FIXME: This really should be broken up into more than one concept.
 // LocalFrame doesn't need the 3 boundaries in this enum.
-enum TextGranularity {
-  kCharacterGranularity,
-  kWordGranularity,
-  kSentenceGranularity,
-  kLineGranularity,
-  kParagraphGranularity,
+enum class TextGranularity {
+  kCharacter,
+  kWord,
+  kSentence,
+  kLine,
+  kParagraph,
   kSentenceBoundary,
   kLineBoundary,
   kParagraphBoundary,
