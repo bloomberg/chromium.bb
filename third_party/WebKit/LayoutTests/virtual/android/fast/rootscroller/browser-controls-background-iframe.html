@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<script>
+  // Set the browser control height but set them to be hidden so that the
+  // viewport is taller than the root scroller. This test passes if the root
+  // scroller's background is painted into the enitre height of the viewport.
+  // That is, the full viewport should be grey.
+  // NOTE: It is important that this test be run with the Android viewport
+  // flags turned on.
+  if (window.internals) {
+    window.internals.setBrowserControlsState(100, false);
+  }
+
+  addEventListener("load", function() {
+    document.rootScroller = document.getElementById("scroller");
+  });
+</script>
+<style>
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+  html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+  }
+  body {
+    background-color: red;
+  }
+  #scroller {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>
+
+<iframe id="scroller" srcdoc="<style>html {background-color: grey;}</style>"></iframe>
