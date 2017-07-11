@@ -1,5 +1,7 @@
 include_rules = [
+    "+base/metrics/field_trial_params.h",  # for fetch/ResourceLoadScheduler.cpp
+    "+base/strings/string_number_conversions.h",  # for fetch/ResourceLoadScheduler.cpp
     "+components/link_header_util",  # for LinkHeader.cpp
     "+net/base/net_errors.h",  # for fetch/ResourceError.h
-    "+net/http/http_util.h",  # for CrossOriginAccessControl.cpp
+    "+net/http/http_util.h",  # for fetch/CrossOriginAccessControl.cpp
 ]

@@ -241,6 +241,10 @@ const base::Feature kRequireSecureOriginsForPepperMediaRequests{
     "RequireSecureOriginsForPepperMediaRequests",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
+const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

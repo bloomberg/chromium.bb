@@ -112,6 +112,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // tests fail.
   size_t outstanding_limit_ = kOutstandingUnlimited;
 
+  // Outstanding limit for throttled frames. Managed via the field trial.
+  const size_t outstanding_throttled_limit_;
+
   // The last used ClientId to calculate the next.
   ClientId current_id_ = kInvalidClientId;
 

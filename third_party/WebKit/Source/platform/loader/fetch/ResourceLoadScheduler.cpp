@@ -4,14 +4,40 @@
 
 #include "platform/loader/fetch/ResourceLoadScheduler.h"
 
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
 namespace {
 
-// TODO(toyoshim): Should be managed via field trial flag.
-constexpr size_t kOutstandingThrottledLimit = 16u;
+// Field trial name.
+const char kResourceLoadSchedulerTrial[] = "ResourceLoadScheduler";
+
+// Field trial parameter names.
+const char kOutstandingLimitForBackgroundFrameName[] = "bg_limit";
+
+// Field trial default parameters.
+constexpr size_t kOutstandingLimitForBackgroundFrameDefault = 16u;
+
+uint32_t GetFieldTrialUint32Param(const char* name, uint32_t default_param) {
+  std::map<std::string, std::string> trial_params;
+  bool result =
+      base::GetFieldTrialParams(kResourceLoadSchedulerTrial, &trial_params);
+  if (!result)
+    return default_param;
+
+  const auto& found = trial_params.find(name);
+  if (found == trial_params.end())
+    return default_param;
+
+  uint32_t param;
+  if (!base::StringToUint(found->second, &param))
+    return default_param;
+
+  return param;
+}
 
 }  // namespace
 
@@ -19,7 +45,10 @@ constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
 
 ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
-    : context_(context) {
+    : outstanding_throttled_limit_(
+          GetFieldTrialUint32Param(kOutstandingLimitForBackgroundFrameName,
+                                   kOutstandingLimitForBackgroundFrameDefault)),
+      context_(context) {
   DCHECK(context);
 
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
@@ -108,7 +137,7 @@ void ResourceLoadScheduler::OnThrottlingStateChanged(
     WebFrameScheduler::ThrottlingState state) {
   switch (state) {
     case WebFrameScheduler::ThrottlingState::kThrottled:
-      SetOutstandingLimitAndMaybeRun(kOutstandingThrottledLimit);
+      SetOutstandingLimitAndMaybeRun(outstanding_throttled_limit_);
       break;
     case WebFrameScheduler::ThrottlingState::kNotThrottled:
       SetOutstandingLimitAndMaybeRun(kOutstandingUnlimited);
