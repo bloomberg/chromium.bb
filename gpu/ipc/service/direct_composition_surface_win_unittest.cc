@@ -111,7 +111,8 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
 
 base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
     const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    bool shared) {
   D3D11_TEXTURE2D_DESC desc = {};
   desc.Width = size.width();
   desc.Height = size.height();
@@ -121,6 +122,10 @@ base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.SampleDesc.Count = 1;
   desc.BindFlags = 0;
+  if (shared) {
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
+                     D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+  }
 
   std::vector<char> image_data(size.width() * size.height() * 3 / 2);
   // Y, U, and V should all be Oxff. Output color should be pink.
@@ -317,7 +322,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   gfx::Size texture_size(50, 50);
   base::win::ScopedComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size);
+      CreateNV12Texture(d3d11_device, texture_size, false);
 
   scoped_refptr<gl::GLImageDXGI> image_dxgi(
       new gl::GLImageDXGI(texture_size, nullptr));
@@ -493,7 +498,7 @@ TEST_F(DirectCompositionPixelTest, VideoSwapchain) {
 
   gfx::Size texture_size(50, 50);
   base::win::ScopedComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size);
+      CreateNV12Texture(d3d11_device, texture_size, false);
 
   scoped_refptr<gl::GLImageDXGI> image_dxgi(
       new gl::GLImageDXGI(texture_size, nullptr));
@@ -582,5 +587,55 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
   context = nullptr;
   DestroySurface(std::move(surface_));
 }
+
+TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
+  if (!CheckIfDCSupported())
+    return;
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
+  gfx::Size window_size(100, 100);
+
+  scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+      nullptr, surface_.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, true));
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(50, 50);
+  base::win::ScopedComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size, true);
+  base::win::ScopedComPtr<IDXGIResource1> resource;
+  texture.CopyTo(resource.GetAddressOf());
+  HANDLE handle;
+  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                               &handle);
+
+  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(new gl::GLImageDXGIHandle(
+      texture_size, base::win::ScopedHandle(handle), 0));
+  ASSERT_TRUE(image_dxgi->Initialize());
+
+  ui::DCRendererLayerParams params(
+      false, gfx::Rect(), 1, gfx::Transform(),
+      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
+      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
+      0);
+  surface_->ScheduleDCLayer(params);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());
+
+  Sleep(1000);
+
+  SkColor expected_color = SkColorSetRGB(0xff, 0xb7, 0xff);
+  SkColor actual_color =
+      ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+  EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+      << std::hex << "Expected " << expected_color << " Actual "
+      << actual_color;
+
+  context = nullptr;
+  DestroySurface(std::move(surface_));
+}
+
 }  // namespace
 }  // namespace gpu
