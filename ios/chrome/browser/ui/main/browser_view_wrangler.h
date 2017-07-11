@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 
+@protocol ApplicationCommands;
 @class BrowsingDataRemovalController;
 @class DeviceSharingManager;
 @protocol TabModelObserver;
@@ -31,8 +32,13 @@ class ChromeBrowserState;
 // Initialize a new instance of this class using |browserState| as the primary
 // browser state for the tab models and BVCs, and setting |tabModelObserver|, if
 // not nil, as the tab model delegate for any tab models that are created.
+// |applicationCommandEndpoint| is the object that methods in the
+// ApplicationCommands protocol should be dispatched to by any BVCs that are
+// created.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
+          applicationCommandEndpoint:
+              (id<ApplicationCommands>)applicationCommandEndpoint
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

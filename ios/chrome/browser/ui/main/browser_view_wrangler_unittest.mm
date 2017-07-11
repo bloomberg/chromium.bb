@@ -31,8 +31,10 @@ class BrowserViewWranglerTest : public PlatformTest {
 
 TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
-      initWithBrowserState:chrome_browser_state_.get()
-          tabModelObserver:nil];
+            initWithBrowserState:chrome_browser_state_.get()
+
+                tabModelObserver:nil
+      applicationCommandEndpoint:(id<ApplicationCommands>)nil];
 
   // Test that BVC and tab model are created on demand.
   BrowserViewController* bvc = [wrangler mainBVC];

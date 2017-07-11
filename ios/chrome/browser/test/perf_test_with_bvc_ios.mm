@@ -143,9 +143,10 @@ void PerfTestWithBVC::SetUp() {
   bvc_factory_.reset([[TestBVCDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()]);
   bvc_.reset([[BrowserViewController alloc]
-       initWithTabModel:tab_model_
-           browserState:chrome_browser_state_.get()
-      dependencyFactory:bvc_factory_]);
+                initWithTabModel:tab_model_
+                    browserState:chrome_browser_state_.get()
+               dependencyFactory:bvc_factory_
+      applicationCommandEndpoint:nil]);
   [bvc_ setActive:YES];
 
   // Create a real window to give to the browser view controller.

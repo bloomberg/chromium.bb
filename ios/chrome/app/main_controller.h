@@ -12,6 +12,7 @@
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 
 @class AppState;
@@ -23,7 +24,8 @@
 //
 // By design, it has no public API of its own. Anything interacting with
 // MainController should be doing so through a specific protocol.
-@interface MainController : NSObject<AppNavigation,
+@interface MainController : NSObject<ApplicationCommands,
+                                     AppNavigation,
                                      BrowserLauncher,
                                      StartupInformation,
                                      TabOpening,

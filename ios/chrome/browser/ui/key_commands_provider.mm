@@ -20,10 +20,11 @@
 @implementation KeyCommandsProvider
 
 - (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-                        dispatcher:(id<BrowserCommands>)dispatcher
+                        dispatcher:
+                            (id<ApplicationCommands, BrowserCommands>)dispatcher
                        editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
-  __weak id<BrowserCommands> weakDispatcher = dispatcher;
+  __weak id<ApplicationCommands, BrowserCommands> weakDispatcher = dispatcher;
 
   // Block to execute a command from the |tag|.
   void (^execute)(NSInteger) = ^(NSInteger tag) {
@@ -223,7 +224,7 @@
                            modifierFlags:UIKeyModifierCommand
                                    title:nil
                                   action:^{
-                                    execute(IDC_OPTIONS);
+                                    [weakDispatcher showSettings];
                                   }],
   ]];
 

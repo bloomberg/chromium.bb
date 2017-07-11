@@ -261,7 +261,8 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 }
 
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
-                   dispatcher:(id<BrowserCommands>)dispatcher {
+                   dispatcher:
+                       (id<ApplicationCommands, BrowserCommands>)dispatcher {
   self = [super init];
   if (self) {
     style_ = style;

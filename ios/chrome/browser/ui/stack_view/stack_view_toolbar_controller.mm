@@ -29,8 +29,10 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
   NewTabButton* _openNewTabButton;
 }
 
-- (instancetype)initWithStackViewToolbar {
-  self = [super initWithStyle:ToolbarControllerStyleDarkMode dispatcher:nil];
+- (instancetype)initWithDispatcher:
+    (id<ApplicationCommands, BrowserCommands>)dispatcher {
+  self = [super initWithStyle:ToolbarControllerStyleDarkMode
+                   dispatcher:dispatcher];
   if (self) {
     _stackViewToolbar =
         [[UIView alloc] initWithFrame:[self specificControlsArea]];

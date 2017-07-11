@@ -510,7 +510,9 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 
 - (instancetype)initWithMainCardSet:(CardSet*)mainCardSet
                          otrCardSet:(CardSet*)otrCardSet
-                      activeCardSet:(CardSet*)activeCardSet {
+                      activeCardSet:(CardSet*)activeCardSet
+         applicationCommandEndpoint:
+             (id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(mainCardSet);
   DCHECK(otrCardSet);
   DCHECK(activeCardSet == otrCardSet || activeCardSet == mainCardSet);
@@ -537,13 +539,17 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
     _dispatcher = [[CommandDispatcher alloc] init];
     [_dispatcher startDispatchingToTarget:self
                               forProtocol:@protocol(BrowserCommands)];
+    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+                              forProtocol:@protocol(ApplicationCommands)];
   }
   return self;
 }
 
 - (instancetype)initWithMainTabModel:(TabModel*)mainModel
                          otrTabModel:(TabModel*)otrModel
-                      activeTabModel:(TabModel*)activeModel {
+                      activeTabModel:(TabModel*)activeModel
+          applicationCommandEndpoint:
+              (id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(mainModel);
   DCHECK(otrModel);
   DCHECK(activeModel == otrModel || activeModel == mainModel);
@@ -553,7 +559,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
       (activeModel == mainModel) ? mainCardSet : otrCardSet;
   return [self initWithMainCardSet:mainCardSet
                         otrCardSet:otrCardSet
-                     activeCardSet:activeCardSet];
+                     activeCardSet:activeCardSet
+        applicationCommandEndpoint:applicationCommandEndpoint];
 }
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -567,8 +574,8 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   return nil;
 }
 
-- (id<BrowserCommands>)dispatcher {
-  return static_cast<id<BrowserCommands>>(_dispatcher);
+- (id<ApplicationCommands, BrowserCommands>)dispatcher {
+  return static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
 }
 
 - (void)setUpWithMainCardSet:(CardSet*)mainCardSet
@@ -734,7 +741,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   [self.view addSubview:_backgroundView];
 
   _toolbarController =
-      [[StackViewToolbarController alloc] initWithStackViewToolbar];
+      [[StackViewToolbarController alloc] initWithDispatcher:self.dispatcher];
   CGRect toolbarFrame = [self.view bounds];
   toolbarFrame.origin.y = CGRectGetMinY([[_toolbarController view] frame]);
   toolbarFrame.size.height = CGRectGetHeight([[_toolbarController view] frame]);

@@ -5,9 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
 
+#import <Foundation/Foundation.h>
+
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
-@protocol BrowserCommands
+@protocol BrowserCommands<NSObject>
 
 // Closes the current tab.
 - (void)closeCurrentTab;

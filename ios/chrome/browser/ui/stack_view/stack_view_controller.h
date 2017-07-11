@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #include "ui/base/page_transition_types.h"
 
+@protocol ApplicationCommands;
 class GURL;
 @class Tab;
 @class TabModel;
@@ -33,11 +34,16 @@ class GURL;
 // Initializes with the given tab models, which must not be nil.
 // |activeTabModel| is the model which starts active, and must be one of the
 // other two models.
+// |applicationCommandEndpoint| is the object that methods in the
+// ApplicationCommands protocol should be dispatched to by any BVCs that are
+// created.
 // TODO(stuartmorgan): Replace the word 'active' in these methods and the
 // corresponding delegate methods. crbug.com/513782
 - (instancetype)initWithMainTabModel:(TabModel*)mainModel
                          otrTabModel:(TabModel*)otrModel
-                      activeTabModel:(TabModel*)activeModel;
+                      activeTabModel:(TabModel*)activeModel
+          applicationCommandEndpoint:
+              (id<ApplicationCommands>)applicationCommandEndpoint;
 
 // Restores internal state with the given tab models, which must not be nil.
 // |activeTabModel| is the model which starts active, and must be one of the

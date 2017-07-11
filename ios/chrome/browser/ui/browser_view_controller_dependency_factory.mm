@@ -82,7 +82,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                           urlLoader:(id<UrlLoader>)urlLoader
                     preloadProvider:(id<PreloadProvider>)preload
-                         dispatcher:(id<BrowserCommands>)dispatcher {
+                         dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                        dispatcher {
   return [[WebToolbarController alloc] initWithDelegate:delegate
                                               urlLoader:urlLoader
                                            browserState:browserState_

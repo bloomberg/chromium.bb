@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -24,6 +25,7 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 @synthesize active = _active;
 @synthesize title = _title;
 @synthesize tag = _tag;
+@synthesize selector = _selector;
 @synthesize tableViewCell = _tableViewCell;
 
 - (id)init {
@@ -45,11 +47,16 @@ static NSString* const kMenuItemCellID = @"MenuItemCellID";
 
 + (instancetype)menuItemWithTitle:(NSString*)title
           accessibilityIdentifier:(NSString*)accessibilityIdentifier
+                         selector:(SEL)selector
                           command:(int)commandID {
+  // Only commandIDs < 0 should have associated selectors.
+  DCHECK((commandID >= 0 && selector == nullptr) ||
+         (commandID < 0 && selector != nullptr));
   ToolsMenuViewItem* menuItem = [[self alloc] init];
   [menuItem setAccessibilityLabel:title];
   [menuItem setAccessibilityIdentifier:accessibilityIdentifier];
   [menuItem setTag:commandID];
+  [menuItem setSelector:selector];
   [menuItem setTitle:title];
 
   return menuItem;
