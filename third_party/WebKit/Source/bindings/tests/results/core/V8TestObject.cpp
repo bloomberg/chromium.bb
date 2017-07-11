@@ -36,7 +36,6 @@
 #include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8Int32Array.h"
 #include "bindings/core/v8/V8Iterator.h"
-#include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 #include "bindings/core/v8/V8ShadowRoot.h"

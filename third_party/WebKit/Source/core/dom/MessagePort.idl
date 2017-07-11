@@ -32,7 +32,7 @@
     DependentLifetime,
     Exposed=(Window,Worker)
 ] interface MessagePort : EventTarget {
-    [PostMessage, RaisesException, Measure] void postMessage(any message, optional sequence<Transferable> transfer);
+    [PostMessage, RaisesException, Measure] void postMessage(any message, optional sequence<object> transfer = []);
     [Measure] void start();
     [Measure] void close();
 

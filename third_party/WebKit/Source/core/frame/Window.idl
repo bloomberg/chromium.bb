@@ -89,7 +89,7 @@
     [Measure] long requestIdleCallback(IdleRequestCallback callback, optional IdleRequestOptions options);
     void cancelIdleCallback(long handle);
 
-    [CrossOrigin, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<Transferable> transfer);
+    [CrossOrigin, Custom, RaisesException] void postMessage(any message, DOMString targetOrigin, optional sequence<object> transfer = []);
 
     // Custom elements
     // https://w3c.github.io/webcomponents/spec/custom/#custom-elements-api
@@ -204,21 +204,6 @@
 
     attribute DOMMatrixConstructor WebKitCSSMatrix;
 };
-
-// https://html.spec.whatwg.org/#transferable-objects
-//
-// Expressing the Transferable typedef in IDL depends on https://crbug.com/240176.
-// The postMessage() methods taking a Transferable array argument have custom
-// binding code that is able to handle the Transferables that we currently
-// recognize. To be able to declare a postMessage() signature that matches
-// the implementation, we provide a Transferable typedef but with an
-// incomplete type.
-//
-// FIXME: make this typedef accurate once enough of https://crbug.com/240176
-// is in place.
-// FIXME: consider putting this typedef in an .idl file containing spec-wide
-// utility type definitions.
-typedef MessagePort Transferable;
 
 Window implements GlobalEventHandlers;
 Window implements WindowBase64;
