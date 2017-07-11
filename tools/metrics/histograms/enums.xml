@@ -19554,6 +19554,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="16" label="GSA account doesn't match Chrome's"/>
   <int value="17" label="GMS call result status is null"/>
   <int value="18" label="GMS call result status is not successful"/>
+  <int value="19" label="Success with selection"/>
+  <int value="20" label="Duplicate entry"/>
 </enum>
 
 <enum name="IDBContextForcedCloseReason">
