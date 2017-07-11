@@ -135,9 +135,6 @@ class ClientSessionTest : public testing::Test {
   // ownership of the HostExtensions themselves.
   std::vector<HostExtension*> extensions_;
 
-  std::vector<protocol::DataChannelManager::NameCallbackPair>
-      data_channel_callbacks_;
-
   // ClientSession instance under test.
   std::unique_ptr<ClientSession> client_session_;
 
@@ -190,7 +187,7 @@ void ClientSessionTest::CreateClientSession(
       &session_event_handler_, std::move(connection),
       desktop_environment_factory_.get(),
       DesktopEnvironmentOptions::CreateDefault(), base::TimeDelta(), nullptr,
-      extensions_, data_channel_callbacks_));
+      extensions_));
 }
 
 void ClientSessionTest::CreateClientSession() {
@@ -438,15 +435,13 @@ TEST_F(ClientSessionTest, Extensions) {
 TEST_F(ClientSessionTest, DataChannelCallbackIsCalled) {
   bool callback_called = false;
 
-  data_channel_callbacks_.push_back(
-      protocol::DataChannelManager::NameCallbackPair(
-          kTestDataChannelCallbackName,
-          base::Bind([](bool* callback_was_called, const std::string& name,
-                        std::unique_ptr<protocol::MessagePipe> pipe)
-                         -> void { *callback_was_called = true; },
-                     &callback_called)));
-
   CreateClientSession();
+  client_session_->RegisterCreateHandlerCallbackForTesting(
+      kTestDataChannelCallbackName,
+      base::Bind([](bool* callback_was_called, const std::string& name,
+                    std::unique_ptr<protocol::MessagePipe> pipe)
+                     -> void { *callback_was_called = true; },
+                 &callback_called));
   ConnectClientSession();
 
   std::unique_ptr<protocol::MessagePipe> pipe =

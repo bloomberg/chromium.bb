@@ -90,8 +90,8 @@ void It2MeStandaloneHost::Connect() {
   session_.reset(new ClientSession(
       &handler_, std::unique_ptr<protocol::ConnectionToClient>(&connection_),
       &factory_, options, base::TimeDelta(),
-      scoped_refptr<protocol::PairingRegistry>(), std::vector<HostExtension*>(),
-      std::vector<protocol::DataChannelManager::NameCallbackPair>()));
+      scoped_refptr<protocol::PairingRegistry>(),
+      std::vector<HostExtension*>()));
   session_->OnConnectionAuthenticated();
   session_->OnConnectionChannelsConnected();
   session_->CreateMediaStreams();

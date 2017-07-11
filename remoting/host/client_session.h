@@ -97,9 +97,7 @@ class ClientSession : public protocol::HostStub,
       const DesktopEnvironmentOptions& desktop_environment_options,
       const base::TimeDelta& max_duration,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
-      const std::vector<HostExtension*>& extensions,
-      const std::vector<protocol::DataChannelManager::NameCallbackPair>&
-          data_channel_callbacks);
+      const std::vector<HostExtension*>& extensions);
   ~ClientSession() override;
 
   // Returns the set of capabilities negotiated between client and host.
@@ -144,6 +142,11 @@ class ClientSession : public protocol::HostStub,
   const std::string* client_capabilities() const {
     return client_capabilities_.get();
   }
+
+  // Registers a DataChannelManager callback for testing.
+  void RegisterCreateHandlerCallbackForTesting(
+      const std::string& prefix,
+      protocol::DataChannelManager::CreateHandlerCallback constructor);
 
   void SetEventTimestampsSourceForTests(
       scoped_refptr<protocol::InputEventTimestampsSource>
