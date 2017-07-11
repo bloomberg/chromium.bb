@@ -11,21 +11,24 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
-#include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+class Profile;
 
 namespace arc {
 
 class ArcFetcherBase;
+class ArcBridgeService;
 
 // Implementation of ARC authorization.
-class ArcAuthService : public ArcService,
+class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public InstanceHolder<mojom::AuthInstance>::Observer {
  public:
-  explicit ArcAuthService(ArcBridgeService* bridge_service);
+  ArcAuthService(Profile* profile, ArcBridgeService* bridge_service);
   ~ArcAuthService() override;
 
   // For supporting ArcServiceManager::GetService<T>().
@@ -71,6 +74,9 @@ class ArcAuthService : public ArcService,
 
   // Called to let ARC container know the account info.
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
+
+  Profile* const profile_;
+  ArcBridgeService* const arc_bridge_service_;
 
   mojo::Binding<mojom::AuthHost> binding_;
 
