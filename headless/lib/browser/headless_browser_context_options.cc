@@ -45,8 +45,10 @@ const std::string& HeadlessBrowserContextOptions::user_agent() const {
   return browser_options_->user_agent;
 }
 
-const net::HostPortPair& HeadlessBrowserContextOptions::proxy_server() const {
-  return ReturnOverriddenValue(proxy_server_, browser_options_->proxy_server);
+const net::ProxyConfig* HeadlessBrowserContextOptions::proxy_config() const {
+  if (proxy_config_)
+    return proxy_config_.get();
+  return browser_options_->proxy_config.get();
 }
 
 const std::string& HeadlessBrowserContextOptions::host_resolver_rules() const {

@@ -207,11 +207,14 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
   net::SpawnedTestServer proxy_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyConfig) {
+  std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
+  proxy_config->proxy_rules().ParseFromString(
+      proxy_server()->host_port_pair().ToString());
   HeadlessBrowserContext* browser_context =
       browser()
           ->CreateBrowserContextBuilder()
-          .SetProxyServer(proxy_server()->host_port_pair())
+          .SetProxyConfig(std::move(proxy_config))
           .Build();
 
   // Load a page which doesn't actually exist, but for which the our proxy

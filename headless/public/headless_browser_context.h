@@ -16,7 +16,7 @@
 #include "content/public/common/web_preferences.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
-#include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {
@@ -121,7 +121,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetProductNameAndVersion(
       const std::string& product_name_and_version);
   Builder& SetUserAgent(const std::string& user_agent);
-  Builder& SetProxyServer(const net::HostPortPair& proxy_server);
+  Builder& SetProxyConfig(std::unique_ptr<net::ProxyConfig> proxy_config);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);

@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "headless/public/headless_browser.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -61,7 +62,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   // thread.
   std::string user_agent_;
   std::string host_resolver_rules_;
-  net::HostPortPair proxy_server_;
+  const net::ProxyConfig* proxy_config_;  // Not owned.
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
