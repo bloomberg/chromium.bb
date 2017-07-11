@@ -674,6 +674,9 @@ Polymer({
       CrOnc.setTypeProperty(onc, 'APN', value);
     } else if (field == 'SIMLockStatus') {
       CrOnc.setTypeProperty(onc, 'SIMLockStatus', value);
+    } else if (field == 'VPN.Host') {
+      // TODO(stevenjb): Generalize this section if we add more editable fields.
+      CrOnc.setProperty(onc, field, value);
     } else {
       console.error('Unexpected property change event: ' + field);
       return;
@@ -885,6 +888,21 @@ Polymer({
       fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
+  },
+
+  /**
+   * @return {!Object} A dictionary of editable fields in the info section.
+   * @private
+   */
+  getInfoEditFieldTypes_: function() {
+    /** @dict */ var editFields = {};
+    var type = this.networkProperties.Type;
+    if (type == CrOnc.Type.VPN && !!this.networkProperties.VPN) {
+      var vpnType = CrOnc.getActiveValue(this.networkProperties.VPN.Type);
+      if (vpnType != 'ThirdPartyVPN')
+        editFields['VPN.Host'] = 'String';
+    }
+    return editFields;
   },
 
   /**
