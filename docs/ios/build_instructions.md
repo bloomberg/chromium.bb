@@ -185,9 +185,8 @@ profiles for EarlGrey and OCHamcrest frameworks:
 In addition to that, then you'll need one additional provisioning profile for
 the XCTest module too. This module bundle identifier depends on whether the
 gn variable `ios_automatically_manage_certs` is set to true or false. If set
-to true, then `${prefix}.test.gtest.generic-unit-test.generic-unit-test-module`
-will be used, otherwise it will match the following pattern:
-`${prefix}.test.${test-suite-name}.${test-suite-name}-module`.
+to true, then `${prefix}.gtest.generic-unit-test-module` will be used, otherwise
+it will match the pattern: `${prefix}.gtest.${test-suite-name}-module`.
 
 ### Other applications
 
