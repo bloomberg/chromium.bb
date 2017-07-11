@@ -437,11 +437,11 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // is not the same as screen coordinates, which span multiple displays.
   gfx::Rect GetRootWindowBoundsInScreenUnits();
 
-  // Given a point, if it is within the given bounds of an edge, returns the
-  // edge. If it is within the given bounds of two edges, returns an int with
+  // Given a point, if it is within the given inset of an edge, returns the
+  // edge. If it is within the given inset of two edges, returns an int with
   // both bits that represent the respective edges turned on. Otherwise returns
   // SCREEN_CENTER.
-  int FindEdgesWithinBounds(gfx::Point point, float bounds);
+  int FindEdgesWithinInset(gfx::Point point, float inset);
 
   // Set the state and modifies any variables related to the state change.
   // (e.g. resetting the gesture provider).
