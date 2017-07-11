@@ -233,8 +233,9 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   return 0;
 }
 
-net::QuicVersion GetQuicVersion(const VariationParameters& quic_trial_params) {
-  return network_session_configurator::ParseQuicVersion(
+net::QuicVersionVector GetQuicVersions(
+    const VariationParameters& quic_trial_params) {
+  return network_session_configurator::ParseQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version"));
 }
 
@@ -306,28 +307,35 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->quic_user_agent_id = quic_user_agent_id;
 
-  net::QuicVersion version = GetQuicVersion(quic_trial_params);
-  if (version != net::QUIC_VERSION_UNSUPPORTED) {
-    net::QuicVersionVector supported_versions;
-    supported_versions.push_back(version);
+  net::QuicVersionVector supported_versions =
+      GetQuicVersions(quic_trial_params);
+  if (!supported_versions.empty())
     params->quic_supported_versions = supported_versions;
-  }
 }
 
 }  // anonymous namespace
 
 namespace network_session_configurator {
 
-net::QuicVersion ParseQuicVersion(const std::string& quic_version) {
-  net::QuicVersionVector supported_versions = net::AllSupportedVersions();
-  for (size_t i = 0; i < supported_versions.size(); ++i) {
-    net::QuicVersion version = supported_versions[i];
-    if (net::QuicVersionToString(version) == quic_version) {
-      return version;
+net::QuicVersionVector ParseQuicVersions(const std::string& quic_versions) {
+  net::QuicVersionVector supported_versions;
+  net::QuicVersionVector all_supported_versions = net::AllSupportedVersions();
+
+  for (const base::StringPiece& version : base::SplitStringPiece(
+           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    auto it = all_supported_versions.begin();
+    while (it != all_supported_versions.end()) {
+      if (net::QuicVersionToString(*it) == version) {
+        supported_versions.push_back(*it);
+        // Remove the supported version to deduplicate versions extracted from
+        // |quic_versions|.
+        all_supported_versions.erase(it);
+        continue;
+      }
+      it++;
     }
   }
-
-  return net::QUIC_VERSION_UNSUPPORTED;
+  return supported_versions;
 }
 
 void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
@@ -378,13 +386,11 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      net::QuicVersion version = network_session_configurator::ParseQuicVersion(
-          command_line.GetSwitchValueASCII(switches::kQuicVersion));
-      if (version != net::QUIC_VERSION_UNSUPPORTED) {
-        net::QuicVersionVector supported_versions;
-        supported_versions.push_back(version);
+      net::QuicVersionVector supported_versions =
+          network_session_configurator::ParseQuicVersions(
+              command_line.GetSwitchValueASCII(switches::kQuicVersion));
+      if (!supported_versions.empty())
         params->quic_supported_versions = supported_versions;
-      }
     }
 
     if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
