@@ -13,6 +13,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,8 +168,8 @@ struct ExpectedElement {
                               uint64_t offset,
                               uint64_t length,
                               WTF::Time time) {
-    return ExpectedElement{
-        DataElement::NewFile(DataElementFile::New(path, offset, length, time))};
+    return ExpectedElement{DataElement::NewFile(
+        DataElementFile::New(WebStringToFilePath(path), offset, length, time))};
   }
 
   static ExpectedElement FileFilesystem(const KURL& url,

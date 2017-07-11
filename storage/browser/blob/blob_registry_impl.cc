@@ -215,7 +215,16 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   // TODO(mek): Fill BlobDataBuilder with elements_ other than blobs.
   auto blob_uuid_it = referenced_blob_uuids_.begin();
   for (const auto& element : elements_) {
-    if (element->is_blob()) {
+    if (element->is_file()) {
+      const auto& f = element->get_file();
+      builder_.AppendFile(f->path, f->offset, f->length,
+                          f->expected_modification_time.value_or(base::Time()));
+    } else if (element->is_file_filesystem()) {
+      const auto& f = element->get_file_filesystem();
+      builder_.AppendFileSystemFile(
+          f->url, f->offset, f->length,
+          f->expected_modification_time.value_or(base::Time()));
+    } else if (element->is_blob()) {
       DCHECK(blob_uuid_it != referenced_blob_uuids_.end());
       const std::string& blob_uuid = *blob_uuid_it++;
       builder_.AppendBlob(blob_uuid, element->get_blob()->offset,
@@ -251,13 +260,19 @@ bool BlobRegistryImpl::BlobUnderConstruction::ContainsCycles(
 }
 #endif
 
-BlobRegistryImpl::BlobRegistryImpl(BlobStorageContext* context)
-    : context_(context), weak_ptr_factory_(this) {}
+BlobRegistryImpl::BlobRegistryImpl(
+    BlobStorageContext* context,
+    scoped_refptr<FileSystemContext> file_system_context)
+    : context_(context),
+      file_system_context_(std::move(file_system_context)),
+      weak_ptr_factory_(this) {}
 
 BlobRegistryImpl::~BlobRegistryImpl() {}
 
-void BlobRegistryImpl::Bind(mojom::BlobRegistryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void BlobRegistryImpl::Bind(mojom::BlobRegistryRequest request,
+                            std::unique_ptr<Delegate> delegate) {
+  DCHECK(delegate);
+  bindings_.AddBinding(this, std::move(request), std::move(delegate));
 }
 
 void BlobRegistryImpl::Register(mojom::BlobRequest blob,
@@ -272,7 +287,41 @@ void BlobRegistryImpl::Register(mojom::BlobRequest blob,
     return;
   }
 
-  // TODO(mek): Security policy checks for files and filesystem items.
+  Delegate* delegate = bindings_.dispatch_context().get();
+  DCHECK(delegate);
+  for (const auto& element : elements) {
+    if (element->is_file()) {
+      if (!delegate->CanReadFile(element->get_file()->path)) {
+        // TODO(mek) Using ERR_FILE_WRITE_FAILED matches the IPC based
+        // implementation, but this is really a very different error than what
+        // FILE_WRITE_FAILED is used for elsewhere, so this should probably be a
+        // dfferent error status. http://crbug.com/740730
+        std::unique_ptr<BlobDataHandle> handle =
+            context_->AddBrokenBlob(uuid, content_type, content_disposition,
+                                    BlobStatus::ERR_FILE_WRITE_FAILED);
+        BlobImpl::Create(std::move(handle), std::move(blob));
+        std::move(callback).Run();
+        return;
+      }
+    } else if (element->is_file_filesystem()) {
+      FileSystemURL filesystem_url(
+          file_system_context_->CrackURL(element->get_file_filesystem()->url));
+      if (!filesystem_url.is_valid() ||
+          !file_system_context_->GetFileSystemBackend(filesystem_url.type()) ||
+          !delegate->CanReadFileSystemFile(filesystem_url)) {
+        // TODO(mek) Using ERR_FILE_WRITE_FAILED matches the IPC based
+        // implementation, but this is really a very different error than what
+        // FILE_WRITE_FAILED is used for elsewhere, so this should probably be a
+        // dfferent error status. http://crbug.com/740730
+        std::unique_ptr<BlobDataHandle> handle =
+            context_->AddBrokenBlob(uuid, content_type, content_disposition,
+                                    BlobStatus::ERR_FILE_WRITE_FAILED);
+        BlobImpl::Create(std::move(handle), std::move(blob));
+        std::move(callback).Run();
+        return;
+      }
+    }
+  }
 
   blobs_under_construction_[uuid] = base::MakeUnique<BlobUnderConstruction>(
       this, uuid, content_type, content_disposition, std::move(elements),
