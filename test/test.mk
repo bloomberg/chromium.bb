@@ -33,6 +33,7 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += altref_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += aq_segment_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += datarate_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += encode_api_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += coding_path_sync.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += error_resilience_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += i420_video_source.h
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += realtime_test.cc
