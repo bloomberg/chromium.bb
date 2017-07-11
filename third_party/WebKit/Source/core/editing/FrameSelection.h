@@ -113,12 +113,12 @@ class CORE_EXPORT FrameSelection final
   void SetSelection(const SelectionInDOMTree&,
                     SetSelectionOptions = kCloseTyping | kClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
-                    TextGranularity = kCharacterGranularity);
+                    TextGranularity = TextGranularity::kCharacter);
 
   void SetSelection(const SelectionInFlatTree&,
                     SetSelectionOptions = kCloseTyping | kClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded,
-                    TextGranularity = kCharacterGranularity);
+                    TextGranularity = TextGranularity::kCharacter);
   void SelectAll(EUserTriggered = kNotUserTriggered);
   void Clear();
   bool IsHidden() const;
@@ -131,7 +131,7 @@ class CORE_EXPORT FrameSelection final
   bool SetSelectionDeprecated(const SelectionInDOMTree&,
                               SetSelectionOptions = kCloseTyping |
                                                     kClearTypingStyle,
-                              TextGranularity = kCharacterGranularity);
+                              TextGranularity = TextGranularity::kCharacter);
   void DidSetSelectionDeprecated(
       SetSelectionOptions = kCloseTyping | kClearTypingStyle,
       CursorAlignOnScroll = CursorAlignOnScroll::kIfNeeded);

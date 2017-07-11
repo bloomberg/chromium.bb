@@ -1251,9 +1251,9 @@ void WebLocalFrameImpl::MoveRangeSelection(
   // needs to be audited.  See http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  blink::TextGranularity blink_granularity = blink::kCharacterGranularity;
+  blink::TextGranularity blink_granularity = blink::TextGranularity::kCharacter;
   if (granularity == WebFrame::kWordGranularity)
-    blink_granularity = blink::kWordGranularity;
+    blink_granularity = blink::TextGranularity::kWord;
   GetFrame()->Selection().MoveRangeSelection(
       VisiblePositionForViewportPoint(base_in_viewport),
       VisiblePositionForViewportPoint(extent_in_viewport), blink_granularity);

@@ -2165,19 +2165,19 @@ InputEvent::InputType DeletionInputTypeFromTextGranularity(
   using InputType = InputEvent::InputType;
   switch (direction) {
     case DeleteDirection::kForward:
-      if (granularity == kWordGranularity)
+      if (granularity == TextGranularity::kWord)
         return InputType::kDeleteWordForward;
-      if (granularity == kLineBoundary)
+      if (granularity == TextGranularity::kLineBoundary)
         return InputType::kDeleteSoftLineForward;
-      if (granularity == kParagraphBoundary)
+      if (granularity == TextGranularity::kParagraphBoundary)
         return InputType::kDeleteHardLineForward;
       return InputType::kDeleteContentForward;
     case DeleteDirection::kBackward:
-      if (granularity == kWordGranularity)
+      if (granularity == TextGranularity::kWord)
         return InputType::kDeleteWordBackward;
-      if (granularity == kLineBoundary)
+      if (granularity == TextGranularity::kLineBoundary)
         return InputType::kDeleteSoftLineBackward;
-      if (granularity == kParagraphBoundary)
+      if (granularity == TextGranularity::kParagraphBoundary)
         return InputType::kDeleteHardLineBackward;
       return InputType::kDeleteContentBackward;
     default:

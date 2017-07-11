@@ -79,13 +79,13 @@ const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::Extent() const {
 template <typename Strategy>
 bool SelectionTemplate<Strategy>::IsCaret() const {
   return base_.IsNotNull() && base_ == extent_ &&
-         granularity_ == kCharacterGranularity;
+         granularity_ == TextGranularity::kCharacter;
 }
 
 template <typename Strategy>
 bool SelectionTemplate<Strategy>::IsRange() const {
   return base_ != extent_ ||
-         (base_.IsNotNull() && granularity_ != kCharacterGranularity);
+         (base_.IsNotNull() && granularity_ != TextGranularity::kCharacter);
 }
 
 template <typename Strategy>
@@ -159,7 +159,7 @@ SelectionType SelectionTemplate<Strategy>::SelectionTypeWithLegacyGranularity()
     const {
   if (base_.IsNull())
     return kNoSelection;
-  if (base_ == extent_ && granularity_ == kCharacterGranularity)
+  if (base_ == extent_ && granularity_ == TextGranularity::kCharacter)
     return kCaretSelection;
   return kRangeSelection;
 }

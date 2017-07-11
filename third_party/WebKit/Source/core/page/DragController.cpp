@@ -627,7 +627,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
               : DeleteMode::kSimple;
       const InsertMode insert_mode =
           (delete_mode == DeleteMode::kSmart &&
-           inner_frame->Selection().Granularity() == kWordGranularity &&
+           inner_frame->Selection().Granularity() == TextGranularity::kWord &&
            drag_data->CanSmartReplace())
               ? InsertMode::kSmart
               : InsertMode::kSimple;

@@ -122,7 +122,7 @@ class CORE_EXPORT SelectionTemplate final {
   PositionTemplate<Strategy> base_;
   PositionTemplate<Strategy> extent_;
   TextAffinity affinity_ = TextAffinity::kDownstream;
-  TextGranularity granularity_ = kCharacterGranularity;
+  TextGranularity granularity_ = TextGranularity::kCharacter;
   bool is_directional_ = false;
   bool is_handle_visible_ = false;
 #if DCHECK_IS_ON()

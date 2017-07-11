@@ -96,7 +96,7 @@ FrameSelection::FrameSelection(LocalFrame& frame)
     : frame_(frame),
       layout_selection_(LayoutSelection::Create(*this)),
       selection_editor_(SelectionEditor::Create(frame)),
-      granularity_(kCharacterGranularity),
+      granularity_(TextGranularity::kCharacter),
       x_pos_for_vertical_arrow_navigation_(NoXPosForVerticalArrowNavigation()),
       focused_(frame.GetPage() &&
                frame.GetPage()->GetFocusController().FocusedFrame() == frame),
@@ -385,12 +385,13 @@ bool FrameSelection::Modify(EAlteration alter,
       kCloseTyping | kClearTypingStyle | user_triggered;
   SetSelection(selection_modifier.Selection().AsSelection(), options);
 
-  if (granularity == kLineGranularity || granularity == kParagraphGranularity)
+  if (granularity == TextGranularity::kLine ||
+      granularity == TextGranularity::kParagraph)
     x_pos_for_vertical_arrow_navigation_ =
         selection_modifier.XPosForVerticalArrowNavigation();
 
   if (user_triggered == kUserTriggered)
-    granularity_ = kCharacterGranularity;
+    granularity_ = TextGranularity::kCharacter;
 
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -412,13 +413,13 @@ bool FrameSelection::Modify(EAlteration alter,
                alter == kAlterationMove ? CursorAlignOnScroll::kAlways
                                         : CursorAlignOnScroll::kIfNeeded);
 
-  granularity_ = kCharacterGranularity;
+  granularity_ = TextGranularity::kCharacter;
 
   return true;
 }
 
 void FrameSelection::Clear() {
-  granularity_ = kCharacterGranularity;
+  granularity_ = TextGranularity::kCharacter;
   if (granularity_strategy_)
     granularity_strategy_->Clear();
   SetSelection(SelectionInDOMTree());
@@ -496,7 +497,7 @@ void FrameSelection::DocumentAttached(Document* document) {
 }
 
 void FrameSelection::ContextDestroyed(Document* document) {
-  granularity_ = kCharacterGranularity;
+  granularity_ = TextGranularity::kCharacter;
 
   layout_selection_->OnDocumentShutdown();
 
@@ -1075,7 +1076,7 @@ bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
                        .Extend(end.DeepEquivalent())
                        .Build(),
                    kCloseTyping | kClearTypingStyle,
-                   CursorAlignOnScroll::kIfNeeded, kWordGranularity);
+                   CursorAlignOnScroll::kIfNeeded, TextGranularity::kWord);
       return true;
     }
   }

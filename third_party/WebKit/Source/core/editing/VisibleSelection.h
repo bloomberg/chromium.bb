@@ -152,7 +152,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   VisibleSelectionTemplate(const SelectionTemplate<Strategy>&, TextGranularity);
 
-  void Validate(TextGranularity = kCharacterGranularity);
+  void Validate(TextGranularity = TextGranularity::kCharacter);
 
   // Support methods for validate()
   void SetBaseAndExtentToDeepEquivalents();
