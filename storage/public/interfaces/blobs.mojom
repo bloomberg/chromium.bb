@@ -5,6 +5,7 @@
 module storage.mojom;
 
 import "mojo/common/file.mojom";
+import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "url/mojo/url.mojom";
 
@@ -97,7 +98,7 @@ interface BytesProvider {
 // A reference to a slice of a file on disk.
 struct DataElementFile {
   // Path of the file.
-  string path;
+  mojo.common.mojom.FilePath path;
   // Offset inside the file.
   uint64 offset;
   // Length of the slice. Can be uint64_max if the length is unknown. If this is

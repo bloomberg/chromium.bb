@@ -4,12 +4,14 @@
 
 #include "storage/browser/blob/blob_registry_impl.h"
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -33,14 +35,45 @@ class MockBlob : public mojom::Blob {
   std::string uuid_;
 };
 
+class MockDelegate : public BlobRegistryImpl::Delegate {
+ public:
+  MockDelegate() {}
+  ~MockDelegate() override {}
+
+  bool CanReadFile(const base::FilePath& file) override {
+    return can_read_file_result;
+  }
+  bool CanReadFileSystemFile(const FileSystemURL& url) override {
+    return can_read_file_system_file_result;
+  }
+
+  bool can_read_file_result = true;
+  bool can_read_file_system_file_result = true;
+};
+
 }  // namespace
 
 class BlobRegistryImplTest : public testing::Test {
  public:
   void SetUp() override {
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = base::MakeUnique<BlobStorageContext>();
-    registry_impl_ = base::MakeUnique<BlobRegistryImpl>(context_.get());
-    registry_impl_->Bind(MakeRequest(&registry_));
+    auto storage_policy =
+        base::MakeRefCounted<content::MockSpecialStoragePolicy>();
+    file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        nullptr /* external_mount_points */, storage_policy.get(),
+        nullptr /* quota_manager_proxy */,
+        std::vector<std::unique_ptr<FileSystemBackend>>(),
+        std::vector<URLRequestAutoMountHandler>(), data_dir_.GetPath(),
+        FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
+                          std::vector<std::string>(), nullptr));
+    registry_impl_ = base::MakeUnique<BlobRegistryImpl>(context_.get(),
+                                                        file_system_context_);
+    auto delegate = base::MakeUnique<MockDelegate>();
+    delegate_ptr_ = delegate.get();
+    registry_impl_->Bind(MakeRequest(&registry_), std::move(delegate));
     mojo::edk::SetDefaultProcessErrorCallback(base::Bind(
         &BlobRegistryImplTest::OnBadMessage, base::Unretained(this)));
   }
@@ -86,10 +119,13 @@ class BlobRegistryImplTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir data_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
   mojom::BlobRegistryPtr registry_;
+  MockDelegate* delegate_ptr_;
 
   std::vector<std::string> bad_messages_;
 };
@@ -363,6 +399,123 @@ TEST_F(BlobRegistryImplTest, Register_ValidBlobReferences) {
 
   EXPECT_EQ(expected_blob_data, *handle2->CreateSnapshot());
   EXPECT_EQ(expected_blob_data, *handle3->CreateSnapshot());
+}
+
+TEST_F(BlobRegistryImplTest, Register_UnreadableFile) {
+  delegate_ptr_->can_read_file_result = false;
+
+  const std::string kId = "id";
+
+  std::vector<mojom::DataElementPtr> elements;
+  elements.push_back(mojom::DataElement::NewFile(mojom::DataElementFile::New(
+      base::FilePath(FILE_PATH_LITERAL("foobar")), 0, 16, base::nullopt)));
+
+  mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_TRUE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+}
+
+TEST_F(BlobRegistryImplTest, Register_ValidFile) {
+  delegate_ptr_->can_read_file_result = true;
+
+  const std::string kId = "id";
+  const base::FilePath path(FILE_PATH_LITERAL("foobar"));
+
+  std::vector<mojom::DataElementPtr> elements;
+  elements.push_back(mojom::DataElement::NewFile(
+      mojom::DataElementFile::New(path, 0, 16, base::nullopt)));
+
+  mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_FALSE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
+
+  BlobDataBuilder expected_blob_data(kId);
+  expected_blob_data.AppendFile(path, 0, 16, base::Time());
+
+  EXPECT_EQ(expected_blob_data, *handle->CreateSnapshot());
+}
+
+TEST_F(BlobRegistryImplTest, Register_FileSystemFile_InvalidScheme) {
+  const std::string kId = "id";
+
+  std::vector<mojom::DataElementPtr> elements;
+  elements.push_back(mojom::DataElement::NewFileFilesystem(
+      mojom::DataElementFilesystemURL::New(GURL("http://foobar.com/"), 0, 16,
+                                           base::nullopt)));
+
+  mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_TRUE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+}
+
+TEST_F(BlobRegistryImplTest, Register_FileSystemFile_UnreadablFile) {
+  delegate_ptr_->can_read_file_system_file_result = false;
+
+  const std::string kId = "id";
+  const GURL url("filesystem:http://example.com/temporary/myfile.png");
+
+  std::vector<mojom::DataElementPtr> elements;
+  elements.push_back(mojom::DataElement::NewFileFilesystem(
+      mojom::DataElementFilesystemURL::New(url, 0, 16, base::nullopt)));
+
+  mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_TRUE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+}
+
+TEST_F(BlobRegistryImplTest, Register_FileSystemFile_Valid) {
+  delegate_ptr_->can_read_file_system_file_result = true;
+
+  const std::string kId = "id";
+  const GURL url("filesystem:http://example.com/temporary/myfile.png");
+
+  std::vector<mojom::DataElementPtr> elements;
+  elements.push_back(mojom::DataElement::NewFileFilesystem(
+      mojom::DataElementFilesystemURL::New(url, 0, 16, base::nullopt)));
+
+  mojom::BlobPtr blob;
+  EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
+                                  std::move(elements)));
+  EXPECT_TRUE(bad_messages_.empty());
+
+  std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
+  WaitForBlobCompletion(handle.get());
+
+  EXPECT_FALSE(handle->IsBroken());
+  EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
+
+  BlobDataBuilder expected_blob_data(kId);
+  expected_blob_data.AppendFileSystemFile(url, 0, 16, base::Time());
+
+  EXPECT_EQ(expected_blob_data, *handle->CreateSnapshot());
 }
 
 }  // namespace storage

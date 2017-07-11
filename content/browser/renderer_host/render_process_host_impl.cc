@@ -62,6 +62,7 @@
 #include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
+#include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
@@ -1715,9 +1716,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 
   if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
-    registry->AddInterface(base::Bind(
-        &ChromeBlobStorageContext::BindBlobRegistry,
-        base::Unretained(ChromeBlobStorageContext::GetFor(browser_context_))));
+    registry->AddInterface(
+        base::Bind(&BlobRegistryWrapper::Bind,
+                   storage_partition_impl_->GetBlobRegistry(), GetID()));
   }
 
   ServiceManagerConnection* service_manager_connection =

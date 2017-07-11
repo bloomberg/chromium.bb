@@ -43,6 +43,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/TextEncoding.h"
+#include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
@@ -351,7 +352,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
         }
         case BlobDataItem::kFile:
           elements.push_back(DataElement::NewFile(DataElementFile::New(
-              item.path.IsNull() ? "" : item.path, item.offset, item.length,
+              WebStringToFilePath(item.path), item.offset, item.length,
               WTF::Time::FromDoubleT(item.expected_modification_time))));
           break;
         case BlobDataItem::kFileSystemURL:

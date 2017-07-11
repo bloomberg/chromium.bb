@@ -15,9 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/public/interfaces/blobs.mojom.h"
 
 namespace base {
 class FilePath;
@@ -27,7 +25,6 @@ class Time;
 
 namespace storage {
 class BlobStorageContext;
-class BlobRegistryImpl;
 }
 
 namespace content {
@@ -70,9 +67,6 @@ class CONTENT_EXPORT ChromeBlobStorageContext
       int64_t size,
       const base::Time& expected_modification_time);
 
-  void BindBlobRegistry(const service_manager::BindSourceInfo& source_info,
-                        storage::mojom::BlobRegistryRequest request);
-
  protected:
   virtual ~ChromeBlobStorageContext();
 
@@ -85,7 +79,6 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   void DeleteOnCorrectThread() const;
 
   std::unique_ptr<storage::BlobStorageContext> context_;
-  std::unique_ptr<storage::BlobRegistryImpl> blob_registry_;
 };
 
 struct ChromeBlobStorageContextDeleter {

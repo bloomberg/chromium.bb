@@ -42,6 +42,7 @@
 #endif
 
 namespace content {
+class BlobRegistryWrapper;
 class BlobURLLoaderFactory;
 
 class CONTENT_EXPORT  StoragePartitionImpl
@@ -119,6 +120,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobURLLoaderFactory* GetBlobURLLoaderFactory();
+  BlobRegistryWrapper* GetBlobRegistry();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
@@ -251,6 +253,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
   scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobURLLoaderFactory> blob_url_loader_factory_;
+  scoped_refptr<BlobRegistryWrapper> blob_registry_;
 
   mojo::BindingSet<mojom::StoragePartitionService> bindings_;
   mojom::NetworkContextPtr network_context_;
