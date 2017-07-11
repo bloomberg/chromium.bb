@@ -28,7 +28,7 @@
 #include <memory>
 #include "base/memory/ptr_util.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "platform/Histogram.h"
@@ -240,7 +240,7 @@ GLenum Canvas2DLayerBridge::GetGLFilter() {
 #if USE_IOSURFACE_FOR_2D_CANVAS
 bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
     SkImage* image,
-    cc::TextureMailbox* out_mailbox) {
+    viz::TextureMailbox* out_mailbox) {
   // Need to flush skia's internal queue, because the texture is about to be
   // accessed directly.
   GrContext* gr_context = context_provider_->GetGrContext();
@@ -279,8 +279,8 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
   info.mailbox_ = mailbox;
 
   *out_mailbox =
-      cc::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
-                         is_overlay_candidate, secure_output_only);
+      viz::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
+                          is_overlay_candidate, secure_output_only);
   if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
     gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
     out_mailbox->set_color_space(color_space);
@@ -372,7 +372,7 @@ void Canvas2DLayerBridge::CreateMailboxInfo() {
 
 bool Canvas2DLayerBridge::PrepareMailboxFromImage(
     sk_sp<SkImage> image,
-    cc::TextureMailbox* out_mailbox) {
+    viz::TextureMailbox* out_mailbox) {
   CreateMailboxInfo();
   MailboxInfo& mailbox_info = mailboxes_.front();
 
@@ -436,7 +436,7 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
     gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
   }
   mailbox_info.mailbox_ = mailbox;
-  *out_mailbox = cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
+  *out_mailbox = viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D);
 
   gl->BindTexture(GL_TEXTURE_2D, 0);
   // Because we are changing the texture binding without going through skia,
@@ -896,7 +896,7 @@ bool Canvas2DLayerBridge::RestoreSurface() {
 }
 
 bool Canvas2DLayerBridge::PrepareTextureMailbox(
-    cc::TextureMailbox* out_mailbox,
+    viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   if (destruction_in_progress_) {
     // It can be hit in the following sequence.

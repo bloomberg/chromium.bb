@@ -915,7 +915,7 @@ class LayerTreeHostContextTestDontUseLostResources
     texture->SetBounds(gfx::Size(10, 10));
     texture->SetIsDrawable(true);
     texture->SetTextureMailbox(
-        TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
+        viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
         SingleReleaseCallback::Create(
             base::Bind(&LayerTreeHostContextTestDontUseLostResources::
                            EmptyReleaseCallback)));

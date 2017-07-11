@@ -643,7 +643,7 @@ void Layer::SwitchCCLayerForTest() {
 }
 
 void Layer::SetTextureMailbox(
-    const cc::TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     gfx::Size texture_size_in_dip) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
@@ -734,7 +734,7 @@ void Layer::SetShowSolidColorContent() {
   SwitchToLayer(new_layer);
   solid_color_layer_ = new_layer;
 
-  mailbox_ = cc::TextureMailbox();
+  mailbox_ = viz::TextureMailbox();
   if (mailbox_release_callback_) {
     mailbox_release_callback_->Run(gpu::SyncToken(), false);
     mailbox_release_callback_.reset();
@@ -940,7 +940,7 @@ size_t Layer::GetApproximateUnsharedMemoryUsage() const {
 }
 
 bool Layer::PrepareTextureMailbox(
-    cc::TextureMailbox* mailbox,
+    viz::TextureMailbox* mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!mailbox_release_callback_)
     return false;

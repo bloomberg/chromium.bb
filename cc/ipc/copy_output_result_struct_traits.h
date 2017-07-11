@@ -25,7 +25,7 @@ struct StructTraits<cc::mojom::CopyOutputResultDataView,
   static const SkBitmap& bitmap(
       const std::unique_ptr<cc::CopyOutputResult>& result);
 
-  static const cc::TextureMailbox& texture_mailbox(
+  static const viz::TextureMailbox& texture_mailbox(
       const std::unique_ptr<cc::CopyOutputResult>& result) {
     return result->texture_mailbox_;
   }

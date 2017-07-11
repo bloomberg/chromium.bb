@@ -193,7 +193,7 @@ class PLATFORM_EXPORT DrawingBuffer
   WebGraphicsContext3DProvider* ContextProvider();
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(cc::TextureMailbox* out_mailbox,
+  bool PrepareTextureMailbox(viz::TextureMailbox* out_mailbox,
                              std::unique_ptr<cc::SingleReleaseCallback>*
                                  out_release_callback) override;
 
@@ -364,16 +364,16 @@ class PLATFORM_EXPORT DrawingBuffer
   void ResolveIfNeeded();
 
   bool PrepareTextureMailboxInternal(
-      cc::TextureMailbox* out_mailbox,
+      viz::TextureMailbox* out_mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback,
       bool force_gpu_result);
 
   // Helper functions to be called only by prepareTextureMailboxInternal.
   bool FinishPrepareTextureMailboxGpu(
-      cc::TextureMailbox* out_mailbox,
+      viz::TextureMailbox* out_mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback);
   bool FinishPrepareTextureMailboxSoftware(
-      cc::TextureMailbox* out_mailbox,
+      viz::TextureMailbox* out_mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback);
 
   // Callbacks for mailboxes given to the compositor from

@@ -21,8 +21,8 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/texture_layer_client.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/compositor/compositor.h"
@@ -294,7 +294,7 @@ class COMPOSITOR_EXPORT Layer
   // Set new TextureMailbox for this layer. Note that |mailbox| may hold a
   // shared memory resource or an actual mailbox for a texture.
   void SetTextureMailbox(
-      const cc::TextureMailbox& mailbox,
+      const viz::TextureMailbox& mailbox,
       std::unique_ptr<cc::SingleReleaseCallback> release_callback,
       gfx::Size texture_size_in_dip);
   void SetTextureSize(gfx::Size texture_size_in_dip);
@@ -389,7 +389,7 @@ class COMPOSITOR_EXPORT Layer
 
   // TextureLayerClient
   bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      viz::TextureMailbox* mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
 
   float device_scale_factor() const { return device_scale_factor_; }
@@ -565,7 +565,7 @@ class COMPOSITOR_EXPORT Layer
   gfx::Rect nine_patch_layer_aperture_;
 
   // The mailbox used by texture_layer_.
-  cc::TextureMailbox mailbox_;
+  viz::TextureMailbox mailbox_;
 
   // The callback to release the mailbox. This is only set after
   // SetTextureMailbox is called, before we give it to the TextureLayer.

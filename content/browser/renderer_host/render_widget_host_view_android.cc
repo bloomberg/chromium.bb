@@ -363,7 +363,7 @@ void PrepareTextureCopyOutputResult(
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
   if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
     return;
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());

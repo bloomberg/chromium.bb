@@ -438,9 +438,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       gpu::SyncToken sync_token =
           GenerateCompositorSyncToken(context_provider_->ContextGL());
 
-      TextureMailbox mailbox(plane_resource.mailbox(), sync_token,
-                             resource_provider_->GetResourceTextureTarget(
-                                 plane_resource.resource_id()));
+      viz::TextureMailbox mailbox(plane_resource.mailbox(), sync_token,
+                                  resource_provider_->GetResourceTextureTarget(
+                                      plane_resource.resource_id()));
       mailbox.set_color_space(output_color_space);
 
       external_resources.mailboxes.push_back(mailbox);
@@ -551,9 +551,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     PlaneResource& plane_resource = *plane_resources[i];
     // VideoResourceUpdater shares a context with the compositor so a
     // sync token is not required.
-    TextureMailbox mailbox(plane_resource.mailbox(), sync_token,
-                           resource_provider_->GetResourceTextureTarget(
-                               plane_resource.resource_id()));
+    viz::TextureMailbox mailbox(plane_resource.mailbox(), sync_token,
+                                resource_provider_->GetResourceTextureTarget(
+                                    plane_resource.resource_id()));
     mailbox.set_color_space(output_color_space);
     external_resources.mailboxes.push_back(mailbox);
     external_resources.release_callbacks.push_back(
@@ -627,8 +627,8 @@ void VideoResourceUpdater::CopyPlaneTexture(
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
   // Set sync token otherwise resource is assumed to be synchronized.
-  TextureMailbox mailbox(resource->mailbox(), sync_token, GL_TEXTURE_2D,
-                         video_frame->coded_size(), false, false);
+  viz::TextureMailbox mailbox(resource->mailbox(), sync_token, GL_TEXTURE_2D,
+                              video_frame->coded_size(), false, false);
   mailbox.set_color_space(resource_color_space);
   external_resources->mailboxes.push_back(mailbox);
 
@@ -672,12 +672,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       CopyPlaneTexture(video_frame.get(), resource_color_space, mailbox_holder,
                        &external_resources);
     } else {
-      TextureMailbox mailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
-                             mailbox_holder.texture_target,
-                             video_frame->coded_size(),
-                             video_frame->metadata()->IsTrue(
-                                 media::VideoFrameMetadata::ALLOW_OVERLAY),
-                             false);
+      viz::TextureMailbox mailbox(
+          mailbox_holder.mailbox, mailbox_holder.sync_token,
+          mailbox_holder.texture_target, video_frame->coded_size(),
+          video_frame->metadata()->IsTrue(
+              media::VideoFrameMetadata::ALLOW_OVERLAY),
+          false);
       mailbox.set_color_space(resource_color_space);
 #if defined(OS_ANDROID)
       mailbox.set_is_backed_by_surface_texture(video_frame->metadata()->IsTrue(

@@ -59,7 +59,7 @@ TEST(TextureLayerImplTest, Occlusion) {
       ->context_provider()
       ->ContextGL()
       ->GenMailboxCHROMIUM(mailbox.name);
-  TextureMailbox texture_mailbox(
+  viz::TextureMailbox texture_mailbox(
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
@@ -119,7 +119,7 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
       ->context_provider()
       ->ContextGL()
       ->GenMailboxCHROMIUM(mailbox.name);
-  TextureMailbox texture_mailbox(
+  viz::TextureMailbox texture_mailbox(
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
@@ -162,7 +162,7 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
       ->context_provider()
       ->ContextGL()
       ->GenMailboxCHROMIUM(mailbox.name);
-  TextureMailbox texture_mailbox(
+  viz::TextureMailbox texture_mailbox(
       mailbox,
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
                      gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),

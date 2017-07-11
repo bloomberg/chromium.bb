@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/texture_mailbox.mojom"
-public_headers = [ "//cc/resources/texture_mailbox.h" ]
+public_headers = [ "//components/viz/common/quads/texture_mailbox.h" ]
 traits_headers = [ "//cc/ipc/texture_mailbox_struct_traits.h" ]
-type_mappings = [ "cc.mojom.TextureMailbox=cc::TextureMailbox" ]
+deps = [
+  "//components/viz/common",
+]
+type_mappings = [ "cc.mojom.TextureMailbox=viz::TextureMailbox" ]

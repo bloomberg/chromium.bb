@@ -31,7 +31,7 @@ struct StructTraits<cc::mojom::CopyOutputRequestDataView,
     return request->area_;
   }
 
-  static const base::Optional<cc::TextureMailbox>& texture_mailbox(
+  static const base::Optional<viz::TextureMailbox>& texture_mailbox(
       const std::unique_ptr<cc::CopyOutputRequest>& request) {
     return request->texture_mailbox_;
   }

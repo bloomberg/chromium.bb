@@ -2778,7 +2778,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
     gpu::SyncToken sync_token;
     gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
-    TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
+    viz::TextureMailbox texture_mailbox(mailbox, sync_token, GL_TEXTURE_2D);
 
     std::unique_ptr<SingleReleaseCallback> release_callback;
     if (own_mailbox) {

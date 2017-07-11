@@ -32,10 +32,10 @@
 #include "cc/resources/release_callback_impl.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/single_release_callback_impl.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -151,11 +151,11 @@ class CC_EXPORT ResourceProvider
 
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
-      const TextureMailbox& mailbox,
+      const viz::TextureMailbox& mailbox,
       std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl);
 
   ResourceId CreateResourceFromTextureMailbox(
-      const TextureMailbox& mailbox,
+      const viz::TextureMailbox& mailbox,
       std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
       bool read_lock_fences_enabled);
 
@@ -298,7 +298,7 @@ class CC_EXPORT ResourceProvider
       return color_space_;
     }
 
-    const TextureMailbox& mailbox() const { return mailbox_; }
+    const viz::TextureMailbox& mailbox() const { return mailbox_; }
 
     void set_sync_token(const gpu::SyncToken& sync_token) {
       sync_token_ = sync_token;
@@ -314,7 +314,7 @@ class CC_EXPORT ResourceProvider
     GLenum target_;
     viz::ResourceFormat format_;
     gfx::Size size_;
-    TextureMailbox mailbox_;
+    viz::TextureMailbox mailbox_;
     gpu::SyncToken sync_token_;
     bool has_sync_token_;
     bool synchronized_;
@@ -612,8 +612,8 @@ class CC_EXPORT ResourceProvider
       return synchronization_state_;
     }
 
-    const TextureMailbox& mailbox() const { return mailbox_; }
-    void SetMailbox(const TextureMailbox& mailbox);
+    const viz::TextureMailbox& mailbox() const { return mailbox_; }
+    void SetMailbox(const viz::TextureMailbox& mailbox);
 
     void SetLocallyUsed();
     void SetSynchronized();
@@ -687,7 +687,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     SynchronizationState synchronization_state_ = SYNCHRONIZED;
-    TextureMailbox mailbox_;
+    viz::TextureMailbox mailbox_;
 
     DISALLOW_COPY_AND_ASSIGN(Resource);
   };

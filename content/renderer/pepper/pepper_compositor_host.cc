@@ -14,9 +14,9 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -281,9 +281,9 @@ void PepperCompositorHost::UpdateLayer(
         static_cast<cc::TextureLayer*>(layer.get()));
     if (!old_layer ||
         new_layer->common.resource_id != old_layer->common.resource_id) {
-      cc::TextureMailbox mailbox(new_layer->texture->mailbox,
-                                 new_layer->texture->sync_token,
-                                 new_layer->texture->target);
+      viz::TextureMailbox mailbox(new_layer->texture->mailbox,
+                                  new_layer->texture->sync_token,
+                                  new_layer->texture->target);
       texture_layer->SetTextureMailbox(mailbox,
           cc::SingleReleaseCallback::Create(
               base::Bind(&PepperCompositorHost::ResourceReleased,
@@ -319,7 +319,7 @@ void PepperCompositorHost::UpdateLayer(
               ->shared_bitmap_manager()
               ->GetBitmapForSharedMemory(image_shm.get());
 
-      cc::TextureMailbox mailbox(bitmap.get(), PP_ToGfxSize(desc.size));
+      viz::TextureMailbox mailbox(bitmap.get(), PP_ToGfxSize(desc.size));
       image_layer->SetTextureMailbox(
           mailbox,
           cc::SingleReleaseCallback::Create(base::Bind(

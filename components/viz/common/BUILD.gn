@@ -15,6 +15,8 @@ source_set("common") {
     "quads/resource_format.h",
     "quads/shared_bitmap.cc",
     "quads/shared_bitmap.h",
+    "quads/texture_mailbox.cc",
+    "quads/texture_mailbox.h",
     "resources/buffer_to_texture_target_map.cc",
     "resources/buffer_to_texture_target_map.h",
     "resources/platform_color.h",
@@ -29,12 +31,14 @@ source_set("common") {
     "//base",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",
+    "//ui/gfx:color_space",
     "//ui/gfx/geometry",
   ]
 
   public_deps = [
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
+    "//mojo/public/cpp/bindings",
   ]
 }
 

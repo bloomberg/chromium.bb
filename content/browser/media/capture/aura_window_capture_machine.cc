@@ -325,7 +325,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     return false;
   }
 
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());

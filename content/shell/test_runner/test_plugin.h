@@ -91,7 +91,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   // cc::TextureLayerClient methods:
   bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      viz::TextureMailbox* mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
 
  private:
@@ -150,7 +150,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   std::unique_ptr<blink::WebGraphicsContext3DProvider> context_provider_;
   gpu::gles2::GLES2Interface* gl_;
   GLuint color_texture_;
-  cc::TextureMailbox texture_mailbox_;
+  viz::TextureMailbox texture_mailbox_;
   std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
   bool mailbox_changed_;
   GLuint framebuffer_;

@@ -158,7 +158,7 @@ void ReflectorImpl::UpdateTexture(ReflectorImpl::LayerData* layer_data,
                                   const gfx::Rect& redraw_rect) {
   if (layer_data->needs_set_mailbox) {
     layer_data->layer->SetTextureMailbox(
-        cc::TextureMailbox(mailbox_->holder()),
+        viz::TextureMailbox(mailbox_->holder()),
         cc::SingleReleaseCallback::Create(base::Bind(ReleaseMailbox, mailbox_)),
         source_size);
     layer_data->needs_set_mailbox = false;

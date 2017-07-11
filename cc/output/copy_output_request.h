@@ -13,7 +13,7 @@
 #include "base/unguessable_token.h"
 #include "cc/cc_export.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -69,16 +69,18 @@ class CC_EXPORT CopyOutputRequest {
 
   // By default copy requests create a new TextureMailbox to return contents
   // in. This allows a client to provide a TextureMailbox, and the compositor
-  // will place the result inside the TextureMailbox.
-  void SetTextureMailbox(const TextureMailbox& texture_mailbox);
+  // will place the result inside the viz::TextureMailbox.
+  void SetTextureMailbox(const viz::TextureMailbox& texture_mailbox);
   bool has_texture_mailbox() const { return texture_mailbox_.has_value(); }
-  const TextureMailbox& texture_mailbox() const { return *texture_mailbox_; }
+  const viz::TextureMailbox& texture_mailbox() const {
+    return *texture_mailbox_;
+  }
 
   void SendEmptyResult();
   void SendBitmapResult(std::unique_ptr<SkBitmap> bitmap);
   void SendTextureResult(
       const gfx::Size& size,
-      const TextureMailbox& texture_mailbox,
+      const viz::TextureMailbox& texture_mailbox,
       std::unique_ptr<SingleReleaseCallback> release_callback);
 
   void SendResult(std::unique_ptr<CopyOutputResult> result);
@@ -94,7 +96,7 @@ class CC_EXPORT CopyOutputRequest {
   base::Optional<base::UnguessableToken> source_;
   bool force_bitmap_result_;
   base::Optional<gfx::Rect> area_;
-  base::Optional<TextureMailbox> texture_mailbox_;
+  base::Optional<viz::TextureMailbox> texture_mailbox_;
   CopyOutputRequestCallback result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputRequest);

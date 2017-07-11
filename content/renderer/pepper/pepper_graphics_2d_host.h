@@ -23,7 +23,6 @@
 
 namespace cc {
 class SingleReleaseCallback;
-class TextureMailbox;
 }
 
 namespace gfx {
@@ -36,6 +35,7 @@ struct SyncToken;
 
 namespace viz {
 class SharedBitmap;
+class TextureMailbox;
 }
 
 namespace content {
@@ -76,7 +76,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
              const gfx::Rect& paint_rect);
 
   bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      viz::TextureMailbox* mailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* release_callback);
   void AttachedToNewLayer();
 

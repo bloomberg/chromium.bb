@@ -155,7 +155,8 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
   std::unique_ptr<SingleReleaseCallbackImpl> callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
-  TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad, target);
+  viz::TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad,
+                              target);
   ResourceId resource8 = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, std::move(callback));
   resource_provider->AllocateForTesting(resource8);

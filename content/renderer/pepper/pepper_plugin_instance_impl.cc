@@ -756,7 +756,7 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
 }
 
 void PepperPluginInstanceImpl::CommitTextureMailbox(
-    const cc::TextureMailbox& texture_mailbox) {
+    const viz::TextureMailbox& texture_mailbox) {
   if (committed_texture_.IsValid() && !IsTextureInUse(committed_texture_)) {
     committed_texture_graphics_3d_->ReturnFrontBuffer(
         committed_texture_.mailbox(), committed_texture_consumed_sync_token_,
@@ -793,7 +793,7 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
 }
 
 void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
-    const cc::TextureMailbox& texture_mailbox,
+    const viz::TextureMailbox& texture_mailbox,
     scoped_refptr<PPB_Graphics3D_Impl> graphics_3d,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
@@ -2169,7 +2169,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 }
 
 bool PepperPluginInstanceImpl::PrepareTextureMailbox(
-    cc::TextureMailbox* mailbox,
+    viz::TextureMailbox* mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!bound_graphics_2d_platform_)
     return false;
@@ -3461,7 +3461,7 @@ void PepperPluginInstanceImpl::ConvertDIPToViewport(gfx::Rect* rect) const {
 }
 
 void PepperPluginInstanceImpl::IncrementTextureReferenceCount(
-    const cc::TextureMailbox& mailbox) {
+    const viz::TextureMailbox& mailbox) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
                    [&mailbox](const TextureMailboxRefCount& ref_count) {
@@ -3476,7 +3476,7 @@ void PepperPluginInstanceImpl::IncrementTextureReferenceCount(
 }
 
 bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
-    const cc::TextureMailbox& mailbox) {
+    const viz::TextureMailbox& mailbox) {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
                    [&mailbox](const TextureMailboxRefCount& ref_count) {
@@ -3494,7 +3494,7 @@ bool PepperPluginInstanceImpl::DecrementTextureReferenceCount(
 }
 
 bool PepperPluginInstanceImpl::IsTextureInUse(
-    const cc::TextureMailbox& mailbox) const {
+    const viz::TextureMailbox& mailbox) const {
   auto it =
       std::find_if(texture_ref_counts_.begin(), texture_ref_counts_.end(),
                    [&mailbox](const TextureMailboxRefCount& ref_count) {

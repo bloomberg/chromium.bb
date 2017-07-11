@@ -16,13 +16,16 @@
 
 class SkBitmap;
 
+namespace viz {
+class TextureMailbox;
+}
+
 namespace cc {
 class CopyOutputRequest;
 class CopyOutputResult;
 class PixelComparator;
 class SolidColorLayer;
 class TextureLayer;
-class TextureMailbox;
 
 class LayerTreePixelTest : public LayerTreeTest {
  public:
@@ -79,7 +82,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   std::unique_ptr<SkBitmap> CopyTextureMailboxToBitmap(
       const gfx::Size& size,
-      const TextureMailbox& texture_mailbox);
+      const viz::TextureMailbox& texture_mailbox);
 
   void Finish();
 

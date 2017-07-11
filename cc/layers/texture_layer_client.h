@@ -7,8 +7,11 @@
 
 #include "cc/resources/single_release_callback.h"
 
-namespace cc {
+namespace viz {
 class TextureMailbox;
+}
+
+namespace cc {
 
 class TextureLayerClient {
  public:
@@ -16,7 +19,7 @@ class TextureLayerClient {
   // Returns false if no new data is available
   // and the old mailbox is to be reused.
   virtual bool PrepareTextureMailbox(
-      TextureMailbox* mailbox,
+      viz::TextureMailbox* mailbox,
       std::unique_ptr<SingleReleaseCallback>* release_callback) = 0;
 
  protected:

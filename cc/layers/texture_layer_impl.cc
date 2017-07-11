@@ -41,7 +41,7 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl, int id)
 TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(
-    const TextureMailbox& mailbox,
+    const viz::TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback) {
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
@@ -256,7 +256,7 @@ void TextureLayerImpl::FreeTextureMailbox() {
                                  ->task_runner_provider()
                                  ->blocking_main_thread_task_runner());
     }
-    texture_mailbox_ = TextureMailbox();
+    texture_mailbox_ = viz::TextureMailbox();
     release_callback_ = nullptr;
   } else if (external_texture_resource_) {
     DCHECK(!own_mailbox_);

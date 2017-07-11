@@ -17,12 +17,12 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
@@ -368,7 +368,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   // as a source.
   request->set_source(frame_subscriber()->GetSourceIdForCopyRequest());
   if (subscriber_texture.get()) {
-    request->SetTextureMailbox(cc::TextureMailbox(
+    request->SetTextureMailbox(viz::TextureMailbox(
         subscriber_texture->mailbox(), subscriber_texture->sync_token(),
         subscriber_texture->target()));
   }
@@ -641,7 +641,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   if (subscriber_texture.get() && !subscriber_texture->texture_id())
     return;
 
-  cc::TextureMailbox texture_mailbox;
+  viz::TextureMailbox texture_mailbox;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
   result->TakeTexture(&texture_mailbox, &release_callback);
   DCHECK(texture_mailbox.IsTexture());

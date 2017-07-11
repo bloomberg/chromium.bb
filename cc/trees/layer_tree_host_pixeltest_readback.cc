@@ -115,7 +115,7 @@ class LayerTreeHostReadbackPixelTest
     EXPECT_TRUE(task_runner_provider()->IsMainThread());
     EXPECT_TRUE(result->HasTexture());
 
-    TextureMailbox texture_mailbox;
+    viz::TextureMailbox texture_mailbox;
     std::unique_ptr<SingleReleaseCallback> release_callback;
     result->TakeTexture(&texture_mailbox, &release_callback);
     EXPECT_TRUE(texture_mailbox.IsValid());

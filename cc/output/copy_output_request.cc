@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/resources/texture_mailbox.h"
+#include "components/viz/common/quads/texture_mailbox.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
@@ -57,7 +57,7 @@ void CopyOutputRequest::SendBitmapResult(std::unique_ptr<SkBitmap> bitmap) {
 
 void CopyOutputRequest::SendTextureResult(
     const gfx::Size& size,
-    const TextureMailbox& texture_mailbox,
+    const viz::TextureMailbox& texture_mailbox,
     std::unique_ptr<SingleReleaseCallback> release_callback) {
   DCHECK(texture_mailbox.IsTexture());
   SendResult(CopyOutputResult::CreateTextureResult(
@@ -65,7 +65,7 @@ void CopyOutputRequest::SendTextureResult(
 }
 
 void CopyOutputRequest::SetTextureMailbox(
-    const TextureMailbox& texture_mailbox) {
+    const viz::TextureMailbox& texture_mailbox) {
   DCHECK(!force_bitmap_result_);
   DCHECK(texture_mailbox.IsTexture());
   texture_mailbox_ = texture_mailbox;
