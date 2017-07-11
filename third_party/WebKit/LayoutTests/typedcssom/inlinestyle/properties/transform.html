@@ -52,7 +52,8 @@ runInlineStylePropertyMapTests( {
     cssTransformWithRotate3D(1, 2, 3, angleValue(2, 'grad')),
     cssTransformWithRotate3D(1, 2, 3, angleValue(0.2, 'turn')),
     // Perspectives
-    // TODO(meade)
+    new CSSTransformValue([new CSSPerspective(CSS.px(10))]),
+    new CSSTransformValue([new CSSPerspective(CSS.em(5))]),
   ],
   // Values with these strings aren't used in Typed OM, but can also be
   // represented by the specified values.
@@ -106,60 +107,39 @@ runInlineStylePropertyMapTests( {
   invalidObjects: [new CSSUnitValue(4, 'px')]
 });
 
+let crashTestStrings = {
+  'rotate(calc(45deg + 1rad))': 'rotate(calc(102.296deg))',
+  'rotate3d(1, 2, 3, calc(45deg + 1rad))': 'rotate3d(1, 2, 3, calc(102.296deg))',
+  'skew(calc(5deg + 0.1rad))': 'skew(calc(10.7296deg))',
+  'skew(calc(5deg + 0.1rad), 5deg)': 'skew(calc(10.7296deg), 5deg)',
+  'skew(5deg, calc(5deg + 0.1rad))': 'skew(5deg, calc(10.7296deg))',
+  'skewX(calc(5deg + 0.1rad))': 'skewX(calc(10.7296deg))',
+  'skewY(calc(5deg + 0.1rad))': 'skewY(calc(10.7296deg))',
+  'perspective(calc(10px + 5em))': 'perspective(calc(10px + 5em))',
+};
+
+for (let inputString in crashTestStrings) {
+  test(() => {
+    testElement.style.transform = inputString;
+    let result = testElement.styleMap.get('transform');
+    assert_equals(result.constructor, CSSStyleValue,
+        'result is a base CSSStyleValue');
+    assert_equals(result.toString(), crashTestStrings[inputString]);
+  }, "Getting transform when it is set to " + inputString + " does not crash");
+}
+
 // TODO(meade): Remove/update this test once translate is supported.
 test(function() {
   testElement.style.transform = 'translateY(50px)';
   testElement.styleMap.entries();
-}, "Unhandled case doesn't crash.");
+}, "Unhandled translate case doesn't crash.");
 
 test(function() {
-  testElement.style.transform = 'rotate(calc(45deg + 1rad))';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.constructor, CSSStyleValue,
-      'result is a base CSSStyleValue');
-  assert_equals(result.toString(), 'rotate(calc(102.296deg))');
-}, 'Getting transform when it has a rotate with a calc angle does not crash');
-
-test(function() {
-  testElement.style.transform = 'rotate3d(1, 2, 3, calc(45deg + 1rad))';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.constructor, CSSStyleValue,
-      'result is a base CSSStyleValue');
-  assert_equals(result.toString(), 'rotate3d(1, 2, 3, calc(102.296deg))');
-}, 'Getting transform when it has a rotate3d with a calc angle does not crash');
-
-test(function() {
-  testElement.style.transform = 'skew(calc(5deg + 0.1rad))';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.toString(), 'skew(calc(10.7296deg))');
-  assert_equals(result.constructor,  CSSStyleValue);
-}, 'Getting transform when it has a skew with a calc angle does not crash');
-
-test(function() {
-  testElement.style.transform = 'skew(calc(5deg + 0.1rad), 5deg)';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.toString(), 'skew(calc(10.7296deg), 5deg)');
-  assert_equals(result.constructor,  CSSStyleValue);
-
-  testElement.style.transform = 'skew(5deg, calc(5deg + 0.1rad))';
-  result = testElement.styleMap.get('transform');
-  assert_equals(result.toString(), 'skew(5deg, calc(10.7296deg))');
-  assert_equals(result.constructor,  CSSStyleValue);
-}, 'Getting transform when it has a 2-argument skew with a calc angle ' +
-   'does not crash');
-
-test(function() {
-  testElement.style.transform = 'skewX(calc(5deg + 0.1rad))';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.toString(), 'skewX(calc(10.7296deg))');
-  assert_equals(result.constructor,  CSSStyleValue);
-}, 'Getting transform when it has a skewX with a calc angle does not crash');
-
-test(function() {
-  testElement.style.transform = 'skewY(calc(5deg + 0.1rad))';
-  let result = testElement.styleMap.get('transform');
-  assert_equals(result.toString(), 'skewY(calc(10.7296deg))');
-  assert_equals(result.constructor,  CSSStyleValue);
-}, 'Getting transform when it has a skewY with a calc angle does not crash');
+  // Clear transform
+  let transform = new CSSTransformValue([new CSSPerspective(CSS.px(-5))]);
+  assert_throws(new TypeError(), () => {
+    testElement.styleMap.set('transform', transform);
+  });
+}, "Invalid perspective (negative length) doesn't crash");
 
 </script>

@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/comparisons.js"></script>
 
 <script>
+let EPSILON = 1e-6;
 
 test(() => {
   let percentValue = new CSSUnitValue(10, 'percent');
@@ -40,6 +42,28 @@ test(() => {
   perspective.is2D = true;
   assert_false(perspective.is2D);
 }, "Setting is2D does nothing");
+
+test(() => {
+  // Obtained by doing $0.style.transform = perspective(10px);
+  // getComputedStyle($0).transform
+  let expectedMatrix = new DOMMatrixReadOnly(
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.1, 0, 0, 0, 1]);
+  let transformValue = new CSSTransformValue([new CSSPerspective(CSS.px(10))]);
+  assert_matrix_approx_equals(
+      transformValue.toMatrix(), expectedMatrix, EPSILON);
+}, "toMatrix when used in a CSSTransformValue produces correct matrix");
+
+test(() => {
+  let expectedMatrix = new DOMMatrixReadOnly();
+  let transformValue = new CSSTransformValue([new CSSPerspective(CSS.em(10))]);
+  assert_matrix_approx_equals(transformValue.toMatrix(), expectedMatrix, EPSILON);
+}, "toMatrix is the identity (instead of crashing) if relative units are used");
+
+test(() => {
+  let expectedMatrix = new DOMMatrixReadOnly();
+  let transformValue = new CSSTransformValue([new CSSPerspective(CSS.px(-10))]);
+  assert_matrix_approx_equals(transformValue.toMatrix(), expectedMatrix, EPSILON);
+}, "toMatrix is the identity when perspective is negative (which is invalid)");
 
 </script>
 
