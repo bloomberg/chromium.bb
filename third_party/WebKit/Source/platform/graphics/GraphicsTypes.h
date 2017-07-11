@@ -50,7 +50,7 @@ enum InterpolationQuality {
   kInterpolationLow = kLow_SkFilterQuality,
   kInterpolationMedium = kMedium_SkFilterQuality,
   kInterpolationHigh = kHigh_SkFilterQuality,
-#if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
+#if defined(WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION)
   kInterpolationDefault = kInterpolationLow,
 #else
   kInterpolationDefault = kInterpolationHigh,

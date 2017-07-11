@@ -25,7 +25,7 @@
 #include "build/build_config.h"
 #include "platform/wtf/build_config.h"
 
-#if defined(OS_ANDROID) && USE(WEBAUDIO_OPENMAX_DL_FFT)
+#if defined(OS_ANDROID) && defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
 
 #include "platform/audio/FFTFrame.h"
 
@@ -158,4 +158,4 @@ OMXFFTSpec_R_F32* FFTFrame::ContextForSize(unsigned log2fft_size) {
 
 }  // namespace blink
 
-#endif  // #if defined(OS_ANDROID) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
+#endif  // #if defined(OS_ANDROID) && !defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
