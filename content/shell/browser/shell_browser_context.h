@@ -108,7 +108,6 @@ class ShellBrowserContext : public BrowserContext {
   net::NetLog* net_log() const { return net_log_; }
 
   std::unique_ptr<ShellResourceContext> resource_context_;
-  bool ignore_certificate_errors_;
   std::unique_ptr<ShellDownloadManagerDelegate> download_manager_delegate_;
   std::unique_ptr<PermissionManager> permission_manager_;
   std::unique_ptr<BackgroundSyncController> background_sync_controller_;
@@ -118,6 +117,7 @@ class ShellBrowserContext : public BrowserContext {
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
+  bool ignore_certificate_errors_;
   bool off_the_record_;
   net::NetLog* net_log_;
   base::FilePath path_;

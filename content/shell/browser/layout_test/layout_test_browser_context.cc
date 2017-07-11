@@ -85,7 +85,6 @@ class MojomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 LayoutTestBrowserContext::LayoutTestBrowserContext(bool off_the_record,
                                                    net::NetLog* net_log)
     : ShellBrowserContext(off_the_record, net_log) {
-  ignore_certificate_errors_ = true;
 }
 
 LayoutTestBrowserContext::~LayoutTestBrowserContext() {
