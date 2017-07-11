@@ -77,14 +77,7 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   return conv_params;
 }
 
-void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
-                           int dst_stride, int w, int h, int bits);
-
 #if CONFIG_HIGHBITDEPTH
-void av1_highbd_convolve_rounding(const int32_t *src, int src_stride,
-                                  uint8_t *dst8, int dst_stride, int w, int h,
-                                  int bits, int bd);
-
 void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    uint8_t *dst, int dst_stride, int w, int h,
                                    const InterpFilter *interp_filter,

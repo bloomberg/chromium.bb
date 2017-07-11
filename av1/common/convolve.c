@@ -309,8 +309,8 @@ void av1_convolve_vert_facade_scale(const uint8_t *src, int src_stride,
 }
 
 #if CONFIG_CONVOLVE_ROUND
-void av1_convolve_rounding(const int32_t *src, int src_stride, uint8_t *dst,
-                           int dst_stride, int w, int h, int bits) {
+void av1_convolve_rounding_c(const int32_t *src, int src_stride, uint8_t *dst,
+                             int dst_stride, int w, int h, int bits) {
   int r, c;
   for (r = 0; r < h; ++r) {
     for (c = 0; c < w; ++c) {
@@ -508,9 +508,9 @@ static INLINE void transpose_uint16(uint16_t *dst, int dst_stride,
     for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
 }
 
-void av1_highbd_convolve_rounding(const int32_t *src, int src_stride,
-                                  uint8_t *dst8, int dst_stride, int w, int h,
-                                  int bits, int bd) {
+void av1_highbd_convolve_rounding_c(const int32_t *src, int src_stride,
+                                    uint8_t *dst8, int dst_stride, int w, int h,
+                                    int bits, int bd) {
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int r, c;
   for (r = 0; r < h; ++r) {

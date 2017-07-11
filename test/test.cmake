@@ -204,8 +204,9 @@ if (CONFIG_AV1_ENCODER)
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
           "${AOM_ROOT}/test/av1_convolve_2d_test.cc"
           "${AOM_ROOT}/test/av1_convolve_2d_test_util.cc"
-          "${AOM_ROOT}/test/av1_convolve_2d_test_util.h")
-    endif ()
+          "${AOM_ROOT}/test/av1_convolve_2d_test_util.h"
+          "${AOM_ROOT}/test/convolve_round_test.cc")
+      endif ()
 
     if (CONFIG_EXT_INTER)
       set(AOM_UNIT_TEST_ENCODER_SOURCES

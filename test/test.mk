@@ -248,6 +248,7 @@ ifeq ($(CONFIG_CONVOLVE_ROUND),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test_util.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE2) += av1_convolve_2d_test_util.cc
+LIBAOM_TEST_SRCS-yes          += convolve_round_test.cc
 endif
 
 ifeq ($(CONFIG_GLOBAL_MOTION)$(CONFIG_AV1_ENCODER),yesyes)
