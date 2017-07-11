@@ -1108,9 +1108,8 @@ config("default_warnings") {
         "-Wno-narrowing",
       ]
 
-      # Don't warn about the "typedef 'foo' locally defined but not used"
-      # for gcc 4.8.
-      # TODO: remove this flag once all builds work. See crbug.com/227506
+      # -Wunused-local-typedefs is broken in gcc,
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63872
       cflags += [ "-Wno-unused-local-typedefs" ]
 
       # Don't warn about "maybe" uninitialized. Clang doesn't include this
