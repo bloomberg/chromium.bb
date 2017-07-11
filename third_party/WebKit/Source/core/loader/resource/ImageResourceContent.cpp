@@ -367,16 +367,14 @@ void ImageResourceContent::UpdateToLoadedContentStatus(
       break;
 
     case ResourceStatus::kCached:
+    case ResourceStatus::kLoadError:
+    case ResourceStatus::kDecodeError:
       // Second (or later) part of a multipart image.
+      // TODO(hiroshige): Assert that this is actually a multipart image.
       break;
 
     case ResourceStatus::kNotStarted:
       // Should have updated to kPending via NotifyStartLoad().
-      CHECK(false);
-      break;
-
-    case ResourceStatus::kLoadError:
-    case ResourceStatus::kDecodeError:
       CHECK(false);
       break;
   }
