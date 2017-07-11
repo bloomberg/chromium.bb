@@ -99,6 +99,15 @@
   return UIColor.whiteColor;
 }
 
++ (UIColor*)sideMenuIconColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:0.f alpha:0.54f];
+  });
+  return color;
+}
+
 #pragma mark - Icons
 
 + (UIImage*)arrowIcon {
@@ -196,6 +205,24 @@
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     icon = [UIImage imageNamed:@"ic_settings_white"];
+  });
+  return icon;
+}
+
++ (UIImage*)helpIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_help"];
+  });
+  return icon;
+}
+
++ (UIImage*)feedbackIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_feedback"];
   });
   return icon;
 }

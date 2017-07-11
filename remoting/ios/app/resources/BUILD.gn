@@ -16,6 +16,8 @@ group("assets") {
     "//third_party/material_design_icons:ic_chevron_left_white_36pt",
     "//third_party/material_design_icons:ic_close_white",
     "//third_party/material_design_icons:ic_desktop_windows_white",
+    "//third_party/material_design_icons:ic_feedback",
+    "//third_party/material_design_icons:ic_help",
     "//third_party/material_design_icons:ic_menu_white",
     "//third_party/material_design_icons:ic_radio_button_checked_white",
     "//third_party/material_design_icons:ic_radio_button_unchecked_white",

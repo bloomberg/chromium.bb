@@ -23,6 +23,7 @@
 @property(class, nonatomic, readonly) UIColor* setupListBackgroundColor;
 @property(class, nonatomic, readonly) UIColor* setupListTextColor;
 @property(class, nonatomic, readonly) UIColor* setupListNumberColor;
+@property(class, nonatomic, readonly) UIColor* sideMenuIconColor;
 
 // Icons
 
@@ -37,6 +38,8 @@
 @property(class, nonatomic, readonly) UIImage* radioOutlineIcon;
 @property(class, nonatomic, readonly) UIImage* refreshIcon;
 @property(class, nonatomic, readonly) UIImage* settingsIcon;
+@property(class, nonatomic, readonly) UIImage* helpIcon;
+@property(class, nonatomic, readonly) UIImage* feedbackIcon;
 
 @end
 
