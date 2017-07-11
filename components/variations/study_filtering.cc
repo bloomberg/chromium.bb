@@ -116,6 +116,12 @@ bool CheckStudyPlatform(const Study::Filter& filter, Study::Platform platform) {
   return false;
 }
 
+bool CheckStudyLowEndDevice(const Study::Filter& filter,
+                            bool is_low_end_device) {
+  return !filter.has_is_low_end_device() ||
+         filter.is_low_end_device() == is_low_end_device;
+}
+
 bool CheckStudyStartDate(const Study::Filter& filter,
                          const base::Time& date_time) {
   if (filter.has_start_date()) {
@@ -242,6 +248,13 @@ bool ShouldAddStudy(const Study& study,
     if (!CheckStudyHardwareClass(study.filter(), client_state.hardware_class)) {
       DVLOG(1) << "Filtered out study " << study.name() <<
                   " due to hardware_class.";
+      return false;
+    }
+
+    if (!CheckStudyLowEndDevice(study.filter(),
+                                client_state.is_low_end_device)) {
+      DVLOG(1) << "Filtered out study " << study.name()
+               << " due to is_low_end_device.";
       return false;
     }
 

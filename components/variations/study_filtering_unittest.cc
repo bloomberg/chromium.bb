@@ -255,6 +255,22 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
   }
 }
 
+TEST(VariationsStudyFilteringTest, CheckStudyLowEndDevice) {
+  Study::Filter filter;
+
+  // Check that if the filter is not set, study applies to either low end value.
+  EXPECT_TRUE(internal::CheckStudyLowEndDevice(filter, true));
+  EXPECT_TRUE(internal::CheckStudyLowEndDevice(filter, false));
+
+  filter.set_is_low_end_device(true);
+  EXPECT_TRUE(internal::CheckStudyLowEndDevice(filter, true));
+  EXPECT_FALSE(internal::CheckStudyLowEndDevice(filter, false));
+
+  filter.set_is_low_end_device(false);
+  EXPECT_FALSE(internal::CheckStudyLowEndDevice(filter, true));
+  EXPECT_TRUE(internal::CheckStudyLowEndDevice(filter, false));
+}
+
 TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);

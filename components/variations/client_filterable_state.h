@@ -41,6 +41,10 @@ struct ClientFilterableState {
   // identify models of devices.
   std::string hardware_class;
 
+  // Whether this is a low-end device. Currently only supported on Android.
+  // Based on base::SysInfo::IsLowEndDevice().
+  bool is_low_end_device = false;
+
   // The country code to use for studies configured with session consistency.
   std::string session_consistency_country;
 
