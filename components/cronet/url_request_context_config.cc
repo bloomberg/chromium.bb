@@ -19,6 +19,9 @@
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/ct_policy_status.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -99,6 +102,20 @@ const char kNQEPersistentCacheReadingEnabled[] =
 const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
+
+// A CTPolicyEnforcer that accepts all certificates.
+class DoNothingCTPolicyEnforcer : public net::CTPolicyEnforcer {
+ public:
+  DoNothingCTPolicyEnforcer() = default;
+  ~DoNothingCTPolicyEnforcer() override = default;
+
+  net::ct::CertPolicyCompliance DoesConformToCertPolicy(
+      net::X509Certificate* cert,
+      const net::SCTList& verified_scts,
+      const net::NetLogWithSource& net_log) override {
+    return net::ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  }
+};
 
 }  // namespace
 
@@ -459,6 +476,12 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     cert_verifier = net::CertVerifier::CreateDefault();
   }
   context_builder->SetCertVerifier(std::move(cert_verifier));
+  // Certificate Transparency is intentionally ignored in Cronet.
+  // See //net/docs/certificate-transparency.md for more details.
+  context_builder->set_ct_verifier(
+      base::MakeUnique<net::DoNothingCTVerifier>());
+  context_builder->set_ct_policy_enforcer(
+      base::MakeUnique<DoNothingCTPolicyEnforcer>());
   // TODO(mef): Use |config| to set cookies.
 }
 

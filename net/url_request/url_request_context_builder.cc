@@ -258,6 +258,11 @@ void URLRequestContextBuilder::set_ct_verifier(
   ct_verifier_ = std::move(ct_verifier);
 }
 
+void URLRequestContextBuilder::set_ct_policy_enforcer(
+    std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer) {
+  ct_policy_enforcer_ = std::move(ct_policy_enforcer);
+}
+
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
   cert_verifier_ = std::move(cert_verifier);
@@ -410,7 +415,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     ct_verifier->AddLogs(ct::CreateLogVerifiersForKnownLogs());
     storage->set_cert_transparency_verifier(std::move(ct_verifier));
   }
-  storage->set_ct_policy_enforcer(base::MakeUnique<CTPolicyEnforcer>());
+  if (ct_policy_enforcer_) {
+    storage->set_ct_policy_enforcer(std::move(ct_policy_enforcer_));
+  } else {
+    storage->set_ct_policy_enforcer(base::MakeUnique<CTPolicyEnforcer>());
+  }
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(
