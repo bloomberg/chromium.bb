@@ -129,6 +129,7 @@ void ProcessIconOnBackgroundThread(
     int desired_size,
     favicon_base::FaviconRawBitmapResult* raw_result,
     SkBitmap* bitmap,
+    GURL* icon_url,
     favicon_base::FallbackIconStyle* fallback_icon_style) {
   if (IsDbResultAdequate(db_result, min_source_size)) {
     gfx::Image image;
@@ -143,6 +144,9 @@ void ProcessIconOnBackgroundThread(
       }
       if (bitmap) {
         *bitmap = image.AsBitmap();
+      }
+      if (icon_url) {
+        *icon_url = db_result.icon_url;
       }
       return;
     }
@@ -205,6 +209,7 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
 
   favicon_base::FaviconRawBitmapResult raw_bitmap_result_;
   SkBitmap bitmap_result_;
+  GURL icon_url_;
   std::unique_ptr<favicon_base::FallbackIconStyle> fallback_icon_style_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconWorker);
@@ -237,6 +242,7 @@ void LargeIconWorker::OnIconLookupComplete(
                  min_source_size_in_pixel_, desired_size_in_pixel_,
                  raw_bitmap_callback_ ? &raw_bitmap_result_ : nullptr,
                  image_callback_ ? &bitmap_result_ : nullptr,
+                 image_callback_ ? &icon_url_ : nullptr,
                  fallback_icon_style_.get()),
       base::Bind(&LargeIconWorker::OnIconProcessingComplete, this));
 }
@@ -256,7 +262,7 @@ void LargeIconWorker::OnIconProcessingComplete() {
 
   if (!bitmap_result_.isNull()) {
     image_callback_.Run(favicon_base::LargeIconImageResult(
-        gfx::Image::CreateFrom1xBitmap(bitmap_result_)));
+        gfx::Image::CreateFrom1xBitmap(bitmap_result_), icon_url_));
     return;
   }
   image_callback_.Run(
@@ -399,6 +405,10 @@ void LargeIconService::
       base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
                  page_url, callback),
       traffic_annotation);
+}
+
+void LargeIconService::TouchIconFromGoogleServer(const GURL& icon_url) {
+  favicon_service_->TouchOnDemandFavicon(icon_url);
 }
 
 base::CancelableTaskTracker::TaskId

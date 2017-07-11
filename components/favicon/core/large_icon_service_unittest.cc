@@ -411,6 +411,7 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
     if (!result.image.IsEmpty()) {
       returned_bitmap_size_ =
           base::MakeUnique<gfx::Size>(result.image.ToImageSkia()->size());
+      ASSERT_TRUE(result.icon_url.is_valid());
     }
     StoreFallbackStyle(result.fallback_icon_style.get());
   }

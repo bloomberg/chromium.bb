@@ -210,9 +210,13 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
     const GURL& page_url,
     const favicon_base::LargeIconResult& result) {
   if (!HasResultDefaultBackgroundColor(result)) {
-    // We should only fetch for default "gray" tiles so that we never overrite
-    // any favicon of any size.
+    // There is already an icon, there is nothing to do. (We should only fetch
+    // for default "gray" tiles so that we never overwrite any favicon of any
+    // size.)
     FinishRequestAndNotifyIconAvailable(page_url, /*newly_available=*/false);
+    // Update the time when the icon was last requested - postpone thus the
+    // automatic eviction of the favicon from the favicon database.
+    large_icon_service_->TouchIconFromGoogleServer(result.bitmap.icon_url);
     return;
   }
 
