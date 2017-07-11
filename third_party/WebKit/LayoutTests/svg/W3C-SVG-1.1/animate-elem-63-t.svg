@@ -320,4 +320,8 @@
 
     </g>
 
+  <script>
+    // Pause the animation at t=0.
+    document.documentElement.pauseAnimations();
+  </script>
 </svg>
