@@ -153,11 +153,6 @@ size_t RegisterChromeCrashKeys() {
     {kInputEventFilterSendFailure, kSmallSize},
 #if defined(OS_CHROMEOS)
     {kNumberOfUsers, kSmallSize},
-    // Temporary for https://crbug.com/629521
-    {"mmap_params", kSmallSize},
-    {"buffer_size", kSmallSize},
-    {"errno", kSmallSize},
-    {"number_of_fds", kSmallSize},
 #endif
 #if defined(OS_MACOSX)
     {mac::kFirstNSException, kMediumSize},
