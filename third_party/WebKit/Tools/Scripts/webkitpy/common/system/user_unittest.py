@@ -47,7 +47,7 @@ class UserTest(unittest.TestCase):
             return None
 
         self.assertEqual(User.prompt('input', repeat=self.repeats_remaining,
-                                     raw_input=mock_raw_input), 'example user response')
+                                     input_func=mock_raw_input), 'example user response')
 
     def test_prompt_when_exceeded_repeats(self):
         self.repeats_remaining = 2
@@ -55,7 +55,7 @@ class UserTest(unittest.TestCase):
         def mock_raw_input(_):
             self.repeats_remaining -= 1
             return None
-        self.assertIsNone(User.prompt('input', repeat=self.repeats_remaining, raw_input=mock_raw_input))
+        self.assertIsNone(User.prompt('input', repeat=self.repeats_remaining, input_func=mock_raw_input))
 
     def test_prompt_with_list(self):
         def run_prompt_test(inputs, expected_result, can_choose_multiple=False):
@@ -66,7 +66,7 @@ class UserTest(unittest.TestCase):
                 self,
                 User.prompt_with_list,
                 args=['title', ['foo', 'bar']],
-                kwargs={'can_choose_multiple': can_choose_multiple, 'raw_input': mock_raw_input},
+                kwargs={'can_choose_multiple': can_choose_multiple, 'input_func': mock_raw_input},
                 expected_stdout='title\n 1. foo\n 2. bar\n')
             self.assertEqual(actual_result, expected_result)
             self.assertEqual(len(inputs), 0)
@@ -87,7 +87,7 @@ class UserTest(unittest.TestCase):
             self.assertEqual(expected_message, message)
             return user_input
 
-        out = User().confirm(default=default, raw_input=mock_raw_input)
+        out = User().confirm(default=default, input_func=mock_raw_input)
         self.assertEqual(expected_out, out)
 
     def test_confirm_input_yes(self):

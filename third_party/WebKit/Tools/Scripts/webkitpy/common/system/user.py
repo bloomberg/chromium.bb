@@ -50,19 +50,19 @@ class User(object):
 
     # FIXME: These are @classmethods because bugzilla.py doesn't have a Tool object (thus no User instance).
     @classmethod
-    def prompt(cls, message, repeat=1, raw_input=raw_input):
+    def prompt(cls, message, repeat=1, input_func=raw_input):
         response = None
         while repeat and not response:
             repeat -= 1
-            response = raw_input(message)
+            response = input_func(message)
         return response
 
     @classmethod
-    def _wait_on_list_response(cls, list_items, can_choose_multiple, raw_input):
+    def _wait_on_list_response(cls, list_items, can_choose_multiple, input_func):
         while True:
             if can_choose_multiple:
                 response = cls.prompt(
-                    'Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \'all\': ', raw_input=raw_input)
+                    'Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \'all\': ', input_func=input_func)
                 if not response.strip() or response == 'all':
                     return list_items
 
@@ -80,25 +80,25 @@ class User(object):
                 return [list_items[i] for i in indices]
             else:
                 try:
-                    result = int(cls.prompt('Enter a number: ', raw_input=raw_input)) - 1
+                    result = int(cls.prompt('Enter a number: ', input_func=input_func)) - 1
                 except ValueError:
                     continue
                 return list_items[result]
 
     @classmethod
-    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input=raw_input):
+    def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, input_func=raw_input):
         print list_title
         i = 0
         for item in list_items:
             i += 1
             print '%2d. %s' % (i, item)
-        return cls._wait_on_list_response(list_items, can_choose_multiple, raw_input)
+        return cls._wait_on_list_response(list_items, can_choose_multiple, input_func)
 
-    def confirm(self, message=None, default=DEFAULT_YES, raw_input=raw_input):
+    def confirm(self, message=None, default=DEFAULT_YES, input_func=raw_input):
         if not message:
             message = 'Continue?'
         choice = {'y': 'Y/n', 'n': 'y/N'}[default]
-        response = raw_input('%s [%s]: ' % (message, choice))
+        response = input_func('%s [%s]: ' % (message, choice))
         response = response.strip().lower()
         if not response:
             response = default
