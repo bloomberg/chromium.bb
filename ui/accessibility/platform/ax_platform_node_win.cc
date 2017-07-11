@@ -1362,10 +1362,10 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_MENUITEM;
 
     case ui::AX_ROLE_MENU_LIST_POPUP:
-      return ROLE_SYSTEM_LIST;
+      return ROLE_SYSTEM_MENUPOPUP;
 
     case ui::AX_ROLE_MENU_LIST_OPTION:
-      return ROLE_SYSTEM_LISTITEM;
+      return ROLE_SYSTEM_MENUITEM;
 
     case ui::AX_ROLE_NAVIGATION:
       return ROLE_SYSTEM_GROUPING;
