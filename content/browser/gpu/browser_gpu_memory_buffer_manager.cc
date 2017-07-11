@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -71,6 +72,14 @@ BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
       gpu_client_tracing_id_(gpu_client_tracing_id) {
   DCHECK(!g_gpu_memory_buffer_manager);
   g_gpu_memory_buffer_manager = this;
+
+  // Enable the dump provider with IO thread affinity. Note that
+  // unregistration happens on the IO thread (See
+  // BrowserProcessSubThread::IOThreadPreCleanUp).
+  DCHECK(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "BrowserGpuMemoryBufferManager",
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 BrowserGpuMemoryBufferManager::~BrowserGpuMemoryBufferManager() {
