@@ -35,7 +35,7 @@ from webkitpy.layout_tests.models.test_configuration import TestConfiguration, T
 from webkitpy.layout_tests.models.test_expectations import (
     TestExpectationLine, TestExpectations, ParseError, TestExpectationParser,
     PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO,
-    TIMEOUT, CRASH, LEAK, SKIP, WONTFIX, NEEDS_REBASELINE, MISSING
+    TIMEOUT, CRASH, LEAK, SKIP, WONTFIX, NEEDS_MANUAL_REBASELINE, MISSING
 )
 
 
@@ -53,13 +53,10 @@ class Base(unittest.TestCase):
         return ['failures/expected/text.html',
                 'failures/expected/image_checksum.html',
                 'failures/expected/crash.html',
-                'failures/expected/needsrebaseline.html',
                 'failures/expected/needsmanualrebaseline.html',
                 'failures/expected/image.html',
                 'failures/expected/timeout.html',
                 'passes/text.html',
-                'reftests/failures/expected/needsrebaseline.html',
-                'reftests/failures/expected/needsrebaseline_with_txt.html',
                 'reftests/failures/expected/needsmanualrebaseline.html',
                 'reftests/failures/expected/needsmanualrebaseline_with_txt.html',
                 'reftests/failures/expected/has_unused_expectation.html']
@@ -68,7 +65,6 @@ class Base(unittest.TestCase):
         return """
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/crash.html [ Crash ]
-Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
 Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/image_checksum.html [ Crash ]
 Bug(test) failures/expected/image.html [ Crash Mac ]
@@ -139,16 +135,24 @@ class MiscTests(Base):
         self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=True), True)
         self.assertEqual(TestExpectations.result_was_expected(MISSING, set([PASS]), test_needs_rebaselining=False), False)
 
-        self.assertTrue(TestExpectations.result_was_expected(PASS, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(MISSING, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(TEXT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(IMAGE, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(IMAGE_PLUS_TEXT,
-                                                             set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertTrue(TestExpectations.result_was_expected(AUDIO, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(TIMEOUT, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(CRASH, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
-        self.assertFalse(TestExpectations.result_was_expected(LEAK, set([NEEDS_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            PASS, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            MISSING, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            TEXT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            IMAGE, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            IMAGE_PLUS_TEXT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertTrue(TestExpectations.result_was_expected(
+            AUDIO, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(
+            TIMEOUT, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(
+            CRASH, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
+        self.assertFalse(TestExpectations.result_was_expected(
+            LEAK, set([NEEDS_MANUAL_REBASELINE]), test_needs_rebaselining=False))
 
     def test_remove_pixel_failures(self):
         self.assertEqual(TestExpectations.remove_pixel_failures(set([FAIL])), set([FAIL]))
@@ -197,31 +201,6 @@ class MiscTests(Base):
             filesystem.write_text_file(
                 filesystem.join(
                     self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsrebaseline.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsrebaseline-expected.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsrebaseline_with_txt.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsrebaseline_with_txt-expected.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsrebaseline_with_txt-expected.txt'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
                     'reftests/failures/expected/needsmanualrebaseline.html'),
                 'content')
             filesystem.write_text_file(
@@ -249,21 +228,14 @@ class MiscTests(Base):
                     self._port.layout_tests_dir(),
                     'reftests/failures/expected/needsmanualrebaseline_with_txt-expected.txt'),
                 'content')
-            self.parse_exp("""Bug(user) reftests/failures/expected/needsrebaseline.html [ NeedsRebaseline ]
-Bug(user) reftests/failures/expected/needsrebaseline_with_txt.html [ NeedsRebaseline ]
-Bug(user) reftests/failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
-Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ NeedsManualRebaseline ]
-""", is_lint_mode=True)
+            self.parse_exp(
+                'Bug(user) reftests/failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]\n'
+                'Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ NeedsManualRebaseline ]\n',
+                is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError as error:
-            warnings = ('expectations:1 NeedsRebaseline is deprecated; see https://crbug.com/692811 '
-                        'reftests/failures/expected/needsrebaseline.html\n'
-                        'expectations:1 A reftest without text expectation cannot be marked as '
-                        'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsrebaseline.html\n'
-                        'expectations:2 NeedsRebaseline is deprecated; see https://crbug.com/692811 '
-                        'reftests/failures/expected/needsrebaseline_with_txt.html\n'
-                        'expectations:3 A reftest without text expectation cannot be marked as '
-                        'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html')
+            warnings = ('expectations:1 A reftest without text expectation cannot be marked as '
+                        'NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html')
             self.assertEqual(str(error), warnings)
 
     def test_parse_warning(self):
@@ -273,14 +245,12 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
             filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'test-to-rebaseline.html'), 'content')
             self.parse_exp('Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n'
                            'Bug(user) non-existent-test.html [ Failure ]\n'
-                           'Bug(user) disabled-test.html-disabled [ Failure ]\n'
-                           'Bug(user) [ Release ] test-to-rebaseline.html [ NeedsRebaseline ]', is_lint_mode=True)
+                           'Bug(user) disabled-test.html-disabled [ Failure ]\n',
+                           is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError as error:
             warnings = ('expectations:1 Unrecognized specifier "FOO" failures/expected/text.html\n'
-                        'expectations:2 Path does not exist. non-existent-test.html\n'
-                        'expectations:4 NeedsRebaseline is deprecated; see https://crbug.com/692811 test-to-rebaseline.html\n'
-                        'expectations:4 A test cannot be rebaselined for Debug/Release. test-to-rebaseline.html')
+                        'expectations:2 Path does not exist. non-existent-test.html')
             self.assertEqual(str(error), warnings)
 
     def test_parse_warnings_are_logged_if_not_in_lint_mode(self):
@@ -337,8 +307,6 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
         self.assertFalse(match('failures/expected/image_checksum.html', PASS, True))
         self.assertFalse(match('failures/expected/image_checksum.html', PASS, False))
         self.assertFalse(match('failures/expected/crash.html', PASS, False))
-        self.assertTrue(match('failures/expected/needsrebaseline.html', TEXT, True))
-        self.assertFalse(match('failures/expected/needsrebaseline.html', CRASH, True))
         self.assertTrue(match('failures/expected/needsmanualrebaseline.html', TEXT, True))
         self.assertFalse(match('failures/expected/needsmanualrebaseline.html', CRASH, True))
         self.assertTrue(match('passes/text.html', PASS, False))
@@ -662,22 +630,24 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
-    def test_remove_needs_rebaseline(self):
+    def test_remove_needs_manual_rebaseline(self):
         host = MockHost()
         test_port = host.port_factory.get('test-win-win7', None)
         test_port.test_exists = lambda test: True
         test_port.test_isfile = lambda test: True
 
         test_config = test_port.test_configuration()
-        test_port.expectations_dict = lambda: {'expectations': """Bug(x) [ Win ] failures/expected/foo.html [ NeedsRebaseline ]
-"""}
+        test_port.expectations_dict = lambda: {
+            'expectations': 'Bug(x) [ Win ] failures/expected/foo.html [ NeedsManualRebaseline ]\n'
+        }
         expectations = TestExpectations(test_port, self.get_basic_tests())
 
         actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
 
-        self.assertEqual("""Bug(x) [ Win7 Debug ] failures/expected/foo.html [ NeedsRebaseline ]
-Bug(x) [ Win10 ] failures/expected/foo.html [ NeedsRebaseline ]
-""", actual_expectations)
+        self.assertEqual(
+            'Bug(x) [ Win7 Debug ] failures/expected/foo.html [ NeedsManualRebaseline ]\n'
+            'Bug(x) [ Win10 ] failures/expected/foo.html [ NeedsManualRebaseline ]\n',
+            actual_expectations)
 
     def test_remove_multiple_configurations(self):
         host = MockHost()

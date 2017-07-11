@@ -95,7 +95,7 @@ class RemoveFlakesOMatic(object):
         if len(expectations) < 2:
             return False
 
-        # Don't check lines that have expectations like NeedsRebaseline or Skip.
+        # Don't check lines that have expectations like Skip.
         if self._has_unstrippable_expectations(expectations):
             return False
 
@@ -190,9 +190,12 @@ class RemoveFlakesOMatic(object):
             True if at least one of the expectations is unstrippable. False
             otherwise.
         """
-        unstrippable_expectations = ('REBASELINE', 'NEEDSREBASELINE',
-                                     'NEEDSMANUALREBASELINE', 'SLOW',
-                                     'SKIP')
+        unstrippable_expectations = (
+            'NEEDSMANUALREBASELINE',
+            'REBASELINE',
+            'SKIP',
+            'SLOW',
+        )
         return any(s in expectations for s in unstrippable_expectations)
 
     def _get_builder_results_by_path(self):

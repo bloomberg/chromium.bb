@@ -42,7 +42,6 @@ import sys
 
 from webkitpy.common.host import Host
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
-from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline
 from webkitpy.tool.commands.command import HelpPrintingOptionParser
 from webkitpy.tool.commands.copy_existing_baselines import CopyExistingBaselines
 from webkitpy.tool.commands.flaky_tests import FlakyTests
@@ -81,7 +80,6 @@ class WebKitPatch(Host):
         self._path = path
         self.commands = [
             AnalyzeBaselines(),
-            AutoRebaseline(),
             CopyExistingBaselines(),
             CrashLog(),
             FlakyTests(),
