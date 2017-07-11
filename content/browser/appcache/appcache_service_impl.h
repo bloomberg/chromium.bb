@@ -50,9 +50,10 @@ class AppCacheStorage;
 // during Reinitialization.
 class CONTENT_EXPORT AppCacheStorageReference
     : public base::RefCounted<AppCacheStorageReference> {
-public:
+ public:
   AppCacheStorage* storage() const { return storage_.get(); }
-private:
+
+ private:
   friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
   AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
@@ -88,7 +89,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   void Initialize(
       const base::FilePath& cache_directory,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread);
 
   void AddObserver(Observer* observer) {
@@ -201,7 +201,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void Reinitialize();
 
   base::FilePath cache_directory_;
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   AppCachePolicy* appcache_policy_;
   AppCacheQuotaClient* quota_client_;

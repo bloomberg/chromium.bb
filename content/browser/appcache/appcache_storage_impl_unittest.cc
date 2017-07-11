@@ -21,8 +21,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_database.h"
@@ -187,8 +188,9 @@ class IOThread : public base::Thread {
   std::unique_ptr<net::URLRequestContext> request_context_;
 };
 
+std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment;
 std::unique_ptr<IOThread> io_thread;
-std::unique_ptr<base::Thread> db_thread;
+std::unique_ptr<base::Thread> background_thread;
 
 }  // namespace
 
@@ -278,7 +280,7 @@ class AppCacheStorageImplTest : public testing::Test {
         : QuotaManager(true /* is_incognito */,
                        base::FilePath(),
                        io_thread->task_runner().get(),
-                       db_thread->task_runner().get(),
+                       background_thread->task_runner().get(),
                        nullptr,
                        storage::GetQuotaSettingsFunc()),
           async_(false) {}
@@ -288,7 +290,7 @@ class AppCacheStorageImplTest : public testing::Test {
                           const UsageAndQuotaCallback& callback) override {
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&MockQuotaManager::CallCallback,
                                   base::Unretained(this), callback));
         return;
@@ -372,29 +374,32 @@ class AppCacheStorageImplTest : public testing::Test {
     SetUpTest();
 
     // Ensure InitTask execution prior to conducting a test.
-    FlushDbThreadTasks();
+    FlushAllTasks();
 
     // We also have to wait for InitTask completion call to be performed
     // on the IO thread prior to running the test. Its guaranteed to be
     // queued by this time.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
                               base::Unretained(this), method));
   }
 
   static void SetUpTestCase() {
+    scoped_task_environment.reset(new base::test::ScopedTaskEnvironment());
+
     // We start both threads as TYPE_IO because we also use the db_thead
     // for the disk_cache which needs to be of TYPE_IO.
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     io_thread.reset(new IOThread("AppCacheTest.IOThread"));
     ASSERT_TRUE(io_thread->StartWithOptions(options));
-    db_thread.reset(new base::Thread("AppCacheTest::DBThread"));
-    ASSERT_TRUE(db_thread->StartWithOptions(options));
+    background_thread.reset(new base::Thread("AppCacheTest::BackgroundThread"));
+    ASSERT_TRUE(background_thread->StartWithOptions(options));
   }
 
   static void TearDownTestCase() {
-    io_thread.reset(NULL);
-    db_thread.reset(NULL);
+    io_thread.reset();
+    background_thread.reset();
+    scoped_task_environment.reset();
   }
 
   // Test harness --------------------------------------------------
@@ -414,8 +419,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
-    service_.reset(new AppCacheServiceImpl(NULL));
-    service_->Initialize(base::FilePath(), db_thread->task_runner(), NULL);
+    service_.reset(new AppCacheServiceImpl(nullptr));
+    service_->Initialize(base::FilePath(), background_thread->task_runner());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));
@@ -423,6 +428,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void TearDownTest() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
+    scoped_refptr<base::SequencedTaskRunner> db_runner =
+        storage()->db_task_runner_;
     storage()->CancelDelegateCallbacks(delegate());
     group_ = NULL;
     cache_ = NULL;
@@ -430,14 +437,16 @@ class AppCacheStorageImplTest : public testing::Test {
     mock_quota_manager_proxy_ = NULL;
     delegate_.reset();
     service_.reset();
-    FlushDbThreadTasks();
+    FlushTasks(db_runner.get());
+    FlushTasks(background_thread->task_runner().get());
+    FlushTasks(db_runner.get());
   }
 
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
                               base::Unretained(this)));
   }
@@ -456,7 +465,8 @@ class AppCacheStorageImplTest : public testing::Test {
     if (task_stack_.empty()) {
       return;
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_stack_.top());
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     task_stack_.top());
     task_stack_.pop();
   }
 
@@ -464,13 +474,19 @@ class AppCacheStorageImplTest : public testing::Test {
     event->Signal();
   }
 
-  void FlushDbThreadTasks() {
+  void FlushAllTasks() {
+    FlushTasks(storage()->db_task_runner_.get());
+    FlushTasks(background_thread->task_runner().get());
+    FlushTasks(storage()->db_task_runner_.get());
+  }
+
+  void FlushTasks(base::SequencedTaskRunner* runner) {
     // We pump a task thru the db thread to ensure any tasks previously
     // scheduled on that thread have been performed prior to return.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    db_thread->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheStorageImplTest::SignalEvent, &event));
+    runner->PostTask(FROM_HERE,
+                     base::Bind(&AppCacheStorageImplTest::SignalEvent, &event));
     event.Wait();
   }
 
@@ -899,7 +915,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // And the entry in storage should also be updated, but that
     // happens asynchronously on the db thread.
-    FlushDbThreadTasks();
+    FlushAllTasks();
     AppCacheDatabase::EntryRecord entry_record2;
     EXPECT_TRUE(database()->FindEntry(1, kEntryUrl, &entry_record2));
     EXPECT_EQ(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN,
@@ -944,7 +960,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->loaded_cache_->GetEntry(kEntryUrl)->IsExplicit());
 
     // And the entry in storage should also be updated.
-    FlushDbThreadTasks();
+    FlushAllTasks();
     AppCacheDatabase::EntryRecord entry_record;
     EXPECT_TRUE(database()->FindEntry(1, kEntryUrl, &entry_record));
     EXPECT_EQ(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN,
@@ -1724,8 +1740,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // Recreate the service to point at the db and corruption on disk.
     service_.reset(new AppCacheServiceImpl(NULL));
     service_->set_request_context(io_thread->request_context());
-    service_->Initialize(temp_directory_.GetPath(), db_thread->task_runner(),
-                         db_thread->task_runner());
+    service_->Initialize(temp_directory_.GetPath(),
+                         background_thread->task_runner());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));
@@ -1736,8 +1752,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // We continue after the init task is complete including the callback
     // on the current thread.
-    FlushDbThreadTasks();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    FlushAllTasks();
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::Continue_Reinitialize,
                               base::Unretained(this), test_case));
   }
@@ -1814,7 +1830,6 @@ class AppCacheStorageImplTest : public testing::Test {
     } else {
       ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);
       AppCacheHost* host2 = backend_->GetHost(2);
-      EXPECT_EQ(1, host2->main_resource_cache_->cache_id());
       EXPECT_TRUE(host2->disabled_storage_reference_.get());
     }
 

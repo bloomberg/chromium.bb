@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/mock_appcache_service.h"
@@ -36,9 +37,10 @@ class MockAppCacheFrontend : public AppCacheFrontend {
 }  // namespace
 
 class AppCacheTest : public testing::Test {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST(AppCacheTest, CleanupUnusedCache) {
+TEST_F(AppCacheTest, CleanupUnusedCache) {
   MockAppCacheService service;
   MockAppCacheFrontend frontend;
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
@@ -57,7 +59,7 @@ TEST(AppCacheTest, CleanupUnusedCache) {
   host2.AssociateNoCache(GURL());
 }
 
-TEST(AppCacheTest, AddModifyRemoveEntry) {
+TEST_F(AppCacheTest, AddModifyRemoveEntry) {
   MockAppCacheService service;
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
 
@@ -101,7 +103,7 @@ TEST(AppCacheTest, AddModifyRemoveEntry) {
   EXPECT_TRUE(cache->entries().empty());
 }
 
-TEST(AppCacheTest, InitializeWithManifest) {
+TEST_F(AppCacheTest, InitializeWithManifest) {
   MockAppCacheService service;
 
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
@@ -145,7 +147,7 @@ TEST(AppCacheTest, InitializeWithManifest) {
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
 }
 
-TEST(AppCacheTest, FindResponseForRequest) {
+TEST_F(AppCacheTest, FindResponseForRequest) {
   MockAppCacheService service;
 
   const GURL kOnlineNamespaceUrl("http://blah/online_namespace");
@@ -357,7 +359,7 @@ TEST(AppCacheTest, FindResponseForRequest) {
   EXPECT_FALSE(network_namespace);
 }
 
-TEST(AppCacheTest, FindInterceptPatternResponseForRequest) {
+TEST_F(AppCacheTest, FindInterceptPatternResponseForRequest) {
   MockAppCacheService service;
 
   // Setup an appcache with an intercept namespace that uses pattern matching.
@@ -428,7 +430,7 @@ TEST(AppCacheTest, FindInterceptPatternResponseForRequest) {
   EXPECT_FALSE(network_namespace);
 }
 
-TEST(AppCacheTest, FindFallbackPatternResponseForRequest) {
+TEST_F(AppCacheTest, FindFallbackPatternResponseForRequest) {
   MockAppCacheService service;
 
   // Setup an appcache with a fallback namespace that uses pattern matching.
@@ -499,8 +501,7 @@ TEST(AppCacheTest, FindFallbackPatternResponseForRequest) {
   EXPECT_FALSE(network_namespace);
 }
 
-
-TEST(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
+TEST_F(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
   MockAppCacheService service;
 
   // Setup an appcache with a network namespace that uses pattern matching.
@@ -542,7 +543,7 @@ TEST(AppCacheTest, FindNetworkNamespacePatternResponseForRequest) {
   EXPECT_FALSE(fallback_entry.has_response_id());
 }
 
-TEST(AppCacheTest, ToFromDatabaseRecords) {
+TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   // Setup a cache with some entries.
   const int64_t kCacheId = 1234;
   const int64_t kGroupId = 4321;
@@ -627,7 +628,7 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
             cache->online_whitelist_namespaces_[0].namespace_url);
 }
 
-TEST(AppCacheTest, IsNamespaceMatch) {
+TEST_F(AppCacheTest, IsNamespaceMatch) {
   AppCacheNamespace prefix;
   prefix.namespace_url = GURL("http://foo.com/prefix");
   prefix.is_pattern = false;

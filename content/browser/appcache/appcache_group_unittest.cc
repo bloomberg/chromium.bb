@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -95,7 +95,7 @@ class TestAppCacheHost : public AppCacheHost {
 
 class AppCacheGroupTest : public testing::Test {
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(AppCacheGroupTest, AddRemoveCache) {

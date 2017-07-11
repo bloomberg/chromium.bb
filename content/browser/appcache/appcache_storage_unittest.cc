@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/appcache/appcache_storage.h"
-#include "base/message_loop/message_loop.h"
+
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -22,6 +23,9 @@ class AppCacheStorageTest : public testing::Test {
   class MockStorageDelegate : public AppCacheStorage::Delegate {
    public:
   };
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(AppCacheStorageTest, AddRemoveCache) {
