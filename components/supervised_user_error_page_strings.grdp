@@ -11,13 +11,13 @@
         Ask your parent
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED" desc="A heading for the supervised user when they attempt to visit a site that is not permitted by the manager (and they can't ask for permission).">
-        Looks like you don't have permission to visit this site
+        You don't have permission to visit this site
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_HEADER_NOT_SIGNED_IN" desc="A heading for the supervised user when the status cannot be established because they haven't signed in to Chrome).">
         Please start and sign in to Chrome before using this app.
       </message>
       <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the child user when they attempt to visit a site that is not permitted by their parent.">
-        Looks like you need permission to visit this site
+        You need permission to visit this site
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED" desc="Message to be shown to a supervised user directing them to the supervisor.">
         Questions? Contact the person who supervises your profile.
