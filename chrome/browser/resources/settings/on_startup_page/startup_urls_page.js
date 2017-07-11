@@ -62,10 +62,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
-        function(ntpExtension) {
-          this.ntpExtension_ = ntpExtension;
-        }.bind(this));
+    this.getNtpExtension_();
 
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
     this.addWebUIListener('update-startup-pages', function(startupPages) {
@@ -84,6 +81,14 @@ Polymer({
       this.showStartupUrlDialog_ = true;
       event.stopPropagation();
     }.bind(this));
+  },
+
+  /** @private */
+  getNtpExtension_: function() {
+    settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
+        function(ntpExtension) {
+          this.ntpExtension_ = ntpExtension;
+        }.bind(this));
   },
 
   /**
