@@ -252,8 +252,10 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // min-content contribution.
   // https://drafts.csswg.org/css-align-3/#baseline-align-content
   // https://drafts.csswg.org/css-align-3/#baseline-align-self
-  bool baseline_affect_intrinsic_width = BaselineMayAffectIntrinsicWidth();
-  bool baseline_affect_intrinsic_height = BaselineMayAffectIntrinsicHeight();
+  bool baseline_affect_intrinsic_width =
+      BaselineMayAffectIntrinsicSize(kForColumns);
+  bool baseline_affect_intrinsic_height =
+      BaselineMayAffectIntrinsicSize(kForRows);
 
   // In orthogonal flow cases column track's size is determined by using the
   // computed row track's size, which it was estimated during the first cycle of
@@ -282,7 +284,8 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   ComputeTrackSizesForDefiniteSize(kForColumns, available_space_for_columns);
   ComputeTrackSizesForDefiniteSize(kForRows, available_space_for_rows);
 
-  if (baseline_affect_intrinsic_height) {
+  if (baseline_affect_intrinsic_height &&
+      StyleRef().LogicalHeight().IsIntrinsicOrAuto()) {
     SetLogicalHeight(ComputeTrackBasedLogicalHeight() +
                      BorderAndPaddingLogicalHeight() +
                      ScrollbarLogicalHeight());
@@ -1872,29 +1875,29 @@ bool LayoutGrid::IsBaselineContextComputed(GridAxis baseline_axis) const {
              : !col_axis_alignment_context_.IsEmpty();
 }
 
-bool LayoutGrid::BaselineMayAffectIntrinsicWidth() const {
-  if (!StyleRef().LogicalWidth().IsIntrinsicOrAuto())
-    return false;
-  for (const auto& context : col_axis_alignment_context_) {
+bool LayoutGrid::BaselineMayAffectIntrinsicSize(
+    GridTrackSizingDirection direction) const {
+  const auto& contexts_map = direction == kForColumns
+                                 ? col_axis_alignment_context_
+                                 : row_axis_alignment_context_;
+  for (const auto& context : contexts_map) {
+    auto track_size =
+        track_sizing_algorithm_.GetGridTrackSize(direction, context.key);
+    // TODO(lajava): Should we consider flexible tracks as well ?
+    if (!track_size.IsContentSized())
+      continue;
     for (const auto& group : context.value->SharedGroups()) {
-      if (group.size() > 1)
-        return true;
+      if (group.size() > 1) {
+        auto grid_area_size =
+            track_sizing_algorithm_.Tracks(direction)[context.key].BaseSize();
+        if (group.MaxAscent() + group.MaxDescent() > grid_area_size)
+          return true;
+      }
     }
   }
   return false;
 }
 
-bool LayoutGrid::BaselineMayAffectIntrinsicHeight() const {
-  if (!StyleRef().LogicalHeight().IsIntrinsicOrAuto())
-    return false;
-  for (const auto& context : row_axis_alignment_context_) {
-    for (const auto& group : context.value->SharedGroups()) {
-      if (group.size() > 1)
-        return true;
-    }
-  }
-  return false;
-}
 
 void LayoutGrid::ComputeBaselineAlignmentContext() {
   for (auto* child = FirstInFlowChildBox(); child;

@@ -269,8 +269,7 @@ class LayoutGrid final : public LayoutBlock {
                              LayoutUnit ascent,
                              GridAxis) const;
 
-  bool BaselineMayAffectIntrinsicWidth() const;
-  bool BaselineMayAffectIntrinsicHeight() const;
+  bool BaselineMayAffectIntrinsicSize(GridTrackSizingDirection) const;
   void ComputeBaselineAlignmentContext();
   void UpdateBaselineAlignmentContextIfNeeded(LayoutBox&, GridAxis);
 
