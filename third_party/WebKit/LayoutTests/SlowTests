@@ -165,9 +165,9 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/animations/combo-transform-rotat
 crbug.com/248938 virtual/threaded/animations/3d/change-transform-in-end-event.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/state-at-end-event-transform.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/transform-perspective.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-hardware.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-fill-mode.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-hardware.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/stability/animation-on-inline-crash.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-background-image.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-border-image-source.html [ Slow ]
@@ -182,7 +182,7 @@ crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
 crbug.com/664857 virtual/threaded/animations/responsive/transform-responsive-neutral-keyframe.html [ Slow ]
 crbug.com/669911 virtual/threaded/animations/responsive/zoom-responsive-transform-animation.html [ Slow ]
 
-crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
+crbug.com/258896 animations/direction-and-fill/animation-direction-reverse-fill-mode.html [ Slow ]
 
 # This test has to generate >250MB of data which takes ~6s in both release and debug.
 crbug.com/420240 http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
