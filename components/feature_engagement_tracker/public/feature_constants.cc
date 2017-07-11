@@ -32,4 +32,13 @@ const base::Feature kIPHNewTabFeature{"IPH_NewTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
+#if defined(OS_IOS)
+const base::Feature kIPHNewTabTipFeature{"IPH_NewTabTip",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHNewIncognitoTabTipFeature{
+    "IPH_NewIncognitoTabTip", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHBadgedReadingListFeature{
+    "IPH_BadgedReadingList", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_IOS)
+
 }  // namespace feature_engagement_tracker
