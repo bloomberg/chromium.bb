@@ -10,7 +10,6 @@
 
 namespace webapk {
 
-const char kGooglePlayInstallState[] = "WebApk.Install.GooglePlayInstallState";
 const char kInstallDurationHistogram[] = "WebApk.Install.InstallDuration";
 const char kInstallEventHistogram[] = "WebApk.Install.InstallEvent";
 const char kInstallSourceHistogram[] = "WebApk.Install.InstallSource";
@@ -40,11 +39,6 @@ void TrackInstallInfoBarShown(InfoBarShown event) {
 
 void TrackUserAction(UserAction event) {
   UMA_HISTOGRAM_ENUMERATION(kUserActionHistogram, event, USER_ACTION_MAX);
-}
-
-void TrackGooglePlayInstallState(GooglePlayInstallState state) {
-  UMA_HISTOGRAM_ENUMERATION(kGooglePlayInstallState, static_cast<int>(state),
-                            static_cast<int>(GooglePlayInstallState::MAX));
 }
 
 }  // namespace webapk

@@ -144,10 +144,6 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
         base::Bind(&ShortcutHelper::FetchSplashScreenImage, web_contents,
                    info.splash_image_url, info.ideal_splash_image_size_in_px,
                    info.minimum_splash_image_size_in_px, webapp_id));
-    GooglePlayInstallState state =
-        ChromeWebApkHost::GetGooglePlayInstallState();
-    if (state != GooglePlayInstallState::SUPPORTED)
-      webapk::TrackGooglePlayInstallState(state);
     return;
   }
   AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap);
@@ -162,7 +158,6 @@ void ShortcutHelper::InstallWebApkWithSkBitmap(
     const WebApkInstallService::FinishCallback& callback) {
   WebApkInstallService::Get(web_contents->GetBrowserContext())
       ->InstallAsync(info, primary_icon_bitmap, badge_icon_bitmap, callback);
-  webapk::TrackGooglePlayInstallState(GooglePlayInstallState::SUPPORTED);
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {
