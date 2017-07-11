@@ -101,6 +101,7 @@ cr.define('print_preview', function() {
      *     to set.
      */
     setCloudPrintInterface: function(cloudPrintInterface) {
+      assert(this.cloudPrintInterface_ == null);
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
           this.cloudPrintInterface_,

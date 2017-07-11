@@ -84,7 +84,8 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationStore_ = new print_preview.DestinationStore(
-        this.nativeLayer_, this.userInfo_, this.appState_);
+        this.nativeLayer_, this.userInfo_, this.appState_,
+        this.listenerTracker);
 
     /**
      * Data store which holds printer sharing invitations.
@@ -339,7 +340,6 @@ cr.define('print_preview', function() {
       print_preview.PrintPreviewFocusManager.getInstance().initialize();
       cr.ui.FocusOutlineManager.forDocument(document);
       this.listenerTracker.add('print-failed', this.onPrintFailed_.bind(this));
-      this.destinationStore_.addWebUIEventListeners(this.listenerTracker);
       this.listenerTracker.add(
           'use-cloud-print', this.onCloudPrintEnable_.bind(this));
       this.listenerTracker.add(
