@@ -756,11 +756,7 @@ BENCHMARK_SWARMING_TIMEOUTS = {
 
 # Devices which are broken right now. Tests will not be scheduled on them.
 # Please add a comment with a bug for replacing the device.
-BLACKLISTED_DEVICES = [
-    'build152-m1',  # crbug.com/736593
-    # All Linux perf bots (crbug.com/732463)
-    'build148-m1', 'build149-m1', 'build150-m1', 'build151-m1', 'build152-m1',
-]
+BLACKLISTED_DEVICES = []
 
 
 # List of benchmarks that are to never be run with reference builds.
