@@ -489,55 +489,6 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.SRC"/>
 </event>
 
-<event name="Memory.Experimental">
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    Metrics associated with memory consumption, in MB.
-  </summary>
-  <metric name="BlinkGC">
-    <summary>
-      Measure of memory consumed by Oilpan.
-    </summary>
-  </metric>
-  <metric name="CommandBuffer">
-    <summary>
-      Measure of memory consumed by GL command buffer.
-    </summary>
-  </metric>
-  <metric name="Malloc">
-    <summary>
-      Measure of memory allocated by malloc.
-    </summary>
-  </metric>
-  <metric name="PartitionAlloc">
-    <summary>
-      Measure of memory allocated by PartitionAlloc.
-    </summary>
-  </metric>
-  <metric name="PrivateMemoryFootprint">
-    <summary>
-      Measure of total memory consumed by process.
-    </summary>
-  </metric>
-  <metric name="ProcessType">
-    <summary>
-      Type of process (e.g. browser, renderer, GPU --- see
-      services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom)
-      of associated metrics.
-    </summary>
-  </metric>
-  <metric name="Resident">
-    <summary>
-      Size of process' working set.
-    </summary>
-  </metric>
-  <metric name="V8">
-    <summary>
-      Measure of memory consumed by V8.
-    </summary>
-  </metric>
-</event>
-
 <event name="PageDomainInfo">
   <owner>uthakore@chromium.org</owner>
   <summary>

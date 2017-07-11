@@ -20,7 +20,6 @@
 
 class ContextualSearchRankerLoggerImpl;
 class PluginInfoMessageFilter;
-class ProcessMemoryMetricsEmitter;
 class UkmPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
 
@@ -90,7 +89,6 @@ class METRICS_EXPORT UkmRecorder {
   friend autofill::AutofillMetrics;
   friend payments::JourneyLogger;
   friend ContextualSearchRankerLoggerImpl;
-  friend ProcessMemoryMetricsEmitter;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
   friend LocalNetworkRequestsPageLoadMetricsObserver;
