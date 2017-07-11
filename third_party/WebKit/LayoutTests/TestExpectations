@@ -1862,9 +1862,6 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
-crbug.com/739965 inspector/console/console-log-linkify-stack-in-errors.html [ NeedsManualRebaseline ]
-crbug.com/739965 fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
-
 crbug.com/736050 external/wpt/IndexedDB/idbcursor_advance_index.htm [ Pass Failure ]
 crbug.com/736050 external/wpt/IndexedDB/idbcursor-continue-exception-order.htm [ Pass Failure ]
 crbug.com/736050 external/wpt/IndexedDB/idbcursor_continue_index2.htm [ Pass Failure ]
