@@ -5638,9 +5638,9 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
     AVERAGE_TILE_CDFS(nmvc[j].joint_cdf)
 
     for (k = 0; k < 2; ++k) {
-      AVERAGE_TILE_CDFS(nmvc[j].comps[k].class_cdf);
-      AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_fp_cdf);
-      AVERAGE_TILE_CDFS(nmvc[j].comps[k].fp_cdf);
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].class_cdf)
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_fp_cdf)
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].fp_cdf)
     }
   }
 }
@@ -5651,10 +5651,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
   aom_cdf_prob *fc_cdf_ptr;
 
-  AVERAGE_TILE_CDFS(tx_size_cdf);
+  AVERAGE_TILE_CDFS(tx_size_cdf)
 
   AVERAGE_TILE_CDFS(intra_ext_tx_cdf)
-  AVERAGE_TILE_CDFS(inter_ext_tx_cdf);
+  AVERAGE_TILE_CDFS(inter_ext_tx_cdf)
 
   AVERAGE_TILE_CDFS(seg.tree_cdf)
   AVERAGE_TILE_CDFS(uv_mode_cdf)
@@ -5677,10 +5677,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(txfm_partition_cdf)
 #endif
 #if CONFIG_PALETTE
-  AVERAGE_TILE_CDFS(palette_y_size_cdf);
-  AVERAGE_TILE_CDFS(palette_uv_size_cdf);
-  AVERAGE_TILE_CDFS(palette_y_color_index_cdf);
-  AVERAGE_TILE_CDFS(palette_uv_color_index_cdf);
+  AVERAGE_TILE_CDFS(palette_y_size_cdf)
+  AVERAGE_TILE_CDFS(palette_uv_size_cdf)
+  AVERAGE_TILE_CDFS(palette_y_color_index_cdf)
+  AVERAGE_TILE_CDFS(palette_uv_color_index_cdf)
 #endif
 #endif  // CONFIG_NEW_MULTISYMBOL
 }
