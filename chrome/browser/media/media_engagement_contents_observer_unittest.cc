@@ -136,6 +136,16 @@ class MediaEngagementContentsObserverTest
         ->SetWasRecentlyAudible(false);
   }
 
+  void SimulateSignificantPlayer(int id) {
+    SimulatePlaybackStarted(id);
+    SimulateIsVisible();
+    SimulateAudible();
+    web_contents()->SetAudioMuted(false);
+    SimulateResizeEvent(id, MediaEngagementContentsObserver::kSignificantSize);
+  }
+
+  void ForceUpdateTimer() { contents_observer_->UpdateTimer(); }
+
  private:
   // contents_observer_ auto-destroys when WebContents is destroyed.
   MediaEngagementContentsObserver* contents_observer_;
@@ -266,11 +276,7 @@ TEST_F(MediaEngagementContentsObserverTest, TimerDoesNotRunIfEntryRecorded) {
 
 TEST_F(MediaEngagementContentsObserverTest,
        SignificantPlaybackRecordedWhenTimerFires) {
-  SimulatePlaybackStarted(0);
-  SimulateIsVisible();
-  SimulateAudible();
-  web_contents()->SetAudioMuted(false);
-  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
+  SimulateSignificantPlayer(0);
   EXPECT_TRUE(IsTimerRunning());
   EXPECT_FALSE(WasSignificantPlaybackRecorded());
 
@@ -306,4 +312,17 @@ TEST_F(MediaEngagementContentsObserverTest, DoNotRecordAudiolessTrack) {
   content::WebContentsObserver::MediaPlayerInfo player_info(true, false);
   SimulatePlaybackStarted(player_info, 0);
   EXPECT_EQ(0u, GetSignificantActivePlayersCount());
+}
+
+TEST_F(MediaEngagementContentsObserverTest,
+       ResetStateOnNavigationWithPlayingPlayers) {
+  Navigate(GURL("https://www.google.com"));
+  SimulateSignificantPlayer(0);
+  ForceUpdateTimer();
+  EXPECT_TRUE(IsTimerRunning());
+
+  Navigate(GURL("https://www.example.com"));
+  EXPECT_FALSE(GetSignificantActivePlayersCount());
+  EXPECT_FALSE(GetStoredPlayerStatesCount());
+  EXPECT_FALSE(IsTimerRunning());
 }
