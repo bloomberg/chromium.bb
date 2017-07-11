@@ -69,6 +69,14 @@ inline void CdmResultPromise<>::resolve() {
   web_cdm_result_.Complete();
 }
 
+template <>
+inline void CdmResultPromise<CdmKeyInformation::KeyStatus>::resolve(
+    const CdmKeyInformation::KeyStatus& key_status) {
+  MarkPromiseSettled();
+  ReportCdmResultUMA(uma_name_, SUCCESS);
+  web_cdm_result_.CompleteWithKeyStatus(ConvertCdmKeyStatus(key_status));
+}
+
 template <typename... T>
 void CdmResultPromise<T...>::reject(CdmPromise::Exception exception_code,
                                     uint32_t system_code,

@@ -351,8 +351,8 @@ void WebMediaPlayerImpl::Load(LoadType load_type,
   // Only URL or MSE blob URL is supported.
   DCHECK(source.IsURL());
   blink::WebURL url = source.GetAsURL();
-  DVLOG(1) << __func__ << "(" << load_type << ", " << url << ", " << cors_mode
-           << ")";
+  DVLOG(1) << __func__ << "(" << load_type << ", " << GURL(url) << ", "
+           << cors_mode << ")";
   if (!defer_load_cb_.is_null()) {
     defer_load_cb_.Run(base::Bind(&WebMediaPlayerImpl::DoLoad, AsWeakPtr(),
                                   load_type, url, cors_mode));

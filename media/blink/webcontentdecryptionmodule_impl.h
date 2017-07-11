@@ -49,7 +49,7 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
       blink::WebContentDecryptionModuleResult result) override;
 
   void GetStatusForPolicy(
-      const blink::WebString& min_hdcp_version,
+      const blink::WebString& min_hdcp_version_string,
       blink::WebContentDecryptionModuleResult result) override;
 
   // Returns a reference to the CDM used by |adapter_|.

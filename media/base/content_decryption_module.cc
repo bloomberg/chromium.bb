@@ -4,11 +4,21 @@
 
 #include "media/base/content_decryption_module.h"
 
+#include "media/base/cdm_promise.h"
+
 namespace media {
 
 ContentDecryptionModule::ContentDecryptionModule() {}
 
 ContentDecryptionModule::~ContentDecryptionModule() {}
+
+// By default a CDM does not support this method.
+void ContentDecryptionModule::GetStatusForPolicy(
+    HdcpVersion min_hdcp_version,
+    std::unique_ptr<KeyStatusCdmPromise> promise) {
+  promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                  "GetStatusForPolicy() is not supported.");
+}
 
 CdmContext* ContentDecryptionModule::GetCdmContext() {
   return nullptr;
