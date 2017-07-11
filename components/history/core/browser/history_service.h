@@ -245,10 +245,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       bool,  // Success flag, when false, nothing else is valid.
       const URLRow&,
-      const VisitVector&)> QueryURLCallback;
+      const VisitVector&)>
+      QueryURLCallback;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),
@@ -257,7 +258,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   base::CancelableTaskTracker::TaskId QueryURL(
       const GURL& url,
       bool want_visits,
-      const QueryURLCallback& callback,
+      QueryURLCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Provides the result of a query. See QueryResults in history_types.h.

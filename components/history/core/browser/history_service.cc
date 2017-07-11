@@ -78,9 +78,9 @@ void RunWithFaviconResult(
   callback.Run(*bitmap_result);
 }
 
-void RunWithQueryURLResult(const HistoryService::QueryURLCallback& callback,
+void RunWithQueryURLResult(HistoryService::QueryURLCallback callback,
                            const QueryURLResult* result) {
-  callback.Run(result->success, result->row, result->visits);
+  std::move(callback).Run(result->success, result->row, result->visits);
 }
 
 void RunWithVisibleVisitCountToHostResult(
@@ -670,7 +670,7 @@ void HistoryService::SetImportedFavicons(
 base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     const GURL& url,
     bool want_visits,
-    const QueryURLCallback& callback,
+    QueryURLCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -679,8 +679,8 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
       backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::QueryURL, history_backend_, url, want_visits,
                  base::Unretained(query_url_result)),
-      base::Bind(&RunWithQueryURLResult, callback,
-                 base::Owned(query_url_result)));
+      base::BindOnce(&RunWithQueryURLResult, std::move(callback),
+                     base::Owned(query_url_result)));
 }
 
 // Statistics ------------------------------------------------------------------
