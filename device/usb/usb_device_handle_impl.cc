@@ -863,11 +863,14 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
     scoped_refptr<InterfaceClaimer> interface_claimer,
     const ResultCallback& callback) {
   if (!device_) {
-    // Ensure that the InterfaceClaimer is released on the blocking thread.
-    InterfaceClaimer* raw_interface_claimer = interface_claimer.get();
-    interface_claimer->AddRef();
-    interface_claimer = nullptr;
-    blocking_task_runner_->ReleaseSoon(FROM_HERE, raw_interface_claimer);
+    if (interface_claimer) {
+      // Ensure that the InterfaceClaimer is released on the blocking thread.
+      InterfaceClaimer* raw_interface_claimer = interface_claimer.get();
+      interface_claimer->AddRef();
+      interface_claimer = nullptr;
+      blocking_task_runner_->ReleaseSoon(FROM_HERE, raw_interface_claimer);
+    }
+
     callback.Run(false);
     return;
   }
@@ -877,7 +880,7 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
         interface_claimer;
     RefreshEndpointMap();
   }
-  callback.Run(static_cast<bool>(interface_claimer));
+  callback.Run(interface_claimer != nullptr);
 }
 
 void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(
