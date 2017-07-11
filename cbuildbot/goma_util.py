@@ -42,7 +42,18 @@ class Goma(object):
       # slow down of the build.
       # Practically, this happens when toolchain is updated in repository,
       # but prebuilt package is not yet ready. (cf. crbug.com/728971)
-      'GOMA_MAX_COMPILER_DISABLED_TASKS': '30'
+      'GOMA_MAX_COMPILER_DISABLED_TASKS': '30',
+
+      # Disable goma soft stickiness.
+      # Goma was historically using `soft stickiness cookie` so that uploaded
+      # file cache is available as much as possible. However, such sticky
+      # requests are cuasing unbalanced server load, and the disadvantage of the
+      # unbalanceness cannot be negligible now. According to chrome's
+      # experiment, the disadvantage of disabling soft stickiness is negligible,
+      # and achieving balanced server load will have more advantage for entire
+      # build. (cf. crbug.com/730962)
+      # TODO(shinyak): This will be removed after crbug.com/730962 is resolved.
+      'GOMA_BACKEND_SOFT_STICKINESS': 'false',
   }
 
   def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None):
