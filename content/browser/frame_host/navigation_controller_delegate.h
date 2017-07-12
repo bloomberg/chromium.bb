@@ -61,7 +61,7 @@ class NavigationControllerDelegate {
   virtual void AttachInterstitialPage(
       InterstitialPageImpl* interstitial_page) = 0;
   virtual void DidProceedOnInterstitial() = 0;
-  virtual void DetachInterstitialPage() = 0;
+  virtual void DetachInterstitialPage(bool has_focus) = 0;
 
   virtual void UpdateOverridingUserAgent() = 0;
 };

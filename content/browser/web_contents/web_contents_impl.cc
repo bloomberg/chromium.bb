@@ -2919,11 +2919,17 @@ void WebContentsImpl::DidProceedOnInterstitial() {
     LoadingStateChanged(true, true, nullptr);
 }
 
-void WebContentsImpl::DetachInterstitialPage() {
+void WebContentsImpl::DetachInterstitialPage(bool has_focus) {
   bool interstitial_pausing_throbber =
       ShowingInterstitialPage() && interstitial_page_->pause_throbber();
   if (ShowingInterstitialPage())
     interstitial_page_ = nullptr;
+
+  // If the focus was on the interstitial, let's keep it to the page.
+  // (Note that in unit-tests the RVH may not have a view).
+  if (has_focus && GetRenderViewHost()->GetWidget()->GetView())
+    GetRenderViewHost()->GetWidget()->GetView()->Focus();
+
   for (auto& observer : observers_)
     observer.DidDetachInterstitialPage();
 

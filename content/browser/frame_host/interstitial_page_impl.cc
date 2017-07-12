@@ -284,27 +284,17 @@ void InterstitialPageImpl::Hide() {
     old_view->Show();
   }
 
-  // If the focus was on the interstitial, let's keep it to the page.
-  // (Note that in unit-tests the RVH may not have a view).
-  if (render_view_host_->GetWidget()->GetView() &&
-      render_view_host_->GetWidget()->GetView()->HasFocus() &&
-      controller_->delegate()->GetRenderViewHost()->GetWidget()->GetView()) {
-    controller_->delegate()
-        ->GetRenderViewHost()
-        ->GetWidget()
-        ->GetView()
-        ->Focus();
-  }
-
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
   // been called from a RVH delegate method, and we can't delete the RVH out
   // from under itself.
   base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
       FROM_HERE, base::Bind(&InterstitialPageImpl::Shutdown,
                             weak_ptr_factory_.GetWeakPtr()));
+  bool has_focus = render_view_host_->GetWidget()->GetView() &&
+                   render_view_host_->GetWidget()->GetView()->HasFocus();
   render_view_host_ = NULL;
   frame_tree_->root()->ResetForNewProcess();
-  controller_->delegate()->DetachInterstitialPage();
+  controller_->delegate()->DetachInterstitialPage(has_focus);
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();
   if (entry && !new_navigation_ && should_revert_web_contents_title_)
