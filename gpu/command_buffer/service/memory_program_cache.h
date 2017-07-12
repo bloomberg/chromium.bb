@@ -50,7 +50,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       GLenum transform_feedback_buffer_mode,
       GLES2DecoderClient* client) override;
 
-  void LoadProgram(const std::string& program) override;
+  void LoadProgram(const std::string& key, const std::string& program) override;
 
   size_t Trim(size_t limit) override;
 

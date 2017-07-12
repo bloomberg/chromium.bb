@@ -248,7 +248,8 @@ TEST_F(MemoryProgramCacheTest, LoadProgram) {
 
   cache_->Clear();
 
-  cache_->LoadProgram(shader_cache_shader());
+  std::string blank;
+  cache_->LoadProgram(blank, shader_cache_shader());
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED, cache_->GetLinkedProgramStatus(
       vertex_shader_->last_compiled_signature(),
       fragment_shader_->last_compiled_signature(),
@@ -349,8 +350,9 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
+  std::string blank;
   cache_->Clear();
-  cache_->LoadProgram(shader_cache_shader());
+  cache_->LoadProgram(blank, shader_cache_shader());
 
   EXPECT_EQ(
       ProgramCache::PROGRAM_LOAD_SUCCESS,

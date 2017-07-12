@@ -395,7 +395,8 @@ void MemoryProgramCache::SaveLinkedProgram(
                        curr_size_bytes_ / 1024);
 }
 
-void MemoryProgramCache::LoadProgram(const std::string& program) {
+void MemoryProgramCache::LoadProgram(const std::string& key,
+                                     const std::string& program) {
   std::unique_ptr<GpuProgramProto> proto(
       GpuProgramProto::default_instance().New());
   if (proto->ParseFromString(program)) {
