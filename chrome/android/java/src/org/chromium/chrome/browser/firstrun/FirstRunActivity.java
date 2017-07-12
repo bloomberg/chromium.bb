@@ -585,8 +585,8 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
                 public void onSendFinished(PendingIntent pendingIntent, Intent intent,
                         int resultCode, String resultData, Bundle resultExtras) {
                     if (ChromeLauncherActivity.isCustomTabIntent(intent)) {
-                        CustomTabsConnection.getInstance(
-                                getApplication()).sendFirstRunCallbackIfNecessary(intent, complete);
+                        CustomTabsConnection.getInstance().sendFirstRunCallbackIfNecessary(
+                                intent, complete);
                     }
                 }
             };

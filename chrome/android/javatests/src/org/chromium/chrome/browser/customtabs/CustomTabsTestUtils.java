@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -38,9 +37,9 @@ public class CustomTabsTestUtils {
         return intent;
     }
 
-    public static CustomTabsConnection setUpConnection(Application application) {
-        CustomTabsConnection connection = CustomTabsConnection.getInstance(application);
-        connection.resetThrottling(application, Process.myUid());
+    public static CustomTabsConnection setUpConnection() {
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.resetThrottling(Process.myUid());
         return connection;
     }
 

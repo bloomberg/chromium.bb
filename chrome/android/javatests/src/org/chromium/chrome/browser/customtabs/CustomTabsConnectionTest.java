@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -15,7 +13,6 @@ import android.os.Bundle;
 import android.os.Process;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -49,17 +46,12 @@ public class CustomTabsConnectionTest {
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
-    private Context mAppContext;
-
     @Before
     public void setUp() throws Exception {
-        mAppContext = InstrumentationRegistry.getInstrumentation()
-                              .getTargetContext()
-                              .getApplicationContext();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
-        mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) mAppContext);
-        mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());
+        mCustomTabsConnection = CustomTabsTestUtils.setUpConnection();
+        mCustomTabsConnection.resetThrottling(Process.myUid());
     }
 
     @After
@@ -155,7 +147,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testPrerenderDestroysSpareRenderer() {
-        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
+        CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -305,7 +297,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testStillHighConfidenceMayLaunchUrlWithSeveralUrls() {
-        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
+        CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
@@ -352,7 +344,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @RetryOnFailure
     public void testCanCancelPrerender() {
-        CustomTabsConnection.getInstance((Application) mAppContext).setForcePrerender(true);
+        CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -439,9 +431,9 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testMultipleMayLaunchUrl() {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         assertWarmupAndMayLaunchUrl(token, URL, true);
-        mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         assertWarmupAndMayLaunchUrl(token, URL2, true);
     }
 
@@ -545,9 +537,9 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testThrottlingAcrossSessions() {
         CustomTabsSessionToken token = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         CustomTabsSessionToken token2 = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(mAppContext, Process.myUid());
+        mCustomTabsConnection.resetThrottling(Process.myUid());
         for (int i = 0; i < 10; i++) {
             mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null);
         }
@@ -558,7 +550,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testBanningWorks() {
-        mCustomTabsConnection.ban(mAppContext, Process.myUid());
+        mCustomTabsConnection.ban(Process.myUid());
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
@@ -578,7 +570,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testBanningDisabledForCellular() {
-        mCustomTabsConnection.ban(mAppContext, Process.myUid());
+        mCustomTabsConnection.ban(Process.myUid());
         final CustomTabsSessionToken token =
                 CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));

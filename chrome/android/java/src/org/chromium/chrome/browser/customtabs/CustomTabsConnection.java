@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.ActivityManager;
-import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +26,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.widget.RemoteViews;
 
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -180,7 +180,7 @@ public class CustomTabsConnection {
 
     @VisibleForTesting
     SpeculationParams mSpeculation;
-    protected final Application mApplication;
+    protected final Context mContext;
     protected final ClientManager mClientManager;
     private final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
@@ -197,21 +197,20 @@ public class CustomTabsConnection {
      * Public to be instanciable from {@link ChromeApplication}. This is however
      * intended to be private.
      */
-    public CustomTabsConnection(Application application) {
+    public CustomTabsConnection() {
         super();
-        mApplication = application;
-        mClientManager = new ClientManager(mApplication);
+        mContext = ContextUtils.getApplicationContext();
+        // Command line switch values are used below.
+        BaseChromiumApplication.initCommandLine(mContext);
+        mClientManager = new ClientManager(mContext);
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
     }
 
     /**
      * @return The unique instance of ChromeCustomTabsConnection.
-     * TODO(estevenson): Remove Application param.
      */
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
-    public static CustomTabsConnection getInstance(Application application) {
+    public static CustomTabsConnection getInstance() {
         if (sInstance.get() == null) {
-            ((ChromeApplication) application).initCommandLine();
             sInstance.compareAndSet(null, AppHooks.get().createCustomTabsConnection());
         }
         return sInstance.get();
@@ -264,17 +263,16 @@ public class CustomTabsConnection {
 
     /** Warmup activities that should only happen once. */
     @SuppressFBWarnings("DM_EXIT")
-    private static void initializeBrowser(final Application app) {
+    private static void initializeBrowser(final Context context) {
         ThreadUtils.assertOnUiThread();
         try {
-            ChromeBrowserInitializer.getInstance(app).handleSynchronousStartupWithGpuWarmUp();
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartupWithGpuWarmUp();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process.");
             // Cannot do anything without the native library, and cannot show a
             // dialog to the user.
             System.exit(-1);
         }
-        final Context context = app.getApplicationContext();
         ChildProcessLauncherHelper.warmUp(context);
         ChromeBrowserInitializer.initNetworkChangeNotifier(context);
         WarmupManager.getInstance().initializeViewHierarchy(
@@ -295,8 +293,8 @@ public class CustomTabsConnection {
     /**
      * @return Whether {@link CustomTabsConnection#warmup(long)} has been called.
      */
-    public static boolean hasWarmUpBeenFinished(Application application) {
-        return getInstance(application).mWarmupHasBeenFinished.get();
+    public static boolean hasWarmUpBeenFinished() {
+        return getInstance().mWarmupHasBeenFinished.get();
     }
 
     /**
@@ -325,7 +323,7 @@ public class CustomTabsConnection {
                     // 4. RequestThrottler first access has to be done only once.
 
                     // (1)
-                    if (!initialized) initializeBrowser(mApplication);
+                    if (!initialized) initializeBrowser(mContext);
 
                     // (2)
                     if (mayCreateSpareWebContents && mSpeculation == null) {
@@ -341,7 +339,7 @@ public class CustomTabsConnection {
                         // The throttling database uses shared preferences, that can cause a
                         // StrictMode violation on the first access. Make sure that this access is
                         // not in mayLauchUrl.
-                        RequestThrottler.loadInBackground(mApplication);
+                        RequestThrottler.loadInBackground(mContext);
                     }
                 } finally {
                     TraceEvent.end("CustomTabsConnection.warmupInternal");
@@ -1009,7 +1007,7 @@ public class CustomTabsConnection {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
             do {
                 ActivityManager am =
-                        (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
+                        (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
                 // Extra paranoia here and below, some L 5.0.x devices seem to throw NPE somewhere
                 // in this code.
                 // See https://crbug.com/654705.
@@ -1068,8 +1066,7 @@ public class CustomTabsConnection {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DATA_REDUCTION_ENABLED;
         }
         ConnectivityManager cm =
-                (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
-                        Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm.isActiveNetworkMetered() && !shouldPrerenderOnCellularForSession(session)) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED;
         }
@@ -1165,7 +1162,7 @@ public class CustomTabsConnection {
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
-        Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
+        Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mContext, true);
         String referrer = getReferrer(session, extrasIntent);
 
         boolean forced = shouldPrerenderOnCellularForSession(session);
@@ -1220,12 +1217,12 @@ public class CustomTabsConnection {
     }
 
     @VisibleForTesting
-    void resetThrottling(Context context, int uid) {
+    void resetThrottling(int uid) {
         mClientManager.resetThrottling(uid);
     }
 
     @VisibleForTesting
-    void ban(Context context, int uid) {
+    void ban(int uid) {
         mClientManager.ban(uid);
     }
 
