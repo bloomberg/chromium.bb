@@ -8785,7 +8785,7 @@ I don't think this site should be blocked!
       </message>
 
       <!--- Sync Confirmation section of the tab modal signin flow when sync is disabled by policy -->
-      <message name="IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow when sync is disabled by policy" formatter_data="android_java">
+      <message name="IDS_SYNC_DISABLED_CONFIRMATION_CHROME_SYNC_TITLE" desc="Title of the chrome sync section of the sync confirmation dialog in the tab modal signin flow when sync is disabled by policy">
         Sync is disabled by your administrator
       </message>
       <message name="IDS_SYNC_DISABLED_CONFIRMATION_DETAILS" desc="Body of the sync confirmation dialog in the tab modal signin flow when sync is disabled by policy">
