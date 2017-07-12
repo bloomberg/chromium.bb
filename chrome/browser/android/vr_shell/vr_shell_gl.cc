@@ -636,6 +636,12 @@ void VrShellGl::OnContentLeave() {
 }
 
 void VrShellGl::OnContentMove(const gfx::PointF& normalized_hit_point) {
+  // TODO(mthiesse, vollick): Content is currently way too sensitive to mouse
+  // moves for how noisy the controller is. It's almost impossible to click a
+  // link without unintentionally starting a drag event. For this reason we
+  // disable mouse moves, only delivering a down and up event.
+  if (controller_->ButtonState(gvr::kControllerButtonClick))
+    return;
   SendGestureToContent(
       MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
 }
