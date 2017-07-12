@@ -1770,7 +1770,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-        if (motion_allowed == NCOBMC_ADAPT_WEIGHT) {
+        if (mbmi->motion_mode == NCOBMC_ADAPT_WEIGHT) {
           ADAPT_OVERLAP_BLOCK ao_block =
               adapt_overlap_block_lookup[mbmi->sb_type];
           ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[0]];

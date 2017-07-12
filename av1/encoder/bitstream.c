@@ -549,17 +549,8 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 static void write_ncobmc_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
                               aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-  MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION
-                                  0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_WARPED_MOTION
-                                  xd,
-#endif
-                                  mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
-  if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;
+  if (mbmi->motion_mode != NCOBMC_ADAPT_WEIGHT) return;
 
   av1_write_token(w, av1_ncobmc_mode_tree, cm->fc->ncobmc_mode_prob[ao_block],
                   &ncobmc_mode_encodings[mbmi->ncobmc_mode[0]]);

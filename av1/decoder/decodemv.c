@@ -363,17 +363,8 @@ static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
                              NCOBMC_MODE ncobmc_mode[2], aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
   FRAME_COUNTS *counts = xd->counts;
-  MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION
-                                  0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_WARPED_MOTION
-                                  xd,
-#endif
-                                  mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
-  if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;
+  if (mbmi->motion_mode != NCOBMC_ADAPT_WEIGHT) return;
 
   ncobmc_mode[0] = aom_read_tree(r, av1_ncobmc_mode_tree,
                                  cm->fc->ncobmc_mode_prob[ao_block], ACCT_STR);
