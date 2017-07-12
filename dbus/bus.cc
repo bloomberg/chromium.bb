@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -47,10 +48,10 @@ const char kServiceNameOwnerChangeMatchRule[] =
 class Watch {
  public:
   explicit Watch(DBusWatch* watch) : raw_watch_(watch) {
-    dbus_watch_set_data(raw_watch_, this, NULL);
+    dbus_watch_set_data(raw_watch_, this, nullptr);
   }
 
-  ~Watch() { dbus_watch_set_data(raw_watch_, NULL, NULL); }
+  ~Watch() { dbus_watch_set_data(raw_watch_, nullptr, nullptr); }
 
   // Returns true if the underlying file descriptor is ready to be watched.
   bool IsReadyToBeWatched() {
@@ -92,24 +93,23 @@ class Watch {
   DBusWatch* raw_watch_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> read_watcher_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> write_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(Watch);
 };
 
 // The class is used for monitoring the timeout used for D-Bus method
 // calls.
-//
-// Unlike Watch, Timeout is a ref counted object, to ensure that |this| of
-// the object is is alive when HandleTimeout() is called. It's unlikely
-// but it may be possible that HandleTimeout() is called after
-// Bus::OnRemoveTimeout(). That's why we don't simply delete the object in
-// Bus::OnRemoveTimeout().
-class Timeout : public base::RefCountedThreadSafe<Timeout> {
+class Timeout {
  public:
   explicit Timeout(DBusTimeout* timeout)
-      : raw_timeout_(timeout),
-        monitoring_is_active_(false),
-        is_completed(false) {
-    dbus_timeout_set_data(raw_timeout_, this, NULL);
-    AddRef();  // Balanced on Complete().
+      : raw_timeout_(timeout), weak_ptr_factory_(this) {
+    // Associated |this| with the underlying DBusTimeout.
+    dbus_timeout_set_data(raw_timeout_, this, nullptr);
+  }
+
+  ~Timeout() {
+    // Remove the association between |this| and the |raw_timeout_|.
+    dbus_timeout_set_data(raw_timeout_, nullptr, nullptr);
   }
 
   // Returns true if the timeout is ready to be monitored.
@@ -121,54 +121,27 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
   void StartMonitoring(Bus* bus) {
     bus->GetDBusTaskRunner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&Timeout::HandleTimeout, this),
+        base::Bind(&Timeout::HandleTimeout, weak_ptr_factory_.GetWeakPtr()),
         GetInterval());
-    monitoring_is_active_ = true;
   }
 
   // Stops monitoring the timeout.
-  void StopMonitoring() {
-    // We cannot take back the delayed task we posted in
-    // StartMonitoring(), so we just mark the monitoring is inactive now.
-    monitoring_is_active_ = false;
-  }
+  void StopMonitoring() { weak_ptr_factory_.InvalidateWeakPtrs(); }
 
-  // Returns the interval.
   base::TimeDelta GetInterval() {
     return base::TimeDelta::FromMilliseconds(
         dbus_timeout_get_interval(raw_timeout_));
   }
 
-  // Cleans up the raw_timeout and marks that timeout is completed.
-  // See the class comment above for why we are doing this.
-  void Complete() {
-    dbus_timeout_set_data(raw_timeout_, NULL, NULL);
-    is_completed = true;
-    Release();
-  }
-
  private:
-  friend class base::RefCountedThreadSafe<Timeout>;
-  ~Timeout() {
-  }
-
-  // Handles the timeout.
-  void HandleTimeout() {
-    // If the timeout is marked completed, we should do nothing. This can
-    // occur if this function is called after Bus::OnRemoveTimeout().
-    if (is_completed)
-      return;
-    // Skip if monitoring is canceled.
-    if (!monitoring_is_active_)
-      return;
-
-    const bool success = dbus_timeout_handle(raw_timeout_);
-    CHECK(success) << "Unable to allocate memory";
-  }
+  // Calls DBus to handle the timeout.
+  void HandleTimeout() { CHECK(dbus_timeout_handle(raw_timeout_)); }
 
   DBusTimeout* raw_timeout_;
-  bool monitoring_is_active_;
-  bool is_completed;
+
+  base::WeakPtrFactory<Timeout> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Timeout);
 };
 
 }  // namespace
@@ -187,7 +160,7 @@ Bus::Bus(const Options& options)
       dbus_task_runner_(options.dbus_task_runner),
       on_shutdown_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
-      connection_(NULL),
+      connection_(nullptr),
       origin_thread_id_(base::PlatformThread::CurrentId()),
       async_operations_set_up_(false),
       shutdown_completed_(false),
@@ -276,7 +249,7 @@ void Bus::RemoveObjectProxyInternal(scoped_refptr<ObjectProxy> object_proxy,
                                     const base::Closure& callback) {
   AssertOnDBusThread();
 
-  object_proxy.get()->Detach();
+  object_proxy->Detach();
 
   GetOriginTaskRunner()->PostTask(FROM_HERE, callback);
 }
@@ -388,10 +361,10 @@ void Bus::RemoveObjectManagerInternalHelper(
       scoped_refptr<dbus::ObjectManager> object_manager,
       const base::Closure& callback) {
   AssertOnOriginThread();
-  DCHECK(object_manager.get());
+  DCHECK(object_manager);
 
   // Release the object manager and run the callback.
-  object_manager = NULL;
+  object_manager = nullptr;
   callback.Run();
 }
 
@@ -510,13 +483,13 @@ void Bus::ShutdownAndBlock() {
     dbus_connection_unref(connection_);
   }
 
-  connection_ = NULL;
+  connection_ = nullptr;
   shutdown_completed_ = true;
 }
 
 void Bus::ShutdownOnDBusThreadAndBlock() {
   AssertOnOriginThread();
-  DCHECK(dbus_task_runner_.get());
+  DCHECK(dbus_task_runner_);
 
   GetDBusTaskRunner()->PostTask(
       FROM_HERE,
@@ -622,27 +595,18 @@ bool Bus::SetUpAsyncOperations() {
   // be called when the incoming data is ready.
   ProcessAllIncomingDataIfAny();
 
-  bool success = dbus_connection_set_watch_functions(connection_,
-                                                     &Bus::OnAddWatchThunk,
-                                                     &Bus::OnRemoveWatchThunk,
-                                                     &Bus::OnToggleWatchThunk,
-                                                     this,
-                                                     NULL);
+  bool success = dbus_connection_set_watch_functions(
+      connection_, &Bus::OnAddWatchThunk, &Bus::OnRemoveWatchThunk,
+      &Bus::OnToggleWatchThunk, this, nullptr);
   CHECK(success) << "Unable to allocate memory";
 
-  success = dbus_connection_set_timeout_functions(connection_,
-                                                  &Bus::OnAddTimeoutThunk,
-                                                  &Bus::OnRemoveTimeoutThunk,
-                                                  &Bus::OnToggleTimeoutThunk,
-                                                  this,
-                                                  NULL);
+  success = dbus_connection_set_timeout_functions(
+      connection_, &Bus::OnAddTimeoutThunk, &Bus::OnRemoveTimeoutThunk,
+      &Bus::OnToggleTimeoutThunk, this, nullptr);
   CHECK(success) << "Unable to allocate memory";
 
   dbus_connection_set_dispatch_status_function(
-      connection_,
-      &Bus::OnDispatchStatusChangedThunk,
-      this,
-      NULL);
+      connection_, &Bus::OnDispatchStatusChangedThunk, this, nullptr);
 
   async_operations_set_up_ = true;
 
@@ -692,8 +656,8 @@ void Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
     return;
   }
 
-  const bool success = dbus_connection_add_filter(
-      connection_, filter_function, user_data, NULL);
+  const bool success = dbus_connection_add_filter(connection_, filter_function,
+                                                  user_data, nullptr);
   CHECK(success) << "Unable to allocate memory";
   filter_functions_added_.insert(filter_data_pair);
 }
@@ -822,19 +786,19 @@ void Bus::ProcessAllIncomingDataIfAny() {
 }
 
 base::TaskRunner* Bus::GetDBusTaskRunner() {
-  if (dbus_task_runner_.get())
+  if (dbus_task_runner_)
     return dbus_task_runner_.get();
   else
     return GetOriginTaskRunner();
 }
 
 base::TaskRunner* Bus::GetOriginTaskRunner() {
-  DCHECK(origin_task_runner_.get());
+  DCHECK(origin_task_runner_);
   return origin_task_runner_.get();
 }
 
 bool Bus::HasDBusThread() {
-  return dbus_task_runner_.get() != NULL;
+  return dbus_task_runner_ != nullptr;
 }
 
 void Bus::AssertOnOriginThread() {
@@ -844,7 +808,7 @@ void Bus::AssertOnOriginThread() {
 void Bus::AssertOnDBusThread() {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (dbus_task_runner_.get()) {
+  if (dbus_task_runner_) {
     DCHECK(dbus_task_runner_->RunsTasksInCurrentSequence());
   } else {
     AssertOnOriginThread();
@@ -1052,8 +1016,7 @@ void Bus::OnToggleWatch(DBusWatch* raw_watch) {
 dbus_bool_t Bus::OnAddTimeout(DBusTimeout* raw_timeout) {
   AssertOnDBusThread();
 
-  // timeout will be deleted when raw_timeout is removed in
-  // OnRemoveTimeoutThunk().
+  // |timeout| will be deleted by OnRemoveTimeoutThunk().
   Timeout* timeout = new Timeout(raw_timeout);
   if (timeout->IsReadyToBeMonitored()) {
     timeout->StartMonitoring(this);
@@ -1066,7 +1029,7 @@ void Bus::OnRemoveTimeout(DBusTimeout* raw_timeout) {
   AssertOnDBusThread();
 
   Timeout* timeout = static_cast<Timeout*>(dbus_timeout_get_data(raw_timeout));
-  timeout->Complete();
+  delete timeout;
   --num_pending_timeouts_;
 }
 
