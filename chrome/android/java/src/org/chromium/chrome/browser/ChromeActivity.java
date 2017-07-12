@@ -111,6 +111,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.OptionalShareTargetsManager;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -1873,8 +1874,22 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return true;
         }
 
-        // All the code below assumes currentTab is not null, so return early if it is null.
         final Tab currentTab = getActivityTab();
+
+        if (id == R.id.help_id) {
+            String url = currentTab != null
+                    ? currentTab.getUrl()
+                    : getBottomSheet() != null && mBottomSheet.isShowingNewTab()
+                            ? UrlConstants.NTP_URL
+                            : "";
+            Profile profile = mTabModelSelector.isIncognitoSelected()
+                    ? Profile.getLastUsedProfile().getOffTheRecordProfile()
+                    : Profile.getLastUsedProfile().getOriginalProfile();
+            startHelpAndFeedback(url, "MobileMenuFeedback", profile);
+            return true;
+        }
+
+        // All the code below assumes currentTab is not null, so return early if it is null.
         if (currentTab == null) {
             return false;
         } else if (id == R.id.forward_menu_id) {
@@ -1962,8 +1977,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 builder.setView(DistilledPagePrefsView.create(this));
                 builder.show();
             }
-        } else if (id == R.id.help_id) {
-            startHelpAndFeedback(currentTab, "MobileMenuFeedback");
         } else {
             return false;
         }
@@ -1972,16 +1985,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /**
      * Shows HelpAndFeedback and records the user action as well.
-     * @param currentTab The tab that the user is currently on.
+     * @param url The URL of the tab the user is currently on.
      * @param recordAction The user action to record.
+     * @param profile The current {@link Profile}.
      */
-    public void startHelpAndFeedback(Tab currentTab, String recordAction) {
+    public void startHelpAndFeedback(String url, String recordAction, Profile profile) {
         // Since reading back the compositor is asynchronous, we need to do the readback
         // before starting the GoogleHelp.
         String helpContextId = HelpAndFeedback.getHelpContextIdFromUrl(
-                this, currentTab.getUrl(), getCurrentTabModel().isIncognito());
-        HelpAndFeedback.getInstance(this)
-                .show(this, helpContextId, currentTab.getProfile(), currentTab.getUrl());
+                this, url, getCurrentTabModel().isIncognito());
+        HelpAndFeedback.getInstance(this).show(this, helpContextId, profile, url);
         RecordUserAction.record(recordAction);
     }
 

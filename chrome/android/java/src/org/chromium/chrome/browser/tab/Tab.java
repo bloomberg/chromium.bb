@@ -1778,7 +1778,8 @@ public class Tab
                 @Override
                 public void run() {
                     if (showSendFeedbackView) {
-                        getActivity().startHelpAndFeedback(Tab.this, "MobileSadTabFeedback");
+                        getActivity().startHelpAndFeedback(
+                                getUrl(), "MobileSadTabFeedback", getProfile());
                     } else {
                         reload();
                     }

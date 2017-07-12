@@ -795,7 +795,7 @@ public class BottomSheet
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
         // Native page URLs in this context do not need to communicate with the tab.
-        if (NativePageFactory.isNativePageUrl(params.getUrl(), incognito)) {
+        if (NativePageFactory.isNativePageUrl(params.getUrl(), incognito) && !isShowingNtp) {
             return TabLoadStatus.PAGE_LOAD_FAILED;
         }
 
