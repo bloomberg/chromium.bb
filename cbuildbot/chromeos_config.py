@@ -2269,6 +2269,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'stout',
       'stumpy',
+      'tidus',
       'tricky',
       'veyron_jaq',
       'veyron_jerry',
@@ -2298,7 +2299,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'quawks',
       'reef',
       'sentry',
-      'tidus',
       'wizpig',
       'zoombini',
   ])
