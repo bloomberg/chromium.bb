@@ -13,7 +13,6 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -594,8 +593,8 @@ import java.util.UUID;
     }
 
     @Override
-    public @Nullable Rect getFullscreenVideoSize() {
-        return nativeGetFullscreenVideoSize(mNativeWebContentsAndroid);
+    public List<Rect> getCurrentlyPlayingVideoSizes() {
+        return nativeGetCurrentlyPlayingVideoSizes(mNativeWebContentsAndroid);
     }
 
     @CalledByNative
@@ -621,11 +620,6 @@ import java.util.UUID;
     @CalledByNative
     private static void createSizeAndAddToList(List<Rect> sizes, int width, int height) {
         sizes.add(new Rect(0, 0, width, height));
-    }
-
-    @CalledByNative
-    private static Rect createSize(int width, int height) {
-        return new Rect(0, 0, width, height);
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
@@ -695,6 +689,6 @@ import java.util.UUID;
             long nativeWebContentsAndroid, int x, int y);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
-    private native Rect nativeGetFullscreenVideoSize(long nativeWebContentsAndroid);
+    private native List<Rect> nativeGetCurrentlyPlayingVideoSizes(long nativeWebContentsAndroid);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
 }

@@ -208,7 +208,7 @@ class CONTENT_EXPORT WebContentsAndroid
   bool HasActiveEffectivelyFullscreenVideo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobject> GetFullscreenVideoSize(
+  base::android::ScopedJavaLocalRef<jobject> GetCurrentlyPlayingVideoSizes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

@@ -791,7 +791,7 @@ class WebContents : public PageNavigator,
   // Returns a map containing the sizes of all currently playing videos.
   using VideoSizeMap =
       base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>;
-  virtual base::Optional<gfx::Size> GetFullscreenVideoSize() = 0;
+  virtual const VideoSizeMap& GetCurrentlyPlayingVideoSizes() = 0;
   virtual bool IsFullscreen() = 0;
 
   // Tells the renderer to clear the focused element (if any).
