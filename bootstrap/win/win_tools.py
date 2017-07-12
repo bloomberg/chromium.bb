@@ -282,20 +282,13 @@ def cipd_ensure(args, dest_directory, package, version):
   _check_call(cipd_args, stdin_input=manifest_text)
 
 
-def need_to_install_git(args, git_directory, legacy):
+def need_to_install_git(args, git_directory):
   """Returns True if git needs to be installed."""
   if args.force:
     return True
 
   is_cipd_managed = os.path.exists(os.path.join(git_directory, '.cipd'))
-  if legacy:
-    if is_cipd_managed:
-      # Converting from non-legacy to legacy, need reinstall.
-      return True
-    if not os.path.exists(os.path.join(
-        git_directory, 'etc', 'profile.d', 'python.sh')):
-      return True
-  elif not is_cipd_managed:
+  if not is_cipd_managed:
     # Converting from legacy to CIPD, need reinstall.
     return True
 
@@ -320,48 +313,19 @@ def need_to_install_git(args, git_directory, legacy):
   return False
 
 
-def install_git_legacy(args, git_version, git_directory, cipd_platform):
-  _safe_rmtree(git_directory)
-  with _tempdir() as temp_dir:
-    cipd_ensure(args, temp_dir,
-        package='infra/depot_tools/git_installer/%s' % cipd_platform,
-        version='v' + git_version.replace('.', '_'))
-
-    # 7-zip has weird expectations for command-line syntax. Pass it as a string
-    # to avoid subprocess module quoting breaking it. Also double-escape
-    # backslashes in paths.
-    _check_call(' '.join([
-      os.path.join(temp_dir, 'git-installer.exe'),
-      '-y',
-      '-InstallPath="%s"' % git_directory.replace('\\', '\\\\'),
-      '-Directory="%s"' % git_directory.replace('\\', '\\\\'),
-    ]))
-
-
-def install_git(args, git_version, git_directory, legacy):
+def install_git(args, git_version, git_directory):
   """Installs |git_version| into |git_directory|."""
   # TODO: Remove legacy version once everyone is on bundled Git.
   cipd_platform = 'windows-%s' % ('amd64' if args.bits == 64 else '386')
-  if legacy:
-    install_git_legacy(args, git_version, git_directory, cipd_platform)
-  else:
-    # When migrating from legacy, we want to nuke this directory. In other
-    # cases, CIPD will handle the cleanup.
-    if not os.path.isdir(os.path.join(git_directory, '.cipd')):
-      logging.info('Deleting legacy Git directory: %s', git_directory)
-      _safe_rmtree(git_directory)
+  # When migrating from legacy, we want to nuke this directory. In other
+  # cases, CIPD will handle the cleanup.
+  if not os.path.isdir(os.path.join(git_directory, '.cipd')):
+    logging.info('Deleting legacy Git directory: %s', git_directory)
+    _safe_rmtree(git_directory)
 
-    cipd_ensure(args, git_directory,
-        package='infra/git/%s' % (cipd_platform,),
-        version=git_version)
-
-  if legacy:
-    # The non-legacy Git bundle includes "python.sh".
-    #
-    # TODO: Delete "profile.d.python.sh" after legacy mode is removed.
-    shutil.copyfile(
-        os.path.join(THIS_DIR, 'profile.d.python.sh'),
-        os.path.join(git_directory, 'etc', 'profile.d', 'python.sh'))
+  cipd_ensure(args, git_directory,
+      package='infra/git/%s' % (cipd_platform,),
+      version=git_version)
 
 
 def ensure_git(args, template):
@@ -378,11 +342,8 @@ def ensure_git(args, template):
       GIT_BIN_RELDIR=git_bin_dir,
       GIT_BIN_RELDIR_UNIX=git_bin_dir)
 
-  # Modern Git versions use CIPD tags beginning with "version:". If the tag
-  # does not begin with that, use the legacy installer.
-  legacy = not git_version.startswith('version:')
-  if need_to_install_git(args, git_directory, legacy):
-    install_git(args, git_version, git_directory, legacy)
+  if need_to_install_git(args, git_directory):
+    install_git(args, git_version, git_directory)
 
   git_postprocess(template, git_directory)
 
@@ -466,7 +427,7 @@ def main(argv):
 
   template = Template.empty()
   if not args.win_tools_name:
-    # Legacy support.
+    # Legacy (non-CIPD) support.
     template = template._replace(
         PYTHON_RELDIR='python276_bin',
         PYTHON_BIN_RELDIR='python276_bin',
