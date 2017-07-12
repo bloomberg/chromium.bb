@@ -77,21 +77,30 @@ struct weston_desktop_xdg_surface {
 	enum weston_desktop_xdg_surface_role role;
 };
 
+struct weston_desktop_xdg_toplevel_state {
+	bool maximized;
+	bool fullscreen;
+	bool resizing;
+	bool activated;
+};
+
 struct weston_desktop_xdg_toplevel {
 	struct weston_desktop_xdg_surface base;
 
 	struct wl_resource *resource;
 	bool added;
-	struct weston_size pending_size;
 	struct {
-		bool maximized;
-		bool fullscreen;
-		bool resizing;
-		bool activated;
-	} pending_state, next_state, state;
-	struct weston_size
-		next_max_size, max_size,
-		next_min_size, min_size;
+		struct weston_desktop_xdg_toplevel_state state;
+		struct weston_size size;
+	} pending;
+	struct {
+		struct weston_desktop_xdg_toplevel_state state;
+		struct weston_size min_size, max_size;
+	} next;
+	struct {
+		struct weston_desktop_xdg_toplevel_state state;
+		struct weston_size min_size, max_size;
+	} current;
 };
 
 struct weston_desktop_xdg_popup {
@@ -414,7 +423,7 @@ weston_desktop_xdg_toplevel_protocol_resize(struct wl_client *wl_client,
 static void
 weston_desktop_xdg_toplevel_ack_configure(struct weston_desktop_xdg_toplevel *toplevel)
 {
-	toplevel->next_state = toplevel->pending_state;
+	toplevel->next.state = toplevel->pending.state;
 }
 
 static void
@@ -427,8 +436,8 @@ weston_desktop_xdg_toplevel_protocol_set_min_size(struct wl_client *wl_client,
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
-	toplevel->next_min_size.width = width;
-	toplevel->next_min_size.height = height;
+	toplevel->next.min_size.width = width;
+	toplevel->next.min_size.height = height;
 }
 
 static void
@@ -441,8 +450,8 @@ weston_desktop_xdg_toplevel_protocol_set_max_size(struct wl_client *wl_client,
 	struct weston_desktop_xdg_toplevel *toplevel =
 		weston_desktop_surface_get_implementation_data(dsurface);
 
-	toplevel->next_max_size.width = width;
-	toplevel->next_max_size.height = height;
+	toplevel->next.max_size.width = width;
+	toplevel->next.max_size.height = height;
 }
 
 static void
@@ -524,26 +533,26 @@ weston_desktop_xdg_toplevel_send_configure(struct weston_desktop_xdg_toplevel *t
 	struct wl_array states;
 
 	wl_array_init(&states);
-	if (toplevel->pending_state.maximized) {
+	if (toplevel->pending.state.maximized) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED;
 	}
-	if (toplevel->pending_state.fullscreen) {
+	if (toplevel->pending.state.fullscreen) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN;
 	}
-	if (toplevel->pending_state.resizing) {
+	if (toplevel->pending.state.resizing) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = ZXDG_TOPLEVEL_V6_STATE_RESIZING;
 	}
-	if (toplevel->pending_state.activated) {
+	if (toplevel->pending.state.activated) {
 		s = wl_array_add(&states, sizeof(uint32_t));
 		*s = ZXDG_TOPLEVEL_V6_STATE_ACTIVATED;
 	}
 
 	zxdg_toplevel_v6_send_configure(toplevel->resource,
-					toplevel->pending_size.width,
-					toplevel->pending_size.height,
+					toplevel->pending.size.width,
+					toplevel->pending.size.height,
 					&states);
 
 	wl_array_release(&states);
@@ -555,7 +564,7 @@ weston_desktop_xdg_toplevel_set_maximized(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	toplevel->pending_state.maximized = maximized;
+	toplevel->pending.state.maximized = maximized;
 	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
@@ -565,7 +574,7 @@ weston_desktop_xdg_toplevel_set_fullscreen(struct weston_desktop_surface *dsurfa
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	toplevel->pending_state.fullscreen = fullscreen;
+	toplevel->pending.state.fullscreen = fullscreen;
 	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
@@ -575,7 +584,7 @@ weston_desktop_xdg_toplevel_set_resizing(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	toplevel->pending_state.resizing = resizing;
+	toplevel->pending.state.resizing = resizing;
 	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
@@ -585,7 +594,7 @@ weston_desktop_xdg_toplevel_set_activated(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	toplevel->pending_state.activated = activated;
+	toplevel->pending.state.activated = activated;
 	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
@@ -596,8 +605,8 @@ weston_desktop_xdg_toplevel_set_size(struct weston_desktop_surface *dsurface,
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	toplevel->pending_size.width = width;
-	toplevel->pending_size.height = height;
+	toplevel->pending.size.width = width;
+	toplevel->pending.size.height = height;
 
 	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
@@ -616,9 +625,9 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 	if (!wsurface->buffer_ref.buffer)
 		return;
 
-	if ((toplevel->next_state.maximized || toplevel->next_state.fullscreen) &&
-	    (toplevel->pending_size.width != wsurface->width ||
-	     toplevel->pending_size.height != wsurface->height)) {
+	if ((toplevel->next.state.maximized || toplevel->next.state.fullscreen) &&
+	    (toplevel->pending.size.width != wsurface->width ||
+	     toplevel->pending.size.height != wsurface->height)) {
 		struct weston_desktop_client *client =
 			weston_desktop_surface_get_client(toplevel->base.desktop_surface);
 		struct wl_resource *client_resource =
@@ -630,9 +639,9 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 		return;
 	}
 
-	toplevel->state = toplevel->next_state;
-	toplevel->min_size = toplevel->next_min_size;
-	toplevel->max_size = toplevel->next_max_size;
+	toplevel->current.state = toplevel->next.state;
+	toplevel->current.min_size = toplevel->next.min_size;
+	toplevel->current.max_size = toplevel->next.max_size;
 
 	weston_desktop_api_committed(toplevel->base.desktop,
 				     toplevel->base.desktop_surface,
@@ -651,7 +660,7 @@ weston_desktop_xdg_toplevel_get_maximized(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	return toplevel->state.maximized;
+	return toplevel->current.state.maximized;
 }
 
 static bool
@@ -660,7 +669,7 @@ weston_desktop_xdg_toplevel_get_fullscreen(struct weston_desktop_surface *dsurfa
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	return toplevel->state.fullscreen;
+	return toplevel->current.state.fullscreen;
 }
 
 static bool
@@ -669,7 +678,7 @@ weston_desktop_xdg_toplevel_get_resizing(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	return toplevel->state.resizing;
+	return toplevel->current.state.resizing;
 }
 
 static bool
@@ -678,7 +687,7 @@ weston_desktop_xdg_toplevel_get_activated(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	return toplevel->state.activated;
+	return toplevel->current.state.activated;
 }
 
 static void
@@ -860,21 +869,21 @@ weston_desktop_xdg_surface_send_configure(void *user_data)
 static bool
 weston_desktop_xdg_toplevel_state_compare(struct weston_desktop_xdg_toplevel *toplevel)
 {
-	if (toplevel->pending_state.activated != toplevel->state.activated)
+	if (toplevel->pending.state.activated != toplevel->current.state.activated)
 		return false;
-	if (toplevel->pending_state.fullscreen != toplevel->state.fullscreen)
+	if (toplevel->pending.state.fullscreen != toplevel->current.state.fullscreen)
 		return false;
-	if (toplevel->pending_state.maximized != toplevel->state.maximized)
+	if (toplevel->pending.state.maximized != toplevel->current.state.maximized)
 		return false;
-	if (toplevel->pending_state.resizing != toplevel->state.resizing)
+	if (toplevel->pending.state.resizing != toplevel->current.state.resizing)
 		return false;
 
-	if (toplevel->base.surface->width == toplevel->pending_size.width &&
-	    toplevel->base.surface->height == toplevel->pending_size.height)
+	if (toplevel->base.surface->width == toplevel->pending.size.width &&
+	    toplevel->base.surface->height == toplevel->pending.size.height)
 		return true;
 
-	if (toplevel->pending_size.width == 0 &&
-	    toplevel->pending_size.height == 0)
+	if (toplevel->pending.size.width == 0 &&
+	    toplevel->pending.size.height == 0)
 		return true;
 
 	return false;
