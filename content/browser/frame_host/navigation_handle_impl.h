@@ -590,10 +590,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // in it.
   int expected_render_process_host_id_;
 
-  // TODO(arthursonzogni): Remove this when we understand the root cause behind
-  // crbug.com/704892.
-  bool is_in_constructor;
-
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);

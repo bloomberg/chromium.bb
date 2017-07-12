@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -1246,6 +1247,10 @@ class NavigationLogger : public WebContentsObserver {
     started_navigation_urls_.push_back(navigation_handle->GetURL());
   }
 
+  void DidRedirectNavigation(NavigationHandle* navigation_handle) override {
+    redirected_navigation_urls_.push_back(navigation_handle->GetURL());
+  }
+
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
     finished_navigation_urls_.push_back(navigation_handle->GetURL());
   }
@@ -1253,12 +1258,16 @@ class NavigationLogger : public WebContentsObserver {
   const std::vector<GURL>& started_navigation_urls() const {
     return started_navigation_urls_;
   }
+  const std::vector<GURL>& redirected_navigation_urls() const {
+    return redirected_navigation_urls_;
+  }
   const std::vector<GURL>& finished_navigation_urls() const {
     return finished_navigation_urls_;
   }
 
  private:
   std::vector<GURL> started_navigation_urls_;
+  std::vector<GURL> redirected_navigation_urls_;
   std::vector<GURL> finished_navigation_urls_;
 };
 
@@ -1509,6 +1518,53 @@ IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
   EXPECT_TRUE(commit_observer.has_committed());
   EXPECT_TRUE(commit_observer.is_error());
   EXPECT_FALSE(commit_observer.is_renderer_initiated());
+}
+
+// Redirects to renderer debug URLs caused problems.
+// See https://crbug.com/728398.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       RedirectToRendererDebugUrl) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  const struct {
+    const GURL renderer_debug_url;
+    const net::Error error_code;
+  } kTestCases[] = {
+      {GURL("javascript:window.alert('hello')"), net::ERR_ABORTED},
+      {GURL(kChromeUIBadCastCrashURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUICrashURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUIDumpURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUIKillURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUIHangURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUIShorthangURL), net::ERR_UNSAFE_REDIRECT},
+      {GURL(kChromeUIMemoryExhaustURL), net::ERR_UNSAFE_REDIRECT},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << "renderer_debug_url = " << test_case.renderer_debug_url);
+
+    GURL redirecting_url = embedded_test_server()->GetURL(
+        "/server-redirect?" + test_case.renderer_debug_url.spec());
+
+    NavigationHandleObserver observer(shell()->web_contents(), redirecting_url);
+    NavigationLogger logger(shell()->web_contents());
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), redirecting_url));
+    EXPECT_EQ(test_case.error_code, observer.net_error_code());
+
+    // Both WebContentsObserver::{DidStartNavigation, DidFinishNavigation}
+    // are called, but no WebContentsObserver::DidRedirectNavigation.
+    std::vector<GURL> started_navigation = {redirecting_url};
+    std::vector<GURL> redirected_navigation = {};
+    std::vector<GURL> finished_navigation = {redirecting_url};
+    EXPECT_EQ(started_navigation, logger.started_navigation_urls());
+    EXPECT_EQ(redirected_navigation, logger.redirected_navigation_urls());
+    EXPECT_EQ(finished_navigation, logger.finished_navigation_urls());
+  }
 }
 
 }  // namespace content
