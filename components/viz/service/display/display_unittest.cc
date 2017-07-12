@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/display.h"
+#include "components/viz/service/display/display.h"
 
 #include <utility>
 
@@ -13,9 +13,6 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/display_client.h"
-#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -26,19 +23,22 @@
 #include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/service/display/display_client.h"
+#include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::AnyNumber;
 
-namespace cc {
+namespace viz {
 namespace {
 
-static constexpr viz::FrameSinkId kArbitraryFrameSinkId(3, 3);
-static constexpr viz::FrameSinkId kAnotherFrameSinkId(4, 4);
+static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
+static constexpr FrameSinkId kAnotherFrameSinkId(4, 4);
 
-class TestSoftwareOutputDevice : public SoftwareOutputDevice {
+class TestSoftwareOutputDevice : public cc::SoftwareOutputDevice {
  public:
   TestSoftwareOutputDevice() {}
 
@@ -48,7 +48,7 @@ class TestSoftwareOutputDevice : public SoftwareOutputDevice {
 
 class TestDisplayScheduler : public DisplayScheduler {
  public:
-  explicit TestDisplayScheduler(BeginFrameSource* begin_frame_source,
+  explicit TestDisplayScheduler(cc::BeginFrameSource* begin_frame_source,
                                 base::SingleThreadTaskRunner* task_runner)
       : DisplayScheduler(begin_frame_source, task_runner, 1),
         damaged(false),
@@ -60,12 +60,12 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   void DisplayResized() override { display_resized_ = true; }
 
-  void SetNewRootSurface(const viz::SurfaceId& root_surface_id) override {
+  void SetNewRootSurface(const SurfaceId& root_surface_id) override {
     has_new_root_surface = true;
   }
 
-  void ProcessSurfaceDamage(const viz::SurfaceId& surface_id,
-                            const BeginFrameAck& ack,
+  void ProcessSurfaceDamage(const SurfaceId& surface_id,
+                            const cc::BeginFrameAck& ack,
                             bool display_damaged) override {
     if (display_damaged) {
       damaged = true;
@@ -101,19 +101,19 @@ class DisplayTest : public testing::Test {
 
   ~DisplayTest() override { support_->EvictCurrentSurface(); }
 
-  void SetUpDisplay(const RendererSettings& settings,
-                    std::unique_ptr<TestWebGraphicsContext3D> context) {
-    begin_frame_source_.reset(new StubBeginFrameSource);
+  void SetUpDisplay(const cc::RendererSettings& settings,
+                    std::unique_ptr<cc::TestWebGraphicsContext3D> context) {
+    begin_frame_source_.reset(new cc::StubBeginFrameSource);
 
-    std::unique_ptr<FakeOutputSurface> output_surface;
+    std::unique_ptr<cc::FakeOutputSurface> output_surface;
     if (context) {
-      auto provider = TestContextProvider::Create(std::move(context));
+      auto provider = cc::TestContextProvider::Create(std::move(context));
       provider->BindToCurrentThread();
-      output_surface = FakeOutputSurface::Create3d(std::move(provider));
+      output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
     } else {
       auto device = base::MakeUnique<TestSoftwareOutputDevice>();
       software_output_device_ = device.get();
-      output_surface = FakeOutputSurface::CreateSoftware(std::move(device));
+      output_surface = cc::FakeOutputSurface::CreateSoftware(std::move(device));
     }
     output_surface_ = output_surface.get();
     auto scheduler = base::MakeUnique<TestDisplayScheduler>(
@@ -126,15 +126,15 @@ class DisplayTest : public testing::Test {
   }
 
   std::unique_ptr<Display> CreateDisplay(
-      const RendererSettings& settings,
-      const viz::FrameSinkId& frame_sink_id,
+      const cc::RendererSettings& settings,
+      const FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
-      std::unique_ptr<OutputSurface> output_surface) {
+      std::unique_ptr<cc::OutputSurface> output_surface) {
     auto display = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
         settings, frame_sink_id, std::move(output_surface),
         std::move(scheduler),
-        base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
+        base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
     display->SetVisible(true);
     return display;
   }
@@ -146,41 +146,42 @@ class DisplayTest : public testing::Test {
   }
 
  protected:
-  void SubmitCompositorFrame(RenderPassList* pass_list,
-                             const viz::LocalSurfaceId& local_surface_id) {
-    CompositorFrame frame = test::MakeCompositorFrame();
+  void SubmitCompositorFrame(cc::RenderPassList* pass_list,
+                             const LocalSurfaceId& local_surface_id) {
+    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
-  FrameSinkManager manager_;
+  cc::FrameSinkManager manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  viz::LocalSurfaceIdAllocator id_allocator_;
+  LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
-  TestSharedBitmapManager shared_bitmap_manager_;
-  std::unique_ptr<BeginFrameSource> begin_frame_source_;
+  cc::TestSharedBitmapManager shared_bitmap_manager_;
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   TestSoftwareOutputDevice* software_output_device_ = nullptr;
-  FakeOutputSurface* output_surface_ = nullptr;
+  cc::FakeOutputSurface* output_surface_ = nullptr;
   TestDisplayScheduler* scheduler_ = nullptr;
 };
 
 class StubDisplayClient : public DisplayClient {
  public:
   void DisplayOutputSurfaceLost() override {}
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      const cc::RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 };
 
-void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
+void CopyCallback(bool* called, std::unique_ptr<cc::CopyOutputResult> result) {
   *called = true;
 }
 
 // Check that frame is damaged and swapped only under correct conditions.
 TEST_F(DisplayTest, DisplayDamaged) {
-  RendererSettings settings;
+  cc::RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
   SetUpDisplay(settings, nullptr);
@@ -191,7 +192,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
-  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
@@ -206,8 +207,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_FALSE(scheduler_->has_new_root_surface);
 
   // First draw from surface should have full damage.
-  RenderPassList pass_list;
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  cc::RenderPassList pass_list;
+  auto pass = cc::RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1u;
@@ -231,7 +232,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), software_output_device_->damage_rect());
   {
     // Only damaged portion should be swapped.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -257,7 +258,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass has no damage so shouldn't be swapped.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -277,7 +278,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass is wrong size so shouldn't be swapped.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
     pass->id = 1u;
@@ -300,7 +301,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Previous frame wasn't swapped, so next swap should have full damage.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -325,11 +326,11 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass has copy output request so should be swapped.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     bool copy_called = false;
-    pass->copy_requests.push_back(CopyOutputRequest::CreateRequest(
+    pass->copy_requests.push_back(cc::CopyOutputRequest::CreateRequest(
         base::Bind(&CopyCallback, &copy_called)));
     pass->id = 1u;
 
@@ -350,7 +351,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   // Pass has no damage, so shouldn't be swapped, but latency info should be
   // saved for next swap.
   {
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -358,7 +359,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
+    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -382,7 +383,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_FALSE(scheduler_->swapped);
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
 
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
     pass->id = 1u;
@@ -390,7 +391,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
+    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -411,7 +412,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     local_surface_id = id_allocator_.GenerateId();
     display_->SetLocalSurfaceId(local_surface_id, 1.0f);
     // Surface that's damaged completely should be resized and swapped.
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
     pass->id = 1u;
@@ -438,7 +439,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
 // Check LatencyInfo storage is cleaned up if it exceeds the limit.
 TEST_F(DisplayTest, MaxLatencyInfoCap) {
-  RendererSettings settings;
+  cc::RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
   SetUpDisplay(settings, nullptr);
@@ -449,14 +450,14 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
-  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   scheduler_->ResetDamageForTest();
   display_->Resize(gfx::Size(100, 100));
 
-  RenderPassList pass_list;
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  cc::RenderPassList pass_list;
+  auto pass = cc::RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1u;
@@ -470,7 +471,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   // This is the same as LatencyInfo::kMaxLatencyInfoNumber.
   const size_t max_latency_info_count = 100;
   for (size_t i = 0; i <= max_latency_info_count; ++i) {
-    pass = RenderPass::Create();
+    pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -478,7 +479,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
+    cc::CompositorFrame frame = cc::test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -495,20 +496,20 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   TearDownDisplay();
 }
 
-class MockedContext : public TestWebGraphicsContext3D {
+class MockedContext : public cc::TestWebGraphicsContext3D {
  public:
   MOCK_METHOD0(shallowFinishCHROMIUM, void());
 };
 
 TEST_F(DisplayTest, Finish) {
-  viz::LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
-  viz::LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
+  LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
+  LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
 
-  RendererSettings settings;
+  cc::RendererSettings settings;
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
 
-  std::unique_ptr<MockedContext> context(new MockedContext());
+  auto context = base::MakeUnique<MockedContext>();
   MockedContext* context_ptr = context.get();
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
 
@@ -522,8 +523,8 @@ TEST_F(DisplayTest, Finish) {
   display_->Resize(gfx::Size(100, 100));
 
   {
-    RenderPassList pass_list;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    cc::RenderPassList pass_list;
+    auto pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -549,8 +550,8 @@ TEST_F(DisplayTest, Finish) {
 
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   {
-    RenderPassList pass_list;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    cc::RenderPassList pass_list;
+    auto pass = cc::RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -582,7 +583,7 @@ class CountLossDisplayClient : public StubDisplayClient {
 };
 
 TEST_F(DisplayTest, ContextLossInformsClient) {
-  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+  SetUpDisplay(cc::RendererSettings(), cc::TestWebGraphicsContext3D::Create());
 
   CountLossDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -600,8 +601,8 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
 // a surface should only cause damage on the Display the surface belongs to.
 // There should not be a side-effect on other Displays.
 TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
-  RendererSettings settings;
-  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  cc::RendererSettings settings;
+  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   // Set up first display.
   SetUpDisplay(settings, nullptr);
@@ -614,13 +615,13 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
       nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       true /* needs_sync_points */);
-  auto begin_frame_source2 = base::MakeUnique<StubBeginFrameSource>();
+  auto begin_frame_source2 = base::MakeUnique<cc::StubBeginFrameSource>();
   auto scheduler_for_display2 = base::MakeUnique<TestDisplayScheduler>(
       begin_frame_source2.get(), task_runner_.get());
   TestDisplayScheduler* scheduler2 = scheduler_for_display2.get();
   auto display2 = CreateDisplay(
       settings, kAnotherFrameSinkId, std::move(scheduler_for_display2),
-      FakeOutputSurface::CreateSoftware(
+      cc::FakeOutputSurface::CreateSoftware(
           base::MakeUnique<TestSoftwareOutputDevice>()));
   manager_.RegisterBeginFrameSource(begin_frame_source2.get(),
                                     kAnotherFrameSinkId);
@@ -637,8 +638,8 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   EXPECT_FALSE(scheduler2->damaged);
 
   // Submit a frame for display_ with full damage.
-  RenderPassList pass_list;
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  cc::RenderPassList pass_list;
+  auto pass = cc::RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1;
@@ -654,4 +655,4 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

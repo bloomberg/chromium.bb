@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
-#define CC_SURFACES_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
+#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
+#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 
 #include "cc/resources/returned_resource.h"
+
+namespace cc {
+struct BeginFrameArgs;
+}  // namespace cc
 
 namespace gfx {
 class Rect;
@@ -13,11 +17,6 @@ class Rect;
 
 namespace viz {
 class LocalSurfaceId;
-}
-
-namespace cc {
-
-struct BeginFrameArgs;
 
 class CompositorFrameSinkSupportClient {
  public:
@@ -29,23 +28,23 @@ class CompositorFrameSinkSupportClient {
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
   virtual void DidReceiveCompositorFrameAck(
-      const std::vector<ReturnedResource>& resources) = 0;
+      const std::vector<cc::ReturnedResource>& resources) = 0;
 
   // Notification for the client to generate a CompositorFrame.
-  virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
+  virtual void OnBeginFrame(const cc::BeginFrameArgs& args) = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) = 0;
+      const std::vector<cc::ReturnedResource>& resources) = 0;
 
   // Called when surface is being scheduled for a draw.
-  virtual void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
+  virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                                const gfx::Rect& damage_rect) = 0;
 
  protected:
   virtual ~CompositorFrameSinkSupportClient() {}
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
+#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_

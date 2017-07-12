@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -19,6 +18,7 @@
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/surface_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,8 +29,7 @@ using testing::Invoke;
 using testing::_;
 using testing::Eq;
 
-namespace cc {
-namespace test {
+namespace viz {
 namespace {
 
 constexpr bool kIsRoot = true;
@@ -38,9 +37,9 @@ constexpr bool kIsChildRoot = false;
 constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
-constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
-constexpr viz::FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
-constexpr viz::FrameSinkId kYetAnotherArbitraryFrameSinkId(3, 3);
+constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
+constexpr FrameSinkId kYetAnotherArbitraryFrameSinkId(3, 3);
 
 const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 const base::UnguessableToken kArbitrarySourceId1 =
@@ -62,32 +61,32 @@ class FakeCompositorFrameSinkSupportClient
   ~FakeCompositorFrameSinkSupportClient() override = default;
 
   void DidReceiveCompositorFrameAck(
-      const std::vector<ReturnedResource>& resources) override {
+      const std::vector<cc::ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
-  void OnBeginFrame(const BeginFrameArgs& args) override {}
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override {}
 
   void ReclaimResources(
-      const std::vector<ReturnedResource>& resources) override {
+      const std::vector<cc::ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
-  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override {}
 
   void clear_returned_resources() { returned_resources_.clear(); }
-  const std::vector<ReturnedResource>& returned_resources() {
+  const std::vector<cc::ReturnedResource>& returned_resources() {
     return returned_resources_;
   }
 
  private:
-  void InsertResources(const std::vector<ReturnedResource>& resources) {
+  void InsertResources(const std::vector<cc::ReturnedResource>& resources) {
     returned_resources_.insert(returned_resources_.end(), resources.begin(),
                                resources.end());
   }
 
-  std::vector<ReturnedResource> returned_resources_;
+  std::vector<cc::ReturnedResource> returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };
@@ -114,11 +113,11 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     support_->EvictCurrentSurface();
   }
 
-  void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
+  void SubmitCompositorFrameWithResources(cc::ResourceId* resource_ids,
                                           size_t num_resource_ids) {
-    CompositorFrame frame = MakeCompositorFrame();
+    auto frame = cc::test::MakeCompositorFrame();
     for (size_t i = 0u; i < num_resource_ids; ++i) {
-      TransferableResource resource;
+      cc::TransferableResource resource;
       resource.id = resource_ids[i];
       resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
       resource.mailbox_holder.sync_token = frame_sync_token_;
@@ -129,12 +128,12 @@ class CompositorFrameSinkSupportTest : public testing::Test {
               local_surface_id_);
   }
 
-  void UnrefResources(ResourceId* ids_to_unref,
+  void UnrefResources(cc::ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
-    std::vector<ReturnedResource> unref_array;
+    std::vector<cc::ReturnedResource> unref_array;
     for (size_t i = 0; i < num_ids_to_unref; ++i) {
-      ReturnedResource resource;
+      cc::ReturnedResource resource;
       resource.sync_token = consumer_sync_token_;
       resource.id = ids_to_unref[i];
       resource.count = counts_to_unref[i];
@@ -143,15 +142,16 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     support_->UnrefResources(unref_array);
   }
 
-  void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
-                                           int* expected_returned_counts,
-                                           size_t expected_resources,
-                                           gpu::SyncToken expected_sync_token) {
-    const std::vector<ReturnedResource>& actual_resources =
+  void CheckReturnedResourcesMatchExpected(
+      cc::ResourceId* expected_returned_ids,
+      int* expected_returned_counts,
+      size_t expected_resources,
+      gpu::SyncToken expected_sync_token) {
+    const std::vector<cc::ReturnedResource>& actual_resources =
         fake_support_client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
     for (size_t i = 0; i < expected_resources; ++i) {
-      ReturnedResource resource = actual_resources[i];
+      cc::ReturnedResource resource = actual_resources[i];
       EXPECT_EQ(expected_sync_token, resource.sync_token);
       EXPECT_EQ(expected_returned_ids[i], resource.id);
       EXPECT_EQ(expected_returned_counts[i], resource.count);
@@ -159,23 +159,23 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     fake_support_client_.clear_returned_resources();
   }
 
-  Surface* GetSurfaceForId(const viz::SurfaceId& id) {
+  cc::Surface* GetSurfaceForId(const SurfaceId& id) {
     return manager_.surface_manager()->GetSurfaceForId(id);
   }
 
   void RefCurrentFrameResources() {
-    Surface* surface = GetSurfaceForId(
-        viz::SurfaceId(support_->frame_sink_id(), local_surface_id_));
+    cc::Surface* surface = GetSurfaceForId(
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support_->RefResources(surface->GetActiveFrame().resource_list);
   }
 
  protected:
-  FrameSinkManager manager_;
+  cc::FrameSinkManager manager_;
   FakeCompositorFrameSinkSupportClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  FakeExternalBeginFrameSource begin_frame_source_;
-  viz::LocalSurfaceId local_surface_id_;
-  FakeSurfaceObserver surface_observer_;
+  cc::FakeExternalBeginFrameSource begin_frame_source_;
+  LocalSurfaceId local_surface_id_;
+  cc::FakeSurfaceObserver surface_observer_;
 
   // This is the sync token submitted with the frame. It should never be
   // returned to the client.
@@ -189,7 +189,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 // Tests submitting a frame with resources followed by one with no resources
 // with no resource provider action in between.
 TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
-  ResourceId first_frame_ids[] = {1, 2, 3};
+  cc::ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -203,14 +203,14 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
   // make all resources of first frame available to be returned.
   SubmitCompositorFrameWithResources(NULL, 0);
 
-  ResourceId expected_returned_ids[] = {1, 2, 3};
+  cc::ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   // Resources were never consumed so no sync token should be set.
   CheckReturnedResourcesMatchExpected(
       expected_returned_ids, expected_returned_counts,
       arraysize(expected_returned_counts), gpu::SyncToken());
 
-  ResourceId third_frame_ids[] = {4, 5, 6};
+  cc::ResourceId third_frame_ids[] = {4, 5, 6};
   SubmitCompositorFrameWithResources(third_frame_ids,
                                      arraysize(third_frame_ids));
 
@@ -222,11 +222,11 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
 
   // The forth frame references no resources of third frame and thus should
   // make all resources of third frame available to be returned.
-  ResourceId forth_frame_ids[] = {7, 8, 9};
+  cc::ResourceId forth_frame_ids[] = {7, 8, 9};
   SubmitCompositorFrameWithResources(forth_frame_ids,
                                      arraysize(forth_frame_ids));
 
-  ResourceId forth_expected_returned_ids[] = {4, 5, 6};
+  cc::ResourceId forth_expected_returned_ids[] = {4, 5, 6};
   int forth_expected_returned_counts[] = {1, 1, 1};
   // Resources were never consumed so no sync token should be set.
   CheckReturnedResourcesMatchExpected(
@@ -238,7 +238,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
 // with the resource provider holding everything alive.
 TEST_F(CompositorFrameSinkSupportTest,
        ResourceLifetimeSimpleWithProviderHoldingAlive) {
-  ResourceId first_frame_ids[] = {1, 2, 3};
+  cc::ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -268,7 +268,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Submitting an empty frame causes previous resources referenced by the
   // previous frame to be returned to client.
   SubmitCompositorFrameWithResources(nullptr, 0);
-  ResourceId expected_returned_ids[] = {1, 2, 3};
+  cc::ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   CheckReturnedResourcesMatchExpected(
       expected_returned_ids, expected_returned_counts,
@@ -278,7 +278,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 // Tests referencing a resource, unref'ing it to zero, then using it again
 // before returning it to the client.
 TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
-  ResourceId first_frame_ids[] = {7};
+  cc::ResourceId first_frame_ids[] = {7};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -295,7 +295,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
   // Now it should be returned.
   // We don't care how many entries are in the returned array for 7, so long as
   // the total returned count matches the submitted count.
-  const std::vector<ReturnedResource>& returned =
+  const std::vector<cc::ReturnedResource>& returned =
       fake_support_client_.returned_resources();
   size_t return_count = 0;
   for (size_t i = 0; i < returned.size(); ++i) {
@@ -308,7 +308,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
 // Tests having resources referenced multiple times, as if referenced by
 // multiple providers.
 TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
-  ResourceId first_frame_ids[] = {3, 4};
+  cc::ResourceId first_frame_ids[] = {3, 4};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -316,7 +316,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   RefCurrentFrameResources();
   RefCurrentFrameResources();
 
-  ResourceId second_frame_ids[] = {4, 5};
+  cc::ResourceId second_frame_ids[] = {4, 5};
   SubmitCompositorFrameWithResources(second_frame_ids,
                                      arraysize(second_frame_ids));
 
@@ -338,7 +338,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   //  5 -> 3
   {
     SCOPED_TRACE("unref all 3");
-    ResourceId ids_to_unref[] = {3, 4, 5};
+    cc::ResourceId ids_to_unref[] = {3, 4, 5};
     int counts[] = {1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
@@ -347,7 +347,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
 
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
-    ResourceId expected_returned_ids[] = {3};
+    cc::ResourceId expected_returned_ids[] = {3};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -359,12 +359,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   //  5 -> 1
   {
     SCOPED_TRACE("unref 4 and 5");
-    ResourceId ids_to_unref[] = {4, 5};
+    cc::ResourceId ids_to_unref[] = {4, 5};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
 
-    ResourceId expected_returned_ids[] = {5};
+    cc::ResourceId expected_returned_ids[] = {5};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -375,12 +375,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   // the returned count is correct.
   {
     SCOPED_TRACE("unref only 4");
-    ResourceId ids_to_unref[] = {4};
+    cc::ResourceId ids_to_unref[] = {4};
     int counts[] = {2};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
 
-    ResourceId expected_returned_ids[] = {4};
+    cc::ResourceId expected_returned_ids[] = {4};
     int expected_returned_counts[] = {2};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -389,7 +389,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
-  ResourceId first_frame_ids[] = {1, 2, 3};
+  cc::ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -402,12 +402,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // The second frame references some of the same resources, but some different
   // ones. We expect to receive back resource 1 with a count of 1 since it was
   // only referenced by the first frame.
-  ResourceId second_frame_ids[] = {2, 3, 4};
+  cc::ResourceId second_frame_ids[] = {2, 3, 4};
   SubmitCompositorFrameWithResources(second_frame_ids,
                                      arraysize(second_frame_ids));
   {
     SCOPED_TRACE("second frame");
-    ResourceId expected_returned_ids[] = {1};
+    cc::ResourceId expected_returned_ids[] = {1};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -418,13 +418,13 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // receive back all resources from the first and second frames. Resource IDs 2
   // and 3 will have counts of 2, since they were used in both frames, and
   // resource ID 4 will have a count of 1.
-  ResourceId third_frame_ids[] = {10, 11, 12, 13};
+  cc::ResourceId third_frame_ids[] = {10, 11, 12, 13};
   SubmitCompositorFrameWithResources(third_frame_ids,
                                      arraysize(third_frame_ids));
 
   {
     SCOPED_TRACE("third frame");
-    ResourceId expected_returned_ids[] = {2, 3, 4};
+    cc::ResourceId expected_returned_ids[] = {2, 3, 4};
     int expected_returned_counts[] = {2, 2, 1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -434,7 +434,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // Simulate a ResourceProvider taking a ref on all of the resources.
   RefCurrentFrameResources();
 
-  ResourceId fourth_frame_ids[] = {12, 13};
+  cc::ResourceId fourth_frame_ids[] = {12, 13};
   SubmitCompositorFrameWithResources(fourth_frame_ids,
                                      arraysize(fourth_frame_ids));
 
@@ -449,7 +449,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // Release resources associated with the first RefCurrentFrameResources() call
   // first.
   {
-    ResourceId ids_to_unref[] = {10, 11, 12, 13};
+    cc::ResourceId ids_to_unref[] = {10, 11, 12, 13};
     int counts[] = {1, 1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
@@ -463,7 +463,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   }
 
   {
-    ResourceId ids_to_unref[] = {12, 13};
+    cc::ResourceId ids_to_unref[] = {12, 13};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
@@ -478,7 +478,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 
   {
     SCOPED_TRACE("fourth frame, second unref");
-    ResourceId expected_returned_ids[] = {10, 11, 12, 13};
+    cc::ResourceId expected_returned_ids[] = {10, 11, 12, 13};
     int expected_returned_counts[] = {1, 1, 2, 2};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -487,18 +487,18 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
-  MockCompositorFrameSinkSupportClient mock_client;
-  std::unique_ptr<CompositorFrameSinkSupport> support =
-      CompositorFrameSinkSupport::Create(
-          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::LocalSurfaceId local_surface_id(6, kArbitraryToken);
-  support->SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
+  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  auto support = CompositorFrameSinkSupport::Create(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(6, kArbitraryToken);
+  support->SubmitCompositorFrame(local_surface_id,
+                                 cc::test::MakeCompositorFrame());
 
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(_))
       .WillOnce(testing::InvokeWithoutArgs([&support, &mock_client]() {
-        viz::LocalSurfaceId new_id(7, base::UnguessableToken::Create());
-        support->SubmitCompositorFrame(new_id, MakeCompositorFrame());
+        LocalSurfaceId new_id(7, base::UnguessableToken::Create());
+        support->SubmitCompositorFrame(new_id, cc::test::MakeCompositorFrame());
       }))
       .WillRepeatedly(testing::Return());
   support->EvictCurrentSurface();
@@ -506,25 +506,24 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
 
 // Tests doing an EvictCurrentSurface before shutting down the factory.
 TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
-  MockCompositorFrameSinkSupportClient mock_client;
-  std::unique_ptr<CompositorFrameSinkSupport> support =
-      CompositorFrameSinkSupport::Create(
-          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::LocalSurfaceId local_surface_id(7, kArbitraryToken);
-  viz::SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
+  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  auto support = CompositorFrameSinkSupport::Create(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
+  SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
 
-  TransferableResource resource;
+  cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  CompositorFrame frame = MakeCompositorFrame();
+  auto frame = cc::test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
             local_surface_id);
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_ = LocalSurfaceId();
 
-  std::vector<ReturnedResource> returned_resources = {
+  std::vector<cc::ReturnedResource> returned_resources = {
       resource.ToReturnedResource()};
   EXPECT_TRUE(GetSurfaceForId(id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
@@ -536,29 +535,28 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
 // Tests doing an EvictCurrentSurface which has unregistered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyUnRegistered) {
-  MockCompositorFrameSinkSupportClient mock_client;
-  std::unique_ptr<CompositorFrameSinkSupport> support =
-      CompositorFrameSinkSupport::Create(
-          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::LocalSurfaceId local_surface_id(7, kArbitraryToken);
+  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  auto support = CompositorFrameSinkSupport::Create(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
-  TransferableResource resource;
+  cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  CompositorFrame frame = MakeCompositorFrame();
+  auto frame = cc::test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
             local_surface_id);
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_ = LocalSurfaceId();
 
-  viz::SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  Surface* surface = GetSurfaceForId(surface_id);
+  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
+  cc::Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  std::vector<ReturnedResource> returned_resource = {
+  std::vector<cc::ReturnedResource> returned_resource = {
       resource.ToReturnedResource()};
 
   EXPECT_TRUE(GetSurfaceForId(surface_id));
@@ -571,32 +569,31 @@ TEST_F(CompositorFrameSinkSupportTest,
 // Tests doing an EvictCurrentSurface which has registered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyRegistered) {
-  MockCompositorFrameSinkSupportClient mock_client;
-  std::unique_ptr<CompositorFrameSinkSupport> support =
-      CompositorFrameSinkSupport::Create(
-          &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::LocalSurfaceId local_surface_id(7, kArbitraryToken);
+  cc::test::MockCompositorFrameSinkSupportClient mock_client;
+  auto support = CompositorFrameSinkSupport::Create(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
+      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
-  TransferableResource resource;
+  cc::TransferableResource resource;
   resource.id = 1;
   resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-  CompositorFrame frame = MakeCompositorFrame();
+  auto frame = cc::test::MakeCompositorFrame();
   frame.resource_list.push_back(resource);
   uint32_t execute_count = 0;
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
             local_surface_id);
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_ = LocalSurfaceId();
 
   manager_.RegisterFrameSinkId(kYetAnotherArbitraryFrameSinkId);
 
-  viz::SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
-  Surface* surface = GetSurfaceForId(surface_id);
+  SurfaceId surface_id(kAnotherArbitraryFrameSinkId, local_surface_id);
+  cc::Surface* surface = GetSurfaceForId(surface_id);
   surface->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  std::vector<ReturnedResource> returned_resources;
+  std::vector<cc::ReturnedResource> returned_resources;
   EXPECT_TRUE(GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
   EXPECT_TRUE(GetSurfaceForId(surface_id));
@@ -606,52 +603,54 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
   manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   EXPECT_FALSE(GetSurfaceForId(surface_id));
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
-  viz::LocalSurfaceId local_surface_id2(5, kArbitraryToken);
-  std::unique_ptr<CompositorFrameSinkSupport> support2 =
-      CompositorFrameSinkSupport::Create(
-          &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-          kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
-  support2->SubmitCompositorFrame(local_surface_id2, MakeCompositorFrame());
+  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
+  auto support2 = CompositorFrameSinkSupport::Create(
+      &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
+      kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
+  support2->SubmitCompositorFrame(local_surface_id2,
+                                  cc::test::MakeCompositorFrame());
 
   // Check that waiting before the sequence is satisfied works.
   GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   support2->EvictCurrentSurface();
 
   DCHECK(GetSurfaceForId(id2));
   manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
+      cc::SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 6));
   DCHECK(!GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
-  support2->SubmitCompositorFrame(local_surface_id2, MakeCompositorFrame());
+  support2->SubmitCompositorFrame(local_surface_id2,
+                                  cc::test::MakeCompositorFrame());
   DCHECK(GetSurfaceForId(id2));
   GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
+      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
   support2->EvictCurrentSurface();
   DCHECK(!GetSurfaceForId(id2));
 }
 
-// Tests that Surface ID namespace invalidation correctly allows
+// Tests that SurfaceId namespace invalidation correctly allows
 // Sequences to be ignored.
 TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
-  viz::FrameSinkId frame_sink_id(1234, 5678);
+  FrameSinkId frame_sink_id(1234, 5678);
 
-  viz::LocalSurfaceId local_surface_id(5, kArbitraryToken);
-  viz::SurfaceId id(support_->frame_sink_id(), local_surface_id);
-  support_->SubmitCompositorFrame(local_surface_id, MakeCompositorFrame());
+  LocalSurfaceId local_surface_id(5, kArbitraryToken);
+  SurfaceId id(support_->frame_sink_id(), local_surface_id);
+  support_->SubmitCompositorFrame(local_surface_id,
+                                  cc::test::MakeCompositorFrame());
 
   manager_.RegisterFrameSinkId(frame_sink_id);
   GetSurfaceForId(id)->AddDestructionDependency(
-      SurfaceSequence(frame_sink_id, 4));
+      cc::SurfaceSequence(frame_sink_id, 4));
 
   support_->EvictCurrentSurface();
 
@@ -666,74 +665,72 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
-  viz::LocalSurfaceId local_surface_id2(5, kArbitraryToken);
-  viz::SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
-  std::unique_ptr<CompositorFrameSinkSupport> support2 =
-      CompositorFrameSinkSupport::Create(
-          &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-          kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id2(5, kArbitraryToken);
+  SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
+  auto support2 = CompositorFrameSinkSupport::Create(
+      &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
+      kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
   manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   // Give local_surface_id_ an initial frame so another client can refer to
   // that surface.
   {
-    CompositorFrame frame = MakeCompositorFrame();
+    auto frame = cc::test::MakeCompositorFrame();
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
   // Give id2 a frame that references local_surface_id_.
   {
-    CompositorFrame frame = MakeCompositorFrame();
+    auto frame = cc::test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(
-        viz::SurfaceId(support_->frame_sink_id(), local_surface_id_));
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support2->SubmitCompositorFrame(local_surface_id2, std::move(frame));
     EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
               local_surface_id2);
   }
   GetSurfaceForId(id2)->AddDestructionDependency(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
   support2->EvictCurrentSurface();
   // Give local_surface_id_ a frame that references id2.
   {
-    CompositorFrame frame = MakeCompositorFrame();
+    auto frame = cc::test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(id2);
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   }
   support_->EvictCurrentSurface();
   EXPECT_TRUE(GetSurfaceForId(id2));
   // local_surface_id_ should be retained by reference from id2.
-  EXPECT_TRUE(GetSurfaceForId(
-      viz::SurfaceId(support_->frame_sink_id(), local_surface_id_)));
+  EXPECT_TRUE(
+      GetSurfaceForId(SurfaceId(support_->frame_sink_id(), local_surface_id_)));
 
   // Satisfy last destruction dependency for id2.
   manager_.surface_manager()->SatisfySequence(
-      SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
+      cc::SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
   // id2 and local_surface_id_ are in a reference cycle that has no surface
   // sequences holding on to it, so they should be destroyed.
   EXPECT_TRUE(!GetSurfaceForId(id2));
   EXPECT_TRUE(!GetSurfaceForId(
-      viz::SurfaceId(support_->frame_sink_id(), local_surface_id_)));
+      SurfaceId(support_->frame_sink_id(), local_surface_id_)));
 
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_ = LocalSurfaceId();
 }
 
 void CopyRequestTestCallback(bool* called,
-                             std::unique_ptr<CopyOutputResult> result) {
+                             std::unique_ptr<cc::CopyOutputResult> result) {
   *called = true;
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   {
-    CompositorFrame frame = MakeCompositorFrame();
+    auto frame = cc::test::MakeCompositorFrame();
     frame.metadata.referenced_surfaces.push_back(
-        viz::SurfaceId(support_->frame_sink_id(), local_surface_id_));
+        SurfaceId(support_->frame_sink_id(), local_surface_id_));
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
     EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
               local_surface_id_);
   }
 
   bool called1 = false;
-  std::unique_ptr<CopyOutputRequest> request;
-  request = CopyOutputRequest::CreateRequest(
+  auto request = cc::CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called1));
   request->set_source(kArbitrarySourceId1);
 
@@ -741,7 +738,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called1);
 
   bool called2 = false;
-  request = CopyOutputRequest::CreateRequest(
+  request = cc::CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called2));
   request->set_source(kArbitrarySourceId2);
 
@@ -751,7 +748,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
 
   bool called3 = false;
-  request = CopyOutputRequest::CreateRequest(
+  request = cc::CopyOutputRequest::CreateRequest(
       base::Bind(&CopyRequestTestCallback, &called3));
   request->set_source(kArbitrarySourceId1);
 
@@ -762,7 +759,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called3);
 
   support_->EvictCurrentSurface();
-  local_surface_id_ = viz::LocalSurfaceId();
+  local_surface_id_ = LocalSurfaceId();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);
@@ -771,21 +768,20 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
 // Check whether the SurfaceInfo object is created and populated correctly
 // after the frame submission.
 TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
-  CompositorFrame frame = MakeCompositorFrame();
+  auto frame = cc::test::MakeCompositorFrame();
 
-  auto render_pass = RenderPass::Create();
+  auto render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass));
 
-  render_pass = RenderPass::Create();
+  render_pass = cc::RenderPass::Create();
   render_pass->SetNew(2, gfx::Rect(7, 8), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass));
 
   frame.metadata.device_scale_factor = 2.5f;
 
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
-  viz::SurfaceId expected_surface_id(support_->frame_sink_id(),
-                                     local_surface_id_);
+  SurfaceId expected_surface_id(support_->frame_sink_id(), local_surface_id_);
   EXPECT_EQ(expected_surface_id, surface_observer_.last_surface_info().id());
   EXPECT_EQ(2.5f, surface_observer_.last_surface_info().device_scale_factor());
   EXPECT_EQ(gfx::Size(7, 8),
@@ -795,9 +791,9 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
 // Check that if a CompositorFrame is received with size zero, we don't create
 // a Surface for it.
 TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
-  viz::SurfaceId id(support_->frame_sink_id(), local_surface_id_);
-  CompositorFrame frame = MakeEmptyCompositorFrame();
-  frame.render_pass_list.push_back(RenderPass::Create());
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  auto frame = cc::test::MakeEmptyCompositorFrame();
+  frame.render_pass_list.push_back(cc::RenderPass::Create());
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
   EXPECT_FALSE(GetSurfaceForId(id));
@@ -806,8 +802,8 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
 // Check that if a CompositorFrame is received with device scale factor of 0, we
 // don't create a Surface for it.
 TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
-  viz::SurfaceId id(support_->frame_sink_id(), local_surface_id_);
-  CompositorFrame frame = MakeCompositorFrame();
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  auto frame = cc::test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.f;
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -817,11 +813,11 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
 // Check that if the size of a CompositorFrame doesn't match the size of the
 // Surface it's being submitted to, we skip the frame.
 TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
-  viz::SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
 
   // Submit a frame with size (5,5).
-  CompositorFrame frame = MakeEmptyCompositorFrame();
-  auto pass = RenderPass::Create();
+  auto frame = cc::test::MakeEmptyCompositorFrame();
+  auto pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 5), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   EXPECT_TRUE(
@@ -830,8 +826,8 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
 
   // Submit a frame with size (5,4). This frame should be rejected and the
   // surface should be destroyed.
-  frame = MakeEmptyCompositorFrame();
-  pass = RenderPass::Create();
+  frame = cc::test::MakeEmptyCompositorFrame();
+  pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 4), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   EXPECT_FALSE(
@@ -843,10 +839,10 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
 // device scale factor of the Surface it's being submitted to, the frame is
 // rejected and the surface is destroyed.
 TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
-  viz::SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
 
   // Submit a frame with device scale factor of 0.5.
-  CompositorFrame frame = MakeCompositorFrame();
+  auto frame = cc::test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.5f;
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -854,7 +850,7 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
 
   // Submit a frame with device scale factor of 0.4. This frame should be
   // rejected and the surface should be destroyed.
-  frame = MakeCompositorFrame();
+  frame = cc::test::MakeCompositorFrame();
   frame.metadata.device_scale_factor = 0.4f;
   EXPECT_FALSE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
@@ -866,25 +862,25 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   support_->SetNeedsBeginFrame(true);
 
   // Issue a BeginFrame.
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  cc::BeginFrameArgs args =
+      cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   begin_frame_source_.TestOnBeginFrame(args);
 
   // Check that the support and SurfaceManager forward the BeginFrameAck
   // attached to a CompositorFrame to the SurfaceObserver.
-  BeginFrameAck ack(0, 1, 1, true);
-  CompositorFrame frame = MakeCompositorFrame();
+  cc::BeginFrameAck ack(0, 1, 1, true);
+  auto frame = cc::test::MakeCompositorFrame();
   frame.metadata.begin_frame_ack = ack;
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
   EXPECT_EQ(ack, surface_observer_.last_ack());
 
   // Issue another BeginFrame.
-  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
+  args = cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
   begin_frame_source_.TestOnBeginFrame(args);
 
   // Check that the support and SurfaceManager forward a DidNotProduceFrame ack
   // to the SurfaceObserver.
-  BeginFrameAck ack2(0, 2, 2, false);
+  cc::BeginFrameAck ack2(0, 2, 2, false);
   support_->DidNotProduceFrame(ack2);
   EXPECT_EQ(ack2, surface_observer_.last_ack());
 
@@ -892,7 +888,4 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
 }
 
 }  // namespace
-
-}  // namespace test
-
-}  // namespace cc
+}  // namespace viz

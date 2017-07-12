@@ -4,7 +4,7 @@
 
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
-#include "base/test/scoped_task_environment.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
@@ -169,7 +169,6 @@ class ServerGpuMemoryBufferManagerTest : public ::testing::Test {
   void TearDown() override { gfx::ClientNativePixmapFactory::ResetInstance(); }
 
  private:
-  base::test::ScopedTaskEnvironment env_;
   FakeClientNativePixmapFactory pixmap_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManagerTest);

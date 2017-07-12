@@ -5,14 +5,14 @@
 #ifndef CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 #define CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "components/viz/common/local_surface_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
 class FakeCompositorFrameSinkSupportClient
-    : public CompositorFrameSinkSupportClient {
+    : public viz::CompositorFrameSinkSupportClient {
  public:
   FakeCompositorFrameSinkSupportClient();
   ~FakeCompositorFrameSinkSupportClient() override;

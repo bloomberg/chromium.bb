@@ -185,7 +185,7 @@ TEST_F(WindowTreeClientWmTest, SetBoundsFailed) {
 // reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientWmTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
+  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
   window.SetProperty(aura::client::kEmbedType,
                      aura::client::WindowEmbedType::EMBED_IN_OWNER);
@@ -216,7 +216,7 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
 TEST_P(WindowTreeClientWmTestSurfaceSync,
        ClientSurfaceEmbedderOnValidEmbedding) {
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
+  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
   window.SetProperty(aura::client::kEmbedType,
                      aura::client::WindowEmbedType::EMBED_IN_OWNER);
@@ -291,7 +291,7 @@ TEST_P(WindowTreeClientWmTestSurfaceSync,
 TEST_P(WindowTreeClientWmTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
   ASSERT_EQ(base::nullopt, window_tree()->last_local_surface_id());
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
+  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
   window.SetProperty(aura::client::kEmbedType,
                      aura::client::WindowEmbedType::EMBED_IN_OWNER);

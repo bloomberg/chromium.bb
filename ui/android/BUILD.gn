@@ -62,6 +62,7 @@ component("android") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/viz/service",
     "//skia",
     "//ui/base",
     "//ui/display",

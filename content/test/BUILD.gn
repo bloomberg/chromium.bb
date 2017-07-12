@@ -250,9 +250,6 @@ static_library("test_support") {
     "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//components/leveldb/public/interfaces",
-    "//components/viz/common",
-    "//components/viz/host",
-    "//components/viz/service",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/speech/proto",
@@ -370,6 +367,9 @@ static_library("test_support") {
 
   if (use_aura || is_mac) {
     deps += [
+      "//components/viz/common",
+      "//components/viz/host",
+      "//components/viz/service",
       "//third_party/libvpx",
       "//ui/compositor",
     ]
@@ -508,7 +508,7 @@ static_library("layouttest_support") {
   deps = [
     ":test_support",
     "//cc",
-    "//cc/blink",
+    "//components/viz/test:test_support",
     "//content/browser:for_content_tests",
     "//content/child:for_content_tests",
     "//content/public/common",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/display.h"
+#include "components/viz/service/display/display.h"
 
 #include <stddef.h>
 
@@ -18,11 +18,11 @@
 #include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display_client.h"
-#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/viz/service/display/display_client.h"
+#include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/surface_aggregator.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/vulkan/features.h"
 #include "ui/gfx/buffer_types.h"
@@ -31,15 +31,16 @@
 #include "cc/output/vulkan_renderer.h"
 #endif
 
-namespace cc {
+namespace viz {
 
-Display::Display(viz::SharedBitmapManager* bitmap_manager,
-                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                 const RendererSettings& settings,
-                 const viz::FrameSinkId& frame_sink_id,
-                 std::unique_ptr<OutputSurface> output_surface,
-                 std::unique_ptr<DisplayScheduler> scheduler,
-                 std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
+Display::Display(
+    SharedBitmapManager* bitmap_manager,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const cc::RendererSettings& settings,
+    const FrameSinkId& frame_sink_id,
+    std::unique_ptr<cc::OutputSurface> output_surface,
+    std::unique_ptr<DisplayScheduler> scheduler,
+    std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter)
     : bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
@@ -63,7 +64,7 @@ Display::~Display() {
   }
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      cc::Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface)
         surface->RunDrawCallback();
     }
@@ -71,7 +72,7 @@ Display::~Display() {
 }
 
 void Display::Initialize(DisplayClient* client,
-                         SurfaceManager* surface_manager) {
+                         cc::SurfaceManager* surface_manager) {
   DCHECK(client);
   DCHECK(surface_manager);
   client_ = client;
@@ -94,15 +95,15 @@ void Display::Initialize(DisplayClient* client,
   }
 }
 
-void Display::SetLocalSurfaceId(const viz::LocalSurfaceId& id,
+void Display::SetLocalSurfaceId(const LocalSurfaceId& id,
                                 float device_scale_factor) {
   if (current_surface_id_.local_surface_id() == id &&
       device_scale_factor_ == device_scale_factor) {
     return;
   }
 
-  TRACE_EVENT0("cc", "Display::SetSurfaceId");
-  current_surface_id_ = viz::SurfaceId(frame_sink_id_, id);
+  TRACE_EVENT0("viz", "Display::SetSurfaceId");
+  current_surface_id_ = SurfaceId(frame_sink_id_, id);
   device_scale_factor_ = device_scale_factor;
 
   UpdateRootSurfaceResourcesLocked();
@@ -111,7 +112,7 @@ void Display::SetLocalSurfaceId(const viz::LocalSurfaceId& id,
 }
 
 void Display::SetVisible(bool visible) {
-  TRACE_EVENT1("cc", "Display::SetVisible", "visible", visible);
+  TRACE_EVENT1("viz", "Display::SetVisible", "visible", visible);
   if (renderer_)
     renderer_->SetVisible(visible);
   if (scheduler_)
@@ -130,7 +131,7 @@ void Display::Resize(const gfx::Size& size) {
   if (size == current_surface_size_)
     return;
 
-  TRACE_EVENT0("cc", "Display::Resize");
+  TRACE_EVENT0("viz", "Display::Resize");
 
   // Need to ensure all pending swaps have executed before the window is
   // resized, or D3D11 will scale the swap output.
@@ -172,27 +173,27 @@ void Display::SetOutputIsSecure(bool secure) {
 void Display::InitializeRenderer() {
   // Not relevant for display compositor since it's not delegated.
   constexpr bool delegated_sync_points_required = false;
-  resource_provider_.reset(new ResourceProvider(
+  resource_provider_ = base::MakeUnique<cc::ResourceProvider>(
       output_surface_->context_provider(), bitmap_manager_,
       gpu_memory_buffer_manager_, nullptr, delegated_sync_points_required,
-      settings_.enable_color_correct_rendering, settings_.resource_settings));
+      settings_.enable_color_correct_rendering, settings_.resource_settings);
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
-    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
-                                             resource_provider_.get(),
-                                             texture_mailbox_deleter_.get());
+    renderer_ = base::MakeUnique<cc::GLRenderer>(
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        texture_mailbox_deleter_.get());
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);
-    renderer_ = base::MakeUnique<VulkanRenderer>(
+    renderer_ = base::MakeUnique<cc::VulkanRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
 #else
     NOTREACHED();
 #endif
   } else {
-    auto renderer = base::MakeUnique<SoftwareRenderer>(
+    auto renderer = base::MakeUnique<cc::SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
@@ -212,7 +213,7 @@ void Display::InitializeRenderer() {
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
-  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
+  cc::Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
   bool root_surface_resources_locked = !surface || !surface->HasActiveFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
@@ -227,32 +228,32 @@ void Display::DidLoseContextProvider() {
 }
 
 bool Display::DrawAndSwap() {
-  TRACE_EVENT0("cc", "Display::DrawAndSwap");
+  TRACE_EVENT0("viz", "Display::DrawAndSwap");
 
   if (!current_surface_id_.is_valid()) {
-    TRACE_EVENT_INSTANT0("cc", "No root surface.", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "No root surface.", TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
   if (!output_surface_) {
-    TRACE_EVENT_INSTANT0("cc", "No output surface", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "No output surface", TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
   base::ElapsedTimer aggregate_timer;
-  CompositorFrame frame = aggregator_->Aggregate(current_surface_id_);
+  cc::CompositorFrame frame = aggregator_->Aggregate(current_surface_id_);
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
   if (frame.render_pass_list.empty()) {
-    TRACE_EVENT_INSTANT0("cc", "Empty aggregated frame.",
+    TRACE_EVENT_INSTANT0("viz", "Empty aggregated frame.",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
   // Run callbacks early to allow pipelining.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-    Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+    cc::Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
     if (surface)
       surface->RunDrawCallback();
   }
@@ -268,7 +269,7 @@ bool Display::DrawAndSwap() {
 
   gfx::Size surface_size;
   bool have_damage = false;
-  RenderPass& last_render_pass = *frame.render_pass_list.back();
+  auto& last_render_pass = *frame.render_pass_list.back();
   if (last_render_pass.output_rect.size() != current_surface_size_ &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
       !current_surface_size_.IsEmpty()) {
@@ -282,14 +283,14 @@ bool Display::DrawAndSwap() {
 
   bool size_matches = surface_size == current_surface_size_;
   if (!size_matches)
-    TRACE_EVENT_INSTANT0("cc", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
   bool should_draw = have_copy_requests || (have_damage && size_matches);
 
   // If the surface is suspended then the resources to be used by the draw are
   // likely destroyed.
   if (output_surface_->SurfaceIsSuspendForRecycle()) {
-    TRACE_EVENT_INSTANT0("cc", "Surface is suspended for recycle.",
+    TRACE_EVENT_INSTANT0("viz", "Surface is suspended for recycle.",
                          TRACE_EVENT_SCOPE_THREAD);
     should_draw = false;
   }
@@ -319,7 +320,7 @@ bool Display::DrawAndSwap() {
                               draw_timer.Elapsed().InMicroseconds());
     }
   } else {
-    TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
 
   bool should_swap = should_draw && size_matches;
@@ -332,14 +333,14 @@ bool Display::DrawAndSwap() {
           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
           "Display::DrawAndSwap");
     }
-    benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
+    cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
   } else {
     if (have_damage && !size_matches)
       aggregator_->SetFullDamageForSurface(current_surface_id_);
-    TRACE_EVENT_INSTANT0("cc", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
     // Do not store more that the allowed size.
     if (ui::LatencyInfo::Verify(frame.metadata.latency_info,
@@ -375,19 +376,19 @@ void Display::DidReceiveTextureInUseResponses(
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
   if (scheduler_) {
-    BeginFrameAck ack;
+    cc::BeginFrameAck ack;
     ack.has_damage = true;
     scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
   }
 }
 
-bool Display::SurfaceDamaged(const viz::SurfaceId& surface_id,
-                             const BeginFrameAck& ack) {
+bool Display::SurfaceDamaged(const SurfaceId& surface_id,
+                             const cc::BeginFrameAck& ack) {
   bool display_damaged = false;
   if (ack.has_damage) {
     if (aggregator_ &&
         aggregator_->previous_contained_surfaces().count(surface_id)) {
-      Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+      cc::Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
       if (surface) {
         DCHECK(surface->HasActiveFrame());
         if (surface->GetActiveFrame().resource_list.empty())
@@ -405,23 +406,23 @@ bool Display::SurfaceDamaged(const viz::SurfaceId& surface_id,
   return display_damaged;
 }
 
-void Display::SurfaceDiscarded(const viz::SurfaceId& surface_id) {
+void Display::SurfaceDiscarded(const SurfaceId& surface_id) {
   if (aggregator_)
     aggregator_->ReleaseResources(surface_id);
 }
 
-bool Display::SurfaceHasUndrawnFrame(const viz::SurfaceId& surface_id) const {
+bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
   if (!surface_manager_)
     return false;
 
-  Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
+  cc::Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
   if (!surface)
     return false;
 
   return surface->HasUndrawnActiveFrame();
 }
 
-const viz::SurfaceId& Display::CurrentSurfaceId() {
+const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;
 }
 
@@ -430,4 +431,4 @@ void Display::ForceImmediateDrawAndSwapIfPossible() {
     scheduler_->ForceImmediateSwapIfPossible();
 }
 
-}  // namespace cc
+}  // namespace viz

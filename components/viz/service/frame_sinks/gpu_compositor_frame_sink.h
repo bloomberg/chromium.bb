@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "components/viz/common/local_surface_id.h"
 #include "components/viz/common/surface_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -22,7 +22,7 @@ namespace viz {
 
 // Server side representation of a WindowSurface.
 class GpuCompositorFrameSink
-    : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
+    : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate) {
  public:
@@ -48,7 +48,7 @@ class GpuCompositorFrameSink
       std::unique_ptr<cc::CopyOutputRequest> request) override;
 
  private:
-  // cc::CompositorFrameSinkSupportClient implementation:
+  // CompositorFrameSinkSupportClient implementation:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -61,7 +61,7 @@ class GpuCompositorFrameSink
   void OnPrivateConnectionLost();
 
   GpuCompositorFrameSinkDelegate* const delegate_;
-  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;

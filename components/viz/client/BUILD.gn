@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("client") {
+import("//components/viz/viz.gni")
+
+viz_source_set("client") {
   sources = [
     "client_layer_tree_frame_sink.cc",
     "client_layer_tree_frame_sink.h",

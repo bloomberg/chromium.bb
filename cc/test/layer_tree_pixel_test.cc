@@ -16,14 +16,14 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/software_output_device.h"
-#include "cc/test/paths.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/test/paths.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
 
@@ -38,7 +38,7 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
-std::unique_ptr<TestLayerTreeFrameSink>
+std::unique_ptr<viz::TestLayerTreeFrameSink>
 LayerTreePixelTest::CreateLayerTreeFrameSink(
     const RendererSettings& renderer_settings,
     double refresh_rate,
@@ -55,11 +55,12 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   bool synchronous_composite =
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-  auto delegating_output_surface = base::MakeUnique<TestLayerTreeFrameSink>(
-      compositor_context_provider, std::move(worker_context_provider),
-      shared_bitmap_manager(), gpu_memory_buffer_manager(), RendererSettings(),
-      ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
-      refresh_rate);
+  auto delegating_output_surface =
+      base::MakeUnique<viz::TestLayerTreeFrameSink>(
+          compositor_context_provider, std::move(worker_context_provider),
+          shared_bitmap_manager(), gpu_memory_buffer_manager(),
+          RendererSettings(), ImplThreadTaskRunner(), synchronous_composite,
+          disable_display_vsync, refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
@@ -109,7 +110,7 @@ void LayerTreePixelTest::BeginTest() {
 
 void LayerTreePixelTest::AfterTest() {
   base::FilePath test_data_dir;
-  EXPECT_TRUE(PathService::Get(CCPaths::DIR_TEST_DATA, &test_data_dir));
+  EXPECT_TRUE(PathService::Get(viz::Paths::DIR_TEST_DATA, &test_data_dir));
   base::FilePath ref_file_path = test_data_dir.Append(ref_file_);
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();

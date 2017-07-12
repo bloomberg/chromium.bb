@@ -40,16 +40,16 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
-#include "cc/surfaces/direct_layer_tree_frame_sink.h"
-#include "cc/surfaces/display.h"
-#include "cc/surfaces/display_scheduler.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/frame_sink_id_allocator.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/display/display.h"
+#include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -791,7 +791,7 @@ void CompositorImpl::OnGpuChannelEstablished(
     return;
   }
 
-  // Unretained is safe this owns cc::Display which owns OutputSurface.
+  // Unretained is safe this owns viz::Display which owns OutputSurface.
   auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
       context_provider,
       base::Bind(&CompositorImpl::DidSwapBuffers, base::Unretained(this)));
@@ -816,9 +816,9 @@ void CompositorImpl::InitializeDisplay(
 
   cc::FrameSinkManager* manager = GetFrameSinkManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+  auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       root_window_->GetBeginFrameSource(), task_runner,
-      display_output_surface->capabilities().max_frames_pending));
+      display_output_surface->capabilities().max_frames_pending);
 
   cc::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
@@ -828,18 +828,18 @@ void CompositorImpl::InitializeDisplay(
   auto* gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                         ->gpu_channel_establish_factory()
                                         ->GetGpuMemoryBufferManager();
-  display_.reset(new cc::Display(
+  display_ = base::MakeUnique<viz::Display>(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
       std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
+      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
 
   auto layer_tree_frame_sink =
       vulkan_context_provider
-          ? base::MakeUnique<cc::DirectLayerTreeFrameSink>(
+          ? base::MakeUnique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(),
                 vulkan_context_provider)
-          : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
+          : base::MakeUnique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
                 nullptr /* worker_context_provider */,
                 gpu_memory_buffer_manager,

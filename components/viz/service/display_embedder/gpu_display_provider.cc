@@ -13,8 +13,8 @@
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display.h"
-#include "cc/surfaces/display_scheduler.h"
+#include "components/viz/service/display/display.h"
+#include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -51,7 +51,7 @@ GpuDisplayProvider::GpuDisplayProvider(
 
 GpuDisplayProvider::~GpuDisplayProvider() = default;
 
-std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
+std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) {
@@ -87,7 +87,7 @@ std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
       display_output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  auto scheduler = base::MakeUnique<cc::DisplayScheduler>(
+  auto scheduler = base::MakeUnique<DisplayScheduler>(
       synthetic_begin_frame_source.get(), task_runner_.get(),
       max_frames_pending);
 
@@ -99,7 +99,7 @@ std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
   // The ownership of the BeginFrameSource is transfered to the caller.
   *begin_frame_source = std::move(synthetic_begin_frame_source);
 
-  return base::MakeUnique<cc::Display>(
+  return base::MakeUnique<Display>(
       ServerSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
       settings, frame_sink_id, std::move(display_output_surface),
       std::move(scheduler),

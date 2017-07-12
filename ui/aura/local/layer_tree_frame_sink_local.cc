@@ -5,7 +5,7 @@
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
 
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -31,7 +31,7 @@ bool LayerTreeFrameSinkLocal::BindToClient(
   DCHECK(!thread_checker_);
   thread_checker_ = base::MakeUnique<base::ThreadChecker>();
 
-  support_ = cc::CompositorFrameSinkSupport::Create(
+  support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_, frame_sink_id_, false /* is_root */,
       true /* handles_frame_sink_id_invalidation */,
       true /* needs_sync_points */);

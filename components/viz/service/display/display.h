@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_DISPLAY_H_
-#define CC_SURFACES_DISPLAY_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_H_
 
 #include <memory>
 #include <vector>
@@ -12,15 +12,24 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/surfaces/surfaces_export.h"
 #include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/surface_id.h"
+#include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 #include "ui/latency/latency_info.h"
+
+namespace cc {
+class DirectRenderer;
+class OutputSurface;
+class RendererSettings;
+class ResourceProvider;
+class SoftwareRenderer;
+class TextureMailboxDeleter;
+}  // namespace cc
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -31,57 +40,47 @@ class Size;
 }
 
 namespace viz {
-class SharedBitmapManager;
-}
 
-namespace cc {
-
-class DirectRenderer;
 class DisplayClient;
-class OutputSurface;
-class RendererSettings;
-class ResourceProvider;
-class SoftwareRenderer;
-class TextureMailboxDeleter;
+class SharedBitmapManager;
 
 // A Display produces a surface that can be used to draw to a physical display
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
-class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
-                                   public OutputSurfaceClient {
+class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
+                                   public cc::OutputSurfaceClient {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
-  Display(viz::SharedBitmapManager* bitmap_manager,
+  Display(SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-          const RendererSettings& settings,
-          const viz::FrameSinkId& frame_sink_id,
-          std::unique_ptr<OutputSurface> output_surface,
+          const cc::RendererSettings& settings,
+          const FrameSinkId& frame_sink_id,
+          std::unique_ptr<cc::OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
-          std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter);
+          std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter);
 
   ~Display() override;
 
-  void Initialize(DisplayClient* client, SurfaceManager* surface_manager);
+  void Initialize(DisplayClient* client, cc::SurfaceManager* surface_manager);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
-  void SetLocalSurfaceId(const viz::LocalSurfaceId& id,
-                         float device_scale_factor);
+  void SetLocalSurfaceId(const LocalSurfaceId& id, float device_scale_factor);
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
   void SetColorSpace(const gfx::ColorSpace& blending_color_space,
                      const gfx::ColorSpace& device_color_space);
   void SetOutputIsSecure(bool secure);
 
-  const viz::SurfaceId& CurrentSurfaceId();
+  const SurfaceId& CurrentSurfaceId();
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
-  bool SurfaceHasUndrawnFrame(const viz::SurfaceId& surface_id) const override;
-  bool SurfaceDamaged(const viz::SurfaceId& surface_id,
-                      const BeginFrameAck& ack) override;
-  void SurfaceDiscarded(const viz::SurfaceId& surface_id) override;
+  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
+  bool SurfaceDamaged(const SurfaceId& surface_id,
+                      const cc::BeginFrameAck& ack) override;
+  void SurfaceDiscarded(const SurfaceId& surface_id) override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
@@ -90,7 +89,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
       const gpu::TextureInUseResponses& responses) override;
 
   bool has_scheduler() const { return !!scheduler_; }
-  DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
+  cc::DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
   size_t stored_latency_info_size_for_testing() const {
     return stored_latency_info_.size();
   }
@@ -102,14 +101,14 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void UpdateRootSurfaceResourcesLocked();
   void DidLoseContextProvider();
 
-  viz::SharedBitmapManager* const bitmap_manager_;
+  SharedBitmapManager* const bitmap_manager_;
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
-  const RendererSettings settings_;
+  const cc::RendererSettings settings_;
 
   DisplayClient* client_ = nullptr;
-  SurfaceManager* surface_manager_ = nullptr;
-  const viz::FrameSinkId frame_sink_id_;
-  viz::SurfaceId current_surface_id_;
+  cc::SurfaceManager* surface_manager_ = nullptr;
+  const FrameSinkId frame_sink_id_;
+  SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
   gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
@@ -118,19 +117,19 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
-  std::unique_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<cc::OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
-  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
-  std::unique_ptr<DirectRenderer> renderer_;
-  SoftwareRenderer* software_renderer_ = nullptr;
+  std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter_;
+  std::unique_ptr<cc::DirectRenderer> renderer_;
+  cc::SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_DISPLAY_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_H_

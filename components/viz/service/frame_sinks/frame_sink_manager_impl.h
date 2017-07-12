@@ -105,7 +105,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // access to a valid pointer for the entirety of their lifetimes.
   cc::FrameSinkManager manager_;
 
-  // Provides a cc::Display for CreateRootCompositorFrameSink().
+  // Provides a Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
   std::unordered_map<FrameSinkId,

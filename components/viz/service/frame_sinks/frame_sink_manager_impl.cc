@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "cc/base/switches.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display.h"
+#include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink.h"
 #include "components/viz/service/frame_sinks/gpu_root_compositor_frame_sink.h"
@@ -55,8 +55,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   DCHECK(display_provider_);
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
-  std::unique_ptr<cc::Display> display = display_provider_->CreateDisplay(
-      frame_sink_id, surface_handle, &begin_frame_source);
+  auto display = display_provider_->CreateDisplay(frame_sink_id, surface_handle,
+                                                  &begin_frame_source);
 
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<GpuRootCompositorFrameSink>(

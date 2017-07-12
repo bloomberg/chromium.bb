@@ -19,7 +19,7 @@
 #include "cc/base/switches.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -293,7 +293,7 @@ namespace {
 class CopyRequestSwapPromise : public cc::SwapPromise {
  public:
   using FindLayerTreeFrameSinkCallback =
-      base::Callback<cc::TestLayerTreeFrameSink*()>;
+      base::Callback<viz::TestLayerTreeFrameSink*()>;
   CopyRequestSwapPromise(
       std::unique_ptr<cc::CopyOutputRequest> request,
       FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback)
@@ -323,13 +323,13 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
  private:
   std::unique_ptr<cc::CopyOutputRequest> copy_request_;
   FindLayerTreeFrameSinkCallback find_layer_tree_frame_sink_callback_;
-  cc::TestLayerTreeFrameSink* layer_tree_frame_sink_from_commit_ = nullptr;
+  viz::TestLayerTreeFrameSink* layer_tree_frame_sink_from_commit_ = nullptr;
 };
 
 }  // namespace
 
 class LayoutTestDependenciesImpl : public LayoutTestDependencies,
-                                   public cc::TestLayerTreeFrameSinkClient {
+                                   public viz::TestLayerTreeFrameSinkClient {
  public:
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
@@ -358,7 +358,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;
-    auto layer_tree_frame_sink = base::MakeUnique<cc::TestLayerTreeFrameSink>(
+    auto layer_tree_frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
         gpu_memory_buffer_manager, renderer_settings, task_runner,
@@ -425,7 +425,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   void DisplayDidDrawAndSwap() override {}
 
  private:
-  cc::TestLayerTreeFrameSink* FindLayerTreeFrameSink(int32_t routing_id) {
+  viz::TestLayerTreeFrameSink* FindLayerTreeFrameSink(int32_t routing_id) {
     auto it = layer_tree_frame_sinks_.find(routing_id);
     return it == layer_tree_frame_sinks_.end() ? nullptr : it->second;
   }
@@ -434,7 +434,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   // layout tests, so this memory usage does not occur in production.
   // Entries in this map will outlive the output surface, because this object is
   // owned by RenderThreadImpl, which outlives layout test execution.
-  std::unordered_map<int32_t, cc::TestLayerTreeFrameSink*>
+  std::unordered_map<int32_t, viz::TestLayerTreeFrameSink*>
       layer_tree_frame_sinks_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 };

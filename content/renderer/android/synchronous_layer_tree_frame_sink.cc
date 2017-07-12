@@ -23,10 +23,10 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/service/display/display.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/android/synchronous_compositor_filter.h"
@@ -176,10 +176,10 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   constexpr bool child_support_is_root = false;
   constexpr bool handles_frame_sink_id_invalidation = true;
   constexpr bool needs_sync_points = true;
-  root_support_ = cc::CompositorFrameSinkSupport::Create(
+  root_support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_.get(), kRootFrameSinkId, root_support_is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
-  child_support_ = cc::CompositorFrameSinkSupport::Create(
+  child_support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_.get(), kChildFrameSinkId, child_support_is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 
@@ -196,10 +196,10 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   // resources.
   // TODO(crbug.com/692814): The Display never sends its resources out of
   // process so there is no reason for it to use a SharedBitmapManager.
-  display_.reset(new cc::Display(
+  display_ = base::MakeUnique<viz::Display>(
       shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
       software_renderer_settings, kRootFrameSinkId, std::move(output_surface),
-      nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
+      nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */);
   display_->Initialize(&display_client_,
                        frame_sink_manager_->surface_manager());
   display_->SetVisible(true);

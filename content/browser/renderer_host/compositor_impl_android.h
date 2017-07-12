@@ -33,7 +33,6 @@ struct ANativeWindow;
 
 namespace cc {
 class AnimationHost;
-class Display;
 class FrameSinkId;
 class FrameSinkManager;
 class Layer;
@@ -43,6 +42,7 @@ class VulkanContextProvider;
 }
 
 namespace viz {
+class Display;
 class HostFrameSinkManager;
 }
 
@@ -154,7 +154,7 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<viz::Display> display_;
 
   gfx::ColorSpace display_color_space_;
   gfx::Size size_;

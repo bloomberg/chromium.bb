@@ -22,13 +22,13 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/paths.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "components/viz/test/paths.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -138,7 +138,7 @@ void PixelTest::ReadbackResult(base::Closure quit_run_loop,
 bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
                                      const PixelComparator& comparator) {
   base::FilePath test_data_dir;
-  if (!PathService::Get(CCPaths::DIR_TEST_DATA, &test_data_dir))
+  if (!PathService::Get(viz::Paths::DIR_TEST_DATA, &test_data_dir))
     return false;
 
   // If this is false, we didn't set up a readback on a render pass.

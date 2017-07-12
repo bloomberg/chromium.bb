@@ -27,18 +27,8 @@ cc_source_set("surface_id") {
 cc_component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
-    "compositor_frame_sink_support.cc",
-    "compositor_frame_sink_support.h",
-    "compositor_frame_sink_support_client.h",
-    "direct_layer_tree_frame_sink.cc",
-    "direct_layer_tree_frame_sink.h",
     "direct_surface_reference_factory.cc",
     "direct_surface_reference_factory.h",
-    "display.cc",
-    "display.h",
-    "display_client.h",
-    "display_scheduler.cc",
-    "display_scheduler.h",
     "frame_sink_manager.cc",
     "frame_sink_manager.h",
     "frame_sink_manager_client.h",
@@ -52,8 +42,6 @@ cc_component("surfaces") {
     "stub_surface_reference_factory.h",
     "surface.cc",
     "surface.h",
-    "surface_aggregator.cc",
-    "surface_aggregator.h",
     "surface_client.h",
     "surface_deadline_observer.h",
     "surface_dependency_deadline.cc",

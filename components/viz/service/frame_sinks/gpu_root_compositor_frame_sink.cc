@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_manager.h"
+#include "components/viz/service/display/display.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 namespace viz {
 
@@ -16,7 +16,7 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
     cc::FrameSinkManager* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
-    std::unique_ptr<cc::Display> display,
+    std::unique_ptr<Display> display,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest
@@ -24,7 +24,7 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
     : delegate_(delegate),
-      support_(cc::CompositorFrameSinkSupport::Create(
+      support_(CompositorFrameSinkSupport::Create(
           this,
           frame_sink_manager,
           frame_sink_id,

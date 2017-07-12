@@ -9,37 +9,37 @@
 
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/display_client.h"
 #include "components/viz/common/local_surface_id.h"
 #include "components/viz/common/surface_id.h"
+#include "components/viz/service/display/display_client.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace cc {
 class BeginFrameSource;
-class CompositorFrameSinkSupport;
-class Display;
 class FrameSinkManager;
 }
 
 namespace viz {
+class CompositorFrameSinkSupport;
+class Display;
 
 class GpuCompositorFrameSinkDelegate;
 
 class GpuRootCompositorFrameSink
-    : public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
+    : public NON_EXPORTED_BASE(CompositorFrameSinkSupportClient),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSink),
       public NON_EXPORTED_BASE(cc::mojom::CompositorFrameSinkPrivate),
       public NON_EXPORTED_BASE(cc::mojom::DisplayPrivate),
-      public NON_EXPORTED_BASE(cc::DisplayClient) {
+      public NON_EXPORTED_BASE(DisplayClient) {
  public:
   GpuRootCompositorFrameSink(
       GpuCompositorFrameSinkDelegate* delegate,
       cc::FrameSinkManager* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
-      std::unique_ptr<cc::Display> display,
+      std::unique_ptr<Display> display,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -68,13 +68,13 @@ class GpuRootCompositorFrameSink
       std::unique_ptr<cc::CopyOutputRequest> request) override;
 
  private:
-  // cc::DisplayClient:
+  // DisplayClient:
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const cc::RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
 
-  // cc::CompositorFrameSinkSupportClient:
+  // CompositorFrameSinkSupportClient:
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -87,12 +87,12 @@ class GpuRootCompositorFrameSink
   void OnPrivateConnectionLost();
 
   GpuCompositorFrameSinkDelegate* const delegate_;
-  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   // GpuRootCompositorFrameSink holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.
   std::unique_ptr<cc::BeginFrameSource> display_begin_frame_source_;
-  std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<Display> display_;
 
   cc::mojom::CompositorFrameSinkClientPtr client_;
   mojo::AssociatedBinding<cc::mojom::CompositorFrameSink>

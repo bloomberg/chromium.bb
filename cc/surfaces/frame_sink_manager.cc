@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/surfaces/display.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/primary_begin_frame_source.h"
 

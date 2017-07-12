@@ -15,9 +15,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -262,7 +262,7 @@ void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
-  support_ = cc::CompositorFrameSinkSupport::Create(
+  support_ = viz::CompositorFrameSinkSupport::Create(
       this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 }

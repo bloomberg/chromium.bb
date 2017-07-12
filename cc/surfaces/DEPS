@@ -1,4 +1,11 @@
 include_rules = [
   "+components/viz/common",
+  "+components/viz/service/display",
   "+mojo/public/cpp/bindings/struct_traits.h",
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+components/viz/service/frame_sinks",
+  ],
+}

@@ -18,8 +18,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/managed_memory_policy.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/display_client.h"
+#include "components/viz/service/display/display_client.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
@@ -27,9 +27,7 @@ class SkCanvas;
 
 namespace cc {
 class BeginFrameSource;
-class CompositorFrameSinkSupport;
 class ContextProvider;
-class Display;
 class FrameSinkManager;
 }  // namespace cc
 
@@ -39,8 +37,10 @@ class Sender;
 }  // namespace IPC
 
 namespace viz {
+class CompositorFrameSinkSupport;
+class Display;
 class LocalSurfaceIdAllocator;
-}
+}  // namespace viz
 
 namespace content {
 
@@ -68,7 +68,7 @@ class SynchronousLayerTreeFrameSinkClient {
 // to a fixed thread when BindToClient is called.
 class SynchronousLayerTreeFrameSink
     : NON_EXPORTED_BASE(public cc::LayerTreeFrameSink),
-      public cc::CompositorFrameSinkSupportClient {
+      public viz::CompositorFrameSinkSupportClient {
  public:
   SynchronousLayerTreeFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -98,7 +98,7 @@ class SynchronousLayerTreeFrameSink
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
 
-  // CompositorFrameSinkSupportClient implementation.
+  // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -146,7 +146,7 @@ class SynchronousLayerTreeFrameSink
   bool fallback_tick_pending_ = false;
   bool fallback_tick_running_ = false;
 
-  class StubDisplayClient : public cc::DisplayClient {
+  class StubDisplayClient : public viz::DisplayClient {
     void DisplayOutputSurfaceLost() override {}
     void DisplayWillDrawAndSwap(
         bool will_draw_and_swap,
@@ -164,12 +164,12 @@ class SynchronousLayerTreeFrameSink
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
   // Uses frame_sink_manager_.
-  std::unique_ptr<cc::CompositorFrameSinkSupport> root_support_;
+  std::unique_ptr<viz::CompositorFrameSinkSupport> root_support_;
   // Uses frame_sink_manager_.
-  std::unique_ptr<cc::CompositorFrameSinkSupport> child_support_;
+  std::unique_ptr<viz::CompositorFrameSinkSupport> child_support_;
   StubDisplayClient display_client_;
   // Uses frame_sink_manager_.
-  std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<viz::Display> display_;
   // Owned by |display_|.
   SoftwareOutputSurface* software_output_surface_ = nullptr;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
