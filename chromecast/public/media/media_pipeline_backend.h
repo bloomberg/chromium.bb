@@ -159,8 +159,12 @@ class MediaPipelineBackend {
       uint64_t dropped_frames;  // Reported as webkitDroppedFrames.
     };
 
-    // Provides the video configuration.  Called once before the backend is
-    // initialized, and again any time the configuration changes (in any state).
+    // Provides the video configuration. Called once with the configuration for
+    // the primary stream before the backend is initialized, and the
+    // configuration may contain a pointer to additional configuration for a
+    // secondary stream. Called again with the configuration for either the
+    // primary or secondary stream when either changes after the backend is
+    // initialized.
     // Note that SetConfig() may be called before SetDelegate() is called.
     // Returns true if the configuration is a supported configuration.
     virtual bool SetConfig(const VideoConfig& config) = 0;
