@@ -689,6 +689,19 @@ bool GpuCommandBufferStub::Initialize(
       surface_ = default_surface;
     }
   } else {
+    switch (init_params.attribs.color_space) {
+      case gles2::COLOR_SPACE_UNSPECIFIED:
+        surface_format.SetColorSpace(
+            gl::GLSurfaceFormat::COLOR_SPACE_UNSPECIFIED);
+        break;
+      case gles2::COLOR_SPACE_SRGB:
+        surface_format.SetColorSpace(gl::GLSurfaceFormat::COLOR_SPACE_SRGB);
+        break;
+      case gles2::COLOR_SPACE_DISPLAY_P3:
+        surface_format.SetColorSpace(
+            gl::GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3);
+        break;
+    }
     surface_ = ImageTransportSurface::CreateNativeSurface(
         AsWeakPtr(), surface_handle_, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {

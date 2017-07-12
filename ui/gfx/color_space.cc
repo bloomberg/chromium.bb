@@ -70,6 +70,12 @@ ColorSpace ColorSpace::CreateSRGB() {
 }
 
 // static
+ColorSpace ColorSpace::CreateDisplayP3D65() {
+  return ColorSpace(PrimaryID::SMPTEST432_1, TransferID::IEC61966_2_1,
+                    MatrixID::RGB, RangeID::FULL);
+}
+
+// static
 ColorSpace ColorSpace::CreateExtendedSRGB() {
   return ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR,
                     MatrixID::RGB, RangeID::FULL);

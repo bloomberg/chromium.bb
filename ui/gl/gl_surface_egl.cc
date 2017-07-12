@@ -54,6 +54,13 @@ extern "C" {
 #define EGL_OPENGL_ES3_BIT 0x00000040
 #endif
 
+// Not present egl/eglext.h yet.
+
+#ifndef EGL_EXT_gl_colorspace_display_p3_linear
+#define EGL_EXT_gl_colorspace_display_p3_linear 1
+#define EGL_GL_COLORSPACE_DISPLAY_P3_LINEAR_EXT 0x3362
+#endif /* EGL_EXT_gl_colorspace_display_p3_linear */
+
 // From ANGLE's egl/eglext.h.
 
 #ifndef EGL_ANGLE_platform_angle
@@ -134,6 +141,8 @@ bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
 bool g_egl_context_priority_supported = false;
+bool g_egl_khr_colorspace = false;
+bool g_egl_ext_colorspace_display_p3_linear = false;
 bool g_use_direct_composition = false;
 
 class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
@@ -543,6 +552,9 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
   g_egl_surface_orientation_supported =
       HasEGLExtension("EGL_ANGLE_surface_orientation");
+  g_egl_khr_colorspace = HasEGLExtension("EGL_KHR_gl_colorspace");
+  g_egl_ext_colorspace_display_p3_linear =
+      HasEGLExtension("EGL_EXT_gl_colorspace_display_p3_linear");
   // According to https://source.android.com/compatibility/android-cdd.html the
   // EGL_IMG_context_priority extension is mandatory for Virtual Reality High
   // Performance support, but due to a bug in Android Nougat the extension
@@ -816,6 +828,29 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     egl_window_attributes.push_back(EGL_TRUE);
     egl_window_attributes.push_back(EGL_DIRECT_COMPOSITION_ANGLE);
     egl_window_attributes.push_back(EGL_TRUE);
+  }
+
+  switch (format_.GetColorSpace()) {
+    case GLSurfaceFormat::COLOR_SPACE_UNSPECIFIED:
+      break;
+    case GLSurfaceFormat::COLOR_SPACE_SRGB:
+      // Note that COLORSPACE_LINEAR refers to the sRGB color space, but
+      // without opting into sRGB blending. It is equivalent to
+      // COLORSPACE_SRGB with Disable(FRAMEBUFFER_SRGB).
+      if (g_egl_khr_colorspace) {
+        egl_window_attributes.push_back(EGL_GL_COLORSPACE_KHR);
+        egl_window_attributes.push_back(EGL_GL_COLORSPACE_LINEAR_KHR);
+      }
+      break;
+    case GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3:
+      // As above, COLORSPACE_DISPLAY_P3_LINEAR is equivalent to
+      // COLORSPACE_DISPLAY_P3 with Disable(FRAMEBUFFER_SRGB).
+      if (g_egl_khr_colorspace && g_egl_ext_colorspace_display_p3_linear) {
+        egl_window_attributes.push_back(EGL_GL_COLORSPACE_KHR);
+        egl_window_attributes.push_back(
+            EGL_GL_COLORSPACE_DISPLAY_P3_LINEAR_EXT);
+      }
+      break;
   }
 
   egl_window_attributes.push_back(EGL_NONE);

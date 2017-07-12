@@ -27,6 +27,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::gles2::ContextType,
                           gpu::gles2::CONTEXT_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::gles2::ColorSpace, gpu::gles2::COLOR_SPACE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities::ShaderPrecision)
   IPC_STRUCT_TRAITS_MEMBER(min_range)
@@ -169,4 +170,5 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::gles2::ContextCreationAttribHelper)
   IPC_STRUCT_TRAITS_MEMBER(should_use_native_gmb_for_backbuffer)
   IPC_STRUCT_TRAITS_MEMBER(own_offscreen_surface)
   IPC_STRUCT_TRAITS_MEMBER(single_buffer)
+  IPC_STRUCT_TRAITS_MEMBER(color_space)
 IPC_STRUCT_TRAITS_END()

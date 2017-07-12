@@ -10,16 +10,16 @@ namespace gl {
 GLSurfaceFormat::GLSurfaceFormat() {
 }
 
-GLSurfaceFormat::GLSurfaceFormat(SurfacePixelLayout layout) {
-  pixel_layout_ = layout;
-}
-
 GLSurfaceFormat::GLSurfaceFormat(const GLSurfaceFormat& other) = default;
 
 GLSurfaceFormat::~GLSurfaceFormat() {
 }
 
-GLSurfaceFormat::SurfacePixelLayout GLSurfaceFormat::GetPixelLayout() {
+GLSurfaceFormat::GLSurfaceFormat(SurfacePixelLayout layout) {
+  pixel_layout_ = layout;
+}
+
+GLSurfaceFormat::SurfacePixelLayout GLSurfaceFormat::GetPixelLayout() const {
   return pixel_layout_;
 }
 
@@ -44,7 +44,7 @@ static int GetBitSize(int num) {
   return GetValue(num, 8);
 }
 
-bool GLSurfaceFormat::IsCompatible(GLSurfaceFormat other) {
+bool GLSurfaceFormat::IsCompatible(GLSurfaceFormat other) const {
   if (GetBitSize(red_bits_) == GetBitSize(other.red_bits_) &&
       GetBitSize(green_bits_) == GetBitSize(other.green_bits_) &&
       GetBitSize(blue_bits_) == GetBitSize(other.blue_bits_) &&
@@ -64,18 +64,10 @@ void GLSurfaceFormat::SetDepthBits(int bits) {
   }
 }
 
-int GLSurfaceFormat::GetDepthBits() {
-  return depth_bits_;
-}
-
 void GLSurfaceFormat::SetStencilBits(int bits) {
   if (bits != -1) {
     stencil_bits_ = bits;
   }
-}
-
-int GLSurfaceFormat::GetStencilBits() {
-  return stencil_bits_;
 }
 
 void GLSurfaceFormat::SetSamples(int num) {
@@ -84,11 +76,7 @@ void GLSurfaceFormat::SetSamples(int num) {
   }
 }
 
-int GLSurfaceFormat::GetSamples() {
-  return samples_;
-}
-
-int GLSurfaceFormat::GetBufferSize() {
+int GLSurfaceFormat::GetBufferSize() const {
   int bits = GetBitSize(red_bits_) + GetBitSize(green_bits_) +
       GetBitSize(blue_bits_) + GetBitSize(alpha_bits_);
   if (bits <= 16) {

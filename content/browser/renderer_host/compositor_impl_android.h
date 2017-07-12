@@ -156,6 +156,7 @@ class CONTENT_EXPORT CompositorImpl
 
   std::unique_ptr<cc::Display> display_;
 
+  gfx::ColorSpace display_color_space_;
   gfx::Size size_;
   bool has_transparent_background_;
 
