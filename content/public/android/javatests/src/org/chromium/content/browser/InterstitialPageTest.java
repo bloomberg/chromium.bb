@@ -96,7 +96,6 @@ public class InterstitialPageTest {
                 + "<head>"
                 + "  <script>"
                 + "    function sendCommand(command) {"
-                + "      window.domAutomationController.setAutomationId(1);"
                 + "      window.domAutomationController.send(command);"
                 + "    }"
                 + "  </script>"
