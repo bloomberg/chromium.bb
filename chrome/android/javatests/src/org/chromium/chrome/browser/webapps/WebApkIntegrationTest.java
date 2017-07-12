@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -16,11 +15,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -45,6 +44,9 @@ public class WebApkIntegrationTest {
 
     @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
+
+    @Rule
+    public final TopActivityListener activityListener = new TopActivityListener();
 
     private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
 
@@ -124,14 +126,11 @@ public class WebApkIntegrationTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!(activity instanceof CustomTabActivity)) {
-                    return false;
-                }
-                CustomTabActivity customTab = (CustomTabActivity) activity;
-                return customTab.getActivityTab() != null
+                ChromeActivity activity = (ChromeActivity) activityListener.getMostRecentActivity();
+                return activity instanceof CustomTabActivity
+                        && activity.getActivityTab() != null
                         // Dropping the TLD as Google can redirect to a local site.
-                        && customTab.getActivityTab().getUrl().startsWith("https://www.google.");
+                        && activity.getActivityTab().getUrl().startsWith("https://www.google.");
             }
         });
     }
