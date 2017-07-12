@@ -75,15 +75,14 @@
         <include src="settings/advanced_options_settings.html">
         <include src="settings/more_settings.html">
       </div>
-      <div id="link-container">
 <if expr="not chromeos">
+      <div id="link-container">
         <div>
           <a is="action-link" id="system-dialog-link" class="navbar-link">
             $i18n{systemDialogOption}
           </a>
           <div id="system-dialog-throbber" hidden class="throbber"></div>
         </div>
-</if>
 <if expr="is_macosx">
         <div>
           <a is="action-link" id="open-pdf-in-preview-link" class="navbar-link">
@@ -93,6 +92,7 @@
         </div>
 </if>
       </div>
+</if>
     </div>
   </div>
   <include src="search/destination_search.html">
