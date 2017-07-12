@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
-#include "components/arc/intent_helper/local_activity_resolver.h"
 
 namespace content {
 class BrowserContext;
@@ -116,14 +115,7 @@ class ArcServiceManager {
   // Called to shut down all ARC services.
   void Shutdown();
 
-  // Returns the activity resolver owned by ArcServiceManager.
-  scoped_refptr<LocalActivityResolver> activity_resolver() {
-    return activity_resolver_;
-  }
-
  private:
-  class IntentHelperObserverImpl;  // implemented in arc_service_manager.cc.
-
   // Helper methods for AddService and GetService.
   bool AddServiceInternal(const std::string& name,
                           std::unique_ptr<ArcService> service);
@@ -133,7 +125,6 @@ class ArcServiceManager {
 
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unordered_multimap<std::string, std::unique_ptr<ArcService>> services_;
-  scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   // This holds the pointer to the BrowserContext (practically Profile)
   // which is allowed to use ARC.
