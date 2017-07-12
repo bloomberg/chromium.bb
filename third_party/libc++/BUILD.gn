@@ -5,10 +5,10 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
-# ASan, MSan and TSan need to override operator new, operator delete, and
+# Sanitizer builds need to override operator new, operator delete, and
 # some exception handling symbols, so libc++ must be a shared library
 # to prevent duplicate symbol errors when linking.
-libcpp_is_static = !is_component_build && !is_asan && !is_msan && !is_tsan
+libcpp_is_static = !is_component_build && !using_sanitizer
 
 # Used by libc++ and libc++abi.
 config("config") {
