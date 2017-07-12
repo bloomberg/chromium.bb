@@ -37,17 +37,17 @@ public class VrShellControllerInputTest {
     @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
 
-    // TODO(bsheedy): Modify test to also check horizontal scrolling
     /**
-     * Verifies that swiping up/down on the Daydream controller's touchpad scrolls
-     * the webpage while in the VR browser.
+     * Verifies that swiping up/down/left/right on the Daydream controller's
+     * touchpad scrolls the webpage while in the VR browser.
      */
     @Test
     @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
     @MediumTest
     public void testControllerScrolling() throws InterruptedException {
         // Load page in VR and make sure the controller is pointed at the content quad
-        mVrTestRule.loadUrl("chrome://credits", PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                mVrTestRule.getHtmlTestFile("test_controller_scrolling"), PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.forceEnterVr();
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
@@ -59,23 +59,39 @@ public class VrShellControllerInputTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return cvc.computeVerticalScrollRange() > cvc.getContainerView().getHeight();
+                return cvc.computeVerticalScrollRange() > cvc.getContainerView().getHeight()
+                        && cvc.computeHorizontalScrollRange() > cvc.getContainerView().getWidth();
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
 
         // Test that scrolling down works
-        int startScrollY = cvc.getNativeScrollYForTest();
+        int startScrollPoint = cvc.getNativeScrollYForTest();
         // Arbitrary, but valid values to scroll smoothly
         int scrollSteps = 20;
         int scrollSpeed = 60;
-        controller.scrollDown(scrollSteps, scrollSpeed);
-        int endScrollY = cvc.getNativeScrollYForTest();
-        Assert.assertTrue("Controller was able to scroll down", startScrollY < endScrollY);
+        controller.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
+        // We need this second scroll down, otherwise the horizontal scrolling becomes flaky
+        // TODO(bsheedy): Figure out why this is the case
+        controller.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
+        int endScrollPoint = cvc.getNativeScrollYForTest();
+        Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
-        startScrollY = endScrollY;
-        controller.scrollUp(scrollSteps, scrollSpeed);
-        endScrollY = cvc.getNativeScrollYForTest();
-        Assert.assertTrue("Controller was able to scroll up", startScrollY > endScrollY);
+        startScrollPoint = endScrollPoint;
+        controller.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
+        endScrollPoint = cvc.getNativeScrollYForTest();
+        Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
+
+        // Test that scrolling right works
+        startScrollPoint = cvc.getNativeScrollXForTest();
+        controller.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
+        endScrollPoint = cvc.getNativeScrollXForTest();
+        Assert.assertTrue("Controller was able to scroll right", startScrollPoint < endScrollPoint);
+
+        // Test that scrolling left works
+        startScrollPoint = endScrollPoint;
+        controller.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
+        endScrollPoint = cvc.getNativeScrollXForTest();
+        Assert.assertTrue("Controller was able to scroll left", startScrollPoint > endScrollPoint);
     }
 }
