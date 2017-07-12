@@ -103,9 +103,8 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
 
-    auto* context =
-        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource);
-    fetcher_ = ResourceFetcher::Create(context, context->GetTaskRunner().Get());
+    fetcher_ = ResourceFetcher::Create(
+        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource));
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

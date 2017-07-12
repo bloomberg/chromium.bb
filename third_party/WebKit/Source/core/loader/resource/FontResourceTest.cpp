@@ -45,8 +45,7 @@ TEST_F(FontResourceTest,
 
   MockFetchContext* context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
-  ResourceFetcher* fetcher =
-      ResourceFetcher::Create(context, context->GetTaskRunner());
+  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);
@@ -105,8 +104,7 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   auto* context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
 
-  ResourceFetcher* fetcher =
-      ResourceFetcher::Create(context, context->GetTaskRunner());
+  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
 
   FetchParameters fetch_params{ResourceRequest(url)};
   fetch_params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
