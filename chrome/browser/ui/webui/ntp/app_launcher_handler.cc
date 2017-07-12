@@ -630,9 +630,9 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
                             AppInfoLaunchSource::FROM_APPS_PAGE,
                             AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
 
-  ShowAppInfoInNativeDialog(
-      web_ui()->GetWebContents(), GetAppInfoNativeDialogSize(),
-      Profile::FromWebUI(web_ui()), extension, base::Closure());
+  ShowAppInfoInNativeDialog(web_ui()->GetWebContents(),
+                            Profile::FromWebUI(web_ui()), extension,
+                            base::Closure());
 }
 
 void AppLauncherHandler::HandleReorderApps(const base::ListValue* args) {

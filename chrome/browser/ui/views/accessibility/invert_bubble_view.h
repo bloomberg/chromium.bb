@@ -6,6 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_INVERT_BUBBLE_VIEW_H_
 
 class BrowserView;
+class Browser;
+
+namespace views {
+class View;
+}
 
 namespace chrome {
 
@@ -14,6 +19,9 @@ namespace chrome {
 // Chrome extension and a dark theme. Only shows the first time we encounter
 // this condition for a particular profile.
 void MaybeShowInvertBubbleView(BrowserView* browser_view);
+
+// Shows the above bubble unconditionally.
+void ShowInvertBubbleView(Browser* browser, views::View* anchor);
 
 }  // namespace chrome
 
