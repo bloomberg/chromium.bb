@@ -91422,6 +91422,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="IPH_DownloadHome" label="In product help download home."/>
   <suffix name="IPH_NewTab" label="In product help new tab."/>
   <suffix name="IPH_IncognitoWindow" label="In product help incognito window."/>
+  <suffix name="IPH_NewTabTip" label="In product help new tab tip."/>
+  <suffix name="IPH_NewIncognitoTabTip"
+      label="In product help new incognito tab tip."/>
+  <suffix name="IPH_BadgedReadingList"
+      label="In product help badged reading list."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPProtocolType" separator="_">

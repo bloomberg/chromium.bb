@@ -5220,6 +5220,14 @@ should be able to be added at any place in this file.
   <description>The user dismissed the in-product help.</description>
 </action>
 
+<action name="InProductHelp.NotifyEvent.IPH_BadgedReadingList">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    An event related to the badged reading list in-product help experiment.
+  </description>
+</action>
+
 <action name="InProductHelp.NotifyEvent.IPH_DataSaverDetail">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
@@ -5258,10 +5266,32 @@ should be able to be added at any place in this file.
   <description>The user triggered an event in in-product help.</description>
 </action>
 
+<action name="InProductHelp.NotifyEvent.IPH_NewIncognitoTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    An event related to the new incognito tab tip in-product help experiment.
+  </description>
+</action>
+
 <action name="InProductHelp.NotifyEvent.IPH_NewTab">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <description>The user triggered an event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_NewTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    An event related to the new tab tip in-product help experiment.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_BadgedReadingList">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>The user triggered a used event in in-product help.</description>
 </action>
 
 <action name="InProductHelp.NotifyUsedEvent.IPH_DataSaverDetail">
@@ -5300,10 +5330,31 @@ should be able to be added at any place in this file.
   <description>The user triggered a used event in in-product help.</description>
 </action>
 
+<action name="InProductHelp.NotifyUsedEvent.IPH_NewIncognitoTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>The user triggered a used event in in-product help.</description>
+</action>
+
 <action name="InProductHelp.NotifyUsedEvent.IPH_NewTab">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <description>The user triggered a used event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_NewTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>The user triggered a used event in in-product help.</description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_BadgedReadingList">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
 </action>
 
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_DataSaverDetail">
@@ -5360,12 +5411,39 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_NewIncognitoTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_NewTab">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <description>
     The feature engagement tracker tried to determine whether in-product help
     should be shown to the user.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_NewTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_BadgedReadingList">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    A user action that could have triggered In-Product Help did not.
   </description>
 </action>
 
@@ -5423,12 +5501,37 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_NewIncognitoTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    A user action that could have triggered In-Product Help did not.
+  </description>
+</action>
+
 <action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_NewTab">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
   <description>
     A user action that could have triggered In-Product Help did not.
   </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_NewTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>
+    A user action that could have triggered In-Product Help did not.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_BadgedReadingList">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>A user action triggered In-Product Help.</description>
 </action>
 
 <action
@@ -5473,9 +5576,22 @@ should be able to be added at any place in this file.
   <description>A user action triggered In-Product Help.</description>
 </action>
 
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_NewIncognitoTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
+  <description>A user action triggered In-Product Help.</description>
+</action>
+
 <action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_NewTab">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
+  <description>A user action triggered In-Product Help.</description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_NewTabTip">
+  <owner>edchin@chromium.org</owner>
+  <owner>gchatz@chromium.org</owner>
   <description>A user action triggered In-Product Help.</description>
 </action>
 
