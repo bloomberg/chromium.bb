@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -20,7 +22,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
-
 
 namespace {
 
@@ -31,8 +32,14 @@ const int kReloadMenuItems[]  = {
   IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM,
 };
 
-}  // namespace
+// True if we should delay the switch from reload to stop (i.e. only show Stop
+// for long loads).
+bool ShouldDelayChangeToReloadState() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDelayReloadStopButtonChange);
+}
 
+}  // namespace
 
 // ReloadButton ---------------------------------------------------------------
 
@@ -46,42 +53,65 @@ ReloadButton::ReloadButton(Profile* profile, CommandUpdater* command_updater)
       visible_mode_(MODE_RELOAD),
       double_click_timer_delay_(
           base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval())),
-      stop_to_reload_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
+      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)),
       menu_enabled_(false),
       testing_mouse_hovered_(false),
       testing_reload_count_(0) {}
 
-ReloadButton::~ReloadButton() {
-}
+ReloadButton::~ReloadButton() {}
 
 void ReloadButton::ChangeMode(Mode mode, bool force) {
   intended_mode_ = mode;
 
-  // If the change is forced, or the user isn't hovering the icon, or it's safe
-  // to change it to the other image type, make the change immediately;
-  // otherwise we'll let it happen later.
-  if (force || (!IsMouseHovered() && !testing_mouse_hovered_) ||
-      ((mode == MODE_STOP) ?
-      !double_click_timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
-    double_click_timer_.Stop();
-    stop_to_reload_timer_.Stop();
-    if (mode != visible_mode_)
-      ChangeModeInternal(mode);
-    SetEnabled(true);
+  if (ShouldDelayChangeToReloadState()) {
+    const bool from_reload_to_stop =
+        visible_mode_ == MODE_RELOAD && mode == MODE_STOP;
+    if (force || (!from_reload_to_stop &&
+                  !(IsMouseHovered() || testing_mouse_hovered_))) {
+      mode_switch_timer_.Stop();
+      if (mode != visible_mode_)
+        ChangeModeInternal(mode);
+      SetEnabled(true);
+    } else {
+      // We want to disable the button if we're preventing a change from stop to
+      // reload due to hovering, but not if we're preventing a change from
+      // reload to stop.  (Disabled reload state is only applicable when instant
+      // extended API is enabled and mode is NTP, which is handled just above.)
+      if (visible_mode_ != MODE_RELOAD)
+        SetEnabled(false);
 
-  // We want to disable the button if we're preventing a change from stop to
-  // reload due to hovering, but not if we're preventing a change from reload to
-  // stop due to the double-click timer running.  (Disabled reload state is only
-  // applicable when instant extended API is enabled and mode is NTP, which is
-  // handled just above.)
-  } else if (visible_mode_ != MODE_RELOAD) {
-    SetEnabled(false);
+      if (!mode_switch_timer_.IsRunning()) {
+        mode_switch_timer_.Start(FROM_HERE, mode_switch_timer_delay_, this,
+                                 &ReloadButton::OnStopToReloadTimer);
+      }
+    }
+  } else {
+    // If the change is forced, or the user isn't hovering the icon, or it's
+    // safe to change it to the other image type, make the change immediately;
+    // otherwise we'll let it happen later.
+    if (force || (!IsMouseHovered() && !testing_mouse_hovered_) ||
+        ((mode == MODE_STOP) ? !double_click_timer_.IsRunning()
+                             : (visible_mode_ != MODE_STOP))) {
+      double_click_timer_.Stop();
+      mode_switch_timer_.Stop();
+      if (mode != visible_mode_)
+        ChangeModeInternal(mode);
+      SetEnabled(true);
 
-    // Go ahead and change to reload after a bit, which allows repeated reloads
-    // without moving the mouse.
-    if (!stop_to_reload_timer_.IsRunning()) {
-      stop_to_reload_timer_.Start(FROM_HERE, stop_to_reload_timer_delay_, this,
-                                  &ReloadButton::OnStopToReloadTimer);
+      // We want to disable the button if we're preventing a change from stop to
+      // reload due to hovering, but not if we're preventing a change from
+      // reload to stop due to the double-click timer running.  (Disabled reload
+      // state is only applicable when instant extended API is enabled and mode
+      // is NTP, which is handled just above.)
+    } else if (visible_mode_ != MODE_RELOAD) {
+      SetEnabled(false);
+
+      // Go ahead and change to reload after a bit, which allows repeated
+      // reloads without moving the mouse.
+      if (!mode_switch_timer_.IsRunning()) {
+        mode_switch_timer_.Start(FROM_HERE, mode_switch_timer_delay_, this,
+                                 &ReloadButton::OnStopToReloadTimer);
+      }
     }
   }
 }
@@ -140,7 +170,17 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);
-  } else if (!double_click_timer_.IsRunning()) {
+    return;
+  }
+
+  // Ignore double clicks. With the ShouldDelayChangeToReloadState flag we have
+  // no use for the double click timer and can just check the event's click
+  // count.
+  const bool is_double_click = ShouldDelayChangeToReloadState()
+                                   ? event.AsMouseEvent()->GetClickCount() > 1
+                                   : double_click_timer_.IsRunning();
+
+  if (!is_double_click) {
     // Shift-clicking or ctrl-clicking the reload button means we should ignore
     // any cached content.
     int command;
@@ -153,13 +193,15 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
       command = IDC_RELOAD;
     }
 
-    // Start a timer - while this timer is running, the reload button cannot be
-    // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
-    // here as the browser will do that when it actually starts loading (which
-    // may happen synchronously, thus the need to do this before telling the
-    // browser to execute the reload command).
-    double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
-                              &ReloadButton::OnDoubleClickTimer);
+    if (!ShouldDelayChangeToReloadState()) {
+      // Start a timer - while this timer is running, the reload button cannot
+      // be changed to a stop button.  We do not set |intended_mode_| to
+      // MODE_STOP here as the browser will do that when it actually starts
+      // loading (which may happen synchronously, thus the need to do this
+      // before telling the browser to execute the reload command).
+      double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
+                                &ReloadButton::OnDoubleClickTimer);
+    }
 
     ExecuteBrowserCommand(command, flags);
     ++testing_reload_count_;

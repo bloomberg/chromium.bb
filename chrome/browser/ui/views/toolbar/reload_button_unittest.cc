@@ -19,7 +19,7 @@ class ReloadButtonTest : public ChromeRenderViewHostTestHarness {
                   ReloadButton::Mode intended_mode,
                   ReloadButton::Mode visible_mode,
                   bool double_click_timer_running,
-                  bool stop_to_reload_timer_running);
+                  bool mode_switch_timer_running);
 
   // These accessors eliminate the need to declare each testcase as a friend.
   void set_mouse_hovered(bool hovered) {
@@ -41,21 +41,20 @@ ReloadButtonTest::ReloadButtonTest() : reload_(profile(), nullptr) {
   // Set the timer delays to 0 so that timers will fire as soon as we tell the
   // message loop to run pending tasks.
   reload_.double_click_timer_delay_ = base::TimeDelta();
-  reload_.stop_to_reload_timer_delay_ = base::TimeDelta();
+  reload_.mode_switch_timer_delay_ = base::TimeDelta();
 }
 
 void ReloadButtonTest::CheckState(bool enabled,
                                   ReloadButton::Mode intended_mode,
                                   ReloadButton::Mode visible_mode,
                                   bool double_click_timer_running,
-                                  bool stop_to_reload_timer_running) {
+                                  bool mode_switch_timer_running) {
   EXPECT_EQ(enabled, reload_.enabled());
   EXPECT_EQ(intended_mode, reload_.intended_mode_);
   EXPECT_EQ(visible_mode, reload_.visible_mode_);
   EXPECT_EQ(double_click_timer_running,
             reload_.double_click_timer_.IsRunning());
-  EXPECT_EQ(stop_to_reload_timer_running,
-            reload_.stop_to_reload_timer_.IsRunning());
+  EXPECT_EQ(mode_switch_timer_running, reload_.mode_switch_timer_.IsRunning());
 }
 
 TEST_F(ReloadButtonTest, Basic) {
