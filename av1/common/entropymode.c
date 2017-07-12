@@ -940,7 +940,7 @@ const int av1_intra_mode_inv[INTRA_MODES] = {
 #endif  // CONFIG_SMOOTH_HV
 #else
 const int av1_intra_mode_ind[INTRA_MODES] = { 0, 2, 3, 6, 4, 5, 8, 9, 7, 1 };
-const int av1_intra_mode_inv[INTRA_MODES] = { 0, 9, 1, 2, 4, 5, 3, 8, 6, 7 }
+const int av1_intra_mode_inv[INTRA_MODES] = { 0, 9, 1, 2, 4, 5, 3, 8, 6, 7 };
 #endif  // CONFIG_ALT_INTRA
 
 #if CONFIG_EXT_INTER
