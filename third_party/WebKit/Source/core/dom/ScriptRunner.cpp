@@ -96,10 +96,6 @@ void ScriptRunner::Resume() {
 void ScriptRunner::ScheduleReadyInOrderScripts() {
   while (!pending_in_order_scripts_.IsEmpty() &&
          pending_in_order_scripts_.front()->IsReady()) {
-    // A ScriptLoader that failed is responsible for cancelling itself
-    // notifyScriptLoadError(); it continues this draining of ready scripts.
-    if (pending_in_order_scripts_.front()->ErrorOccurred())
-      break;
     in_order_scripts_to_execute_soon_.push_back(
         pending_in_order_scripts_.TakeFirst());
     PostTask(BLINK_FROM_HERE);
@@ -146,28 +142,6 @@ bool ScriptRunner::RemovePendingInOrderScript(ScriptLoader* script_loader) {
   SECURITY_CHECK(number_of_in_order_scripts_with_pending_notification_ > 0);
   number_of_in_order_scripts_with_pending_notification_--;
   return true;
-}
-
-void ScriptRunner::NotifyScriptLoadError(ScriptLoader* script_loader,
-                                         AsyncExecutionType execution_type) {
-  switch (execution_type) {
-    case kAsync: {
-      // See notifyScriptReady() comment.
-      SECURITY_CHECK(pending_async_scripts_.Contains(script_loader));
-      pending_async_scripts_.erase(script_loader);
-      break;
-    }
-    case kInOrder: {
-      SECURITY_CHECK(RemovePendingInOrderScript(script_loader));
-      ScheduleReadyInOrderScripts();
-      break;
-    }
-    case kNone: {
-      NOTREACHED();
-      break;
-    }
-  }
-  document_->DecrementLoadEventDelayCount();
 }
 
 void ScriptRunner::MovePendingScript(Document& old_document,

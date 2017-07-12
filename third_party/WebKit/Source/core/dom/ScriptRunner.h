@@ -61,7 +61,6 @@ class CORE_EXPORT ScriptRunner final
   void Suspend();
   void Resume();
   void NotifyScriptReady(ScriptLoader*, AsyncExecutionType);
-  void NotifyScriptLoadError(ScriptLoader*, AsyncExecutionType);
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
