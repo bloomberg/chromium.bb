@@ -70,7 +70,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   ~SharedBuffer();
 
-  // DEPRECATED: use a segment iterator or Copy() instead.
+  // DEPRECATED: use a segment iterator, FlatData or Copy() instead.
   //
   // Calling this function will force internal segmented buffers to be merged
   // into a flat buffer. Use getSomeData() whenever possible for better
@@ -150,6 +150,24 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
       pos += length;
     }
   }
+
+  // Helper for providing a contiguous view of the data.  If the SharedBuffer is
+  // segmented, this will copy/merge all segments into a temporary buffer.
+  // In general, clients should use the efficient/segmented accessors.
+  class PLATFORM_EXPORT DeprecatedFlatData {
+    STACK_ALLOCATED();
+
+   public:
+    explicit DeprecatedFlatData(PassRefPtr<const SharedBuffer>);
+
+    const char* Data() const { return data_; }
+    size_t size() const { return buffer_->size(); }
+
+   private:
+    RefPtr<const SharedBuffer> buffer_;
+    Vector<char> flat_buffer_;
+    const char* data_;
+  };
 
  private:
   SharedBuffer();

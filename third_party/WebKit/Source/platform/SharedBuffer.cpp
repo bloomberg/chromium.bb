@@ -262,4 +262,26 @@ void SharedBuffer::OnMemoryDump(const String& dump_prefix,
   }
 }
 
+SharedBuffer::DeprecatedFlatData::DeprecatedFlatData(
+    PassRefPtr<const SharedBuffer> buffer)
+    : buffer_(std::move(buffer)) {
+  DCHECK(buffer_);
+
+  if (buffer_->size() <= buffer_->buffer_.size()) {
+    // The SharedBuffer is not segmented - just point to its data.
+    data_ = buffer_->buffer_.data();
+    return;
+  }
+
+  // Merge all segments.
+  flat_buffer_.ReserveInitialCapacity(buffer_->size());
+  buffer_->ForEachSegment([this](const char* segment, size_t segment_size,
+                                 size_t segment_offset) -> bool {
+    flat_buffer_.Append(segment, segment_size);
+    return true;
+  });
+
+  data_ = flat_buffer_.data();
+}
+
 }  // namespace blink
