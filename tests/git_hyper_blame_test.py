@@ -132,8 +132,12 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
                            stdout=stdout, stderr=stderr)
     self.assertNotEqual(0, retval)
     self.assertEqual('', stdout.getvalue())
-    self.assertEqual('fatal: no such path some/files/xxxx in %s\n' %
-                     self.repo['C'], stderr.getvalue())
+    # TODO(mgiuca): This test used to test the exact string, but it broke due to
+    # an upstream bug in git-blame. For now, just check the start of the string.
+    # A patch has been sent upstream; when it rolls out we can revert back to
+    # the original test logic.
+    self.assertTrue(
+        stderr.getvalue().startswith('fatal: no such path some/files/xxxx in '))
 
   def testBadRevision(self):
     """Tests the main function (bad revision to blame from)."""
