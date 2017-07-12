@@ -34,8 +34,6 @@ group("all") {
   if (is_cronet_build) {
     deps = [
       "//components/cronet/ios:cronet_package",
-      "//ios/crnet:crnet_framework",
-      "//ios/crnet/test:crnet_test",
     ]
   } else {
     deps = [
