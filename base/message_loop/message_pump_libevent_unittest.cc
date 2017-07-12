@@ -50,10 +50,6 @@ class MessagePumpLibeventTest : public testing::Test {
       PLOG(ERROR) << "close";
   }
 
-  void WaitUntilIoThreadStarted() {
-    ASSERT_TRUE(io_thread_.WaitUntilThreadStarted());
-  }
-
   MessageLoopForIO* io_loop() const {
     return static_cast<MessageLoopForIO*>(io_thread_.message_loop());
   }
@@ -86,13 +82,15 @@ class StupidWatcher : public MessagePumpLibevent::Watcher {
 
 // Test to make sure that we catch calling WatchFileDescriptor off of the
 // wrong thread.
-TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// Flaky on Chrome OS and Linux: crbug.com/138845.
+#define MAYBE_TestWatchingFromBadThread DISABLED_TestWatchingFromBadThread
+#else
+#define MAYBE_TestWatchingFromBadThread TestWatchingFromBadThread
+#endif
+TEST_F(MessagePumpLibeventTest, MAYBE_TestWatchingFromBadThread) {
   MessagePumpLibevent::FileDescriptorWatcher watcher(FROM_HERE);
   StupidWatcher delegate;
-
-  // Ensure that |io_thread_| has started, otherwise we're racing against
-  // creation of the thread's MessagePump.
-  WaitUntilIoThreadStarted();
 
   ASSERT_DCHECK_DEATH(
       io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
@@ -215,18 +213,20 @@ void FatalClosure() {
 class QuitWatcher : public BaseWatcher {
  public:
   QuitWatcher(MessagePumpLibevent::FileDescriptorWatcher* controller,
-              base::Closure quit_closure)
-      : BaseWatcher(controller), quit_closure_(std::move(quit_closure)) {}
+              RunLoop* run_loop)
+      : BaseWatcher(controller), run_loop_(run_loop) {}
+  ~QuitWatcher() override {}
 
   void OnFileCanReadWithoutBlocking(int /* fd */) override {
     // Post a fatal closure to the MessageLoop before we quit it.
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce(&FatalClosure));
 
-    quit_closure_.Run();
+    // Now quit the MessageLoop.
+    run_loop_->Quit();
   }
 
  private:
-  base::Closure quit_closure_;
+  RunLoop* run_loop_;  // weak
 };
 
 void WriteFDWrapper(const int fd,
@@ -246,7 +246,7 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
   MessageLoop loop(WrapUnique(pump));
   RunLoop run_loop;
   MessagePumpLibevent::FileDescriptorWatcher controller(FROM_HERE);
-  QuitWatcher delegate(&controller, run_loop.QuitClosure());
+  QuitWatcher delegate(&controller, &run_loop);
   WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
                       WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<WaitableEventWatcher> watcher(new WaitableEventWatcher);
@@ -275,87 +275,6 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
   io_loop()->task_runner()->PostTask(
       FROM_HERE,
       BindOnce(&WaitableEventWatcher::StopWatching, Owned(watcher.release())));
-}
-
-class CaptureAndQuitWatcher : public BaseWatcher {
- public:
-  CaptureAndQuitWatcher(MessagePumpLibevent::FileDescriptorWatcher* controller,
-                        base::Closure quit_closure)
-      : BaseWatcher(controller), quit_closure_(std::move(quit_closure)) {}
-
-  void OnFileCanReadWithoutBlocking(int /* fd */) override {
-    is_readable_ = true;
-    quit_closure_.Run();
-  }
-  void OnFileCanWriteWithoutBlocking(int /* fd */) override {
-    is_writable_ = true;
-    quit_closure_.Run();
-  }
-
-  bool is_readable_ = false;
-  bool is_writable_ = false;
-
- private:
-  base::Closure quit_closure_;
-};
-
-// Verify that basic readable notification works.
-TEST_F(MessagePumpLibeventTest, WatchReadable) {
-  // Tear-down the old MessageLoop before creating the replacement.
-  ui_loop_.reset();
-
-  ui_loop_ = base::MakeUnique<MessageLoopForIO>();
-  MessagePumpLibevent::FileDescriptorWatcher watcher(FROM_HERE);
-  RunLoop run_loop;
-  CaptureAndQuitWatcher delegate(&watcher, run_loop.QuitClosure());
-
-  // Watch the pipe for readability.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
-      pipefds_[0], /* persistent= */ false, MessageLoopForIO::WATCH_READ,
-      &watcher, &delegate));
-
-  // The pipe should not be readable when first created.
-  base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(delegate.is_readable_);
-  ASSERT_FALSE(delegate.is_writable_);
-
-  // Write a byte to the other end, making it readable.
-  const char buf = 0;
-  ASSERT_TRUE(WriteFileDescriptor(pipefds_[1], &buf, sizeof(buf)));
-
-  // We don't want to assume that the read fd becomes readable the
-  // instant a bytes is written, so Run until quit by an event.
-  run_loop.Run();
-
-  ASSERT_TRUE(delegate.is_readable_);
-  ASSERT_FALSE(delegate.is_writable_);
-}
-
-// Verify that watching a file descriptor for writability succeeds.
-TEST_F(MessagePumpLibeventTest, WatchWritable) {
-  // Tear-down the old MessageLoop before creating the replacement.
-  ui_loop_.reset();
-
-  ui_loop_ = base::MakeUnique<MessageLoopForIO>();
-  MessagePumpLibevent::FileDescriptorWatcher watcher(FROM_HERE);
-  RunLoop run_loop;
-  CaptureAndQuitWatcher delegate(&watcher, run_loop.QuitClosure());
-
-  // Watch the pipe for writability.
-  ASSERT_TRUE(MessageLoopForIO::current()->WatchFileDescriptor(
-      pipefds_[1], /* persistent= */ false, MessageLoopForIO::WATCH_WRITE,
-      &watcher, &delegate));
-
-  // We should not receive a writable notification until we process events.
-  ASSERT_FALSE(delegate.is_readable_);
-  ASSERT_FALSE(delegate.is_writable_);
-
-  // The pipe should be writable immediately, so no need to wait for
-  // the quit closure.
-  run_loop.RunUntilIdle();
-
-  ASSERT_FALSE(delegate.is_readable_);
-  ASSERT_TRUE(delegate.is_writable_);
 }
 
 }  // namespace
