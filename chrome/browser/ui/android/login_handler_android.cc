@@ -9,14 +9,9 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-
-#include "device/vr/features/features.h"
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
-
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/auth.h"
@@ -56,12 +51,10 @@ class LoginHandlerAndroid : public LoginHandler {
     ViewAndroidHelper* view_helper = ViewAndroidHelper::FromWebContents(
         web_contents);
 
-#if BUILDFLAG(ENABLE_VR)
-    if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+    if (vr::VrTabHelper::IsInVr(web_contents)) {
       CancelAuth();
       return;
     }
-#endif
 
     // Notify WindowAndroid that HTTP authentication is required.
     if (view_helper->GetViewAndroid() &&

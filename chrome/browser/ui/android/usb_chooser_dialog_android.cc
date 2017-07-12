@@ -19,6 +19,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/elide_url.h"
@@ -33,10 +34,6 @@
 #include "jni/UsbChooserDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 
 using device::UsbDevice;
 
@@ -65,14 +62,13 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
       weak_factory_(this) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
-#if BUILDFLAG(ENABLE_VR)
-  if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+  if (vr::VrTabHelper::IsInVr(web_contents)) {
     DCHECK(!callback_.is_null());
     callback_.Run(nullptr);
     callback_.Reset();  // Reset |callback_| so that it is only run once.
     return;
   }
-#endif
+
   device::UsbService* usb_service =
       device::DeviceClient::Get()->GetUsbService();
   if (!usb_service)

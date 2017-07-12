@@ -16,9 +16,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "device/vr/features/features.h"
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_database.h"
@@ -29,10 +29,6 @@
 #include "net/ssl/ssl_private_key.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -193,12 +189,11 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList unused_client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
-#if BUILDFLAG(ENABLE_VR)
-  if (vr_shell::VrTabHelper::IsInVr(contents)) {
+  if (vr::VrTabHelper::IsInVr(contents)) {
     delegate->ContinueWithCertificate(nullptr, nullptr);
     return;
   }
-#endif  // BUILDFLAG(ENABLE_VR)
+
   ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(contents)
       ->GetViewAndroid()->GetWindowAndroid();
   DCHECK(window);

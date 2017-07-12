@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,10 +34,6 @@
 #include "content/public/browser/web_contents.h"
 #include "device/vr/features/features.h"
 #include "ppapi/features/features.h"
-
-#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/flash_permission_context.h"
@@ -329,13 +326,11 @@ int PermissionManager::RequestPermissions(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
-#if BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
-  if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+  if (vr::VrTabHelper::IsInVr(web_contents)) {
     callback.Run(
         std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
     return kNoPendingOperation;
   }
-#endif  // BUILDFLAG(ENABLE_VR) && defined(OS_ANDROID)
 
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_TAB_HELPER_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_VR_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_VR_VR_TAB_HELPER_H_
+#define CHROME_BROWSER_VR_VR_TAB_HELPER_H_
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace vr_shell {
+namespace vr {
 
 class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
  public:
@@ -33,6 +33,6 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   DISALLOW_COPY_AND_ASSIGN(VrTabHelper);
 };
 
-}  // namespace vr_shell
+}  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_VR_VR_TAB_HELPER_H_
