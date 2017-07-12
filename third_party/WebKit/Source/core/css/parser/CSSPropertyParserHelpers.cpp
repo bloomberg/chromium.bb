@@ -1582,7 +1582,38 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
   return nullptr;
 }
 
-bool ConsumeShorthandVia4LonghandsAPI(
+bool ConsumeShorthandVia2LonghandAPIs(
+    const StylePropertyShorthand& shorthand,
+    bool important,
+    const CSSParserContext& context,
+    CSSParserTokenRange& range,
+    HeapVector<CSSProperty, 256>& properties) {
+  DCHECK_EQ(shorthand.length(), 2u);
+  const CSSPropertyID* longhands = shorthand.properties();
+  bool needs_legacy_parsing = false;
+
+  const CSSValue* start = ParseLonghandViaAPI(
+      longhands[0], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
+
+  if (!start)
+    return false;
+
+  const CSSValue* end = ParseLonghandViaAPI(
+      longhands[1], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
+
+  if (!end)
+    end = start;
+  AddProperty(longhands[0], shorthand.id(), *start, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(longhands[1], shorthand.id(), *end, important,
+              IsImplicitProperty::kNotImplicit, properties);
+
+  return range.AtEnd();
+}
+
+bool ConsumeShorthandVia4LonghandAPIs(
     const StylePropertyShorthand& shorthand,
     bool important,
     const CSSParserContext& context,
