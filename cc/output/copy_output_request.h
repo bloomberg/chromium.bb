@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/task_runner.h"
 #include "base/unguessable_token.h"
 #include "cc/cc_export.h"
 #include "cc/resources/single_release_callback.h"
@@ -43,13 +44,18 @@ class CC_EXPORT CopyOutputRequest {
       const CopyOutputRequestCallback& result_callback) {
     return base::WrapUnique(new CopyOutputRequest(true, result_callback));
   }
-  static std::unique_ptr<CopyOutputRequest> CreateRelayRequest(
-      const CopyOutputRequest& original_request,
-      const CopyOutputRequestCallback& result_callback);
 
   ~CopyOutputRequest();
 
   bool IsEmpty() const { return result_callback_.is_null(); }
+
+  // Requests that the result callback be run as a task posted to the given
+  // |task_runner|. If this is not set, the result callback could be run from
+  // any context.
+  void set_result_task_runner(scoped_refptr<base::TaskRunner> task_runner) {
+    result_task_runner_ = std::move(task_runner);
+  }
+  bool has_result_task_runner() const { return !!result_task_runner_; }
 
   // Optionally specify the source of this copy request. If set when this copy
   // request is submitted to a layer, a prior uncommitted copy request from the
@@ -93,6 +99,7 @@ class CC_EXPORT CopyOutputRequest {
   CopyOutputRequest(bool force_bitmap_result,
                     const CopyOutputRequestCallback& result_callback);
 
+  scoped_refptr<base::TaskRunner> result_task_runner_;
   base::Optional<base::UnguessableToken> source_;
   bool force_bitmap_result_;
   base::Optional<gfx::Rect> area_;
