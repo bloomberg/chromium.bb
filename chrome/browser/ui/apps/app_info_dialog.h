@@ -21,7 +21,6 @@ class Extension;
 
 namespace gfx {
 class Rect;
-class Size;
 }
 
 // Used for UMA to track where the App Info dialog is launched from.
@@ -36,9 +35,6 @@ enum AppInfoLaunchSource {
 // Returns true if the app info dialog is available on the current platform.
 bool CanShowAppInfoDialog();
 
-// Returns the size of the native window container for the app info dialog.
-gfx::Size GetAppInfoNativeDialogSize();
-
 #if BUILDFLAG(ENABLE_APP_LIST)
 // Shows the chrome app information as a frameless window for the given |app|
 // and |profile| at the given |app_list_bounds|. Appears 'inside' the app list.
@@ -49,9 +45,8 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const base::Closure& close_callback);
 #endif
 
-// Shows the chrome app information in a native dialog box of the given |size|.
+// Shows the chrome app information in a native dialog box.
 void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
-                               const gfx::Size& size,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback);

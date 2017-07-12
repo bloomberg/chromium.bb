@@ -70,10 +70,6 @@ bool CanShowAppInfoDialog() {
 #endif
 }
 
-gfx::Size GetAppInfoNativeDialogSize() {
-  return gfx::Size(380, 490);
-}
-
 #if BUILDFLAG(ENABLE_APP_LIST)
 void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const gfx::Rect& app_list_bounds,
@@ -91,14 +87,14 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
 #endif
 
 void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
-                               const gfx::Size& size,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback) {
   gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
   views::View* app_info_view = new AppInfoDialog(window, profile, app);
+  constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
   views::DialogDelegate* dialog =
-      CreateDialogContainerForView(app_info_view, size, close_callback);
+      CreateDialogContainerForView(app_info_view, kDialogSize, close_callback);
   views::Widget* dialog_widget;
   if (dialog->GetModalType() == ui::MODAL_TYPE_CHILD) {
     dialog_widget =
