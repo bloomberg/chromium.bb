@@ -105,9 +105,7 @@ PaymentRequest::PaymentRequest(
     }
   }
 
-  // TODO(crbug.com/702063): Change this code to prioritize payment methods by
-  // use count and other means.
-  auto first_complete_payment_method =
+  const auto first_complete_payment_method =
       std::find_if(payment_methods_.begin(), payment_methods_.end(),
                    [this](PaymentInstrument* payment_method) {
                      return payment_method->IsCompleteForPayment();
@@ -229,7 +227,8 @@ autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(
   profile_cache_.push_back(
       base::MakeUnique<autofill::AutofillProfile>(profile));
 
-  PopulateAvailableProfiles();
+  contact_profiles_.push_back(profile_cache_.back().get());
+  shipping_profiles_.push_back(profile_cache_.back().get());
 
   return profile_cache_.back().get();
 }
@@ -241,6 +240,7 @@ void PaymentRequest::PopulateProfileCache() {
   if (profiles_to_suggest.empty())
     return;
 
+  profile_cache_.clear();
   profile_cache_.reserve(profiles_to_suggest.size());
 
   for (const auto* profile : profiles_to_suggest) {
@@ -305,7 +305,7 @@ AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
       method_name, credit_card, matches_merchant_card_type_exactly,
       billing_profiles(), GetApplicationLocale(), this));
 
-  PopulateAvailablePaymentMethods();
+  payment_methods_.push_back(payment_method_cache_.back().get());
 
   return static_cast<AutofillPaymentInstrument*>(
       payment_method_cache_.back().get());
@@ -371,9 +371,10 @@ void PaymentRequest::PopulatePaymentMethodCache() {
   if (credit_cards_to_suggest.empty())
     return;
 
-  // TODO(crbug.com/602666): Determine number of possible payments so
-  // that we can appropriate reserve space in the following vector.
+  // TODO(crbug.com/602666): Determine the number of possible payment methods so
+  // that we can reserve enough space in the following vector.
 
+  payment_method_cache_.clear();
   payment_method_cache_.reserve(credit_cards_to_suggest.size());
 
   for (const auto* credit_card : credit_cards_to_suggest)
@@ -387,7 +388,6 @@ void PaymentRequest::PopulateAvailablePaymentMethods() {
   payment_methods_.clear();
   payment_methods_.reserve(payment_method_cache_.size());
 
-  // TODO(crbug.com/602666): Implement prioritization rules for payment methods.
   for (auto const& payment_method : payment_method_cache_)
     payment_methods_.push_back(payment_method.get());
 }
