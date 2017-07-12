@@ -219,7 +219,6 @@ class DummyConnectionManager : public ServerConnectionManager {
       : ServerConnectionManager("unused", 0, false, signal),
         send_error_(false) {}
 
-  ~DummyConnectionManager() override {}
   bool PostBufferWithCachedAuth(PostBufferParams* params) override {
     if (send_error_) {
       return false;
