@@ -34,6 +34,7 @@
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python*_bin
 /python_bin_reldir.txt
+/win_tools*_bin
 /git_bin
 /git-*_bin
 /svn_bin
