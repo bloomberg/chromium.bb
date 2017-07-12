@@ -124,39 +124,12 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool use_fallback_content_ : 1;
 };
 
-// Intentionally left unimplemented, template specialization needs to be
-// provided for specific return types.
-template <typename T>
-inline const T& ToElement(const ListedElement&);
-template <typename T>
-inline const T* ToElement(const ListedElement*);
-
-// Make toHTMLObjectElement() accept a ListedElement as input instead of
-// a Node.
-template <>
-inline const HTMLObjectElement* ToElement<HTMLObjectElement>(
-    const ListedElement* element) {
-  SECURITY_DCHECK(!element || !element->IsFormControlElement());
-  const HTMLObjectElement* object_element =
-      static_cast<const HTMLObjectElement*>(element);
-  // We need to assert after the cast because ListedElement doesn't
-  // have hasTagName.
-  SECURITY_DCHECK(!object_element ||
-                  object_element->HasTagName(HTMLNames::objectTag));
-  return object_element;
-}
-
-template <>
-inline const HTMLObjectElement& ToElement<HTMLObjectElement>(
-    const ListedElement& element) {
-  SECURITY_DCHECK(!element.IsFormControlElement());
-  const HTMLObjectElement& object_element =
-      static_cast<const HTMLObjectElement&>(element);
-  // We need to assert after the cast because ListedElement doesn't
-  // have hasTagName.
-  SECURITY_DCHECK(object_element.HasTagName(HTMLNames::objectTag));
-  return object_element;
-}
+// Like toHTMLObjectElement() but accepts a ListedElement as input
+// instead of a Node.
+const HTMLObjectElement* ToHTMLObjectElementFromListedElement(
+    const ListedElement*);
+const HTMLObjectElement& ToHTMLObjectElementFromListedElement(
+    const ListedElement&);
 
 }  // namespace blink
 

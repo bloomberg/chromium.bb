@@ -450,4 +450,21 @@ void HTMLObjectElement::AttachLayoutTree(AttachContext& context) {
   HTMLPlugInElement::AttachLayoutTree(context);
 }
 
+const HTMLObjectElement* ToHTMLObjectElementFromListedElement(
+    const ListedElement* element) {
+  SECURITY_DCHECK(!element || !element->IsFormControlElement());
+  const HTMLObjectElement* object_element =
+      static_cast<const HTMLObjectElement*>(element);
+  // We need to assert after the cast because ListedElement doesn't
+  // have hasTagName.
+  SECURITY_DCHECK(!object_element ||
+                  object_element->HasTagName(HTMLNames::objectTag));
+  return object_element;
+}
+
+const HTMLObjectElement& ToHTMLObjectElementFromListedElement(
+    const ListedElement& element) {
+  return *ToHTMLObjectElementFromListedElement(&element);
+}
+
 }  // namespace blink
