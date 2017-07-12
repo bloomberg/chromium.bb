@@ -822,6 +822,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  INV_TXFM_PARAM inv_txfm_param;
   uint8_t *dst;
   int ctx = 0;
   dst = &pd->dst
@@ -857,12 +858,11 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_HIGHBITDEPTH
     }
 #endif  // !CONFIG_PVQ
-#if CONFIG_HIGHBITDEPTH
-    INV_TXFM_PARAM inv_txfm_param;
     inv_txfm_param.bd = xd->bd;
     inv_txfm_param.tx_type = DCT_DCT;
     inv_txfm_param.eob = p->eobs[block];
     inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride,
                                   &inv_txfm_param);
@@ -870,9 +870,9 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
     }
 #endif  //  CONFIG_HIGHBITDEPTH
     if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-      av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, p->eobs[block]);
+      av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
     } else {
-      av1_idct4x4_add(dqcoeff, dst, pd->dst.stride, p->eobs[block]);
+      av1_idct4x4_add(dqcoeff, dst, pd->dst.stride, &inv_txfm_param);
     }
   }
 }

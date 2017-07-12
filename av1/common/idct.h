@@ -76,9 +76,9 @@ typedef struct {
 int av1_get_tx_scale(const TX_SIZE tx_size);
 
 void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     int eob);
+                     const INV_TXFM_PARAM *inv_txfm_param);
 void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     int eob);
+                     const INV_TXFM_PARAM *inv_txfm_param);
 
 void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       INV_TXFM_PARAM *inv_txfm_param);

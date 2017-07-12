@@ -249,6 +249,10 @@ int get_inv_lgt8(transform_1d tx_orig, const INV_TXFM_PARAM *inv_txfm_param,
 void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          const INV_TXFM_PARAM *param) {
   int tx_type = param->tx_type;
+  if (tx_type == DCT_DCT) {
+    aom_idct4x4_16_add(input, dest, stride);
+    return;
+  }
   static const transform_2d IHT_4[] = {
     { aom_idct4_c, aom_idct4_c },    // DCT_DCT  = 0
     { aom_iadst4_c, aom_idct4_c },   // ADST_DCT = 1
@@ -1303,15 +1307,17 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
 // idct
 void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     int eob) {
+                     const INV_TXFM_PARAM *param) {
+  const int eob = param->eob;
   if (eob > 1)
-    aom_idct4x4_16_add(input, dest, stride);
+    av1_iht4x4_16_add(input, dest, stride, param);
   else
     aom_idct4x4_1_add(input, dest, stride);
 }
 
 void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                     int eob) {
+                     const INV_TXFM_PARAM *param) {
+  const int eob = param->eob;
   if (eob > 1)
     aom_iwht4x4_16_add(input, dest, stride);
   else
@@ -1427,15 +1433,14 @@ static void inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest, int stride,
 static void inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
                              const INV_TXFM_PARAM *param) {
   const TX_TYPE tx_type = param->tx_type;
-  const int eob = param->eob;
   if (param->lossless) {
     assert(tx_type == DCT_DCT);
-    av1_iwht4x4_add(input, dest, stride, eob);
+    av1_iwht4x4_add(input, dest, stride, param);
     return;
   }
 
   switch (tx_type) {
-    case DCT_DCT: av1_idct4x4_add(input, dest, stride, eob); break;
+    case DCT_DCT: av1_idct4x4_add(input, dest, stride, param); break;
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
