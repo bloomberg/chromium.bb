@@ -48,16 +48,16 @@ class CONTENT_EXPORT Sandbox {
   // This path is not necessarily unique e.g. in the face of hardlinks.
   static base::FilePath GetCanonicalSandboxPath(const base::FilePath& path);
 
-  static const char* kSandboxEnableLogging;
-  static const char* kSandboxDisableDenialLogging;
-  static const char* kSandboxHomedirAsLiteral;
-  static const char* kSandboxOSVersion;
-  static const char* kSandboxPermittedDir;
+  static const char* kSandboxBrowserPID;
   static const char* kSandboxBundlePath;
-  static const char* kSandboxLoggingPathAsLiteral;
   static const char* kSandboxChromeBundleId;
   static const char* kSandboxComponentPath;
-  static const char* kSandboxChromePID;
+  static const char* kSandboxDisableDenialLogging;
+  static const char* kSandboxEnableLogging;
+  static const char* kSandboxHomedirAsLiteral;
+  static const char* kSandboxLoggingPathAsLiteral;
+  static const char* kSandboxOSVersion;
+  static const char* kSandboxPermittedDir;
 
   // TODO(kerrnel): this is only for the legacy sandbox.
   static const char* kSandboxElCapOrLater;

@@ -12,19 +12,17 @@
 (define (param-defined? str) (string? (param str)))
 
 ; Define constants for all of the parameter strings passed in.
+(define browser-pid "BROWSER_PID")
+(define bundle-id "BUNDLE_ID")
+(define bundle-path "BUNDLE_PATH")
+(define component-path "COMPONENT_PATH")
+(define current-pid "CURRENT_PID")
 (define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
 (define enable-logging "ENABLE_LOGGING")
-(define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
-(define bundle-path "BUNDLE_PATH")
 (define executable-path "EXECUTABLE_PATH")
-(define chromium-pid "CHROMIUM_PID")
+(define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
 (define log-file-path "LOG_FILE_PATH")
-(define bundle-id "BUNDLE_ID")
-(define component-path "COMPONENT_PATH")
 (define os-version (string->number (param "OS_VERSION")))
-
-; OS Version numbers
-(define mavericks 1009)
 
 ; Backwards compatibility for 10.9
 (if (not (defined? 'path))
@@ -58,7 +56,7 @@
 
 (allow mach-lookup (global-name (string-append (param bundle-id)
                                                ".rohitfork."
-                                               (param chromium-pid))))
+                                               (param browser-pid))))
 ; Allow realpath() to work.
 (allow file-read-metadata (subpath "/"))
 
@@ -76,7 +74,7 @@
 (allow file-read-data (path (user-homedir-path "/.CFUserTextEncoding")))
 
 ; Reads of /dev devices.
-(allow file-read-data 
+(allow file-read-data
   (path "/dev/autofs_nowait")
   (path "/dev/fd")
   (path "/dev/null")
@@ -130,11 +128,11 @@
   (global-name "com.apple.windowserver.active"))
 
 ; MacOS dropped FontServer to replace it with the (XPC based) com.apple.fonts.
-(if (= os-version mavericks)
+(if (< os-version 1010)
   (allow mach-lookup (global-name "com.apple.FontServer")))
 
 ; sysctl
-(if (= os-version mavericks)
+(if (= os-version 1009)
   (allow sysctl-read)
   ; else
   (allow sysctl-read
@@ -155,4 +153,6 @@
     (sysctl-name "kern.osrelease")
     (sysctl-name "kern.ostype")
     (sysctl-name "kern.osversion")
+    (sysctl-name (string-append "kern.proc.pid." (param current-pid)))
+    (sysctl-name "kern.usrstack64")
     (sysctl-name "kern.version")))
