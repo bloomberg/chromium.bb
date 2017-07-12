@@ -88,21 +88,50 @@ found in the LICENSE file.
       // WebVR-specific code begins here.
       // ================================
 
-      // This sample is going to use a slightly different start up sequence.
-      // In order to show the splash screen effect we won't have any magic
-      // window content and only begin loading the scene once the "Enter VR"
-      // button is clicked. At that point we'll render a single frame of the
-      // splash screen and let it reproject while the real scene loads. Once
-      // that scene is ready we'll begin rendering it.
+      // For many WebVR apps it can be handy to display a splash screen while
+      // the main scene's resources load, especially if the VR content isn't
+      // preloaded via a magic window. This lets the user know that their
+      // request to enter VR has been acknowledged and provides a super minimal
+      // tracked environment while everything else is being built.
+
+      // There are some best practices to follow when doing a splash screen,
+      // which this sample aims to demonstrate. They are:
+
+      // * Render a single frame and allow the underlying VR system to reproject
+      //   it for you.
+      // * Always render the splash such against a black background so the user
+      //   can't tell where the edge of the reprojected surface is.
+      // * The splash screen image should fit entirely in the users field of
+      //   view, otherwise reprojection may show clipped edges.
+      // * Always render the splash directly in front of the user, no matter
+      //   where they are looking at the moment the splash screen is shown.
+      // * Avoid the temptation to continuously render a spinner or other small
+      //   animation. You're just eating up GPU time that should be used to load
+      //   faster, and you're likely to jank terribly.
+      // * Beyond that, avoid even sparsely updated progress bars, as the user
+      //   may not be looking at the splash wen you update and then reprojection
+      //   breaks.
+      // * If you MUST update the splash while loading, always draw the updated
+      //   frames directy in front of the user. This is really janky, though, so
+      //   please just don't?
+      // * In general render the ABSOLUTE MINIMUM NECESSARY and spend all the
+      //   rest of your time loading. People did not come to your site to gawk
+      //   at your fabulous splash image.
 
       // WebGL setup.
-      var webglCanvas = null; document.getElementById("webgl-canvas");
+      var webglCanvas = null;
       var gl = null;
       var cubeSea = null;
       var stats = null;
       var textureLoader = null;
       var splashScreen = null;
 
+      // This sample is going to use a slightly different start up sequence.
+      // In order to show the splash screen effect we won't have any magic
+      // window content and only begin loading the scene once the "Enter VR"
+      // button is clicked. At that point we'll render a single frame of the
+      // splash screen and let it reproject while the real scene loads. Once
+      // that scene is ready we'll begin rendering it.
       function initWebGL (preserveDrawingBuffer) {
         webglCanvas = document.createElement('canvas');
         var glAttribs = {
