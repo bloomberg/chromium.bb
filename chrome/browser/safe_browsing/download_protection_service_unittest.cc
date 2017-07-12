@@ -1448,6 +1448,88 @@ TEST_F(DownloadProtectionServiceTest,
   CheckClientDownloadReportCorruptArchive(DMG);
 }
 
+// Tests that signatures get recorded and uploaded for signed DMGs.
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportDmgWithSignature) {
+  net::FakeURLFetcherFactory factory(NULL);
+  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::FilePath signed_dmg;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
+  signed_dmg = signed_dmg.AppendASCII("safe_browsing")
+                   .AppendASCII("mach_o")
+                   .AppendASCII("signed-archive.dmg");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
+      "http://www.google.com/",                                 // referrer
+      signed_dmg,                                               // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_TRUE(GetClientDownloadRequest()->has_udif_code_signature());
+  EXPECT_EQ(2215u, GetClientDownloadRequest()->udif_code_signature().length());
+
+  base::FilePath signed_dmg_signature;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
+  signed_dmg_signature = signed_dmg_signature.AppendASCII("safe_browsing")
+                             .AppendASCII("mach_o")
+                             .AppendASCII("signed-archive-signature.data");
+
+  std::string signature;
+  base::ReadFileToString(signed_dmg_signature, &signature);
+  EXPECT_EQ(2215u, signature.length());
+  EXPECT_EQ(signature, GetClientDownloadRequest()->udif_code_signature());
+
+  ClearClientDownloadRequest();
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+}
+
+// Tests that no signature gets recorded and uploaded for unsigned DMGs.
+TEST_F(DownloadProtectionServiceTest,
+       CheckClientDownloadReportDmgWithoutSignature) {
+  net::FakeURLFetcherFactory factory(NULL);
+  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::FilePath unsigned_dmg;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &unsigned_dmg));
+  unsigned_dmg = unsigned_dmg.AppendASCII("chrome")
+                     .AppendASCII("safe_browsing_dmg")
+                     .AppendASCII("mach_o_in_dmg.dmg");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
+      "http://www.google.com/",                                 // referrer
+      unsigned_dmg,                                             // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                        base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_FALSE(GetClientDownloadRequest()->has_udif_code_signature());
+
+  ClearClientDownloadRequest();
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+}
+
 // Test that downloaded files with no disk image extension that have a 'koly'
 // trailer are treated as disk images and processed accordingly.
 TEST_F(DownloadProtectionServiceTest,

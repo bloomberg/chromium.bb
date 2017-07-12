@@ -6,6 +6,12 @@ KEYCHAIN_PASSWORD=g0atMaster
 # This must match the commonName in codesign.cfg.
 KEYCHAIN_IDENTITY=untrusted@goat.local
 
+# Funcitons to add and remove codesigning identity to user's keychain. These 
+# are necessary since the codesign utility no longer supports the -k option,
+# which reads the identity from a file.
+pre-build = security import codesign.key && security import codesign.crt
+post-build = security delete-identity -c untrusted@goat.local
+
 executable32: src.c
 	clang -m32 -o $@ $^
 
@@ -34,58 +40,57 @@ codesign.crt: codesign.csr codesign.key codesign.cfg
 	openssl x509 -req -signkey codesign.key -sha256 \
 		-extfile codesign.cfg -extensions req_attrs -in $< -out $@
 
-codesign.keychain: codesign.key codesign.crt
-	security create-keychain -p $(KEYCHAIN_PASSWORD) $(PWD)/$@
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) $(PWD)/$@
-	certtool i ./codesign.crt k=$(PWD)/$@ r=./codesign.key
-
-signedexecutable32: executable32 codesign.keychain
+signedexecutable32: executable32 codesign.crt
+	$(call pre-build)
 	cp $< $@
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain $@
+	codesign -s $(KEYCHAIN_IDENTITY) $@
+	$(call post-build)
 
-libsigned64.dylib: lib64.dylib codesign.keychain
+libsigned64.dylib: lib64.dylib codesign.crt
+	$(call pre-build)
 	cp $< $@
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain $@
+	codesign -s $(KEYCHAIN_IDENTITY) $@
+	$(call post-build)
 
-signedexecutablefat: executablefat codesign.keychain
+signedexecutablefat: executablefat codesign.crt
+	$(call pre-build)
 	cp $< $@
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
-		$@ --all-architectures
+	codesign -s $(KEYCHAIN_IDENTITY) $@ --all-architectures
+	$(call post-build)
+
+signed-archive.dmg: test-bundle.app codesign.crt
+	$(call pre-build)
+	hdiutil create -srcfolder test-bundle.app -format UDZO -layout \
+		SPUD -volname "Signed Archive" -ov $@
+	codesign -s $(KEYCHAIN_IDENTITY) $@
+	$(call post-build)
 
 .PHONY: test-bundle.app
 test-bundle.app: signedexecutablefat libsigned64.dylib executable32
+	$(call pre-build)
 	ditto base-bundle.app $@
 	ditto $< $@/Contents/MacOS/test-bundle
 	ditto $(word 2,$^) $@/Contents/Frameworks/$(word 2,$^)
 	ditto $(word 3,$^) $@/Contents/Resources/$(word 3,$^)
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
-		$@ --all-architectures --resource-rules ResourceRules
+	codesign -f -s $(KEYCHAIN_IDENTITY) $@ --all-architectures \
+		--resource-rules ResourceRules
+	$(call post-build)
 
 .PHONY: modified-bundle.app
 modified-bundle.app: test-bundle.app lib32.dylib executable64
+	$(call pre-build)
 	ditto $< $@
 	echo "<xml/>" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
-		$@ --all-architectures --resource-rules ResourceRules
+	codesign -f -s $(KEYCHAIN_IDENTITY) $@ --all-architectures \
+		--resource-rules ResourceRules
 	echo "BAD" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
 	touch $@/Contents/Resources/codesign.cfg
 	ditto $(word 2,$^) $@/Contents/Frameworks/libsigned64.dylib
 	ditto $(word 3,$^) $@/Contents/Resources/executable32
 	echo "foo" >> $@/Contents/Resources/Base.lproj/MainMenu.nib
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
+	codesign -f -s $(KEYCHAIN_IDENTITY) \
 		$@/Contents/Resources/Base.lproj/MainMenu.nib
+	$(call post-build)
 
 .PHONY: modified-bundle-and-exec.app
 modified-bundle-and-exec.app: test-bundle.app lib32.dylib executable64
@@ -110,10 +115,10 @@ modified-main-exec64.app: test-bundle.app
 
 .PHONY: modified-localization.app
 modified-localization.app: test-bundle.app
+	$(call pre-build)
 	ditto $< $@
 	echo "<xml/>" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
-	security unlock-keychain -p $(KEYCHAIN_PASSWORD) \
-		$(PWD)/codesign.keychain
-	codesign -f -s $(KEYCHAIN_IDENTITY) --keychain $(PWD)/codesign.keychain \
-		$@ --all-architectures --resource-rules ResourceRules
+	codesign -f -s $(KEYCHAIN_IDENTITY) $@ --all-architectures \
+		--resource-rules ResourceRules
 	echo "CORRUPT" > $@/Contents/Resources/Base.lproj/InfoPlist.strings
+	$(call post-build)

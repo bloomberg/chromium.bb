@@ -12,3 +12,8 @@ only ever treated as data.
 
 The `executableppc' file has no Makefile target, as modern Macs cannot build
 for PPC. This file was created in a 10.6 VM with Xcode 3.2.6.
+
+Creating the signed binaries requires importing a temporary codesigning 
+identity into the current user's keychain. This is because the `codesign -k` 
+flag, which specifies a specific keychain file to use, is no longer respected.
+The temporary identity will be removed after the test binary is signed.

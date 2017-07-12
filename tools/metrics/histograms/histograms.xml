@@ -48253,8 +48253,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dimich@chromium.org</owner>
   <summary>
     Enum-based buckets reflect the number of days the Chrome was used in each
-    specific way. This data is accumulated locally and reported when connection
-    is likely to succeed (usually after successful online navigation).
+    specific way: - Not used at all during whole day. - Started, but failed to
+    successfully navigate. - Only navigated to offline pages locally saved on
+    the device. - Only navigated online. - Navigated to both online and offline
+    pages. This data is accumulated locally and reported when connection is
+    likely to succeed (usually after successful online navigation).
   </summary>
 </histogram>
 
@@ -65557,6 +65560,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records a histogram of how often users download a file with a file extension
     that is possibly dangerous (e.g., exe, class).
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DownloadFileHasDmgSignature" enum="Boolean">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    A Mac-only metric that records whether a given download file is a
+    cryptographically signed DMG archive. This metric is logged before Chrome
+    sends SafeBrowsing download pings.
   </summary>
 </histogram>
 

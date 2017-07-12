@@ -37,6 +37,10 @@ class DMGIterator {
   // invalid element before the first item.
   bool Open();
 
+  // Returns the raw code signature file metadata. This will be empty for DMGs
+  // that are not signed.
+  const std::vector<uint8_t>& GetCodeSignature();
+
   // Advances the iterator to the next file item. Returns true on success
   // and false on end-of-iterator.
   bool Next();

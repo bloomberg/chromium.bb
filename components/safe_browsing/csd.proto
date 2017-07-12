@@ -521,6 +521,11 @@ message ClientDownloadRequest {
   // Deprecated.
   optional bool DEPRECATED_download_attribution_finch_enabled = 39
       [deprecated = true];
+
+  // The Mac disk image code signature.
+  // The underlying structure of code signature is defined at
+  // https://opensource.apple.com/source/xnu/xnu-2782.1.97/bsd/sys/codesign.h
+  optional bytes udif_code_signature = 40;
 }
 
 // Please update SafeBrowsingNavigationObserverManager::SanitizeReferrerChain()
