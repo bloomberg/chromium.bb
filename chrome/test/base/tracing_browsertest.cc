@@ -101,13 +101,8 @@ class TracingBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// crbug.com/708487.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
-#else
-#define MAYBE_TestMemoryInfra TestMemoryInfra
-#endif  // defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestMemoryInfra) {
+// crbug.com/708487
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestMemoryInfra) {
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
@@ -115,13 +110,8 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestMemoryInfra) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
 }
 
-// crbug.com/708487.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TestBackgroundMemoryInfra DISABLED_TestBackgroundMemoryInfra
-#else
-#define MAYBE_TestBackgroundMemoryInfra TestBackgroundMemoryInfra
-#endif  // defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestBackgroundMemoryInfra) {
+// crbug.com/708487
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestBackgroundMemoryInfra) {
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
