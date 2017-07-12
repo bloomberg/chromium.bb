@@ -291,6 +291,7 @@ EXPERIMENT_LIST="
     cfl
     xiphrc
     dct_only
+    daala_dct4
     cb4x4
     chroma_2x2
     chroma_sub8x8
@@ -558,6 +559,14 @@ post_process_cmdline() {
     if enabled ec_smallmul && enabled ans; then
       log_echo "ec_smallmul requires not ans, so disabling ec_smallmul"
       disable_feature ec_smallmul
+    fi
+    if enabled daala_dct4; then
+      enable_feature dct_only
+      disable_feature mmx
+      disable_feature rect_tx
+      disable_feature var_tx
+      disable_feature lgt
+      enable_feature lowbitdepth
     fi
     if enabled ext_tile; then
       log_echo "ext_tile not compatible with reference_buffer, so"

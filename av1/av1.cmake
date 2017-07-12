@@ -33,6 +33,8 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/common_data.h"
     "${AOM_ROOT}/av1/common/convolve.c"
     "${AOM_ROOT}/av1/common/convolve.h"
+    "${AOM_ROOT}/av1/common/daala_tx.c"
+    "${AOM_ROOT}/av1/common/daala_tx.h"
     "${AOM_ROOT}/av1/common/debugmodes.c"
     "${AOM_ROOT}/av1/common/entropy.c"
     "${AOM_ROOT}/av1/common/entropy.h"
