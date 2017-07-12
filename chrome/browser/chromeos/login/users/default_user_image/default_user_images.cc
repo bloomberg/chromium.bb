@@ -6,11 +6,13 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/values.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -259,6 +261,25 @@ int GetDefaultImageHistogramValue(int index) {
   if (index < kHistogramImageFromCamera)
     return index;
   return index + 6;
+}
+
+std::unique_ptr<base::ListValue> GetAsDictionary() {
+  auto image_urls = base::MakeUnique<base::ListValue>();
+  for (int i = default_user_image::kFirstDefaultImageIndex;
+       i < default_user_image::kDefaultImagesCount; ++i) {
+    auto image_data = base::MakeUnique<base::DictionaryValue>();
+    image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
+    image_data->SetString("author",
+                          l10n_util::GetStringUTF16(
+                              default_user_image::kDefaultImageAuthorIDs[i]));
+    image_data->SetString("website",
+                          l10n_util::GetStringUTF16(
+                              default_user_image::kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title",
+                          default_user_image::GetDefaultImageDescription(i));
+    image_urls->Append(std::move(image_data));
+  }
+  return image_urls;
 }
 
 }  // namespace default_user_image
