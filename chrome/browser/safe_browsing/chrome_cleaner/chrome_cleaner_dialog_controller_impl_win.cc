@@ -5,41 +5,20 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/url_constants.h"
-#include "content/public/browser/page_navigator.h"
-#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "url/gurl.h"
 
 namespace safe_browsing {
 
 namespace {
 
 void OpenSettingsPage(Browser* browser) {
-  browser->OpenURL(content::OpenURLParams(
-      GURL(chrome::kChromeUISettingsURL), content::Referrer(),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false));
-}
-
-Browser* FindBrowserForDialog() {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  for (BrowserList::const_reverse_iterator browser_iterator =
-           browser_list->begin_last_active();
-       browser_iterator != browser_list->end_last_active();
-       ++browser_iterator) {
-    Browser* browser = *browser_iterator;
-    if (browser->window()->IsActive() || !browser->window()->IsMinimized())
-      return browser;
-  }
-
-  return nullptr;
+  chrome_cleaner_util::OpenSettingsPage(
+      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      /*skip_if_current_tab=*/false);
 }
 
 // These values are used to send UMA information and are replicated in the
@@ -147,7 +126,7 @@ void ChromeCleanerDialogControllerImpl::OnInfected(
     const std::set<base::FilePath>& files_to_delete) {
   DCHECK(!dialog_shown_);
 
-  browser_ = FindBrowserForDialog();
+  browser_ = chrome_cleaner_util::FindBrowser();
   if (!browser_) {
     // TODO(alito): Register with chrome::BrowserListObserver to get notified
     // later if a suitable browser window becomes available to show the

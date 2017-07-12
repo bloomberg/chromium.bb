@@ -25,15 +25,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace safe_browsing {
 
@@ -511,6 +514,12 @@ void ChromeCleanerController::OnCleanerProcessDone(
     if (process_status.exit_code == kRebootRequiredExitCode) {
       RecordCleanupResultHistogram(CLEANUP_RESULT_REBOOT_REQUIRED);
       SetStateAndNotifyObservers(State::kRebootRequired);
+
+      Browser* browser = chrome_cleaner_util::FindBrowser();
+      if (browser)
+        chrome_cleaner_util::OpenSettingsPage(
+            browser, WindowOpenDisposition::NEW_BACKGROUND_TAB,
+            /*skip_if_current_tab=*/true);
       return;
     }
 
