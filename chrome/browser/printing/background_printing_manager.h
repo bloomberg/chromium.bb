@@ -48,6 +48,8 @@ class BackgroundPrintingManager : public content::NotificationObserver {
   void DeletePreviewContentsForBrowserContext(
       content::BrowserContext* browser_context);
 
+  void OnPrintRequestCancelled(content::WebContents* preview_dialog);
+
  private:
   // content::NotificationObserver overrides:
   void Observe(int type,

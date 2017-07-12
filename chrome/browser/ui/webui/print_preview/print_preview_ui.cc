@@ -533,13 +533,20 @@ void PrintPreviewUI::OnPrintPreviewDialogClosed() {
 }
 
 void PrintPreviewUI::OnInitiatorClosed() {
+  // Should only get here if the initiator was still tracked by the Print
+  // Preview Dialog Controller, so the print job has not yet been sent.
   WebContents* preview_dialog = web_ui()->GetWebContents();
   printing::BackgroundPrintingManager* background_printing_manager =
       g_browser_process->background_printing_manager();
-  if (background_printing_manager->HasPrintPreviewDialog(preview_dialog))
-    web_ui()->CallJavascriptFunctionUnsafe("cancelPendingPrintRequest");
-  else
+  if (background_printing_manager->HasPrintPreviewDialog(preview_dialog)) {
+    // Dialog is hidden but is still generating the preview. Cancel the print
+    // request as it can't be completed.
+    background_printing_manager->OnPrintRequestCancelled(preview_dialog);
+    handler_->OnPrintRequestCancelled();
+  } else {
+    // Initiator was closed while print preview dialog was still open.
     OnClosePrintPreviewDialog();
+  }
 }
 
 void PrintPreviewUI::OnPrintPreviewCancelled() {

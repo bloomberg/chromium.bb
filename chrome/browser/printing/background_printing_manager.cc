@@ -113,6 +113,11 @@ void BackgroundPrintingManager::DeletePreviewContentsForBrowserContext(
   }
 }
 
+void BackgroundPrintingManager::OnPrintRequestCancelled(
+    WebContents* preview_contents) {
+  DeletePreviewContents(preview_contents);
+}
+
 void BackgroundPrintingManager::DeletePreviewContents(
     WebContents* preview_contents) {
   auto i = printing_contents_map_.find(preview_contents);

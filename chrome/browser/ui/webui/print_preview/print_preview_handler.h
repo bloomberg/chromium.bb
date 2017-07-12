@@ -86,6 +86,9 @@ class PrintPreviewHandler
   // Called when print preview is ready.
   void OnPrintPreviewReady(int preview_uid, int request_id);
 
+  // Called when a print request is cancelled due to its initiator closing.
+  void OnPrintRequestCancelled();
+
   // Send the print preset options from the document.
   void SendPrintPresetOptions(bool disable_scaling, int copies, int duplex);
 
