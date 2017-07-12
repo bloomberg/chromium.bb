@@ -350,7 +350,6 @@ Still reading?
     <ignore regexp="remoting/android/java/res/drawable-hdpi/ic_zoom_in.png"/>
     <ignore regexp="remoting/android/java/res/drawable-hdpi/ic_zoom_out.png"/>
     <ignore regexp="remoting/android/java/res/layout/navigation_list_item.xml"/>
-    <ignore regexp="remoting/android/java/res/mipmap-hdpi/logo_remote_desktop_launcher.png"/>
     <ignore regexp="remoting/android/java/res/values-v17/styles.xml"/>
     <!-- Used by Android's policies system -->
     <ignore regexp="restriction_values.xml"/>
@@ -464,5 +463,9 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/payments/ui/EditorDialog.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/signin/SigninAndSyncView.java"/>
+  </issue>
+  <issue id="IconLauncherFormat" severity="ignore">
+    <!-- TODO(crbug.com/739746): Remove after lint version has been updated. -->
+    <ignore regexp="remoting/android/java/res/mipmap-anydpi-v26/ic_launcher.xml"/>
   </issue>
 </lint>
