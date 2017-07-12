@@ -22,6 +22,8 @@ class CastTransportHostFilterTest : public testing::Test {
       : browser_thread_bundle_(
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
     filter_ = new cast::CastTransportHostFilter();
+    static_cast<cast::CastTransportHostFilter*>(filter_.get())
+        ->InitializeNoOpWakeLockForTesting();
     // 127.0.0.1:7 is the local echo service port, which
     // is probably not going to respond, but that's ok.
     // TODO(hubbe): Open up an UDP port and make sure

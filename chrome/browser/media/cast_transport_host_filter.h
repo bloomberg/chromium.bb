@@ -27,6 +27,9 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
  public:
   CastTransportHostFilter();
 
+  // Used by unit test only.
+  void InitializeNoOpWakeLockForTesting();
+
  private:
   ~CastTransportHostFilter() override;
 
