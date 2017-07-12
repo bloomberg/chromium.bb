@@ -62,14 +62,11 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
       PLOG(ERROR) << "dup";
       return nullptr;
     }
-    // Close all the fds.
-    for (const auto& fd : handle.native_pixmap_handle.fds)
-      base::ScopedFD scoped_fd(fd.fd);
   }
 
   gfx::NativePixmapHandle native_pixmap_handle;
   if (scoped_fd.is_valid()) {
-    native_pixmap_handle.fds.emplace_back(scoped_fd.release(),
+    native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
                                           true /* auto_close */);
   }
   native_pixmap_handle.planes = handle.native_pixmap_handle.planes;
