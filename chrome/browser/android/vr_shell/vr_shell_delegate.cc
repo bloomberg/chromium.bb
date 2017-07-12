@@ -245,10 +245,6 @@ void VrShellDelegate::CreateVRDisplayInfo(
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-bool RegisterVrShellDelegate(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new VrShellDelegate(env, obj));
 }

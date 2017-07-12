@@ -259,8 +259,6 @@ class VrShell : public device::GvrDelegate,
   DISALLOW_COPY_AND_ASSIGN(VrShell);
 };
 
-bool RegisterVrShell(JNIEnv* env);
-
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_H_

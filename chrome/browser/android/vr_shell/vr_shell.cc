@@ -188,10 +188,6 @@ void VrShell::SetUiState() {
   }
 }
 
-bool RegisterVrShell(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 VrShell::~VrShell() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   poll_capturing_media_task_.Cancel();

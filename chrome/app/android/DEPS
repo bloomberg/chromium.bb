@@ -3,4 +3,8 @@ specific_include_rules = {
   "chrome_main_delegate_android.cc": [
     "+content/browser/media/android/browser_media_player_manager.h",
   ],
+  "chrome_jni_onload.cc": [
+    "+device/vr/features/features.h",
+    "+third_party/gvr-android-sdk"
+  ],
 }
