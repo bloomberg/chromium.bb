@@ -4,15 +4,19 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 
+#include "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_constants.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_item.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,6 +51,21 @@
 }
 
 #pragma mark - Public
+
+- (void)takeSnapshotWithCache:(SnapshotCache*)snapshotCache {
+  web::WebState* webState = self.webStateList->GetActiveWebState();
+  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
+  DCHECK(tabHelper);
+  NSString* tabID = tabHelper->tab_id();
+  int index = self.webStateList->active_index();
+  __weak TabCollectionMediator* weakSelf = self;
+  webState->TakeSnapshot(base::BindBlockArc(^(const gfx::Image& snapshot) {
+                           [snapshotCache setImage:snapshot.ToUIImage()
+                                     withSessionID:tabID];
+                           [weakSelf.consumer updateSnapshotAtIndex:index];
+                         }),
+                         kSnapshotThumbnailSize);
+}
 
 - (void)disconnect {
   _webStateList = nullptr;

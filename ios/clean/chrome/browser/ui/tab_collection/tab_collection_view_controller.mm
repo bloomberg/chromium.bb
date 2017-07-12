@@ -157,6 +157,7 @@
 - (void)insertItem:(TabCollectionItem*)item
            atIndex:(int)index
      selectedIndex:(int)selectedIndex {
+  DCHECK(item);
   DCHECK_GE(index, 0);
   DCHECK_LE(static_cast<NSUInteger>(index), self.items.count);
   [self.items insertObject:item atIndex:index];
@@ -202,6 +203,15 @@
   self.items = [items mutableCopy];
   [self.tabs reloadItemsAtIndexPaths:[self.tabs indexPathsForVisibleItems]];
   self.selectedIndex = selectedIndex;
+}
+
+- (void)updateSnapshotAtIndex:(int)index {
+  DCHECK_GE(index, 0);
+  DCHECK_LT(static_cast<NSUInteger>(index), self.items.count);
+  TabCollectionTabCell* cell = base::mac::ObjCCastStrict<TabCollectionTabCell>(
+      [self.tabs cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index
+                                                            inSection:0]]);
+  [cell configureCell:self.items[index] snapshotCache:self.snapshotCache];
 }
 
 @end

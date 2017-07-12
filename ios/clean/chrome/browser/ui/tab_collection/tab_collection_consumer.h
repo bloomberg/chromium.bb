@@ -36,6 +36,10 @@
 // of the selected item in the tab collection.
 - (void)populateItems:(NSArray<TabCollectionItem*>*)items
         selectedIndex:(int)selectedIndex;
+
+// Updates the snapshot |index|.
+- (void)updateSnapshotAtIndex:(int)index;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_CONSUMER_H_
