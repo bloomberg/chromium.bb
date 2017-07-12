@@ -108,7 +108,11 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
 
 void ClientProcessImpl::RequestOSMemoryDump(
     const std::vector<base::ProcessId>& ids,
-    const RequestOSMemoryDumpCallback& callback) {}
+    const RequestOSMemoryDumpCallback& callback) {
+  using OSMemDump = base::trace_event::MemoryDumpCallbackResult::OSMemDump;
+  std::unordered_map<base::ProcessId, OSMemDump> results;
+  callback.Run(true, results);
+}
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,
                                   const std::string& service_name,
