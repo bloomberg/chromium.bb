@@ -22,7 +22,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -209,7 +208,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       CollectionViewTextItem* headerItem =
           [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
       headerItem.text =
-          l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE);
+          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING);
       headerItem.textColor = [[MDCPalette greyPalette] tint500];
       [model setHeader:headerItem
           forSectionWithIdentifier:SectionIdentifierSavedPasswords];
@@ -223,7 +222,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       CollectionViewTextItem* headerItem =
           [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
       headerItem.text =
-          l10n_util::GetNSString(IDS_PASSWORD_MANAGER_EXCEPTIONS_TAB_TITLE);
+          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING);
       headerItem.textColor = [[MDCPalette greyPalette] tint500];
       [model setHeader:headerItem
           forSectionWithIdentifier:SectionIdentifierBlacklist];

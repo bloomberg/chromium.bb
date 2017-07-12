@@ -570,7 +570,7 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   // of the list of passwords.
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                                IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE)),
+                                IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING)),
                             grey_accessibilityTrait(UIAccessibilityTraitHeader),
                             nullptr)] assertWithMatcher:grey_notNil()];
 
