@@ -128,14 +128,14 @@ void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
 
     // Log a warning message because, for now, this should not basically happen
     // except for some exceptional situation or due to some bug.
-    LOG(WARNING) << "Migration has happend for an ARC-disallowed user.";
+    LOG(WARNING) << "Migration has happened for an ARC-disallowed user.";
   } else {
     message_center::NotifierId notifier_id(
         message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
     notifier_id.profile_id = account_id.GetUserEmail();
 
     // Delay the notification to make sure that it is not hidden behind windows
-    // which are shown at the beginnig of user session (e.g. Chrome).
+    // which are shown at the beginning of user session (e.g. Chrome).
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DoShowArcMigrationSuccessNotification, notifier_id),

@@ -27,11 +27,11 @@ namespace arc {
 // Values to be stored in the local state preference to keep track of the
 // filesystem encryption migration status.
 enum FileSystemCompatibilityState : int32_t {
-  // No migiration has happend, user keeps using the old file system.
+  // No migration has happened, user keeps using the old file system.
   kFileSystemIncompatible = 0,
-  // Migration has happend. New filesystem is in use.
+  // Migration has happened. New filesystem is in use.
   kFileSystemCompatible = 1,
-  // Migration has happend, and a notification about the fact was already shown.
+  // Migration has happened, and a notification about it was already shown.
   kFileSystemCompatibleAndNotified = 2,
 
   // Existing code assumes that kFileSystemIncompatible is the only state
@@ -47,7 +47,7 @@ enum FileSystemCompatibilityState : int32_t {
 bool IsArcAllowedForProfile(const Profile* profile);
 
 // Returns true if the profile is temporarily blocked to run ARC in the current
-// session, because the filesystem storing the profile is incomaptible with the
+// session, because the filesystem storing the profile is incompatible with the
 // currently installed ARC version.
 //
 // The actual filesystem check is performed only when it is running on the
