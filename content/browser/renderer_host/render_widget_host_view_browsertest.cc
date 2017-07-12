@@ -619,7 +619,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         "}"
         "</style>"
         "<script>"
-        "  domAutomationController.setAutomationId(0);"
         "  domAutomationController.send(\"DONE\");"
         "</script>",
         box_size.width(),
