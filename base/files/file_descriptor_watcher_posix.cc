@@ -108,8 +108,12 @@ FileDescriptorWatcher::Controller::Watcher::~Watcher() {
 void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MessageLoopForIO::current()->WatchFileDescriptor(
+  bool succeeded = MessageLoopForIO::current()->WatchFileDescriptor(
       fd_, false, mode_, &file_descriptor_watcher_, this);
+  // TODO(wez): Ideally we would [D]CHECK here, or propagate the failure back
+  // to the caller, but there is no guarantee that they haven't already
+  // closed |fd_| on another thread.
+  DLOG_IF(ERROR, !succeeded) << "Failed to watch fd=" << fd_;
 
   if (!registered_as_destruction_observer_) {
     MessageLoopForIO::current()->AddDestructionObserver(this);
