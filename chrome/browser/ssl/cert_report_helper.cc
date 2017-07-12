@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -124,6 +125,8 @@ void CertReportHelper::FinishCertCollection(
   certificate_reporting::ErrorReport report(request_url_.host(), ssl_info_);
 
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
+
+  report.AddChromeChannel(chrome::GetChannel());
 
   report.SetInterstitialInfo(
       interstitial_reason_, user_proceeded,

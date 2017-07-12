@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "components/certificate_reporting/cert_logger.pb.h"
 #include "components/network_time/network_time_tracker.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -174,12 +173,43 @@ void ErrorReport::AddNetworkTimeInfo(
   network_time_info->set_network_time_query_behavior(report_behavior);
 }
 
+void ErrorReport::AddChromeChannel(version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::STABLE:
+      cert_report_->set_chrome_channel(
+          CertLoggerRequest::CHROME_CHANNEL_STABLE);
+      break;
+
+    case version_info::Channel::BETA:
+      cert_report_->set_chrome_channel(CertLoggerRequest::CHROME_CHANNEL_BETA);
+      break;
+
+    case version_info::Channel::CANARY:
+      cert_report_->set_chrome_channel(
+          CertLoggerRequest::CHROME_CHANNEL_CANARY);
+      break;
+
+    case version_info::Channel::DEV:
+      cert_report_->set_chrome_channel(CertLoggerRequest::CHROME_CHANNEL_DEV);
+      break;
+
+    case version_info::Channel::UNKNOWN:
+      cert_report_->set_chrome_channel(
+          CertLoggerRequest::CHROME_CHANNEL_UNKNOWN);
+      break;
+  }
+}
+
 void ErrorReport::SetIsRetryUpload(bool is_retry_upload) {
   cert_report_->set_is_retry_upload(is_retry_upload);
 }
 
 const std::string& ErrorReport::hostname() const {
   return cert_report_->hostname();
+}
+
+CertLoggerRequest::ChromeChannel ErrorReport::chrome_channel() const {
+  return cert_report_->chrome_channel();
 }
 
 bool ErrorReport::is_retry_upload() const {

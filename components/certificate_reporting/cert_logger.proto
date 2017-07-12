@@ -148,4 +148,16 @@ message CertLoggerRequest {
   // False when the report is attempted to be uploaded for the first time. True
   // in all other uploads.
   optional bool is_retry_upload = 11;
+
+  enum ChromeChannel {
+    CHROME_CHANNEL_NONE = 0;
+    CHROME_CHANNEL_UNKNOWN = 1;
+    CHROME_CHANNEL_DEV = 2;
+    CHROME_CHANNEL_CANARY = 3;
+    CHROME_CHANNEL_BETA = 4;
+    CHROME_CHANNEL_STABLE = 5;
+  };
+
+  // The Chrome channel that this error occurred on.
+  optional ChromeChannel chrome_channel = 12;
 };

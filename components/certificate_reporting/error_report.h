@@ -8,6 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "components/certificate_reporting/cert_logger.pb.h"
+#include "components/version_info/version_info.h"
+
 namespace base {
 class Time;
 }  // namespace base
@@ -73,11 +76,16 @@ class ErrorReport {
   void AddNetworkTimeInfo(
       const network_time::NetworkTimeTracker* network_time_tracker);
 
+  void AddChromeChannel(version_info::Channel channel);
+
   // Sets is_retry_upload field of the protobuf to |is_retry_upload|.
   void SetIsRetryUpload(bool is_retry_upload);
 
   // Gets the hostname to which this report corresponds.
   const std::string& hostname() const;
+
+  // Gets the Chrome channel attached to this report.
+  CertLoggerRequest::ChromeChannel chrome_channel() const;
 
   // Returns true if the report has been retried.
   bool is_retry_upload() const;

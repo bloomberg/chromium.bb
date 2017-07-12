@@ -609,6 +609,8 @@ class SSLUITest : public InProcessBrowserTest {
         std::move(ssl_cert_reporter));
 
     EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
+    EXPECT_EQ(certificate_reporting::CertLoggerRequest::CHROME_CHANNEL_NONE,
+              reporter_callback.GetLatestChromeChannelReported());
 
     // Leave the interstitial (either by proceeding or going back)
     if (proceed == SSL_INTERSTITIAL_PROCEED) {
@@ -626,9 +628,13 @@ class SSLUITest : public InProcessBrowserTest {
       run_loop.Run();
       EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
                 reporter_callback.GetLatestHostnameReported());
+      EXPECT_NE(certificate_reporting::CertLoggerRequest::CHROME_CHANNEL_NONE,
+                reporter_callback.GetLatestChromeChannelReported());
     } else {
       base::RunLoop().RunUntilIdle();
       EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
+      EXPECT_EQ(certificate_reporting::CertLoggerRequest::CHROME_CHANNEL_NONE,
+                reporter_callback.GetLatestChromeChannelReported());
     }
   }
 
