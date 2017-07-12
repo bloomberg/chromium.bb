@@ -14,17 +14,6 @@
 
 namespace cc {
 
-// static
-std::unique_ptr<CopyOutputRequest> CopyOutputRequest::CreateRelayRequest(
-    const CopyOutputRequest& original_request,
-    const CopyOutputRequestCallback& result_callback) {
-  std::unique_ptr<CopyOutputRequest> relay = CreateRequest(result_callback);
-  relay->force_bitmap_result_ = original_request.force_bitmap_result_;
-  relay->area_ = original_request.area_;
-  relay->texture_mailbox_ = original_request.texture_mailbox_;
-  return relay;
-}
-
 CopyOutputRequest::CopyOutputRequest() : force_bitmap_result_(false) {}
 
 CopyOutputRequest::CopyOutputRequest(
@@ -42,9 +31,16 @@ CopyOutputRequest::~CopyOutputRequest() {
 }
 
 void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
-  bool success = !result->IsEmpty();
-  base::ResetAndReturn(&result_callback_).Run(std::move(result));
-  TRACE_EVENT_ASYNC_END1("cc", "CopyOutputRequest", this, "success", success);
+  TRACE_EVENT_ASYNC_END1("cc", "CopyOutputRequest", this, "success",
+                         !result->IsEmpty());
+  if (result_task_runner_) {
+    result_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(base::ResetAndReturn(&result_callback_),
+                                  std::move(result)));
+    result_task_runner_ = nullptr;
+  } else {
+    base::ResetAndReturn(&result_callback_).Run(std::move(result));
+  }
 }
 
 void CopyOutputRequest::SendEmptyResult() {

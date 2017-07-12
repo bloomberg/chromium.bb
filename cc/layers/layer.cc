@@ -1114,21 +1114,6 @@ void Layer::SetStickyPositionConstraint(
   SetNeedsCommit();
 }
 
-static void RunCopyCallbackOnMainThread(
-    std::unique_ptr<CopyOutputRequest> request,
-    std::unique_ptr<CopyOutputResult> result) {
-  request->SendResult(std::move(result));
-}
-
-static void PostCopyCallbackToMainThread(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    std::unique_ptr<CopyOutputRequest> request,
-    std::unique_ptr<CopyOutputResult> result) {
-  main_thread_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&RunCopyCallbackOnMainThread,
-                                base::Passed(&request), base::Passed(&result)));
-}
-
 bool Layer::IsSnapped() {
   return scrollable();
 }
@@ -1218,21 +1203,17 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
 void Layer::TakeCopyRequests(
     std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
-  for (auto& it : inputs_.copy_requests) {
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-        layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner();
-    std::unique_ptr<CopyOutputRequest> original_request = std::move(it);
-    const CopyOutputRequest& original_request_ref = *original_request;
-    std::unique_ptr<CopyOutputRequest> main_thread_request =
-        CopyOutputRequest::CreateRelayRequest(
-            original_request_ref,
-            base::Bind(&PostCopyCallbackToMainThread, main_thread_task_runner,
-                       base::Passed(&original_request)));
-    if (main_thread_request->has_area()) {
-      main_thread_request->set_area(gfx::IntersectRects(
-          main_thread_request->area(), gfx::Rect(bounds())));
+  for (std::unique_ptr<CopyOutputRequest>& request : inputs_.copy_requests) {
+    // Ensure the result callback is not invoked on the compositing thread.
+    if (!request->has_result_task_runner()) {
+      request->set_result_task_runner(
+          layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
     }
-    requests->push_back(std::move(main_thread_request));
+    if (request->has_area()) {
+      request->set_area(
+          gfx::IntersectRects(request->area(), gfx::Rect(bounds())));
+    }
+    requests->push_back(std::move(request));
   }
 
   inputs_.copy_requests.clear();
