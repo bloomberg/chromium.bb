@@ -242,6 +242,9 @@ IOSIOThread::IOSIOThread(PrefService* local_state,
   pref_proxy_config_tracker_ =
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
           local_state);
+  system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
+      pref_proxy_config_tracker_.get());
+
   ssl_config_service_manager_.reset(
       ssl_config::SSLConfigServiceManager::CreateDefaultManager(
           local_state,
@@ -285,7 +288,11 @@ void IOSIOThread::ChangedToOnTheRecord() {
 net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!system_url_request_context_getter_.get()) {
-    InitSystemRequestContext();
+    // If we're in unit_tests, IOSIOThread may not be run.
+    if (!web::WebThread::IsMessageLoopValid(web::WebThread::IO))
+      return nullptr;
+    system_url_request_context_getter_ =
+        new SystemURLRequestContextGetter(this);
   }
   return system_url_request_context_getter_.get();
 }
@@ -353,19 +360,12 @@ void IOSIOThread::Init() {
       base::CommandLine(base::CommandLine::NO_PROGRAM),
       /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_);
 
-  // InitSystemRequestContext turns right around and posts a task back
-  // to the IO thread, so we can't let it run until we know the IO
-  // thread has started.
-  //
-  // Note that since we are at WebThread::Init time, the UI thread
-  // is blocked waiting for the thread to start.  Therefore, posting
-  // this task to the main thread's message loop here is guaranteed to
-  // get it onto the message loop while the IOSIOThread object still
-  // exists.  However, the message might not be processed on the UI
-  // thread until after IOSIOThread is gone, so use a weak pointer.
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
-                           base::Bind(&IOSIOThread::InitSystemRequestContext,
-                                      weak_factory_.GetWeakPtr()));
+  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
+      net_log_, nullptr, globals_->system_network_delegate.get(),
+      std::move(system_proxy_config_service_), true /* quick_check_enabled */);
+
+  globals_->system_request_context.reset(
+      ConstructSystemRequestContext(globals_, params_, net_log_));
 }
 
 void IOSIOThread::CleanUp() {
@@ -427,37 +427,6 @@ void IOSIOThread::ChangedToOnTheRecordOnIOThread() {
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
   ClearHostCache();
-}
-
-void IOSIOThread::InitSystemRequestContext() {
-  if (system_url_request_context_getter_.get())
-    return;
-  // If we're in unit_tests, IOSIOThread may not be run.
-  if (!web::WebThread::IsMessageLoopValid(web::WebThread::IO))
-    return;
-  system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
-      pref_proxy_config_tracker_.get());
-
-  system_url_request_context_getter_ = new SystemURLRequestContextGetter(this);
-  // Safe to post an unretained this pointer, since IOSIOThread is
-  // guaranteed to outlive the IO WebThread.
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
-      base::Bind(&IOSIOThread::InitSystemRequestContextOnIOThread,
-                 base::Unretained(this)));
-}
-
-void IOSIOThread::InitSystemRequestContextOnIOThread() {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  DCHECK(!globals_->system_proxy_service.get());
-  DCHECK(system_proxy_config_service_.get());
-
-  globals_->system_proxy_service = ProxyServiceFactory::CreateProxyService(
-      net_log_, nullptr, globals_->system_network_delegate.get(),
-      std::move(system_proxy_config_service_), true /* quick_check_enabled */);
-
-  globals_->system_request_context.reset(
-      ConstructSystemRequestContext(globals_, params_, net_log_));
 }
 
 net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(

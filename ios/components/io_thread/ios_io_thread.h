@@ -177,16 +177,6 @@ class IOSIOThread : public web::WebThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  // Global state must be initialized on the IO thread, then this
-  // method must be invoked on the UI thread.
-  void InitSystemRequestContext();
-
-  // Lazy initialization of system request context for
-  // SystemURLRequestContextGetter. To be called on IO thread only
-  // after global state has been initialized on the IO thread, and
-  // SystemRequestContext state has been initialized on the UI thread.
-  void InitSystemRequestContextOnIOThread();
-
   // Sets up HttpAuthPreferences and HttpAuthHandlerFactory on Globals.
   void CreateDefaultAuthHandlerFactory();
 
