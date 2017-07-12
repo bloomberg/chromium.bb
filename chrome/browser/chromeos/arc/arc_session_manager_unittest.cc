@@ -486,6 +486,74 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->Shutdown();
 }
 
+// Test case when directly started flag is not set during the ARC boot.
+TEST_F(ArcSessionManagerTest, IsDirectlyStartedFalse) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  // On initial start directy started flag is not set.
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->Shutdown();
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+}
+
+// Test case when directly started flag is set during the ARC boot.
+// Preconditions are: ToS accepted and ARC was signed in.
+TEST_F(ArcSessionManagerTest, IsDirectlyStartedTrue) {
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(arc_session_manager()->is_directly_started());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Disabling ARC turns directy started flag off.
+  arc_session_manager()->RequestDisable();
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->Shutdown();
+}
+
+// Test case when directly started flag is preserved during the internal ARC
+// restart.
+TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+
+  // Simualate internal restart.
+  arc_session_manager()->StopAndEnableArc();
+  // Fake ARC session implementation synchronously calls stop callback and
+  // session manager should be reactivated at this moment.
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  // directy started flag should be preserved.
+  EXPECT_FALSE(arc_session_manager()->is_directly_started());
+  arc_session_manager()->Shutdown();
+}
+
 class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
  public:
   ArcSessionManagerArcAlwaysStartTest() = default;

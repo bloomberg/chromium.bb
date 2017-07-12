@@ -205,7 +205,7 @@ class ArcAppListPrefs
       ui::ScaleFactor scale_factor) const;
 
   // Sets last launched time for the requested app.
-  void SetLastLaunchTime(const std::string& app_id, const base::Time& time);
+  void SetLastLaunchTime(const std::string& app_id);
 
   // Calls RequestIcon if no request is recorded.
   void MaybeRequestIcon(const std::string& app_id,
@@ -441,6 +441,8 @@ class ArcAppListPrefs
   bool apps_restored_ = false;
   // True is ARC package list has been successfully refreshed.
   bool package_list_initial_refreshed_ = false;
+  // Used to detect first ARC app launch request.
+  bool first_launch_app_request_ = true;
   // Play Store does not have publicly available observers for default app
   // installations. This timeout is for validating default app availability.
   // Default apps should be either already installed or their installations

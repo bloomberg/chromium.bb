@@ -492,8 +492,11 @@ void ArcSessionManager::ShutdownSession() {
       // Request to stop the ARC. |state_| will be set to STOPPED eventually.
       // TODO(yusukes): Always call RequestStop() with |true|.
       // We can actually remove the boolean parameter then.
-      arc_session_runner_->RequestStop(false);
+      // Set state before requesting the runner to stop in order to prevent the
+      // case when |OnSessionStopped| can be called inline and as result
+      // |state_| might be changed.
       state_ = State::STOPPING;
+      arc_session_runner_->RequestStop(false);
       break;
     case State::STOPPING:
       // Now ARC is stopping. Do nothing here.
@@ -584,14 +587,17 @@ void ArcSessionManager::RequestEnable() {
   enable_requested_ = true;
 
   VLOG(1) << "ARC opt-in. Starting ARC session.";
-  RequestEnableImpl();
+
+  // |directly_started_| flag must be preserved during the internal ARC restart.
+  // So set it only when ARC is externally requested to start.
+  directly_started_ = RequestEnableImpl();
 }
 
 bool ArcSessionManager::IsPlaystoreLaunchRequestedForTesting() const {
   return playstore_launcher_.get();
 }
 
-void ArcSessionManager::RequestEnableImpl() {
+bool ArcSessionManager::RequestEnableImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(enable_requested_);
@@ -604,7 +610,7 @@ void ArcSessionManager::RequestEnableImpl() {
     // stopped) or ARC data removal is in progress, postpone the enabling
     // procedure.
     reenable_arc_ = true;
-    return;
+    return false;
   }
 
   oobe_start_ = IsOobeOptInActive();
@@ -628,7 +634,7 @@ void ArcSessionManager::RequestEnableImpl() {
     // Otherwise, be silent now. Users are notified when clicking ARC app icons.
     if (!start_arc_directly && !g_disable_ui_for_testing)
       arc::ShowArcMigrationGuideNotification(profile_);
-    return;
+    return false;
   }
 
   if (!pai_starter_ && !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) &&
@@ -647,10 +653,11 @@ void ArcSessionManager::RequestEnableImpl() {
     // Thus, StartArc() should be called so that disabling should work even
     // if synchronous call case.
     StartBackgroundAndroidManagementCheck();
-    return;
+    return true;
   }
 
   MaybeStartTermsOfServiceNegotiation();
+  return false;
 }
 
 void ArcSessionManager::RequestDisable() {
@@ -663,7 +670,9 @@ void ArcSessionManager::RequestDisable() {
     arc_session_runner_->RequestStop(true);
     return;
   }
+
   oobe_start_ = false;
+  directly_started_ = false;
   enable_requested_ = false;
   scoped_opt_in_tracker_.reset();
 
@@ -945,7 +954,9 @@ void ArcSessionManager::StartArc() {
 
 void ArcSessionManager::StopArc() {
   // TODO(hidehiko): This STOPPED guard should be unnecessary. Remove it later.
-  if (state_ != State::STOPPED) {
+  // |reenable_arc_| may be set in |StopAndEnableArc| in case enterprise
+  // management state is lost.
+  if (!reenable_arc_ && state_ != State::STOPPED) {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
   }
