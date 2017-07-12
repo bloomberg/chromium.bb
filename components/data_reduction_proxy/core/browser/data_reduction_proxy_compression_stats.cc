@@ -1078,6 +1078,7 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
         long_bypass.Add(data_used);
         break;
       case UPDATE:
+      case DIRECT_HTTP:
         // Don't record any request level prefs. If this is an update, this data
         // was already recorded at the URLRequest level. Updates are generally
         // page load level optimizations and don't correspond to request types.

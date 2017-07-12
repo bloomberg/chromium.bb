@@ -84,6 +84,7 @@ void RecordNewContentLengthHistograms(
       suffix = ".ViaDRP";
       break;
     case HTTPS:
+    case DIRECT_HTTP:
       suffix = ".Direct";
       break;
     case SHORT_BYPASS:
@@ -150,9 +151,10 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength", received_content_length);
 
   // Record the new histograms broken down by HTTP/HTTPS and video/non-video
-  RecordNewContentLengthHistograms("Net.HttpContentLength", is_https, is_video,
-                                   request_type, received_content_length);
-  RecordNewContentLengthHistograms("Net.HttpOriginalContentLength", is_https,
+  RecordNewContentLengthHistograms("Net.HttpContentLengthV2", is_https,
+                                   is_video, request_type,
+                                   received_content_length);
+  RecordNewContentLengthHistograms("Net.HttpOriginalContentLengthV2", is_https,
                                    is_video, request_type,
                                    original_content_length);
 

@@ -40,6 +40,7 @@ enum DataReductionProxyRequestType {
   LONG_BYPASS,   // The client is bypassed by the proxy for a long time (due
                  // to country bypass policy, for example).
   UPDATE,        // An update to already counted request data.
+  DIRECT_HTTP,   // An http request with a disabled data reduction proxy.
   UNKNOWN_TYPE,  // Any other reason not listed above.
 };
 
