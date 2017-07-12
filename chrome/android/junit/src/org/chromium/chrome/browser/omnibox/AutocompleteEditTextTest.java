@@ -70,23 +70,12 @@ public class AutocompleteEditTextTest {
 
         @Override
         public void onAutocompleteTextStateChanged(boolean updateDisplay) {
-            // This function is called in super(), so mVerifier may be null.
-            if (mVerifier != null) {
-                mVerifier.onAutocompleteTextStateChanged(updateDisplay);
-            }
+            mVerifier.onAutocompleteTextStateChanged(updateDisplay);
         }
 
         @Override
         public void onUpdateSelectionForTesting(int selStart, int selEnd) {
-            // This function is called in super(), so mVerifier may be null.
-            if (mVerifier != null) {
-                mVerifier.onUpdateSelection(selStart, selEnd);
-            }
-        }
-
-        @Override
-        public boolean hasFocus() {
-            return true;
+            mVerifier.onUpdateSelection(selStart, selEnd);
         }
     }
 
