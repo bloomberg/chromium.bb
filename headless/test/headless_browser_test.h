@@ -145,6 +145,9 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // main world.
   virtual bool GetCreateTabSocketOnlyForIsolatedWorld();
 
+  // Returns the ProxyConfig to us, if any.  By default null is returned.
+  virtual std::unique_ptr<net::ProxyConfig> GetProxyConfig();
+
  protected:
   void RunTest();
 

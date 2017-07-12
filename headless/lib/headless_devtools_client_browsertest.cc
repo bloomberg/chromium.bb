@@ -1484,4 +1484,95 @@ class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsSetCookieTest);
 
+class DevtoolsInterceptionWithAuthProxyTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public network::ExperimentalObserver,
+      public page::Observer {
+ public:
+  DevtoolsInterceptionWithAuthProxyTest()
+      : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
+                      net::SpawnedTestServer::kLocalhost,
+                      base::FilePath(FILE_PATH_LITERAL("headless/test/data"))) {
+  }
+
+  void SetUp() override {
+    ASSERT_TRUE(proxy_server_.Start());
+    HeadlessAsyncDevTooledBrowserTest::SetUp();
+  }
+
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->SetRequestInterceptionEnabled(
+            network::SetRequestInterceptionEnabledParams::Builder()
+                .SetEnabled(true)
+                .Build());
+
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/dom_tree_test.html").spec());
+  }
+
+  void OnRequestIntercepted(
+      const network::RequestInterceptedParams& params) override {
+    if (params.HasAuthChallenge()) {
+      auth_challenge_seen_ = true;
+      devtools_client_->GetNetwork()
+          ->GetExperimental()
+          ->ContinueInterceptedRequest(
+              network::ContinueInterceptedRequestParams::Builder()
+                  .SetInterceptionId(params.GetInterceptionId())
+                  .SetAuthChallengeResponse(
+                      network::AuthChallengeResponse::Builder()
+                          .SetResponse(network::AuthChallengeResponseResponse::
+                                           PROVIDE_CREDENTIALS)
+                          .SetUsername("foo")  // These are tested by the proxy.
+                          .SetPassword("bar")
+                          .Build())
+                  .Build());
+    } else {
+      devtools_client_->GetNetwork()
+          ->GetExperimental()
+          ->ContinueInterceptedRequest(
+              network::ContinueInterceptedRequestParams::Builder()
+                  .SetInterceptionId(params.GetInterceptionId())
+                  .Build());
+      GURL url(params.GetRequest()->GetUrl());
+      files_loaded_.insert(url.path());
+    }
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_TRUE(auth_challenge_seen_);
+    EXPECT_THAT(files_loaded_,
+                ElementsAre("/Ahem.ttf", "/dom_tree_test.css",
+                            "/dom_tree_test.html", "/iframe.html"));
+    FinishAsynchronousTest();
+  }
+
+  std::unique_ptr<net::ProxyConfig> GetProxyConfig() override {
+    std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
+    proxy_config->proxy_rules().ParseFromString(
+        proxy_server_.host_port_pair().ToString());
+    return proxy_config;
+  }
+
+ private:
+  net::SpawnedTestServer proxy_server_;
+  bool auth_challenge_seen_ = false;
+  std::set<std::string> files_loaded_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);
+
 }  // namespace headless
