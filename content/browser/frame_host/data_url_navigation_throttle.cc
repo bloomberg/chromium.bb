@@ -7,11 +7,13 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
 #include "url/url_constants.h"
@@ -31,6 +33,18 @@ DataUrlNavigationThrottle::~DataUrlNavigationThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
 DataUrlNavigationThrottle::WillProcessResponse() {
+#if defined(OS_ANDROID)
+  // This should ideally be done in CreateThrottleForNavigation(), but
+  // NavigationHandleImpl::GetRenderFrameHost() expects to not be run before
+  // WillProcessResponse().
+  // TODO(meacer): Remove this special case when PlzNavigate is enabled.
+  if (!IsBrowserSideNavigationEnabled() &&
+      navigation_handle()
+          ->GetRenderFrameHost()
+          ->IsDataUrlNavigationAllowedForAndroidWebView()) {
+    return PROCEED;
+  }
+#endif
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle());
   if (handle->is_download())
