@@ -45,7 +45,12 @@ Status FilesystemErrorToStatus(FileError error,
   char buf[512];
   snprintf(buf, sizeof(buf), "%s (MojoFSError: %d::%s)", err_str.c_str(),
            method, MethodIDToString(method));
-  return Status::IOError(filename, buf);
+
+  if (error == FileError::NOT_FOUND) {
+    return Status::NotFound(filename, buf);
+  } else {
+    return Status::IOError(filename, buf);
+  }
 }
 
 class MojoFileLock : public FileLock {
