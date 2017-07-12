@@ -594,12 +594,18 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFont.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFontVariant.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIMargin.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOutline.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOverflow.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOffset.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPITextDecoration.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderAfter.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderBefore.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderEnd.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitBorderStart.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskBoxImage.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextEmphasis.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitTextStroke.h",
   ]
 }
 
