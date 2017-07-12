@@ -83,6 +83,17 @@ class StateController : public ash::mojom::TrayActionClient,
   void Initialize();
   void SetPrimaryProfile(Profile* profile);
 
+  // Shuts down the state controller, reseting all dependencies on profiles.
+  // Should be called on global instance before profile destruction starts.
+  // TODO(tbarzic): Consider removing this after lock screen implementation
+  //     moves to ash - the main reason the method is needed is to enable
+  //     SigninScreenHandler to safely remove itself as an observer on its
+  //     destruction (which might happen after state controller has to be
+  //     shutdown). When this is not the case anymore StateController::Shutdown
+  //     usage can be replaced with destructing the StateController instance.
+  //     https://crbug.com/741145
+  void Shutdown();
+
   void AddObserver(StateObserver* observer);
   void RemoveObserver(StateObserver* observer);
 

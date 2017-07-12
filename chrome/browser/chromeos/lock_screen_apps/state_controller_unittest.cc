@@ -52,6 +52,9 @@ namespace {
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kSecondaryTestAppId[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
+// The primary tesing profile.
+const char kPrimaryProfileName[] = "primary_profile";
+
 scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
     const std::string& app_id) {
   ListBuilder action_handlers;
@@ -369,10 +372,28 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     extensions::ExtensionSystem::Get(lock_screen_profile())->Shutdown();
 
     state_controller_->RemoveObserver(&observer_);
-    state_controller_.reset();
+    state_controller_->Shutdown();
     session_manager_.reset();
     app_manager_ = nullptr;
+    app_window_.reset();
     BrowserWithTestWindowTest::TearDown();
+    DestroyProfile(lock_screen_profile());
+  }
+
+  TestingProfile* CreateProfile() override {
+    return profile_manager_.CreateTestingProfile(kPrimaryProfileName);
+  }
+
+  void DestroyProfile(TestingProfile* test_profile) override {
+    if (test_profile == profile()) {
+      profile_manager_.DeleteTestingProfile(kPrimaryProfileName);
+    } else if (test_profile == lock_screen_profile()) {
+      lock_screen_profile_ = nullptr;
+      profile_manager_.DeleteTestingProfile(
+          chromeos::ProfileHelper::GetLockScreenAppProfileName());
+    } else {
+      ADD_FAILURE() << "Request to destroy unknown profile.";
+    }
   }
 
   void InitExtensionSystem(Profile* profile) {
@@ -478,7 +499,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
            TrayActionState::kActive;
   }
 
-  TestingProfile* profile() { return &profile_; }
   TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
 
   chromeos::FakePowerManagerClient* power_manager_client() {
@@ -505,7 +525,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   TestingProfileManager profile_manager_;
-  TestingProfile profile_;
   TestingProfile* lock_screen_profile_ = nullptr;
 
   // Run loop used to throttle test until async state controller initialization

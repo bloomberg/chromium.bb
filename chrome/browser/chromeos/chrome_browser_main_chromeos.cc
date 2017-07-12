@@ -1009,7 +1009,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
-  lock_screen_apps_state_controller_.reset();
+  if (lock_screen_apps_state_controller_)
+    lock_screen_apps_state_controller_->Shutdown();
 
   // This must be shut down before |arc_service_launcher_|.
   NoteTakingHelper::Shutdown();
