@@ -759,6 +759,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method unwrapKey
 [Worker]     method verify
 [Worker]     method wrapKey
+[Worker] interface SyncManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getTags
+[Worker]     method register
 [Worker] interface TextDecoder
 [Worker]     attribute @@toStringTag
 [Worker]     getter encoding
