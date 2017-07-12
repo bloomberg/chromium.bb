@@ -123,6 +123,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   uint32_t target_bitrate_;
   size_t u_plane_offset_;
   size_t v_plane_offset_;
+  size_t y_stride_;
+  size_t u_stride_;
+  size_t v_stride_;
 
   base::win::ScopedComPtr<IMFTransform> encoder_;
   base::win::ScopedComPtr<ICodecAPI> codec_api_;

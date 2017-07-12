@@ -181,11 +181,16 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
       VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kYPlane,
                             input_visible_size_)
           .GetArea();
-  v_plane_offset_ =
-      u_plane_offset_ +
-      VideoFrame::PlaneSize(PIXEL_FORMAT_I420, VideoFrame::kUPlane,
-                            input_visible_size_)
-          .GetArea();
+  v_plane_offset_ = u_plane_offset_ + VideoFrame::PlaneSize(PIXEL_FORMAT_I420,
+                                                            VideoFrame::kUPlane,
+                                                            input_visible_size_)
+                                          .GetArea();
+  y_stride_ = VideoFrame::RowBytes(VideoFrame::kYPlane, PIXEL_FORMAT_I420,
+                                   input_visible_size_.width());
+  u_stride_ = VideoFrame::RowBytes(VideoFrame::kUPlane, PIXEL_FORMAT_I420,
+                                   input_visible_size_.width());
+  v_stride_ = VideoFrame::RowBytes(VideoFrame::kVPlane, PIXEL_FORMAT_I420,
+                                   input_visible_size_.width());
 
   if (!SetEncoderModes()) {
     DLOG(ERROR) << "Failed setting encoder parameters.";
@@ -513,12 +518,10 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
                      frame->stride(VideoFrame::kVPlane),
                      frame->visible_data(VideoFrame::kUPlane),
                      frame->stride(VideoFrame::kUPlane), scoped_buffer.get(),
-                     frame->stride(VideoFrame::kYPlane),
-                     scoped_buffer.get() + u_plane_offset_,
-                     frame->stride(VideoFrame::kUPlane),
-                     scoped_buffer.get() + v_plane_offset_,
-                     frame->stride(VideoFrame::kVPlane),
-                     input_visible_size_.width(), input_visible_size_.height());
+                     y_stride_, scoped_buffer.get() + u_plane_offset_,
+                     u_stride_, scoped_buffer.get() + v_plane_offset_,
+                     v_stride_, input_visible_size_.width(),
+                     input_visible_size_.height());
   }
 
   input_sample_->SetSampleTime(frame->timestamp().InMicroseconds() *
