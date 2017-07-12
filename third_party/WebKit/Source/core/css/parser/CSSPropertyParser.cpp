@@ -2471,8 +2471,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumePlaceSelfShorthand(important);
     case CSSPropertyScrollPadding:
       return Consume4Values(scrollPaddingShorthand(), important);
-    case CSSPropertyScrollPaddingBlock:
-      return Consume2Values(scrollPaddingBlockShorthand(), important);
     case CSSPropertyScrollPaddingInline:
       return Consume2Values(scrollPaddingInlineShorthand(), important);
     case CSSPropertyScrollSnapMargin:
