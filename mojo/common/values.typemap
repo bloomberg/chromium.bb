@@ -8,13 +8,14 @@ traits_headers = [
   "//ipc/ipc_message_utils.h",
   "//mojo/common/values_struct_traits.h",
 ]
+
 public_deps = [
   "//base",
   "//ipc",
 ]
-sources = [
-  "values_struct_traits.cc",
-  "values_struct_traits.h",
+
+deps = [
+  "//mojo/common:values_struct_traits",
 ]
 
 type_mappings = [

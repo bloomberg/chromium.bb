@@ -96,3 +96,15 @@ source_set("struct_traits") {
     "//base:i18n",
   ]
 }
+
+source_set("values_struct_traits") {
+  sources = [
+    "values_struct_traits.cc",
+    "values_struct_traits.h",
+  ]
+  public_deps = [
+    ":common_custom_types_shared_cpp_sources",
+    "//base",
+    "//mojo/public/cpp/bindings:bindings",
+  ]
+}
