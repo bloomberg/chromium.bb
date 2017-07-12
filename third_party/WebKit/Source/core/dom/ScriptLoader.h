@@ -95,19 +95,9 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // FetchClassicScript()/FetchModuleScriptTree().
   PendingScript* CreatePendingScript();
 
-  enum class ExecuteScriptResult {
-    kShouldFireErrorEvent,
-    kShouldFireLoadEvent,
-    kShouldFireNone
-  };
-  WARN_UNUSED_RESULT ExecuteScriptResult ExecuteScript(const Script*);
-
   // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
   virtual void Execute();
 
-  // XML parser calls these
-  void DispatchLoadEvent();
-  void DispatchErrorEvent();
   bool IsScriptTypeSupported(LegacyTypeSupport,
                              ScriptType& out_script_type) const;
 
@@ -180,7 +170,15 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                              ParserDisposition,
                              WebURLRequest::FetchCredentialsMode);
 
+  enum class ExecuteScriptResult {
+    kShouldFireErrorEvent,
+    kShouldFireLoadEvent,
+    kShouldFireNone
+  };
+  WARN_UNUSED_RESULT ExecuteScriptResult ExecuteScript(const Script*);
   ExecuteScriptResult DoExecuteScript(const Script*);
+  void DispatchLoadEvent();
+  void DispatchErrorEvent();
 
   // Clears the connection to the PendingScript.
   void DetachPendingScript();
