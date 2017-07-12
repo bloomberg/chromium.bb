@@ -309,7 +309,8 @@ bool IsNewBookmarkAppsEnabled() {
 bool CanHostedAppsOpenInWindows() {
 #if defined(OS_MACOSX)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableHostedAppsInWindows);
+             switches::kEnableHostedAppsInWindows) ||
+         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
 #else
   return true;
 #endif
