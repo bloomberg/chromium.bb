@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <unordered_map>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -58,6 +59,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   ~CoordinatorImpl() override;
 
  private:
+  using OSMemDumpMap = std::unordered_map<
+      base::ProcessId,
+      base::trace_event::MemoryDumpCallbackResult::OSMemDump>;
   friend std::default_delete<CoordinatorImpl>;  // For testing
   friend class CoordinatorImplTest;             // For testing
 
@@ -70,17 +74,36 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
 
-    struct Response {
-      Response(mojom::ProcessType, mojom::RawProcessMemoryDumpPtr);
-      ~Response();
+    struct PendingResponse {
+      enum Type {
+        kProcessDump,
+        kOSDump,
+      };
+      PendingResponse(const mojom::ClientProcess* client, const Type type);
 
-      const mojom::ProcessType process_type;
-      const mojom::RawProcessMemoryDumpPtr dump_ptr;
+      bool operator<(const PendingResponse& other) const;
+
+      const mojom::ClientProcess* client;
+      const Type type;
     };
 
-    // Collects the data received from OnProcessMemoryDumpResponse().
-    std::vector<std::pair<base::ProcessId, std::unique_ptr<Response>>>
-        responses;
+    struct Response {
+      Response();
+      ~Response();
+
+      base::ProcessId process_id;
+      mojom::ProcessType process_type;
+      mojom::RawProcessMemoryDumpPtr dump_ptr;
+      OSMemDumpMap os_dumps;
+    };
+
+    // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
+    // set contains a |PendingResponse| for each |RequestProcessMemoryDump| and
+    // |RequestOSMemoryDump| call that has not yet replied or been canceled (due
+    // to the client disconnecting).
+    std::set<QueuedMemoryDumpRequest::PendingResponse> pending_responses;
+    std::map<mojom::ClientProcess*, Response> responses;
+    int failed_memory_dump_count = 0;
   };
 
   // Holds the identity and remote reference of registered clients.
@@ -95,15 +118,21 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const mojom::ProcessType process_type;
   };
 
-  // Callback of RequestProcessMemoryInternalDump.
+  // Callback of RequestProcessMemoryDump.
   void OnProcessMemoryDumpResponse(
       mojom::ClientProcess*,
       bool success,
       uint64_t dump_guid,
       mojom::RawProcessMemoryDumpPtr process_memory_dump);
 
+  // Callback of RequestOSMemoryDump.
+  void OnOSMemoryDumpResponse(mojom::ClientProcess*,
+                              bool success,
+                              const OSMemDumpMap&);
+
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
+  QueuedMemoryDumpRequest* GetCurrentRequest();
 
   mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
 
@@ -113,16 +142,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Oustanding dump requests, enqueued via RequestGlobalMemoryDump().
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
 
-  // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
-  // set contains the subset of registerd |clients_| that have not yet replied
-  // to the local dump request (via RequestProcessMemoryDump()) .
-  std::set<mojom::ClientProcess*> pending_clients_for_current_dump_;
-
-  int failed_memory_dump_count_;
-
   // Maintains a map of service_manager::Identity -> pid for registered clients.
   std::unique_ptr<ProcessMap> process_map_;
-
   uint64_t next_dump_id_;
 
   THREAD_CHECKER(thread_checker_);
