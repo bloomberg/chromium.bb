@@ -54,11 +54,14 @@ struct SandboxTypeToResourceIDMapping {
 
 // Mapping from sandbox process types to resource IDs containing the sandbox
 // profile for all process types known to content.
+// TODO(tsepez): Implement profile for SANDBOX_TYPE_NETWORK.
 SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
-  { SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE },
-  { SANDBOX_TYPE_UTILITY,  IDR_UTILITY_SANDBOX_PROFILE },
-  { SANDBOX_TYPE_GPU,      IDR_GPU_SANDBOX_PROFILE },
-  { SANDBOX_TYPE_PPAPI,    IDR_PPAPI_SANDBOX_PROFILE },
+    {SANDBOX_TYPE_NO_SANDBOX, -1},
+    {SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE},
+    {SANDBOX_TYPE_UTILITY, IDR_UTILITY_SANDBOX_PROFILE},
+    {SANDBOX_TYPE_GPU, IDR_GPU_SANDBOX_PROFILE},
+    {SANDBOX_TYPE_PPAPI, IDR_PPAPI_SANDBOX_PROFILE},
+    {SANDBOX_TYPE_NETWORK, -1},
 };
 
 static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \

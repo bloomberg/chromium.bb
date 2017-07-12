@@ -294,7 +294,7 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
       this, BrowserThread::GetTaskRunnerForThread(thread_id).get());
   utility_process_host->SetName(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME));
-  utility_process_host->DisableSandbox();
+  utility_process_host->SetSandboxType(content::SANDBOX_TYPE_NO_SANDBOX);
 
 #if defined(OS_MACOSX)
   base::EnvironmentMap env;

@@ -77,15 +77,15 @@ void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 void StartServiceInUtilityProcess(
     const std::string& service_name,
     const base::string16& process_name,
-    bool use_sandbox,
+    SandboxType sandbox_type,
     service_manager::mojom::ServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   process_host->SetName(process_name);
-  if (!use_sandbox)
-    process_host->DisableSandbox();
+  process_host->SetSandboxType(sandbox_type);
   process_host->Start();
+
   service_manager::mojom::ServiceFactoryPtr service_factory;
   BindInterface(process_host, mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
@@ -337,49 +337,37 @@ ServiceManagerContext::ServiceManagerContext() {
   // GetConnectorForIOThread().
   g_io_thread_connector.Get() = browser_connection->GetConnector()->Clone();
 
-  ContentBrowserClient::OutOfProcessServiceMap sandboxed_services;
-  GetContentClient()
-      ->browser()
-      ->RegisterOutOfProcessServices(&sandboxed_services);
-  sandboxed_services.insert(
-      std::make_pair(data_decoder::mojom::kServiceName,
-                     base::ASCIIToUTF16("Data Decoder Service")));
-  for (const auto& service : sandboxed_services) {
-    packaged_services_connection_->AddServiceRequestHandler(
-        service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
-                                  service.second, true /* use_sandbox */));
-  }
+  ContentBrowserClient::OutOfProcessServiceMap out_of_process_services;
+  GetContentClient()->browser()->RegisterOutOfProcessServices(
+      &out_of_process_services);
 
-  ContentBrowserClient::OutOfProcessServiceMap unsandboxed_services;
-  GetContentClient()
-      ->browser()
-      ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
+  out_of_process_services[data_decoder::mojom::kServiceName] = {
+      base::ASCIIToUTF16("Data Decoder Service"), SANDBOX_TYPE_UTILITY};
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(features::kNetworkService);
   if (network_service_enabled) {
-    unsandboxed_services.insert(
-        std::make_pair(content::mojom::kNetworkServiceName,
-                       base::ASCIIToUTF16("Network Service")));
+    out_of_process_services[content::mojom::kNetworkServiceName] = {
+        base::ASCIIToUTF16("Network Service"), SANDBOX_TYPE_NETWORK};
   }
+
   if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
-    unsandboxed_services.insert(
-        std::make_pair(video_capture::mojom::kServiceName,
-                       base::ASCIIToUTF16("Video Capture Service")));
+    out_of_process_services[video_capture::mojom::kServiceName] = {
+        base::ASCIIToUTF16("Video Capture Service"), SANDBOX_TYPE_NO_SANDBOX};
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
   // TODO(xhwang): This is only used for test/experiment for now so it's okay
   // to run it in an unsandboxed utility process. Fix CDM loading so that we can
   // run it in the sandboxed utility process. See http://crbug.com/510604
-  unsandboxed_services.insert(std::make_pair(
-      media::mojom::kMediaServiceName, base::ASCIIToUTF16("Media Service")));
+  out_of_process_services[media::mojom::kMediaServiceName] = {
+      base::ASCIIToUTF16("Media Service"), SANDBOX_TYPE_NO_SANDBOX};
 #endif
 
-  for (const auto& service : unsandboxed_services) {
+  for (const auto& service : out_of_process_services) {
     packaged_services_connection_->AddServiceRequestHandler(
         service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
-                                  service.second, false /* use_sandbox */));
+                                  service.second.first, service.second.second));
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
