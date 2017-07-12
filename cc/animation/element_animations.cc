@@ -195,29 +195,6 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   UpdateClientAnimationState();
 }
 
-void ElementAnimations::NotifyAnimationPropertyUpdate(
-    const AnimationEvent& event) {
-  DCHECK(!event.is_impl_only);
-  bool notify_active_elements = true;
-  bool notify_pending_elements = true;
-  switch (event.target_property) {
-    case TargetProperty::OPACITY: {
-      NotifyClientOpacityAnimated(event.opacity, notify_active_elements,
-                                  notify_pending_elements);
-      break;
-    }
-    case TargetProperty::TRANSFORM: {
-      TransformOperations operations;
-      operations.AppendMatrix(event.transform);
-      NotifyClientTransformOperationsAnimated(
-          operations, notify_active_elements, notify_pending_elements);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 bool ElementAnimations::HasFilterAnimationThatInflatesBounds() const {
   for (auto& player : players_list_) {
     if (player.HasFilterAnimationThatInflatesBounds())

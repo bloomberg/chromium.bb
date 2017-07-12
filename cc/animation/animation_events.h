@@ -19,7 +19,7 @@
 namespace cc {
 
 struct CC_ANIMATION_EXPORT AnimationEvent {
-  enum Type { STARTED, FINISHED, ABORTED, PROPERTY_UPDATE, TAKEOVER };
+  enum Type { STARTED, FINISHED, ABORTED, TAKEOVER };
 
   AnimationEvent(Type type,
                  ElementId element_id,
