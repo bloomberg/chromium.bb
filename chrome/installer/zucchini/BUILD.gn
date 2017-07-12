@@ -13,6 +13,8 @@ static_library("zucchini_lib") {
     "disassembler.cc",
     "disassembler.h",
     "image_utils.h",
+    "io_utils.cc",
+    "io_utils.h",
     "suffix_array.h",
     "typed_value.h",
   ]
@@ -45,6 +47,7 @@ test("zucchini_unittests") {
   sources = [
     "buffer_view_unittest.cc",
     "crc32_unittest.cc",
+    "io_utils_unittest.cc",
     "suffix_array_unittest.cc",
     "typed_value_unittest.cc",
   ]
