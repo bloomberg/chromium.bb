@@ -31,6 +31,8 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 // ResourceLoadSchedulerClient instances and calls Run() on them to dispatch
 // them possibly with additional throttling/scheduling. This also keeps track of
 // in-flight requests that are granted but are not released (by Release()) yet.
+// Note: If FetchContext can not provide a WebFrameScheduler, throttling and
+// scheduling functionalities will be completely disabled.
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollectedFinalized<ResourceLoadScheduler>,
       public WebFrameScheduler::Observer {
@@ -78,8 +80,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // step, bug the ReleaseOption must be kReleaseOnly in such a case.
   bool Release(ClientId, ReleaseOption);
 
-  // Sets outstanding limit for testing. Should be reset with
-  // kOutstandingUnlimited before calling Shutdown().
+  // Sets outstanding limit for testing.
   void SetOutstandingLimitForTesting(size_t limit);
 
   // WebFrameScheduler::Observer overrides:

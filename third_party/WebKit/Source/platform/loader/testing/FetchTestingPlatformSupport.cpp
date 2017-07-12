@@ -27,9 +27,8 @@ FetchTestingPlatformSupport::~FetchTestingPlatformSupport() {
 
 MockFetchContext* FetchTestingPlatformSupport::Context() {
   if (!context_) {
-    context_ = MockFetchContext::Create(
-        MockFetchContext::kShouldLoadNewResource,
-        CurrentThread()->Scheduler()->LoadingTaskRunner());
+    context_ =
+        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   }
   return context_;
 }
