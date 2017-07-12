@@ -455,10 +455,7 @@ bool LayerImpl::has_copy_requests_in_target_subtree() {
   return GetEffectTree().Node(effect_tree_index())->subtree_has_copy_request;
 }
 
-void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
-  if (scrollable())
-    UpdatePropertyTreeScrollOffset();
-
+void LayerImpl::UpdatePropertyTreeForAnimationIfNeeded() {
   if (HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM)) {
     if (TransformNode* node =
             GetTransformTree().FindNodeFromElementId(element_id())) {
@@ -709,24 +706,6 @@ void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
 
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
   return GetScrollTree().current_scroll_offset(element_id());
-}
-
-void LayerImpl::UpdatePropertyTreeScrollOffset() {
-  // TODO(enne): in the future, scrolling should update the scroll tree
-  // directly instead of going through layers.
-  TransformTree& transform_tree = GetTransformTree();
-  TransformNode* node = transform_tree.Node(transform_tree_index_);
-  DCHECK(node);
-  // TODO(pdr): This is a workaround for https://crbug.com/712298 to avoid
-  // crashing when there's no transform node. This workaround should be removed.
-  if (!node)
-    return;
-  gfx::ScrollOffset current_offset = CurrentScrollOffset();
-  if (node->scroll_offset != current_offset) {
-    node->scroll_offset = current_offset;
-    node->needs_local_transform_update = true;
-    transform_tree.set_needs_update(true);
-  }
 }
 
 SimpleEnclosedRegion LayerImpl::VisibleOpaqueRegion() const {

@@ -182,8 +182,13 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
   property_trees()->changed = true;
   set_needs_update_draw_properties();
 
-  if (IsActiveTree() && layer_tree_host_impl_->pending_tree())
-    layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(id);
+  if (IsActiveTree()) {
+    // Ensure the other trees are kept in sync.
+    if (layer_tree_host_impl_->pending_tree())
+      layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(id);
+    if (layer_tree_host_impl_->recycle_tree())
+      layer_tree_host_impl_->recycle_tree()->DidUpdateScrollOffset(id);
+  }
 }
 
 void LayerTreeImpl::UpdateScrollbarGeometries() {
@@ -667,29 +672,21 @@ float LayerTreeImpl::ClampPageScaleFactorToLimits(
   return page_scale_factor;
 }
 
-void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
-    bool is_impl_side_update) {
-  // TODO(enne): This should get replaced by pulling out scrolling and
-  // animations into their own trees.  Then scrolls and animations would have
-  // their own ways of synchronizing across commits.  This occurs to push
-  // updates from scrolling deltas on the compositor thread that have occurred
-  // after begin frame and updates from animations that have ticked since begin
-  // frame to a newly-committed property tree.
+void LayerTreeImpl::UpdatePropertyTreeAnimationFromMainThread() {
+  // TODO(enne): This should get replaced by pulling out animations into their
+  // own trees.  Then animations would have their own ways of synchronizing
+  // across commits.  This occurs to push updates from animations that have
+  // ticked since begin frame to a newly-committed property tree.
   if (layer_list_.empty())
     return;
 
-  // Entries from |element_id_to_*_animations_| should be deleted only after
-  // they have been synchronized with the main thread, which will not be the
-  // case if this is an impl-side invalidation.
-  const bool can_delete_animations = !is_impl_side_update;
   auto element_id_to_opacity = element_id_to_opacity_animations_.begin();
   while (element_id_to_opacity != element_id_to_opacity_animations_.end()) {
     const ElementId id = element_id_to_opacity->first;
     if (EffectNode* node =
             property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if ((!node->is_currently_animating_opacity ||
-           node->opacity == element_id_to_opacity->second) &&
-          can_delete_animations) {
+      if (!node->is_currently_animating_opacity ||
+          node->opacity == element_id_to_opacity->second) {
         element_id_to_opacity_animations_.erase(element_id_to_opacity++);
         continue;
       }
@@ -704,9 +701,8 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
     const ElementId id = element_id_to_filter->first;
     if (EffectNode* node =
             property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if ((!node->is_currently_animating_filter ||
-           node->filters == element_id_to_filter->second) &&
-          can_delete_animations) {
+      if (!node->is_currently_animating_filter ||
+          node->filters == element_id_to_filter->second) {
         element_id_to_filter_animations_.erase(element_id_to_filter++);
         continue;
       }
@@ -721,9 +717,8 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
     const ElementId id = element_id_to_transform->first;
     if (TransformNode* node =
             property_trees_.transform_tree.FindNodeFromElementId(id)) {
-      if ((!node->is_currently_animating ||
-           node->local == element_id_to_transform->second) &&
-          can_delete_animations) {
+      if (!node->is_currently_animating ||
+          node->local == element_id_to_transform->second) {
         element_id_to_transform_animations_.erase(element_id_to_transform++);
         continue;
       }
@@ -735,7 +730,7 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread(
   }
 
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
-    layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
+    layer->UpdatePropertyTreeForAnimationIfNeeded();
   });
 }
 
