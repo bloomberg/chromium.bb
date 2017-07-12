@@ -133,6 +133,11 @@ template("jumbo_target") {
       args = [ "--outputs" ] + rebase_path(outputs, root_build_dir) +
              [ "--file-list={{response_file_name}}" ]
     }
+  } else {
+    # If the list subtraction triggers a gn error,
+    # jumbo_excluded_sources lists a file that is not in sources.
+    sources_after_exclusion = invoker.sources - excluded_sources
+    assert(sources_after_exclusion != [] || true)  # Prevent "unused variable".
   }
 
   target_type = invoker.target_type
