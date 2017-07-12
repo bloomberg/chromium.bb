@@ -992,6 +992,8 @@ component("base") {
     "trace_event/memory_infra_background_whitelist.h",
     "trace_event/memory_peak_detector.cc",
     "trace_event/memory_peak_detector.h",
+    "trace_event/memory_tracing_observer.cc",
+    "trace_event/memory_tracing_observer.h",
     "trace_event/memory_usage_estimator.cc",
     "trace_event/memory_usage_estimator.h",
     "trace_event/process_memory_dump.cc",

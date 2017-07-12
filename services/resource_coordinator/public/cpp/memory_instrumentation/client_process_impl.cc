@@ -7,83 +7,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/pattern.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace memory_instrumentation {
-
-namespace {
-
-void FillOsDumpFromProcessMemoryDump(
-    const base::trace_event::ProcessMemoryDump* pmd,
-    base::trace_event::MemoryDumpCallbackResult::OSMemDump* osDump) {
-  if (pmd->has_process_totals()) {
-    const base::trace_event::ProcessMemoryTotals* totals =
-        pmd->process_totals();
-    osDump->resident_set_kb = totals->resident_set_bytes() / 1024;
-    osDump->platform_private_footprint = totals->GetPlatformPrivateFootprint();
-  }
-}
-
-uint32_t GetDumpsSumKb(const std::string& pattern,
-                       const base::trace_event::ProcessMemoryDump* pmd) {
-  uint64_t sum = 0;
-  for (const auto& kv : pmd->allocator_dumps()) {
-    auto name = base::StringPiece(kv.first);
-    if (base::MatchPattern(name, pattern)) {
-      sum += kv.second->GetSizeInternal();
-    }
-  }
-  return sum / 1024;
-}
-
-void CreateDumpSummary(
-    const base::trace_event::ProcessMemoryDumpsMap& process_dumps,
-    base::trace_event::MemoryDumpCallbackResult* result) {
-  for (const auto& kv : process_dumps) {
-    base::ProcessId pid = kv.first;  // kNullProcessId for the current process.
-    const base::trace_event::ProcessMemoryDump* process_memory_dump =
-        kv.second.get();
-
-    // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-    if (pid == base::kNullProcessId) {
-      result->chrome_dump.malloc_total_kb =
-          GetDumpsSumKb("malloc", process_memory_dump);
-      result->chrome_dump.v8_total_kb =
-          GetDumpsSumKb("v8/*", process_memory_dump);
-
-      result->chrome_dump.command_buffer_total_kb =
-          GetDumpsSumKb("gpu/gl/textures/*", process_memory_dump);
-      result->chrome_dump.command_buffer_total_kb +=
-          GetDumpsSumKb("gpu/gl/buffers/*", process_memory_dump);
-      result->chrome_dump.command_buffer_total_kb +=
-          GetDumpsSumKb("gpu/gl/renderbuffers/*", process_memory_dump);
-
-      // partition_alloc reports sizes for both allocated_objects and
-      // partitions. The memory allocated_objects uses is a subset of
-      // the partitions memory so to avoid double counting we only
-      // count partitions memory.
-      result->chrome_dump.partition_alloc_total_kb =
-          GetDumpsSumKb("partition_alloc/partitions/*", process_memory_dump);
-      result->chrome_dump.blink_gc_total_kb =
-          GetDumpsSumKb("blink_gc", process_memory_dump);
-      FillOsDumpFromProcessMemoryDump(process_memory_dump, &result->os_dump);
-    } else {
-      auto& os_dump = result->extra_processes_dumps[pid];
-      FillOsDumpFromProcessMemoryDump(process_memory_dump, &os_dump);
-    }
-  }
-}
-
-}  // namespace
 
 // static
 void ClientProcessImpl::CreateInstance(const Config& config) {
@@ -127,10 +59,6 @@ ClientProcessImpl::ClientProcessImpl(const Config& config)
           &ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
           base::Unretained(this)),
       is_coordinator_process);
-
-  tracing_observer_ = base::MakeUnique<TracingObserver>(
-      base::trace_event::TraceLog::GetInstance(),
-      base::trace_event::MemoryDumpManager::GetInstance());
 }
 
 ClientProcessImpl::~ClientProcessImpl() {}
@@ -138,50 +66,22 @@ ClientProcessImpl::~ClientProcessImpl() {}
 void ClientProcessImpl::RequestProcessMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestProcessMemoryDumpCallback& callback) {
-  DCHECK(!callback.is_null());
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
       args, base::Bind(&ClientProcessImpl::OnProcessMemoryDumpDone,
-                       base::Unretained(this), callback, args));
+                       base::Unretained(this), callback));
 }
 
 void ClientProcessImpl::OnProcessMemoryDumpDone(
     const RequestProcessMemoryDumpCallback& callback,
-    const base::trace_event::MemoryDumpRequestArgs& req_args,
     bool success,
     uint64_t dump_guid,
-    const base::trace_event::ProcessMemoryDumpsMap& process_dumps) {
-  DCHECK(success || process_dumps.empty());
-  for (const auto& kv : process_dumps) {
-    base::ProcessId pid = kv.first;  // kNullProcessId for the current process.
-    base::trace_event::ProcessMemoryDump* process_memory_dump = kv.second.get();
-
-    // SUMMARY_ONLY dumps are just return the summarized result in the
-    // ProcessMemoryDumpCallback. These shouldn't be added to the trace to
-    // avoid confusing trace consumers.
-    if (req_args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY) {
-      bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
-          &req_args, pid, process_memory_dump);
-
-      success = success && added_to_trace;
-    }
-  }
-
+    const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
   mojom::RawProcessMemoryDumpPtr process_memory_dump(
       mojom::RawProcessMemoryDump::New());
-
-  // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-  // Don't try to fill the struct in detailed mode since it is hard to avoid
-  // double counting.
-  if (req_args.level_of_detail !=
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
-    // The results struct to fill.
-    base::trace_event::MemoryDumpCallbackResult result;
-
-    CreateDumpSummary(process_dumps, &result);
-
-    process_memory_dump->os_dump = result.os_dump;
-    process_memory_dump->chrome_dump = result.chrome_dump;
-    for (const auto& kv : result.extra_processes_dumps) {
+  if (result) {
+    process_memory_dump->os_dump = result->os_dump;
+    process_memory_dump->chrome_dump = result->chrome_dump;
+    for (const auto& kv : result->extra_processes_dumps) {
       const base::ProcessId pid = kv.first;
       const base::trace_event::MemoryDumpCallbackResult::OSMemDump&
           os_mem_dump = kv.second;
