@@ -36,14 +36,6 @@ class CONTENT_EXPORT DownloadItemImpl
     : public DownloadItem,
       public DownloadDestinationObserver {
  public:
-  enum ResumeMode {
-    RESUME_MODE_INVALID = 0,
-    RESUME_MODE_IMMEDIATE_CONTINUE,
-    RESUME_MODE_IMMEDIATE_RESTART,
-    RESUME_MODE_USER_CONTINUE,
-    RESUME_MODE_USER_RESTART
-  };
-
   // Information about the initial request that triggers the download. Most of
   // the fields are immutable after the DownloadItem is successfully created.
   // However, it is possible that the url chain is changed when resuming an
@@ -290,11 +282,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
 
-  // Determines the resume mode for an interrupted download. Requires
-  // last_reason_ to be set, but doesn't require the download to be in
-  // INTERRUPTED state.
-  virtual ResumeMode GetResumeMode() const;
-
   // State transition operations on regular downloads --------------------------
 
   // Start the download.
@@ -312,9 +299,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // TODO(rdsmith): Unwind DownloadManagerImpl and DownloadItemImpl,
   // removing these from the public interface.
-
-  // Notify observers that this item is being removed by the user.
-  virtual void NotifyRemoved();
 
   virtual void OnDownloadedFileRemoved();
 
@@ -612,6 +596,22 @@ class CONTENT_EXPORT DownloadItemImpl
   // request. Should only be called if the resumption request was successful.
   virtual void UpdateValidatorsOnResumption(
       const DownloadCreateInfo& new_create_info);
+
+  // Notify observers that this item is being removed by the user.
+  void NotifyRemoved();
+
+  enum ResumeMode {
+    RESUME_MODE_INVALID = 0,
+    RESUME_MODE_IMMEDIATE_CONTINUE,
+    RESUME_MODE_IMMEDIATE_RESTART,
+    RESUME_MODE_USER_CONTINUE,
+    RESUME_MODE_USER_RESTART
+  };
+
+  // Determines the resume mode for an interrupted download. Requires
+  // last_reason_ to be set, but doesn't require the download to be in
+  // INTERRUPTED state.
+  ResumeMode GetResumeMode() const;
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);
