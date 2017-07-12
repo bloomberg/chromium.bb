@@ -36,10 +36,16 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
           ConnectionToHostResult_FailureClientConnectionEventType::TIMEOUT);
       break;
     case ConnectionToHostResult::
-        CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_NEW_ATTEMPT:
+        CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_USER:
       RecordConnectionResultFailureClientConnection(
           ConnectionToHostResult_FailureClientConnectionEventType::
-              CANCELED_BY_NEW_ATTEMPT);
+              CANCELED_BY_USER);
+      break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_INTERNAL_ERROR:
+      RecordConnectionResultFailureClientConnection(
+          ConnectionToHostResult_FailureClientConnectionEventType::
+              INTERNAL_ERROR);
       break;
     case ConnectionToHostResult::
         CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED:

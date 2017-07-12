@@ -22,7 +22,8 @@ class HostConnectionMetricsLogger {
     CONNECTION_RESULT_SUCCESS,
     CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR,
     CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_TIMEOUT,
-    CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_NEW_ATTEMPT,
+    CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_USER,
+    CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_INTERNAL_ERROR,
     CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED,
     CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED
   };
@@ -46,7 +47,10 @@ class HostConnectionMetricsLogger {
       RecordConnectionResultFailureClientConnection_Timeout);
   FRIEND_TEST_ALL_PREFIXES(
       HostConnectionMetricsLoggerTest,
-      RecordConnectionResultFailureClientConnection_CanceledByNewAttempt);
+      RecordConnectionResultFailureClientConnection_CanceledByUser);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureClientConnection_InternalError);
   FRIEND_TEST_ALL_PREFIXES(
       HostConnectionMetricsLoggerTest,
       RecordConnectionResultFailureTetheringTimeout_SetupRequired);
@@ -89,7 +93,8 @@ class HostConnectionMetricsLogger {
 
   enum ConnectionToHostResult_FailureClientConnectionEventType {
     TIMEOUT = 0,
-    CANCELED_BY_NEW_ATTEMPT = 1,
+    CANCELED_BY_USER = 1,
+    INTERNAL_ERROR = 2,
     FAILURE_CLIENT_CONNECTION_MAX
   };
 
@@ -100,24 +105,18 @@ class HostConnectionMetricsLogger {
   };
 
   // Record if a host connection attempt never went through due to provisioning
-  // failure, or otherwise continued. Should only be publicly called with
-  // an argument of ConnectionToHostResult_ProvisioningFailureEventType::OTHER.
+  // failure, or otherwise continued.
   void RecordConnectionResultProvisioningFailure(
       ConnectionToHostResult_ProvisioningFailureEventType event_type);
 
-  // Record if a host connection attempt succeeded or failed. Should only be
-  // publicly called with
-  // an argument of ConnectionToHostResult_SuccessEventType::SUCCESS. Failure is
+  // Record if a host connection attempt succeeded or failed. Failure is
   // covered by the RecordConnectionResultFailure() method.
   void RecordConnectionResultSuccess(
       ConnectionToHostResult_SuccessEventType event_type);
 
-  // Record how a host connection attempt failed. Should only be
-  // publicly called with an argument of
-  // ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR. Failure due to
-  // client error or tethering
-  // timeout is covered
-  // by theRecordConnectionResultFailureClientConnection() or
+  // Record how a host connection attempt failed. Failure due to client error or
+  // tethering timeout is covered by the
+  // RecordConnectionResultFailureClientConnection() or
   // RecordConnectionResultFailureTetheringTimeout() methods, respectively.
   void RecordConnectionResultFailure(
       ConnectionToHostResult_FailureEventType event_type);

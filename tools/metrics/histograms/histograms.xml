@@ -26681,7 +26681,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Provides a top-level breakdown of the times a connection to a host has
     failed.
 
-    An &quot;unknown error&quot; is generally caused by the host returning an
+    An &quot;unknown error&quot; is caused by the host returning an
     &quot;unknown error&quot; response code. Tethering timing out and client
     connection error and 3) are both broken down further in
     InstantTethering.ConnectionToHostResult.Failure.TetheringTimeout and
@@ -26696,9 +26696,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hansberry@chromium.com</owner>
   <summary>
     Breaks down the reasons why the client failed to connect to the hotspot, and
-    the number of times they occurred. This histogram captures 2 reasons: 1) the
-    connection attempt to the hotspot timed out, or 2) any stage of the
-    connection attempt was canceled by a new connection attempt.
+    the number of times they occurred.
+
+    Note that a client connection can be canceled by a user either via pressing
+    the Disconnect button or beginning a connection attempt to another host. The
+    &quot;internal error&quot; case is a general bucket that captures client
+    errors we don't expect to be significant failure causes.
 
     This histogram breaks down the &quot;client connection error&quot; count of
     InstantTethering.ConnectionToHostResult.Failure.

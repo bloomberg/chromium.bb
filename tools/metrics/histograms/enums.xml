@@ -20557,7 +20557,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
   <int value="0" label="Timeout while waiting to connect"/>
-  <int value="1" label="Canceled by a new connection attempt"/>
+  <int value="1" label="Canceled"/>
+  <int value="2" label="Internal error"/>
 </enum>
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure_TetheringTimeout">
