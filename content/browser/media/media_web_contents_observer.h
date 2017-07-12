@@ -50,6 +50,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // It should only be called while the WebContents is fullscreen.
   bool HasActiveEffectivelyFullscreenVideo() const;
 
+  // Gets the MediaPlayerId of the fullscreen video if it exists.
+  const base::Optional<MediaPlayerId>& GetFullscreenVideoMediaPlayerId() const;
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
