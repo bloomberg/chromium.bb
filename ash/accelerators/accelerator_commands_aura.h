@@ -15,15 +15,6 @@ namespace accelerators {
 // Toggles touch HUD.
 ASH_EXPORT void ToggleTouchHudProjection();
 
-// True if the desktop zoom accelerator is enabled.
-bool IsInternalDisplayZoomEnabled();
-
-// Change internal display zooming up or down.
-ASH_EXPORT bool ZoomInternalDisplay(bool up);
-
-// Reset the display zooming to the default state.
-ASH_EXPORT void ResetInternalDisplayZoom();
-
 // If it is in the pinned mode, exit from it.
 ASH_EXPORT void Unpin();
 

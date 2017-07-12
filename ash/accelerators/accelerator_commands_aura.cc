@@ -8,8 +8,6 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/user_metrics.h"
-#include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/managed_display_info.h"
 
 namespace ash {
 namespace accelerators {
@@ -18,28 +16,6 @@ void ToggleTouchHudProjection() {
   base::RecordAction(base::UserMetricsAction("Accel_Touch_Hud_Clear"));
   bool enabled = Shell::Get()->is_touch_hud_projection_enabled();
   Shell::Get()->SetTouchHudProjectionEnabled(!enabled);
-}
-
-bool IsInternalDisplayZoomEnabled() {
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  return display_manager->IsDisplayUIScalingEnabled() ||
-         display_manager->IsInUnifiedMode();
-}
-
-bool ZoomInternalDisplay(bool up) {
-  if (up)
-    base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Up"));
-  else
-    base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Down"));
-
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  return display_manager->ZoomInternalDisplay(up);
-}
-
-void ResetInternalDisplayZoom() {
-  base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Reset"));
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  display_manager->ResetInternalDisplayZoom();
 }
 
 void Unpin() {

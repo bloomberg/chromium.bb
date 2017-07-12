@@ -12,6 +12,15 @@
 namespace ash {
 namespace accelerators {
 
+// True if the desktop zoom accelerator is enabled.
+ASH_EXPORT bool IsInternalDisplayZoomEnabled();
+
+// Change internal display zooming up or down.
+ASH_EXPORT bool ZoomInternalDisplay(bool up);
+
+// Reset the display zooming to the default state.
+ASH_EXPORT void ResetInternalDisplayZoom();
+
 // Minimizes the active window, if present. If no windows are active, restores
 // the first unminimized window. Returns true if a window was minimized or
 // restored.
