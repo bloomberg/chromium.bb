@@ -187,8 +187,11 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::SuspendableTaskRunner() {
   if (!suspendable_web_task_runner_) {
     // TODO(altimin): Split FRAME_UNTHROTTLED into FRAME_UNTHROTTLED and
     // FRAME_UNSUSPENDED.
-    suspendable_task_queue_ = renderer_scheduler_->NewTimerTaskQueue(
-        MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
+    suspendable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED)
+            .SetCanBeBlocked(true)
+            .SetCanBeSuspended(true));
     suspendable_task_queue_->SetBlameContext(blame_context_);
     suspendable_web_task_runner_ =
         WebTaskRunnerImpl::Create(suspendable_task_queue_);
@@ -202,8 +205,9 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::SuspendableTaskRunner() {
 RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::UnthrottledTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_web_task_runner_) {
-    unthrottled_task_queue_ = renderer_scheduler_->NewUnthrottledTaskQueue(
-        MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
+    unthrottled_task_queue_ = renderer_scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED));
     unthrottled_task_queue_->SetBlameContext(blame_context_);
     unthrottled_web_task_runner_ =
         WebTaskRunnerImpl::Create(unthrottled_task_queue_);
@@ -215,9 +219,10 @@ RefPtr<blink::WebTaskRunner>
 WebFrameSchedulerImpl::UnthrottledButBlockableTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_but_blockable_web_task_runner_) {
-    unthrottled_but_blockable_task_queue_ =
-        renderer_scheduler_->NewTimerTaskQueue(
-            MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED);
+    unthrottled_but_blockable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED)
+            .SetCanBeBlocked(true));
     unthrottled_but_blockable_task_queue_->SetBlameContext(blame_context_);
     unthrottled_but_blockable_web_task_runner_ =
         WebTaskRunnerImpl::Create(unthrottled_but_blockable_task_queue_);

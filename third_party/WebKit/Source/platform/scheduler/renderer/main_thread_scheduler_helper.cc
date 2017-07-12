@@ -16,15 +16,13 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
     : SchedulerHelper(task_queue_manager_delegate),
       renderer_scheduler_(renderer_scheduler),
       default_task_queue_(
-          NewTaskQueue(MainThreadTaskQueue::QueueType::DEFAULT,
-                       MainThreadTaskQueue::CreateSpecForType(
+          NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                            MainThreadTaskQueue::QueueType::DEFAULT)
                            .SetShouldMonitorQuiescence(true))),
       control_task_queue_(
-          NewTaskQueue(MainThreadTaskQueue::QueueType::CONTROL,
-                       MainThreadTaskQueue::CreateSpecForType(
+          NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                            MainThreadTaskQueue::QueueType::CONTROL)
-                           .SetShouldNotifyObservers(false))) {
+                           .SetShouldNotifyObservers(true))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_);
 }
 
@@ -49,10 +47,9 @@ scoped_refptr<TaskQueue> MainThreadSchedulerHelper::ControlTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
-    MainThreadTaskQueue::QueueType type,
-    const TaskQueue::Spec& spec) {
+    const MainThreadTaskQueue::QueueCreationParams& params) {
   return task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(
-      spec, type, renderer_scheduler_);
+      params.spec, params, renderer_scheduler_);
 }
 
 }  // namespace scheduler

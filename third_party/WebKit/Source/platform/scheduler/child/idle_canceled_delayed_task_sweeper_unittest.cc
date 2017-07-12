@@ -38,13 +38,14 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
             mock_task_runner_,
             base::WrapUnique(new TestTimeSource(clock_.get())))),
         scheduler_helper_(new MainThreadSchedulerHelper(delegate_, nullptr)),
-        idle_helper_(new IdleHelper(scheduler_helper_.get(),
-                                    this,
-                                    "test",
-                                    base::TimeDelta::FromSeconds(30),
-                                    scheduler_helper_->NewTaskQueue(
-                                        MainThreadTaskQueue::QueueType::TEST,
-                                        TaskQueue::Spec("test_idle_tq")))),
+        idle_helper_(
+            new IdleHelper(scheduler_helper_.get(),
+                           this,
+                           "test",
+                           base::TimeDelta::FromSeconds(30),
+                           scheduler_helper_->NewTaskQueue(
+                               MainThreadTaskQueue::QueueCreationParams(
+                                   MainThreadTaskQueue::QueueType::TEST)))),
         idle_canceled_delayed_taks_sweeper_(
             new IdleCanceledDelayedTaskSweeper(scheduler_helper_.get(),
                                                idle_helper_->IdleTaskRunner())),
