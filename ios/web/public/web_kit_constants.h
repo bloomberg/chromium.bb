@@ -19,7 +19,9 @@ const long kWebKitErrorCannotShowMimeType = 100;
 // Can not change location URL.
 const long kWebKitErrorCannotShowUrl = 101;
 
-// Frame load was interrupted by a policy change.
+// Frame load was interrupted by a policy change (f.e. by rejecting the load in
+// decidePolicyForNavigationAction: or decidePolicyForNavigationResponse:
+// WKNavigationDelegate callback).
 const long kWebKitErrorFrameLoadInterruptedByPolicyChange = 102;
 
 // Undocumented iOS-specific WebKit error.
