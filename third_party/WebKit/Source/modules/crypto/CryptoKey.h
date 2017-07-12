@@ -58,7 +58,7 @@ class MODULES_EXPORT CryptoKey final
   String type() const;
   bool extractable() const;
   ScriptValue algorithm(ScriptState*);
-  Vector<String> usages() const;
+  ScriptValue usages(ScriptState*);
 
   const WebCryptoKey& Key() const { return key_; }
 

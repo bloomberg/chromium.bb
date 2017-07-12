@@ -402,7 +402,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_TRUE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(), UnorderedElementsAre("encrypt", "decrypt"));
+  EXPECT_EQ(kWebCryptoKeyUsageEncrypt | kWebCryptoKeyUsageDecrypt,
+            new_key->Key().Usages());
 
   // Check that the keys have the same raw representation.
   WebVector<uint8_t> key_raw =
@@ -438,7 +439,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyAES) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(), UnorderedElementsAre("decrypt"));
+  EXPECT_EQ(kWebCryptoKeyUsageDecrypt, new_key->Key().Usages());
 
   // Check that it can successfully decrypt data.
   Vector<uint8_t> iv(16, 0);
@@ -473,7 +474,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_TRUE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(), UnorderedElementsAre("sign", "verify"));
+  EXPECT_EQ(kWebCryptoKeyUsageSign | kWebCryptoKeyUsageVerify,
+            new_key->Key().Usages());
 
   // Check that the keys have the same raw representation.
   WebVector<uint8_t> key_raw =
@@ -510,7 +512,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyHMAC) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(), UnorderedElementsAre("verify"));
+  EXPECT_EQ(kWebCryptoKeyUsageVerify, new_key->Key().Usages());
 
   // Check that it can successfully verify a signature.
   Vector<uint8_t> message{1, 2, 3};
@@ -547,7 +549,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
   CryptoKey* new_private_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
   EXPECT_TRUE(new_private_key->extractable());
-  EXPECT_THAT(new_private_key->usages(), UnorderedElementsAre("sign"));
+  EXPECT_EQ(kWebCryptoKeyUsageSign, new_private_key->Key().Usages());
 
   // Check that the keys have the same PKCS8 representation.
   WebVector<uint8_t> key_raw =
@@ -593,7 +595,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyRSAHashed) {
   CryptoKey* new_public_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("public", new_public_key->type());
   EXPECT_TRUE(new_public_key->extractable());
-  EXPECT_THAT(new_public_key->usages(), UnorderedElementsAre("verify"));
+  EXPECT_EQ(kWebCryptoKeyUsageVerify, new_public_key->Key().Usages());
 
   // Check that it can successfully verify a signature.
   Vector<uint8_t> message{1, 2, 3};
@@ -638,7 +640,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
   CryptoKey* new_private_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
   EXPECT_TRUE(new_private_key->extractable());
-  EXPECT_THAT(new_private_key->usages(), UnorderedElementsAre("sign"));
+  EXPECT_EQ(kWebCryptoKeyUsageSign, new_private_key->Key().Usages());
 
   // Check that the keys have the same PKCS8 representation.
   WebVector<uint8_t> key_raw =
@@ -679,7 +681,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyEC) {
   CryptoKey* new_public_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("public", new_public_key->type());
   EXPECT_TRUE(new_public_key->extractable());
-  EXPECT_THAT(new_public_key->usages(), UnorderedElementsAre("verify"));
+  EXPECT_EQ(kWebCryptoKeyUsageVerify, new_public_key->Key().Usages());
 
   // Check that it can successfully verify a signature.
   Vector<uint8_t> message{1, 2, 3};
@@ -714,7 +716,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(), UnorderedElementsAre("deriveBits"));
+  EXPECT_EQ(kWebCryptoKeyUsageDeriveBits, new_key->Key().Usages());
 
   // Check that the keys derive the same bits.
   WebCryptoAlgorithm hash(kWebCryptoAlgorithmIdSha256, nullptr);
@@ -744,8 +746,8 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyNoParams) {
   CryptoKey* new_key = V8CryptoKey::toImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
-  EXPECT_THAT(new_key->usages(),
-              UnorderedElementsAre("deriveKey", "deriveBits"));
+  EXPECT_EQ(kWebCryptoKeyUsageDeriveKey | kWebCryptoKeyUsageDeriveBits,
+            new_key->Key().Usages());
 
   // Check that it derives the right bits.
   WebCryptoAlgorithm hash(kWebCryptoAlgorithmIdSha256, nullptr);

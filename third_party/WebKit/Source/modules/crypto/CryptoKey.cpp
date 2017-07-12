@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "platform/CryptoResult.h"
+#include "platform/bindings/ToV8.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "public/platform/WebString.h"
@@ -153,14 +154,17 @@ ScriptValue CryptoKey::algorithm(ScriptState* script_state) {
 //        instead is return the same (immutable) array. (Javascript callers can
 //        distinguish this by doing an == test on the arrays and seeing they are
 //        different).
-Vector<String> CryptoKey::usages() const {
+ScriptValue CryptoKey::usages(ScriptState* script_state) {
   Vector<String> result;
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kKeyUsageMappings); ++i) {
     WebCryptoKeyUsage usage = kKeyUsageMappings[i].value;
     if (key_.Usages() & usage)
       result.push_back(KeyUsageToString(usage));
   }
-  return result;
+
+  return ScriptValue(script_state,
+                     ToV8(result, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
 bool CryptoKey::CanBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,

@@ -36,6 +36,5 @@
     readonly attribute DOMString type;
     readonly attribute boolean extractable;
     [CallWith=ScriptState] readonly attribute object algorithm;
-    // TODO(jyasskin): |usages| should be of type object.
-    readonly attribute DOMString[] usages;
+    [CallWith=ScriptState] readonly attribute object usages;
 };
