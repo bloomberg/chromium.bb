@@ -134,7 +134,6 @@ struct FrameResizeObserver {
                              const std::string& label) {
     const char kOnResizeCallbackSetup[] =
         "document.body.onresize = function(){"
-        "  window.domAutomationController.setAutomationId(0);"
         "  window.domAutomationController.send('%s ' + window.innerWidth);"
         "};";
     EXPECT_TRUE(ExecuteScript(
@@ -168,7 +167,6 @@ struct ResizeObserver {
   void SetupOnResizeCallback(const ToRenderFrameHost& adapter) {
     const char kOnResizeCallbackSetup[] =
         "document.body.onresize = function(){"
-        "  window.domAutomationController.setAutomationId(0);"
         "  window.domAutomationController.send('Resized');"
         "};";
     EXPECT_TRUE(ExecuteScript(
