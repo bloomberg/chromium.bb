@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -28,6 +29,7 @@ namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
 using ::payment_request_util::GetEmailLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
+using ::payment_request_util::GetContactNotificationLabelFromAutofillProfile;
 }  // namespace
 
 class PaymentRequestContactInfoSelectionMediatorTest : public PlatformTest {
@@ -35,14 +37,24 @@ class PaymentRequestContactInfoSelectionMediatorTest : public PlatformTest {
   PaymentRequestContactInfoSelectionMediatorTest()
       : autofill_profile_1_(autofill::test::GetFullProfile()),
         autofill_profile_2_(autofill::test::GetFullProfile2()),
+        autofill_profile_3_(autofill::test::GetFullProfile()),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+    // Change the name of the third profile (to avoid deduplication), and make
+    // it incomplete by removing the phone number.
+    autofill_profile_3_.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                                base::ASCIIToUTF16("Richard Roe"), "en-US");
+    autofill_profile_3_.SetInfo(
+        autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+        base::string16(), "en-US");
+
     // Add testing profiles to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_1_);
     personal_data_manager_.AddTestingProfile(&autofill_profile_2_);
-
+    personal_data_manager_.AddTestingProfile(&autofill_profile_3_);
     payment_request_ = base::MakeUnique<payments::TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+
     // Override the selected contact profile.
     payment_request_->set_selected_contact_profile(
         payment_request_->contact_profiles()[1]);
@@ -61,6 +73,7 @@ class PaymentRequestContactInfoSelectionMediatorTest : public PlatformTest {
 
   autofill::AutofillProfile autofill_profile_1_;
   autofill::AutofillProfile autofill_profile_2_;
+  autofill::AutofillProfile autofill_profile_3_;
   web::TestWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
@@ -73,8 +86,8 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestSelectableItems) {
   NSArray<CollectionViewItem*>* selectable_items =
       [GetMediator() selectableItems];
 
-  // There must be two selectable items.
-  ASSERT_EQ(2U, selectable_items.count);
+  // There must be three selectable items.
+  ASSERT_EQ(3U, selectable_items.count);
 
   // The second item must be selected.
   EXPECT_EQ(1U, GetMediator().selectedItemIndex);
@@ -110,6 +123,23 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestSelectableItems) {
                           *payment_request_->contact_profiles()[1])]);
   EXPECT_EQ(nil, profile_item_2.address);
   EXPECT_EQ(nil, profile_item_2.notification);
+
+  CollectionViewItem* item_3 = [selectable_items objectAtIndex:2];
+  DCHECK([item_3 isKindOfClass:[AutofillProfileItem class]]);
+  AutofillProfileItem* profile_item_3 =
+      base::mac::ObjCCastStrict<AutofillProfileItem>(item_3);
+  EXPECT_TRUE([profile_item_3.name
+      isEqualToString:GetNameLabelFromAutofillProfile(
+                          *payment_request_->contact_profiles()[2])]);
+  EXPECT_TRUE([profile_item_3.email
+      isEqualToString:GetEmailLabelFromAutofillProfile(
+                          *payment_request_->contact_profiles()[2])]);
+  EXPECT_EQ(nil, profile_item_3.phoneNumber);
+  EXPECT_EQ(nil, profile_item_3.address);
+  EXPECT_TRUE([profile_item_3.notification
+      isEqualToString:GetContactNotificationLabelFromAutofillProfile(
+                          *payment_request_.get(),
+                          *payment_request_->contact_profiles()[2])]);
 }
 
 // Tests that the index of the selected item is as expected when there is no
@@ -123,8 +153,8 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestNoSelectedItem) {
   NSArray<CollectionViewItem*>* selectable_items =
       [GetMediator() selectableItems];
 
-  // There must be two selectable items.
-  ASSERT_EQ(2U, selectable_items.count);
+  // There must be three selectable items.
+  ASSERT_EQ(3U, selectable_items.count);
 
   // The selected item index must be invalid.
   EXPECT_EQ(NSUIntegerMax, GetMediator().selectedItemIndex);
@@ -148,6 +178,14 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestOnlyRequestedData) {
   EXPECT_NE(nil, profile_item.phoneNumber);
   EXPECT_EQ(nil, profile_item.address);
   EXPECT_EQ(nil, profile_item.notification);
+
+  // Incomplete item should display a notification since the phone number is
+  // missing.
+  CollectionViewItem* incomplete_item = [selectable_items objectAtIndex:2];
+  DCHECK([incomplete_item isKindOfClass:[AutofillProfileItem class]]);
+  AutofillProfileItem* incomplete_profile_item =
+      base::mac::ObjCCastStrict<AutofillProfileItem>(incomplete_item);
+  EXPECT_NE(nil, incomplete_profile_item.notification);
 
   // Update the web_payment_request and reload the items.
   payment_request_->web_payment_request().options.request_payer_email = false;
@@ -179,5 +217,13 @@ TEST_F(PaymentRequestContactInfoSelectionMediatorTest, TestOnlyRequestedData) {
   EXPECT_NE(nil, profile_item.email);
   EXPECT_EQ(nil, profile_item.phoneNumber);
   EXPECT_EQ(nil, profile_item.address);
+  EXPECT_EQ(nil, profile_item.notification);
+
+  // Incomplete item should not display a notification, since the phone number
+  // is not requested.
+  incomplete_item = [selectable_items objectAtIndex:2];
+  DCHECK([incomplete_item isKindOfClass:[AutofillProfileItem class]]);
+  profile_item =
+      base::mac::ObjCCastStrict<AutofillProfileItem>(incomplete_item);
   EXPECT_EQ(nil, profile_item.notification);
 }

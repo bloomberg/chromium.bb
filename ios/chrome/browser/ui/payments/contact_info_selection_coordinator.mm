@@ -10,6 +10,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/payments/cells/payments_is_selectable.h"
 #include "ios/chrome/browser/ui/payments/contact_info_selection_mediator.h"
 #include "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,13 +88,24 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 - (BOOL)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index {
-  // Update the data source with the selection.
-  self.mediator.selectedItemIndex = index;
+  CollectionViewItem<PaymentsIsSelectable>* selectedItem =
+      self.mediator.selectableItems[index];
 
   DCHECK(index < self.paymentRequest->contact_profiles().size());
-  [self delayedNotifyDelegateOfSelection:self.paymentRequest
-                                             ->contact_profiles()[index]];
-  return YES;
+  autofill::AutofillProfile* selectedProfile =
+      self.paymentRequest->contact_profiles()[index];
+
+  // Proceed with item selection only if the item has all required info, or
+  // else bring up the contact info editor.
+  if (selectedItem.complete) {
+    // Update the data source with the selection.
+    self.mediator.selectedItemIndex = index;
+    [self delayedNotifyDelegateOfSelection:selectedProfile];
+    return YES;
+  } else {
+    [self startContactInfoEditCoordinatorWithProfile:selectedProfile];
+    return NO;
+  }
 }
 
 - (void)paymentRequestSelectorViewControllerDidFinish:
@@ -125,6 +138,25 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
            didFinishEditingProfile:(autofill::AutofillProfile*)profile {
   // Update the data source with the new data.
   [self.mediator loadItems];
+
+  const std::vector<autofill::AutofillProfile*>& contactProfiles =
+      self.paymentRequest->contact_profiles();
+  const auto position =
+      std::find(contactProfiles.begin(), contactProfiles.end(), profile);
+  DCHECK(position != contactProfiles.end());
+
+  const size_t index = position - contactProfiles.begin();
+
+  // Mark the edited item as complete meaning all required information has been
+  // filled out.
+  CollectionViewItem<PaymentsIsSelectable>* editedItem =
+      self.mediator.selectableItems[index];
+  editedItem.complete = YES;
+
+  if (![self.viewController isEditing]) {
+    // Update the data source with the selection.
+    self.mediator.selectedItemIndex = index;
+  }
 
   [self.viewController loadModel];
   [self.viewController.collectionView reloadData];

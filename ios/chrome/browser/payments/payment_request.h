@@ -220,6 +220,10 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   virtual PaymentsProfileComparator* profile_comparator();
 
+  // Returns a const version of what the non-const |profile_comparator()|
+  // method above returns.
+  const PaymentsProfileComparator* profile_comparator() const;
+
   // Returns whether the current PaymentRequest can be used to make a payment.
   bool CanMakePayment() const;
 
