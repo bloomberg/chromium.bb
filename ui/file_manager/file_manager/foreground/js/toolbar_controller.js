@@ -153,11 +153,15 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
   // controller which controls whole app window. Or, both toolbar and FileGrid
   // should listen to the FileSelectionHandler.
   if (this.directoryModel_.getFileListSelection().multiple) {
-    this.filesSelectedLabel_.ownerDocument.body.classList.toggle(
-        'selecting', selection.totalCount > 0);
-    this.filesSelectedLabel_.ownerDocument.body.classList.toggle(
-        'check-select',
-        this.directoryModel_.getFileListSelection().getCheckSelectMode());
+    var bodyClassList = this.filesSelectedLabel_.ownerDocument.body.classList;
+    bodyClassList.toggle('selecting', selection.totalCount > 0);
+    if (bodyClassList.contains('check-select') !=
+        this.directoryModel_.getFileListSelection().getCheckSelectMode()) {
+      bodyClassList.toggle('check-select');
+      // Some custom styles depend on |check-select| class. We need to
+      // re-evaluate the custom styles when the class value is changed.
+      Polymer.updateStyles();
+    }
   }
 }
 
