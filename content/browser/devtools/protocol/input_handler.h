@@ -57,8 +57,8 @@ class InputHandler : public DevToolsDomainHandler,
 
   void DispatchMouseEvent(
       const std::string& type,
-      int x,
-      int y,
+      double x,
+      double y,
       Maybe<int> modifiers,
       Maybe<double> timestamp,
       Maybe<std::string> button,
@@ -78,20 +78,20 @@ class InputHandler : public DevToolsDomainHandler,
   Response SetIgnoreInputEvents(bool ignore) override;
 
   void SynthesizePinchGesture(
-      int x,
-      int y,
+      double x,
+      double y,
       double scale_factor,
       Maybe<int> relative_speed,
       Maybe<std::string> gesture_source_type,
       std::unique_ptr<SynthesizePinchGestureCallback> callback) override;
 
   void SynthesizeScrollGesture(
-      int x,
-      int y,
-      Maybe<int> x_distance,
-      Maybe<int> y_distance,
-      Maybe<int> x_overscroll,
-      Maybe<int> y_overscroll,
+      double x,
+      double y,
+      Maybe<double> x_distance,
+      Maybe<double> y_distance,
+      Maybe<double> x_overscroll,
+      Maybe<double> y_overscroll,
       Maybe<bool> prevent_fling,
       Maybe<int> speed,
       Maybe<std::string> gesture_source_type,
@@ -101,8 +101,8 @@ class InputHandler : public DevToolsDomainHandler,
       std::unique_ptr<SynthesizeScrollGestureCallback> callback) override;
 
   void SynthesizeTapGesture(
-      int x,
-      int y,
+      double x,
+      double y,
       Maybe<int> duration,
       Maybe<int> tap_count,
       Maybe<std::string> gesture_source_type,
