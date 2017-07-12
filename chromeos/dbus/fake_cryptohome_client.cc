@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <utility>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/attestation/attestation.pb.h"
@@ -379,13 +380,17 @@ bool FakeCryptohomeClient::InstallAttributesIsFirstInstall(
 void FakeCryptohomeClient::TpmAttestationIsPrepared(
     const BoolDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
+                                tpm_attestation_is_prepared_));
 }
 
 void FakeCryptohomeClient::TpmAttestationIsEnrolled(
     const BoolDBusMethodCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+  auto task = service_is_available_
+                  ? base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
+                                   tpm_attestation_is_enrolled_)
+                  : base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateEnrollRequest(
@@ -424,8 +429,14 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
     const BoolDBusMethodCallback& callback) {
+  bool result = false;
+  if (key_type == attestation::KEY_USER) {
+    result = base::ContainsKey(user_certificate_map_,
+                               std::make_pair(cryptohome_id, key_name));
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
+      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, result));
 }
 
 void FakeCryptohomeClient::TpmAttestationGetCertificate(
@@ -433,9 +444,19 @@ void FakeCryptohomeClient::TpmAttestationGetCertificate(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
     const DataMethodCallback& callback) {
+  bool result = false;
+  std::string certificate;
+  if (key_type == attestation::KEY_USER) {
+    const auto it = user_certificate_map_.find({cryptohome_id, key_name});
+    if (it != user_certificate_map_.end()) {
+      result = true;
+      certificate = it->second;
+    }
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false, std::string()));
+      base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, result, certificate));
 }
 
 void FakeCryptohomeClient::TpmAttestationGetPublicKey(
@@ -515,7 +536,7 @@ void FakeCryptohomeClient::GetKeyDataEx(
     const cryptohome::GetKeyDataRequest& request,
     const ProtobufMethodCallback& callback) {
   cryptohome::BaseReply reply;
-  auto it = key_data_map_.find(cryptohome_id);
+  const auto it = key_data_map_.find(cryptohome_id);
   if (it == key_data_map_.end()) {
     reply.set_error(cryptohome::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
   } else {
@@ -644,6 +665,15 @@ void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i].Run(is_available);
   }
+}
+
+void FakeCryptohomeClient::SetTpmAttestationUserCertificate(
+    const cryptohome::Identification& cryptohome_id,
+    const std::string& key_name,
+    const std::string& certificate) {
+  user_certificate_map_.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(cryptohome_id, key_name),
+                                std::forward_as_tuple(certificate));
 }
 
 // static
