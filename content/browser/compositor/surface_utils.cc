@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/sequenced_task_runner.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
@@ -214,10 +214,8 @@ void CopyFromCompositingSurfaceHasResult(
 
 namespace surface_utils {
 
-void ConnectWithInProcessFrameSinkManager(
-    viz::HostFrameSinkManager* host,
-    viz::FrameSinkManagerImpl* manager,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+void ConnectWithInProcessFrameSinkManager(viz::HostFrameSinkManager* host,
+                                          viz::FrameSinkManagerImpl* manager) {
   // A mojo pointer to |host| which is the FrameSinkManager's client.
   cc::mojom::FrameSinkManagerClientPtr host_mojo;
   // A mojo pointer to |manager|.
@@ -230,11 +228,11 @@ void ConnectWithInProcessFrameSinkManager(
       mojo::MakeRequest(&manager_mojo);
 
   // Sets |manager_mojo| which is given to the |host|.
-  manager->BindAndSetClient(std::move(manager_mojo_request), task_runner,
-                            std::move(host_mojo));
+  manager->BindPtrAndSetClient(std::move(manager_mojo_request),
+                               std::move(host_mojo));
   // Sets |host_mojo| which was given to the |manager|.
-  host->BindAndSetManager(std::move(host_mojo_request), task_runner,
-                          std::move(manager_mojo));
+  host->BindManagerClientAndSetManagerPtr(std::move(host_mojo_request),
+                                          std::move(manager_mojo));
 }
 
 }  // namespace surface_utils

@@ -5,7 +5,6 @@
 #include "content/browser/compositor/image_transport_factory.h"
 
 #include "base/command_line.h"
-#include "base/single_thread_task_runner.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -25,12 +24,11 @@ void SetFactory(ImageTransportFactory* factory) {
 }
 
 // static
-void ImageTransportFactory::Initialize(
-    scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner) {
+void ImageTransportFactory::Initialize() {
   DCHECK(!g_factory || g_initialized_for_unit_tests);
   if (g_initialized_for_unit_tests)
     return;
-  SetFactory(new GpuProcessTransportFactory(std::move(resize_task_runner)));
+  SetFactory(new GpuProcessTransportFactory);
 }
 
 void ImageTransportFactory::InitializeForUnitTests(

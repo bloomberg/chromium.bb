@@ -7,16 +7,11 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace cc {
 class CopyOutputResult;
@@ -46,8 +41,7 @@ namespace surface_utils {
 
 CONTENT_EXPORT void ConnectWithInProcessFrameSinkManager(
     viz::HostFrameSinkManager* host,
-    viz::FrameSinkManagerImpl* manager,
-    scoped_refptr<base::SequencedTaskRunner> task_runner);
+    viz::FrameSinkManagerImpl* manager);
 
 }  // namespace surface_utils
 

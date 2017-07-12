@@ -15,10 +15,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/latency/latency_info.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace gfx {
 enum class SwapResult;
 }
@@ -48,8 +44,7 @@ class CONTENT_EXPORT ImageTransportFactory {
   virtual ~ImageTransportFactory() {}
 
   // Initializes the global transport factory.
-  static void Initialize(
-      scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner);
+  static void Initialize();
 
   // Initializes the global transport factory for unit tests using the provided
   // context factory.
