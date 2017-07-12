@@ -132,6 +132,10 @@ class CC_EXPORT SchedulerStateMachine {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
+  // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
+  // TODO(sunnyps): Remove after fixing https://crbug.com/622080
+  std::string CrashKeyValueForBeginMainFrameHang() const;
+
   Action NextAction() const;
   void WillSendBeginMainFrame();
   void WillNotifyBeginMainFrameNotSent();

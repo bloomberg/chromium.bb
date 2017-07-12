@@ -74,6 +74,11 @@ constexpr char kZeroEncodeDetails[] = "zero-encode-details";
 constexpr size_t kPrinterInfoCount = 4;
 constexpr char kPrinterInfo[] = "prn-info-%" PRIuS;
 
+// TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
+// TODO(sunnyps): Remove after fixing https://crbug.com/622080
+constexpr char kBeginMainFrameHangCompositorState[] =
+    "begin-main-frame-hang-compositor-state";
+
 using namespace crash_keys;
 
 int snprintf(char* buffer,
@@ -183,6 +188,10 @@ size_t RegisterCrashKeysHelper() {
 
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", kMediumSize},
+
+      // TEMPORARY: Compositor state for debugging BeginMainFrame renderer hang.
+      // TODO(sunnyps): Remove after fixing https://crbug.com/622080
+      {kBeginMainFrameHangCompositorState, kSmallSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
