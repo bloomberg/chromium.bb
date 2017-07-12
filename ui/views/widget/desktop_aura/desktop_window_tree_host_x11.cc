@@ -763,6 +763,13 @@ void DesktopWindowTreeHostX11::Activate() {
     // would have raised an X error if the window is not mapped.
     auto old_error_handler = XSetErrorHandler(IgnoreX11Errors);
     XSetInputFocus(xdisplay_, xwindow_, RevertToParent, timestamp);
+    // At this point, we know we will receive focus, and some
+    // webdriver tests depend on a window being IsActive() immediately
+    // after an Activate(), so just set this state now.
+    has_pointer_focus_ = false;
+    has_window_focus_ = true;
+    // window_mapped_in_client_ == true based on the IsVisible() check above.
+    window_mapped_in_server_ = true;
     XSetErrorHandler(old_error_handler);
   }
   AfterActivationStateChanged();
