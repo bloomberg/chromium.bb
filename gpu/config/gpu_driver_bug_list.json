@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.17",
+  "version": "10.18",
   "entries": [
     {
       "id": 1,
@@ -2563,6 +2563,23 @@
       "gl_vendor": "Intel.*",
       "features": [
         "rely_on_implicit_sync_for_swap_buffers"
+      ]
+    },
+    {
+      "id": 236,
+      "description": "glClearColor does not always work on Intel 6xxx Mac drivers",
+      "cr_bugs": [710443],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.12.6"
+        }
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x1626", "0x162B", "0x1622"],
+      "features": [
+        "clear_to_zero_or_one_broken"
       ]
     }
   ],

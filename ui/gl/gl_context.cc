@@ -61,6 +61,7 @@ GLContext::~GLContext() {
 GLApi* GLContext::CreateGLApi(DriverGL* driver) {
   real_gl_api_ = new RealGLApi;
   real_gl_api_->Initialize(driver);
+  real_gl_api_->set_gl_workarounds(gl_workarounds_);
   return real_gl_api_;
 }
 
@@ -207,6 +208,14 @@ void GLContext::SetCurrent(GLSurface* surface) {
   if (!surface && GetGLImplementation() != kGLImplementationMockGL &&
       GetGLImplementation() != kGLImplementationStubGL) {
     SetCurrentGL(nullptr);
+  }
+}
+
+void GLContext::SetGLWorkarounds(const GLWorkarounds& workarounds) {
+  DCHECK(IsCurrent(nullptr));
+  gl_workarounds_ = workarounds;
+  if (real_gl_api_) {
+    real_gl_api_->set_gl_workarounds(gl_workarounds_);
   }
 }
 
