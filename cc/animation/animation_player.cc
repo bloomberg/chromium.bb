@@ -13,6 +13,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/transform_operations.h"
+#include "cc/base/math_util.h"
 #include "cc/trees/property_animation_state.h"
 
 namespace cc {
@@ -723,82 +724,53 @@ void AnimationPlayer::MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
     SetNeedsPushProperties();
 }
 
-void AnimationPlayer::TickAnimations(base::TimeTicks monotonic_time) {
-  DCHECK(element_animations_);
-
-  for (size_t i = 0; i < animations_.size(); ++i) {
-    if (animations_[i]->run_state() == Animation::STARTING ||
-        animations_[i]->run_state() == Animation::RUNNING ||
-        animations_[i]->run_state() == Animation::PAUSED) {
-      if (!animations_[i]->InEffect(monotonic_time))
-        continue;
-
-      base::TimeDelta trimmed =
-          animations_[i]->TrimTimeToCurrentIteration(monotonic_time);
-
-      switch (animations_[i]->target_property()) {
-        case TargetProperty::TRANSFORM: {
-          const TransformAnimationCurve* transform_animation_curve =
-              animations_[i]->curve()->ToTransformAnimationCurve();
-          const TransformOperations operations =
-              transform_animation_curve->GetValue(trimmed);
-          element_animations_->NotifyClientTransformOperationsAnimated(
-              operations, animations_[i]->affects_active_elements(),
-              animations_[i]->affects_pending_elements());
-          break;
-        }
-
-        case TargetProperty::OPACITY: {
-          const FloatAnimationCurve* float_animation_curve =
-              animations_[i]->curve()->ToFloatAnimationCurve();
-          const float opacity = std::max(
-              std::min(float_animation_curve->GetValue(trimmed), 1.0f), 0.f);
-          element_animations_->NotifyClientOpacityAnimated(
-              opacity, animations_[i]->affects_active_elements(),
-              animations_[i]->affects_pending_elements());
-          break;
-        }
-
-        case TargetProperty::FILTER: {
-          const FilterAnimationCurve* filter_animation_curve =
-              animations_[i]->curve()->ToFilterAnimationCurve();
-          const FilterOperations filter =
-              filter_animation_curve->GetValue(trimmed);
-          element_animations_->NotifyClientFilterAnimated(
-              filter, animations_[i]->affects_active_elements(),
-              animations_[i]->affects_pending_elements());
-          break;
-        }
-
-        case TargetProperty::BACKGROUND_COLOR: {
-          // Not yet implemented.
-          break;
-        }
-
-        case TargetProperty::SCROLL_OFFSET: {
-          const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
-              animations_[i]->curve()->ToScrollOffsetAnimationCurve();
-          const gfx::ScrollOffset scroll_offset =
-              scroll_offset_animation_curve->GetValue(trimmed);
-          element_animations_->NotifyClientScrollOffsetAnimated(
-              scroll_offset, animations_[i]->affects_active_elements(),
-              animations_[i]->affects_pending_elements());
-          break;
-        }
-
-        case TargetProperty::BOUNDS: {
-          const SizeAnimationCurve* size_animation_curve =
-              animations_[i]->curve()->ToSizeAnimationCurve();
-          const gfx::SizeF size = size_animation_curve->GetValue(trimmed);
-          element_animations_->NotifyClientBoundsAnimated(
-              size, animations_[i]->affects_active_elements(),
-              animations_[i]->affects_pending_elements());
-          break;
-        }
-      }
-    }
+void AnimationPlayer::TickAnimation(base::TimeTicks monotonic_time,
+                                    Animation* animation,
+                                    AnimationTarget* target) {
+  if ((animation->run_state() != Animation::STARTING &&
+       animation->run_state() != Animation::RUNNING &&
+       animation->run_state() != Animation::PAUSED) ||
+      !animation->InEffect(monotonic_time)) {
+    return;
   }
 
+  AnimationCurve* curve = animation->curve();
+  base::TimeDelta trimmed =
+      animation->TrimTimeToCurrentIteration(monotonic_time);
+
+  switch (animation->target_property()) {
+    case TargetProperty::TRANSFORM:
+      target->NotifyClientTransformOperationsAnimated(
+          curve->ToTransformAnimationCurve()->GetValue(trimmed), animation);
+      break;
+    case TargetProperty::OPACITY:
+      target->NotifyClientOpacityAnimated(
+          MathUtil::ClampToRange(
+              curve->ToFloatAnimationCurve()->GetValue(trimmed), 0.0f, 1.0f),
+          animation);
+      break;
+    case TargetProperty::FILTER:
+      target->NotifyClientFilterAnimated(
+          curve->ToFilterAnimationCurve()->GetValue(trimmed), animation);
+      break;
+    case TargetProperty::BACKGROUND_COLOR:
+      // Not yet implemented.
+      break;
+    case TargetProperty::SCROLL_OFFSET:
+      target->NotifyClientScrollOffsetAnimated(
+          curve->ToScrollOffsetAnimationCurve()->GetValue(trimmed), animation);
+      break;
+    case TargetProperty::BOUNDS:
+      target->NotifyClientBoundsAnimated(
+          curve->ToSizeAnimationCurve()->GetValue(trimmed), animation);
+      break;
+  }
+}
+
+void AnimationPlayer::TickAnimations(base::TimeTicks monotonic_time) {
+  DCHECK(element_animations_);
+  for (auto& animation : animations_)
+    TickAnimation(monotonic_time, animation.get(), element_animations_.get());
   last_tick_time_ = monotonic_time;
 }
 
