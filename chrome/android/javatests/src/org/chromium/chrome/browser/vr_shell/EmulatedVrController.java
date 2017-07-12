@@ -9,6 +9,8 @@ import android.os.SystemClock;
 
 import com.google.vr.testframework.controller.ControllerTestApi;
 
+import org.junit.Assert;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  *   - PairedControllerAddress: "FOO"
  */
 public class EmulatedVrController {
+    public enum ScrollDirection { UP, DOWN, LEFT, RIGHT }
     private final ControllerTestApi mApi;
 
     public EmulatedVrController(Context context) {
@@ -87,31 +90,41 @@ public class EmulatedVrController {
     }
 
     /**
-     * Performs an upward swipe on the touchpad, which scrolls down in VR Shell.
+     * Performs an swipe on the touchpad in order to scroll in the specified
+     * direction while in the VR browser.
      * Note that scrolling this way is not consistent, i.e. scrolling down then
      * scrolling up at the same speed won't necessarily scroll back to the exact
      * starting position on the page.
      *
+     * @param direction the ScrollDirection to scroll with
      * @param steps the number of intermediate steps to send while scrolling
      * @param speed how long to wait between steps in the scroll, with higher
      * numbers resulting in a faster scroll
      */
-    public void scrollDown(int steps, int speed) {
-        performLinearTouchpadMovement(0.5f, 0.9f, 0.5f, 0.1f, steps, speed);
-    }
-
-    /**
-     * Performs a downward swipe on the touchpad, which scrolls up in VR Shell.
-     * Note that scrolling this way is not consistent, i.e. scrolling down then
-     * scrolling up at the same speed won't necessarily scroll back to the exact
-     * starting position on the page.
-     *
-     * @param steps the number of intermediate steps to send while scrolling
-     * @param speed how long to wait between steps in the scroll, with higher
-     * numbers resulting in a faster scroll
-     */
-    public void scrollUp(int steps, int speed) {
-        performLinearTouchpadMovement(0.5f, 0.1f, 0.5f, 0.9f, steps, speed);
+    public void scroll(ScrollDirection direction, int steps, int speed) {
+        float startX, startY, endX, endY;
+        startX = startY = endX = endY = 0.5f;
+        switch (direction) {
+            case UP:
+                startY = 0.1f;
+                endY = 0.9f;
+                break;
+            case DOWN:
+                startY = 0.9f;
+                endY = 0.1f;
+                break;
+            case LEFT:
+                startX = 0.1f;
+                endX = 0.9f;
+                break;
+            case RIGHT:
+                startX = 0.9f;
+                endX = 0.1f;
+                break;
+            default:
+                Assert.fail("Unknown scroll direction enum given");
+        }
+        performLinearTouchpadMovement(startX, startY, endX, endY, steps, speed);
     }
 
     /**
