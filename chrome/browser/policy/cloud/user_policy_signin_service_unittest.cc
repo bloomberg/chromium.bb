@@ -400,9 +400,39 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
   ASSERT_FALSE(manager_->core()->service());
 }
 
-  // TODO(joaodasilva): these tests rely on issuing the OAuth2 login refresh
-  // token after signin. Revisit this after figuring how to handle that on
-  // Android.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
+  // Make sure user is not signed in.
+  ASSERT_FALSE(
+      SigninManagerFactory::GetForProfile(profile_.get())->IsAuthenticated());
+
+  // No oauth access token yet, so client registration should be deferred.
+  ASSERT_FALSE(IsRequestActive());
+
+  // Make oauth token available.
+  std::string account_id = AccountTrackerService::PickAccountIdForAccount(
+      profile_.get()->GetPrefs(), kTestGaiaId, kTestUser);
+  GetTokenService()->UpdateCredentials(account_id, "oauth_login_refresh_token");
+
+  // Not ssigned in yet, so client registration should be deferred.
+  ASSERT_FALSE(IsRequestActive());
+
+  // Sign in to Chrome.
+  signin_manager_->SignIn(kTestGaiaId, kTestUser, "");
+
+  // Complete initialization of the store.
+  mock_store_->NotifyStoreLoaded();
+
+  // Client registration should be in progress since we now have an oauth token
+  // for the authenticated account id.
+  EXPECT_EQ(mock_store_->signin_username(), kTestUser);
+  ASSERT_TRUE(IsRequestActive());
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+// TODO(joaodasilva): these tests rely on issuing the OAuth2 login refresh
+// token after signin. Revisit this after figuring how to handle that on
+// Android.
 #if !defined(OS_ANDROID)
 
 TEST_F(UserPolicySigninServiceSignedInTest, InitWhileSignedIn) {

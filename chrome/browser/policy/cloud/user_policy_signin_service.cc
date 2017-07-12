@@ -137,6 +137,17 @@ void UserPolicySigninService::CallPolicyRegistrationCallback(
   callback.Run(client->dm_token(), client->client_id());
 }
 
+void UserPolicySigninService::GoogleSigninSucceeded(
+    const std::string& account_id,
+    const std::string& username) {
+  if (!oauth2_token_service_->RefreshTokenIsAvailable(account_id))
+    return;
+
+  // ProfileOAuth2TokenService now has a refresh token for the primary account
+  // so initialize the UserCloudPolicyManager.
+  TryInitializeForSignedInUser();
+}
+
 void UserPolicySigninService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
@@ -145,6 +156,20 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 UserPolicySigninService::OnRefreshTokenAvailable"));
 
+  // Ignore OAuth tokens for any account but the primary one.
+  if (account_id != signin_manager()->GetAuthenticatedAccountId())
+    return;
+
+  // ProfileOAuth2TokenService now has a refresh token for the primary account
+  // so initialize the UserCloudPolicyManager.
+  TryInitializeForSignedInUser();
+}
+
+void UserPolicySigninService::TryInitializeForSignedInUser() {
+  DCHECK(signin_manager()->IsAuthenticated());
+  DCHECK(oauth2_token_service_->RefreshTokenIsAvailable(
+      signin_manager()->GetAuthenticatedAccountId()));
+
   // If using a TestingProfile with no UserCloudPolicyManager, skip
   // initialization.
   if (!policy_manager()) {
@@ -152,12 +177,6 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
     return;
   }
 
-  // Ignore OAuth tokens for any account but the primary one.
-  if (account_id != signin_manager()->GetAuthenticatedAccountId())
-    return;
-
-  // ProfileOAuth2TokenService now has a refresh token so initialize the
-  // UserCloudPolicyManager.
   InitializeForSignedInUser(
       signin_manager()->GetAuthenticatedAccountInfo().email,
       profile_->GetRequestContext());
