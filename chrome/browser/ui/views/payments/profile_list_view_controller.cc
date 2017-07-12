@@ -48,21 +48,26 @@ class ProfileItem : public PaymentRequestItemList::Item {
   // are represented by the current instance of the dialog. |parent_view| points
   // to the controller which owns |parent_list|. |profile| is the
   // AutofillProfile that this specific list item represents. It's a cached
-  // profile owned by |state|.
+  // profile owned by |state|. |clickable| indicates whether or not this profile
+  // can be clicked (i.e., whether it's enabled).
   ProfileItem(autofill::AutofillProfile* profile,
               PaymentRequestSpec* spec,
               PaymentRequestState* state,
               PaymentRequestItemList* parent_list,
               ProfileListViewController* controller,
               PaymentRequestDialogView* dialog,
-              bool selected)
+              bool selected,
+              bool clickable)
       : PaymentRequestItemList::Item(spec,
                                      state,
                                      parent_list,
                                      selected,
+                                     clickable,
                                      /*show_edit_button=*/true),
         controller_(controller),
-        profile_(profile) {}
+        profile_(profile) {
+    Init();
+  }
   ~ProfileItem() override {}
 
  private:
@@ -81,18 +86,20 @@ class ProfileItem : public PaymentRequestItemList::Item {
     }
   }
 
-  bool IsEnabled() override { return controller_->IsEnabled(profile_); }
+  base::string16 GetNameForDataType() override {
+    return controller_->GetSheetTitle();
+  }
 
   bool CanBeSelected() override {
     // In order to be selectable, a profile entry needs to be enabled, and the
     // profile valid according to the controller. If either condition is false,
     // PerformSelectionFallback() is called.
-    return IsEnabled() && controller_->IsValidProfile(*profile_);
+    return clickable() && controller_->IsValidProfile(*profile_);
   }
 
   void PerformSelectionFallback() override {
     // If enabled, the editor is opened to complete the invalid profile.
-    if (IsEnabled())
+    if (clickable())
       controller_->ShowEditor(profile_);
   }
 
@@ -253,6 +260,7 @@ class ShippingProfileViewController : public ProfileListViewController,
         dialog()->GoBack();
       } else {
         // The error profile is known, refresh the view to display it correctly.
+        PopulateList();
         UpdateContentView();
       }
     }
@@ -375,12 +383,12 @@ std::unique_ptr<views::View> ProfileListViewController::CreateHeaderView() {
 void ProfileListViewController::PopulateList() {
   autofill::AutofillProfile* selected_profile = GetSelectedProfile();
 
-  // This must be done at Create-time, rather than construct-time, because
-  // the subclass method GetProfiles can't be called in the ctor.
+  list_.Clear();
+
   for (auto* profile : GetProfiles()) {
-    list_.AddItem(base::MakeUnique<ProfileItem>(profile, spec(), state(),
-                                                &list_, this, dialog(),
-                                                profile == selected_profile));
+    list_.AddItem(base::MakeUnique<ProfileItem>(
+        profile, spec(), state(), &list_, this, dialog(),
+        profile == selected_profile, IsEnabled(profile)));
   }
 }
 

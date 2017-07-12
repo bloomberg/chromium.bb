@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -29,14 +30,16 @@ class PaymentRequestState;
 class PaymentRequestItemList {
  public:
   // Represents an item in the item list.
-  class Item : public views::ButtonListener {
+  class Item : public views::ButtonListener, public PaymentRequestRowView {
    public:
     // Creates an item that will be owned by |list| with the initial state set
-    // to |selected|.
+    // to |selected|. |clickable| indicates whether or not the user can interact
+    // with this row.
     Item(PaymentRequestSpec* spec,
          PaymentRequestState* state,
          PaymentRequestItemList* list,
          bool selected,
+         bool clickable,
          bool show_edit_button);
     ~Item() override;
 
@@ -57,6 +60,11 @@ class PaymentRequestItemList {
     PaymentRequestState* state() { return state_; }
 
    protected:
+    // Initializes the layout and content of the row. Must be called by subclass
+    // constructors, so that virtual methods providing row contents are
+    // accessible.
+    void Init();
+
     // Called when the selected state of this item changes. Subclasses may
     // assume that they are the only selected item in |list| when this is
     // called. This could be called before CreateItemView so subclasses should
@@ -78,9 +86,10 @@ class PaymentRequestItemList {
     // item's view, such as the credit card icon.
     virtual std::unique_ptr<views::View> CreateExtraView();
 
-    // Whether the item should be enabled (if disabled, the user will not be
-    // able to click on the item).
-    virtual bool IsEnabled() = 0;
+    // Returns a string describing the type of data for which this row
+    // represents an instance. e.g., "credit card" or "billing address". Used
+    // when describing the row for accessibility.
+    virtual base::string16 GetNameForDataType() = 0;
 
     // Returns whether this item is complete/valid and can be selected by the
     // user. If this returns false when the user attempts to select this item,
@@ -99,10 +108,15 @@ class PaymentRequestItemList {
     // views::ButtonListener:
     void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+    // Updates the accessible description of this item to reflect its current
+    // status (selected/not).
+    void UpdateAccessibleName();
+
     PaymentRequestSpec* spec_;
     PaymentRequestState* state_;
     PaymentRequestItemList* list_;
     std::unique_ptr<views::ImageView> checkmark_;
+    base::string16 accessible_item_description_;
     bool selected_;
     bool show_edit_button_;
 
@@ -114,6 +128,9 @@ class PaymentRequestItemList {
 
   // Adds an item to this list. |item->list()| should return this object.
   void AddItem(std::unique_ptr<Item> item);
+
+  // Removes all items which have been added.
+  void Clear();
 
   // Creates and returns the UI representation of this list. It iterates over
   // the items it contains, creates their associated views, and adds them to the

@@ -53,7 +53,7 @@ void PaymentRequestRowView::SetIsHighlighted(bool highlighted) {
 
 // views::CustomButton:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
-  if (!clickable_)
+  if (!clickable())
     return;
 
   SetIsHighlighted(state() == views::Button::STATE_HOVERED ||
@@ -61,14 +61,14 @@ void PaymentRequestRowView::StateChanged(ButtonState old_state) {
 }
 
 void PaymentRequestRowView::OnFocus() {
-  if (clickable_) {
+  if (clickable()) {
     SetIsHighlighted(true);
     SchedulePaint();
   }
 }
 
 void PaymentRequestRowView::OnBlur() {
-  if (clickable_) {
+  if (clickable()) {
     SetIsHighlighted(false);
     SchedulePaint();
   }

@@ -381,6 +381,9 @@
   <message name="IDS_PAYMENTS_ROW_ACCESSIBLE_NAME_FORMAT" desc="The format to build the screen reader string for Payment Sheet rows">
     <ph name="ROW_NAME">$1<ex>Payment Method</ex></ph> <ph name="ROW_CONTENT">$2<ex>VISA ****1234</ex></ph>
   </message>
+  <message name="IDS_PAYMENTS_ROW_ACCESSIBLE_NAME_SELECTED_FORMAT" desc="The format to build the screen reader string for Payment Sheet rows, with an added indication that this row has been selected">
+    <ph name="ROW_NAME">$1<ex>Payment Method</ex></ph>, currently selected. <ph name="ROW_CONTENT">$2<ex>VISA ****1234</ex></ph>
+  </message>
   <message name="IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT" desc="The format to build the screen reader string for profile labels">
     <ph name="FIRST_LABEL">$1<ex>VISA ****1234</ex></ph> <ph name="SECOND_LABEL">$2<ex>Homer Simpson</ex></ph> <ph name="THIRD_LABEL">$3<ex>123 Fake Street</ex></ph>
   </message>
