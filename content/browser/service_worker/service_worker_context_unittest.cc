@@ -180,11 +180,13 @@ class RecordableEmbeddedWorkerInstanceClient
  protected:
   void StartWorker(const EmbeddedWorkerStartParams& params,
                    mojom::ServiceWorkerEventDispatcherRequest request,
+                   mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
                    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
                        instance_host) override {
     events_.push_back(Message::StartWorker);
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-        params, std::move(request), std::move(instance_host));
+        params, std::move(request), std::move(scripts_info),
+        std::move(instance_host));
   }
 
   void StopWorker() override {

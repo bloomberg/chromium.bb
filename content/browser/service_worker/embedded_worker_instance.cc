@@ -478,6 +478,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 void EmbeddedWorkerInstance::Start(
     std::unique_ptr<EmbeddedWorkerStartParams> params,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+    mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     const StatusCallback& callback) {
   restart_count_++;
   if (!context_) {
@@ -508,6 +509,7 @@ void EmbeddedWorkerInstance::Start(
       base::Bind(&CallDetach, base::Unretained(this)));
 
   pending_dispatcher_request_ = std::move(dispatcher_request);
+  pending_installed_scripts_info_ = std::move(installed_scripts_info);
 
   inflight_start_task_.reset(
       new StartTask(this, params->script_url, std::move(request)));
@@ -643,12 +645,13 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
   instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
 
+  const bool is_script_streaming = !pending_installed_scripts_info_.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
   client_->StartWorker(*params, std::move(pending_dispatcher_request_),
+                       std::move(pending_installed_scripts_info_),
                        std::move(host_ptr_info));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
-  // TODO(shimazu): Check if script streaming is used for the starting worker.
-  OnStartWorkerMessageSent(false /* is_script_streaming */);
+  OnStartWorkerMessageSent(is_script_streaming);
   if (starting_phase() == SCRIPT_STREAMING) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
                                       "SENT_START_WITH_SCRIPT_STREAMING", this);

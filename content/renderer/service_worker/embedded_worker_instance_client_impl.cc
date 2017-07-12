@@ -35,11 +35,13 @@ EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
     base::TimeTicks blink_initialized_time,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
     const service_manager::BindSourceInfo& source_info,
     mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   EmbeddedWorkerInstanceClientImpl* client =
-      new EmbeddedWorkerInstanceClientImpl(std::move(request));
+      new EmbeddedWorkerInstanceClientImpl(std::move(io_thread_runner),
+                                           std::move(request));
   client->blink_initialized_time_ = blink_initialized_time;
 }
 
@@ -54,6 +56,7 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
     const EmbeddedWorkerStartParams& params,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+    mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
@@ -66,7 +69,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(instance_host), std::move(temporal_self_));
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
-  wrapper_ = StartWorkerContext(params, std::move(client));
+  wrapper_ = StartWorkerContext(params, std::move(installed_scripts_info),
+                                std::move(client));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
@@ -94,8 +98,11 @@ void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
     mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request)
-    : binding_(this, std::move(request)), temporal_self_(this) {
+    : binding_(this, std::move(request)),
+      temporal_self_(this),
+      io_thread_runner_(std::move(io_thread_runner)) {
   binding_.set_connection_error_handler(base::Bind(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
 }
@@ -110,10 +117,14 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
 std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     const EmbeddedWorkerStartParams& params,
+    mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     std::unique_ptr<ServiceWorkerContextClient> context_client) {
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
-  if (ServiceWorkerUtils::IsScriptStreamingEnabled())
-    manager = WebServiceWorkerInstalledScriptsManagerImpl::Create();
+  if (ServiceWorkerUtils::IsScriptStreamingEnabled()) {
+    DCHECK(installed_scripts_info);
+    manager = WebServiceWorkerInstalledScriptsManagerImpl::Create(
+        std::move(installed_scripts_info), io_thread_runner_);
+  }
 
   auto wrapper = base::MakeUnique<WorkerWrapper>(
       blink::WebEmbeddedWorker::Create(std::move(context_client),

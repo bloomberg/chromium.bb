@@ -763,7 +763,7 @@ void RenderThreadImpl::Init(
   registry->AddInterface(base::Bind(&CreateFrameFactory),
                          base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(base::Bind(&EmbeddedWorkerInstanceClientImpl::Create,
-                                    base::TimeTicks::Now()),
+                                    base::TimeTicks::Now(), GetIOTaskRunner()),
                          base::ThreadTaskRunnerHandle::Get());
   GetServiceManagerConnection()->AddConnectionFilter(
       base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));

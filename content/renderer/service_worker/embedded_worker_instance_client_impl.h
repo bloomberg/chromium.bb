@@ -33,9 +33,11 @@ class ServiceWorkerContextClient;
 class EmbeddedWorkerInstanceClientImpl
     : public mojom::EmbeddedWorkerInstanceClient {
  public:
-  static void Create(base::TimeTicks blink_initialized_time,
-                     const service_manager::BindSourceInfo& source_info,
-                     mojom::EmbeddedWorkerInstanceClientRequest request);
+  static void Create(
+      base::TimeTicks blink_initialized_time,
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
+      const service_manager::BindSourceInfo& source_info,
+      mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
@@ -66,12 +68,14 @@ class EmbeddedWorkerInstanceClientImpl
   };
 
   EmbeddedWorkerInstanceClientImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
       mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request);
 
   // mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host)
       override;
   void StopWorker() override;
@@ -84,6 +88,7 @@ class EmbeddedWorkerInstanceClientImpl
 
   std::unique_ptr<WorkerWrapper> StartWorkerContext(
       const EmbeddedWorkerStartParams& params,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
       std::unique_ptr<ServiceWorkerContextClient> context_client);
 
   mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
@@ -97,6 +102,8 @@ class EmbeddedWorkerInstanceClientImpl
 
   // For UMA.
   base::TimeTicks blink_initialized_time_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);
 };

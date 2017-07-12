@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
+import "content/common/service_worker/service_worker_installed_scripts_manager.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
@@ -31,6 +32,7 @@ interface EmbeddedWorkerInstanceClient {
   // as OnThreadStarted(), OnStarted().
   StartWorker(EmbeddedWorkerStartParams params,
               ServiceWorkerEventDispatcher& dispatcher_request,
+              ServiceWorkerInstalledScriptsInfo? installed_scripts_info,
               associated EmbeddedWorkerInstanceHost instance_host);
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
