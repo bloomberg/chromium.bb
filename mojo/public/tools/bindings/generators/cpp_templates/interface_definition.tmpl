@@ -255,8 +255,8 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 
 bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
     mojo::Message* message) {
-{%-     if method|method_supports_lazy_serialization %}
   mojo::internal::MessageDispatchContext dispatch_context(message);
+{%-     if method|method_supports_lazy_serialization %}
   if (!message->is_serialized()) {
     auto context =
         message->TakeUnserializedContext<{{response_message_typename}}>();
