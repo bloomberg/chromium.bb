@@ -1210,10 +1210,9 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step2(
     // the test before the event has had a chance to be reported back to the
     // browser.
     std::string expected_response = base::StringPrintf("\"i%d\"", i);
-    right_frame()->ExecuteJavaScriptWithUserGestureForTests(base::UTF8ToUTF16(
-        base::StringPrintf("domAutomationController.setAutomationId(0);\n"
-                           "domAutomationController.send(%s);\n",
-                           expected_response.c_str())));
+    right_frame()->ExecuteJavaScriptWithUserGestureForTests(
+        base::UTF8ToUTF16(base::StringPrintf(
+            "domAutomationController.send(%s);", expected_response.c_str())));
 
     // Wait until our response comes back (it might be mixed with responses
     // carrying events that are sent by event_monitoring.js).
