@@ -284,9 +284,6 @@ float ShapeResult::PositionForOffset(unsigned absolute_offset) const {
     x += runs_[i]->width_;
   }
 
-  if (Rtl())
-    x -= Width();
-
   // The position in question might be just after the text.
   if (!offset_x && absolute_offset == NumCharacters())
     return Rtl() ? 0 : width_;
