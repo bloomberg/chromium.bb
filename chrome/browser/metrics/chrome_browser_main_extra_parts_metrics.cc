@@ -13,6 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,7 +24,6 @@
 #include "chrome/browser/mac/bluetooth_utility.h"
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
@@ -43,7 +44,6 @@
 #include "base/linux_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
@@ -174,9 +174,9 @@ void RecordMicroArchitectureStats() {
                               base::SysInfo::NumberOfProcessors());
 }
 
-// Called on the blocking pool some time after startup to avoid slowing down
+// Called on a background thread, with low priority to avoid slowing down
 // startup with metrics that aren't trivial to compute.
-void RecordStartupMetricsOnBlockingPool() {
+void RecordStartupMetrics() {
 #if defined(OS_WIN)
   GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms();
 
@@ -459,7 +459,9 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
   UMA_HISTOGRAM_ENUMERATION("Windows.IsPinnedToTaskbar", result, NUM_RESULTS);
 }
 
-// Records the pinned state of the current executable into a histogram.
+// Records the pinned state of the current executable into a histogram. Should
+// be called on a background thread, with low priority, to avoid slowing down
+// startup.
 void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
       base::Bind(&OnShellHandlerConnectionError),
@@ -504,9 +506,12 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
                             UMA_LINUX_WINDOW_MANAGER_COUNT);
 #endif
+
+  const base::TaskTraits background_task_traits = {
+      base::MayBlock(), base::TaskPriority::BACKGROUND,
+      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
                            base::BindOnce(&RecordLinuxDistro));
 #endif
 
@@ -528,16 +533,24 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMacMetrics();
 #endif  // defined(OS_MACOSX)
 
-  constexpr base::TimeDelta kStartupMetricsGatheringDelay =
-      base::TimeDelta::FromSeconds(45);
-  content::BrowserThread::GetBlockingPool()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&RecordStartupMetricsOnBlockingPool),
-      kStartupMetricsGatheringDelay);
 #if defined(OS_WIN)
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RecordIsPinnedToTaskbarHistogram),
-      kStartupMetricsGatheringDelay);
+  // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),
+  // which requires a COM thread on Windows.
+  base::CreateCOMSTATaskRunnerWithTraits(background_task_traits)
+      ->PostTask(FROM_HERE, base::BindOnce(&RecordStartupMetrics));
+#else
+  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
+                           base::BindOnce(&RecordStartupMetrics));
+#endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+  // TODO(isherman): The delay below is currently needed to avoid (flakily)
+  // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
+  // tests. Figure out why there is a dependency and fix the tests.
+  base::CreateSequencedTaskRunnerWithTraits(background_task_traits)
+      ->PostDelayedTask(FROM_HERE,
+                        base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
+                        base::TimeDelta::FromSeconds(45));
 #endif  // defined(OS_WIN)
 
   display_count_ = display::Screen::GetScreen()->GetNumDisplays();
