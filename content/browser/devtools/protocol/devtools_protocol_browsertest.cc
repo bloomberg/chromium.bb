@@ -447,7 +447,6 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
       "function handleKeyEvent(event) {"
-        "domAutomationController.setAutomationId(0);"
         "domAutomationController.send(event.key);"
       "}"
       "document.body.addEventListener('keydown', handleKeyEvent);"
