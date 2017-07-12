@@ -334,7 +334,7 @@ aura::Window* KeyboardController::GetContainerWindowWithoutCreationForTest() {
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   current_keyboard_bounds_ = new_bounds;
-  if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
+  if (ui_->HasContentsWindow() && ui_->GetContentsWindow()->IsVisible()) {
     for (KeyboardControllerObserver& observer : observer_list_)
       observer.OnKeyboardBoundsChanging(new_bounds);
     if (keyboard::IsKeyboardOverscrollEnabled())
@@ -441,7 +441,7 @@ void KeyboardController::ShowKeyboardInDisplay(int64_t display_id) {
 }
 
 bool KeyboardController::IsKeyboardWindowCreated() {
-  return keyboard_container_initialized() && ui_->HasKeyboardWindow();
+  return keyboard_container_initialized() && ui_->HasContentsWindow();
 }
 
 void KeyboardController::OnWindowHierarchyChanged(
@@ -469,7 +469,7 @@ void KeyboardController::OnWindowBoundsChanged(aura::Window* window,
     return;
   // Keep the same height when window resize. It gets called when screen
   // rotate.
-  if (!keyboard_container_initialized() || !ui_->HasKeyboardWindow())
+  if (!keyboard_container_initialized() || !ui_->HasContentsWindow())
     return;
 
   int container_height = container_->bounds().height();
@@ -491,7 +491,7 @@ void KeyboardController::OnWindowBoundsChanged(aura::Window* window,
 }
 
 void KeyboardController::Reload() {
-  if (ui_->HasKeyboardWindow()) {
+  if (ui_->HasContentsWindow()) {
     // A reload should never try to show virtual keyboard. If keyboard is not
     // visible before reload, it should keep invisible after reload.
     show_on_resize_ = false;
@@ -580,8 +580,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   TRACE_EVENT0("vk", "ShowKeyboardInternal");
 
   if (container_->children().empty()) {
-    // Add the WebContents window to the container if it hasn't already.
-    aura::Window* keyboard = ui_->GetKeyboardWindow();
+    aura::Window* keyboard = ui_->GetContentsWindow();
     keyboard->Show();
     container_->AddChild(keyboard);
     keyboard->set_owned_by_parent(false);
@@ -598,7 +597,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   if (keyboard_visible_) {
     return;
   } else if (!show_keyboard ||
-             ui_->GetKeyboardWindow()->bounds().height() == 0) {
+             ui_->GetContentsWindow()->bounds().height() == 0) {
     if (show_keyboard) {
       // show the keyboard once loading is complete.
       show_on_resize_ = true;

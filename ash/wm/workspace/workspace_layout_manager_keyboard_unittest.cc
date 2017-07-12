@@ -122,7 +122,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest2, ChangeWorkAreaInNonStickyMode) {
 
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
-  kb_controller->ui()->GetKeyboardWindow()->SetBounds(
+  kb_controller->ui()->GetContentsWindow()->SetBounds(
       keyboard::FullWidthKeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 
@@ -171,7 +171,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest2,
 
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
-  kb_controller->ui()->GetKeyboardWindow()->SetBounds(
+  kb_controller->ui()->GetContentsWindow()->SetBounds(
       keyboard::FullWidthKeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 

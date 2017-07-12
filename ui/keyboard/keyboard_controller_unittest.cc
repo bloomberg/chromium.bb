@@ -122,11 +122,11 @@ class TestKeyboardUI : public KeyboardUI {
   }
 
   // Overridden from KeyboardUI:
-  bool HasKeyboardWindow() const override { return !!window_; }
+  bool HasContentsWindow() const override { return !!window_; }
   bool ShouldWindowOverscroll(aura::Window* window) const override {
     return true;
   }
-  aura::Window* GetKeyboardWindow() override {
+  aura::Window* GetContentsWindow() override {
     if (!window_) {
       window_.reset(new aura::Window(&delegate_));
       window_->Init(ui::LAYER_NOT_DRAWN);
@@ -288,9 +288,9 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
     input_method->SetFocusedTextInputClient(client);
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
       input_method->ShowImeIfNeeded();
-      if (controller_->ui()->GetKeyboardWindow()->bounds().height() == 0) {
+      if (controller_->ui()->GetContentsWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
-        controller_->ui()->GetKeyboardWindow()->SetBounds(
+        controller_->ui()->GetContentsWindow()->SetBounds(
             FullWidthKeyboardBoundsFromRootBounds(
                 root_window()->bounds(), kDefaultVirtualKeyboardHeight));
       }
@@ -302,11 +302,10 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
   }
 
   bool ShouldEnableInsets(aura::Window* window) {
-    aura::Window* keyboard_window = controller_->ui()->GetKeyboardWindow();
-    return (keyboard_window->GetRootWindow() == window->GetRootWindow() &&
+    aura::Window* contents_window = controller_->ui()->GetContentsWindow();
+    return (contents_window->GetRootWindow() == window->GetRootWindow() &&
             keyboard::IsKeyboardOverscrollEnabled() &&
-            keyboard_window->IsVisible() &&
-            controller_->keyboard_visible());
+            contents_window->IsVisible() && controller_->keyboard_visible());
   }
 
   void ResetController() { controller_.reset(); }
@@ -333,7 +332,7 @@ INSTANTIATE_TEST_CASE_P(NewAndOldBehavior,
 
 TEST_P(KeyboardControllerTest, KeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  aura::Window* keyboard(ui()->GetContentsWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
   root_window()->AddChild(container);
   container->AddChild(keyboard);
@@ -372,7 +371,7 @@ TEST_P(KeyboardControllerTest, KeyboardSize) {
 
 TEST_P(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
   aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  aura::Window* keyboard(ui()->GetContentsWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
   root_window()->AddChild(container);
   container->AddChild(keyboard);
@@ -404,7 +403,7 @@ TEST_P(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
 
 TEST_P(KeyboardControllerTest, FloatingKeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  aura::Window* keyboard(ui()->GetContentsWindow());
   root_window()->AddChild(container);
   controller()->SetKeyboardMode(FLOATING);
   container->AddChild(keyboard);
@@ -516,11 +515,11 @@ TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   SetFocus(&no_input_client);
   // Insets should not be enabled for new windows while keyboard is in the
   // process of hiding when overscroll is enabled.
-  EXPECT_FALSE(ShouldEnableInsets(ui()->GetKeyboardWindow()));
+  EXPECT_FALSE(ShouldEnableInsets(ui()->GetContentsWindow()));
   // Cancel keyboard hide.
   SetFocus(&input_client);
   // Insets should be enabled for new windows as hide was cancelled.
-  EXPECT_TRUE(ShouldEnableInsets(ui()->GetKeyboardWindow()));
+  EXPECT_TRUE(ShouldEnableInsets(ui()->GetContentsWindow()));
 }
 
 // Verify switch to FLOATING mode will reset the overscroll or resize and when
@@ -665,9 +664,7 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
     return controller()->GetContainerWindow();
   }
 
-  aura::Window* keyboard_window() {
-    return ui()->GetKeyboardWindow();
-  }
+  aura::Window* contents_window() { return ui()->GetContentsWindow(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAnimationTest);
@@ -688,7 +685,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
   // Keyboard container and window should immediately become visible before
   // animation starts.
   EXPECT_TRUE(keyboard_container()->IsVisible());
-  EXPECT_TRUE(keyboard_window()->IsVisible());
+  EXPECT_TRUE(contents_window()->IsVisible());
   float show_start_opacity = layer->opacity();
   gfx::Transform transform;
   transform.Translate(0, kAnimationDistance);
@@ -697,7 +694,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
 
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_container()->IsVisible());
-  EXPECT_TRUE(keyboard_window()->IsVisible());
+  EXPECT_TRUE(contents_window()->IsVisible());
   float show_end_opacity = layer->opacity();
   EXPECT_LT(show_start_opacity, show_end_opacity);
   EXPECT_EQ(gfx::Transform(), layer->transform());
@@ -709,7 +706,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
   controller()->HideKeyboard(KeyboardController::HIDE_REASON_AUTOMATIC);
   EXPECT_TRUE(keyboard_container()->IsVisible());
   EXPECT_TRUE(keyboard_container()->layer()->visible());
-  EXPECT_TRUE(keyboard_window()->IsVisible());
+  EXPECT_TRUE(contents_window()->IsVisible());
   float hide_start_opacity = layer->opacity();
   // KeyboardController should notify the bounds of keyboard window to its
   // observers before hide animation starts.
@@ -718,7 +715,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
   RunAnimationForLayer(layer);
   EXPECT_FALSE(keyboard_container()->IsVisible());
   EXPECT_FALSE(keyboard_container()->layer()->visible());
-  EXPECT_FALSE(keyboard_window()->IsVisible());
+  EXPECT_FALSE(contents_window()->IsVisible());
   float hide_end_opacity = layer->opacity();
   EXPECT_GT(hide_start_opacity, hide_end_opacity);
   EXPECT_EQ(transform, layer->transform());
@@ -739,7 +736,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   ShowKeyboard();
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_container()->IsVisible());
-  EXPECT_TRUE(keyboard_window()->IsVisible());
+  EXPECT_TRUE(contents_window()->IsVisible());
   EXPECT_EQ(1.0, layer->opacity());
   EXPECT_EQ(gfx::Transform(), layer->transform());
 }
@@ -748,7 +745,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
 TEST_P(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  aura::Window* keyboard(ui()->GetContentsWindow());
   root_window()->AddChild(container);
 
   controller()->SetKeyboardMode(FLOATING);

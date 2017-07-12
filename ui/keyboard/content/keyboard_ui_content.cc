@@ -78,7 +78,7 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
 
   void MoveContents(content::WebContents* source,
                     const gfx::Rect& pos) override {
-    aura::Window* keyboard = ui_->GetKeyboardWindow();
+    aura::Window* keyboard = ui_->GetContentsWindow();
     // keyboard window must have been added to keyboard container window at this
     // point. Otherwise, wrong keyboard bounds is used and may cause problem as
     // described in crbug.com/367788.
@@ -198,7 +198,7 @@ void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
   }
 }
 
-aura::Window* KeyboardUIContent::GetKeyboardWindow() {
+aura::Window* KeyboardUIContent::GetContentsWindow() {
   if (!keyboard_contents_) {
     keyboard_contents_.reset(CreateWebContents());
     keyboard_contents_->SetDelegate(new KeyboardContentsDelegate(this));
@@ -210,7 +210,7 @@ aura::Window* KeyboardUIContent::GetKeyboardWindow() {
   return keyboard_contents_->GetNativeView();
 }
 
-bool KeyboardUIContent::HasKeyboardWindow() const {
+bool KeyboardUIContent::HasContentsWindow() const {
   return !!keyboard_contents_;
 }
 
@@ -228,7 +228,7 @@ void KeyboardUIContent::ReloadKeyboardIfNeeded() {
       // same as Android. Note we need to explicitly close current page as it
       // might try to resize keyboard window in javascript on a resize event.
       TRACE_EVENT0("vk", "ReloadKeyboardIfNeeded");
-      GetKeyboardWindow()->SetBounds(gfx::Rect());
+      GetContentsWindow()->SetBounds(gfx::Rect());
       keyboard_contents_->ClosePage();
       keyboard_controller()->SetKeyboardMode(FULL_WIDTH);
     }
@@ -334,10 +334,10 @@ const GURL& KeyboardUIContent::GetVirtualKeyboardUrl() {
 }
 
 bool KeyboardUIContent::ShouldEnableInsets(aura::Window* window) {
-  aura::Window* keyboard_window = GetKeyboardWindow();
-  return (keyboard_window->GetRootWindow() == window->GetRootWindow() &&
+  aura::Window* contents_window = GetContentsWindow();
+  return (contents_window->GetRootWindow() == window->GetRootWindow() &&
           keyboard::IsKeyboardOverscrollEnabled() &&
-          keyboard_window->IsVisible() &&
+          contents_window->IsVisible() &&
           keyboard_controller()->keyboard_visible());
 }
 
