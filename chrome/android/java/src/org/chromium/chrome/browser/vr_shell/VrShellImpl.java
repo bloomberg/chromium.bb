@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -87,6 +88,7 @@ public class VrShellImpl
     private final ChromeActivity mActivity;
     private final VrShellDelegate mDelegate;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
+    private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private final TabRedirectHandler mTabRedirectHandler;
     private final TabObserver mTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
@@ -111,6 +113,7 @@ public class VrShellImpl
 
     private boolean mReprojectedRendering;
 
+    private InterceptNavigationDelegateImpl mNonVrInterceptNavigationDelegate;
     private TabRedirectHandler mNonVrTabRedirectHandler;
     private TabModelSelector mTabModelSelector;
     private float mLastContentWidth;
@@ -162,6 +165,10 @@ public class VrShellImpl
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
         mContentVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
         mContentVirtualDisplay.setTo(primaryDisplay);
+
+        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl(
+                new VrExternalNavigationDelegate(mActivity.getActivityTab()),
+                mActivity.getActivityTab());
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity) {
             @Override
@@ -404,6 +411,8 @@ public class VrShellImpl
     }
 
     private void initializeTabForVR() {
+        mNonVrInterceptNavigationDelegate = mTab.getInterceptNavigationDelegate();
+        mTab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
@@ -411,6 +420,7 @@ public class VrShellImpl
     }
 
     private void restoreTabFromVR() {
+        mTab.setInterceptNavigationDelegate(mNonVrInterceptNavigationDelegate);
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
     }
@@ -436,7 +446,7 @@ public class VrShellImpl
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
-        mDelegate.showDoffAndExitVr(false);
+        VrShellDelegate.showDoffAndExitVr(false);
     }
 
     // Called because showing PageInfo isn't supported in VR. This happens when the user clicks on
