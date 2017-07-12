@@ -93,6 +93,8 @@ static const int error_measure_lut[512] = {
 
 static ProjectPointsFunc get_project_points_type(TransformationType type) {
   switch (type) {
+    case VERTRAPEZOID: return project_points_vertrapezoid;
+    case HORTRAPEZOID: return project_points_hortrapezoid;
     case HOMOGRAPHY: return project_points_homography;
     case AFFINE: return project_points_affine;
     case ROTZOOM: return project_points_rotzoom;
