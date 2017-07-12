@@ -746,116 +746,6 @@ bool BrowserAccessibility::GetHtmlAttribute(
   return GetData().GetHtmlAttribute(html_attr, value);
 }
 
-BrowserAccessibility* BrowserAccessibility::GetTable() const {
-  BrowserAccessibility* table = const_cast<BrowserAccessibility*>(this);
-  while (table && !ui::IsTableLikeRole(table->GetRole()))
-    table = table->PlatformGetParent();
-  return table;
-}
-
-BrowserAccessibility* BrowserAccessibility::GetTableCell(int index) const {
-  if (!ui::IsTableLikeRole(GetRole()) &&
-      !ui::IsCellOrTableHeaderRole(GetRole()))
-    return nullptr;
-
-  BrowserAccessibility* table = GetTable();
-  if (!table)
-    return nullptr;
-  const std::vector<int32_t>& unique_cell_ids =
-      table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
-  if (index < 0 || index >= static_cast<int>(unique_cell_ids.size()))
-    return nullptr;
-  return table->manager_->GetFromID(unique_cell_ids[index]);
-}
-
-BrowserAccessibility* BrowserAccessibility::GetTableCell(int row,
-                                                         int column) const {
-  if (!ui::IsTableLikeRole(GetRole()) &&
-      !ui::IsCellOrTableHeaderRole(GetRole()))
-    return nullptr;
-  if (row < 0 || row >= GetTableRowCount() || column < 0 ||
-      column >= GetTableColumnCount()) {
-    return nullptr;
-  }
-
-  BrowserAccessibility* table = GetTable();
-  if (!table)
-    return nullptr;
-
-  // In contrast to unique cell IDs, these are duplicated whenever a cell spans
-  // multiple columns or rows.
-  const std::vector<int32_t>& cell_ids =
-      table->GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
-  DCHECK_EQ(GetTableRowCount() * GetTableColumnCount(),
-            static_cast<int>(cell_ids.size()));
-  int position = row * GetTableColumnCount() + column;
-  if (position < 0 || position >= static_cast<int>(cell_ids.size()))
-    return nullptr;
-  return table->manager_->GetFromID(cell_ids[position]);
-}
-
-int BrowserAccessibility::GetTableCellIndex() const {
-  if (!ui::IsCellOrTableHeaderRole(GetRole()))
-    return -1;
-
-  BrowserAccessibility* table = GetTable();
-  if (!table)
-    return -1;
-
-  const std::vector<int32_t>& unique_cell_ids =
-      table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
-  auto iter =
-      std::find(unique_cell_ids.begin(), unique_cell_ids.end(), GetId());
-  if (iter == unique_cell_ids.end())
-    return -1;
-
-  return std::distance(unique_cell_ids.begin(), iter);
-}
-
-int BrowserAccessibility::GetTableColumn() const {
-  return GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX);
-}
-
-int BrowserAccessibility::GetTableColumnCount() const {
-  BrowserAccessibility* table = GetTable();
-  if (!table)
-    return 0;
-
-  return table->GetIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT);
-}
-
-int BrowserAccessibility::GetTableColumnSpan() const {
-  if (!ui::IsCellOrTableHeaderRole(GetRole()))
-    return 0;
-
-  int column_span;
-  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &column_span))
-    return column_span;
-  return 1;
-}
-
-int BrowserAccessibility::GetTableRow() const {
-  return GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX);
-}
-
-int BrowserAccessibility::GetTableRowCount() const {
-  BrowserAccessibility* table = GetTable();
-  if (!table)
-    return 0;
-
-  return table->GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT);
-}
-
-int BrowserAccessibility::GetTableRowSpan() const {
-  if (!ui::IsCellOrTableHeaderRole(GetRole()))
-    return 0;
-
-  int row_span;
-  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &row_span))
-    return row_span;
-  return 1;
-}
-
 base::string16 BrowserAccessibility::GetText() const {
   return GetInnerText();
 }
@@ -1098,6 +988,12 @@ gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {
     return nullptr;
 
   return focused->GetNativeViewAccessible();
+}
+
+ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
+  // Not all BrowserAccessibility subclasses can return an AXPlatformNode yet.
+  // So, here we just return nullptr.
+  return nullptr;
 }
 
 gfx::AcceleratedWidget

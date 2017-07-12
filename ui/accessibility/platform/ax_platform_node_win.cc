@@ -362,12 +362,6 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
 
   IAccessible* result = nullptr;
   switch (nav_dir) {
-    case NAVDIR_DOWN:
-    case NAVDIR_UP:
-    case NAVDIR_LEFT:
-    case NAVDIR_RIGHT:
-      // These directions are not implemented except in tables.
-      return E_NOTIMPL;
 
     case NAVDIR_FIRSTCHILD:
       if (delegate_->GetChildCount() > 0)
@@ -390,6 +384,67 @@ STDMETHODIMP AXPlatformNodeWin::accNavigate(
       AXPlatformNodeBase* previous = target->GetPreviousSibling();
       if (previous)
         result = previous->GetNativeViewAccessible();
+      break;
+    }
+
+    case NAVDIR_DOWN: {
+      // This direction is not implemented except in tables.
+      if (!ui::IsTableLikeRole(GetData().role) &&
+          !ui::IsCellOrTableHeaderRole(GetData().role))
+        return E_NOTIMPL;
+
+      AXPlatformNodeBase* next = target->GetTableCell(
+          GetTableRow() + GetTableRowSpan(), GetTableColumn());
+      if (!next)
+        return S_OK;
+
+      result = next->GetNativeViewAccessible();
+      break;
+    }
+
+    case NAVDIR_UP: {
+      // This direction is not implemented except in tables.
+      if (!ui::IsTableLikeRole(GetData().role) &&
+          !ui::IsCellOrTableHeaderRole(GetData().role))
+        return E_NOTIMPL;
+
+      AXPlatformNodeBase* next =
+          target->GetTableCell(GetTableRow() - 1, GetTableColumn());
+      if (!next)
+        return S_OK;
+
+      result = next->GetNativeViewAccessible();
+      break;
+    }
+
+    case NAVDIR_LEFT: {
+      // This direction is not implemented except in tables.
+      if (!ui::IsTableLikeRole(GetData().role) &&
+          !ui::IsCellOrTableHeaderRole(GetData().role))
+        return E_NOTIMPL;
+
+      AXPlatformNodeBase* next =
+          target->GetTableCell(GetTableRow(), GetTableColumn() - 1);
+      if (!next)
+        return S_OK;
+
+      result = next->GetNativeViewAccessible();
+      break;
+    }
+
+    case NAVDIR_RIGHT: {
+      // This direction is not implemented except in tables.
+
+      if (!ui::IsTableLikeRole(GetData().role) &&
+          !ui::IsCellOrTableHeaderRole(GetData().role))
+        return E_NOTIMPL;
+
+      AXPlatformNodeBase* next = target->GetTableCell(
+          GetTableRow(), GetTableColumn() + GetTableColumnSpan());
+      if (!next)
+        return S_OK;
+
+      result = next->GetNativeViewAccessible();
       break;
     }
   }

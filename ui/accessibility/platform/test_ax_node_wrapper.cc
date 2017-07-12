@@ -141,6 +141,10 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
   return nullptr;
 }
 
+AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
+  return nullptr;
+}
+
 gfx::AcceleratedWidget
 TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;

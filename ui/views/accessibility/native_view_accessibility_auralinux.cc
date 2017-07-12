@@ -106,6 +106,8 @@ class AuraLinuxApplication
     return nullptr;
   }
 
+  ui::AXPlatformNode* GetFromNodeID(int32_t id) override { return nullptr; }
+
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override {
     return gfx::kNullAcceleratedWidget;
   }
