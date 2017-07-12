@@ -21,16 +21,9 @@
 @synthesize webState = _webState;
 @synthesize consumer = _consumer;
 
-#pragma mark - Public
-
-- (void)disconnect {
-  [self disableWebUsage:self.webState];
-}
-
 #pragma mark - Properties
 
 - (void)setWebState:(web::WebState*)webState {
-  [self disableWebUsage:_webState];
   _webState = webState;
   [self updateConsumerWithWebState:webState];
 }
@@ -44,17 +37,10 @@
 
 #pragma mark - Private
 
-- (void)disableWebUsage:(web::WebState*)webState {
-  if (webState) {
-    webState->SetWebUsageEnabled(false);
-  }
-}
-
-// Sets |webState| webUsageEnabled and updates the consumer's contentView.
+// Updates the consumer's contentView.
 - (void)updateConsumerWithWebState:(web::WebState*)webState {
   UIView* updatedView = nil;
   if (webState) {
-    webState->SetWebUsageEnabled(true);
     updatedView = webState->GetView();
     // PLACEHOLDER: This navigates the page since the omnibox is not yet
     // hooked up.
