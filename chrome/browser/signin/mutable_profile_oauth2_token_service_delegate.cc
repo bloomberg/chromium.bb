@@ -476,7 +476,7 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
     if (refresh_token_present) {
       VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was present. "
               << "account_id=" << account_id;
-
+      RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
       refresh_tokens_[account_id]->set_refresh_token(refresh_token);
     } else {
       VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "

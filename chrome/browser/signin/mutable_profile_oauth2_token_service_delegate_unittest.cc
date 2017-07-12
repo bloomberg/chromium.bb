@@ -414,7 +414,40 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistanceNotifications) {
+// Tests that calling UpdateCredentials revokes the old token, without sending
+// the notification.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RevokeOnUpdate) {
+  // Add a token.
+  ASSERT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  ExpectOneTokenAvailableNotification();
+
+  // Update the token.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token2");
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  ExpectOneTokenAvailableNotification();
+
+  // Flush the server revokes.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+
+  // Set the same token again.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token2");
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  ExpectNoNotifications();
+
+  // Clear the token.
+  oauth2_service_delegate_->RevokeAllCredentials();
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  ExpectOneTokenRevokedNotification();
+
+  // Flush the server revokes.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceNotifications) {
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
   ExpectOneTokenAvailableNotification();
 
