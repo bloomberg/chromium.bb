@@ -33,7 +33,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
@@ -739,9 +741,12 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)managePermissionAndSaveImage:(NSData*)data
                    withFileExtension:(NSString*)fileExtension;
 // Saves the image. In order to keep the metadata of the image, the image is
-// saved as a temporary file on disk then saved in photos.
-// This should be called on FILE thread.
-- (void)saveImage:(NSData*)data withFileExtension:(NSString*)fileExtension;
+// saved as a temporary file on disk then saved in photos. Saving will happen
+// on a background sequence and the completion block will be invoked on that
+// sequence.
+- (void)saveImage:(NSData*)data
+    withFileExtension:(NSString*)fileExtension
+           completion:(void (^)(BOOL, NSError*))completionBlock;
 // Called when Chrome has been denied access to the photos or videos and the
 // user can change it.
 // Shows a privacy alert on the main queue, allowing the user to go to Chrome's
@@ -3319,50 +3324,62 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       break;
 
     // The application has permission to access the photos.
-    default: {
-      web::WebThread::PostTask(
-          web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^{
-            [self saveImage:data withFileExtension:fileExtension];
-          }));
+    default:
+      __weak BrowserViewController* weakSelf = self;
+      [self saveImage:data
+          withFileExtension:fileExtension
+                 completion:^(BOOL success, NSError* error) {
+                   [weakSelf finishSavingImageWithError:error];
+                 }];
       break;
-    }
   }
 }
 
-- (void)saveImage:(NSData*)data withFileExtension:(NSString*)fileExtension {
-  NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
-      stringByAppendingString:fileExtension];
-  NSURL* fileURL =
-      [NSURL fileURLWithPath:[NSTemporaryDirectory()
-                                 stringByAppendingPathComponent:fileName]];
-  NSError* error = nil;
-  [data writeToURL:fileURL options:NSDataWritingAtomic error:&error];
+- (void)saveImage:(NSData*)data
+    withFileExtension:(NSString*)fileExtension
+           completion:(void (^)(BOOL, NSError*))completion {
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindBlockArc(^{
+        base::ThreadRestrictions::AssertIOAllowed();
 
-  // Error while writing the image to disk.
-  if (error) {
-    NSString* errorMessage = [NSString
-        stringWithFormat:@"%@ (%@ %" PRIdNS ")", [error localizedDescription],
-                         [error domain], [error code]];
-    [self displayPrivacyErrorAlertOnMainQueue:errorMessage];
-    return;
-  }
+        NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
+            stringByAppendingString:fileExtension];
+        NSURL* fileURL = [NSURL
+            fileURLWithPath:[NSTemporaryDirectory()
+                                stringByAppendingPathComponent:fileName]];
+        NSError* error = nil;
+        [data writeToURL:fileURL options:NSDataWritingAtomic error:&error];
+        if (error) {
+          if (completion)
+            completion(NO, error);
+          return;
+        }
 
-  // Save the image to photos.
-  [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-    [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:fileURL];
-  }
-      completionHandler:^(BOOL success, NSError* error) {
-        // Callback for the image saving.
-        [self finishSavingImageWithError:error];
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+          [PHAssetChangeRequest
+              creationRequestForAssetFromImageAtFileURL:fileURL];
+        }
+            completionHandler:^(BOOL success, NSError* error) {
+              base::PostTaskWithTraits(
+                  FROM_HERE,
+                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                  base::BindBlockArc(^{
+                    base::ThreadRestrictions::AssertIOAllowed();
+                    if (completion)
+                      completion(success, error);
 
-        // Cleanup the temporary file.
-        web::WebThread::PostTask(
-            web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^{
-              NSError* error = nil;
-              [[NSFileManager defaultManager] removeItemAtURL:fileURL
-                                                        error:&error];
-            }));
-      }];
+                    // Cleanup the temporary file.
+                    NSError* deleteFileError = nil;
+                    [[NSFileManager defaultManager]
+                        removeItemAtURL:fileURL
+                                  error:&deleteFileError];
+                  }));
+            }];
+      }));
 }
 
 - (void)displayImageErrorAlertWithSettingsOnMainQueue {
