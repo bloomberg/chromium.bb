@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.Instrumentation.ActivityResult;
@@ -205,18 +204,13 @@ public class CustomTabActivityTest {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         mWebServer = TestWebServer.start();
 
-        CustomTabsConnection connection =
-                CustomTabsConnection.getInstance((Application) appContext);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
         connection.setForcePrerender(true);
     }
 
     @After
     public void tearDown() throws Exception {
-        Context appContext = InstrumentationRegistry.getInstrumentation()
-                                     .getTargetContext()
-                                     .getApplicationContext();
-        CustomTabsConnection connection =
-                CustomTabsConnection.getInstance((Application) appContext);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
         connection.setForcePrerender(false);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -1012,7 +1006,7 @@ public class CustomTabActivityTest {
         final Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2);
         final CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession(intent);
         Assert.assertEquals(getActivity().getIntentDataProvider().getSession(), session);
-        CustomTabsConnection connection = CustomTabsConnection.getInstance((Application) context);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
         String packageName = context.getPackageName();
         final String referrer =
                 IntentHandler.constructValidReferrerForAuthority(packageName).getUrl();
@@ -2191,8 +2185,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        final CustomTabsConnection connection =
-                CustomTabsConnection.getInstance((Application) context);
+        final CustomTabsConnection connection = CustomTabsConnection.getInstance();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
 
@@ -2681,8 +2674,7 @@ public class CustomTabActivityTest {
         Context context = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
                                   .getApplicationContext();
-        CustomTabsConnection connection =
-                CustomTabsTestUtils.setUpConnection((Application) context);
+        CustomTabsConnection connection = CustomTabsTestUtils.setUpConnection();
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         Bundle extras = null;
@@ -2704,11 +2696,7 @@ public class CustomTabActivityTest {
     }
 
     private CustomTabsConnection warmUpAndWait() {
-        final Context context = InstrumentationRegistry.getInstrumentation()
-                                        .getTargetContext()
-                                        .getApplicationContext();
-        CustomTabsConnection connection =
-                CustomTabsTestUtils.setUpConnection((Application) context);
+        CustomTabsConnection connection = CustomTabsTestUtils.setUpConnection();
         final CallbackHelper startupCallbackHelper = new CallbackHelper();
         Assert.assertTrue(connection.warmup(0));
         ThreadUtils.runOnUiThread(new Runnable() {
