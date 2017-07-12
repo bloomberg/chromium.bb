@@ -169,6 +169,8 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     interstitial_.reset();
   }
 
+  InterstitialPageImpl* interstitial() { return interstitial_.get(); }
+
   bool FocusInputAndSelectText() {
     return ExecuteScript(interstitial_->GetMainFrame(), "focus_select_input()");
   }
@@ -313,6 +315,34 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, SelectAll) {
   EXPECT_EQ("original body text", input_text);
 
   TearDownInterstitialPage();
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, FocusAfterDetaching) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Load something into the WebContents.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+  // Blur the main frame.
+  web_contents->GetMainFrame()->GetRenderWidgetHost()->Blur();
+  EXPECT_FALSE(
+      web_contents->GetMainFrame()->GetRenderWidgetHost()->is_focused());
+
+  // Setup the interstitial and focus it.
+  SetUpInterstitialPage();
+  interstitial()->GetView()->GetRenderWidgetHost()->Focus();
+  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  EXPECT_TRUE(static_cast<RenderWidgetHostImpl*>(
+                  interstitial()->GetView()->GetRenderWidgetHost())
+                  ->is_focused());
+
+  // Tear down interstitial.
+  TearDownInterstitialPage();
+
+  // Since the interstitial was focused, the main frame should be now focused
+  // after the interstitial teardown.
+  EXPECT_TRUE(web_contents->GetRenderViewHost()->GetWidget()->is_focused());
 }
 
 // Ensure that we don't show the underlying RenderWidgetHostView if a subframe

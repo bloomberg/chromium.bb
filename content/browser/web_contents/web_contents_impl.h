@@ -814,7 +814,7 @@ class CONTENT_EXPORT WebContentsImpl
                                bool muted);
 
   // Unsets the currently showing interstitial.
-  void DetachInterstitialPage() override;
+  void DetachInterstitialPage(bool has_focus) override;
 
   void UpdateOverridingUserAgent() override;
 
