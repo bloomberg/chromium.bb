@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -747,15 +748,7 @@ STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
 
 STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
   COM_OBJECT_VALIDATE_1_ARG(states);
-  // There are only a couple of states we need to support
-  // in IAccessible2. If any more are added, we may want to
-  // add a helper function like MSAAState.
-  *states = IA2_STATE_OPAQUE;
-  if (GetData().state & (1 << ui::AX_STATE_EDITABLE))
-    *states |= IA2_STATE_EDITABLE;
-  if (GetData().state & (1 << ui::AX_STATE_VERTICAL))
-    *states |= IA2_STATE_VERTICAL;
-
+  *states = IA2State();
   return S_OK;
 }
 
@@ -1603,6 +1596,74 @@ bool AXPlatformNodeWin::IsWebAreaForPresentationalIframe() {
     return false;
 
   return parent->GetData().role == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
+}
+
+int32_t AXPlatformNodeWin::IA2State() {
+  const AXNodeData& data = GetData();
+
+  int32_t ia2_state = IA2_STATE_OPAQUE;
+
+  const auto checked_state = static_cast<ui::AXCheckedState>(
+      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  if (checked_state) {
+    ia2_state |= IA2_STATE_CHECKABLE;
+  }
+
+  if (HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
+      GetIntAttribute(ui::AX_ATTR_INVALID_STATE) != ui::AX_INVALID_STATE_FALSE)
+    ia2_state |= IA2_STATE_INVALID_ENTRY;
+  if (data.HasState(ui::AX_STATE_REQUIRED))
+    ia2_state |= IA2_STATE_REQUIRED;
+  if (data.HasState(ui::AX_STATE_VERTICAL))
+    ia2_state |= IA2_STATE_VERTICAL;
+  if (data.HasState(ui::AX_STATE_HORIZONTAL))
+    ia2_state |= IA2_STATE_HORIZONTAL;
+
+  const bool is_editable = data.HasState(ui::AX_STATE_EDITABLE);
+  if (is_editable)
+    ia2_state |= IA2_STATE_EDITABLE;
+
+  if (IsRichTextControl() || ui::IsEditField(data.role)) {
+    // Support multi/single line states if root editable or appropriate role.
+    // We support the edit box roles even if the area is not actually editable,
+    // because it is technically feasible for JS to implement the edit box
+    // by controlling selection.
+    if (data.HasState(ui::AX_STATE_MULTILINE)) {
+      ia2_state |= IA2_STATE_MULTI_LINE;
+    } else {
+      ia2_state |= IA2_STATE_SINGLE_LINE;
+    }
+  }
+
+  if (!GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())
+    ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
+
+  if (GetBoolAttribute(ui::AX_ATTR_MODAL))
+    ia2_state |= IA2_STATE_MODAL;
+
+  switch (data.role) {
+    case ui::AX_ROLE_MENU_LIST_POPUP:
+      ia2_state &= ~(IA2_STATE_EDITABLE);
+      break;
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      ia2_state &= ~(IA2_STATE_EDITABLE);
+      break;
+    case ui::AX_ROLE_SCROLL_AREA:
+      ia2_state &= ~(IA2_STATE_EDITABLE);
+      break;
+    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SEARCH_BOX:
+      if (data.HasState(ui::AX_STATE_MULTILINE)) {
+        ia2_state |= IA2_STATE_MULTI_LINE;
+      } else {
+        ia2_state |= IA2_STATE_SINGLE_LINE;
+      }
+      ia2_state |= IA2_STATE_SELECTABLE_TEXT;
+      break;
+    default:
+      break;
+  }
+  return ia2_state;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveReadonlyState(
