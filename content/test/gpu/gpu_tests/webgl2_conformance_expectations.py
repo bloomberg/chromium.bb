@@ -201,8 +201,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/misc/' +
         'copy-texture-image-webgl-specific.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 

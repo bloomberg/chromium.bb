@@ -250,6 +250,27 @@ class ScopedUnpackStateButAlignmentReset {
   GLint image_height_ = 0;
 };
 
+class ScopedPackStateRowLengthReset {
+ public:
+  ScopedPackStateRowLengthReset(bool enable) {
+    if (!enable) {
+      return;
+    }
+
+    glGetIntegerv(GL_PACK_ROW_LENGTH, &row_length_);
+    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+  }
+
+  ~ScopedPackStateRowLengthReset() {
+    if (row_length_ != 0) {
+      glPixelStorei(GL_PACK_ROW_LENGTH, row_length_);
+    }
+  }
+
+ private:
+  GLint row_length_ = 0;
+};
+
 }  // anonymous namespace
 
 // Implementations of commands
@@ -1757,6 +1778,8 @@ error::Error GLES2DecoderPassthroughImpl::DoReadPixels(GLint x,
                                                        void* pixels,
                                                        int32_t* success) {
   FlushErrors();
+  ScopedPackStateRowLengthReset reset_row_length(
+      bufsize != 0 && feature_info_->gl_version_info().is_es3);
   glReadPixelsRobustANGLE(x, y, width, height, format, type, bufsize, length,
                           columns, rows, pixels);
   *success = FlushErrors() ? 0 : 1;
