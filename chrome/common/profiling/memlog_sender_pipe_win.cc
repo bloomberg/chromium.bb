@@ -10,7 +10,7 @@
 
 namespace profiling {
 
-MemlogSenderPipe::MemlogSenderPipe(const base::string& pipe_id)
+MemlogSenderPipe::MemlogSenderPipe(const std::string& pipe_id)
     : pipe_id_(base::UTF8ToUTF16(pipe_id)), handle_(INVALID_HANDLE_VALUE) {}
 
 MemlogSenderPipe::~MemlogSenderPipe() {
@@ -28,9 +28,13 @@ bool MemlogSenderPipe::Connect() {
   ULONGLONG timeout_ticks = ::GetTickCount64() + kMaxWaitMS;
   do {
     if (!::WaitNamedPipe(pipe_name.c_str(), kMaxWaitMS)) {
-      // Since it will wait "forever", the only time WaitNamedPipe should fail
-      // is if the pipe doesn't exist.
-      return false;
+      // This code will race with the creation of the pipe in the profiling
+      // process. If the pipe doesn't exist yet, wait briefly and try again.
+
+      // TODO(brettw) check for GetLastError() and only do this if the pipe
+      // doesn't exist (other errors should bail).
+      ::Sleep(10);
+      continue;
     }
     // This is a single-direction pipe so we don't specify GENERIC_READ, but
     // MSDN says we need FILE_READ_ATTRIBUTES.

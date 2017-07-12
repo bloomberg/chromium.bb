@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/macros.h"
+#include "chrome/profiling/memlog_control_receiver.h"
 #include "chrome/profiling/memlog_receiver.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
 
@@ -16,8 +17,13 @@ namespace profiling {
 // Parses a memory stream. Refcounted via StreamReceiver.
 class MemlogStreamParser : public MemlogStreamReceiver {
  public:
-  // Receiver must outlive this class.
-  explicit MemlogStreamParser(MemlogReceiver* receiver);
+  // Both receivers must either outlive this class or live until
+  // DisconnectReceivers is called.
+  explicit MemlogStreamParser(MemlogControlReceiver* control_receiver,
+                              MemlogReceiver* receiver);
+
+  // For tear-down, resets both receivers so they will not be called.
+  void DisconnectReceivers();
 
   // StreamReceiver implementation.
   void OnStreamData(std::unique_ptr<char[]> data, size_t sz) override;
@@ -53,7 +59,9 @@ class MemlogStreamParser : public MemlogStreamReceiver {
   ReadStatus ParseAlloc();
   ReadStatus ParseFree();
 
-  MemlogReceiver* receiver_;  // Not owned by this class.
+  // Not owned by this class.
+  MemlogControlReceiver* control_receiver_;
+  MemlogReceiver* receiver_;
 
   std::deque<Block> blocks_;
 

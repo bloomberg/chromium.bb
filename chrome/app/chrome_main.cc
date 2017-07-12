@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
-#include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
@@ -18,6 +17,7 @@
 #include "ui/gfx/switches.h"
 
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/common/profiling/memlog_sender.h"
 #include "chrome/profiling/profiling_main.h"
 #endif

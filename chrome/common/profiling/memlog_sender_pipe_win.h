@@ -7,6 +7,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -14,7 +16,7 @@ namespace profiling {
 
 class MemlogSenderPipe {
  public:
-  explicit MemlogSenderPipe(const base::string& pipe_id);
+  explicit MemlogSenderPipe(const std::string& pipe_id);
   ~MemlogSenderPipe();
 
   bool Connect();
