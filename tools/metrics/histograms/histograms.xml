@@ -27844,14 +27844,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records events related to local discovery notifications.</summary>
 </histogram>
 
-<histogram name="LocalNetworkRequests.PrivatePage" units="requests">
+<histogram base="true" name="LocalNetworkRequests.PrivatePage" units="requests">
   <owner>uthakore@chromium.org</owner>
   <summary>
     Number of requests made by a private page to resources besides itself.
   </summary>
 </histogram>
 
-<histogram name="LocalNetworkRequests.PublicPage" units="requests">
+<histogram base="true" name="LocalNetworkRequests.PublicPage" units="requests">
   <owner>uthakore@chromium.org</owner>
   <summary>
     Number of requests made by a public page to resources with reserved IP
@@ -91816,34 +91816,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="LocalNetReqsLocalhostResources" separator=".">
-  <suffix name="Localhost.DbRequests"
+  <suffix base="true" name="Localhost.DbRequests"
       label="Requests made to localhost on a database server port."/>
-  <suffix name="Localhost.DevRequests"
+  <suffix base="true" name="Localhost.DevRequests"
       label="Requests made to localhost on a development server port."/>
-  <suffix name="Localhost.OtherRequests"
+  <suffix base="true" name="Localhost.OtherRequests"
       label="Requests made to localhost on any port not otherwise monitored
              by the other local network request metrics."/>
-  <suffix name="Localhost.PrinterRequests"
+  <suffix base="true" name="Localhost.PrinterRequests"
       label="Requests made to localhost on a printer server port."/>
-  <suffix name="Localhost.WebRequests"
+  <suffix base="true" name="Localhost.WebRequests"
       label="Requests made to localhost on a web server port."/>
   <affected-histogram name="LocalNetworkRequests.PrivatePage"/>
   <affected-histogram name="LocalNetworkRequests.PublicPage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LocalNetReqsPrivatePage" separator=".">
-  <suffix name="DifferentSubnetRequests"
+  <suffix base="true" name="DifferentSubnetRequests"
       label="Requests made to local resources on a different subnet."/>
-  <suffix name="PublicRequests" label="Requests made to public resources."/>
-  <suffix name="SameSubnetRequests"
+  <suffix base="true" name="PublicRequests"
+      label="Requests made to public resources."/>
+  <suffix base="true" name="SameSubnetRequests"
       label="Requests made to local resources on the same reserved IP space
              as the page."/>
   <affected-histogram name="LocalNetworkRequests.PrivatePage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LocalNetReqsPublicPage" separator=".">
-  <suffix name="PrivateRequests" label="Requests made to private resources."/>
-  <suffix name="RouterRequests"
+  <suffix base="true" name="PrivateRequests"
+      label="Requests made to private resources."/>
+  <suffix base="true" name="RouterRequests"
       label="Requests made to resources likely to be routers."/>
   <affected-histogram name="LocalNetworkRequests.PublicPage"/>
 </histogram_suffixes>
