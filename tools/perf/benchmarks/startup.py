@@ -91,7 +91,8 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # blank_page.html not disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_ANDROID], 'Desktop benchmark')
     return StoryExpectations()
 
 
@@ -115,5 +116,6 @@ class StartupLargeProfileWarmBlankPage(_StartupWarm):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # blank_page.html not disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_ANDROID], 'Desktop benchmark')
     return StoryExpectations()
