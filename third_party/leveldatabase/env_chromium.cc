@@ -426,7 +426,11 @@ Status MakeIOError(Slice filename,
   char buf[512];
   base::snprintf(buf, sizeof(buf), "%s (ChromeMethodBFE: %d::%s::%d)",
            message.c_str(), method, MethodIDToString(method), -error);
-  return Status::IOError(filename, buf);
+  if (error == base::File::FILE_ERROR_NOT_FOUND) {
+    return Status::NotFound(filename, buf);
+  } else {
+    return Status::IOError(filename, buf);
+  }
 }
 
 Status MakeIOError(Slice filename,
