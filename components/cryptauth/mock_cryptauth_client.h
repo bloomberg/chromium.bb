@@ -29,6 +29,10 @@ class MockCryptAuthClient : public CryptAuthClient {
                void(const FindEligibleUnlockDevicesRequest& request,
                     const FindEligibleUnlockDevicesCallback& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD3(FindEligibleForPromotion,
+               void(const FindEligibleForPromotionRequest& request,
+                    const FindEligibleForPromotionCallback& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD4(SendDeviceSyncTickle,
                void(const SendDeviceSyncTickleRequest& request,
                     const SendDeviceSyncTickleCallback& callback,

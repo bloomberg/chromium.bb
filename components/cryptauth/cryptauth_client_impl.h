@@ -47,6 +47,10 @@ class CryptAuthClientImpl : public CryptAuthClient {
       const FindEligibleUnlockDevicesRequest& request,
       const FindEligibleUnlockDevicesCallback& callback,
       const ErrorCallback& error_callback) override;
+  void FindEligibleForPromotion(
+      const FindEligibleForPromotionRequest& request,
+      const FindEligibleForPromotionCallback& callback,
+      const ErrorCallback& error_callback) override;
   void SendDeviceSyncTickle(const SendDeviceSyncTickleRequest& request,
                             const SendDeviceSyncTickleCallback& callback,
                             const ErrorCallback& error_callback,

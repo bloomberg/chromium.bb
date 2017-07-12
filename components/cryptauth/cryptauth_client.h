@@ -25,6 +25,8 @@ class SetupEnrollmentRequest;
 class SetupEnrollmentResponse;
 class FinishEnrollmentRequest;
 class FinishEnrollmentResponse;
+class FindEligibleForPromotionRequest;
+class FindEligibleForPromotionResponse;
 }
 
 namespace cryptauth {
@@ -57,6 +59,14 @@ class CryptAuthClient {
   virtual void FindEligibleUnlockDevices(
       const FindEligibleUnlockDevicesRequest& request,
       const FindEligibleUnlockDevicesCallback& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // FindEligibleForPromotion
+  typedef base::Callback<void(const FindEligibleForPromotionResponse&)>
+      FindEligibleForPromotionCallback;
+  virtual void FindEligibleForPromotion(
+      const FindEligibleForPromotionRequest& request,
+      const FindEligibleForPromotionCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // SendDeviceSyncTickle
