@@ -923,8 +923,13 @@ void BlinkTestRunner::CaptureDumpContinued() {
       interfaces->TestRunner()->ShouldGeneratePixelResults() &&
       !interfaces->TestRunner()->ShouldDumpAsAudio()) {
     CHECK(render_view()->GetWebView()->IsAcceleratedCompositingActive());
+
+    // Test finish should only be processed in the BlinkTestRunner associated
+    // with the current, non-swapped-out RenderView.
+    DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
+
     interfaces->TestRunner()->DumpPixelsAsync(
-        render_view()->GetWebView(),
+        render_view()->GetWebView()->MainFrame()->ToWebLocalFrame(),
         base::Bind(&BlinkTestRunner::OnPixelsDumpCompleted,
                    base::Unretained(this)));
     return;

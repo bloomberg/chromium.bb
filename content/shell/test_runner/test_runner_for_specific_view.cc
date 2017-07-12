@@ -233,10 +233,14 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::MainThreadIsolate(), callback);
 
+  CHECK(web_view()->MainFrame()->IsWebLocalFrame())
+      << "Layout tests harness doesn't currently support running "
+      << "testRuner.capturePixelsAsyncThen from an OOPIF";
+
   web_view_test_proxy_base_->test_interfaces()
       ->GetTestRunner()
       ->DumpPixelsAsync(
-          web_view(),
+          web_view()->MainFrame()->ToWebLocalFrame(),
           base::Bind(&TestRunnerForSpecificView::CapturePixelsCallback,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(std::move(persistent_callback))));
@@ -289,8 +293,14 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
   v8::UniquePersistent<v8::Function> persistent_callback(
       blink::MainThreadIsolate(), callback);
 
+  // TODO(lukasza): Support image capture in OOPIFs for
+  // https://crbug.com/477150.
+  CHECK(web_view()->MainFrame()->IsWebLocalFrame())
+      << "Layout tests harness doesn't support calling "
+      << "testRunner.copyImageAtAndCapturePixelsAsyncThen from an OOPIF.";
+
   CopyImageAtAndCapturePixels(
-      web_view(), x, y,
+      web_view()->MainFrame()->ToWebLocalFrame(), x, y,
       base::Bind(&TestRunnerForSpecificView::CapturePixelsCallback,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(persistent_callback))));

@@ -56,8 +56,8 @@ class WebTestRunner {
   // and calls |callback| with the result.  Caller needs to ensure that
   // |web_view| stays alive until |callback| is called.
   virtual void DumpPixelsAsync(
-      blink::WebView* web_view,
-      const base::Callback<void(const SkBitmap&)>& callback) = 0;
+      blink::WebLocalFrame* frame,
+      base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 
   // Replicates changes to layout test runtime flags
   // (i.e. changes that happened in another renderer).
