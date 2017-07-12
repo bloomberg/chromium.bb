@@ -5,6 +5,8 @@
 source_set("tools_menu") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "new_tab_menu_view_item.h",
+    "new_tab_menu_view_item.mm",
     "reading_list_menu_view_item.h",
     "reading_list_menu_view_item.mm",
     "tools_menu_constants.h",

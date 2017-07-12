@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/new_tab_command.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_tab_strip_placeholder_view.h"
@@ -185,6 +186,9 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   // The model index of the placeholder gap, if one exists.  This value is used
   // as the new model index of the dragged tab when it is dropped.
   NSUInteger _placeholderGapModelIndex;
+
+  // YES if this tab strip is representing an incognito TabModel.
+  BOOL _isIncognito;
 }
 
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
@@ -358,10 +362,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     CGRect buttonNewTabFrame = tabStripFrame;
     buttonNewTabFrame.size.width = kNewTabButtonWidth;
     _buttonNewTab = [[UIButton alloc] initWithFrame:buttonNewTabFrame];
-    BOOL isBrowserStateIncognito =
-        tabModel && tabModel.browserState->IsOffTheRecord();
-    _buttonNewTab.tag =
-        isBrowserStateIncognito ? IDC_NEW_INCOGNITO_TAB : IDC_NEW_TAB;
+    _isIncognito = tabModel && tabModel.browserState->IsOffTheRecord();
     // TODO(crbug.com/600829): Rewrite layout code and convert these masks to
     // to trailing and leading margins rather than right and bottom.
     _buttonNewTab.autoresizingMask = (UIViewAutoresizingFlexibleRightMargin |
@@ -391,13 +392,13 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     _buttonNewTab.imageEdgeInsets = imageInsets;
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
-        isBrowserStateIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
-                                : IDS_IOS_TOOLS_MENU_NEW_TAB,
-        isBrowserStateIncognito ? @"New Incognito Tab" : @"New Tab");
+        _isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
+                     : IDS_IOS_TOOLS_MENU_NEW_TAB,
+        _isIncognito ? @"New Incognito Tab" : @"New Tab");
     // Use a nil target to send |-chromeExecuteCommand:| down the responder
     // chain.
-    [_buttonNewTab addTarget:nil
-                      action:@selector(chromeExecuteCommand:)
+    [_buttonNewTab addTarget:self
+                      action:@selector(sendNewTabCommand)
             forControlEvents:UIControlEventTouchUpInside];
     [_buttonNewTab addTarget:self
                       action:@selector(recordUserMetrics:)
@@ -577,6 +578,14 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   else
     LOG(WARNING) << "Trying to record metrics for unknown sender "
                  << base::SysNSStringToUTF8([sender description]);
+}
+
+- (void)sendNewTabCommand {
+  CGPoint center = [_buttonNewTab.superview convertPoint:_buttonNewTab.center
+                                                  toView:_buttonNewTab.window];
+  NewTabCommand* command =
+      [[NewTabCommand alloc] initWithIncognito:_isIncognito originPoint:center];
+  [_view chromeExecuteCommand:command];
 }
 
 - (void)tabTapped:(id)sender {

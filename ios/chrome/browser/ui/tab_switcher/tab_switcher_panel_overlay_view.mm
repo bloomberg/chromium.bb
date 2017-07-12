@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/sync/sync_util.h"
@@ -410,15 +412,13 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       shouldShowTextButton = NO;
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_OPEN_TABS:
-      tag = IDC_NEW_TAB;
-      selector = @selector(rootViewControllerChromeCommand:);
+      selector = @selector(sendNewTabCommand:);
       _recordedMetricString = "MobileTabSwitcherCreateNonIncognitoTab";
       shouldShowTextButton = NO;
       shouldShowFloatingButton = YES;
       break;
     case TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_INCOGNITO_TABS:
-      tag = IDC_NEW_INCOGNITO_TAB;
-      selector = @selector(rootViewControllerChromeCommand:);
+      selector = @selector(sendNewIncognitoTabCommand:);
       _recordedMetricString = "MobileTabSwitcherCreateIncognitoTab";
       shouldShowTextButton = NO;
       shouldShowFloatingButton = YES;
@@ -456,7 +456,19 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
                                  _browserState)];
 }
 
-- (void)rootViewControllerChromeCommand:(id)command {
+- (void)sendNewTabCommand:(id)sender {
+  UIView* view = base::mac::ObjCCast<UIView>(sender);
+  CGPoint center = [view.superview convertPoint:view.center toView:view.window];
+  NewTabCommand* command =
+      [[NewTabCommand alloc] initWithIncognito:NO originPoint:center];
+  [self chromeExecuteCommand:command];
+}
+
+- (void)sendNewIncognitoTabCommand:(id)sender {
+  UIView* view = base::mac::ObjCCast<UIView>(sender);
+  CGPoint center = [view.superview convertPoint:view.center toView:view.window];
+  NewTabCommand* command =
+      [[NewTabCommand alloc] initWithIncognito:YES originPoint:center];
   [self chromeExecuteCommand:command];
 }
 
