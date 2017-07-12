@@ -676,3 +676,12 @@ void PrintPreviewUI::SetPdfSavedClosureForTesting(
     const base::Closure& closure) {
   handler_->SetPdfSavedClosureForTesting(closure);
 }
+
+void PrintPreviewUI::SendEnableManipulateSettingsForTest() {
+  handler_->SendEnableManipulateSettingsForTest();
+}
+
+void PrintPreviewUI::SendManipulateSettingsForTest(
+    const base::DictionaryValue& settings) {
+  handler_->SendManipulateSettingsForTest(settings);
+}

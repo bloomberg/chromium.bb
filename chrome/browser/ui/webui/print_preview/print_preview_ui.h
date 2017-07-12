@@ -23,6 +23,7 @@ struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 class RefCountedBytes;
 }
@@ -154,6 +155,14 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Passes |closure| to PrintPreviewHandler::SetPdfSavedClosureForTesting().
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
+
+  // Tell the handler to send the enable-manipulate-settings-for-test WebUI
+  // event.
+  void SendEnableManipulateSettingsForTest();
+
+  // Tell the handler to send the manipulate-settings-for-test WebUI event
+  // to set the print preview settings contained in |settings|.
+  void SendManipulateSettingsForTest(const base::DictionaryValue& settings);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewDialogControllerUnitTest,
