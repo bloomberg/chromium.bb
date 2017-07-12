@@ -64,7 +64,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/precache/precache_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -376,12 +375,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   // TODO(amohammadkhan): Verify that there is no double recording in data use
   // of redirected requests.
   RecordNetworkErrorHistograms(request, net_error);
-
-  if (net_error == net::OK) {
-#if defined(OS_ANDROID)
-    precache::UpdatePrecacheMetricsAndState(request, profile_);
-#endif  // defined(OS_ANDROID)
-  }
 
   extensions_delegate_->OnCompleted(request, started, net_error);
   if (domain_reliability_monitor_)

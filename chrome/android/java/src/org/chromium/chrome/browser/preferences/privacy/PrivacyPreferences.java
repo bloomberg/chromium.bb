@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
-import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -130,7 +129,6 @@ public class PrivacyPreferences extends PreferenceFragment
                     (boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setNetworkPredictionEnabled((boolean) newValue);
-            PrecacheLauncher.updatePrecachingEnabled(getActivity());
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
         }

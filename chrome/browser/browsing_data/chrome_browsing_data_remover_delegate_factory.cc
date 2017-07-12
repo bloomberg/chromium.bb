@@ -25,7 +25,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/precache/precache_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -69,7 +68,6 @@ ChromeBrowsingDataRemoverDelegateFactory::
 
 #if defined(OS_ANDROID)
   DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
-  DependsOn(precache::PrecacheManagerFactory::GetInstance());
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

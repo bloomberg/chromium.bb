@@ -9,9 +9,12 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/metrics/user_metrics.h"
+#include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -87,10 +90,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/precache/precache_manager_factory.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/precache/content/precache_manager.h"
+#include "sql/connection.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -253,6 +255,16 @@ void ClearReportingCacheOnIOThread(
   if (service)
     service->RemoveBrowsingData(data_type_mask, origin_filter);
 }
+
+#if defined(OS_ANDROID)
+void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
+  // Precache code was removed in M61 but the sqlite database file could be
+  // still here.
+  base::FilePath db_path(browser_context->GetPath().Append(
+      base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
+  sql::Connection::Delete(db_path);
+}
+#endif
 
 // Returned by ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher().
 bool DoesOriginMatchEmbedderMask(int origin_type_mask,
@@ -616,18 +628,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #endif
 
 #if defined(OS_ANDROID)
-    precache::PrecacheManager* precache_manager =
-        precache::PrecacheManagerFactory::GetForBrowserContext(profile_);
-    // |precache_manager| could be nullptr if the profile is off the record.
-    if (!precache_manager) {
-      clear_precache_history_.Start();
-      precache_manager->ClearHistory();
-      // The above calls are done on the UI thread but do their work on the DB
-      // thread. So wait for it.
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::DB, FROM_HERE, base::Bind(&base::DoNothing),
-          clear_precache_history_.GetCompletionCallback());
-    }
+    clear_precache_history_.Start();
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&ClearPrecacheInBackground, profile_),
+        clear_precache_history_.GetCompletionCallback());
 
     // Clear the history information (last launch time and origin URL) of any
     // registered webapps.

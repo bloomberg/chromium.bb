@@ -21,8 +21,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.offlinepages.BackgroundScheduler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.precache.PrecacheController;
-import org.chromium.chrome.browser.precache.PrecacheUMA;
 
 /**
  * {@link ChromeBackgroundService} is scheduled through the {@link GcmNetworkManager} when the
@@ -56,11 +54,6 @@ public class ChromeBackgroundService extends GcmTaskService {
                     case SnippetsLauncher.TASK_TAG_WIFI:
                     case SnippetsLauncher.TASK_TAG_FALLBACK:
                         handleFetchSnippets(context, taskTag);
-                        break;
-
-                    case PrecacheController.PERIODIC_TASK_TAG:
-                    case PrecacheController.CONTINUATION_TASK_TAG:
-                        handlePrecache(context, taskTag);
                         break;
 
                     case DownloadResumptionScheduler.TASK_TAG:
@@ -107,23 +100,6 @@ public class ChromeBackgroundService extends GcmTaskService {
         SnippetsBridge.rescheduleFetching();
     }
 
-    private void handlePrecache(Context context, String tag) {
-        if (!hasPrecacheInstance()) {
-            launchBrowser(context, tag);
-        }
-        precache(context, tag);
-    }
-
-    @VisibleForTesting
-    protected boolean hasPrecacheInstance() {
-        return PrecacheController.hasInstance();
-    }
-
-    @VisibleForTesting
-    protected void precache(Context context, String tag) {
-        PrecacheController.get(context).precache(tag);
-    }
-
     @VisibleForTesting
     @SuppressFBWarnings("DM_EXIT")
     protected void launchBrowser(Context context, String tag) {
@@ -132,16 +108,6 @@ public class ChromeBackgroundService extends GcmTaskService {
             ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ProcessInitException while starting the browser process");
-            switch (tag) {
-                case PrecacheController.PERIODIC_TASK_TAG:
-                case PrecacheController.CONTINUATION_TASK_TAG:
-                    // Record the failure persistently, and upload to UMA when the library
-                    // successfully loads next time.
-                    PrecacheUMA.record(PrecacheUMA.Event.PRECACHE_TASK_LOAD_LIBRARY_FAIL);
-                    break;
-                default:
-                    break;
-            }
             // Since the library failed to initialize nothing in the application
             // can work, so kill the whole application not just the activity.
             System.exit(-1);
@@ -151,11 +117,6 @@ public class ChromeBackgroundService extends GcmTaskService {
     @VisibleForTesting
     protected void rescheduleBackgroundSyncTasksOnUpgrade() {
         BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
-    }
-
-    @VisibleForTesting
-    protected void reschedulePrecacheTasksOnUpgrade() {
-        PrecacheController.rescheduleTasksOnUpgrade(this);
     }
 
     private void rescheduleSnippetsTasksOnUpgrade() {
@@ -175,7 +136,6 @@ public class ChromeBackgroundService extends GcmTaskService {
     @Override
     public void onInitializeTasks() {
         rescheduleBackgroundSyncTasksOnUpgrade();
-        reschedulePrecacheTasksOnUpgrade();
         rescheduleSnippetsTasksOnUpgrade();
     }
 }
