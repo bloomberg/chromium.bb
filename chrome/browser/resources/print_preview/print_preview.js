@@ -574,8 +574,18 @@ cr.define('print_preview', function() {
           this.documentInfo_,
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
           this.showSystemDialogBeforeNextPrint_);
-
-      if (!destination.isLocal) {
+      if (this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW ||
+          (destination.isLocal && !destination.isPrivet &&
+           !destination.isExtension &&
+           destination.id !=
+               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
+        // Local printers resolve when print is ready to start. Hide the
+        // dialog. Mac "Open in Preview" is treated as a local printer.
+        var boundHideDialog = function() {
+          this.nativeLayer_.startHideDialog();
+        }.bind(this);
+        whenPrintDone.then(boundHideDialog, boundHideDialog);
+      } else if (!destination.isLocal) {
         // Cloud print resolves when print data is returned to submit to cloud
         // print, or if setings are invalid.
         whenPrintDone.then(
@@ -587,20 +597,14 @@ cr.define('print_preview', function() {
         whenPrintDone.then(
             this.close_.bind(this, false),
             this.onPrintFailed_.bind(this));
-      } else if (
-          destination.id ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+      } else {
+        assert(
+            destination.id ==
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF);
         // Save as PDF resolves when file selection is completed or cancelled.
         whenPrintDone.then(
             this.onFileSelectionComplete_.bind(this),
             this.onFileSelectionCancel_.bind(this));
-      } else {  // standard local printer
-        var boundHideDialog = function () {
-          this.nativeLayer_.startHideDialog();
-        }.bind(this);
-        // Local printers resolve when print is ready to start. Hide the
-        // dialog.
-        whenPrintDone.then(boundHideDialog, boundHideDialog);
       }
 
       this.showSystemDialogBeforeNextPrint_ = false;
