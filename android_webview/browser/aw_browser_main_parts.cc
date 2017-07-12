@@ -167,6 +167,9 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
       new AwGeolocationDelegate());
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+
+  // TODO(meacer): Remove when PlzNavigate ships.
+  content::RenderFrameHost::AllowDataUrlNavigationForAndroidWebView();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

@@ -169,9 +169,15 @@ int g_next_accessibility_reset_token = 1;
 // The next value to use for the javascript callback id.
 int g_next_javascript_callback_id = 1;
 
+#if defined(OS_ANDROID)
 // Whether to allow injecting javascript into any kind of frame (for Android
 // WebView).
 bool g_allow_injecting_javascript = false;
+
+// Whether to allow data URL navigations for Android WebView.
+// TODO(meacer): Remove after PlzNavigate ships.
+bool g_allow_data_url_navigation = false;
+#endif
 
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32_t, int32_t> RenderFrameHostID;
@@ -376,6 +382,16 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
 // static
 void RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView() {
   g_allow_injecting_javascript = true;
+}
+
+// static
+void RenderFrameHost::AllowDataUrlNavigationForAndroidWebView() {
+  g_allow_data_url_navigation = true;
+}
+
+// static
+bool RenderFrameHost::IsDataUrlNavigationAllowedForAndroidWebView() {
+  return g_allow_data_url_navigation;
 }
 
 void CreateMediaPlayerRenderer(
@@ -3775,8 +3791,11 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
-  return g_allow_injecting_javascript ||
-         !frame_tree_node_->current_url().is_valid() ||
+#if defined(OS_ANDROID)
+  if (g_allow_injecting_javascript)
+    return true;
+#endif
+  return !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
              GetProcess()->GetID()) ||

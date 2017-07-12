@@ -739,4 +739,31 @@ public class AwContentsTest extends AwTestBase {
         awContents = createAwTestContainerView(mContentsClient).getAwContents();
         awContents.resumeTimers();
     }
+
+    /** Regression test for https://crbug.com/732976. Load a data URL, then immediately
+     * after that load a javascript URL. The data URL navigation shouldn't be blocked.
+     */
+    @LargeTest
+    @Feature({"AndroidWebView"})
+    public void testJavaScriptUrlAfterLoadData() throws Throwable {
+        AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // Run javascript navigation immediately, without waiting for the completion of data
+                // URL.
+                awContents.loadData("<html>test</html>", "text/html", "utf-8");
+                awContents.loadUrl("javascript: void(0)");
+            }
+        });
+
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(
+                0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        assertEquals("data:text/html,<html>test</html>", awContents.getLastCommittedUrl());
+
+        TestAwContentsClient.AddMessageToConsoleHelper consoleHelper =
+                mContentsClient.getAddMessageToConsoleHelper();
+        assertEquals(0, consoleHelper.getMessages().size());
+    }
 }
