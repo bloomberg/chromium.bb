@@ -137,7 +137,7 @@ void TestWindowTree::SetWindowBounds(
     uint32_t change_id,
     uint32_t window_id,
     const gfx::Rect& bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   window_id_ = window_id;
   last_local_surface_id_ = local_surface_id;
   OnChangeReceived(change_id, WindowTreeChangeType::BOUNDS);

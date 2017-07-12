@@ -7,18 +7,18 @@
 
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/surface_reference.mojom-shared.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference.h"
+#include "components/viz/common/surface_id.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::SurfaceReferenceDataView, cc::SurfaceReference> {
-  static const cc::SurfaceId& parent_id(const cc::SurfaceReference& ref) {
+  static const viz::SurfaceId& parent_id(const cc::SurfaceReference& ref) {
     return ref.parent_id();
   }
 
-  static const cc::SurfaceId& child_id(const cc::SurfaceReference& ref) {
+  static const viz::SurfaceId& child_id(const cc::SurfaceReference& ref) {
     return ref.child_id();
   }
 

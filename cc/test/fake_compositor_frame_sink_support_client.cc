@@ -27,7 +27,7 @@ void FakeCompositorFrameSinkSupportClient::ReclaimResources(
 }
 
 void FakeCompositorFrameSinkSupportClient::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   last_local_surface_id_ = local_surface_id;
   last_damage_rect_ = damage_rect;

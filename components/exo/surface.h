@@ -68,7 +68,7 @@ class Surface : public ui::ContextFactoryObserver,
 
   aura::Window* window() { return window_.get(); }
 
-  cc::SurfaceId GetSurfaceId() const;
+  viz::SurfaceId GetSurfaceId() const;
 
   LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder() {
     return layer_tree_frame_sink_holder_.get();

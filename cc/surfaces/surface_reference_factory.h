@@ -7,8 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference_owner.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -20,8 +20,9 @@ class SurfaceReferenceFactory
  public:
   // Creates a reference to the surface with the given surface id and returns
   // a closure that must be called exactly once to remove the reference.
-  virtual base::Closure CreateReference(SurfaceReferenceOwner* owner,
-                                        const SurfaceId& surface_id) const = 0;
+  virtual base::Closure CreateReference(
+      SurfaceReferenceOwner* owner,
+      const viz::SurfaceId& surface_id) const = 0;
 
   SurfaceReferenceFactory() = default;
 

@@ -5,7 +5,7 @@
 #ifndef CC_SURFACES_SURFACE_INFO_H_
 #define CC_SURFACES_SURFACE_INFO_H_
 
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace IPC {
@@ -22,7 +22,7 @@ class SurfaceInfoDataView;
 class SurfaceInfo {
  public:
   SurfaceInfo() = default;
-  SurfaceInfo(const SurfaceId& id,
+  SurfaceInfo(const viz::SurfaceId& id,
               float device_scale_factor,
               const gfx::Size& size_in_pixels)
       : id_(id),
@@ -42,7 +42,7 @@ class SurfaceInfo {
 
   bool operator!=(const SurfaceInfo& info) const { return !(*this == info); }
 
-  const SurfaceId& id() const { return id_; }
+  const viz::SurfaceId& id() const { return id_; }
   float device_scale_factor() const { return device_scale_factor_; }
   const gfx::Size& size_in_pixels() const { return size_in_pixels_; }
 
@@ -50,7 +50,7 @@ class SurfaceInfo {
   friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
   friend struct IPC::ParamTraits<SurfaceInfo>;
 
-  SurfaceId id_;
+  viz::SurfaceId id_;
   float device_scale_factor_ = 1.f;
   gfx::Size size_in_pixels_;
 };

@@ -11,7 +11,7 @@ namespace viz {
 GpuCompositorFrameSink::GpuCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
     cc::FrameSinkManager* frame_sink_manager,
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest
         compositor_frame_sink_private_request,
@@ -43,7 +43,7 @@ void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void GpuCompositorFrameSink::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
     compositor_frame_sink_binding_.CloseWithReason(
@@ -64,7 +64,7 @@ void GpuCompositorFrameSink::DidReceiveCompositorFrameAck(
 }
 
 void GpuCompositorFrameSink::ClaimTemporaryReference(
-    const cc::SurfaceId& surface_id) {
+    const SurfaceId& surface_id) {
   support_->ClaimTemporaryReference(surface_id);
 }
 
@@ -85,7 +85,7 @@ void GpuCompositorFrameSink::ReclaimResources(
 }
 
 void GpuCompositorFrameSink::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
+    const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
 void GpuCompositorFrameSink::OnClientConnectionLost() {

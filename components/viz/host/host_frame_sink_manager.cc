@@ -32,7 +32,7 @@ void HostFrameSinkManager::RemoveObserver(FrameSinkObserver* observer) {
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
   DCHECK_EQ(frame_sink_data_map_.count(frame_sink_id), 0u);
@@ -45,7 +45,7 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
 }
 
 void HostFrameSinkManager::DestroyCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id) {
+    const FrameSinkId& frame_sink_id) {
   auto iter = frame_sink_data_map_.find(frame_sink_id);
   DCHECK(iter != frame_sink_data_map_.end());
 
@@ -58,8 +58,8 @@ void HostFrameSinkManager::DestroyCompositorFrameSink(
 }
 
 void HostFrameSinkManager::RegisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   // Register and store the parent.
   frame_sink_manager_ptr_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                       child_frame_sink_id);
@@ -67,8 +67,8 @@ void HostFrameSinkManager::RegisterFrameSinkHierarchy(
 }
 
 void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   auto iter = frame_sink_data_map_.find(child_frame_sink_id);
   DCHECK(iter != frame_sink_data_map_.end());
 
@@ -93,7 +93,7 @@ void HostFrameSinkManager::OnSurfaceCreated(
 }
 
 void HostFrameSinkManager::OnClientConnectionClosed(
-    const cc::FrameSinkId& frame_sink_id) {
+    const FrameSinkId& frame_sink_id) {
   // TODO(kylechar): Notify observers.
 }
 

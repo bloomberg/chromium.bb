@@ -416,7 +416,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
         std::move(context_provider), flipped_output_surface);
   }
   void DisplayReceivedLocalSurfaceId(
-      const cc::LocalSurfaceId& local_surface_id) override {}
+      const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
       const cc::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(

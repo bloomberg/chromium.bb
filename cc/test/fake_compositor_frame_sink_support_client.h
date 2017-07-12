@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/local_surface_id.h"
+#include "components/viz/common/local_surface_id.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -23,11 +23,11 @@ class FakeCompositorFrameSinkSupportClient
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   const gfx::Rect& last_damage_rect() const { return last_damage_rect_; }
-  const LocalSurfaceId& last_local_surface_id() const {
+  const viz::LocalSurfaceId& last_local_surface_id() const {
     return last_local_surface_id_;
   }
   const std::vector<ReturnedResource>& returned_resources() const {
@@ -36,7 +36,7 @@ class FakeCompositorFrameSinkSupportClient
 
  private:
   gfx::Rect last_damage_rect_;
-  LocalSurfaceId last_local_surface_id_;
+  viz::LocalSurfaceId last_local_surface_id_;
   std::vector<ReturnedResource> returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);

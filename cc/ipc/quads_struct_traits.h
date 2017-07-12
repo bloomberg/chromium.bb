@@ -234,7 +234,7 @@ struct EnumTraits<cc::mojom::SurfaceDrawQuadType, cc::SurfaceDrawQuadType> {
 };
 template <>
 struct StructTraits<cc::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
-  static const cc::SurfaceId& surface(const cc::DrawQuad& input) {
+  static const viz::SurfaceId& surface(const cc::DrawQuad& input) {
     const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
     return quad->surface_id;
   }

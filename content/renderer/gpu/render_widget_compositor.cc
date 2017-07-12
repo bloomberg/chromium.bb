@@ -691,7 +691,7 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-cc::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
+viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
@@ -1218,7 +1218,7 @@ void RenderWidgetCompositor::DidSubmitCompositorFrame() {}
 void RenderWidgetCompositor::DidLoseLayerTreeFrameSink() {}
 
 void RenderWidgetCompositor::SetFrameSinkId(
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
   layer_tree_host_->SetFrameSinkId(frame_sink_id);
 }
@@ -1241,7 +1241,7 @@ void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
 }
 
 void RenderWidgetCompositor::SetLocalSurfaceId(
-    const cc::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceId& local_surface_id) {
   layer_tree_host_->SetLocalSurfaceId(local_surface_id);
 }
 

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ui {
@@ -29,7 +29,7 @@ class CompositorFrameSinkClientBinding : public cc::mojom::CompositorFrameSink {
 
  private:
   // cc::mojom::CompositorFrameSink implementation:
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
@@ -37,8 +37,8 @@ class CompositorFrameSinkClientBinding : public cc::mojom::CompositorFrameSink {
   mojo::Binding<cc::mojom::CompositorFrameSinkClient> binding_;
   cc::mojom::DisplayPrivateAssociatedPtr display_private_;
   cc::mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink_;
-  cc::LocalSurfaceId local_surface_id_;
-  cc::LocalSurfaceIdAllocator id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator id_allocator_;
   gfx::Size last_submitted_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkClientBinding);

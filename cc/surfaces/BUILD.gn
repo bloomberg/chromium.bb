@@ -6,13 +6,6 @@ import("//cc/cc.gni")
 
 cc_source_set("surface_id") {
   sources = [
-    "frame_sink_id.cc",
-    "frame_sink_id.h",
-    "frame_sink_id_allocator.h",
-    "local_surface_id.cc",
-    "local_surface_id.h",
-    "surface_id.cc",
-    "surface_id.h",
     "surface_info.h",
     "surface_reference.cc",
     "surface_reference.h",
@@ -25,6 +18,7 @@ cc_source_set("surface_id") {
 
   deps = [
     "//base",
+    "//components/viz/common",
     "//mojo/public/cpp/bindings:struct_traits",
     "//ui/gfx/geometry:geometry",
   ]
@@ -48,8 +42,6 @@ cc_component("surfaces") {
     "frame_sink_manager.cc",
     "frame_sink_manager.h",
     "frame_sink_manager_client.h",
-    "local_surface_id_allocator.cc",
-    "local_surface_id_allocator.h",
     "primary_begin_frame_source.cc",
     "primary_begin_frame_source.h",
     "referenced_surface_tracker.cc",
@@ -89,6 +81,7 @@ cc_component("surfaces") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/viz/common",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//gpu/vulkan:features",

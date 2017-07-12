@@ -386,7 +386,7 @@ void WindowServer::ProcessWindowBoundsChanged(
     const ServerWindow* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessWindowBoundsChanged(window, old_bounds, new_bounds,
                                             IsOperationSource(pair.first),
@@ -654,7 +654,7 @@ bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {
 }
 
 void WindowServer::HandleTemporaryReferenceForNewSurface(
-    const cc::SurfaceId& surface_id,
+    const viz::SurfaceId& surface_id,
     ServerWindow* window) {
   // TODO(kylechar): Investigate adding tests for this.
   const ClientSpecificId window_client_id = window->id().client_id;
@@ -900,7 +900,7 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 }
 
 void WindowServer::OnClientConnectionClosed(
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   // TODO(kylechar): Notify observers
 }
 

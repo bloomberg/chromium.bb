@@ -32,9 +32,9 @@ namespace content {
 namespace {
 
 constexpr uint32_t kRendererClientId = 3;
-constexpr cc::FrameSinkId kFrameSinkParent(kRendererClientId, 1);
-constexpr cc::FrameSinkId kFrameSinkA(kRendererClientId, 3);
-constexpr cc::FrameSinkId kFrameSinkB(kRendererClientId, 4);
+constexpr viz::FrameSinkId kFrameSinkParent(kRendererClientId, 1);
+constexpr viz::FrameSinkId kFrameSinkA(kRendererClientId, 3);
+constexpr viz::FrameSinkId kFrameSinkB(kRendererClientId, 4);
 
 // Stub OffscreenCanvasSurfaceClient that stores the latest SurfaceInfo.
 class StubOffscreenCanvasSurfaceClient
@@ -123,7 +123,7 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
   // Gets the OffscreenCanvasSurfaceImpl for |frame_sink_id| or null if it
   // it doesn't exist.
   OffscreenCanvasSurfaceImpl* GetOffscreenCanvasSurface(
-      const cc::FrameSinkId& frame_sink_id) {
+      const viz::FrameSinkId& frame_sink_id) {
     auto iter = provider_->canvas_map_.find(frame_sink_id);
     if (iter == provider_->canvas_map_.end())
       return nullptr;
@@ -131,8 +131,8 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
   }
 
   // Gets list of FrameSinkId for all offscreen canvases.
-  std::vector<cc::FrameSinkId> GetAllCanvases() {
-    std::vector<cc::FrameSinkId> frame_sink_ids;
+  std::vector<viz::FrameSinkId> GetAllCanvases() {
+    std::vector<viz::FrameSinkId> frame_sink_ids;
     for (auto& map_entry : provider_->canvas_map_)
       frame_sink_ids.push_back(map_entry.second->frame_sink_id());
     std::sort(frame_sink_ids.begin(), frame_sink_ids.end());
@@ -205,7 +205,7 @@ TEST_F(OffscreenCanvasProviderImplTest,
       mojo::MakeRequest(&compositor_frame_sink));
 
   // Renderer submits a CompositorFrame with |local_id|.
-  const cc::LocalSurfaceId local_id(1, base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_id(1, base::UnguessableToken::Create());
   compositor_frame_sink->SubmitCompositorFrame(local_id, MakeCompositorFrame());
 
   RunUntilIdle();
@@ -302,7 +302,7 @@ TEST_F(OffscreenCanvasProviderImplTest, ClientConnectionWrongOrder) {
 // Check that trying to create an OffscreenCanvasSurfaceImpl with a client id
 // that doesn't match the renderer fails.
 TEST_F(OffscreenCanvasProviderImplTest, InvalidClientId) {
-  const cc::FrameSinkId invalid_frame_sink_id(4, 3);
+  const viz::FrameSinkId invalid_frame_sink_id(4, 3);
   EXPECT_NE(kRendererClientId, invalid_frame_sink_id.client_id());
 
   StubOffscreenCanvasSurfaceClient surface_client;

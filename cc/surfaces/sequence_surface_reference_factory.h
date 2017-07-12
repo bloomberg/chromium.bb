@@ -18,14 +18,15 @@ class CC_SURFACES_EXPORT SequenceSurfaceReferenceFactory
   SequenceSurfaceReferenceFactory() = default;
 
   // SurfaceReferenceFactory implementation:
-  base::Closure CreateReference(SurfaceReferenceOwner* owner,
-                                const SurfaceId& surface_id) const override;
+  base::Closure CreateReference(
+      SurfaceReferenceOwner* owner,
+      const viz::SurfaceId& surface_id) const override;
 
  protected:
   ~SequenceSurfaceReferenceFactory() override = default;
 
  private:
-  virtual void RequireSequence(const SurfaceId& surface_id,
+  virtual void RequireSequence(const viz::SurfaceId& surface_id,
                                const SurfaceSequence& sequence) const = 0;
   virtual void SatisfySequence(const SurfaceSequence& sequence) const = 0;
 

@@ -11,9 +11,11 @@ namespace gfx {
 class Rect;
 }
 
-namespace cc {
-
+namespace viz {
 class LocalSurfaceId;
+}
+
+namespace cc {
 
 struct BeginFrameArgs;
 
@@ -37,7 +39,7 @@ class CompositorFrameSinkSupportClient {
       const std::vector<ReturnedResource>& resources) = 0;
 
   // Called when surface is being scheduled for a draw.
-  virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+  virtual void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                                const gfx::Rect& damage_rect) = 0;
 
  protected:

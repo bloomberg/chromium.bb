@@ -42,11 +42,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             cc::FrameSinkManager* frame_sink_manager,
                             Client* client,
-                            const cc::FrameSinkId& frame_sink_id);
+                            const viz::FrameSinkId& frame_sink_id);
 
   ~DelegatedFrameHostAndroid() override;
 
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void DidNotProduceFrame(const cc::BeginFrameAck& ack);
 
@@ -54,7 +54,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   bool HasDelegatedContent() const;
 
-  cc::FrameSinkId GetFrameSinkId() const;
+  viz::FrameSinkId GetFrameSinkId() const;
 
   // Should only be called when the host has a content layer.
   void RequestCopyOfSurface(
@@ -70,7 +70,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void DetachFromCompositor();
 
   // Returns the ID for the current Surface.
-  cc::SurfaceId SurfaceId() const;
+  viz::SurfaceId SurfaceId() const;
 
  private:
   // cc::CompositorFrameSinkSupportClient implementation.
@@ -79,7 +79,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   // cc::ExternalBeginFrameSourceClient implementation.
@@ -87,7 +87,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void CreateNewCompositorFrameSinkSupport();
 
-  const cc::FrameSinkId frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
 
   ViewAndroid* view_;
 

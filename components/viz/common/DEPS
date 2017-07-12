@@ -5,6 +5,7 @@ specific_include_rules = {
     "+gpu/command_buffer/client",
     "+gpu/command_buffer/common",
     "+gpu/ipc/common",
+    "+mojo/public/cpp/bindings",
     "+ui/gfx/geometry",
     "+services/ui/gpu/interfaces",
     "+third_party/skia",

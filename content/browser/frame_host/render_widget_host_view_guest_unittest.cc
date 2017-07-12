@@ -198,13 +198,13 @@ class RenderWidgetHostViewGuestSurfaceTest
 #endif
   }
 
-  cc::SurfaceId GetSurfaceId() const {
+  viz::SurfaceId GetSurfaceId() const {
     DCHECK(view_);
     RenderWidgetHostViewChildFrame* rwhvcf =
         static_cast<RenderWidgetHostViewChildFrame*>(view_);
     if (!rwhvcf->local_surface_id_.is_valid())
-      return cc::SurfaceId();
-    return cc::SurfaceId(rwhvcf->frame_sink_id_, rwhvcf->local_surface_id_);
+      return viz::SurfaceId();
+    return viz::SurfaceId(rwhvcf->frame_sink_id_, rwhvcf->local_surface_id_);
   }
 
  protected:
@@ -246,7 +246,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
-  cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
+  viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
 
   ASSERT_TRUE(browser_plugin_guest_);
 
@@ -258,7 +258,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
       local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  cc::SurfaceId id = GetSurfaceId();
+  viz::SurfaceId id = GetSurfaceId();
 
   EXPECT_TRUE(id.is_valid());
 

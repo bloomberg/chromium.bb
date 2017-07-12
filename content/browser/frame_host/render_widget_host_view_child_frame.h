@@ -117,7 +117,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) override;
   void OnSurfaceChanged(const cc::SurfaceInfo& surface_info) override;
@@ -129,7 +129,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                               InputEventAckState ack_result) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  cc::FrameSinkId GetFrameSinkId() override;
+  viz::FrameSinkId GetFrameSinkId() override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
                             const ui::LatencyInfo& latency) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
@@ -142,7 +142,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                            const ui::LatencyInfo& latency) override;
   gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
   bool TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
+                                       const viz::SurfaceId& original_surface,
                                        gfx::Point* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::Point& point,
@@ -177,12 +177,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& id,
+  void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override {}
 
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;
-  cc::SurfaceId SurfaceIdForTesting() const override;
+  viz::SurfaceId SurfaceIdForTesting() const override;
   CrossProcessFrameConnector* FrameConnectorForTesting() const {
     return frame_connector_;
   }
@@ -220,7 +220,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
 
-  void ProcessCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void ProcessCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                               cc::CompositorFrame frame);
 
   void SendSurfaceInfoToEmbedder();
@@ -238,11 +238,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   RenderWidgetHostImpl* host_;
 
   // The ID for FrameSink associated with this view.
-  cc::FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
 
   // Surface-related state.
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
-  cc::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
@@ -278,7 +278,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   FrameSwappedCallbackList frame_swapped_callbacks_;
 
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
-  cc::FrameSinkId parent_frame_sink_id_;
+  viz::FrameSinkId parent_frame_sink_id_;
 
   bool has_frame_ = false;
   cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =

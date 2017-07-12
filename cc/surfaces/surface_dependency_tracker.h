@@ -37,8 +37,8 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker {
   void OnSurfaceActivated(Surface* surface);
   void OnSurfaceDependenciesChanged(
       Surface* surface,
-      const base::flat_set<SurfaceId>& added_dependencies,
-      const base::flat_set<SurfaceId>& removed_dependencies);
+      const base::flat_set<viz::SurfaceId>& added_dependencies,
+      const base::flat_set<viz::SurfaceId>& removed_dependencies);
   void OnSurfaceDiscarded(Surface* surface);
 
  private:
@@ -58,20 +58,22 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker {
   // Informs all Surfaces with pending frames blocked on the provided
   // |surface_id| that there is now an active frame available in Surface
   // corresponding to |surface_id|.
-  void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
+  void NotifySurfaceIdAvailable(const viz::SurfaceId& surface_id);
 
   SurfaceManager* const surface_manager_;
 
   // A map from a SurfaceId to the set of Surfaces blocked on that SurfaceId.
-  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
+  std::unordered_map<viz::SurfaceId,
+                     base::flat_set<viz::SurfaceId>,
+                     viz::SurfaceIdHash>
       blocked_surfaces_from_dependency_;
 
   // The set of SurfaceIds corresponding that are known to have blockers.
-  base::flat_set<SurfaceId> blocked_surfaces_by_id_;
+  base::flat_set<viz::SurfaceId> blocked_surfaces_by_id_;
 
   // The set of SurfaceIds corresponding to Surfaces that have active
   // CompositorFrames with missing dependencies.
-  base::flat_set<SurfaceId> surfaces_with_missing_dependencies_;
+  base::flat_set<viz::SurfaceId> surfaces_with_missing_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyTracker);
 };

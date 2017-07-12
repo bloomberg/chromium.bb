@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "cc/cc_export.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -33,7 +33,7 @@ class CC_EXPORT AppendQuadsData {
   // This is the set of surface IDs that must have corresponding
   // active CompositorFrames so that this CompositorFrame can
   // activate.
-  std::vector<SurfaceId> activation_dependencies;
+  std::vector<viz::SurfaceId> activation_dependencies;
 };
 
 }  // namespace cc

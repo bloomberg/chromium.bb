@@ -16,15 +16,15 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,8 +35,8 @@ using testing::AnyNumber;
 namespace cc {
 namespace {
 
-static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
-static constexpr FrameSinkId kAnotherFrameSinkId(4, 4);
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(3, 3);
+static constexpr viz::FrameSinkId kAnotherFrameSinkId(4, 4);
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
@@ -60,11 +60,11 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   void DisplayResized() override { display_resized_ = true; }
 
-  void SetNewRootSurface(const SurfaceId& root_surface_id) override {
+  void SetNewRootSurface(const viz::SurfaceId& root_surface_id) override {
     has_new_root_surface = true;
   }
 
-  void ProcessSurfaceDamage(const SurfaceId& surface_id,
+  void ProcessSurfaceDamage(const viz::SurfaceId& surface_id,
                             const BeginFrameAck& ack,
                             bool display_damaged) override {
     if (display_damaged) {
@@ -127,7 +127,7 @@ class DisplayTest : public testing::Test {
 
   std::unique_ptr<Display> CreateDisplay(
       const RendererSettings& settings,
-      const FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<OutputSurface> output_surface) {
     auto display = base::MakeUnique<Display>(
@@ -147,7 +147,7 @@ class DisplayTest : public testing::Test {
 
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
-                             const LocalSurfaceId& local_surface_id) {
+                             const viz::LocalSurfaceId& local_surface_id) {
     CompositorFrame frame = test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
@@ -156,7 +156,7 @@ class DisplayTest : public testing::Test {
 
   FrameSinkManager manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
-  LocalSurfaceIdAllocator id_allocator_;
+  viz::LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   TestSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<BeginFrameSource> begin_frame_source_;
@@ -191,7 +191,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
@@ -449,7 +449,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   display_->SetLocalSurfaceId(local_surface_id, 1.f);
 
   scheduler_->ResetDamageForTest();
@@ -501,8 +501,8 @@ class MockedContext : public TestWebGraphicsContext3D {
 };
 
 TEST_F(DisplayTest, Finish) {
-  LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
-  LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
+  viz::LocalSurfaceId local_surface_id1(id_allocator_.GenerateId());
+  viz::LocalSurfaceId local_surface_id2(id_allocator_.GenerateId());
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
@@ -601,7 +601,7 @@ TEST_F(DisplayTest, ContextLossInformsClient) {
 // There should not be a side-effect on other Displays.
 TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   RendererSettings settings;
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+  viz::LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
 
   // Set up first display.
   SetUpDisplay(settings, nullptr);

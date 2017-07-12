@@ -1,8 +1,7 @@
 include_rules = [
   "+cc",
   "-cc/blink",
-  "+components/viz/common/quads",
-  "+components/viz/common/resources",
+  "+components/viz/common",
   "+components/viz/host",
   "+gpu/command_buffer/client/gles2_interface.h",
   "+services/ui/public/cpp",

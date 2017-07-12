@@ -51,7 +51,7 @@ void CreateSurfaceDrawQuad(RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect,
                            const gfx::Rect& quad_rect,
-                           SurfaceId surface_id) {
+                           viz::SurfaceId surface_id) {
   CreateSharedQuadState(pass, transform, root_rect);
   SurfaceDrawQuad* surface_quad =
       pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -85,13 +85,13 @@ TestSurfaceHittestDelegate::TestSurfaceHittestDelegate()
 TestSurfaceHittestDelegate::~TestSurfaceHittestDelegate() {}
 
 void TestSurfaceHittestDelegate::AddInsetsForRejectSurface(
-    const SurfaceId& surface_id,
+    const viz::SurfaceId& surface_id,
     const gfx::Insets& inset) {
   insets_for_reject_.insert(std::make_pair(surface_id, inset));
 }
 
 void TestSurfaceHittestDelegate::AddInsetsForAcceptSurface(
-    const SurfaceId& surface_id,
+    const viz::SurfaceId& surface_id,
     const gfx::Insets& inset) {
   insets_for_accept_.insert(std::make_pair(surface_id, inset));
 }

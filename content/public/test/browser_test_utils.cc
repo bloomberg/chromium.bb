@@ -1341,7 +1341,7 @@ class SurfaceHitTestReadyNotifier {
   void WaitForSurfaceReady(RenderWidgetHostViewBase* root_container);
 
  private:
-  bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id);
+  bool ContainsSurfaceId(const viz::SurfaceId& container_surface_id);
 
   cc::SurfaceManager* surface_manager_;
   RenderWidgetHostViewBase* target_view_;
@@ -1357,7 +1357,7 @@ SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
 
 void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
     RenderWidgetHostViewBase* root_view) {
-  cc::SurfaceId root_surface_id = root_view->SurfaceIdForTesting();
+  viz::SurfaceId root_surface_id = root_view->SurfaceIdForTesting();
   while (!ContainsSurfaceId(root_surface_id)) {
     // TODO(kenrb): Need a better way to do this. Needs investigation on
     // whether we can add a callback through RenderWidgetHostViewBaseObserver
@@ -1372,7 +1372,7 @@ void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
 }
 
 bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
-    const cc::SurfaceId& container_surface_id) {
+    const viz::SurfaceId& container_surface_id) {
   if (!container_surface_id.is_valid())
     return false;
 
@@ -1381,7 +1381,7 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
   if (!container_surface || !container_surface->active_referenced_surfaces())
     return false;
 
-  for (const cc::SurfaceId& id :
+  for (const viz::SurfaceId& id :
        *container_surface->active_referenced_surfaces()) {
     if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
       return true;

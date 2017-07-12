@@ -24,6 +24,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
+class LocalSurfaceId;
 class SharedBitmapManager;
 }
 
@@ -32,7 +33,6 @@ namespace cc {
 struct BeginFrameAck;
 class CompositorFrame;
 class LayerTreeFrameSinkClient;
-class LocalSurfaceId;
 
 // An interface for submitting CompositorFrames to a display compositor
 // which will compose frames from multiple clients to show on screen to the
@@ -110,9 +110,9 @@ class CC_EXPORT LayerTreeFrameSink {
     return shared_bitmap_manager_;
   }
 
-  // If supported, this sets the LocalSurfaceId the LayerTreeFrameSink will use
-  // to submit a CompositorFrame.
-  virtual void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) {}
+  // If supported, this sets the viz::LocalSurfaceId the LayerTreeFrameSink will
+  // use to submit a CompositorFrame.
+  virtual void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) {}
 
   // Support for a pull-model where draws are requested by the implementation of
   // LayerTreeFrameSink. This is called by the compositor to notify that there's

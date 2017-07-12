@@ -94,7 +94,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
       &window_delegate_, gfx::Rect(size));
   compositor_.reset(
-      new ui::Compositor(cc::FrameSinkId(1, 1), context_factory, nullptr,
+      new ui::Compositor(viz::FrameSinkId(1, 1), context_factory, nullptr,
                          base::ThreadTaskRunnerHandle::Get(),
                          false /* enable_surface_synchronization */));
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());

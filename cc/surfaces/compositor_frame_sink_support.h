@@ -37,14 +37,14 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
       FrameSinkManager* frame_sink_manager,
-      const FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       bool is_root,
       bool handles_frame_sink_id_invalidation,
       bool needs_sync_tokens);
 
   ~CompositorFrameSinkSupport() override;
 
-  const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   FrameSinkManager* frame_sink_manager() { return frame_sink_manager_; }
   SurfaceManager* surface_manager() { return surface_manager_; }
@@ -64,17 +64,16 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void EvictCurrentSurface();
   void SetNeedsBeginFrame(bool needs_begin_frame);
   void DidNotProduceFrame(const BeginFrameAck& ack);
-  bool SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
+  bool SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              CompositorFrame frame);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
-  void ClaimTemporaryReference(const SurfaceId& surface_id);
-
+  void ClaimTemporaryReference(const viz::SurfaceId& surface_id);
 
   Surface* GetCurrentSurfaceForTesting();
 
  protected:
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
-                             const FrameSinkId& frame_sink_id,
+                             const viz::FrameSinkId& frame_sink_id,
                              bool is_root,
                              bool handles_frame_sink_id_invalidation,
                              bool needs_sync_tokens);
@@ -87,14 +86,14 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // if |is_root_| is true and |local_surface_id| has changed. Modifies surface
   // references stored in SurfaceManager.
   void UpdateSurfaceReferences(
-      const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>& active_referenced_surfaces);
+      const viz::LocalSurfaceId& local_surface_id,
+      const std::vector<viz::SurfaceId>& active_referenced_surfaces);
 
   // Creates a surface reference from the top-level root to |surface_id|.
-  SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
+  SurfaceReference MakeTopLevelRootReference(const viz::SurfaceId& surface_id);
 
   void DidReceiveCompositorFrameAck();
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect);
 
   // BeginFrameObserver implementation.
@@ -110,13 +109,13 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   FrameSinkManager* frame_sink_manager_ = nullptr;
   SurfaceManager* surface_manager_ = nullptr;
 
-  const FrameSinkId frame_sink_id_;
-  SurfaceId current_surface_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::SurfaceId current_surface_id_;
 
   // If this contains a value then a surface reference from the top-level root
-  // to SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()) was
+  // to viz::SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()) was
   // added. This will not contain a value if |is_root_| is false.
-  base::Optional<LocalSurfaceId> referenced_local_surface_id_;
+  base::Optional<viz::LocalSurfaceId> referenced_local_surface_id_;
 
   SurfaceResourceHolder surface_resource_holder_;
 

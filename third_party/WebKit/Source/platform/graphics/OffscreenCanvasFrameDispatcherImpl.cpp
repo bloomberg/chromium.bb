@@ -41,7 +41,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     int width,
     int height)
     : OffscreenCanvasFrameDispatcher(client),
-      frame_sink_id_(cc::FrameSinkId(client_id, sink_id)),
+      frame_sink_id_(viz::FrameSinkId(client_id, sink_id)),
       width_(width),
       height_(height),
       change_size_for_next_commit_(false),

@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_observer.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -51,7 +51,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // cc::mojom::FrameSinkManager implementation:
   void CreateRootCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -59,17 +59,17 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
   void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client) override;
   void RegisterFrameSinkHierarchy(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& child_frame_sink_id) override;
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) override;
   void UnregisterFrameSinkHierarchy(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& child_frame_sink_id) override;
-  void DropTemporaryReference(const cc::SurfaceId& surface_id) override;
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) override;
+  void DropTemporaryReference(const SurfaceId& surface_id) override;
 
  private:
   // It is necessary to pass |frame_sink_id| by value because the id
@@ -77,21 +77,21 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // removed from the map, |frame_sink_id| would also be destroyed if it were a
   // reference. But the map can continue to iterate and try to use it. Passing
   // by value avoids this.
-  void DestroyCompositorFrameSink(cc::FrameSinkId frame_sink_id);
+  void DestroyCompositorFrameSink(FrameSinkId frame_sink_id);
 
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
-  bool OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+  bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const cc::BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const cc::SurfaceId& surface_id) override;
-  void OnSurfaceDestroyed(const cc::SurfaceId& surface_id) override;
-  void OnSurfaceDamageExpected(const cc::SurfaceId& surface_id,
+  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
+  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const cc::BeginFrameArgs& args) override;
-  void OnSurfaceWillDraw(const cc::SurfaceId& surface_id) override;
+  void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
 
   // GpuCompositorFrameSinkDelegate implementation.
-  void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id) override;
-  void OnPrivateConnectionLost(const cc::FrameSinkId& frame_sink_id) override;
+  void OnClientConnectionLost(const FrameSinkId& frame_sink_id) override;
+  void OnPrivateConnectionLost(const FrameSinkId& frame_sink_id) override;
 
   // FrameSinkManager should be the first object constructed and the last object
   // destroyed in order to ensure that all other objects that depend on it have
@@ -101,9 +101,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Provides a cc::Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
-  std::unordered_map<cc::FrameSinkId,
+  std::unordered_map<FrameSinkId,
                      std::unique_ptr<cc::mojom::CompositorFrameSink>,
-                     cc::FrameSinkIdHash>
+                     FrameSinkIdHash>
       compositor_frame_sinks_;
 
   THREAD_CHECKER(thread_checker_);

@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -44,25 +44,25 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // that allows the client to submit CompositorFrames. When no longer needed,
   // call DestroyCompositorFrameSink().
   void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkClientPtr client);
 
   // Destroys a client connection. Will call UnregisterFrameSinkHierarchy() with
   // the registered parent if there is one.
-  void DestroyCompositorFrameSink(const cc::FrameSinkId& frame_sink_id);
+  void DestroyCompositorFrameSink(const FrameSinkId& frame_sink_id);
 
   // Registers FrameSink hierarchy. Clients can call this multiple times to
   // reparent without calling UnregisterFrameSinkHierarchy(). If a client uses
   // CompositorFrameSink, then CreateCompositorFrameSink() should be called
   // before this.
-  void RegisterFrameSinkHierarchy(const cc::FrameSinkId& parent_frame_sink_id,
-                                  const cc::FrameSinkId& child_frame_sink_id);
+  void RegisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
+                                  const FrameSinkId& child_frame_sink_id);
 
   // Unregisters FrameSink hierarchy. Client must have registered FrameSink
   // hierarchy before unregistering.
-  void UnregisterFrameSinkHierarchy(const cc::FrameSinkId& parent_frame_sink_id,
-                                    const cc::FrameSinkId& child_frame_sink_id);
+  void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
+                                    const FrameSinkId& child_frame_sink_id);
 
  private:
   struct FrameSinkData {
@@ -73,7 +73,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
     // The FrameSinkId registered as the parent in the BeginFrame hierarchy.
     // This mirrors state in viz.
-    base::Optional<cc::FrameSinkId> parent;
+    base::Optional<FrameSinkId> parent;
 
     // The private interface that gives the host control over the
     // CompositorFrameSink connection between the client and viz.
@@ -85,7 +85,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
-  void OnClientConnectionClosed(const cc::FrameSinkId& frame_sink_id) override;
+  void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override;
 
   // Mojo connection to the FrameSinkManager.
   cc::mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
@@ -94,7 +94,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   mojo::Binding<cc::mojom::FrameSinkManagerClient> binding_;
 
   // Per CompositorFrameSink data.
-  base::flat_map<cc::FrameSinkId, FrameSinkData> frame_sink_data_map_;
+  base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
 
   // Local observers to that receive OnSurfaceCreated() messages from IPC.
   base::ObserverList<FrameSinkObserver> observers_;

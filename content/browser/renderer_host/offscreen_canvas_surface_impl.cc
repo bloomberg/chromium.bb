@@ -16,8 +16,8 @@ namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
     viz::HostFrameSinkManager* host_frame_sink_manager,
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& parent_frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request,
     DestroyCallback destroy_callback)
@@ -68,7 +68,7 @@ void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(
     client_->OnSurfaceCreated(surface_info);
 }
 
-void OffscreenCanvasSurfaceImpl::Require(const cc::SurfaceId& surface_id,
+void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,
                                          const cc::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->RequireSequence(surface_id,
                                                             sequence);

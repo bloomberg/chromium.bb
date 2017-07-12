@@ -17,7 +17,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -29,7 +29,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       local_surface_id_allocator_(
-          base::MakeUnique<cc::LocalSurfaceIdAllocator>()),
+          base::MakeUnique<viz::LocalSurfaceIdAllocator>()),
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
@@ -158,21 +158,21 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
   surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
-                         cc::SurfaceId(frame_sink_id_, child_id_));
+                         viz::SurfaceId(frame_sink_id_, child_id_));
 }
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
   child_id_ = local_surface_id_allocator_->GenerateId();
-  surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
+  surfaces_->AddChildId(viz::SurfaceId(frame_sink_id_, child_id_));
 }
 
 void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
-  surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
+  surfaces_->RemoveChildId(viz::SurfaceId(frame_sink_id_, child_id_));
   support_->EvictCurrentSurface();
-  child_id_ = cc::LocalSurfaceId();
+  child_id_ = viz::LocalSurfaceId();
 }
 
 void HardwareRenderer::DidReceiveCompositorFrameAck(
@@ -192,7 +192,7 @@ void HardwareRenderer::ReclaimResources(
 }
 
 void HardwareRenderer::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
 // static

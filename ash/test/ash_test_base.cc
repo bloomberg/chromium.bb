@@ -144,15 +144,15 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::UnblockCompositors() {
-  // In order for frames to be generated, a cc::LocalSurfaceId must be given to
-  // the ui::Compositor. Normally that cc::LocalSurfaceId comes from the window
+  // In order for frames to be generated, a viz::LocalSurfaceId must be given to
+  // the ui::Compositor. Normally that viz::LocalSurfaceId comes from the window
   // server but in unit tests, there is no window server so we just make up a
-  // cc::LocalSurfaceId to allow the layer compositor to make forward progress.
+  // viz::LocalSurfaceId to allow the layer compositor to make forward progress.
   if (Shell::GetAshConfig() == Config::MUS ||
       Shell::GetAshConfig() == Config::MASH) {
     aura::Window::Windows root_windows = Shell::GetAllRootWindows();
     for (aura::Window* root : root_windows) {
-      cc::LocalSurfaceId id(1, base::UnguessableToken::Create());
+      viz::LocalSurfaceId id(1, base::UnguessableToken::Create());
       root->GetHost()->compositor()->SetLocalSurfaceId(id);
     }
   }

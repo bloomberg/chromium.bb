@@ -8,15 +8,15 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/surfaces/display.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 
 namespace cc {
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
-    const FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<ContextProvider> context_provider,
@@ -38,7 +38,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
 }
 
 DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
-    const FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     FrameSinkManager* frame_sink_manager,
     Display* display,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
@@ -150,7 +150,7 @@ void DirectLayerTreeFrameSink::ReclaimResources(
 }
 
 void DirectLayerTreeFrameSink::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   // TODO(staraz): Implement this.
 }

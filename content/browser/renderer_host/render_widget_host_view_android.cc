@@ -478,7 +478,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   view_.SetLayout(ui::ViewAndroid::LayoutParams::MatchParent());
 
   if (using_browser_compositor_) {
-    cc::FrameSinkId frame_sink_id =
+    viz::FrameSinkId frame_sink_id =
         host_->AllocateFrameSinkId(false /* is_guest_view_hack */);
     delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
         &view_, CompositorImpl::GetFrameSinkManager(), this, frame_sink_id));
@@ -825,17 +825,17 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
     ClearBeginFrameRequest(PERSISTENT_BEGIN_FRAME);
 }
 
-cc::SurfaceId RenderWidgetHostViewAndroid::SurfaceIdForTesting() const {
+viz::SurfaceId RenderWidgetHostViewAndroid::SurfaceIdForTesting() const {
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceId()
-                               : cc::SurfaceId();
+                               : viz::SurfaceId();
 }
 
-cc::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
+viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   if (!delegated_frame_host_)
-    return cc::FrameSinkId();
+    return viz::FrameSinkId();
 
   float scale_factor = view_.GetDipScale();
   DCHECK_GT(scale_factor, 0);
@@ -843,7 +843,7 @@ cc::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
   // |point| from DIPs to pixels before hittesting.
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
 
-  cc::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
+  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
   if (surface_id.is_valid()) {
     cc::SurfaceHittest hittest(delegate,
                                GetFrameSinkManager()->surface_manager());
@@ -890,7 +890,7 @@ void RenderWidgetHostViewAndroid::ProcessGestureEvent(
 
 bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
+    const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   if (!delegated_frame_host_)
     return false;
@@ -901,7 +901,7 @@ bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(
   // is necessary.
   gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
 
-  cc::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
+  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
   if (!surface_id.is_valid())
     return false;
 
@@ -930,7 +930,7 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
   // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
   // but it is not necessary here because the final target view is responsible
   // for converting before computing the final transform.
-  cc::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
+  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
   if (!surface_id.is_valid())
     return false;
 
@@ -1201,7 +1201,7 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
 }
 
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   if (!delegated_frame_host_) {
     DCHECK(!using_browser_compositor_);
@@ -2028,9 +2028,9 @@ void RenderWidgetHostViewAndroid::DidStopFlinging() {
     content_view_core_->DidStopFlinging();
 }
 
-cc::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
+viz::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
   if (!delegated_frame_host_)
-    return cc::FrameSinkId();
+    return viz::FrameSinkId();
 
   return delegated_frame_host_->GetFrameSinkId();
 }

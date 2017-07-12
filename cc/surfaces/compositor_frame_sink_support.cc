@@ -22,7 +22,7 @@ namespace cc {
 std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     CompositorFrameSinkSupportClient* client,
     FrameSinkManager* frame_sink_manager,
-    const FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
     bool needs_sync_tokens) {
@@ -43,7 +43,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // Make it unreachable from the top-level root.
   if (referenced_local_surface_id_.has_value()) {
     auto reference = MakeTopLevelRootReference(
-        SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()));
+        viz::SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()));
     surface_manager_->RemoveSurfaceReferences({reference});
   }
 
@@ -118,8 +118,8 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 void CompositorFrameSinkSupport::EvictCurrentSurface() {
   if (!current_surface_id_.is_valid())
     return;
-  SurfaceId to_destroy_surface_id = current_surface_id_;
-  current_surface_id_ = SurfaceId();
+  viz::SurfaceId to_destroy_surface_id = current_surface_id_;
+  current_surface_id_ = viz::SurfaceId();
   surface_manager_->DestroySurface(to_destroy_surface_id);
 }
 
@@ -145,7 +145,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 }
 
 bool CompositorFrameSinkSupport::SubmitCompositorFrame(
-    const LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
   TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
@@ -176,7 +176,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       local_surface_id == current_surface_id_.local_surface_id()) {
     current_surface = prev_surface;
   } else {
-    SurfaceId surface_id(frame_sink_id_, local_surface_id);
+    viz::SurfaceId surface_id(frame_sink_id_, local_surface_id);
     gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
     float device_scale_factor = frame.metadata.device_scale_factor;
     SurfaceInfo surface_info(surface_id, device_scale_factor, frame_size);
@@ -193,7 +193,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     }
 
     current_surface = CreateSurface(surface_info);
-    current_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
+    current_surface_id_ = viz::SurfaceId(frame_sink_id_, local_surface_id);
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }
@@ -222,14 +222,14 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
-    const LocalSurfaceId& local_surface_id,
-    const std::vector<SurfaceId>& active_referenced_surfaces) {
-  SurfaceId surface_id(frame_sink_id_, local_surface_id);
+    const viz::LocalSurfaceId& local_surface_id,
+    const std::vector<viz::SurfaceId>& active_referenced_surfaces) {
+  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id);
 
-  const base::flat_set<SurfaceId>& existing_referenced_surfaces =
+  const base::flat_set<viz::SurfaceId>& existing_referenced_surfaces =
       surface_manager_->GetSurfacesReferencedByParent(surface_id);
 
-  base::flat_set<SurfaceId> new_referenced_surfaces(
+  base::flat_set<viz::SurfaceId> new_referenced_surfaces(
       active_referenced_surfaces.begin(), active_referenced_surfaces.end(),
       base::KEEP_FIRST_OF_DUPES);
 
@@ -242,16 +242,17 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
                                 new_referenced_surfaces, &references_to_add,
                                 &references_to_remove);
 
-  // Check if this is a display root surface and the SurfaceId is changing.
+  // Check if this is a display root surface and the viz::SurfaceId is changing.
   if (is_root_ && (!referenced_local_surface_id_.has_value() ||
                    referenced_local_surface_id_.value() != local_surface_id)) {
-    // Make the new SurfaceId reachable from the top-level root.
+    // Make the new viz::SurfaceId reachable from the top-level root.
     references_to_add.push_back(MakeTopLevelRootReference(surface_id));
 
-    // Make the old SurfaceId unreachable from the top-level root if applicable.
+    // Make the old viz::SurfaceId unreachable from the top-level root if
+    // applicable.
     if (referenced_local_surface_id_.has_value()) {
-      references_to_remove.push_back(MakeTopLevelRootReference(
-          SurfaceId(frame_sink_id_, referenced_local_surface_id_.value())));
+      references_to_remove.push_back(MakeTopLevelRootReference(viz::SurfaceId(
+          frame_sink_id_, referenced_local_surface_id_.value())));
     }
 
     referenced_local_surface_id_ = local_surface_id;
@@ -265,7 +266,7 @@ void CompositorFrameSinkSupport::UpdateSurfaceReferences(
 }
 
 SurfaceReference CompositorFrameSinkSupport::MakeTopLevelRootReference(
-    const SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id) {
   return SurfaceReference(surface_manager_->GetRootSurfaceId(), surface_id);
 }
 
@@ -280,20 +281,20 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 }
 
 void CompositorFrameSinkSupport::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {
   if (client_)
     client_->WillDrawSurface(local_surface_id, damage_rect);
 }
 
 void CompositorFrameSinkSupport::ClaimTemporaryReference(
-    const SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id) {
   surface_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);
 }
 
 CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
-    const FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
     bool needs_sync_tokens)

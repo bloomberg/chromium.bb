@@ -28,8 +28,8 @@ CompositorFrame MakeEmptyCompositorFrame() {
 }
 
 CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> activation_dependencies,
-    std::vector<SurfaceId> referenced_surfaces,
+    std::vector<viz::SurfaceId> activation_dependencies,
+    std::vector<viz::SurfaceId> referenced_surfaces,
     std::vector<TransferableResource> resource_list) {
   CompositorFrame compositor_frame = test::MakeCompositorFrame();
   compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, 1, true);

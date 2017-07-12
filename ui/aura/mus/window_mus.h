@@ -79,7 +79,7 @@ class AURA_EXPORT WindowMus {
                                  ui::mojom::OrderDirection) = 0;
   virtual void SetBoundsFromServer(
       const gfx::Rect& bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) = 0;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) = 0;
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
   virtual void SetOpacityFromServer(float opacity) = 0;
@@ -87,8 +87,8 @@ class AURA_EXPORT WindowMus {
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
   virtual void SetFrameSinkIdFromServer(
-      const cc::FrameSinkId& frame_sink_id) = 0;
-  virtual const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
+      const viz::FrameSinkId& frame_sink_id) = 0;
+  virtual const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& new_size) = 0;
   virtual void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
@@ -100,10 +100,10 @@ class AURA_EXPORT WindowMus {
   virtual ChangeSource OnTransientChildAdded(WindowMus* child) = 0;
   virtual ChangeSource OnTransientChildRemoved(WindowMus* child) = 0;
 
-  // Returns the currently used cc::LocalSurfaceId to embed this Window. Local
+  // Returns the currently used viz::LocalSurfaceId to embed this Window. Local
   // windows or windows that have not been embedded yet will have an invalid
-  // cc::LocalSurfaceId.
-  virtual const cc::LocalSurfaceId& GetLocalSurfaceId() = 0;
+  // viz::LocalSurfaceId.
+  virtual const viz::LocalSurfaceId& GetLocalSurfaceId() = 0;
 
   // Called in the rare case when WindowTreeClient needs to change state and
   // can't go through one of the SetFooFromServer() functions above. Generally

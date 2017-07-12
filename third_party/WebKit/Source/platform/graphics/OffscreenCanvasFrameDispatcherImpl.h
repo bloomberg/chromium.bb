@@ -8,9 +8,9 @@
 #include <memory>
 #include "cc/ipc/compositor_frame_sink.mojom-blink.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -60,9 +60,9 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
  private:
   // Surface-related
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
-  const cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId current_local_surface_id_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId current_local_surface_id_;
 
   int width_;
   int height_;

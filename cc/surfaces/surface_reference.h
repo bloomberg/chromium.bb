@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/hash.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
@@ -20,13 +20,14 @@ class SurfaceReferenceDataView;
 class SurfaceReference {
  public:
   SurfaceReference();
-  SurfaceReference(const SurfaceId& parent_id, const SurfaceId& child_id);
+  SurfaceReference(const viz::SurfaceId& parent_id,
+                   const viz::SurfaceId& child_id);
   SurfaceReference(const SurfaceReference& other);
 
   ~SurfaceReference();
 
-  const SurfaceId& parent_id() const { return parent_id_; }
-  const SurfaceId& child_id() const { return child_id_; }
+  const viz::SurfaceId& parent_id() const { return parent_id_; }
+  const viz::SurfaceId& child_id() const { return child_id_; }
 
   size_t hash() const {
     return base::HashInts(static_cast<uint64_t>(parent_id_.hash()),
@@ -52,8 +53,8 @@ class SurfaceReference {
   friend struct mojo::StructTraits<mojom::SurfaceReferenceDataView,
                                    SurfaceReference>;
 
-  SurfaceId parent_id_;
-  SurfaceId child_id_;
+  viz::SurfaceId parent_id_;
+  viz::SurfaceId child_id_;
 };
 
 struct SurfaceReferenceHash {

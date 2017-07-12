@@ -22,7 +22,8 @@ class MockCompositorFrameSinkSupportClient
                void(const std::vector<ReturnedResource>&));
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
   MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
-  MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
+  MOCK_METHOD2(WillDrawSurface,
+               void(const viz::LocalSurfaceId&, const gfx::Rect&));
 };
 
 }  // namespace test

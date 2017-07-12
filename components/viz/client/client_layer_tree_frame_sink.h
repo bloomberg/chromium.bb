@@ -11,8 +11,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace viz {
@@ -52,7 +52,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) override;
+  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
@@ -70,7 +70,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   static void OnMojoConnectionError(uint32_t custom_reason,
                                     const std::string& description);
 
-  cc::LocalSurfaceId local_surface_id_;
+  LocalSurfaceId local_surface_id_;
   std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;

@@ -27,10 +27,10 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/test/pixel_test_utils.h"
+#include "components/viz/common/surface_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor_observer.h"
@@ -1743,7 +1743,7 @@ class TestSurfaceReferenceFactory : public cc::SequenceSurfaceReferenceFactory {
 
   // cc::SequenceSurfaceReferenceFactory implementation:
   void SatisfySequence(const cc::SurfaceSequence& seq) const override {}
-  void RequireSequence(const cc::SurfaceId& id,
+  void RequireSequence(const viz::SurfaceId& id,
                        const cc::SurfaceSequence& seq) const override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestSurfaceReferenceFactory);
@@ -1770,7 +1770,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   // Showing surface content changes the underlying cc layer.
   before = child->cc_layer_for_testing();
   child->SetShowPrimarySurface(
-      cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
+      cc::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_NE(before.get(), child->cc_layer_for_testing());
@@ -1787,9 +1787,9 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   scoped_refptr<cc::SurfaceReferenceFactory> reference_factory(
       new TestSurfaceReferenceFactory());
 
-  cc::SurfaceId surface_id(
-      cc::FrameSinkId(0, 1),
-      cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
+  viz::SurfaceId surface_id(
+      viz::FrameSinkId(0, 1),
+      viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info(surface_id, 1.0f, gfx::Size(10, 10));
   layer->SetShowPrimarySurface(surface_info, reference_factory);
 
@@ -1801,8 +1801,8 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   EXPECT_EQ(surface_info, surface->primary_surface_info());
 
   surface_id =
-      cc::SurfaceId(cc::FrameSinkId(1, 2),
-                    cc::LocalSurfaceId(3, base::UnguessableToken::Create()));
+      viz::SurfaceId(viz::FrameSinkId(1, 2),
+                     viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
   cc::SurfaceInfo surface_info_2(surface_id, 2.0f, gfx::Size(20, 20));
   layer->SetShowPrimarySurface(surface_info_2, reference_factory);
 
@@ -1818,9 +1818,9 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
 TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
   std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
 
-  cc::SurfaceId surface_id(
-      cc::FrameSinkId(0, 1),
-      cc::LocalSurfaceId(2, base::UnguessableToken::Create()));
+  viz::SurfaceId surface_id(
+      viz::FrameSinkId(0, 1),
+      viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
 
   layer->SetShowPrimarySurface(
       cc::SurfaceInfo(surface_id, 2.0f, gfx::Size(30, 40)),
@@ -1844,7 +1844,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
   // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
   layer->SetShowPrimarySurface(
-      cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
+      cc::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
@@ -2168,7 +2168,7 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
   FrameDamageCheckingDelegate delegate;
   layer->set_delegate(&delegate);
   layer->SetShowPrimarySurface(
-      cc::SurfaceInfo(cc::SurfaceId(), 1.0, gfx::Size(10, 10)),
+      cc::SurfaceInfo(viz::SurfaceId(), 1.0, gfx::Size(10, 10)),
       new TestSurfaceReferenceFactory());
 
   EXPECT_FALSE(delegate.delegated_frame_damage_called());

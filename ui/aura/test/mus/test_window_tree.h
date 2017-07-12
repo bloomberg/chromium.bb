@@ -95,7 +95,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
     return last_hit_test_mask_;
   }
 
-  const base::Optional<cc::LocalSurfaceId>& last_local_surface_id() const {
+  const base::Optional<viz::LocalSurfaceId>& last_local_surface_id() const {
     return last_local_surface_id_;
   }
 
@@ -125,7 +125,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
       uint32_t change_id,
       uint32_t window_id,
       const gfx::Rect& bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void SetWindowTransform(uint32_t change_id,
                           uint32_t window_id,
                           const gfx::Transform& transform) override;
@@ -236,7 +236,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   base::Optional<gfx::Rect> last_hit_test_mask_;
 
-  base::Optional<cc::LocalSurfaceId> last_local_surface_id_;
+  base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

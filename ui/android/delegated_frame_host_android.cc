@@ -13,7 +13,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/display/display.h"
@@ -53,7 +53,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
     cc::FrameSinkManager* frame_sink_manager,
     Client* client,
-    const cc::FrameSinkId& frame_sink_id)
+    const viz::FrameSinkId& frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       view_(view),
       frame_sink_manager_(frame_sink_manager),
@@ -74,7 +74,7 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
 }
 
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   if (local_surface_id != surface_info_.id().local_surface_id()) {
     DestroyDelegatedContent();
@@ -83,7 +83,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     cc::RenderPass* root_pass = frame.render_pass_list.back().get();
     gfx::Size frame_size = root_pass->output_rect.size();
     surface_info_ = cc::SurfaceInfo(
-        cc::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);
+        viz::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);
     has_transparent_background_ = root_pass->has_transparent_background;
 
     bool result =
@@ -104,7 +104,7 @@ void DelegatedFrameHostAndroid::DidNotProduceFrame(
   support_->DidNotProduceFrame(ack);
 }
 
-cc::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
+viz::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
@@ -187,7 +187,7 @@ void DelegatedFrameHostAndroid::ReclaimResources(
 }
 
 void DelegatedFrameHostAndroid::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
 void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
@@ -204,7 +204,7 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
       handles_frame_sink_id_invalidation, needs_sync_points);
 }
 
-cc::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
+viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
   return surface_info_.id();
 }
 

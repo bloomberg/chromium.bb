@@ -112,9 +112,9 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   // Returns the settings used by this host.
   const LayerTreeSettings& GetSettings() const;
 
-  // Sets the client id used to generate the SurfaceId that uniquely identifies
-  // the Surfaces produced by this compositor.
-  void SetFrameSinkId(const FrameSinkId& frame_sink_id);
+  // Sets the client id used to generate the viz::SurfaceId that uniquely
+  // identifies the Surfaces produced by this compositor.
+  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
 
   // Sets the LayerTreeMutator interface used to directly mutate the compositor
   // state on the compositor thread. (Compositor-Worker)
@@ -325,10 +325,12 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void SetContentSourceId(uint32_t);
   uint32_t content_source_id() const { return content_source_id_; }
 
-  // If this LayerTreeHost needs a valid LocalSurfaceId then commits will be
-  // deferred until a valid LocalSurfaceId is provided.
-  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id);
-  const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
+  // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
+  // be deferred until a valid viz::LocalSurfaceId is provided.
+  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
+  const viz::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
 
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
@@ -356,9 +358,9 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   void SetHasCopyRequest(bool has_copy_request);
   bool has_copy_request() const { return has_copy_request_; }
 
-  void AddSurfaceLayerId(const SurfaceId& surface_id);
-  void RemoveSurfaceLayerId(const SurfaceId& surface_id);
-  base::flat_set<SurfaceId> SurfaceLayerIds() const;
+  void AddSurfaceLayerId(const viz::SurfaceId& surface_id);
+  void RemoveSurfaceLayerId(const viz::SurfaceId& surface_id);
+  base::flat_set<viz::SurfaceId> SurfaceLayerIds() const;
 
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
@@ -604,7 +606,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
-  LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_;
   bool defer_commits_ = false;
 
   SkColor background_color_ = SK_ColorWHITE;
@@ -630,8 +632,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
-  // The number of SurfaceLayers that have fallback set to SurfaceId.
-  base::flat_map<SurfaceId, int> surface_layer_ids_;
+  // The number of SurfaceLayers that have fallback set to viz::SurfaceId.
+  base::flat_map<viz::SurfaceId, int> surface_layer_ids_;
 
   // Set of layers that need to push properties.
   std::unordered_set<Layer*> layers_that_should_push_properties_;

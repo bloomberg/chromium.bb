@@ -56,8 +56,8 @@ WindowPortForShutdown::CreateLayerTreeFrameSink() {
   return nullptr;
 }
 
-cc::SurfaceId WindowPortForShutdown::GetSurfaceId() const {
-  return cc::SurfaceId();
+viz::SurfaceId WindowPortForShutdown::GetSurfaceId() const {
+  return viz::SurfaceId();
 }
 
 void WindowPortForShutdown::OnWindowAddedToRootWindow() {}

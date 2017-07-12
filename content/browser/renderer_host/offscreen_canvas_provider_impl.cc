@@ -23,8 +23,8 @@ void OffscreenCanvasProviderImpl::Add(
 }
 
 void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& parent_frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request) {
   // TODO(kylechar): Kill the renderer too.
@@ -47,7 +47,7 @@ void OffscreenCanvasProviderImpl::CreateOffscreenCanvasSurface(
 }
 
 void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkClientPtr client,
     cc::mojom::CompositorFrameSinkRequest request) {
   // TODO(kylechar): Kill the renderer too.
@@ -67,7 +67,7 @@ void OffscreenCanvasProviderImpl::CreateCompositorFrameSink(
 }
 
 void OffscreenCanvasProviderImpl::DestroyOffscreenCanvasSurface(
-    cc::FrameSinkId frame_sink_id) {
+    viz::FrameSinkId frame_sink_id) {
   canvas_map_.erase(frame_sink_id);
 }
 

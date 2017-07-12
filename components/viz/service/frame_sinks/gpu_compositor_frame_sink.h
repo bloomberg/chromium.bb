@@ -13,8 +13,8 @@
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/local_surface_id.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -29,7 +29,7 @@ class GpuCompositorFrameSink
   GpuCompositorFrameSink(
       GpuCompositorFrameSinkDelegate* delegate,
       cc::FrameSinkManager* frame_sink_manager,
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client);
@@ -38,12 +38,12 @@ class GpuCompositorFrameSink
 
   // cc::mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& begin_frame_ack) override;
 
   // cc::mojom::CompositorFrameSinkPrivate:
-  void ClaimTemporaryReference(const cc::SurfaceId& surface_id) override;
+  void ClaimTemporaryReference(const SurfaceId& surface_id) override;
   void RequestCopyOfSurface(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
 
@@ -54,7 +54,7 @@ class GpuCompositorFrameSink
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   void OnClientConnectionLost();

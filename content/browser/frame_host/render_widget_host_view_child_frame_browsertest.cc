@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surface_id.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
@@ -147,7 +147,7 @@ class SurfaceRefMessageFilter : public BrowserMessageFilter {
     return false;
   }
 
-  void OnRequire(const cc::SurfaceId& id, const cc::SurfaceSequence sequence) {
+  void OnRequire(const viz::SurfaceId& id, const cc::SurfaceSequence sequence) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&SurfaceRefMessageFilter::OnRequireOnUI, this));

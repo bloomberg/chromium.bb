@@ -41,7 +41,7 @@ void FrameSinkManagerImpl::BindPtrAndSetClient(
 }
 
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -65,7 +65,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
@@ -79,25 +79,24 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
 }
 
 void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   manager_.RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                       child_frame_sink_id);
 }
 
 void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   manager_.UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                         child_frame_sink_id);
 }
 
-void FrameSinkManagerImpl::DropTemporaryReference(
-    const cc::SurfaceId& surface_id) {
+void FrameSinkManagerImpl::DropTemporaryReference(const SurfaceId& surface_id) {
   manager_.DropTemporaryReference(surface_id);
 }
 
-void FrameSinkManagerImpl::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
+void FrameSinkManagerImpl::DestroyCompositorFrameSink(FrameSinkId sink_id) {
   compositor_frame_sinks_.erase(sink_id);
 }
 
@@ -115,32 +114,30 @@ void FrameSinkManagerImpl::OnSurfaceCreated(
     client_->OnSurfaceCreated(surface_info);
 }
 
-bool FrameSinkManagerImpl::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+bool FrameSinkManagerImpl::OnSurfaceDamaged(const SurfaceId& surface_id,
                                             const cc::BeginFrameAck& ack) {
   return false;
 }
 
-void FrameSinkManagerImpl::OnSurfaceDiscarded(const cc::SurfaceId& surface_id) {
-}
+void FrameSinkManagerImpl::OnSurfaceDiscarded(const SurfaceId& surface_id) {}
 
-void FrameSinkManagerImpl::OnSurfaceDestroyed(const cc::SurfaceId& surface_id) {
-}
+void FrameSinkManagerImpl::OnSurfaceDestroyed(const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnSurfaceDamageExpected(
-    const cc::SurfaceId& surface_id,
+    const SurfaceId& surface_id,
     const cc::BeginFrameArgs& args) {}
 
-void FrameSinkManagerImpl::OnSurfaceWillDraw(const cc::SurfaceId& surface_id) {}
+void FrameSinkManagerImpl::OnSurfaceWillDraw(const SurfaceId& surface_id) {}
 
 void FrameSinkManagerImpl::OnClientConnectionLost(
-    const cc::FrameSinkId& frame_sink_id) {
+    const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (client_)
     client_->OnClientConnectionClosed(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::OnPrivateConnectionLost(
-    const cc::FrameSinkId& frame_sink_id) {
+    const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DestroyCompositorFrameSink(frame_sink_id);
 }

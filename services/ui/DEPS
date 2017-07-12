@@ -3,6 +3,7 @@ include_rules = [
   "+chromeos/system",
   "+components/discardable_memory/service",
   "+components/discardable_memory/public",
+  "+components/viz/common",
   "+ipc",
   "+mojo/common",
   "+mojo/converters",

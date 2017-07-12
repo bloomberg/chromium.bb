@@ -204,7 +204,7 @@ void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink(
 }
 
 void TestRenderWidgetHostView::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   did_swap_compositor_frame_ = true;
 }
@@ -216,7 +216,7 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
-cc::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {
+viz::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {
   return frame_sink_id_;
 }
 

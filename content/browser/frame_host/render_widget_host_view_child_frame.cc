@@ -111,8 +111,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
       GetFrameSinkManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                           frame_sink_id_);
     }
-    parent_frame_sink_id_ = cc::FrameSinkId();
-    local_surface_id_ = cc::LocalSurfaceId();
+    parent_frame_sink_id_ = viz::FrameSinkId();
+    local_surface_id_ = viz::LocalSurfaceId();
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
     UnlockMouse();
@@ -451,7 +451,7 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
 }
 
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
   current_surface_scale_factor_ = frame.metadata.device_scale_factor;
@@ -480,7 +480,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   cc::SurfaceSequence sequence =
       cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   cc::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
-  cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
   manager->RequireSequence(surface_id, sequence);
@@ -496,7 +496,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
 }
 
 void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
@@ -567,7 +567,7 @@ bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
   return host_->delegate()->HasMouseLock(host_);
 }
 
-cc::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
+viz::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
@@ -617,20 +617,20 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(
-      point, cc::SurfaceId(frame_sink_id_, local_surface_id_));
+      point, viz::SurfaceId(frame_sink_id_, local_surface_id_));
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
+    const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
   if (!frame_connector_ || !local_surface_id_.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpace(
-      point, original_surface, cc::SurfaceId(frame_sink_id_, local_surface_id_),
-      transformed_point);
+      point, original_surface,
+      viz::SurfaceId(frame_sink_id_, local_surface_id_), transformed_point);
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
@@ -646,7 +646,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, cc::SurfaceId(frame_sink_id_, local_surface_id_),
+      point, target_view, viz::SurfaceId(frame_sink_id_, local_surface_id_),
       transformed_point);
 }
 
@@ -821,8 +821,8 @@ bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
   return true;
 }
 
-cc::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
-  return cc::SurfaceId(frame_sink_id_, local_surface_id_);
+viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
+  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
 };
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {

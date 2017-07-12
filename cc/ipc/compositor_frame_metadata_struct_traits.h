@@ -101,12 +101,12 @@ struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
     return metadata.latency_info;
   }
 
-  static const std::vector<cc::SurfaceId>& referenced_surfaces(
+  static const std::vector<viz::SurfaceId>& referenced_surfaces(
       const cc::CompositorFrameMetadata& metadata) {
     return metadata.referenced_surfaces;
   }
 
-  static const std::vector<cc::SurfaceId>& activation_dependencies(
+  static const std::vector<viz::SurfaceId>& activation_dependencies(
       const cc::CompositorFrameMetadata& metadata) {
     return metadata.activation_dependencies;
   }

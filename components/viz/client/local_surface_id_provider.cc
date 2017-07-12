@@ -13,8 +13,7 @@ LocalSurfaceIdProvider::~LocalSurfaceIdProvider() = default;
 
 DefaultLocalSurfaceIdProvider::DefaultLocalSurfaceIdProvider() = default;
 
-const cc::LocalSurfaceId&
-DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdForFrame(
+const LocalSurfaceId& DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdForFrame(
     const cc::CompositorFrame& frame) {
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (!local_surface_id_.is_valid() || surface_size_ != frame_size ||

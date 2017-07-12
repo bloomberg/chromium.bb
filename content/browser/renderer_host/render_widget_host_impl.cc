@@ -446,19 +446,19 @@ RenderWidgetHostViewBase* RenderWidgetHostImpl::GetView() const {
   return view_.get();
 }
 
-cc::FrameSinkId RenderWidgetHostImpl::AllocateFrameSinkId(
+viz::FrameSinkId RenderWidgetHostImpl::AllocateFrameSinkId(
     bool is_guest_view_hack) {
 // GuestViews have two RenderWidgetHostViews and so we need to make sure
 // we don't have FrameSinkId collisions.
 // The FrameSinkId generated here must not conflict with FrameSinkId allocated
-// in cc::FrameSinkIdAllocator.
+// in viz::FrameSinkIdAllocator.
 #if !defined(OS_ANDROID)
   if (is_guest_view_hack) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     return factory->GetContextFactoryPrivate()->AllocateFrameSinkId();
   }
 #endif
-  return cc::FrameSinkId(
+  return viz::FrameSinkId(
       base::checked_cast<uint32_t>(this->GetProcess()->GetID()),
       base::checked_cast<uint32_t>(this->GetRoutingID()));
 }
@@ -703,7 +703,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
         view_->DoBrowserControlsShrinkBlinkSize();
     resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
-    cc::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
+    viz::LocalSurfaceId local_surface_id = view_->GetLocalSurfaceId();
     if (local_surface_id.is_valid())
       resize_params->local_surface_id = local_surface_id;
   }
@@ -2583,7 +2583,7 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void RenderWidgetHostImpl::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   auto new_surface_properties =
       RenderWidgetSurfaceProperties::FromCompositorFrame(frame);

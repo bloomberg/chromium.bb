@@ -31,13 +31,16 @@ class CompositorFrameSinkSupport;
 class ContextProvider;
 class Display;
 class FrameSinkManager;
-class LocalSurfaceIdAllocator;
 }  // namespace cc
 
 namespace IPC {
 class Message;
 class Sender;
 }  // namespace IPC
+
+namespace viz {
+class LocalSurfaceIdAllocator;
+}
 
 namespace content {
 
@@ -101,7 +104,7 @@ class SynchronousLayerTreeFrameSink
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
  private:
@@ -154,9 +157,9 @@ class SynchronousLayerTreeFrameSink
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
   std::unique_ptr<cc::FrameSinkManager> frame_sink_manager_;
-  std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
-  cc::LocalSurfaceId child_local_surface_id_;
-  cc::LocalSurfaceId root_local_surface_id_;
+  std::unique_ptr<viz::LocalSurfaceIdAllocator> local_surface_id_allocator_;
+  viz::LocalSurfaceId child_local_surface_id_;
+  viz::LocalSurfaceId root_local_surface_id_;
   gfx::Size child_size_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;

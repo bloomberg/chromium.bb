@@ -86,7 +86,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient),
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
-  DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
+  DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                      DelegatedFrameHostClient* client);
   ~DelegatedFrameHost() override;
 
@@ -114,14 +114,14 @@ class CONTENT_EXPORT DelegatedFrameHost
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& id,
+  void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
 
   // Public interface exposed to RenderWidgetHostView.
 
   void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void ClearDelegatedFrame();
   void WasHidden();
@@ -147,19 +147,19 @@ class CONTENT_EXPORT DelegatedFrameHost
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
   bool HasFrameSubscriber() const { return !!frame_subscriber_; }
-  cc::FrameSinkId GetFrameSinkId();
+  viz::FrameSinkId GetFrameSinkId();
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.
-  cc::SurfaceId SurfaceIdAtPoint(cc::SurfaceHittestDelegate* delegate,
-                                 const gfx::Point& point,
-                                 gfx::Point* transformed_point);
+  viz::SurfaceId SurfaceIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                  const gfx::Point& point,
+                                  gfx::Point* transformed_point);
 
   // Given the SurfaceID of a Surface that is contained within this class'
   // Surface, find the relative transform between the Surfaces and apply it
   // to a point. Returns false if a Surface has not yet been created or if
   // |original_surface| is not embedded within our current Surface.
   bool TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
+                                       const viz::SurfaceId& original_surface,
                                        gfx::Point* transformed_point);
 
   // Given a RenderWidgetHostViewBase that renders to a Surface that is
@@ -175,8 +175,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   void DidNotProduceFrame(const cc::BeginFrameAck& ack);
 
   // Exposed for tests.
-  cc::SurfaceId SurfaceIdForTesting() const {
-    return cc::SurfaceId(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId SurfaceIdForTesting() const {
+    return viz::SurfaceId(frame_sink_id_, local_surface_id_);
   }
 
   bool HasFrameForTesting() const { return has_frame_; }
@@ -252,8 +252,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   void DidFinishFrame(const cc::BeginFrameAck& ack);
 
-  const cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId local_surface_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
 

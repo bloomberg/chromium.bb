@@ -1767,8 +1767,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   resource_provider_->PrepareSendToParent(resources,
                                           &compositor_frame.resource_list);
   compositor_frame.render_pass_list = std::move(frame->render_passes);
-  // TODO(fsamuel): Once all clients get their LocalSurfaceId from their parent,
-  // the LocalSurfaceId should hang off CompositorFrameMetadata.
+  // TODO(fsamuel): Once all clients get their viz::LocalSurfaceId from their
+  // parent, the viz::LocalSurfaceId should hang off CompositorFrameMetadata.
   if (settings_.enable_surface_synchronization &&
       active_tree()->local_surface_id().is_valid()) {
     layer_tree_frame_sink_->SetLocalSurfaceId(

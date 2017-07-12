@@ -11,7 +11,7 @@
 #include "base/event_types.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -193,7 +193,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // If frame_sink_id is not passed in, one will be grabbed from
   // ContextFactoryPrivate.
   void CreateCompositor(
-      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId());
+      const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId());
 
   void InitCompositor();
   void OnAcceleratedWidgetAvailable();

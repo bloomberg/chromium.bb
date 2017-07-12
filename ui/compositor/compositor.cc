@@ -32,9 +32,9 @@
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -53,7 +53,7 @@
 
 namespace ui {
 
-Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
+Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
                        ui::ContextFactoryPrivate* context_factory_private,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -225,7 +225,7 @@ bool Compositor::IsForSubframe() {
   return false;
 }
 
-void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
+void Compositor::AddFrameSink(const viz::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
   context_factory_private_->GetFrameSinkManager()->RegisterFrameSinkHierarchy(
@@ -233,7 +233,7 @@ void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
   child_frame_sinks_.insert(frame_sink_id);
 }
 
-void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
+void Compositor::RemoveFrameSink(const viz::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
   auto it = child_frame_sinks_.find(frame_sink_id);
@@ -244,7 +244,8 @@ void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
   child_frame_sinks_.erase(it);
 }
 
-void Compositor::SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id) {
+void Compositor::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
   host_->SetLocalSurfaceId(local_surface_id);
 }
 

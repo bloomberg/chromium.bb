@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/surface_id.mojom"
-public_headers = [ "//cc/surfaces/surface_id.h" ]
+public_headers = [ "//components/viz/common/surface_id.h" ]
+deps = [
+  "//components/viz/common",
+]
 traits_headers = [ "//cc/ipc/surface_id_struct_traits.h" ]
-type_mappings = [ "cc.mojom.SurfaceId=cc::SurfaceId" ]
+type_mappings = [ "cc.mojom.SurfaceId=viz::SurfaceId" ]

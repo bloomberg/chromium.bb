@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -228,8 +228,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) = 0;
 
-  virtual void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
-                                     cc::CompositorFrame frame) = 0;
+  virtual void SubmitCompositorFrame(
+      const viz::LocalSurfaceId& local_surface_id,
+      cc::CompositorFrame frame) = 0;
 
   virtual void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) {}
   virtual void OnSurfaceChanged(const cc::SurfaceInfo& surface_info) {}
@@ -252,16 +253,16 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void DidStopFlinging() {}
 
   // Returns the ID associated with the CompositorFrameSink of this view.
-  virtual cc::FrameSinkId GetFrameSinkId();
+  virtual viz::FrameSinkId GetFrameSinkId();
 
-  virtual cc::LocalSurfaceId GetLocalSurfaceId() const;
+  virtual viz::LocalSurfaceId GetLocalSurfaceId() const;
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following
   // methods are invoked on the RenderWidgetHostView that should be able to
   // properly handle the event (i.e. it has focus for keyboard events, or has
   // been identified by hit testing mouse, touch or gesture events).
-  virtual cc::FrameSinkId FrameSinkIdAtPoint(
+  virtual viz::FrameSinkId FrameSinkIdAtPoint(
       cc::SurfaceHittestDelegate* delegate,
       const gfx::Point& point,
       gfx::Point* transformed_point);
@@ -289,7 +290,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // coordinate space as an intermediate step.
   virtual bool TransformPointToLocalCoordSpace(
       const gfx::Point& point,
-      const cc::SurfaceId& original_surface,
+      const viz::SurfaceId& original_surface,
       gfx::Point* transformed_point);
 
   // Transform a point that is in the coordinate space for the current
@@ -437,7 +438,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Exposed for testing.
   virtual bool IsChildFrameForTesting() const;
-  virtual cc::SurfaceId SurfaceIdForTesting() const;
+  virtual viz::SurfaceId SurfaceIdForTesting() const;
 
  protected:
   // Interface class only, do not construct.

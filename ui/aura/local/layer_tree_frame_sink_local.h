@@ -10,8 +10,8 @@
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "ui/aura/window_port.h"
 #include "ui/base/property_data.h"
 
@@ -30,12 +30,12 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
                                 public cc::CompositorFrameSinkSupportClient,
                                 public cc::ExternalBeginFrameSourceClient {
  public:
-  LayerTreeFrameSinkLocal(const cc::FrameSinkId& frame_sink_id,
+  LayerTreeFrameSinkLocal(const viz::FrameSinkId& frame_sink_id,
                           cc::FrameSinkManager* frame_sink_manager);
   ~LayerTreeFrameSinkLocal() override;
 
   using SurfaceChangedCallback =
-      base::Callback<void(const cc::SurfaceId&, const gfx::Size&)>;
+      base::Callback<void(const viz::SurfaceId&, const gfx::Size&)>;
   // Set a callback which will be called when the surface is changed.
   void SetSurfaceChangedCallback(const SurfaceChangedCallback& callback);
 
@@ -51,20 +51,20 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override {}
 
   // cc::ExternalBeginFrameSourceClient:
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
  private:
-  const cc::FrameSinkId frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
   cc::FrameSinkManager* const frame_sink_manager_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;
-  cc::LocalSurfaceIdAllocator id_allocator_;
-  cc::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::ThreadChecker> thread_checker_;
   SurfaceChangedCallback surface_changed_callback_;

@@ -238,7 +238,7 @@ void WindowPortMus::ReorderFromServer(WindowMus* child,
 
 void WindowPortMus::SetBoundsFromServer(
     const gfx::Rect& bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   ServerChangeData data;
   data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
@@ -248,7 +248,7 @@ void WindowPortMus::SetBoundsFromServer(
   if (local_surface_id)
     local_surface_id_ = *local_surface_id;
   else
-    local_surface_id_ = cc::LocalSurfaceId();
+    local_surface_id_ = viz::LocalSurfaceId();
   window_->SetBounds(bounds);
 }
 
@@ -290,14 +290,14 @@ void WindowPortMus::SetPropertyFromServer(
 }
 
 void WindowPortMus::SetFrameSinkIdFromServer(
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   DCHECK(window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
          window_mus_type() == WindowMusType::EMBED_IN_OWNER);
   frame_sink_id_ = frame_sink_id;
   UpdatePrimarySurfaceInfo();
 }
 
-const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
+const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
     const gfx::Size& surface_size_in_pixels) {
   if (last_surface_size_in_pixels_ == surface_size_in_pixels &&
       local_surface_id_.is_valid()) {
@@ -392,7 +392,7 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
              : ChangeSource::LOCAL;
 }
 
-const cc::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
+const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
   return local_surface_id_;
 }
 
@@ -549,9 +549,9 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   return std::move(frame_sink);
 }
 
-cc::SurfaceId WindowPortMus::GetSurfaceId() const {
+viz::SurfaceId WindowPortMus::GetSurfaceId() const {
   // This is only used by WindowPortLocal in unit tests.
-  return cc::SurfaceId();
+  return viz::SurfaceId();
 }
 
 void WindowPortMus::UpdatePrimarySurfaceInfo() {
@@ -566,7 +566,7 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
     return;
 
   primary_surface_info_ = cc::SurfaceInfo(
-      cc::SurfaceId(frame_sink_id_, local_surface_id_),
+      viz::SurfaceId(frame_sink_id_, local_surface_id_),
       ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
   UpdateClientSurfaceEmbedder();
   if (window_->delegate())

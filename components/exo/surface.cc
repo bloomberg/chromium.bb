@@ -233,7 +233,7 @@ Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
 }
 
-cc::SurfaceId Surface::GetSurfaceId() const {
+viz::SurfaceId Surface::GetSurfaceId() const {
   return window_->GetSurfaceId();
 }
 

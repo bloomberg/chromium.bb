@@ -14,11 +14,10 @@ namespace viz {
 class GpuCompositorFrameSinkDelegate {
  public:
   // When the client pipe is closed the host process will be notified.
-  virtual void OnClientConnectionLost(const cc::FrameSinkId& frame_sink_id) = 0;
+  virtual void OnClientConnectionLost(const FrameSinkId& frame_sink_id) = 0;
 
   // When the private pipe is closed the CompositorFrameSink will be destroyed.
-  virtual void OnPrivateConnectionLost(
-      const cc::FrameSinkId& frame_sink_id) = 0;
+  virtual void OnPrivateConnectionLost(const FrameSinkId& frame_sink_id) = 0;
 
  protected:
   virtual ~GpuCompositorFrameSinkDelegate() {}

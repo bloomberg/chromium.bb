@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 
 namespace cc {
 
@@ -23,14 +23,14 @@ class SurfaceSequenceGenerator {
   SurfaceSequenceGenerator();
   ~SurfaceSequenceGenerator();
 
-  void set_frame_sink_id(const FrameSinkId& frame_sink_id) {
+  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
     frame_sink_id_ = frame_sink_id;
   }
 
   SurfaceSequence CreateSurfaceSequence();
 
  private:
-  FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
   uint32_t next_surface_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSequenceGenerator);

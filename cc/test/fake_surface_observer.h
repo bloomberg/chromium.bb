@@ -7,9 +7,9 @@
 
 #include "base/containers/flat_set.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_observer.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -22,11 +22,11 @@ class FakeSurfaceObserver : public SurfaceObserver {
 
   const BeginFrameAck& last_ack() const { return last_ack_; }
 
-  bool IsSurfaceDamaged(const SurfaceId& surface_id) const;
+  bool IsSurfaceDamaged(const viz::SurfaceId& surface_id) const;
 
-  bool SurfaceWillDrawCalled(const SurfaceId& surface_id) const;
+  bool SurfaceWillDrawCalled(const viz::SurfaceId& surface_id) const;
 
-  const SurfaceId& last_created_surface_id() const {
+  const viz::SurfaceId& last_created_surface_id() const {
     return last_created_surface_id_;
   }
 
@@ -36,20 +36,20 @@ class FakeSurfaceObserver : public SurfaceObserver {
 
  private:
   // SurfaceObserver implementation:
-  bool OnSurfaceDamaged(const SurfaceId& surface_id,
+  bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
   void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override {}
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
-  void OnSurfaceDamageExpected(const SurfaceId& surface_id,
+  void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) override {}
+  void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override {}
+  void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
-  void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
+  void OnSurfaceWillDraw(const viz::SurfaceId& surface_id) override;
 
   bool damage_display_;
   BeginFrameAck last_ack_;
-  base::flat_set<SurfaceId> damaged_surfaces_;
-  base::flat_set<SurfaceId> will_draw_surfaces_;
-  SurfaceId last_created_surface_id_;
+  base::flat_set<viz::SurfaceId> damaged_surfaces_;
+  base::flat_set<viz::SurfaceId> will_draw_surfaces_;
+  viz::SurfaceId last_created_surface_id_;
   SurfaceInfo last_surface_info_;
 };
 

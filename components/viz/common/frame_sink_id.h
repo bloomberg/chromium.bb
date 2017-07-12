@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_FRAME_SINK_ID_H_
-#define CC_SURFACES_FRAME_SINK_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_
+#define COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 
 #include "base/hash.h"
 
-namespace cc {
+namespace viz {
 
 class FrameSinkId {
  public:
@@ -57,6 +57,6 @@ struct FrameSinkIdHash {
   size_t operator()(const FrameSinkId& key) const { return key.hash(); }
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_FRAME_SINK_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_

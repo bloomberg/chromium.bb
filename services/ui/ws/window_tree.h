@@ -231,7 +231,7 @@ class WindowTree : public mojom::WindowTree,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       bool originated_change,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void ProcessWindowTransformChanged(const ServerWindow* window,
                                      const gfx::Transform& old_transform,
                                      const gfx::Transform& new_transform,
@@ -442,7 +442,7 @@ class WindowTree : public mojom::WindowTree,
       uint32_t change_id,
       Id window_id,
       const gfx::Rect& bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void SetWindowTransform(uint32_t change_id,
                           Id window_id,
                           const gfx::Transform& transform) override;

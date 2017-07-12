@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -66,7 +66,7 @@ class CONTENT_EXPORT CompositorImpl
 
   static cc::FrameSinkManager* GetFrameSinkManager();
   static viz::HostFrameSinkManager* GetHostFrameSinkManager();
-  static cc::FrameSinkId AllocateFrameSinkId();
+  static viz::FrameSinkId AllocateFrameSinkId();
 
   // ui::ResourceProvider implementation.
   cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;
@@ -116,9 +116,9 @@ class CONTENT_EXPORT CompositorImpl
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
-  cc::FrameSinkId GetFrameSinkId() override;
-  void AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) override;
-  void RemoveChildFrameSink(const cc::FrameSinkId& frame_sink_id) override;
+  viz::FrameSinkId GetFrameSinkId() override;
+  void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
+  void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
@@ -140,7 +140,7 @@ class CONTENT_EXPORT CompositorImpl
   bool HavePendingReadbacks();
   void SetBackgroundColor(int color);
 
-  cc::FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
@@ -186,7 +186,7 @@ class CONTENT_EXPORT CompositorImpl
 
   gpu::Capabilities gpu_capabilities_;
   bool has_layer_tree_frame_sink_ = false;
-  std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash>
+  std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 

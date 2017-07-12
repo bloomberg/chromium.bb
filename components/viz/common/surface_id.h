@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_ID_H_
-#define CC_SURFACES_SURFACE_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACE_ID_H_
+#define COMPONENTS_VIZ_COMMON_SURFACE_ID_H_
 
 #include <stdint.h>
 
@@ -12,14 +12,17 @@
 
 #include "base/format_macros.h"
 #include "base/hash.h"
-#include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_surface_id.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/local_surface_id.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
 namespace mojom {
 class SurfaceIdDataView;
 }
+}  // namespace cc
+
+namespace viz {
 
 class SurfaceId {
  public:
@@ -66,7 +69,7 @@ class SurfaceId {
   }
 
  private:
-  friend struct mojo::StructTraits<mojom::SurfaceIdDataView, SurfaceId>;
+  friend struct mojo::StructTraits<cc::mojom::SurfaceIdDataView, SurfaceId>;
 
   FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;
@@ -78,6 +81,6 @@ struct SurfaceIdHash {
   size_t operator()(const SurfaceId& key) const { return key.hash(); }
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SURFACE_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACE_ID_H_

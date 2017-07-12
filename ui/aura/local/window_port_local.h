@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "ui/aura/window_port.h"
 #include "ui/base/property_data.h"
 
@@ -42,17 +42,17 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
-  cc::SurfaceId GetSurfaceId() const override;
+  viz::SurfaceId GetSurfaceId() const override;
   void OnWindowAddedToRootWindow() override;
   void OnWillRemoveWindowFromRootWindow() override;
 
  private:
-  void OnSurfaceChanged(const cc::SurfaceId& surface_id,
+  void OnSurfaceChanged(const viz::SurfaceId& surface_id,
                         const gfx::Size& surface_size);
 
   Window* const window_;
-  cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId local_surface_id_;
+  viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId local_surface_id_;
 
   base::WeakPtrFactory<WindowPortLocal> weak_factory_;
 

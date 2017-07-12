@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -35,7 +35,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider
 
   // DisplayProvider:
   std::unique_ptr<cc::Display> CreateDisplay(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) override;
 

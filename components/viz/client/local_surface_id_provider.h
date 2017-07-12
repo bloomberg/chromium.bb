@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_VIZ_CLIENT_LOCAL_SURFACE_ID_PROVIDER_H_
 #define COMPONENTS_VIZ_CLIENT_LOCAL_SURFACE_ID_PROVIDER_H_
 
-#include "cc/surfaces/local_surface_id.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -20,7 +20,7 @@ class LocalSurfaceIdProvider {
   LocalSurfaceIdProvider();
   virtual ~LocalSurfaceIdProvider();
 
-  virtual const cc::LocalSurfaceId& GetLocalSurfaceIdForFrame(
+  virtual const LocalSurfaceId& GetLocalSurfaceIdForFrame(
       const cc::CompositorFrame& frame) = 0;
 
  private:
@@ -31,14 +31,14 @@ class DefaultLocalSurfaceIdProvider : public LocalSurfaceIdProvider {
  public:
   DefaultLocalSurfaceIdProvider();
 
-  const cc::LocalSurfaceId& GetLocalSurfaceIdForFrame(
+  const LocalSurfaceId& GetLocalSurfaceIdForFrame(
       const cc::CompositorFrame& frame) override;
 
  private:
-  cc::LocalSurfaceId local_surface_id_;
+  LocalSurfaceId local_surface_id_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  LocalSurfaceIdAllocator local_surface_id_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultLocalSurfaceIdProvider);
 };

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "cc/quads/render_pass.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace gfx {
@@ -43,7 +43,7 @@ void CreateSurfaceDrawQuad(RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect,
                            const gfx::Rect& quad_rect,
-                           SurfaceId surface_id);
+                           viz::SurfaceId surface_id);
 
 void CreateRenderPass(int render_pass_id,
                       const gfx::Rect& rect,
@@ -64,9 +64,9 @@ class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
   int reject_target_overrides() const { return reject_target_overrides_; }
   int accept_target_overrides() const { return accept_target_overrides_; }
 
-  void AddInsetsForRejectSurface(const SurfaceId& surface_id,
+  void AddInsetsForRejectSurface(const viz::SurfaceId& surface_id,
                                  const gfx::Insets& inset);
-  void AddInsetsForAcceptSurface(const SurfaceId& surface_id,
+  void AddInsetsForAcceptSurface(const viz::SurfaceId& surface_id,
                                  const gfx::Insets& inset);
 
   // SurfaceHittestDelegate implementation.
@@ -78,8 +78,8 @@ class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
  private:
   int reject_target_overrides_;
   int accept_target_overrides_;
-  std::map<SurfaceId, gfx::Insets> insets_for_reject_;
-  std::map<SurfaceId, gfx::Insets> insets_for_accept_;
+  std::map<viz::SurfaceId, gfx::Insets> insets_for_reject_;
+  std::map<viz::SurfaceId, gfx::Insets> insets_for_accept_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSurfaceHittestDelegate);
 };

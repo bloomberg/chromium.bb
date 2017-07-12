@@ -1336,7 +1336,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   StartCompositor();
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
   compositor_->SetFrameSinkId(
-      cc::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
+      viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // render_thread may be NULL in tests.

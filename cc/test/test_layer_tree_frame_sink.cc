@@ -19,7 +19,7 @@
 
 namespace cc {
 
-static constexpr FrameSinkId kLayerTreeFrameSinkId(1, 1);
+static constexpr viz::FrameSinkId kLayerTreeFrameSinkId(1, 1);
 
 TestLayerTreeFrameSink::TestLayerTreeFrameSink(
     scoped_refptr<ContextProvider> compositor_context_provider,
@@ -42,7 +42,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
       frame_sink_manager_(new FrameSinkManager),
-      local_surface_id_allocator_(new LocalSurfaceIdAllocator),
+      local_surface_id_allocator_(new viz::LocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {
   // Always use sync tokens so that code paths in resource provider that deal
@@ -127,7 +127,7 @@ void TestLayerTreeFrameSink::DetachFromClient() {
 }
 
 void TestLayerTreeFrameSink::SetLocalSurfaceId(
-    const LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceId& local_surface_id) {
   test_client_->DisplayReceivedLocalSurfaceId(local_surface_id);
 }
 
@@ -194,7 +194,7 @@ void TestLayerTreeFrameSink::ReclaimResources(
 }
 
 void TestLayerTreeFrameSink::WillDrawSurface(
-    const LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
 void TestLayerTreeFrameSink::DisplayOutputSurfaceLost() {

@@ -80,8 +80,8 @@ struct Change {
   Id window_id3;
   gfx::Rect bounds;
   gfx::Rect bounds2;
-  cc::FrameSinkId frame_sink_id;
-  base::Optional<cc::LocalSurfaceId> local_surface_id;
+  viz::FrameSinkId frame_sink_id;
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
   int32_t event_action;
   bool matches_pointer_watcher;
   std::string embed_url;
@@ -92,7 +92,7 @@ struct Change {
   std::string property_value;
   ui::CursorType cursor_type;
   uint32_t change_id;
-  cc::SurfaceId surface_id;
+  viz::SurfaceId surface_id;
   gfx::Size frame_size;
   float device_scale_factor;
   gfx::Transform transform;
@@ -151,14 +151,14 @@ class TestChangeTracker {
   void OnUnembed(Id window_id);
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);
   void OnFrameSinkIdAllocated(Id window_id,
-                              const cc::FrameSinkId& frame_sink_id);
+                              const viz::FrameSinkId& frame_sink_id);
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void OnWindowTransformChanged(Id window_id);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,

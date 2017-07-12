@@ -155,7 +155,7 @@ void PrepareBitmapCopyOutputResult(
 
 namespace content {
 
-cc::FrameSinkId AllocateFrameSinkId() {
+viz::FrameSinkId AllocateFrameSinkId() {
 #if defined(OS_ANDROID)
   return CompositorImpl::AllocateFrameSinkId();
 #else

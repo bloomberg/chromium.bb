@@ -1428,8 +1428,8 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 // when enough time passes without receiving a new compositor frame.
 TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
 
   host_->set_new_content_rendering_delay_for_testing(
       base::TimeDelta::FromMicroseconds(10));
@@ -1490,8 +1490,8 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
 // in its metadata is properly discarded.
 TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
 
   host_->StartNewContentRenderingTimeout(100);
   host_->set_new_content_rendering_delay_for_testing(
@@ -2023,8 +2023,8 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
 TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   const uint32_t frame_token = 99;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
   messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
@@ -2048,8 +2048,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
 TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   const uint32_t frame_token = 99;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
   messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
@@ -2074,8 +2074,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -2113,8 +2113,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -2152,8 +2152,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -2186,8 +2186,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   const uint32_t frame_token2 = 50;
   const uint32_t frame_token3 = 30;
   const gfx::Size frame_size(50, 50);
-  const cc::LocalSurfaceId local_surface_id(1,
-                                            base::UnguessableToken::Create());
+  const viz::LocalSurfaceId local_surface_id(1,
+                                             base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages3;
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));

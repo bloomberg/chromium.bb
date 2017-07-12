@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/class_property.h"
 
@@ -84,8 +84,8 @@ class AURA_EXPORT WindowPort {
   virtual std::unique_ptr<cc::LayerTreeFrameSink>
   CreateLayerTreeFrameSink() = 0;
 
-  // Get the current cc::SurfaceId.
-  virtual cc::SurfaceId GetSurfaceId() const = 0;
+  // Get the current viz::SurfaceId.
+  virtual viz::SurfaceId GetSurfaceId() const = 0;
 
   virtual void OnWindowAddedToRootWindow() = 0;
   virtual void OnWillRemoveWindowFromRootWindow() = 0;

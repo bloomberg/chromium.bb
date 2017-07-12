@@ -479,7 +479,7 @@ class LayerTreeTestLayerTreeFrameSinkClient
         std::move(compositor_context_provider));
   }
   void DisplayReceivedLocalSurfaceId(
-      const LocalSurfaceId& local_surface_id) override {
+      const viz::LocalSurfaceId& local_surface_id) override {
     hooks_->DisplayReceivedLocalSurfaceIdOnThread(local_surface_id);
   }
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
@@ -575,7 +575,7 @@ void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
 }
 
 void LayerTreeTest::PostSetLocalSurfaceIdToMainThread(
-    const LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceId& local_surface_id) {
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetLocalSurfaceId,
                                 main_thread_weak_ptr_, local_surface_id));
@@ -752,7 +752,7 @@ void LayerTreeTest::DispatchAddAnimationToPlayer(
 }
 
 void LayerTreeTest::DispatchSetLocalSurfaceId(
-    const LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceId& local_surface_id) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
     layer_tree_host_->SetLocalSurfaceId(local_surface_id);

@@ -25,8 +25,8 @@ namespace test {
 void AddSurfaceQuad(RenderPass* pass,
                     const gfx::Size& surface_size,
                     float opacity,
-                    const SurfaceId& primary_surface_id,
-                    const SurfaceId& fallback_surface_id) {
+                    const viz::SurfaceId& primary_surface_id,
+                    const viz::SurfaceId& fallback_surface_id) {
   gfx::Transform layer_to_target_transform;
   gfx::Size layer_bounds = surface_size;
   gfx::Rect visible_layer_rect = gfx::Rect(surface_size);

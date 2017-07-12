@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
@@ -34,12 +34,12 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
 
   // blink::mojom::OffscreenCanvasProvider implementation.
   void CreateOffscreenCanvasSurface(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& parent_frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       blink::mojom::OffscreenCanvasSurfaceClientPtr client,
       blink::mojom::OffscreenCanvasSurfaceRequest request) override;
   void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkClientPtr client,
       cc::mojom::CompositorFrameSinkRequest request) override;
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
 
   // Destroys the |canvas_map_| entry for |frame_sink_id|. Provided as a
   // callback to each OffscreenCanvasSurfaceImpl so they can destroy themselves.
-  void DestroyOffscreenCanvasSurface(cc::FrameSinkId frame_sink_id);
+  void DestroyOffscreenCanvasSurface(viz::FrameSinkId frame_sink_id);
 
   viz::HostFrameSinkManager* const host_frame_sink_manager_;
 
@@ -57,7 +57,7 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
 
   mojo::BindingSet<blink::mojom::OffscreenCanvasProvider> bindings_;
 
-  base::flat_map<cc::FrameSinkId, std::unique_ptr<OffscreenCanvasSurfaceImpl>>
+  base::flat_map<viz::FrameSinkId, std::unique_ptr<OffscreenCanvasSurfaceImpl>>
       canvas_map_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasProviderImpl);

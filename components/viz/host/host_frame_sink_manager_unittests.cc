@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,8 +19,8 @@ namespace viz {
 namespace test {
 namespace {
 
-constexpr cc::FrameSinkId kFrameSinkId1(1, 1);
-constexpr cc::FrameSinkId kFrameSinkId2(1, 1);
+constexpr FrameSinkId kFrameSinkId1(1, 1);
+constexpr FrameSinkId kFrameSinkId2(1, 1);
 
 ACTION_P(InvokeClosure, closure) {
   closure.Run();
@@ -67,7 +67,7 @@ class MockFrameSinkManagerImpl : public cc::mojom::FrameSinkManager {
   // cc::mojom::FrameSinkManager:
   // TODO(kylechar): See if we can mock functions with InterfacePtrs parameters.
   void CreateRootCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -75,17 +75,15 @@ class MockFrameSinkManagerImpl : public cc::mojom::FrameSinkManager {
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override {}
   void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client) override {}
   MOCK_METHOD2(RegisterFrameSinkHierarchy,
-               void(const cc::FrameSinkId& parent,
-                    const cc::FrameSinkId& child));
+               void(const FrameSinkId& parent, const FrameSinkId& child));
   MOCK_METHOD2(UnregisterFrameSinkHierarchy,
-               void(const cc::FrameSinkId& parent,
-                    const cc::FrameSinkId& child));
-  MOCK_METHOD1(DropTemporaryReference, void(const cc::SurfaceId& surface_id));
+               void(const FrameSinkId& parent, const FrameSinkId& child));
+  MOCK_METHOD1(DropTemporaryReference, void(const SurfaceId& surface_id));
 
  private:
   mojo::Binding<cc::mojom::FrameSinkManager> binding_;

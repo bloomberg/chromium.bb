@@ -722,7 +722,7 @@ GpuProcessTransportFactory::GetContextFactoryPrivate() {
   return this;
 }
 
-cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
+viz::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 

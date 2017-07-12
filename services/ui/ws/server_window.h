@@ -73,9 +73,9 @@ class ServerWindow {
 
   const WindowId& id() const { return id_; }
 
-  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  const base::Optional<cc::LocalSurfaceId>& current_local_surface_id() const {
+  const base::Optional<viz::LocalSurfaceId>& current_local_surface_id() const {
     return current_local_surface_id_;
   }
 
@@ -89,7 +89,7 @@ class ServerWindow {
   // Sets the bounds. If the size changes this implicitly resets the client
   // area to fill the whole bounds.
   void SetBounds(const gfx::Rect& bounds,
-                 const base::Optional<cc::LocalSurfaceId>& local_surface_id =
+                 const base::Optional<viz::LocalSurfaceId>& local_surface_id =
                      base::nullopt);
 
   const std::vector<gfx::Rect>& additional_client_areas() const {
@@ -239,8 +239,8 @@ class ServerWindow {
 
   ServerWindowDelegate* delegate_;
   const WindowId id_;
-  cc::FrameSinkId frame_sink_id_;
-  base::Optional<cc::LocalSurfaceId> current_local_surface_id_;
+  viz::FrameSinkId frame_sink_id_;
+  base::Optional<viz::LocalSurfaceId> current_local_surface_id_;
 
   ServerWindow* parent_;
   Windows children_;

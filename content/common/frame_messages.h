@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surface_id.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
@@ -549,7 +549,7 @@ IPC_STRUCT_END()
 // to perform hittesting on the browser process.
 IPC_STRUCT_BEGIN(FrameHostMsg_HittestData_Params)
   // |surface_id| represents the surface used by this remote frame.
-  IPC_STRUCT_MEMBER(cc::SurfaceId, surface_id)
+  IPC_STRUCT_MEMBER(viz::SurfaceId, surface_id)
 
   // If |ignored_for_hittest| then this surface should be ignored during
   // hittesting.
@@ -1427,7 +1427,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_SatisfySequence,
 // Creates a destruction dependency for the Surface specified by the given
 // |surface_id|.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_RequireSequence,
-                    cc::SurfaceId /* surface_id */,
+                    viz::SurfaceId /* surface_id */,
                     cc::SurfaceSequence /* sequence */)
 
 // Provides the result from handling BeforeUnload.  |proceed| matches the return

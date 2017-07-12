@@ -107,7 +107,7 @@ void RendererWindowTreeClient::OnEmbed(
     int64_t display_id,
     ui::Id focused_window_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
   if (!pending_layer_tree_frame_sink_callback_.is_null()) {
@@ -134,7 +134,7 @@ void RendererWindowTreeClient::OnCaptureChanged(ui::Id new_capture_window_id,
 
 void RendererWindowTreeClient::OnFrameSinkIdAllocated(
     ui::Id window_id,
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   // TODO(fsamuel): OOPIF's |frame_sink_id| is ready. The OOPIF can now be
   // embedded by the parent.
 }
@@ -144,7 +144,7 @@ void RendererWindowTreeClient::OnTopLevelCreated(
     ui::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   NOTREACHED();
 }
 
@@ -152,8 +152,7 @@ void RendererWindowTreeClient::OnWindowBoundsChanged(
     ui::Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
-}
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {}
 
 void RendererWindowTreeClient::OnWindowTransformChanged(
     ui::Id window_id,

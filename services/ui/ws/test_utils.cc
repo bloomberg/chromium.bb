@@ -232,7 +232,7 @@ void TestWindowManager::WmNewDisplayAdded(
     const display::Display& display,
     ui::mojom::WindowDataPtr root,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   display_added_count_++;
 }
 
@@ -311,7 +311,7 @@ void TestWindowTreeClient::OnEmbed(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   // TODO(sky): add test coverage of |focused_window_id|.
   tracker_.OnEmbed(client_id, std::move(root), drawn);
 }
@@ -331,7 +331,7 @@ void TestWindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
 
 void TestWindowTreeClient::OnFrameSinkIdAllocated(
     Id window_id,
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   tracker_.OnFrameSinkIdAllocated(window_id, frame_sink_id);
 }
 
@@ -340,7 +340,7 @@ void TestWindowTreeClient::OnTopLevelCreated(
     mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   tracker_.OnTopLevelCreated(change_id, std::move(data), drawn);
 }
 
@@ -348,7 +348,7 @@ void TestWindowTreeClient::OnWindowBoundsChanged(
     uint32_t window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   tracker_.OnWindowBoundsChanged(window, std::move(old_bounds),
                                  std::move(new_bounds), local_surface_id);
 }

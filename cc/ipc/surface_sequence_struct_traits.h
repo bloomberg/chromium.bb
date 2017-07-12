@@ -12,7 +12,7 @@ namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::SurfaceSequenceDataView, cc::SurfaceSequence> {
-  static const cc::FrameSinkId& frame_sink_id(const cc::SurfaceSequence& id) {
+  static const viz::FrameSinkId& frame_sink_id(const cc::SurfaceSequence& id) {
     return id.frame_sink_id;
   }
 
@@ -22,7 +22,7 @@ struct StructTraits<cc::mojom::SurfaceSequenceDataView, cc::SurfaceSequence> {
 
   static bool Read(cc::mojom::SurfaceSequenceDataView data,
                    cc::SurfaceSequence* out) {
-    cc::FrameSinkId frame_sink_id;
+    viz::FrameSinkId frame_sink_id;
     if (!data.ReadFrameSinkId(&frame_sink_id))
       return false;
     *out = cc::SurfaceSequence(frame_sink_id, data.sequence());

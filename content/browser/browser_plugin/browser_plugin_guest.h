@@ -52,7 +52,6 @@ struct FrameHostMsg_ShowPopup_Params;
 #endif
 
 namespace cc {
-class SurfaceId;
 class SurfaceInfo;
 struct SurfaceSequence;
 }  // namespace cc
@@ -60,6 +59,10 @@ struct SurfaceSequence;
 namespace gfx {
 class Range;
 }  // namespace gfx
+
+namespace viz {
+class SurfaceId;
+}  // namespace viz
 
 namespace content {
 
@@ -280,7 +283,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void OnSatisfySequence(int instance_id, const cc::SurfaceSequence& sequence);
   void OnRequireSequence(int instance_id,
-                         const cc::SurfaceId& id,
+                         const viz::SurfaceId& id,
                          const cc::SurfaceSequence& sequence);
   // Message handlers for messages from embedder.
   void OnDetach(int instance_id);

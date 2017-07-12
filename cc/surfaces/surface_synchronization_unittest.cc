@@ -5,12 +5,12 @@
 #include "base/containers/flat_set.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
+#include "components/viz/common/surface_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,20 +27,21 @@ constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
 constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
-constexpr FrameSinkId kDisplayFrameSink(2, 0);
-constexpr FrameSinkId kParentFrameSink(3, 0);
-constexpr FrameSinkId kChildFrameSink1(65563, 0);
-constexpr FrameSinkId kChildFrameSink2(65564, 0);
-constexpr FrameSinkId kArbitraryFrameSink(1337, 7331);
+constexpr viz::FrameSinkId kDisplayFrameSink(2, 0);
+constexpr viz::FrameSinkId kParentFrameSink(3, 0);
+constexpr viz::FrameSinkId kChildFrameSink1(65563, 0);
+constexpr viz::FrameSinkId kChildFrameSink2(65564, 0);
+constexpr viz::FrameSinkId kArbitraryFrameSink(1337, 7331);
 
-std::vector<SurfaceId> empty_surface_ids() {
-  return std::vector<SurfaceId>();
+std::vector<viz::SurfaceId> empty_surface_ids() {
+  return std::vector<viz::SurfaceId>();
 }
 
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-  return SurfaceId(
-      frame_sink_id,
-      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
+viz::SurfaceId MakeSurfaceId(const viz::FrameSinkId& frame_sink_id,
+                             uint32_t local_id) {
+  return viz::SurfaceId(
+      frame_sink_id, viz::LocalSurfaceId(
+                         local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 }  // namespace
@@ -102,15 +103,15 @@ class SurfaceSynchronizationTest : public testing::Test {
   FrameSinkManager& frame_sink_manager() { return frame_sink_manager_; }
 
   // Returns all the references where |surface_id| is the parent.
-  const base::flat_set<SurfaceId>& GetChildReferences(
-      const SurfaceId& surface_id) {
+  const base::flat_set<viz::SurfaceId>& GetChildReferences(
+      const viz::SurfaceId& surface_id) {
     return frame_sink_manager()
         .surface_manager()
         ->GetSurfacesReferencedByParent(surface_id);
   }
 
   // Returns true if there is a temporary reference for |surface_id|.
-  bool HasTemporaryReference(const SurfaceId& surface_id) {
+  bool HasTemporaryReference(const viz::SurfaceId& surface_id) {
     return frame_sink_manager().surface_manager()->HasTemporaryReference(
         surface_id);
   }
@@ -172,12 +173,12 @@ class SurfaceSynchronizationTest : public testing::Test {
     surface_observer_.Reset();
   }
 
-  bool IsMarkedForDestruction(const SurfaceId& surface_id) {
+  bool IsMarkedForDestruction(const viz::SurfaceId& surface_id) {
     return frame_sink_manager_.surface_manager()->IsMarkedForDestruction(
         surface_id);
   }
 
-  Surface* GetSurfaceForId(const SurfaceId& surface_id) {
+  Surface* GetSurfaceForId(const viz::SurfaceId& surface_id) {
     return frame_sink_manager_.surface_manager()->GetSurfaceForId(surface_id);
   }
 
@@ -196,10 +197,11 @@ class SurfaceSynchronizationTest : public testing::Test {
 };
 
 // The display root surface should have a surface reference from the top-level
-// root added/removed when a CompositorFrame is submitted with a new SurfaceId.
+// root added/removed when a CompositorFrame is submitted with a new
+// viz::SurfaceId.
 TEST_F(SurfaceSynchronizationTest, RootSurfaceReceivesReferences) {
-  const SurfaceId display_id_first = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId display_id_second = MakeSurfaceId(kDisplayFrameSink, 2);
+  const viz::SurfaceId display_id_first = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId display_id_second = MakeSurfaceId(kDisplayFrameSink, 2);
 
   // Submit a CompositorFrame for the first display root surface.
   display_support().SubmitCompositorFrame(display_id_first.local_surface_id(),
@@ -229,9 +231,9 @@ TEST_F(SurfaceSynchronizationTest, RootSurfaceReceivesReferences) {
 
 // The parent Surface is blocked on |child_id1| and |child_id2|.
 TEST_F(SurfaceSynchronizationTest, BlockedOnTwo) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -269,9 +271,9 @@ TEST_F(SurfaceSynchronizationTest, BlockedOnTwo) {
 
 // The parent Surface is blocked on |child_id2| which is blocked on |child_id3|.
 TEST_F(SurfaceSynchronizationTest, BlockedChain) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -334,9 +336,9 @@ TEST_F(SurfaceSynchronizationTest, BlockedChain) {
 
 // parent_surface and child_surface1 are blocked on |child_id2|.
 TEST_F(SurfaceSynchronizationTest, TwoBlockedOnOne) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -387,9 +389,9 @@ TEST_F(SurfaceSynchronizationTest, TwoBlockedOnOne) {
 // parent_surface is blocked on |child_id1|, and child_surface2 is blocked on
 // |child_id2| until the deadline hits.
 TEST_F(SurfaceSynchronizationTest, DeadlineHits) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -456,8 +458,8 @@ TEST_F(SurfaceSynchronizationTest, DeadlineHits) {
 // This test verifies at the Surface activates once a CompositorFrame is
 // submitted that has no unresolved dependencies.
 TEST_F(SurfaceSynchronizationTest, NewFrameOverridesOldDependencies) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   // Submit a CompositorFrame that depends on |arbitrary_id|.
   parent_support().SubmitCompositorFrame(
@@ -485,9 +487,9 @@ TEST_F(SurfaceSynchronizationTest, NewFrameOverridesOldDependencies) {
 // references. A new surface from a child will continue to exist as a temporary
 // reference until the parent's frame activates.
 TEST_F(SurfaceSynchronizationTest, OnlyActiveFramesAffectSurfaceReferences) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   // child_support1 submits a CompositorFrame without any dependencies.
   // DidReceiveCompositorFrameAck should call on immediate activation.
@@ -551,8 +553,8 @@ TEST_F(SurfaceSynchronizationTest, OnlyActiveFramesAffectSurfaceReferences) {
 // CompositorFrame starts out as pending, then becomes active, and then is
 // replaced with another active CompositorFrame.
 TEST_F(SurfaceSynchronizationTest, ResourcesOnlyReturnedOnce) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   // The parent submits a CompositorFrame that depends on |child_id| before the
   // child submits a CompositorFrame. The CompositorFrame also has resources in
@@ -609,9 +611,9 @@ TEST_F(SurfaceSynchronizationTest, ResourcesOnlyReturnedOnce) {
 // child_support1 evicts its blocked Surface. The parent surface should
 // activate.
 TEST_F(SurfaceSynchronizationTest, EvictSurfaceWithPendingFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   // Submit a CompositorFrame that depends on |child_id1|.
   parent_support().SubmitCompositorFrame(
@@ -654,9 +656,9 @@ TEST_F(SurfaceSynchronizationTest, EvictSurfaceWithPendingFrame) {
 // updated allowing garbage collection of surfaces that are no longer
 // referenced.
 TEST_F(SurfaceSynchronizationTest, DropStaleReferencesAfterActivation) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   // The parent submits a CompositorFrame that depends on |child_id1| before the
   // child submits a CompositorFrame.
@@ -742,11 +744,11 @@ TEST_F(SurfaceSynchronizationTest, DropStaleReferencesAfterActivation) {
 }
 
 // Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. No frame has unresolved dependencies.
+// one when viz::LocalSurfaceId changes. No frame has unresolved dependencies.
 TEST_F(SurfaceSynchronizationTest,
        LatencyInfoCarriedOverOnResize_NoUnresolvedDependencies) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =
       ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
   const int64_t latency_id1 = 234;
@@ -772,7 +774,7 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(old_surface->HasPendingFrame());
 
   // Submit another frame with some other latency info and a different
-  // LocalSurfaceId.
+  // viz::LocalSurfaceId.
   ui::LatencyInfo info2;
   info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
 
@@ -812,12 +814,13 @@ TEST_F(SurfaceSynchronizationTest,
 }
 
 // Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. Old surface has unresolved dependencies.
+// one when viz::LocalSurfaceId changes. Old surface has unresolved
+// dependencies.
 TEST_F(SurfaceSynchronizationTest,
        LatencyInfoCarriedOverOnResize_OldSurfaceHasPendingAndActiveFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
       ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
@@ -889,12 +892,13 @@ TEST_F(SurfaceSynchronizationTest,
 }
 
 // Checks whether the latency info are moved to the new surface from the old
-// one when LocalSurfaceId changes. The new surface has unresolved dependencies.
+// one when viz::LocalSurfaceId changes. The new surface has unresolved
+// dependencies.
 TEST_F(SurfaceSynchronizationTest,
        LatencyInfoCarriedOverOnResize_NewSurfaceHasPendingFrame) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
       ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
@@ -970,7 +974,7 @@ TEST_F(SurfaceSynchronizationTest,
 
 // Checks that resources and ack are sent together if possible.
 TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   TransferableResource resource;
   resource.id = 1234;
   parent_support().SubmitCompositorFrame(
@@ -989,8 +993,8 @@ TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {
 // Verifies that if a surface is marked destroyed and a new frame arrives for
 // it, it will be recovered.
 TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
 
   // Create the child surface by submitting a frame to it.
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
@@ -1026,11 +1030,11 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   EXPECT_FALSE(IsMarkedForDestruction(child_id));
 }
 
-// Verifies that if a LocalSurfaceId belonged to a surface that doesn't exist
-// anymore, it can still be reused for new surfaces.
+// Verifies that if a viz::LocalSurfaceId belonged to a surface that doesn't
+// exist anymore, it can still be reused for new surfaces.
 TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 3);
 
   // Submit the first frame. Creates the surface.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
@@ -1066,10 +1070,10 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
 // by deadline, and the new subtree was activated by a dependency finally
 // resolving.
 TEST_F(SurfaceSynchronizationTest, DependencyTrackingGarbageCollection) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id1.local_surface_id(),
@@ -1125,10 +1129,10 @@ TEST_F(SurfaceSynchronizationTest, DependencyTrackingGarbageCollection) {
 // from that subtree due to an unresolved dependency. This test verifies that
 // this dependency resolution does not crash.
 TEST_F(SurfaceSynchronizationTest, GarbageCollectionOnDeadline) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   // |parent_id1| is blocked on |child_id|.
   parent_support().SubmitCompositorFrame(
@@ -1192,9 +1196,9 @@ TEST_F(SurfaceSynchronizationTest, GarbageCollectionOnDeadline) {
 // This test verifies that a CompositorFrame will only blocked on embedded
 // surfaces but not on other retained surface IDs in the CompositorFrame.
 TEST_F(SurfaceSynchronizationTest, OnlyBlockOnEmbeddedSurfaces) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
 
   // Submitting a CompositorFrame with |parent_id2| so that the display
   // CompositorFrame can hold a reference to it.
@@ -1232,9 +1236,9 @@ TEST_F(SurfaceSynchronizationTest, OnlyBlockOnEmbeddedSurfaces) {
 // This test verifies that a late arriving CompositorFrame activates immediately
 // and does not trigger a new deadline.
 TEST_F(SurfaceSynchronizationTest, LateArrivingDependency) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
 
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
@@ -1270,10 +1274,10 @@ TEST_F(SurfaceSynchronizationTest, LateArrivingDependency) {
 // This test verifies that a late arriving CompositorFrame activates immediately
 // along with its subtree and does not trigger a new deadline.
 TEST_F(SurfaceSynchronizationTest, MultiLevelLateArrivingDependency) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
@@ -1325,11 +1329,11 @@ TEST_F(SurfaceSynchronizationTest, MultiLevelLateArrivingDependency) {
 // by a parent CompositorFrame as a fallback will be rejected and ACK'ed
 // immediately.
 TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   // This is the fallback child surface that the parent holds a reference to.
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
   // This is the primary child surface that the parent wants to block on.
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
 
   // child_support1 submits a CompositorFrame without any dependencies.
   // DidReceiveCompositorFrameAck should call on immediate activation.
@@ -1404,10 +1408,10 @@ TEST_F(SurfaceSynchronizationTest, FallbackSurfacesClosed) {
 
 // This test verifies that two surface subtrees have independent deadlines.
 TEST_F(SurfaceSynchronizationTest, IndependentDeadlines) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+  const viz::SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
                                          MakeCompositorFrame());
@@ -1483,9 +1487,9 @@ TEST_F(SurfaceSynchronizationTest, IndependentDeadlines) {
 // This test verifies that a child inherits its deadline from its dependent
 // parent (embedder) surface.
 TEST_F(SurfaceSynchronizationTest, DeadlineInheritance) {
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const viz::SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   parent_support().SubmitCompositorFrame(
       parent_id1.local_surface_id(),
@@ -1531,10 +1535,10 @@ TEST_F(SurfaceSynchronizationTest, DeadlineInheritance) {
 // ultimately inherit the same deadline even if the grandchild is available
 // before the child.
 TEST_F(SurfaceSynchronizationTest, MultiLevelDeadlineInheritance) {
-  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  const viz::SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const viz::SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const viz::SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+  const viz::SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),

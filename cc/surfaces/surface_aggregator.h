@@ -15,8 +15,8 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/gfx/color_space.h"
 
 namespace cc {
@@ -31,19 +31,19 @@ class SurfaceManager;
 
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
-  using SurfaceIndexMap = base::flat_map<SurfaceId, int>;
+  using SurfaceIndexMap = base::flat_map<viz::SurfaceId, int>;
 
   SurfaceAggregator(SurfaceManager* manager,
                     ResourceProvider* provider,
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
-  CompositorFrame Aggregate(const SurfaceId& surface_id);
-  void ReleaseResources(const SurfaceId& surface_id);
+  CompositorFrame Aggregate(const viz::SurfaceId& surface_id);
+  void ReleaseResources(const viz::SurfaceId& surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
   }
-  void SetFullDamageForSurface(const SurfaceId& surface_id);
+  void SetFullDamageForSurface(const viz::SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
   // Set the color spaces for the created RenderPasses, which is propagated
@@ -66,7 +66,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     ~PrewalkResult();
     // This is the set of Surfaces that were referenced by another Surface, but
     // not included in a SurfaceDrawQuad.
-    base::flat_set<SurfaceId> undrawn_surfaces;
+    base::flat_set<viz::SurfaceId> undrawn_surfaces;
     bool may_contain_video = false;
   };
 
@@ -97,7 +97,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                              const gfx::Transform& target_transform);
 
   RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
-                           const SurfaceId& surface_id);
+                           const viz::SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          const gfx::Transform& target_transform,
@@ -118,8 +118,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       RenderPass* dest_pass,
-      const SurfaceId& surface_id);
-  gfx::Rect PrewalkTree(const SurfaceId& surface_id,
+      const viz::SurfaceId& surface_id);
+  gfx::Rect PrewalkTree(const viz::SurfaceId& surface_id,
                         bool in_moved_pixel_surface,
                         int parent_pass,
                         PrewalkResult* result);
@@ -148,10 +148,10 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   ResourceProvider* provider_;
 
   // Every Surface has its own RenderPass ID namespace. This structure maps
-  // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
-  // used in the aggregated frame. An entry is removed from the map if it's not
-  // used for one output frame.
-  base::flat_map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>
+  // each source (viz::SurfaceId, RenderPass id) to a unified ID namespace
+  // that's used in the aggregated frame. An entry is removed from the map if
+  // it's not used for one output frame.
+  base::flat_map<std::pair<viz::SurfaceId, RenderPassId>, RenderPassInfo>
       render_pass_allocator_map_;
   RenderPassId next_render_pass_id_;
   const bool aggregate_only_damaged_;
@@ -167,7 +167,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_ = 0;
 
-  base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
+  base::flat_map<viz::SurfaceId, int> surface_id_to_resource_child_id_;
 
   // The following state is only valid for the duration of one Aggregate call
   // and is only stored on the class to avoid having to pass through every
@@ -175,7 +175,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of surfaces referenced in the aggregation so far, used to
   // detect cycles.
-  base::flat_set<SurfaceId> referenced_surfaces_;
+  base::flat_set<viz::SurfaceId> referenced_surfaces_;
 
   // For each Surface used in the last aggregation, gives the frame_index at
   // that time.
@@ -183,7 +183,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceIndexMap contained_surfaces_;
 
   // After surface validation, every Surface in this set is valid.
-  base::flat_set<SurfaceId> valid_surfaces_;
+  base::flat_set<viz::SurfaceId> valid_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;

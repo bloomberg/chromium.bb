@@ -896,7 +896,7 @@ void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
 }
 
 void RenderWidgetHostViewAura::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
@@ -1603,7 +1603,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   event_handler_->OnMouseEvent(event);
 }
 
-cc::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
+viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
@@ -1615,10 +1615,10 @@ cc::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
       gfx::ConvertPointToPixel(device_scale_factor_, point);
   // TODO: this shouldn't be used with aura-mus, so that the null check so
   // go away and become a DCHECK.
-  cc::SurfaceId id = delegated_frame_host_
-                         ? delegated_frame_host_->SurfaceIdAtPoint(
-                               delegate, point_in_pixels, transformed_point)
-                         : cc::SurfaceId();
+  viz::SurfaceId id = delegated_frame_host_
+                          ? delegated_frame_host_->SurfaceIdAtPoint(
+                                delegate, point_in_pixels, transformed_point)
+                          : viz::SurfaceId();
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 
@@ -1655,7 +1655,7 @@ void RenderWidgetHostViewAura::ProcessGestureEvent(
 
 bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
+    const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
@@ -2287,17 +2287,17 @@ void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
 
-cc::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
+viz::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-cc::LocalSurfaceId RenderWidgetHostViewAura::GetLocalSurfaceId() const {
+viz::LocalSurfaceId RenderWidgetHostViewAura::GetLocalSurfaceId() const {
   return local_surface_id_;
 }
 
-cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
+viz::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceIdForTesting()
-                               : cc::SurfaceId();
+                               : viz::SurfaceId();
 }
 
 void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 
 #include "base/strings/stringprintf.h"
 
-namespace cc {
+namespace viz {
 
 std::string FrameSinkId::ToString() const {
   return base::StringPrintf("FrameSinkId(%d, %d)", client_id_, sink_id_);
@@ -16,4 +16,4 @@ std::ostream& operator<<(std::ostream& out, const FrameSinkId& frame_sink_id) {
   return out << frame_sink_id.ToString();
 }
 
-}  // namespace cc
+}  // namespace viz

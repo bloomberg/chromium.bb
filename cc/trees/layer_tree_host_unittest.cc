@@ -7542,7 +7542,7 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
 
-// Makes sure that LocalSurfaceId is propagated to the LayerTreeFrameSink.
+// Makes sure that viz::LocalSurfaceId is propagated to the LayerTreeFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -7564,15 +7564,15 @@ class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
   }
 
   void DisplayReceivedLocalSurfaceIdOnThread(
-      const LocalSurfaceId& local_surface_id) override {
+      const viz::LocalSurfaceId& local_surface_id) override {
     EXPECT_EQ(expected_local_surface_id_, local_surface_id);
     EndTest();
   }
 
   void AfterTest() override {}
 
-  LocalSurfaceId expected_local_surface_id_;
-  LocalSurfaceIdAllocator allocator_;
+  viz::LocalSurfaceId expected_local_surface_id_;
+  viz::LocalSurfaceIdAllocator allocator_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLocalSurfaceId);

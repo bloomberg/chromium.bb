@@ -12,13 +12,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surface_id.h"
 
 struct AwDrawGLInfo;
 
 namespace cc {
 class CompositorFrameSinkSupport;
+}
+
+namespace viz {
 class LocalSurfaceIdAllocator;
 }
 
@@ -55,7 +58,7 @@ class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<cc::ReturnedResource>& resources) override;
-  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
@@ -89,11 +92,11 @@ class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
   std::unique_ptr<ChildFrame> child_frame_;
 
   const scoped_refptr<SurfacesInstance> surfaces_;
-  cc::FrameSinkId frame_sink_id_;
-  const std::unique_ptr<cc::LocalSurfaceIdAllocator>
+  viz::FrameSinkId frame_sink_id_;
+  const std::unique_ptr<viz::LocalSurfaceIdAllocator>
       local_surface_id_allocator_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
-  cc::LocalSurfaceId child_id_;
+  viz::LocalSurfaceId child_id_;
   CompositorID compositor_id_;
   // HardwareRenderer guarantees resources are returned in the order of
   // layer_tree_frame_sink_id, and resources for old output surfaces are

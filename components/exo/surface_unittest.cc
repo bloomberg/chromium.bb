@@ -100,7 +100,7 @@ TEST_F(SurfaceTest, RequestFrameCallback) {
 }
 
 const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
-  cc::SurfaceId surface_id = surface->GetSurfaceId();
+  viz::SurfaceId surface_id = surface->GetSurfaceId();
   cc::SurfaceManager* surface_manager = aura::Env::GetInstance()
                                             ->context_factory_private()
                                             ->GetFrameSinkManager()

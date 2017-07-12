@@ -23,9 +23,9 @@ constexpr float kDefaultScaleFactor = 1.0f;
 constexpr float kArbitraryScaleFactor = 0.5f;
 constexpr gfx::Size kArbitrarySize(3, 4);
 constexpr gfx::Size kAnotherArbitrarySize(5, 6);
-const cc::SurfaceId kArbitrarySurfaceId(
-    cc::FrameSinkId(1, 1),
-    cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
+const viz::SurfaceId kArbitrarySurfaceId(
+    viz::FrameSinkId(1, 1),
+    viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
 const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId,
                                             1.0f,
                                             gfx::Size(100, 100));
@@ -41,7 +41,7 @@ class TestClientBinding : public cc::mojom::CompositorFrameSink,
   ~TestClientBinding() override = default;
 
   // cc::mojom::CompositorFrameSink implementation:
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override {
     ++frames_submitted_;
     last_frame_ = std::move(frame);
@@ -191,7 +191,7 @@ TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   // Verify that the CompositorFrame refers to the window manager's surface via
   // referenced_surfaces.
   const cc::CompositorFrameMetadata& last_metadata = LastMetadata();
-  const std::vector<cc::SurfaceId>& referenced_surfaces =
+  const std::vector<viz::SurfaceId>& referenced_surfaces =
       last_metadata.referenced_surfaces;
   EXPECT_EQ(1lu, referenced_surfaces.size());
   EXPECT_EQ(kArbitrarySurfaceId, referenced_surfaces.front());

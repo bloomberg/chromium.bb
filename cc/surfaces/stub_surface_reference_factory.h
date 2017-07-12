@@ -20,8 +20,9 @@ class CC_SURFACES_EXPORT StubSurfaceReferenceFactory
   StubSurfaceReferenceFactory() = default;
 
   // SurfaceReferenceFactory:
-  base::Closure CreateReference(SurfaceReferenceOwner* owner,
-                                const SurfaceId& surface_id) const override;
+  base::Closure CreateReference(
+      SurfaceReferenceOwner* owner,
+      const viz::SurfaceId& surface_id) const override;
 
  protected:
   ~StubSurfaceReferenceFactory() override = default;

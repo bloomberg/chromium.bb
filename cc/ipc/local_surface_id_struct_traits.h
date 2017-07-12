@@ -6,24 +6,24 @@
 #define CC_IPC_LOCAL_SURFACE_ID_STRUCT_TRAITS_H_
 
 #include "cc/ipc/local_surface_id.mojom-shared.h"
-#include "cc/surfaces/local_surface_id.h"
+#include "components/viz/common/local_surface_id.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::LocalSurfaceIdDataView, cc::LocalSurfaceId> {
-  static uint32_t local_id(const cc::LocalSurfaceId& local_surface_id) {
+struct StructTraits<cc::mojom::LocalSurfaceIdDataView, viz::LocalSurfaceId> {
+  static uint32_t local_id(const viz::LocalSurfaceId& local_surface_id) {
     return local_surface_id.local_id();
   }
 
   static const base::UnguessableToken& nonce(
-      const cc::LocalSurfaceId& local_surface_id) {
+      const viz::LocalSurfaceId& local_surface_id) {
     return local_surface_id.nonce();
   }
 
   static bool Read(cc::mojom::LocalSurfaceIdDataView data,
-                   cc::LocalSurfaceId* out) {
+                   viz::LocalSurfaceId* out) {
     out->local_id_ = data.local_id();
     return data.ReadNonce(&out->nonce_);
   }

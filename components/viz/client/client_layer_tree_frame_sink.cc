@@ -96,7 +96,7 @@ void ClientLayerTreeFrameSink::DetachFromClient() {
 }
 
 void ClientLayerTreeFrameSink::SetLocalSurfaceId(
-    const cc::LocalSurfaceId& local_surface_id) {
+    const LocalSurfaceId& local_surface_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(local_surface_id.is_valid());
   DCHECK(enable_surface_synchronization_);
