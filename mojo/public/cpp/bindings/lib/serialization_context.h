@@ -93,6 +93,16 @@ class MOJO_CPP_BINDINGS_EXPORT SerializationContext {
                       Message* message);
 
   const std::vector<mojo::ScopedHandle>* handles() { return &handles_; }
+  std::vector<mojo::ScopedHandle>* mutable_handles() { return &handles_; }
+
+  const std::vector<ScopedInterfaceEndpointHandle>*
+  associated_endpoint_handles() const {
+    return &associated_endpoint_handles_;
+  }
+  std::vector<ScopedInterfaceEndpointHandle>*
+  mutable_associated_endpoint_handles() {
+    return &associated_endpoint_handles_;
+  }
 
   // Takes handles from a received Message object and assumes ownership of them.
   // Individual handles can be extracted using Take* methods below.

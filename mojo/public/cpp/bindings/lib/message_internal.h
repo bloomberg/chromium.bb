@@ -76,6 +76,15 @@ class MOJO_CPP_BINDINGS_EXPORT SyncMessageResponseSetup {
   static void SetCurrentSyncResponseMessage(Message* message);
 };
 
+MOJO_CPP_BINDINGS_EXPORT size_t
+ComputeSerializedMessageSize(uint32_t flags,
+                             size_t payload_size,
+                             size_t payload_interface_id_count);
+
+// Used by generated bindings to bypass validation for unserialized message
+// objects and control messages.
+MOJO_CPP_BINDINGS_EXPORT bool IsUnserializedOrControlMessage(Message* message);
+
 }  // namespace internal
 }  // namespace mojo
 

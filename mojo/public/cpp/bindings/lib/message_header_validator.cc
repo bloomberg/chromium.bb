@@ -117,6 +117,10 @@ void MessageHeaderValidator::SetDescription(const std::string& description) {
 }
 
 bool MessageHeaderValidator::Accept(Message* message) {
+  // Don't bother validating unserialized message headers.
+  if (!message->is_serialized())
+    return true;
+
   // Pass 0 as number of handles and associated endpoint handles because we
   // don't expect any in the header, even if |message| contains handles.
   internal::ValidationContext validation_context(

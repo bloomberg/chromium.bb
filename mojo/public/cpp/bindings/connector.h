@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/handle_signal_tracker.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 namespace base {
@@ -47,11 +48,44 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
     MULTI_THREADED_SEND
   };
 
+  // Determines how this Connector should behave with respect to serialization
+  // of outgoing messages.
+  enum class OutgoingSerializationMode {
+    // Lazy serialization. The Connector prefers to transmit serialized messages
+    // only when it knows its peer endpoint is remote. This ensures outgoing
+    // requests are unserialized by default (when possible, i.e. when generated
+    // bindings support it) and serialized only if and when necessary.
+    kLazy,
+
+    // Eager serialization. The Connector always prefers serialized messages,
+    // ensuring that interface calls will be serialized immediately before
+    // sending on the Connector.
+    kEager,
+  };
+
+  // Determines how this Connector should behave with respect to serialization
+  // of incoming messages.
+  enum class IncomingSerializationMode {
+    // Accepts and dispatches either serialized or unserialized messages. This
+    // is the only mode that should be used in production.
+    kDispatchAsIs,
+
+    // Accepts either serialized or unserialized messages, but always forces
+    // serialization (if applicable) before dispatch. Should be used only in
+    // test environments to coerce the lazy serialization of a message after
+    // transmission.
+    kSerializeBeforeDispatchForTesting,
+  };
+
   // The Connector takes ownership of |message_pipe|.
   Connector(ScopedMessagePipeHandle message_pipe,
             ConnectorConfig config,
             scoped_refptr<base::SequencedTaskRunner> runner);
   ~Connector() override;
+
+  // Sets outgoing serialization mode.
+  void SetOutgoingSerializationMode(OutgoingSerializationMode mode);
+  void SetIncomingSerializationMode(IncomingSerializationMode mode);
 
   // Sets the receiver to handle messages read from the message pipe.  The
   // Connector will read messages from the pipe regardless of whether or not an
@@ -121,6 +155,7 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   void ResumeIncomingMethodCallProcessing();
 
   // MessageReceiver implementation:
+  bool PrefersSerializedMessages() override;
   bool Accept(Message* message) override;
 
   MessagePipeHandle handle() const {
@@ -153,6 +188,13 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   // Sets the tag used by the heap profiler.
   // |tag| must be a const string literal.
   void SetWatcherHeapProfilerTag(const char* tag);
+
+  // Allows testing environments to override the default serialization behavior
+  // of newly constructed Connector instances. Must be called before any
+  // Connector instances are constructed.
+  static void OverrideDefaultSerializationBehaviorForTesting(
+      OutgoingSerializationMode outgoing_mode,
+      IncomingSerializationMode incoming_mode);
 
  private:
   class ActiveDispatchTracker;
@@ -191,12 +233,16 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<SimpleWatcher> handle_watcher_;
+  base::Optional<HandleSignalTracker> peer_remoteness_tracker_;
 
   bool error_ = false;
   bool drop_writes_ = false;
   bool enforce_errors_from_incoming_receiver_ = true;
 
   bool paused_ = false;
+
+  OutgoingSerializationMode outgoing_serialization_mode_;
+  IncomingSerializationMode incoming_serialization_mode_;
 
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.

@@ -26,7 +26,7 @@ namespace mojo {
 namespace {
 
 void DCheckIfInvalid(const base::WeakPtr<InterfaceEndpointClient>& client,
-                   const std::string& message) {
+                     const std::string& message) {
   bool is_valid = client && !client->encountered_error();
   DCHECK(!is_valid) << message;
 }
@@ -67,6 +67,10 @@ class ResponderThunk : public MessageReceiverWithStatus {
   }
 
   // MessageReceiver implementation:
+  bool PrefersSerializedMessages() override {
+    return endpoint_client_ && endpoint_client_->PrefersSerializedMessages();
+  }
+
   bool Accept(Message* message) override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     accept_was_invoked_ = true;
@@ -93,7 +97,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&DCheckIfInvalid, endpoint_client_, message));
     }
- }
+  }
 
  private:
   base::WeakPtr<InterfaceEndpointClient> endpoint_client_;
@@ -209,6 +213,11 @@ void InterfaceEndpointClient::CloseWithReason(uint32_t custom_reason,
 
   auto handle = PassHandle();
   handle.ResetWithReason(custom_reason, description);
+}
+
+bool InterfaceEndpointClient::PrefersSerializedMessages() {
+  auto* controller = handle_.group_controller();
+  return controller && controller->PrefersSerializedMessages();
 }
 
 bool InterfaceEndpointClient::Accept(Message* message) {

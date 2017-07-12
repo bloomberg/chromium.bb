@@ -898,39 +898,48 @@ def PassesAssociatedKinds(interface):
   return False
 
 
-# Finds out whether a method passes associated interfaces and associated
-# interface requests.
-def MethodPassesAssociatedKinds(method, visited_kinds=None):
-  def _ContainsAssociatedKinds(kind):
+def _AnyMethodParameterRecursive(method, predicate, visited_kinds=None):
+  def _HasProperty(kind):
     if kind in visited_kinds:
       # No need to examine the kind again.
       return False
     visited_kinds.add(kind)
-    if IsAssociatedKind(kind):
+    if predicate(kind):
       return True
     if IsArrayKind(kind):
-      return _ContainsAssociatedKinds(kind.kind)
+      return _HasProperty(kind.kind)
     if IsStructKind(kind) or IsUnionKind(kind):
       for field in kind.fields:
-        if _ContainsAssociatedKinds(field.kind):
+        if _HasProperty(field.kind):
           return True
     if IsMapKind(kind):
-      # No need to examine the key kind, only primitive kinds and non-nullable
-      # string are allowed to be key kinds.
-      return _ContainsAssociatedKinds(kind.value_kind)
+      if  _HasProperty(kind.key_kind) or _HasProperty(kind.value_kind):
+        return True
     return False
 
   if visited_kinds is None:
     visited_kinds = set()
 
   for param in method.parameters:
-    if _ContainsAssociatedKinds(param.kind):
+    if _HasProperty(param.kind):
       return True
   if method.response_parameters != None:
     for param in method.response_parameters:
-      if _ContainsAssociatedKinds(param.kind):
+      if _HasProperty(param.kind):
         return True
   return False
+
+
+# Finds out whether a method passes associated interfaces and associated
+# interface requests.
+def MethodPassesAssociatedKinds(method, visited_kinds=None):
+  return _AnyMethodParameterRecursive(method, IsAssociatedKind,
+                                      visited_kinds=visited_kinds)
+
+
+# Determines whether a method passes interfaces.
+def MethodPassesInterfaces(method):
+  return _AnyMethodParameterRecursive(method, IsInterfaceKind)
 
 
 def HasSyncMethods(interface):

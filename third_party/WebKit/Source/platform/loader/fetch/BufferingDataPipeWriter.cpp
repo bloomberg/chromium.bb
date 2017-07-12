@@ -64,7 +64,8 @@ void BufferingDataPipeWriter::Finish() {
   ClearIfNeeded();
 }
 
-void BufferingDataPipeWriter::OnWritable(MojoResult) {
+void BufferingDataPipeWriter::OnWritable(MojoResult,
+                                         const mojo::HandleSignalsState&) {
   if (!handle_.is_valid())
     return;
   waiting_ = false;

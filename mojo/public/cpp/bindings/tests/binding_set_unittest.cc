@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,18 +20,7 @@ namespace mojo {
 namespace test {
 namespace {
 
-class BindingSetTest : public testing::Test {
- public:
-  BindingSetTest() {}
-  ~BindingSetTest() override {}
-
-  base::MessageLoop& loop() { return loop_; }
-
- private:
-  base::MessageLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BindingSetTest);
-};
+using BindingSetTest = BindingsTestBase;
 
 template <typename BindingSetType, typename ContextType>
 void ExpectContextHelper(BindingSetType* binding_set,
@@ -114,7 +104,7 @@ class PingImpl : public PingService {
   base::Closure ping_handler_;
 };
 
-TEST_F(BindingSetTest, BindingSetContext) {
+TEST_P(BindingSetTest, BindingSetContext) {
   PingImpl impl;
 
   BindingSet<PingService, int> bindings;
@@ -155,7 +145,7 @@ TEST_F(BindingSetTest, BindingSetContext) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_F(BindingSetTest, BindingSetDispatchBinding) {
+TEST_P(BindingSetTest, BindingSetDispatchBinding) {
   PingImpl impl;
 
   BindingSet<PingService, int> bindings;
@@ -196,7 +186,7 @@ TEST_F(BindingSetTest, BindingSetDispatchBinding) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
+TEST_P(BindingSetTest, BindingSetConnectionErrorWithReason) {
   PingImpl impl;
   PingServicePtr ptr;
   BindingSet<PingService> bindings;
@@ -215,7 +205,7 @@ TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
   ptr.ResetWithReason(1024u, "bye");
 }
 
-TEST_F(BindingSetTest, BindingSetReportBadMessage) {
+TEST_P(BindingSetTest, BindingSetReportBadMessage) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -252,7 +242,7 @@ TEST_F(BindingSetTest, BindingSetReportBadMessage) {
   edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
 }
 
-TEST_F(BindingSetTest, BindingSetGetBadMessageCallback) {
+TEST_P(BindingSetTest, BindingSetGetBadMessageCallback) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -302,7 +292,7 @@ TEST_F(BindingSetTest, BindingSetGetBadMessageCallback) {
   edk::SetDefaultProcessErrorCallback(mojo::edk::ProcessErrorCallback());
 }
 
-TEST_F(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
+TEST_P(BindingSetTest, BindingSetGetBadMessageCallbackOutlivesBindingSet) {
   PingImpl impl;
 
   std::string last_received_error;
@@ -370,7 +360,7 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
   base::Closure new_ping_handler_;
 };
 
-TEST_F(BindingSetTest, AssociatedBindingSetContext) {
+TEST_P(BindingSetTest, AssociatedBindingSetContext) {
   AssociatedPingProviderPtr provider;
   PingProviderImpl impl;
   Binding<AssociatedPingProvider> binding(&impl, MakeRequest(&provider));
@@ -426,7 +416,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   EXPECT_TRUE(impl.ping_bindings().empty());
 }
 
-TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
+TEST_P(BindingSetTest, MasterInterfaceBindingSetContext) {
   AssociatedPingProviderPtr provider_a, provider_b;
   PingProviderImpl impl;
   BindingSet<AssociatedPingProvider, int> bindings;
@@ -471,7 +461,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_F(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
+TEST_P(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
   AssociatedPingProviderPtr provider_a, provider_b;
   PingProviderImpl impl;
   BindingSet<AssociatedPingProvider, int> bindings;
@@ -516,7 +506,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetDispatchBinding) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_F(BindingSetTest, PreDispatchHandler) {
+TEST_P(BindingSetTest, PreDispatchHandler) {
   PingImpl impl;
 
   BindingSet<PingService, int> bindings;
@@ -567,7 +557,7 @@ TEST_F(BindingSetTest, PreDispatchHandler) {
   EXPECT_TRUE(bindings.empty());
 }
 
-TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
+TEST_P(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
   AssociatedPingProviderPtr master_ptr;
   PingProviderImpl master_impl;
   Binding<AssociatedPingProvider> master_binding(&master_impl,
@@ -603,7 +593,7 @@ class PingInstanceCounter : public PingService {
 };
 int PingInstanceCounter::instance_count = 0;
 
-TEST_F(BindingSetTest, StrongBinding_Destructor) {
+TEST_P(BindingSetTest, StrongBinding_Destructor) {
   PingServicePtr ping_a, ping_b;
   auto bindings = base::MakeUnique<StrongBindingSet<PingService>>();
 
@@ -619,7 +609,7 @@ TEST_F(BindingSetTest, StrongBinding_Destructor) {
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-TEST_F(BindingSetTest, StrongBinding_ConnectionError) {
+TEST_P(BindingSetTest, StrongBinding_ConnectionError) {
   PingServicePtr ping_a, ping_b;
   StrongBindingSet<PingService> bindings;
   bindings.AddBinding(base::MakeUnique<PingInstanceCounter>(),
@@ -637,7 +627,7 @@ TEST_F(BindingSetTest, StrongBinding_ConnectionError) {
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-TEST_F(BindingSetTest, StrongBinding_RemoveBinding) {
+TEST_P(BindingSetTest, StrongBinding_RemoveBinding) {
   PingServicePtr ping_a, ping_b;
   StrongBindingSet<PingService> bindings;
   BindingId binding_id_a = bindings.AddBinding(
@@ -652,6 +642,8 @@ TEST_F(BindingSetTest, StrongBinding_RemoveBinding) {
   EXPECT_TRUE(bindings.RemoveBinding(binding_id_b));
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
+
+INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(BindingSetTest);
 
 }  // namespace
 }  // namespace test

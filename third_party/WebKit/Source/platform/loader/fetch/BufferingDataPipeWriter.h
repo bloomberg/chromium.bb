@@ -28,7 +28,7 @@ class PLATFORM_EXPORT BufferingDataPipeWriter {
   void Finish();
 
  private:
-  void OnWritable(MojoResult);
+  void OnWritable(MojoResult, const mojo::HandleSignalsState&);
   void ClearIfNeeded();
   void Clear();
 

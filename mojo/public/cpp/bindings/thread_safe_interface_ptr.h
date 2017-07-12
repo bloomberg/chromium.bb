@@ -74,6 +74,13 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
 
  private:
   // MessageReceiverWithResponder implementation:
+  bool PrefersSerializedMessages() override {
+    // TSIP is primarily used because it emulates legacy IPC threading behavior.
+    // In practice this means it's only for cross-process messaging and we can
+    // just always assume messages should be serialized.
+    return true;
+  }
+
   bool Accept(Message* message) override {
     if (!message->associated_endpoint_handles()->empty()) {
       // If this DCHECK fails, it is likely because:

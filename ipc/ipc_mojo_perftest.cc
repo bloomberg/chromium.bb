@@ -555,6 +555,31 @@ class MojoInterfacePerfTest : public mojo::edk::test::MojoTestBase {
   DISALLOW_COPY_AND_ASSIGN(MojoInterfacePerfTest);
 };
 
+enum class InProcessMessageMode {
+  kSerialized,
+  kUnserialized,
+};
+
+class MojoInProcessInterfacePerfTest
+    : public MojoInterfacePerfTest,
+      public testing::WithParamInterface<InProcessMessageMode> {
+ public:
+  MojoInProcessInterfacePerfTest() {
+    switch (GetParam()) {
+      case InProcessMessageMode::kSerialized:
+        mojo::Connector::OverrideDefaultSerializationBehaviorForTesting(
+            mojo::Connector::OutgoingSerializationMode::kEager,
+            mojo::Connector::IncomingSerializationMode::kDispatchAsIs);
+        break;
+      case InProcessMessageMode::kUnserialized:
+        mojo::Connector::OverrideDefaultSerializationBehaviorForTesting(
+            mojo::Connector::OutgoingSerializationMode::kLazy,
+            mojo::Connector::IncomingSerializationMode::kDispatchAsIs);
+        break;
+    }
+  }
+};
+
 DEFINE_TEST_CLIENT_WITH_PIPE(PingPongClient, MojoInterfacePerfTest, h) {
   base::MessageLoop main_message_loop;
   return RunPingPongClient(h);
@@ -570,7 +595,7 @@ TEST_F(MojoInterfacePerfTest, MultiprocessPingPong) {
 }
 
 // A single process version of the above test.
-TEST_F(MojoInterfacePerfTest, SingleProcessMultiThreadPingPong) {
+TEST_P(MojoInProcessInterfacePerfTest, MultiThreadPingPong) {
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
@@ -584,7 +609,7 @@ TEST_F(MojoInterfacePerfTest, SingleProcessMultiThreadPingPong) {
   RunPingPongServer(server_handle, "SingleProcess");
 }
 
-TEST_F(MojoInterfacePerfTest, SingleProcessSingleThreadPingPong) {
+TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   MojoHandle server_handle, client_handle;
   CreateMessagePipe(&server_handle, &client_handle);
 
@@ -596,6 +621,11 @@ TEST_F(MojoInterfacePerfTest, SingleProcessSingleThreadPingPong) {
 
   RunPingPongServer(server_handle, "SingleProcess");
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        MojoInProcessInterfacePerfTest,
+                        testing::Values(InProcessMessageMode::kSerialized,
+                                        InProcessMessageMode::kUnserialized));
 
 class CallbackPerfTest : public testing::Test {
  public:

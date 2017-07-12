@@ -207,7 +207,8 @@ class MojomProcessor(object):
             js_bindings_mode=args.js_bindings_mode,
             export_attribute=args.export_attribute,
             export_header=args.export_header,
-            generate_non_variant_code=args.generate_non_variant_code)
+            generate_non_variant_code=args.generate_non_variant_code,
+            support_lazy_serialization=args.support_lazy_serialization)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -362,6 +363,10 @@ def main():
   generate_parser.add_argument(
       "--scrambled_message_id_salt",
       help="If non-empty, the salt for generating scrambled message IDs.")
+  generate_parser.add_argument(
+      "--support_lazy_serialization",
+      help="If set, generated bindings will serialize lazily when possible.",
+      action="store_true")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

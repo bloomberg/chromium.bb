@@ -31,6 +31,14 @@ namespace {
 base::LazyInstance<base::ThreadLocalPointer<base::RunLoop::NestingObserver>>::
     Leaky g_tls_nesting_observer = LAZY_INSTANCE_INITIALIZER;
 
+// The default outgoing serialization mode for new Connectors.
+Connector::OutgoingSerializationMode g_default_outgoing_serialization_mode =
+    Connector::OutgoingSerializationMode::kLazy;
+
+// The default incoming serialization mode for new Connectors.
+Connector::IncomingSerializationMode g_default_incoming_serialization_mode =
+    Connector::IncomingSerializationMode::kDispatchAsIs;
+
 }  // namespace
 
 // Used to efficiently maintain a doubly-linked list of all Connectors
@@ -133,6 +141,8 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      scoped_refptr<base::SequencedTaskRunner> runner)
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
+      outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
+      incoming_serialization_mode_(g_default_incoming_serialization_mode),
       nesting_observer_(RunLoopNestingObserver::GetForThread()),
       weak_factory_(this) {
   if (config == MULTI_THREADED_SEND)
@@ -154,6 +164,16 @@ Connector::~Connector() {
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CancelWait();
+}
+
+void Connector::SetOutgoingSerializationMode(OutgoingSerializationMode mode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  outgoing_serialization_mode_ = mode;
+}
+
+void Connector::SetIncomingSerializationMode(IncomingSerializationMode mode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  incoming_serialization_mode_ = mode;
 }
 
 void Connector::CloseMessagePipe() {
@@ -229,6 +249,14 @@ void Connector::ResumeIncomingMethodCallProcessing() {
 
   paused_ = false;
   WaitToReadMore();
+}
+
+bool Connector::PrefersSerializedMessages() {
+  if (outgoing_serialization_mode_ == OutgoingSerializationMode::kEager)
+    return true;
+  DCHECK_EQ(OutgoingSerializationMode::kLazy, outgoing_serialization_mode_);
+  return peer_remoteness_tracker_ &&
+         peer_remoteness_tracker_->last_known_state().peer_remote();
 }
 
 bool Connector::Accept(Message* message) {
@@ -310,6 +338,14 @@ void Connector::SetWatcherHeapProfilerTag(const char* tag) {
   }
 }
 
+// static
+void Connector::OverrideDefaultSerializationBehaviorForTesting(
+    OutgoingSerializationMode outgoing_mode,
+    IncomingSerializationMode incoming_mode) {
+  g_default_outgoing_serialization_mode = outgoing_mode;
+  g_default_incoming_serialization_mode = incoming_mode;
+}
+
 void Connector::OnWatcherHandleReady(MojoResult result) {
   OnHandleReadyInternal(result);
 }
@@ -349,6 +385,11 @@ void Connector::WaitToReadMore() {
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
 
+  if (message_pipe_.is_valid()) {
+    peer_remoteness_tracker_.emplace(message_pipe_.get(),
+                                     MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+  }
+
   if (rv != MOJO_RESULT_OK) {
     // If the watch failed because the handle is invalid or its conditions can
     // no longer be met, we signal the error asynchronously to avoid reentry.
@@ -383,6 +424,14 @@ bool Connector::ReadSingleMessage(MojoResult* read_result) {
     if (!is_dispatching_ && nesting_observer_) {
       is_dispatching_ = true;
       dispatch_tracker.emplace(weak_self);
+    }
+
+    if (incoming_serialization_mode_ ==
+        IncomingSerializationMode::kSerializeBeforeDispatchForTesting) {
+      message.SerializeIfNecessary();
+    } else {
+      DCHECK_EQ(IncomingSerializationMode::kDispatchAsIs,
+                incoming_serialization_mode_);
     }
 
     TRACE_EVENT0("mojom", heap_profiler_tag_);
@@ -446,6 +495,7 @@ void Connector::ReadAllAvailableMessages() {
 }
 
 void Connector::CancelWait() {
+  peer_remoteness_tracker_.reset();
   handle_watcher_.reset();
   sync_watcher_.reset();
 }

@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/bindings/lib/unserialized_message_context.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message.h"
 
@@ -41,6 +42,14 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // Constructs an uninitialized Message object.
   Message();
 
+  // See the move-assignment operator below.
+  Message(Message&& other);
+
+  // Constructs a new message with an unserialized context attached. This
+  // message may be serialized later if necessary.
+  explicit Message(
+      std::unique_ptr<internal::UnserializedMessageContext> context);
+
   // Constructs a new serialized Message object with optional handles attached.
   // This message is fully functional and may be exchanged for a
   // ScopedMessageHandle for transit over a message pipe. See TakeMojoMessage().
@@ -61,9 +70,6 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // another message pipe, but are otherwise safe to inspect and pass around.
   Message(ScopedMessageHandle handle);
 
-  // See the move-assignment operator below.
-  Message(Message&& other);
-
   ~Message();
 
   // Moves |other| into a new Message object. The moved-from Message becomes
@@ -77,6 +83,9 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
 
   // Indicates whether this Message is uninitialized.
   bool IsNull() const { return !handle_.is_valid(); }
+
+  // Indicates whether this Message is serialized.
+  bool is_serialized() const { return serialized_; }
 
   uint32_t data_num_bytes() const { return static_cast<uint32_t>(data_size_); }
 
@@ -167,6 +176,24 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   bool DeserializeAssociatedEndpointHandles(
       AssociatedGroupController* group_controller);
 
+  // If this Message has an unserialized message context attached, force it to
+  // be serialized immediately. Otherwise this does nothing.
+  void SerializeIfNecessary();
+
+  // Takes the unserialized message context from this Message if its tag matches
+  // |tag|.
+  std::unique_ptr<internal::UnserializedMessageContext> TakeUnserializedContext(
+      const internal::UnserializedMessageContext::Tag* tag);
+
+  template <typename MessageType>
+  std::unique_ptr<MessageType> TakeUnserializedContext() {
+    auto generic_context = TakeUnserializedContext(&MessageType::kMessageTag);
+    if (!generic_context)
+      return nullptr;
+    return base::WrapUnique(
+        generic_context.release()->template SafeCast<MessageType>());
+  }
+
  private:
   ScopedMessageHandle handle_;
 
@@ -184,6 +211,9 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // identified by |handle_|.
   bool transferable_ = false;
 
+  // Indicates whether this Message object is serialized.
+  bool serialized_ = false;
+
   // A Buffer which may be used to allocated blocks of data within the message
   // payload. May be invalid if there is no capacity remaining in the payload.
   internal::Buffer payload_buffer_;
@@ -191,9 +221,12 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   DISALLOW_COPY_AND_ASSIGN(Message);
 };
 
-class MessageReceiver {
+class MOJO_CPP_BINDINGS_EXPORT MessageReceiver {
  public:
   virtual ~MessageReceiver() {}
+
+  // Indicates whether the receiver prefers to receive serialized messages.
+  virtual bool PrefersSerializedMessages();
 
   // The receiver may mutate the given message.  Returns true if the message
   // was accepted and false otherwise, indicating that the message was invalid
