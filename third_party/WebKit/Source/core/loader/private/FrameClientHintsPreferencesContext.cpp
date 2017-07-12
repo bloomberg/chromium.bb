@@ -8,24 +8,28 @@
 
 namespace blink {
 
+namespace {
+
+// Mapping from WebClientHintsType to WebFeature. The ordering should match the
+// ordering of enums in WebClientHintsType.
+static constexpr WebFeature kWebFeatureMapping[] = {
+    WebFeature::kClientHintsDeviceRAM, WebFeature::kClientHintsDPR,
+    WebFeature::kClientHintsResourceWidth,
+    WebFeature::kClientHintsViewportWidth,
+};
+
+static_assert(kWebClientHintsTypeLast + 1 == arraysize(kWebFeatureMapping),
+              "unhandled client hint type");
+
+}  // namespace
+
 FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
     LocalFrame* frame)
     : frame_(frame) {}
 
-void FrameClientHintsPreferencesContext::CountClientHintsDeviceRAM() {
-  UseCounter::Count(frame_, WebFeature::kClientHintsDeviceRAM);
-}
-
-void FrameClientHintsPreferencesContext::CountClientHintsDPR() {
-  UseCounter::Count(frame_, WebFeature::kClientHintsDPR);
-}
-
-void FrameClientHintsPreferencesContext::CountClientHintsResourceWidth() {
-  UseCounter::Count(frame_, WebFeature::kClientHintsResourceWidth);
-}
-
-void FrameClientHintsPreferencesContext::CountClientHintsViewportWidth() {
-  UseCounter::Count(frame_, WebFeature::kClientHintsViewportWidth);
+void FrameClientHintsPreferencesContext::CountClientHints(
+    WebClientHintsType type) {
+  UseCounter::Count(frame_, kWebFeatureMapping[static_cast<int32_t>(type)]);
 }
 
 }  // namespace blink

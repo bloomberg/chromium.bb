@@ -9,18 +9,38 @@
 
 namespace blink {
 
-ClientHintsPreferences::ClientHintsPreferences()
-    : should_send_device_ram_(false),
-      should_send_dpr_(false),
-      should_send_resource_width_(false),
-      should_send_viewport_width_(false) {}
+namespace {
+
+// Mapping from WebClientHintsType to the header value for enabling the
+// corresponding client hint. The ordering should match the ordering of enums in
+// WebClientHintsType.
+static constexpr const char* kHeaderMapping[] = {"device-ram", "dpr", "width",
+                                                 "viewport-width"};
+
+static_assert(kWebClientHintsTypeLast + 1 == arraysize(kHeaderMapping),
+              "unhandled client hint type");
+
+void ParseAcceptChHeader(const String& header_value,
+                         bool enabled_types[kWebClientHintsTypeLast + 1]) {
+  CommaDelimitedHeaderSet accept_client_hints_header;
+  ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
+
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
+    enabled_types[i] = accept_client_hints_header.Contains(kHeaderMapping[i]);
+
+  enabled_types[kWebClientHintsTypeDeviceRam] =
+      enabled_types[kWebClientHintsTypeDeviceRam] &&
+      RuntimeEnabledFeatures::DeviceRAMHeaderEnabled();
+}
+
+}  // namespace
+
+ClientHintsPreferences::ClientHintsPreferences() {}
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
-  should_send_device_ram_ = preferences.should_send_device_ram_;
-  should_send_dpr_ = preferences.should_send_dpr_;
-  should_send_resource_width_ = preferences.should_send_resource_width_;
-  should_send_viewport_width_ = preferences.should_send_viewport_width_;
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
+    enabled_types_[i] = preferences.enabled_types_[i];
 }
 
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
@@ -29,31 +49,18 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (!RuntimeEnabledFeatures::ClientHintsEnabled() || header_value.IsEmpty())
     return;
 
-  CommaDelimitedHeaderSet accept_client_hints_header;
-  ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
-  if (RuntimeEnabledFeatures::DeviceRAMHeaderEnabled() &&
-      accept_client_hints_header.Contains("device-ram")) {
-    if (context)
-      context->CountClientHintsDeviceRAM();
-    should_send_device_ram_ = true;
-  }
+  bool new_enabled_types[kWebClientHintsTypeLast + 1] = {};
 
-  if (accept_client_hints_header.Contains("dpr")) {
-    if (context)
-      context->CountClientHintsDPR();
-    should_send_dpr_ = true;
-  }
+  ParseAcceptChHeader(header_value, new_enabled_types);
 
-  if (accept_client_hints_header.Contains("width")) {
-    if (context)
-      context->CountClientHintsResourceWidth();
-    should_send_resource_width_ = true;
-  }
+  for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i)
+    enabled_types_[i] = enabled_types_[i] || new_enabled_types[i];
 
-  if (accept_client_hints_header.Contains("viewport-width")) {
-    if (context)
-      context->CountClientHintsViewportWidth();
-    should_send_viewport_width_ = true;
+  if (context) {
+    for (size_t i = 0; i < kWebClientHintsTypeLast + 1; ++i) {
+      if (enabled_types_[i])
+        context->CountClientHints(static_cast<WebClientHintsType>(i));
+    }
   }
 }
 
