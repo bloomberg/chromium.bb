@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -87,11 +88,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
-
-#include "device/vr/features/features.h"
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
@@ -216,12 +212,10 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
         entry->GetURL().host_piece() != chrome::kChromeUIChromeSigninHost;
   }
 
-#if BUILDFLAG(ENABLE_VR)
   // The password manager is disabled while VR (virtual reality) is being used,
   // as the use of conventional UI elements might harm the user experience in
   // VR.
-  is_enabled = is_enabled && !vr_shell::VrTabHelper::IsInVr(web_contents());
-#endif  // BUILDFLAG(ENABLE_VR)
+  is_enabled = is_enabled && !vr::VrTabHelper::IsInVr(web_contents());
 
   if (log_manager_->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(

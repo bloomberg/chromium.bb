@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/presentation_request.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,10 +21,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/vr/features/features.h"
 #include "jni/ChromeMediaRouterDialogController_jni.h"
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerAndroid);
@@ -148,13 +145,11 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 }
 
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
-#if BUILDFLAG(ENABLE_VR)
   // TODO(crbug.com/736568): Re-enable dialog in VR.
-  if (vr_shell::VrTabHelper::IsInVr(initiator())) {
+  if (vr::VrTabHelper::IsInVr(initiator())) {
     CancelPresentationRequest();
     return;
   }
-#endif  // BUILDFLAG(ENABLE_VR)
 
   JNIEnv* env = base::android::AttachCurrentThread();
 

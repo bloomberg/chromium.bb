@@ -215,6 +215,8 @@ struct CONTENT_EXPORT WebPreferences {
   // Cues will not be placed in this margin area.
   float text_track_margin_percentage;
 
+  bool page_popups_suppressed;
+
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
   float font_scale_factor;
@@ -251,7 +253,6 @@ struct CONTENT_EXPORT WebPreferences {
   // If enabled, video fullscreen detection will be enabled.
   bool video_fullscreen_detection_enabled;
   bool embedded_media_experience_enabled;
-  bool page_popups_suppressed;
 #else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
 
