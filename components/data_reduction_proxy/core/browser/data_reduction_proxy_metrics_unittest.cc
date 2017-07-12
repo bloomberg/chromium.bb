@@ -37,6 +37,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
       DataReductionProxyTestContext::Builder()
           .Build();
   TestDataReductionProxyConfig* config = test_context->config();
+  config->test_params()->UseNonSecureProxiesForHttp();
 
   net::ProxyServer origin =
       config->test_params()->proxies_for_http().front().proxy_server();

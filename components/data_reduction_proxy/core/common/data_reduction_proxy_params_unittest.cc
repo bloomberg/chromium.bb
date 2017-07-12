@@ -31,10 +31,6 @@
 namespace data_reduction_proxy {
 class DataReductionProxyParamsTest : public testing::Test {
  public:
-  void CheckParams(const TestDataReductionProxyParams& params,
-                   bool expected_init_result) {
-    EXPECT_EQ(expected_init_result, params.init_result());
-  }
   void CheckValues(const TestDataReductionProxyParams& params,
                    const std::string& expected_origin,
                    const std::string& expected_fallback_origin) {
@@ -57,18 +53,16 @@ class DataReductionProxyParamsTest : public testing::Test {
 
 TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   TestDataReductionProxyParams params;
-  CheckParams(params, true);
   std::vector<DataReductionProxyServer> expected_proxies;
 
   // Both the origin and fallback proxy must have type CORE.
   expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
+      net::ProxyServer::FromURI("https://proxy.googlezip.net:443",
                                 net::ProxyServer::SCHEME_HTTP),
       ProxyServer::CORE));
   expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI(
-          TestDataReductionProxyParams::DefaultFallbackOrigin(),
-          net::ProxyServer::SCHEME_HTTP),
+      net::ProxyServer::FromURI("compress.googlezip.net:80",
+                                net::ProxyServer::SCHEME_HTTP),
       ProxyServer::CORE));
 
   EXPECT_EQ(expected_proxies, params.proxies_for_http());
@@ -76,15 +70,11 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
 
 TEST_F(DataReductionProxyParamsTest, Flags) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxy,
-      TestDataReductionProxyParams::FlagOrigin());
+      switches::kDataReductionProxy, "http://ovveride-1.com/");
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyFallback,
-      TestDataReductionProxyParams::FlagFallbackOrigin());
+      switches::kDataReductionProxyFallback, "http://ovveride-2.com/");
   TestDataReductionProxyParams params;
-  CheckParams(params, true);
-  CheckValues(params, TestDataReductionProxyParams::FlagOrigin(),
-              TestDataReductionProxyParams::FlagFallbackOrigin());
+  CheckValues(params, "http://ovveride-1.com/", "http://ovveride-2.com/");
 }
 
 TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {

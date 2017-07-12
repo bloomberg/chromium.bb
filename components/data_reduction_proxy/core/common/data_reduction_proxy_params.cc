@@ -31,8 +31,6 @@ const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
 const char kLitePage[] = "Enabled_Preview";
-const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
-const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://check.googlezip.net/generate_204";
 
@@ -470,41 +468,9 @@ DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
 DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo() {}
 
 DataReductionProxyParams::DataReductionProxyParams()
-    : DataReductionProxyParams(true) {}
-
-DataReductionProxyParams::~DataReductionProxyParams() {}
-
-DataReductionProxyParams::DataReductionProxyParams(bool should_call_init)
     : use_override_proxies_for_http_(false) {
-  if (should_call_init) {
-    bool result = Init();
-    DCHECK(result);
-  }
-}
-
-void DataReductionProxyParams::SetProxiesForHttpForTesting(
-    const std::vector<DataReductionProxyServer>& proxies_for_http) {
-  proxies_for_http_ = proxies_for_http;
-}
-
-bool DataReductionProxyParams::Init() {
-  InitWithoutChecks();
-  // Verify that all necessary params are set.
-  if (!origin_.is_valid()) {
-    DVLOG(1) << "Invalid data reduction proxy origin: " << origin_.ToURI();
-    return false;
-  }
-
-  if (!fallback_origin_.is_valid()) {
-    DVLOG(1) << "Invalid data reduction proxy fallback origin: "
-             << fallback_origin_.ToURI();
-    return false;
-  }
-  return true;
-}
-
-void DataReductionProxyParams::InitWithoutChecks() {
-  DCHECK(proxies_for_http_.empty());
+  static const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
+  static const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
 
   use_override_proxies_for_http_ =
       params::GetOverrideProxiesForHttpFromCommandLine(
@@ -512,31 +478,37 @@ void DataReductionProxyParams::InitWithoutChecks() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  std::string origin;
-  origin = command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
+  std::string origin =
+      command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
   std::string fallback_origin =
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyFallback);
 
   // Set from preprocessor constants those params that are not specified on the
   // command line.
   if (origin.empty())
-    origin = GetDefaultOrigin();
+    origin = kDefaultSpdyOrigin;
   if (fallback_origin.empty())
-    fallback_origin = GetDefaultFallbackOrigin();
+    fallback_origin = kDefaultFallbackOrigin;
 
-  origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
-  fallback_origin_ =
+  net::ProxyServer origin_proxy_server =
+      net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
+  net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI(fallback_origin, net::ProxyServer::SCHEME_HTTP);
-  if (origin_.is_valid()) {
-    // |origin_| is the core proxy server.
+  if (origin_proxy_server.is_valid()) {
     proxies_for_http_.push_back(
-        DataReductionProxyServer(origin_, ProxyServer::CORE));
+        DataReductionProxyServer(origin_proxy_server, ProxyServer::CORE));
   }
-  if (fallback_origin_.is_valid()) {
-    // |fallback| is also a core proxy server.
+  if (fallback_proxy_server.is_valid()) {
     proxies_for_http_.push_back(
-        DataReductionProxyServer(fallback_origin_, ProxyServer::CORE));
+        DataReductionProxyServer(fallback_proxy_server, ProxyServer::CORE));
   }
+}
+
+DataReductionProxyParams::~DataReductionProxyParams() {}
+
+void DataReductionProxyParams::SetProxiesForHttpForTesting(
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
+  proxies_for_http_ = proxies_for_http;
 }
 
 const std::vector<DataReductionProxyServer>&
@@ -544,15 +516,6 @@ DataReductionProxyParams::proxies_for_http() const {
   if (use_override_proxies_for_http_)
     return override_data_reduction_proxy_servers_;
   return proxies_for_http_;
-}
-
-// TODO(kundaji): Remove tests for macro definitions.
-std::string DataReductionProxyParams::GetDefaultOrigin() const {
-  return kDefaultSpdyOrigin;
-}
-
-std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {
-  return kDefaultFallbackOrigin;
 }
 
 }  // namespace data_reduction_proxy

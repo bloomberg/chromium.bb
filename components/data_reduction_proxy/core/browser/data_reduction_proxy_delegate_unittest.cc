@@ -588,24 +588,26 @@ class DataReductionProxyDelegateTest : public testing::Test {
 
 TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
   GURL url("http://www.google.com/");
-
-  // Data reduction proxy info
+  params()->UseNonSecureProxiesForHttp();
+  net::ProxyList proxy_list;
+  proxy_list.AddProxyServer(
+      params()->proxies_for_http().front().proxy_server());
+  proxy_list.AddProxyServer(net::ProxyServer::Direct());
   net::ProxyInfo data_reduction_proxy_info;
-  std::string data_reduction_proxy;
-  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UsePacString(
-      "PROXY " +
-      net::ProxyServer::FromURI(params()->DefaultOrigin(),
-                                net::ProxyServer::SCHEME_HTTP)
-          .host_port_pair()
-          .ToString() +
-      "; DIRECT");
+  data_reduction_proxy_info.UseProxyList(proxy_list);
   EXPECT_FALSE(data_reduction_proxy_info.is_empty());
 
   // Data reduction proxy config
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
-      "http=" + data_reduction_proxy + ",direct://;");
+      "http=" +
+      params()
+          ->proxies_for_http()
+          .front()
+          .proxy_server()
+          .host_port_pair()
+          .ToString() +
+      ",direct://;");
   data_reduction_proxy_config.set_id(1);
 
   // Other proxy info
@@ -733,17 +735,12 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
     GURL url(test.url);
 
     net::ProxyInfo data_reduction_proxy_info;
-
-    std::string data_reduction_proxy;
     if (!test.use_direct_proxy) {
-      base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-      data_reduction_proxy_info.UsePacString(
-          "PROXY " +
-          net::ProxyServer::FromURI(params()->DefaultOrigin(),
-                                    net::ProxyServer::SCHEME_HTTP)
-              .host_port_pair()
-              .ToString() +
-          "; DIRECT");
+      net::ProxyList proxy_list;
+      proxy_list.AddProxyServer(
+          params()->proxies_for_http().front().proxy_server());
+      proxy_list.AddProxyServer(net::ProxyServer::Direct());
+      data_reduction_proxy_info.UseProxyList(proxy_list);
     }
     EXPECT_EQ(test.use_direct_proxy, data_reduction_proxy_info.is_empty());
 
@@ -753,7 +750,14 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
 
     } else {
       data_reduction_proxy_config.proxy_rules().ParseFromString(
-          "http=" + data_reduction_proxy + ",direct://;");
+          "http=" +
+          params()
+              ->proxies_for_http()
+              .front()
+              .proxy_server()
+              .host_port_pair()
+              .ToString() +
+          ",direct://;");
       data_reduction_proxy_config.set_id(1);
     }
     EXPECT_NE(test.use_direct_proxy, data_reduction_proxy_config.is_valid());
@@ -798,6 +802,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
       "Chrome-Proxy: q=low\r\n"
       "Content-Length: 1000\r\n\r\n";
 
+  params()->UseNonSecureProxiesForHttp();
   std::unique_ptr<net::URLRequest> request = FetchURLRequest(
       GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 1000);
 
@@ -825,6 +830,7 @@ TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
       "Via: 1.1 Chrome-Compression-Proxy-Suffix\r\n"
       "Content-Length: 10\r\n\r\n";
 
+  params()->UseNonSecureProxiesForHttp();
   {
     base::HistogramTester histogram_tester;
     base::TimeDelta advance_time(base::TimeDelta::FromSeconds(1));
@@ -882,6 +888,9 @@ TEST_F(DataReductionProxyDelegateTest, Holdback) {
       },
   };
   for (const auto& test : tests) {
+    if (!test.holdback)
+      params()->UseNonSecureProxiesForHttp();
+
     base::FieldTrialList field_trial_list(nullptr);
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "DataCompressionProxyHoldback", test.holdback ? "Enabled" : "Control"));
@@ -904,6 +913,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "X-Original-Content-Length: 10000\r\n\r\n";
 
+  params()->UseNonSecureProxiesForHttp();
   std::unique_ptr<net::URLRequest> request = FetchURLRequest(
       GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 0);
 
@@ -921,6 +931,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForWriteError) {
   int64_t baseline_received_bytes = total_received_bytes();
   int64_t baseline_original_received_bytes = total_original_received_bytes();
 
+  params()->UseNonSecureProxiesForHttp();
   net::MockWrite writes[] = {
       net::MockWrite("GET http://example.com/path/ HTTP/1.1\r\n"
                      "Host: example.com\r\n"),
@@ -945,6 +956,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForReadError) {
   int64_t baseline_received_bytes = total_received_bytes();
   int64_t baseline_original_received_bytes = total_original_received_bytes();
 
+  params()->UseNonSecureProxiesForHttp();
   net::MockRead reads[] = {net::MockRead("HTTP/1.1 "),
                            net::MockRead(net::ASYNC, net::ERR_ABORTED)};
   net::StaticSocketDataProvider socket(reads, arraysize(reads), nullptr, 0);
@@ -1028,6 +1040,7 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
        100, 300},
   };
 
+  params()->UseNonSecureProxiesForHttp();
   for (const auto& test : test_cases) {
     base::HistogramTester histogram_tester;
     int64_t baseline_received_bytes = total_received_bytes();
