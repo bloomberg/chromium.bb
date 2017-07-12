@@ -1159,6 +1159,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrCancelAnimationActivity.java",
   "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContext.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapper.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionChecker.java",
