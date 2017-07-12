@@ -975,6 +975,7 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   GetRenderText()->SetDisplayRect(bounds);
   OnCaretBoundsChanged();
   UpdateCursorViewPosition();
+  UpdateCursorVisibility();
 }
 
 bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {

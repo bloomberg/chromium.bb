@@ -3212,6 +3212,7 @@ TEST_F(TextfieldTest, TextfieldBoundsChangeTest) {
   int prev_x = GetCursorBounds().x();
   SendKeyEvent('a');
   EXPECT_EQ(prev_x, GetCursorBounds().x());
+  EXPECT_TRUE(test_api_->IsCursorVisible());
 
   // Increase the textfield size and check if the cursor moves to the new end.
   textfield_->SetSize(gfx::Size(40, 100));
@@ -3221,6 +3222,31 @@ TEST_F(TextfieldTest, TextfieldBoundsChangeTest) {
   // Decrease the textfield size and check if the cursor moves to the new end.
   textfield_->SetSize(gfx::Size(30, 100));
   EXPECT_GT(prev_x, GetCursorBounds().x());
+}
+
+// Verify that after creating a new Textfield, the Textfield doesn't
+// automatically receive focus and the text cursor is not visible.
+TEST_F(TextfieldTest, TextfieldInitialization) {
+  TestTextfield* new_textfield = new TestTextfield();
+  new_textfield->set_controller(this);
+  View* container = new View();
+  Widget* widget(new Widget());
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.bounds = gfx::Rect(100, 100, 100, 100);
+  widget->Init(params);
+  widget->SetContentsView(container);
+  container->AddChildView(new_textfield);
+
+  new_textfield->SetBoundsRect(params.bounds);
+  new_textfield->set_id(1);
+  test_api_.reset(new TextfieldTestApi(new_textfield));
+  widget->Show();
+  EXPECT_FALSE(new_textfield->HasFocus());
+  EXPECT_FALSE(test_api_->IsCursorVisible());
+  new_textfield->RequestFocus();
+  EXPECT_TRUE(test_api_->IsCursorVisible());
+  widget->Close();
 }
 
 // Verify that if a textfield gains focus during key dispatch that an edit
