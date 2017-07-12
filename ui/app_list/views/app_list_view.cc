@@ -199,6 +199,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       search_box_widget_(nullptr),
       search_box_view_(nullptr),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      processing_scroll_event_series_(false),
       app_list_state_(PEEKING),
       display_observer_(this),
       overlay_view_(nullptr),
@@ -495,6 +496,25 @@ void AppListView::InitializeBubble(gfx::NativeView parent,
   overlay_view_->SetBoundsRect(GetContentsBounds());
 }
 
+void AppListView::HandleClickOrTap() {
+  switch (app_list_state_) {
+    case HALF:
+    case FULLSCREEN_SEARCH:
+      search_box_view_->ClearSearch();
+      SetState(app_list_state_ == HALF ? PEEKING : FULLSCREEN_ALL_APPS);
+      break;
+    case PEEKING:
+    case FULLSCREEN_ALL_APPS:
+      if (search_box_view_->is_search_box_active())
+        search_box_view_->ClearSearch();
+      else
+        SetState(CLOSED);
+      break;
+    case CLOSED:
+      break;
+  }
+}
+
 void AppListView::StartDrag(const gfx::Point& location) {
   initial_drag_point_ = location;
 }
@@ -516,6 +536,9 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
+  // When the SearchBoxView closes the app list, ignore the final event.
+  if (app_list_state_ == CLOSED)
+    return;
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
@@ -703,16 +726,8 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      StartDrag(event->location());
       event->SetHandled();
-      break;
-    case ui::ET_MOUSE_DRAGGED:
-      UpdateDrag(event->location());
-      event->SetHandled();
-      break;
-    case ui::ET_MOUSE_RELEASED:
-      EndDrag(event->location());
-      event->SetHandled();
+      HandleClickOrTap();
       break;
     default:
       break;
@@ -724,17 +739,28 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      processing_scroll_event_series_ = false;
+      event->SetHandled();
+      HandleClickOrTap();
+      break;
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
+      processing_scroll_event_series_ = true;
       StartDrag(event->location());
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
+      processing_scroll_event_series_ = true;
       last_fling_velocity_ = event->details().scroll_y();
       UpdateDrag(event->location());
       event->SetHandled();
       break;
     case ui::ET_GESTURE_END:
+      if (!processing_scroll_event_series_)
+        break;
+
+      processing_scroll_event_series_ = false;
       EndDrag(event->location());
       event->SetHandled();
       break;

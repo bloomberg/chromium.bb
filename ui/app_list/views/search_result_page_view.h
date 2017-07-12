@@ -53,6 +53,8 @@ class APP_LIST_EXPORT SearchResultPageView
   // Overridden from SearchResultContainerView::Delegate :
   void OnSearchResultContainerResultsChanged() override;
 
+  views::View* contents_view() { return contents_view_; }
+
  private:
   // |directional_movement| is true if the navigation was caused by directional
   // controls (eg, arrow keys), as opposed to linear controls (eg, Tab).
