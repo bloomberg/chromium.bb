@@ -18,6 +18,7 @@
 #include "components/certificate_reporting/cert_logger.pb.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/version_info/version_info.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
@@ -245,6 +246,37 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
             parsed.features_info()
                 .network_time_querying_info()
                 .network_time_query_behavior());
+}
+
+TEST(ErrorReportTest, TestChromeChannelIncluded) {
+  struct ChannelTestCase {
+    version_info::Channel channel;
+    CertLoggerRequest::ChromeChannel expected_channel;
+  } kTestCases[] = {
+      {version_info::Channel::UNKNOWN,
+       CertLoggerRequest::CHROME_CHANNEL_UNKNOWN},
+      {version_info::Channel::DEV, CertLoggerRequest::CHROME_CHANNEL_DEV},
+      {version_info::Channel::CANARY, CertLoggerRequest::CHROME_CHANNEL_CANARY},
+      {version_info::Channel::BETA, CertLoggerRequest::CHROME_CHANNEL_BETA},
+      {version_info::Channel::STABLE,
+       CertLoggerRequest::CHROME_CHANNEL_STABLE}};
+
+  // Create a report, set its channel value and check if we
+  // get back test_case.expected_channel.
+  for (const ChannelTestCase& test_case : kTestCases) {
+    SSLInfo ssl_info;
+    ASSERT_NO_FATAL_FAILURE(
+        GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
+    ErrorReport report(kDummyHostname, ssl_info);
+
+    report.AddChromeChannel(test_case.channel);
+    std::string serialized_report;
+    ASSERT_TRUE(report.Serialize(&serialized_report));
+
+    CertLoggerRequest parsed;
+    ASSERT_TRUE(parsed.ParseFromString(serialized_report));
+    EXPECT_EQ(test_case.expected_channel, parsed.chrome_channel());
+  }
 }
 
 #if defined(OS_ANDROID)

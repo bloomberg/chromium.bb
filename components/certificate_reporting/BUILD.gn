@@ -21,6 +21,7 @@ static_library("certificate_reporting") {
   deps = [
     "//base",
     "//components/network_time",
+    "//components/version_info",
     "//crypto",
     "//net",
     "//url",
@@ -52,6 +53,7 @@ source_set("unit_tests") {
     "//components/network_time",
     "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
+    "//components/version_info",
     "//net:test_support",
     "//testing/gtest",
   ]
