@@ -2791,6 +2791,8 @@ crbug.com/740350 external/wpt/css-paint-api/background-image-tiled.html [ Pass F
 crbug.com/740350 external/wpt/css-paint-api/geometry-background-image-tiled-001.html [ Pass Failure ]
 crbug.com/740350 virtual/android/fast/rootscroller/browser-controls-gradient-background.html [ Pass Failure ]
 crbug.com/740350 virtual/android/fast/rootscroller/browser-controls-gradient-background-iframe-scroller.html [ Pass Failure ]
+crbug.com/740350 fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsManualRebaseline ]
+crbug.com/740350 fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ NeedsManualRebaseline ]
 
 # Sheriff failures 2017-06-23
 crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
