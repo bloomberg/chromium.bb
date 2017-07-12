@@ -692,6 +692,23 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   return true;
 }
 
+// If there are multiple Unicode code points to be deleted, adjust the
+// range to match platform conventions.
+static VisibleSelection AdjustSelectionForBackwardDelete(
+    const VisibleSelection& selection) {
+  if (selection.End().ComputeContainerNode() !=
+      selection.Start().ComputeContainerNode())
+    return selection;
+  if (selection.End().ComputeOffsetInContainerNode() -
+          selection.Start().ComputeOffsetInContainerNode() <=
+      1)
+    return selection;
+  return VisibleSelection::CreateWithoutValidationDeprecated(
+      selection.End(),
+      PreviousPositionOf(selection.End(), PositionMoveType::kBackwardDeletion),
+      selection.Affinity());
+}
+
 void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
                                      bool kill_ring,
                                      EditingState* editing_state) {
@@ -701,14 +718,11 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  VisibleSelection selection_to_delete;
-  VisibleSelection selection_after_undo;
-
   switch (EndingSelection().GetSelectionType()) {
     case kRangeSelection:
-      selection_to_delete = EndingSelection();
-      selection_after_undo = selection_to_delete;
-      break;
+      DeleteKeyPressedInternal(EndingSelection(), EndingSelection(), kill_ring,
+                               editing_state);
+      return;
     case kCaretSelection: {
       // After breaking out of an empty mail blockquote, we still want continue
       // with the deletion so actual content will get deleted, and not just the
@@ -801,50 +815,49 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
         return;
       }
 
-      selection_to_delete = selection_modifier.Selection();
-
-      if (granularity == TextGranularity::kCharacter &&
-          selection_to_delete.End().ComputeContainerNode() ==
-              selection_to_delete.Start().ComputeContainerNode() &&
-          selection_to_delete.End().ComputeOffsetInContainerNode() -
-                  selection_to_delete.Start().ComputeOffsetInContainerNode() >
-              1) {
-        // If there are multiple Unicode code points to be deleted, adjust the
-        // range to match platform conventions.
-        selection_to_delete =
-            VisibleSelection::CreateWithoutValidationDeprecated(
-                selection_to_delete.End(),
-                PreviousPositionOf(selection_to_delete.End(),
-                                   PositionMoveType::kBackwardDeletion),
-                selection_to_delete.Affinity());
-      }
+      const VisibleSelection& selection_to_delete =
+          granularity == TextGranularity::kCharacter
+              ? AdjustSelectionForBackwardDelete(selection_modifier.Selection())
+              : selection_modifier.Selection();
 
       if (!StartingSelection().IsRange() ||
           selection_to_delete.Base() != StartingSelection().Start()) {
-        selection_after_undo = selection_to_delete;
-      } else {
-        // It's a little tricky to compute what the starting selection would
-        // have been in the original document. We can't let the VisibleSelection
-        // class's validation kick in or it'll adjust for us based on the
-        // current state of the document and we'll get the wrong result.
-        selection_after_undo =
-            VisibleSelection::CreateWithoutValidationDeprecated(
-                StartingSelection().End(), selection_to_delete.Extent(),
-                selection_after_undo.Affinity());
+        DeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
+                                 kill_ring, editing_state);
+        return;
       }
-      break;
+      // It's a little tricky to compute what the starting selection would
+      // have been in the original document. We can't let the VisibleSelection
+      // class's validation kick in or it'll adjust for us based on the
+      // current state of the document and we'll get the wrong result.
+      const VisibleSelection& selection_after_undo =
+          VisibleSelection::CreateWithoutValidationDeprecated(
+              StartingSelection().End(), selection_to_delete.Extent(),
+              selection_to_delete.Affinity());
+      DeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
+                               kill_ring, editing_state);
+      return;
     }
     case kNoSelection:
       NOTREACHED();
       break;
   }
+}
 
+void TypingCommand::DeleteKeyPressedInternal(
+    const VisibleSelection& selection_to_delete,
+    const VisibleSelection& selection_after_undo,
+    bool kill_ring,
+    EditingState* editing_state) {
   DCHECK(!selection_to_delete.IsNone());
   if (selection_to_delete.IsNone())
     return;
 
   if (selection_to_delete.IsCaret())
     return;
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  DCHECK(frame);
 
   if (kill_ring)
     frame->GetEditor().AddToKillRing(
