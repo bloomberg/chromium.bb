@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "content/public/browser/navigation_throttle.h"
 
 class BrowserList;
 class GURL;
@@ -37,6 +38,7 @@ class TickClock;
 }
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }
 
@@ -60,6 +62,9 @@ class TabManagerDelegate;
 // in case Chrome is not able to relieve the pressure quickly enough and the
 // kernel is forced to kill processes, it will be able to do so using the same
 // algorithm as the one used here.
+//
+// The TabManager also delays background tabs' navigation when needed in order
+// to improve users' experience with the foreground tab.
 //
 // Note that the browser tests are only active for platforms that use
 // TabManager (CrOS only for now) and need to be adjusted accordingly if
@@ -150,6 +155,23 @@ class TabManager : public TabStripModelObserver,
   // TODO(tasak): rename this to CanPurgeBackgroundedRenderer.
   bool CanSuspendBackgroundedRenderer(int render_process_id) const;
 
+  // Maybe throttle a tab's navigation based on current system status.
+  content::NavigationThrottle::ThrottleCheckResult MaybeThrottleNavigation(
+      content::NavigationHandle* navigation_handle);
+
+  // Notifies TabManager that one navigation has finished (committed, aborted or
+  // replaced). TabManager should clean up the NavigationHandle objects bookkept
+  // before.
+  void OnDidFinishNavigation(content::NavigationHandle* navigation_handle);
+
+  // Notifies TabManager that one tab has finished loading. TabManager can
+  // decide which tab to load next.
+  void OnDidStopLoading(content::WebContents* contents);
+
+  // Notifies TabManager that one tab WebContents has been destroyed. TabManager
+  // needs to clean up data related to that tab.
+  void OnWebContentsDestroyed(content::WebContents* contents);
+
   // Returns true if |first| is considered less desirable to be killed than
   // |second|.
   static bool CompareTabStats(const TabStats& first, const TabStats& second);
@@ -187,6 +209,11 @@ class TabManager : public TabStripModelObserver,
                            GetUnsortedTabStatsIsInVisibleWindow);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, HistogramsSessionRestoreSwitchToTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardTabWithNonVisibleTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidFinishNavigation);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidStopLoading);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
 
   // Information about a Browser.
   struct BrowserInfo {
@@ -339,6 +366,31 @@ class TabManager : public TabStripModelObserver,
   // during session restore.
   void RecordSwitchToTab(content::WebContents* contents) const;
 
+  // Returns true if the navigation should be delayed.
+  bool ShouldDelayNavigation(
+      content::NavigationHandle* navigation_handle) const;
+
+  // Start loading the next background tab if needed.
+  void LoadNextBackgroundTabIfNeeded();
+
+  // Resume the tab's navigation if it is pending right now.
+  void ResumeTabNavigationIfNeeded(content::WebContents* contents);
+
+  // Resume navigation.
+  void ResumeNavigation(content::NavigationHandle* navigation_handle);
+
+  // Remove the pending navigation for the provided WebContents. Return the
+  // removed navigation handle. Return nullptr if it doesn't exists.
+  content::NavigationHandle* RemovePendingNavigationIfNeeded(
+      content::WebContents* contents);
+
+  // Check if the tab is loading. Use only in tests.
+  bool IsTabLoadingForTest(content::WebContents* contents) const;
+
+  // Check if the navigation is delayed. Use only in tests.
+  bool IsNavigationDelayedForTest(
+      const content::NavigationHandle* navigation_handle) const;
+
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
@@ -407,6 +459,14 @@ class TabManager : public TabStripModelObserver,
 
   class TabManagerSessionRestoreObserver;
   std::unique_ptr<TabManagerSessionRestoreObserver> session_restore_observer_;
+
+  // The list of navigation handles that are delayed.
+  std::vector<content::NavigationHandle*> pending_navigations_;
+
+  // The tabs that are currently loading. We will consider loading the next
+  // background tab when these tabs have finished loading or a background tab
+  // is brought to foreground.
+  std::set<content::WebContents*> loading_contents_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

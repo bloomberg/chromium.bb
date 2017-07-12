@@ -363,6 +363,13 @@ const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
 const base::Feature kSiteDetails{"SiteDetails",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Enables delaying the navigation of background tabs in order to improve
+// foreground tab's user experience.
+const base::Feature kStaggeredBackgroundTabOpen{
+    "StaggeredBackgroundTabOpen", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables the creation of (legacy) supervised users. Does not
 // affect existing supervised users.
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",

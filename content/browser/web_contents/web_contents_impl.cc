@@ -1506,6 +1506,10 @@ void WebContentsImpl::WasHidden() {
   should_normally_be_visible_ = false;
 }
 
+bool WebContentsImpl::IsVisible() const {
+  return should_normally_be_visible_;
+}
+
 void WebContentsImpl::WasOccluded() {
   if (capturer_count_ > 0)
     return;

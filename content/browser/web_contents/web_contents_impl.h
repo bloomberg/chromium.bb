@@ -365,6 +365,7 @@ class CONTENT_EXPORT WebContentsImpl
   base::TimeTicks GetLastHiddenTime() const override;
   void WasShown() override;
   void WasHidden() override;
+  bool IsVisible() const override;
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload() override;
   void AttachToOuterWebContentsFrame(

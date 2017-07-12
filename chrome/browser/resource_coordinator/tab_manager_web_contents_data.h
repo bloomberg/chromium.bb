@@ -57,6 +57,8 @@ class TabManager::WebContentsData
   void DidStopLoading() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
   // Returns true if the tab has been discarded to save memory.
@@ -122,6 +124,11 @@ class TabManager::WebContentsData
   // Returns the time to first purge after the tab is backgrounded.
   base::TimeDelta time_to_purge() const { return time_to_purge_; }
 
+  // Sets the tab loading state.
+  void SetTabLoadingState(TabLoadingState state) {
+    tab_data_.tab_loading_state = state;
+  }
+
   // Returns the TabLoadingState of the tab.
   TabLoadingState tab_loading_state() const {
     return tab_data_.tab_loading_state;
@@ -164,11 +171,6 @@ class TabManager::WebContentsData
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
   // for more details.
   base::TimeTicks NowTicks() const;
-
-  // Sets the tab loading state.
-  void SetTabLoadingState(TabLoadingState state) {
-    tab_data_.tab_loading_state = state;
-  }
 
   // Contains all the needed data for the tab.
   Data tab_data_;

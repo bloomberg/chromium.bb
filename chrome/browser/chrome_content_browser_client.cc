@@ -73,6 +73,7 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
+#include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/browser_url_loader_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
@@ -3283,6 +3284,16 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     subresource_filter_client->MaybeAppendNavigationThrottles(handle,
                                                               &throttles);
   }
+
+#if !defined(OS_ANDROID)
+  // BackgroundTabNavigationThrottle is used by TabManager, which is only
+  // enabled on non-Android platforms.
+  std::unique_ptr<content::NavigationThrottle>
+      background_tab_navigation_throttle = resource_coordinator::
+          BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(handle);
+  if (background_tab_navigation_throttle)
+    throttles.push_back(std::move(background_tab_navigation_throttle));
+#endif
 
   return throttles;
 }
