@@ -274,6 +274,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   int MSAARole();
   std::string StringOverrideForMSAARole();
 
+  int32_t IA2State();
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 

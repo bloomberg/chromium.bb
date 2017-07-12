@@ -914,7 +914,7 @@ bool BrowserAccessibility::IsNativeTextControl() const {
   return html_tag == "textarea";
 }
 
-// In general we should use IsEditField() instead if we want to check for
+// In general we should use ui::IsEditField() instead if we want to check for
 // something that has a caret and the user can edit.
 // TODO(aleventhal) this name is confusing because it returns true for combobox,
 // and we should take a look at why a combobox is considered a text control. The
@@ -934,11 +934,6 @@ bool BrowserAccessibility::IsSimpleTextControl() const {
     default:
       return false;
   }
-}
-
-bool BrowserAccessibility::IsEditField() const {
-  return GetRole() == ui::AX_ROLE_TEXT_FIELD ||
-         GetRole() == ui::AX_ROLE_SEARCH_BOX;
 }
 
 // Indicates if this object is at the root of a rich edit text control.

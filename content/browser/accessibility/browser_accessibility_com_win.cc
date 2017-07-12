@@ -720,12 +720,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_states(AccessibleStates* states) {
     return E_FAIL;
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!states)
-    return E_INVALIDARG;
-
-  *states = ia2_state();
-
-  return S_OK;
+  return AXPlatformNodeWin::get_states(states);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_uniqueID(LONG* unique_id) {
@@ -3739,6 +3734,8 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
+  // TODO(dougt): When we move IA2 Role handling to AXPlatformNodeWin, we can
+  // remove this ia2_role special case.
   if (owner()->IsWebAreaForPresentationalIframe()) {
     win_attributes_->ia2_role = ROLE_SYSTEM_GROUPING;
   }
@@ -4920,46 +4917,6 @@ void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
 
 void BrowserAccessibilityComWin::InitRoleAndState() {
   int32_t ia2_role = 0;
-  int32_t ia2_state = IA2_STATE_OPAQUE;
-
-  const auto checked_state = static_cast<ui::AXCheckedState>(
-      owner()->GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
-  if (checked_state) {
-    ia2_state |= IA2_STATE_CHECKABLE;
-  }
-
-  if (owner()->HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
-      owner()->GetIntAttribute(ui::AX_ATTR_INVALID_STATE) !=
-          ui::AX_INVALID_STATE_FALSE)
-    ia2_state |= IA2_STATE_INVALID_ENTRY;
-  if (owner()->HasState(ui::AX_STATE_REQUIRED))
-    ia2_state |= IA2_STATE_REQUIRED;
-  if (owner()->HasState(ui::AX_STATE_VERTICAL))
-    ia2_state |= IA2_STATE_VERTICAL;
-  if (owner()->HasState(ui::AX_STATE_HORIZONTAL))
-    ia2_state |= IA2_STATE_HORIZONTAL;
-
-  const bool is_editable = owner()->HasState(ui::AX_STATE_EDITABLE);
-  if (is_editable)
-    ia2_state |= IA2_STATE_EDITABLE;
-
-  if (owner()->IsRichTextControl() || owner()->IsEditField()) {
-    // Support multi/single line states if root editable or appropriate role.
-    // We support the edit box roles even if the area is not actually editable,
-    // because it is technically feasible for JS to implement the edit box
-    // by controlling selection.
-    if (owner()->HasState(ui::AX_STATE_MULTILINE)) {
-      ia2_state |= IA2_STATE_MULTI_LINE;
-    } else {
-      ia2_state |= IA2_STATE_SINGLE_LINE;
-    }
-  }
-
-  if (!owner()->GetStringAttribute(ui::AX_ATTR_AUTO_COMPLETE).empty())
-    ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
-
-  if (owner()->GetBoolAttribute(ui::AX_ATTR_MODAL))
-    ia2_state |= IA2_STATE_MODAL;
 
   base::string16 html_tag = owner()->GetString16Attribute(ui::AX_ATTR_HTML_TAG);
   switch (owner()->GetRole()) {
@@ -5038,12 +4995,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_MENU_ITEM_RADIO:
       ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
       break;
-    case ui::AX_ROLE_MENU_LIST_POPUP:
-      ia2_state &= ~(IA2_STATE_EDITABLE);
-      break;
-    case ui::AX_ROLE_MENU_LIST_OPTION:
-      ia2_state &= ~(IA2_STATE_EDITABLE);
-      break;
     case ui::AX_ROLE_NAVIGATION:
       ia2_role = IA2_ROLE_SECTION;
       break;
@@ -5069,7 +5020,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_SCROLL_AREA:
       ia2_role = IA2_ROLE_SCROLL_PANE;
-      ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_SEARCH:
       ia2_role = IA2_ROLE_SECTION;
@@ -5082,10 +5032,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_TOGGLE_BUTTON:
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
-      break;
-    case ui::AX_ROLE_TEXT_FIELD:
-    case ui::AX_ROLE_SEARCH_BOX:
-      ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_ABBR:
     case ui::AX_ROLE_TIME:
@@ -5105,7 +5051,7 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     ia2_role = win_attributes_->ia_role;
 
   win_attributes_->ia2_role = ia2_role;
-  win_attributes_->ia2_state = ia2_state;
+  win_attributes_->ia2_state = IA2State();
 }
 
 BrowserAccessibilityComWin* ToBrowserAccessibilityComWin(
