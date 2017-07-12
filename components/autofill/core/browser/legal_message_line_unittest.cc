@@ -47,6 +47,7 @@ class TestLegalMessageLine : public LegalMessageLine {
 struct TestCase {
   std::string message_json;
   LegalMessageLines expected_lines;
+  bool escape_apostrophes;
 };
 
 // Prints out a legal message |line| to |os|.
@@ -109,7 +110,8 @@ TEST_P(LegalMessageLineTest, Parsing) {
   EXPECT_TRUE(value->GetAsDictionary(&dictionary));
   ASSERT_TRUE(dictionary);
   LegalMessageLines actual_lines;
-  LegalMessageLine::Parse(*dictionary, &actual_lines);
+  LegalMessageLine::Parse(*dictionary, &actual_lines,
+                          GetParam().escape_apostrophes);
 
   EXPECT_EQ(GetParam().expected_lines, actual_lines);
 };
@@ -272,41 +274,58 @@ INSTANTIATE_TEST_CASE_P(
                                    Link(24, 30, "http://www.example.com/1"),
                                    Link(17, 19, "http://www.example.com/2"),
                                    Link(36, 39, "http://www.example.com/3")})}},
-        TestCase{"{"
-                 "  \"line\" : [ {"
-                 "    \"template\": \"a{0} b{1} c{2} d{3} e{4} f{5} g{6}\","
-                 "    \"template_parameter\": [ {"
-                 "      \"display_text\": \"A\","
-                 "      \"url\": \"http://www.example.com/0\""
-                 "    }, {"
-                 "      \"display_text\": \"B\","
-                 "      \"url\": \"http://www.example.com/1\""
-                 "    }, {"
-                 "      \"display_text\": \"C\","
-                 "      \"url\": \"http://www.example.com/2\""
-                 "    }, {"
-                 "      \"display_text\": \"D\","
-                 "      \"url\": \"http://www.example.com/3\""
-                 "    }, {"
-                 "      \"display_text\": \"E\","
-                 "      \"url\": \"http://www.example.com/4\""
-                 "    }, {"
-                 "      \"display_text\": \"F\","
-                 "      \"url\": \"http://www.example.com/5\""
-                 "    }, {"
-                 "      \"display_text\": \"G\","
-                 "      \"url\": \"http://www.example.com/6\""
-                 "    } ]"
-                 "  } ]"
-                 "}",
-                 {TestLegalMessageLine(
-                     "aA bB cC dD eE fF gG",
-                     {Link(1, 2, "http://www.example.com/0"),
-                      Link(4, 5, "http://www.example.com/1"),
-                      Link(7, 8, "http://www.example.com/2"),
-                      Link(10, 11, "http://www.example.com/3"),
-                      Link(13, 14, "http://www.example.com/4"),
-                      Link(16, 17, "http://www.example.com/5"),
-                      Link(19, 20, "http://www.example.com/6")})}}));
+        TestCase{
+            "{"
+            "  \"line\" : [ {"
+            "    \"template\": \"a{0} b{1} c{2} d{3} e{4} f{5} g{6}\","
+            "    \"template_parameter\": [ {"
+            "      \"display_text\": \"A\","
+            "      \"url\": \"http://www.example.com/0\""
+            "    }, {"
+            "      \"display_text\": \"B\","
+            "      \"url\": \"http://www.example.com/1\""
+            "    }, {"
+            "      \"display_text\": \"C\","
+            "      \"url\": \"http://www.example.com/2\""
+            "    }, {"
+            "      \"display_text\": \"D\","
+            "      \"url\": \"http://www.example.com/3\""
+            "    }, {"
+            "      \"display_text\": \"E\","
+            "      \"url\": \"http://www.example.com/4\""
+            "    }, {"
+            "      \"display_text\": \"F\","
+            "      \"url\": \"http://www.example.com/5\""
+            "    }, {"
+            "      \"display_text\": \"G\","
+            "      \"url\": \"http://www.example.com/6\""
+            "    } ]"
+            "  } ]"
+            "}",
+            {TestLegalMessageLine("aA bB cC dD eE fF gG",
+                                  {Link(1, 2, "http://www.example.com/0"),
+                                   Link(4, 5, "http://www.example.com/1"),
+                                   Link(7, 8, "http://www.example.com/2"),
+                                   Link(10, 11, "http://www.example.com/3"),
+                                   Link(13, 14, "http://www.example.com/4"),
+                                   Link(16, 17, "http://www.example.com/5"),
+                                   Link(19, 20, "http://www.example.com/6")})}},
+        // When |escape_apostrophes| is true, all ASCII apostrophes should be
+        // escaped for ICU's MessageFormat by doubling them up.  This allows the
+        // template parameters to work correctly.
+        // http://www.icu-project.org/apiref/icu4c/messagepattern_8h.html#af6e0757e0eb81c980b01ee5d68a9978b
+        TestCase{
+            "{"
+            "  \"line\" : [ {"
+            "    \"template\": \"The panda bear's bamboo was '{0}.\","
+            "    \"template_parameter\": [ {"
+            "      \"display_text\": \"delicious\","
+            "      \"url\": \"http://www.example.com/0\""
+            "    } ]"
+            "  } ]"
+            "}",
+            {TestLegalMessageLine("The panda bear's bamboo was 'delicious.",
+                                  {Link(29, 38, "http://www.example.com/0")})},
+            true}));
 
 }  // namespace autofill

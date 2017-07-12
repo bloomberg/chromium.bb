@@ -79,7 +79,8 @@ LegalMessageLine::~LegalMessageLine() {}
 
 // static
 bool LegalMessageLine::Parse(const base::DictionaryValue& legal_message,
-                             LegalMessageLines* out) {
+                             LegalMessageLines* out,
+                             bool escape_apostrophes) {
   const base::ListValue* lines_list = nullptr;
   if (legal_message.GetList("line", &lines_list)) {
     LegalMessageLines lines;
@@ -88,7 +89,7 @@ bool LegalMessageLine::Parse(const base::DictionaryValue& legal_message,
       lines.emplace_back(LegalMessageLine());
       const base::DictionaryValue* single_line;
       if (!lines_list->GetDictionary(i, &single_line) ||
-          !lines.back().ParseLine(*single_line))
+          !lines.back().ParseLine(*single_line, escape_apostrophes))
         return false;
     }
 
@@ -98,7 +99,8 @@ bool LegalMessageLine::Parse(const base::DictionaryValue& legal_message,
   return true;
 }
 
-bool LegalMessageLine::ParseLine(const base::DictionaryValue& line) {
+bool LegalMessageLine::ParseLine(const base::DictionaryValue& line,
+                                 bool escape_apostrophes) {
   DCHECK(text_.empty());
   DCHECK(links_.empty());
 
@@ -132,6 +134,17 @@ bool LegalMessageLine::ParseLine(const base::DictionaryValue& line) {
   base::string16 template_icu;
   if (!line.GetString("template", &template_icu))
     return false;
+
+  if (escape_apostrophes) {
+    // The ICU standard counts "'{" as beginning an escaped string literal, even
+    // if there's no closing apostrophe.  This fails legal message templates
+    // where an apostrophe precedes the template parameter, like "l'{1}" in
+    // Italian.  Therefore, when |escape_apostrophes| is true, escape all
+    // apostrophes in the string by doubling them up.
+    // http://www.icu-project.org/apiref/icu4c/messagepattern_8h.html#af6e0757e0eb81c980b01ee5d68a9978b
+    base::ReplaceChars(template_icu, base::ASCIIToUTF16("'"),
+                       base::ASCIIToUTF16("''"), &template_icu);
+  }
 
   // Replace the placeholders in |template_icu| with strings from
   // |display_texts|, and store the start position of each replacement in

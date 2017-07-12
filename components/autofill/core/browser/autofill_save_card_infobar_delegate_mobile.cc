@@ -44,7 +44,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
   if (legal_message) {
-    if (!LegalMessageLine::Parse(*legal_message, &legal_messages_)) {
+    if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
+                                 /*escape_apostrophes=*/true)) {
       AutofillMetrics::LogCreditCardInfoBarMetric(
           AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
           pref_service_->GetInteger(
