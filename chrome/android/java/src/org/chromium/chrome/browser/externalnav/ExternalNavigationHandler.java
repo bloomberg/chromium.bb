@@ -183,7 +183,8 @@ public class ExternalNavigationHandler {
 
         // http://crbug.com/169549 : If you type in a URL that then redirects in server side to an
         // link that cannot be rendered by the browser, we want to show the intent picker.
-        boolean isTyped = pageTransitionCore == PageTransition.TYPED;
+        boolean isTyped = (pageTransitionCore == PageTransition.TYPED)
+                || ((params.getPageTransition() & PageTransition.FROM_ADDRESS_BAR) != 0);
         boolean typedRedirectToExternalProtocol = isTyped && params.isRedirect()
                 && isExternalProtocol;
 
