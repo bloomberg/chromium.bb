@@ -230,8 +230,8 @@ void RecordAbortAfterCommitBeforePaint(
                           abort_info.time_to_abort);
       return;
     case PageAbortReason::ABORT_OTHER:
-      NOTREACHED()
-          << "Received PageAbortReason::ABORT_OTHER for committed load.";
+      // This is technically possible, though rare. See ~PageLoadTracker for an
+      // explanation.
       return;
     case PageAbortReason::ABORT_NONE:
       NOTREACHED();
@@ -268,8 +268,8 @@ void RecordAbortDuringParse(
                           abort_info.time_to_abort);
       return;
     case PageAbortReason::ABORT_OTHER:
-      NOTREACHED()
-          << "Received PageAbortReason::ABORT_OTHER for committed load.";
+      // This is technically possible, though rare. See ~PageLoadTracker for an
+      // explanation.
       return;
     case PageAbortReason::ABORT_NONE:
       NOTREACHED();
