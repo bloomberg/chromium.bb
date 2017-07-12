@@ -103,9 +103,6 @@ blink_core_sources("inspector") {
 
     # Collides with InspectorPageAgent.cpp (patch incoming)
     "MainThreadDebugger.cpp",
-
-    "InspectorOverlayAgent.cpp",  # Way too many different "Response"
-    "InspectorEmulationAgent.cpp",  # Way too many different "Response"
   ]
 
   configs += [
