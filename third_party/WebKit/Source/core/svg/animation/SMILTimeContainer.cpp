@@ -38,7 +38,6 @@
 
 namespace blink {
 
-static const double kInitialFrameDelay = 0.025;
 static const double kAnimationPolicyOnceDuration = 3.000;
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
@@ -176,18 +175,10 @@ void SMILTimeContainer::Start() {
   started_ = true;
 
   // If the "presentation time" is non-zero, the timeline was modified via
-  // setElapsed() before the document began.  In this case pass on
-  // 'seekToTime=true' to updateAnimations() to issue a seek.
-  SMILTime earliest_fire_time =
-      UpdateAnimations(presentation_time_, presentation_time_ ? true : false);
-  if (!CanScheduleFrame(earliest_fire_time))
-    return;
-  // If the timeline is running, and there are pending animation updates,
-  // always perform the first update after the timeline was started using
-  // the wake-up mechanism.
-  double delay_time = earliest_fire_time.Value() - presentation_time_;
-  ScheduleWakeUp(std::max(kInitialFrameDelay, delay_time),
-                 kSynchronizeAnimations);
+  // SetElapsed() before the document began. In this case pass on
+  // seek_to_time=true to issue a seek.
+  UpdateAnimationsAndScheduleFrameIfNeeded(presentation_time_,
+                                           presentation_time_ ? true : false);
 }
 
 void SMILTimeContainer::Pause() {
@@ -530,6 +521,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
 }
 
 void SMILTimeContainer::AdvanceFrameForTesting() {
+  const double kInitialFrameDelay = 0.025;
   SetElapsed(Elapsed() + kInitialFrameDelay);
 }
 
