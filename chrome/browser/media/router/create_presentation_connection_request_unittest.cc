@@ -70,10 +70,10 @@ TEST_F(CreatePresentationConnectionRequestTest, Getters) {
                                    "Unknown error.");
   CreatePresentationConnectionRequest request(
       render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
-      base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
-                 base::Unretained(this)),
-      base::Bind(&CreatePresentationConnectionRequestTest::OnError,
-                 base::Unretained(this), error));
+      base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&CreatePresentationConnectionRequestTest::OnError,
+                     base::Unretained(this), error));
 
   PresentationRequest presentation_request(
       render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)));
@@ -87,10 +87,10 @@ TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
                                               kPresentationId);
   CreatePresentationConnectionRequest request(
       render_frame_host_id_, {presentation_url_}, url::Origin(GURL(kFrameUrl)),
-      base::Bind(&CreatePresentationConnectionRequestTest::OnSuccess,
-                 base::Unretained(this), presentation_info),
-      base::Bind(&CreatePresentationConnectionRequestTest::FailOnError,
-                 base::Unretained(this)));
+      base::BindOnce(&CreatePresentationConnectionRequestTest::OnSuccess,
+                     base::Unretained(this), presentation_info),
+      base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnError,
+                     base::Unretained(this)));
   MediaRoute route(kRouteId, MediaSourceForTab(1), "sinkId", "Description",
                    false, "", false);
   request.InvokeSuccessCallback(kPresentationId, presentation_url_, route);
@@ -103,10 +103,10 @@ TEST_F(CreatePresentationConnectionRequestTest, ErrorCallback) {
       "This is an error message");
   CreatePresentationConnectionRequest request(
       render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),
-      base::Bind(&CreatePresentationConnectionRequestTest::FailOnSuccess,
-                 base::Unretained(this)),
-      base::Bind(&CreatePresentationConnectionRequestTest::OnError,
-                 base::Unretained(this), error));
+      base::BindOnce(&CreatePresentationConnectionRequestTest::FailOnSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&CreatePresentationConnectionRequestTest::OnError,
+                     base::Unretained(this), error));
   request.InvokeErrorCallback(error);
   EXPECT_TRUE(cb_invoked_);
 }

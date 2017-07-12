@@ -77,8 +77,8 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
   EXPECT_CALL(provide_handler_, InvokeInternal(kInstanceId, testing::_));
   media_router_proxy_->RegisterMediaRouteProvider(
       std::move(mojo_media_router),
-      base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
-                 base::Unretained(&provide_handler_)));
+      base::BindOnce(&RegisterMediaRouteProviderHandler::Invoke,
+                     base::Unretained(&provide_handler_)));
 }
 
 void MediaRouterMojoTest::SetUp() {

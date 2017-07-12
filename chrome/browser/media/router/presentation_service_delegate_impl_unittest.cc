@@ -459,10 +459,10 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
-      base::Bind(&MockCreatePresentationConnnectionCallbacks::
-                     OnCreateConnectionSuccess,
-                 base::Unretained(&mock_create_connection_callbacks)),
-      base::Bind(
+      base::BindOnce(&MockCreatePresentationConnnectionCallbacks::
+                         OnCreateConnectionSuccess,
+                     base::Unretained(&mock_create_connection_callbacks)),
+      base::BindOnce(
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 
@@ -702,10 +702,10 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
-      base::Bind(&MockCreatePresentationConnnectionCallbacks::
-                     OnCreateConnectionSuccess,
-                 base::Unretained(&mock_create_connection_callbacks)),
-      base::Bind(
+      base::BindOnce(&MockCreatePresentationConnnectionCallbacks::
+                         OnCreateConnectionSuccess,
+                     base::Unretained(&mock_create_connection_callbacks)),
+      base::BindOnce(
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 
@@ -722,10 +722,10 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
-      base::Bind(&MockCreatePresentationConnnectionCallbacks::
-                     OnCreateConnectionSuccess,
-                 base::Unretained(&mock_create_connection_callbacks)),
-      base::Bind(
+      base::BindOnce(&MockCreatePresentationConnnectionCallbacks::
+                         OnCreateConnectionSuccess,
+                     base::Unretained(&mock_create_connection_callbacks)),
+      base::BindOnce(
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 }
@@ -765,10 +765,10 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
-      base::Bind(&MockCreatePresentationConnnectionCallbacks::
-                     OnCreateConnectionSuccess,
-                 base::Unretained(&mock_create_connection_callbacks)),
-      base::Bind(
+      base::BindOnce(&MockCreatePresentationConnnectionCallbacks::
+                         OnCreateConnectionSuccess,
+                     base::Unretained(&mock_create_connection_callbacks)),
+      base::BindOnce(
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 
@@ -785,10 +785,10 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
-      base::Bind(&MockCreatePresentationConnnectionCallbacks::
-                     OnCreateConnectionSuccess,
-                 base::Unretained(&mock_create_connection_callbacks)),
-      base::Bind(
+      base::BindOnce(&MockCreatePresentationConnnectionCallbacks::
+                         OnCreateConnectionSuccess,
+                     base::Unretained(&mock_create_connection_callbacks)),
+      base::BindOnce(
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 }

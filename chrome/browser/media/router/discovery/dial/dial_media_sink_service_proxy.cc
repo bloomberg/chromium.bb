@@ -28,7 +28,7 @@ void DialMediaSinkServiceProxy::Start() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&DialMediaSinkServiceProxy::StartOnIOThread, this));
+      base::BindOnce(&DialMediaSinkServiceProxy::StartOnIOThread, this));
 }
 
 void DialMediaSinkServiceProxy::Stop() {
@@ -36,7 +36,7 @@ void DialMediaSinkServiceProxy::Stop() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&DialMediaSinkServiceProxy::StopOnIOThread, this));
+      base::BindOnce(&DialMediaSinkServiceProxy::StopOnIOThread, this));
 }
 
 void DialMediaSinkServiceProxy::SetDialMediaSinkServiceForTest(
@@ -72,7 +72,7 @@ void DialMediaSinkServiceProxy::OnSinksDiscoveredOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(sink_discovery_callback_, std::move(sinks)));
+      base::BindOnce(sink_discovery_callback_, std::move(sinks)));
 }
 
 }  // namespace media_router
