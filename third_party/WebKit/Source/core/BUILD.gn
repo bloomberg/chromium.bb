@@ -1554,6 +1554,7 @@ source_set("unit_tests") {
     "workers/ThreadedWorkletTest.cpp",
     "workers/WorkerThreadTest.cpp",
     "workers/WorkerThreadTestHelper.h",
+    "workers/WorkletModuleResponsesMapTest.cpp",
     "xml/XPathFunctionsTest.cpp",
     "xml/parser/SharedBufferReaderTest.cpp",
   ]
