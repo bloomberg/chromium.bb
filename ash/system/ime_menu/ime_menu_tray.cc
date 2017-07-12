@@ -47,6 +47,10 @@ using chromeos::input_method::InputMethodManager;
 namespace ash {
 
 namespace {
+
+// Used for testing.
+const int kEmojiButtonId = 1;
+
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
   const int max_items = 5;
@@ -179,7 +183,8 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   ImeButtonsView(ImeMenuTray* ime_menu_tray,
                  bool show_emoji,
                  bool show_handwriting,
-                 bool show_voice) {
+                 bool show_voice)
+      : ime_menu_tray_(ime_menu_tray) {
     DCHECK(ime_menu_tray_);
 
     Init(show_emoji, show_handwriting, show_voice);
@@ -231,6 +236,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
       emoji_button_ =
           CreateImeMenuButton(this, kImeMenuEmoticonIcon,
                               IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
+      emoji_button_->set_id(kEmojiButtonId);
       AddChildView(emoji_button_);
     }
 
