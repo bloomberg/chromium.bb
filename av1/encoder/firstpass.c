@@ -2708,7 +2708,7 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
       break;
 
     case LAST_BIPRED_UPDATE:
-      cpi->refresh_last_frame = 0;
+      cpi->refresh_last_frame = 1;
       cpi->refresh_golden_frame = 0;
       cpi->refresh_bwd_ref_frame = 0;
       cpi->refresh_alt_ref_frame = 0;
