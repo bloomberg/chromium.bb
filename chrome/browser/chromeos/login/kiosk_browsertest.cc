@@ -843,7 +843,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   int original_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       window->web_contents(),
-      "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(window.innerWidth);",
       &original_width));
 
@@ -859,7 +858,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   int width_zoomed_in;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       window->web_contents(),
-      "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(window.innerWidth);",
       &width_zoomed_in));
   DCHECK_LT(width_zoomed_in, original_width);
@@ -870,7 +868,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   int width_zoom_normal;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       window->web_contents(),
-      "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(window.innerWidth);",
       &width_zoom_normal));
   DCHECK_EQ(width_zoom_normal, original_width);
@@ -881,7 +878,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   int width_zoomed_out;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       window->web_contents(),
-      "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(window.innerWidth);",
       &width_zoomed_out));
   DCHECK_GT(width_zoomed_out, original_width);
@@ -2229,7 +2225,6 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       window->web_contents(),
       "chrome.identity.getAuthToken({ 'interactive': false }, function(token) {"
-      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(token);"
       "});",
       &result));

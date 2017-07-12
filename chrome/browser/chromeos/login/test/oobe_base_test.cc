@@ -237,7 +237,6 @@ void OobeBaseTest::WaitForGaiaPageReload() {
       "  var authenticator = $('gaia-signin').gaiaAuthHost_;"
       "  var f = function() {"
       "    authenticator.removeEventListener('ready', f);"
-      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send('GaiaReady');"
       "  };"
       "  authenticator.addEventListener('ready', f);"

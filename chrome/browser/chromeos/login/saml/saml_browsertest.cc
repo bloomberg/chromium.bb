@@ -364,7 +364,6 @@ class SamlTest : public OobeBaseTest {
         "    function f() {"
         "      $('gaia-signin').gaiaAuthHost_.removeEventListener("
         "          'authFlowChange', f);"
-        "      window.domAutomationController.setAutomationId(0);"
         "      window.domAutomationController.send("
         "          $('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
         "    });");
@@ -523,7 +522,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
       "$('gaia-signin').gaiaAuthHost_.addEventListener('authCompleted',"
       "    function(e) {"
       "      var password = e.detail.password;"
-      "      window.domAutomationController.setAutomationId(0);"
       "      window.domAutomationController.send(password);"
       "    });"));
 
@@ -1121,7 +1119,6 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
-      "  window.domAutomationController.setAutomationId(0);"
       "  window.domAutomationController.send('ready');"
       "});"
       "$('add-user-button').click();"));
@@ -1138,7 +1135,6 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
       "$('saml-interstitial').addEventListener("
       "    'samlInterstitialPageReady',"
       "    function() {"
-      "        window.domAutomationController.setAutomationId(0);"
       "        window.domAutomationController.send("
       "            'samlInterstitialPageReady');"
       "    });"
@@ -1171,7 +1167,6 @@ void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
-      "  window.domAutomationController.setAutomationId(0);"
       "  window.domAutomationController.send('ready');"
       "});"
       "$('saml-interstitial').changeAccountLink.click();"));
