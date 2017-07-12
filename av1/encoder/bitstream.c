@@ -1572,7 +1572,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   // Only y plane's tx_type is transmitted
   if (plane > 0) return;
   PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
 #endif
 
   if (!FIXED_TX_TYPE) {
