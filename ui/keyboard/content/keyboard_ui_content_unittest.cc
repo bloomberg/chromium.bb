@@ -22,7 +22,6 @@ class TestKeyboardUIContent : public KeyboardUIContent {
   ~TestKeyboardUIContent() override {}
 
   ui::InputMethod* GetInputMethod() override { return nullptr; }
-  void SetUpdateInputType(ui::TextInputType type) override {}
   void RequestAudioInput(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
