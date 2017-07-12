@@ -433,9 +433,6 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
 
 void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
                                   const std::string& session_id) {
-  // Resolve the promise first.
-  OnPromiseResolved(promise_id);
-
   // Now create the expiration changed event.
   cdm::Time expiration = 0.0;  // Never expires.
 
@@ -451,6 +448,9 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
   }
 
   host_->OnExpirationChange(session_id.data(), session_id.length(), expiration);
+
+  // Resolve the promise.
+  OnPromiseResolved(promise_id);
 }
 
 void ClearKeyCdm::CloseSession(uint32_t promise_id,

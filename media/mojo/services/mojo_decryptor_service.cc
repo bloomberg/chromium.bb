@@ -225,7 +225,8 @@ void MojoDecryptorService::OnVideoDecoded(
     DecryptAndDecodeVideoCallback callback,
     Status status,
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
+  DVLOG_IF(1, status != Status::kSuccess)
+      << __func__ << ": status = " << status;
   DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
   if (!frame) {
