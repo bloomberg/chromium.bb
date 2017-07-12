@@ -5,14 +5,14 @@
 #ifndef CC_TEST_MOCK_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 #define CC_TEST_MOCK_COMPOSITOR_FRAME_SINK_SUPPORT_CLIENT_H_
 
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cc {
 namespace test {
 
 class MockCompositorFrameSinkSupportClient
-    : public CompositorFrameSinkSupportClient {
+    : public viz::CompositorFrameSinkSupportClient {
  public:
   MockCompositorFrameSinkSupportClient();
   ~MockCompositorFrameSinkSupportClient() override;

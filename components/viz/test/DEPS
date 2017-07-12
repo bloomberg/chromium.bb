@@ -1,0 +1,14 @@
+include_rules = [
+  "+cc",
+  "+ui/gfx/geometry",
+]
+
+specific_include_rules = {
+  ".*_test_suite\.cc": [
+    "+ui/gl/test",
+  ],
+
+  "run_all_unittests\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ],
+}

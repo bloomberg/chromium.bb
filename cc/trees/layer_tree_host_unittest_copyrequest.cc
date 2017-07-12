@@ -12,13 +12,12 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/direct_renderer.h"
-#include "cc/surfaces/display.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
@@ -464,7 +463,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     client_.set_bounds(root_->bounds());
   }
 
-  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
@@ -536,7 +535,7 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   RenderPassId parent_render_pass_id = 0;
   RenderPassId copy_layer_render_pass_id = 0;
-  TestLayerTreeFrameSink* frame_sink_ = nullptr;
+  viz::TestLayerTreeFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;

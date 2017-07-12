@@ -2,38 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
 #include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
 
-namespace cc {
+namespace viz {
 namespace {
 
-constexpr viz::FrameSinkId kArbitraryRootFrameSinkId(1, 1);
-constexpr viz::FrameSinkId kArbitraryChildFrameSinkId(2, 2);
-constexpr viz::FrameSinkId kArbitraryLeftFrameSinkId(3, 3);
-constexpr viz::FrameSinkId kArbitraryRightFrameSinkId(4, 4);
+constexpr FrameSinkId kArbitraryRootFrameSinkId(1, 1);
+constexpr FrameSinkId kArbitraryChildFrameSinkId(2, 2);
+constexpr FrameSinkId kArbitraryLeftFrameSinkId(3, 3);
+constexpr FrameSinkId kArbitraryRightFrameSinkId(4, 4);
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
 constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
-class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
+class SurfaceAggregatorPixelTest
+    : public cc::RendererPixelTest<cc::GLRenderer> {
  public:
-  SurfacesPixelTest()
+  SurfaceAggregatorPixelTest()
       : support_(
             CompositorFrameSinkSupport::Create(nullptr,
                                                &manager_,
@@ -41,16 +43,16 @@ class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
                                                kIsRoot,
                                                kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)) {}
-  ~SurfacesPixelTest() override { support_->EvictCurrentSurface(); }
+  ~SurfaceAggregatorPixelTest() override { support_->EvictCurrentSurface(); }
 
  protected:
-  FrameSinkManager manager_;
-  viz::LocalSurfaceIdAllocator allocator_;
+  cc::FrameSinkManager manager_;
+  LocalSurfaceIdAllocator allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 };
 
-SharedQuadState* CreateAndAppendTestSharedQuadState(
-    RenderPass* render_pass,
+cc::SharedQuadState* CreateAndAppendTestSharedQuadState(
+    cc::RenderPass* render_pass,
     const gfx::Transform& transform,
     const gfx::Size& size) {
   const gfx::Rect layer_rect = gfx::Rect(size);
@@ -59,92 +61,81 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
   bool is_clipped = false;
   float opacity = 1.f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
-  SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
+  auto* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, layer_rect, visible_layer_rect, clip_rect,
                        is_clipped, opacity, blend_mode, 0);
   return shared_state;
 }
 
 // Draws a very simple frame with no surface references.
-TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
+TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   gfx::Rect rect(device_viewport_size_);
   int id = 1;
-  std::unique_ptr<RenderPass> pass = RenderPass::Create();
+  auto pass = cc::RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
-  CreateAndAppendTestSharedQuadState(
-      pass.get(), gfx::Transform(), device_viewport_size_);
+  CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
+                                     device_viewport_size_);
 
-  SolidColorDrawQuad* color_quad =
-      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
   bool force_anti_aliasing_off = false;
-  color_quad->SetNew(pass->shared_quad_state_list.back(),
-                     rect,
-                     rect,
-                     SK_ColorGREEN,
-                     force_anti_aliasing_off);
+  color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
+                     SK_ColorGREEN, force_anti_aliasing_off);
 
-  CompositorFrame root_frame = test::MakeCompositorFrame();
+  auto root_frame = cc::test::MakeCompositorFrame();
   root_frame.render_pass_list.push_back(std::move(pass));
 
-  viz::LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
-  viz::SurfaceId root_surface_id(support_->frame_sink_id(),
-                                 root_local_surface_id);
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
   support_->SubmitCompositorFrame(root_local_surface_id, std::move(root_frame));
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
-  ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  cc::ExactPixelComparator pixel_comparator(discard_alpha);
+  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("green.png")),
                            pixel_comparator));
 }
 
 // Draws a frame with simple surface embedding.
-TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
+TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
   std::unique_ptr<CompositorFrameSinkSupport> child_support =
       CompositorFrameSinkSupport::Create(
           nullptr, &manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
 
-  viz::LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
-  viz::SurfaceId child_surface_id(child_support->frame_sink_id(),
-                                  child_local_surface_id);
-  viz::LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
-  viz::SurfaceId root_surface_id(support_->frame_sink_id(),
-                                 root_local_surface_id);
+  LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
+  SurfaceId child_surface_id(child_support->frame_sink_id(),
+                             child_local_surface_id);
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
     gfx::Rect rect(device_viewport_size_);
     int id = 1;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    auto pass = cc::RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), gfx::Transform(), device_viewport_size_);
+    CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
+                                       device_viewport_size_);
 
-    SurfaceDrawQuad* surface_quad =
-        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
                          gfx::Rect(child_size), gfx::Rect(child_size),
-                         child_surface_id, SurfaceDrawQuadType::PRIMARY,
+                         child_surface_id, cc::SurfaceDrawQuadType::PRIMARY,
                          nullptr);
 
-    SolidColorDrawQuad* color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
-    color_quad->SetNew(pass->shared_quad_state_list.back(),
-                       rect,
-                       rect,
-                       SK_ColorYELLOW,
-                       force_anti_aliasing_off);
+    color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
+                       SK_ColorYELLOW, force_anti_aliasing_off);
 
-    CompositorFrame root_frame = test::MakeCompositorFrame();
+    auto root_frame = cc::test::MakeCompositorFrame();
     root_frame.render_pass_list.push_back(std::move(pass));
 
     support_->SubmitCompositorFrame(root_local_surface_id,
@@ -154,22 +145,18 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    auto pass = cc::RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), gfx::Transform(), child_size);
+    CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
+                                       child_size);
 
-    SolidColorDrawQuad* color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
-    color_quad->SetNew(pass->shared_quad_state_list.back(),
-                       rect,
-                       rect,
-                       SK_ColorBLUE,
-                       force_anti_aliasing_off);
+    color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
+                       SK_ColorBLUE, force_anti_aliasing_off);
 
-    CompositorFrame child_frame = test::MakeCompositorFrame();
+    auto child_frame = cc::test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     child_support->SubmitCompositorFrame(child_local_surface_id,
@@ -178,11 +165,11 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
-  ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  cc::ExactPixelComparator pixel_comparator(discard_alpha);
+  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
                            pixel_comparator));
@@ -191,7 +178,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
 }
 
 // Tests a surface quad that has a non-identity transform into its pass.
-TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
+TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   gfx::Size child_size(100, 200);
   gfx::Size quad_size(100, 100);
   // Structure:
@@ -209,45 +196,43 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
       CompositorFrameSinkSupport::Create(
           nullptr, &manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  viz::LocalSurfaceId left_child_local_id = allocator_.GenerateId();
-  viz::SurfaceId left_child_id(left_support->frame_sink_id(),
-                               left_child_local_id);
-  viz::LocalSurfaceId right_child_local_id = allocator_.GenerateId();
-  viz::SurfaceId right_child_id(right_support->frame_sink_id(),
-                                right_child_local_id);
-  viz::LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
-  viz::SurfaceId root_surface_id(support_->frame_sink_id(),
-                                 root_local_surface_id);
+  LocalSurfaceId left_child_local_id = allocator_.GenerateId();
+  SurfaceId left_child_id(left_support->frame_sink_id(), left_child_local_id);
+  LocalSurfaceId right_child_local_id = allocator_.GenerateId();
+  SurfaceId right_child_id(right_support->frame_sink_id(),
+                           right_child_local_id);
+  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
     gfx::Rect rect(device_viewport_size_);
     int id = 1;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    auto pass = cc::RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     gfx::Transform surface_transform;
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), surface_transform, device_viewport_size_);
+    CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
+                                       device_viewport_size_);
 
-    SurfaceDrawQuad* left_surface_quad =
-        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    auto* left_surface_quad =
+        pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(child_size), gfx::Rect(child_size),
-                              left_child_id, SurfaceDrawQuadType::PRIMARY,
+                              left_child_id, cc::SurfaceDrawQuadType::PRIMARY,
                               nullptr);
 
     surface_transform.Translate(100, 0);
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), surface_transform, device_viewport_size_);
+    CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
+                                       device_viewport_size_);
 
-    SurfaceDrawQuad* right_surface_quad =
-        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    auto* right_surface_quad =
+        pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                                gfx::Rect(child_size), gfx::Rect(child_size),
-                               right_child_id, SurfaceDrawQuadType::PRIMARY,
+                               right_child_id, cc::SurfaceDrawQuadType::PRIMARY,
                                nullptr);
 
-    CompositorFrame root_frame = test::MakeCompositorFrame();
+    auto root_frame = cc::test::MakeCompositorFrame();
     root_frame.render_pass_list.push_back(std::move(pass));
 
     support_->SubmitCompositorFrame(root_local_surface_id,
@@ -257,30 +242,26 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    auto pass = cc::RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), gfx::Transform(), child_size);
+    CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
+                                       child_size);
 
-    SolidColorDrawQuad* top_color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* top_color_quad =
+        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
-                           gfx::Rect(quad_size),
-                           gfx::Rect(quad_size),
-                           SK_ColorGREEN,
-                           force_anti_aliasing_off);
+                           gfx::Rect(quad_size), gfx::Rect(quad_size),
+                           SK_ColorGREEN, force_anti_aliasing_off);
 
-    SolidColorDrawQuad* bottom_color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    bottom_color_quad->SetNew(pass->shared_quad_state_list.back(),
-                              gfx::Rect(0, 100, 100, 100),
-                              gfx::Rect(0, 100, 100, 100),
-                              SK_ColorBLUE,
-                              force_anti_aliasing_off);
+    auto* bottom_color_quad =
+        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    bottom_color_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
+        gfx::Rect(0, 100, 100, 100), SK_ColorBLUE, force_anti_aliasing_off);
 
-    CompositorFrame child_frame = test::MakeCompositorFrame();
+    auto child_frame = cc::test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     left_support->SubmitCompositorFrame(left_child_local_id,
@@ -290,30 +271,26 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    auto pass = cc::RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
-    CreateAndAppendTestSharedQuadState(
-        pass.get(), gfx::Transform(), child_size);
+    CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
+                                       child_size);
 
-    SolidColorDrawQuad* top_color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* top_color_quad =
+        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
-                           gfx::Rect(quad_size),
-                           gfx::Rect(quad_size),
-                           SK_ColorBLUE,
-                           force_anti_aliasing_off);
+                           gfx::Rect(quad_size), gfx::Rect(quad_size),
+                           SK_ColorBLUE, force_anti_aliasing_off);
 
-    SolidColorDrawQuad* bottom_color_quad =
-        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    bottom_color_quad->SetNew(pass->shared_quad_state_list.back(),
-                              gfx::Rect(0, 100, 100, 100),
-                              gfx::Rect(0, 100, 100, 100),
-                              SK_ColorGREEN,
-                              force_anti_aliasing_off);
+    auto* bottom_color_quad =
+        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    bottom_color_quad->SetNew(
+        pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
+        gfx::Rect(0, 100, 100, 100), SK_ColorGREEN, force_anti_aliasing_off);
 
-    CompositorFrame child_frame = test::MakeCompositorFrame();
+    auto child_frame = cc::test::MakeCompositorFrame();
     child_frame.render_pass_list.push_back(std::move(pass));
 
     right_support->SubmitCompositorFrame(right_child_local_id,
@@ -322,11 +299,11 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
-  ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  cc::ExactPixelComparator pixel_comparator(discard_alpha);
+  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(
       pass_list,
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),
@@ -337,6 +314,6 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
 
 #endif  // !defined(OS_ANDROID)

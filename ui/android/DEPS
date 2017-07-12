@@ -8,6 +8,7 @@ include_rules = [
   "+cc/test/test_task_graph_runner.h",
   "+cc/trees/layer_tree_host.h",
   "+components/viz/common",
+  "+components/viz/service/frame_sinks",
   "+jni",
   "+skia/ext",
   "+third_party/skia",

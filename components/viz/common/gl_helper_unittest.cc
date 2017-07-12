@@ -17,12 +17,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gl_helper_readback_support.h"
 #include "components/viz/common/gl_helper_scaling.h"
@@ -32,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
+
+#if !defined(OS_ANDROID)
 
 namespace viz {
 
@@ -1248,7 +1250,6 @@ class GLHelperTest : public testing::Test {
   std::unique_ptr<GLHelper> helper_;
   std::unique_ptr<GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
-  base::MessageLoop message_loop_;
 };
 
 class GLHelperPixelTest : public GLHelperTest {
@@ -1420,3 +1421,5 @@ TEST_F(GLHelperTest, CheckOptimizations) {
 }
 
 }  // namespace viz
+
+#endif  // OS_ANDROID

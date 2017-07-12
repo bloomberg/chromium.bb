@@ -15,11 +15,11 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -833,7 +833,7 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
-  support_ = cc::CompositorFrameSinkSupport::Create(
+  support_ = viz::CompositorFrameSinkSupport::Create(
       this, GetFrameSinkManager(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
   if (parent_frame_sink_id_.is_valid()) {

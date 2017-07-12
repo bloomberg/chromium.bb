@@ -9,12 +9,12 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "components/viz/common/surface_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,14 +54,14 @@ class SurfaceManagerRefTest : public testing::Test {
         .EvictCurrentSurface();
   }
 
-  CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(
+  viz::CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(
       const viz::FrameSinkId& frame_sink_id) {
     auto& support_ptr = supports_[frame_sink_id];
     if (!support_ptr) {
       constexpr bool is_root = false;
       constexpr bool handles_frame_sink_id_invalidation = true;
       constexpr bool needs_sync_points = true;
-      support_ptr = CompositorFrameSinkSupport::Create(
+      support_ptr = viz::CompositorFrameSinkSupport::Create(
           nullptr, manager_.get(), frame_sink_id, is_root,
           handles_frame_sink_id_invalidation, needs_sync_points);
     }
@@ -123,7 +123,7 @@ class SurfaceManagerRefTest : public testing::Test {
   }
 
   std::unordered_map<viz::FrameSinkId,
-                     std::unique_ptr<CompositorFrameSinkSupport>,
+                     std::unique_ptr<viz::CompositorFrameSinkSupport>,
                      viz::FrameSinkIdHash>
       supports_;
   std::unique_ptr<FrameSinkManager> manager_;

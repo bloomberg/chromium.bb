@@ -3,12 +3,20 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//components/viz/viz.gni")
 
 config("viz_service_implementation") {
 }
 
-component("service") {
+viz_component("service") {
   sources = [
+    "display/display.cc",
+    "display/display.h",
+    "display/display_client.h",
+    "display/display_scheduler.cc",
+    "display/display_scheduler.h",
+    "display/surface_aggregator.cc",
+    "display/surface_aggregator.h",
     "display_embedder/buffer_queue.cc",
     "display_embedder/buffer_queue.h",
     "display_embedder/compositor_overlay_candidate_validator.h",
@@ -23,6 +31,11 @@ component("service") {
     "display_embedder/server_shared_bitmap_manager.h",
     "display_embedder/shared_bitmap_allocation_notifier_impl.cc",
     "display_embedder/shared_bitmap_allocation_notifier_impl.h",
+    "frame_sinks/compositor_frame_sink_support.cc",
+    "frame_sinks/compositor_frame_sink_support.h",
+    "frame_sinks/compositor_frame_sink_support_client.h",
+    "frame_sinks/direct_layer_tree_frame_sink.cc",
+    "frame_sinks/direct_layer_tree_frame_sink.h",
     "frame_sinks/frame_eviction_manager.cc",
     "frame_sinks/frame_eviction_manager.h",
     "frame_sinks/frame_evictor.cc",
@@ -39,7 +52,7 @@ component("service") {
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  configs = [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     "//components/viz/common",
@@ -48,6 +61,8 @@ component("service") {
     # dependency should not be in public_deps.
     "//gpu/ipc/client",
     "//gpu/ipc/service",
+    "//gpu/vulkan:features",
+    "//skia",
     "//ui/display/types",
   ]
 
@@ -58,6 +73,9 @@ component("service") {
     "//cc/surfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/latency",
   ]
 
   if (is_mac) {
@@ -93,19 +111,24 @@ component("service") {
   }
 }
 
-# These are part of the components_unittests build target.
-source_set("unit_tests") {
+viz_source_set("unit_tests") {
   testonly = true
   sources = [
+    "display/display_scheduler_unittest.cc",
+    "display/display_unittest.cc",
+    "display/surface_aggregator_pixeltest.cc",
+    "display/surface_aggregator_unittest.cc",
     "display_embedder/buffer_queue_unittest.cc",
     "display_embedder/server_shared_bitmap_manager_unittest.cc",
+    "frame_sinks/compositor_frame_sink_support_unittest.cc",
+    "frame_sinks/direct_layer_tree_frame_sink_unittest.cc",
   ]
 
   if (!use_aura && !is_mac) {
     sources -= [ "display_embedder/buffer_queue_unittest.cc" ]
   }
 
-  configs += [
+  configs = [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/khronos:khronos_headers",
   ]
@@ -119,5 +142,21 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display/types",
+  ]
+}
+
+viz_source_set("perf_tests") {
+  testonly = true
+  sources = [
+    "display/surface_aggregator_perftest.cc",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//cc:test_support",
+    "//cc/base",
+    "//testing/gtest",
+    "//testing/perf",
   ]
 }

@@ -2,23 +2,55 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/viz/viz.gni")
 import("//testing/test.gni")
 
-test("viz_unittests") {
+viz_test("viz_unittests") {
   sources = [
-    "run_all_unittests.cc",
+    "test/run_all_unittests.cc",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/viz/common:unit_tests",
+    "//components/viz/host:unit_tests",
+    "//components/viz/service:unit_tests",
+    "//components/viz/test:test_suite",
+    "//components/viz/test:test_support",
+    "//mojo/edk/system",
+  ]
+
+  if (!is_android) {
+    data = [
+      "test/data/",
+    ]
+  }
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}
+
+viz_test("viz_perftests") {
+  sources = [
+    "test/run_all_perftests.cc",
   ]
 
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/viz/host:unit_tests",
-    "//components/viz/service:unit_tests",
-    "//mojo/edk/system",
-    "//ui/gl:test_support",
+    "//components/viz/service:perf_tests",
+    "//components/viz/test:test_suite",
   ]
 
-  if (!is_android) {
-    deps += [ "//components/viz/common:unit_tests" ]
-  }
+  # This target should not require the Chrome executable to run.
+  assert_no_deps = [ "//chrome" ]
+
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_gtest_perf_test.py",
+    "//tools/perf/generate_legacy_perf_dashboard_json.py",
+  ]
 }

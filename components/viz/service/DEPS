@@ -1,0 +1,7 @@
+include_rules = [
+  "+cc",
+  "+third_party/skia",
+  "+ui/gfx",
+  "+ui/gfx/geometry",
+  "+ui/latency",
+]

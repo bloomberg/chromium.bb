@@ -15,7 +15,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 
 // See ui/compositor/compositor.h: ContextFactoryPrivate.
-// The DisplayPrivate is used by privileged clients to talk to cc::Display.
+// The DisplayPrivate is used by privileged clients to talk to Display.
 // DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
 interface DisplayPrivate {
   SetDisplayVisible(bool visible);
@@ -32,7 +32,7 @@ interface DisplayPrivate {
 // through the frame sink manager host. Clients request a CompositorFrameSink
 // interface, and implement a CompositorFrameSinkClient interface. The frame
 // sink manager host holds one or more display CompositorFrameSinks that are
-// tied to a valid |surface_handle| and cc::Display. All other
+// tied to a valid |surface_handle| and Display. All other
 // CompositorFrameSinks must be parented by another CompositorFrameSink.
 // FrameSinkIds are fixed for a given client and are determined ahead of time.
 // Thus, a client will typically simply request a CompositorFrameSink from the

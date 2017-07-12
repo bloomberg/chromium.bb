@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/viz/viz.gni")
 import("//testing/test.gni")
 
-source_set("common") {
+viz_source_set("common") {
   sources = [
     "frame_sink_id.cc",
     "frame_sink_id.h",
@@ -52,9 +53,7 @@ source_set("common") {
   ]
 }
 
-# These tests don't pass on Android so this target isn't in viz_unittests. If
-# you add a test here that should run on Android you need to change that.
-source_set("unit_tests") {
+viz_source_set("unit_tests") {
   testonly = true
   sources = [
     "gl_helper_unittest.cc",
@@ -77,12 +76,12 @@ source_set("unit_tests") {
 
 # Microbenchmark to measure performance of GLHelper code, for use in
 # debugging, profiling, and optimizing.
-test("viz_benchmark") {
+viz_test("viz_benchmark") {
   sources = [
     "gl_helper_benchmark.cc",
   ]
 
-  configs += [
+  configs = [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//third_party/khronos:khronos_headers",
   ]

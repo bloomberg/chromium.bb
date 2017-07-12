@@ -724,6 +724,7 @@ source_set("common") {
     "//components/version_info",
     "//components/visitedlink/browser",
     "//components/visitedlink/renderer",
+    "//components/viz/service",
     "//components/web_contents_delegate_android:web_contents_delegate_android",
     "//components/web_restrictions:browser",
     "//content",

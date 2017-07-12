@@ -199,7 +199,7 @@ void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
   constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
-  support_ = cc::CompositorFrameSinkSupport::Create(
+  support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_, frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 }

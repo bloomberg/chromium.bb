@@ -1,0 +1,36 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//components/viz/viz.gni")
+
+viz_static_library("test_support") {
+  testonly = true
+  sources = [
+    "paths.cc",
+    "paths.h",
+    "test_layer_tree_frame_sink.cc",
+    "test_layer_tree_frame_sink.h",
+  ]
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//components/viz/service",
+    "//ui/gfx/geometry",
+  ]
+}
+
+viz_source_set("test_suite") {
+  testonly = true
+  sources = [
+    "viz_test_suite.cc",
+    "viz_test_suite.h",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//ui/gl:test_support",
+  ]
+}

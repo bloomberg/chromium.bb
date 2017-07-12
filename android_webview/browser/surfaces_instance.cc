@@ -17,11 +17,11 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/display.h"
-#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/service/display/display.h"
+#include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -60,7 +60,7 @@ SurfacesInstance::SurfacesInstance()
   constexpr bool is_root = true;
   constexpr bool handles_frame_sink_id_invalidation = true;
   constexpr bool needs_sync_points = true;
-  support_ = cc::CompositorFrameSinkSupport::Create(
+  support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
 
@@ -72,14 +72,14 @@ SurfacesInstance::SurfacesInstance()
           make_scoped_refptr(new AwGLSurface),
           DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
-  std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
+  auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       begin_frame_source_.get(), nullptr,
-      output_surface_holder->capabilities().max_frames_pending));
-  display_.reset(new cc::Display(
+      output_surface_holder->capabilities().max_frames_pending);
+  display_ = base::MakeUnique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings, frame_sink_id_,
       std::move(output_surface_holder), std::move(scheduler),
-      std::move(texture_mailbox_deleter)));
+      std::move(texture_mailbox_deleter));
   display_->Initialize(this, frame_sink_manager_->surface_manager());
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                 frame_sink_id_);

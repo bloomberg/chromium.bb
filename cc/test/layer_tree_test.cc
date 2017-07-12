@@ -24,7 +24,6 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -34,6 +33,7 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -467,12 +467,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 };
 
 class LayerTreeTestLayerTreeFrameSinkClient
-    : public TestLayerTreeFrameSinkClient {
+    : public viz::TestLayerTreeFrameSinkClient {
  public:
   explicit LayerTreeTestLayerTreeFrameSinkClient(TestHooks* hooks)
       : hooks_(hooks) {}
 
-  // TestLayerTreeFrameSinkClient implementation.
+  // viz::TestLayerTreeFrameSinkClient implementation.
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider) override {
     return hooks_->CreateDisplayOutputSurfaceOnThread(
@@ -874,7 +874,8 @@ void LayerTreeTest::RequestNewLayerTreeFrameSink() {
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-std::unique_ptr<TestLayerTreeFrameSink> LayerTreeTest::CreateLayerTreeFrameSink(
+std::unique_ptr<viz::TestLayerTreeFrameSink>
+LayerTreeTest::CreateLayerTreeFrameSink(
     const RendererSettings& renderer_settings,
     double refresh_rate,
     scoped_refptr<ContextProvider> compositor_context_provider,
@@ -883,7 +884,7 @@ std::unique_ptr<TestLayerTreeFrameSink> LayerTreeTest::CreateLayerTreeFrameSink(
   bool synchronous_composite =
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-  return base::MakeUnique<TestLayerTreeFrameSink>(
+  return base::MakeUnique<viz::TestLayerTreeFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
       impl_task_runner_, synchronous_composite, disable_display_vsync,

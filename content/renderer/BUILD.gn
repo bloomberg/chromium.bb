@@ -444,6 +444,7 @@ target(link_target_type, "renderer") {
     "//components/url_formatter",
     "//components/variations",
     "//components/viz/client",
+    "//components/viz/service",
     "//content:resources",
     "//content/child",
     "//content/common",

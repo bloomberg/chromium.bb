@@ -61,7 +61,6 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -71,6 +70,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -8783,7 +8783,7 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 void ShutdownReleasesContext_Callback(
     std::unique_ptr<CopyOutputResult> result) {}
 
-class FrameSinkClient : public TestLayerTreeFrameSinkClient {
+class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(
       scoped_refptr<ContextProvider> display_context_provider)
@@ -8813,7 +8813,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
-  auto layer_tree_frame_sink = base::MakeUnique<TestLayerTreeFrameSink>(
+  auto layer_tree_frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
       RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
       synchronous_composite, disable_display_vsync, refresh_rate);

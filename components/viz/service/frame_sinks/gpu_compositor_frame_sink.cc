@@ -17,7 +17,7 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
         compositor_frame_sink_private_request,
     cc::mojom::CompositorFrameSinkClientPtr client)
     : delegate_(delegate),
-      support_(cc::CompositorFrameSinkSupport::Create(
+      support_(CompositorFrameSinkSupport::Create(
           this,
           frame_sink_manager,
           frame_sink_id,

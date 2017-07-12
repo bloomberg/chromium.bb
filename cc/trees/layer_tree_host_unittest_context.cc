@@ -30,13 +30,13 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
 
@@ -77,7 +77,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     context3d_ = nullptr;
   }
 
-  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,

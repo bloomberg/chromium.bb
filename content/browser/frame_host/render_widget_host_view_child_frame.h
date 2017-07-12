@@ -18,9 +18,9 @@
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -31,7 +31,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
+namespace viz {
 class CompositorFrameSinkSupport;
 }
 
@@ -54,7 +54,7 @@ class TouchSelectionControllerClientChildFrame;
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewBase,
       public TouchSelectionControllerClientManager::Observer,
-      public NON_EXPORTED_BASE(cc::CompositorFrameSinkSupportClient) {
+      public NON_EXPORTED_BASE(viz::CompositorFrameSinkSupportClient) {
  public:
   static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
@@ -171,7 +171,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 
-  // cc::CompositorFrameSinkSupportClient implementation.
+  // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -241,7 +241,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::FrameSinkId frame_sink_id_;
 
   // Surface-related state.
-  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
+  std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   viz::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;
   gfx::Size current_surface_size_;

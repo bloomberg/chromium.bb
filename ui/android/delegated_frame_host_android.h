@@ -9,9 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/surface_info.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
@@ -28,7 +28,7 @@ class ViewAndroid;
 class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
-    : public cc::CompositorFrameSinkSupportClient,
+    : public viz::CompositorFrameSinkSupportClient,
       public cc::ExternalBeginFrameSourceClient {
  public:
   class Client {
@@ -73,7 +73,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   viz::SurfaceId SurfaceId() const;
 
  private:
-  // cc::CompositorFrameSinkSupportClient implementation.
+  // viz::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -95,7 +95,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 
-  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
+  std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   cc::ExternalBeginFrameSource begin_frame_source_;
 
   cc::SurfaceInfo surface_info_;

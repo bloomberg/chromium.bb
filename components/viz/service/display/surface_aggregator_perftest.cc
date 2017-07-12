@@ -7,19 +7,19 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 constexpr bool kIsRoot = true;
@@ -32,11 +32,11 @@ const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
   SurfaceAggregatorPerfTest() {
-    context_provider_ = TestContextProvider::Create();
+    context_provider_ = cc::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager);
+    shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
 
-    resource_provider_ = FakeResourceProvider::Create(
+    resource_provider_ = cc::FakeResourceProvider::Create(
         context_provider_.get(), shared_bitmap_manager_.get());
   }
 
@@ -50,28 +50,27 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
       child_supports[i] = CompositorFrameSinkSupport::Create(
-          nullptr, &manager_, viz::FrameSinkId(1, i + 1), kIsChildRoot,
+          nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
     }
-    aggregator_.reset(new SurfaceAggregator(
-        manager_.surface_manager(), resource_provider_.get(), optimize_damage));
+    aggregator_ = base::MakeUnique<SurfaceAggregator>(
+        manager_.surface_manager(), resource_provider_.get(), optimize_damage);
     for (int i = 0; i < num_surfaces; i++) {
-      viz::LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
+      LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
 
-      std::unique_ptr<RenderPass> pass(RenderPass::Create());
+      auto pass = cc::RenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
 
-      CompositorFrame frame = test::MakeEmptyCompositorFrame();
+      cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
 
-      SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+      auto* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
-        TransferableResource resource;
+        cc::TransferableResource resource;
         resource.id = j;
         resource.is_software = true;
         frame.resource_list.push_back(resource);
 
-        TextureDrawQuad* quad =
-            pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+        auto* quad = pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
         const gfx::Rect rect(0, 0, 1, 2);
         const gfx::Rect opaque_rect;
         // Half of rects should be visible with partial damage.
@@ -93,13 +92,12 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       sqs = pass->CreateAndAppendSharedQuadState();
       sqs->opacity = opacity;
       if (i >= 1) {
-        SurfaceDrawQuad* surface_quad =
-            pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+        auto* surface_quad =
+            pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-            viz::SurfaceId(viz::FrameSinkId(1, i),
-                           viz::LocalSurfaceId(i, kArbitraryToken)),
-            SurfaceDrawQuadType::PRIMARY, nullptr);
+            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)),
+            cc::SurfaceDrawQuadType::PRIMARY, nullptr);
       }
 
       frame.render_pass_list.push_back(std::move(pass));
@@ -107,23 +105,21 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                                                std::move(frame));
     }
 
-    std::unique_ptr<CompositorFrameSinkSupport> root_support =
-        CompositorFrameSinkSupport::Create(
-            nullptr, &manager_, viz::FrameSinkId(1, num_surfaces + 1), kIsRoot,
-            kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+    auto root_support = CompositorFrameSinkSupport::Create(
+        nullptr, &manager_, FrameSinkId(1, num_surfaces + 1), kIsRoot,
+        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
     timer_.Reset();
     do {
-      std::unique_ptr<RenderPass> pass(RenderPass::Create());
-      CompositorFrame frame = test::MakeEmptyCompositorFrame();
+      auto pass = cc::RenderPass::Create();
+      cc::CompositorFrame frame = cc::test::MakeEmptyCompositorFrame();
 
-      SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-      SurfaceDrawQuad* surface_quad =
-          pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+      auto* sqs = pass->CreateAndAppendSharedQuadState();
+      auto* surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
       surface_quad->SetNew(
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
-          viz::SurfaceId(viz::FrameSinkId(1, num_surfaces),
-                         viz::LocalSurfaceId(num_surfaces, kArbitraryToken)),
-          SurfaceDrawQuadType::PRIMARY, nullptr);
+          SurfaceId(FrameSinkId(1, num_surfaces),
+                    LocalSurfaceId(num_surfaces, kArbitraryToken)),
+          cc::SurfaceDrawQuadType::PRIMARY, nullptr);
 
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
 
@@ -135,12 +131,11 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame.render_pass_list.push_back(std::move(pass));
 
       root_support->SubmitCompositorFrame(
-          viz::LocalSurfaceId(num_surfaces + 1, kArbitraryToken),
-          std::move(frame));
+          LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame));
 
-      CompositorFrame aggregated = aggregator_->Aggregate(viz::SurfaceId(
-          viz::FrameSinkId(1, num_surfaces + 1),
-          viz::LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
+      cc::CompositorFrame aggregated = aggregator_->Aggregate(
+          SurfaceId(FrameSinkId(1, num_surfaces + 1),
+                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -152,12 +147,12 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   }
 
  protected:
-  FrameSinkManager manager_;
-  scoped_refptr<TestContextProvider> context_provider_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  cc::FrameSinkManager manager_;
+  scoped_refptr<cc::TestContextProvider> context_provider_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
-  LapTimer timer_;
+  cc::LapTimer timer_;
 };
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque) {
@@ -189,4 +184,4 @@ TEST_F(SurfaceAggregatorPerfTest, FewSurfacesAggregateDamaged) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
