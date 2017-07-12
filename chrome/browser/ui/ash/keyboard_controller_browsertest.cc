@@ -57,7 +57,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     input_method->ShowImeIfNeeded();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
+    ui()->GetContentsWindow()->SetBounds(init_bounds);
   }
 
   void FocusNonEditableNode() {
@@ -72,7 +72,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     keyboard::KeyboardController::GetInstance()->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
+    ui()->GetContentsWindow()->SetBounds(init_bounds);
   }
 
   bool IsKeyboardVisible() const {
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
             keyboard_bounds.height() + keyboard_bounds.y());
   controller->SetKeyboardMode(keyboard::FLOATING);
   // Move keyboard to a random place.
-  ui()->GetKeyboardWindow()->SetBounds(gfx::Rect(50, 50, 50, 50));
+  ui()->GetContentsWindow()->SetBounds(gfx::Rect(50, 50, 50, 50));
   EXPECT_EQ(gfx::Rect(50, 50, 50, 50),
             controller->GetContainerWindow()->bounds());
 
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
   controller->ShowKeyboard(true);
-  controller->ui()->GetKeyboardWindow()->SetBounds(test_bounds);
+  controller->ui()->GetContentsWindow()->SetBounds(test_bounds);
   gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
   // Starts overscroll.
   controller->NotifyKeyboardBoundsChanging(keyboard_bounds);

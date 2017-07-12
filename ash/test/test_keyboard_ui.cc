@@ -15,7 +15,7 @@ namespace ash {
 TestKeyboardUI::TestKeyboardUI() {}
 TestKeyboardUI::~TestKeyboardUI() {}
 
-bool TestKeyboardUI::HasKeyboardWindow() const {
+bool TestKeyboardUI::HasContentsWindow() const {
   return !!keyboard_;
 }
 
@@ -23,7 +23,7 @@ bool TestKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
   return true;
 }
 
-aura::Window* TestKeyboardUI::GetKeyboardWindow() {
+aura::Window* TestKeyboardUI::GetContentsWindow() {
   if (!keyboard_) {
     keyboard_.reset(new aura::Window(&delegate_));
     keyboard_->Init(ui::LAYER_NOT_DRAWN);

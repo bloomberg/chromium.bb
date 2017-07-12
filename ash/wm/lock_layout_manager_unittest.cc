@@ -91,8 +91,8 @@ class LockLayoutManagerTest : public AshTestBase {
 
     if (show) {
       keyboard->ShowKeyboard(true);
-      if (keyboard->ui()->GetKeyboardWindow()->bounds().height() == 0) {
-        keyboard->ui()->GetKeyboardWindow()->SetBounds(
+      if (keyboard->ui()->GetContentsWindow()->bounds().height() == 0) {
+        keyboard->ui()->GetContentsWindow()->SetBounds(
             keyboard::FullWidthKeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(),
                 kVirtualKeyboardHeight));
@@ -234,7 +234,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   gfx::Rect target_bounds(screen_bounds);
   target_bounds.set_height(
       target_bounds.height() -
-      keyboard->ui()->GetKeyboardWindow()->bounds().height());
+      keyboard->ui()->GetContentsWindow()->bounds().height());
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
   ShowKeyboard(false);
 
