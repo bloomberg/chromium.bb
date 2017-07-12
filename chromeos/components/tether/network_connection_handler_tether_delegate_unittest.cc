@@ -87,15 +87,7 @@ class MockTetherConnector : public TetherConnector {
 
 class MockTetherDisconnector : public TetherDisconnector {
  public:
-  MockTetherDisconnector()
-      : TetherDisconnector(nullptr /* network_connection_handler */,
-                           nullptr /* network_state_handler */,
-                           nullptr /* active_host */,
-                           nullptr /* ble_connection_manager */,
-                           nullptr /* network_configuration_remover */,
-                           nullptr /* tether_connector */,
-                           nullptr /* device_id_tether_network_guid_map */,
-                           nullptr /* tether_host_fetcher */) {}
+  MockTetherDisconnector() : TetherDisconnector() {}
   ~MockTetherDisconnector() override {}
 
   MOCK_METHOD3(

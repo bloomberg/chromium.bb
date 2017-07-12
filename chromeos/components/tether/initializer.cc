@@ -18,7 +18,7 @@
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/tether_connector.h"
-#include "chromeos/components/tether/tether_disconnector.h"
+#include "chromeos/components/tether/tether_disconnector_impl.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_network_disconnection_handler.h"
@@ -94,6 +94,7 @@ void Initializer::Shutdown() {
 void Initializer::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ActiveHost::RegisterPrefs(registry);
   TetherHostResponseRecorder::RegisterPrefs(registry);
+  TetherDisconnectorImpl::RegisterPrefs(registry);
 }
 
 Initializer::Initializer(
@@ -222,11 +223,11 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   network_configuration_remover_ =
       base::MakeUnique<NetworkConfigurationRemover>(
           network_state_handler_, managed_network_configuration_handler_);
-  tether_disconnector_ = base::MakeUnique<TetherDisconnector>(
+  tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
       network_connection_handler_, network_state_handler_, active_host_.get(),
       ble_connection_manager_.get(), network_configuration_remover_.get(),
       tether_connector_.get(), device_id_tether_network_guid_map_.get(),
-      tether_host_fetcher_.get());
+      tether_host_fetcher_.get(), pref_service_);
   tether_network_disconnection_handler_ =
       base::MakeUnique<TetherNetworkDisconnectionHandler>(
           active_host_.get(), network_state_handler_,

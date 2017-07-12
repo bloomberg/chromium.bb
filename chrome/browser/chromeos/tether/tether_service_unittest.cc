@@ -233,10 +233,12 @@ TEST_F(TetherServiceTest, TestShutdown) {
 
   ShutdownTetherService();
 
-  EXPECT_EQ(
-      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler()->GetTechnologyState(
-          chromeos::NetworkTypePattern::Tether()));
+  // The TechnologyState should not have changed due to Shutdown() being called.
+  // If it had changed, any settings UI that was previously open would have
+  // shown visual jank.
+  EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
+            network_state_handler()->GetTechnologyState(
+                chromeos::NetworkTypePattern::Tether()));
   EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 }
 
