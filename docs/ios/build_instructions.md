@@ -14,14 +14,6 @@ Are you a Google employee? See
 
 * A 64-bit Mac running 10.11+.
 * [Xcode](https://developer.apple.com/xcode) 8.0+.
-* The OS X 10.10 SDK. Run
-
-    ```shell
-    $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
-    ```
-
-  to check whether you have it.  Building with the 10.11 SDK works too, but
-  the releases currently use the 10.10 SDK.
 * The current version of the JDK (required for the Closure compiler).
 
 ## Install `depot_tools`
