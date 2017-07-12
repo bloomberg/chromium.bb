@@ -92389,6 +92389,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ServiceWorker.NavigationPreload.ConcurrentTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NavigationType" separator=".">
+  <suffix name="NewPageInPageOriginMismatch"
+      label="in-document new page navigation with a non-matching origin"/>
+  <suffix name="NewPageInPage"
+      label="in-document new page navigation"/>
+  <suffix name="NewPagePendingEntryMatches"
+      label="new page navigation which found a pending entry"/>
+  <suffix name="NewPageNoMatchingEntry"
+      label="new page navigation with no matching entry"/>
+  <suffix name="ExistingPageSameDocumentIntendedAsNew"
+      label="in-document existing page navigation which is intended as new"/>
+  <suffix name="ExistingPageDifferentDocumentIntendedAsNew"
+      label="existing page navigation which is intended as new"/>
+  <suffix name="ExistingPageSameDocumentRestoredBrowserInitiated"
+      label="in-document existing page browser-initiated navigation which is restored"/>
+  <suffix name="ExistingPageSameDocumentBrowserInitiated"
+      label="in-document existing page browser-initiated navigation"/>
+  <suffix name="ExistingPageRestoredBrowserInitiated"
+      label="existing page browser-initiated navigation which is restored"/>
+  <suffix name="ExistingPageBrowserInitiated"
+      label="existing page browser-initiated navigation"/>
+  <suffix name="ExistingPageSameDocumentRendererInitiated"
+      label="in-document existing page renderer-initiated navigation"/>
+  <suffix name="ExistingPageDifferentDocumentRendererInitiated"
+      label="existing page renderer-initiated navigation"/>
+  <suffix name="NewSubFrame" label="new subframe navigation"/>
+  <affected-histogram name="Navigation.SecureSchemeHasSSLStatus"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="Net.BidirectionalStreamExperiment" separator=".">
   <owner>xunjieli@chromium.org</owner>
   <suffix name="QUIC" label="Bidirectional streams that use QUIC protocol"/>
