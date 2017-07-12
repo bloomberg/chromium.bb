@@ -167,6 +167,9 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 InterfaceEndpointClient::~InterfaceEndpointClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(crbug.com/741047): Remove this.
+  CHECK(task_runner_->RunsTasksInCurrentSequence());
+
   if (controller_)
     handle_.group_controller()->DetachEndpointClient(handle_);
 }

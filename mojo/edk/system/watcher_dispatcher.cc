@@ -228,7 +228,10 @@ MojoResult WatcherDispatcher::Arm(
   return MOJO_RESULT_FAILED_PRECONDITION;
 }
 
-WatcherDispatcher::~WatcherDispatcher() {}
+WatcherDispatcher::~WatcherDispatcher() {
+  // TODO(crbug.com/74044): Remove this.
+  CHECK(closed_);
+}
 
 }  // namespace edk
 }  // namespace mojo
