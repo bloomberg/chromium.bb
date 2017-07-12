@@ -2647,10 +2647,33 @@ class TestGitCl(TestCase):
   def test_cmd_issue_erase_existing(self):
     out = StringIO.StringIO()
     self.mock(git_cl.sys, 'stdout', out)
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda _: 'This is a description')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
         ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        # Let this command raise exception (retcode=1) - it should be ignored.
+        ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
+         CERR1),
+        ((['git', 'config', '--unset', 'branch.feature.gerritissue'],), ''),
+        ((['git', 'config', '--unset', 'branch.feature.gerritpatchset'],), ''),
+        ((['git', 'config', '--unset', 'branch.feature.gerritserver'],), ''),
+        ((['git', 'config', '--unset', 'branch.feature.gerritsquashhash'],),
+         ''),
+    ]
+    self.assertEqual(0, git_cl.main(['issue', '0']))
+
+  def test_cmd_issue_erase_existing_with_change_id(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda _: 'This is a description\n\nChange-Id: Ideadbeef')
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'commit', '--amend', '-m', 'This is a description\n'],), ''),
         # Let this command raise exception (retcode=1) - it should be ignored.
         ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
          CERR1),
