@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
@@ -32,12 +33,10 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   struct AllocatedProcessInfo {
     // Same as RenderProcessHost::GetID().
     int process_id;
-    // True if SiteInstance was used to retrieve the process. Even if true, this
-    // might not actually be a brand new process, since SiteInstance can return
-    // an existing process. If false, the process already existed in
-    // ServiceWorkerProcessManager's list of known processes.
-    // TODO(falken): Fix this.
-    bool is_new_process;
+
+    // This must be one of NEW_PROCESS, EXISTING_UNREADY_PROCESS or
+    // EXISTING_READY_PROCESS.
+    ServiceWorkerMetrics::StartSituation start_situation;
   };
 
   // |*this| must be owned by a ServiceWorkerContextWrapper in a

@@ -144,9 +144,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   int restart_count() const { return restart_count_; }
   int process_id() const;
   int thread_id() const { return thread_id_; }
-  // This should be called only when the worker instance has a valid process,
-  // that is, when |process_id()| returns a valid process id.
-  bool is_new_process() const;
   int worker_devtools_agent_route_id() const;
 
   void AddListener(Listener* listener);
@@ -216,7 +213,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Called back from StartTask after the worker is registered to
   // WorkerDevToolsManager.
   void OnRegisteredToDevToolsManager(
-      bool is_new_process,
       std::unique_ptr<DevToolsProxy> devtools_proxy,
       bool wait_for_debugger);
 

@@ -14,8 +14,8 @@ namespace {
 const std::string kNavigationPreloadSuffix = "_NavigationPreloadEnabled";
 const std::string kStartWorkerDuringStartupSuffix = "_StartWorkerDuringStartup";
 const std::string kWorkerStartOccurred = "_WorkerStartOccurred";
-const std::string kStartWorkerExistingProcessSuffix =
-    "_StartWorkerExistingProcess";
+const std::string kStartWorkerExistingReadyProcessSuffix =
+    "_StartWorkerExistingReadyProcess";
 const std::string kPreparationTime =
     "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time";
 const std::string kPreparationType =
@@ -111,14 +111,19 @@ TEST(ServiceWorkerMetricsTest, ActivatedWorkerPreparation) {
     // Test preparation when the worker started up in an existing process.
     base::HistogramTester histogram_tester;
     ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
-        time, EmbeddedWorkerStatus::STOPPED, StartSituation::EXISTING_PROCESS,
+        time, EmbeddedWorkerStatus::STOPPED,
+        StartSituation::EXISTING_READY_PROCESS,
         true /* did_navigation_preload */);
     histogram_tester.ExpectUniqueSample(
         kPreparationType,
-        static_cast<int>(WorkerPreparationType::START_IN_EXISTING_PROCESS), 1);
+        static_cast<int>(
+            WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
+        1);
     histogram_tester.ExpectUniqueSample(
         kPreparationType + kNavigationPreloadSuffix,
-        static_cast<int>(WorkerPreparationType::START_IN_EXISTING_PROCESS), 1);
+        static_cast<int>(
+            WorkerPreparationType::START_IN_EXISTING_READY_PROCESS),
+        1);
     histogram_tester.ExpectTimeBucketCount(kPreparationTime, time, 1);
     histogram_tester.ExpectTimeBucketCount(
         kPreparationTime + kNavigationPreloadSuffix, time, 1);
@@ -137,7 +142,7 @@ TEST(ServiceWorkerMetricsTest,
   base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(123);
   base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
   EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::RUNNING;
-  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  StartSituation start_situation = StartSituation::EXISTING_READY_PROCESS;
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
@@ -164,7 +169,7 @@ TEST(ServiceWorkerMetricsTest,
   base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(123);
   base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
   EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::RUNNING;
-  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  StartSituation start_situation = StartSituation::EXISTING_READY_PROCESS;
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
@@ -216,7 +221,7 @@ TEST(ServiceWorkerMetricsTest, NavigationPreloadResponse_WorkerStart_SubFrame) {
   base::TimeDelta worker_start = base::TimeDelta::FromMilliseconds(234);
   base::TimeDelta response_start = base::TimeDelta::FromMilliseconds(789);
   EmbeddedWorkerStatus initial_worker_status = EmbeddedWorkerStatus::STOPPED;
-  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  StartSituation start_situation = StartSituation::EXISTING_READY_PROCESS;
   base::HistogramTester histogram_tester;
   ServiceWorkerMetrics::RecordNavigationPreloadResponse(
       worker_start, response_start, initial_worker_status, start_situation,
@@ -342,7 +347,7 @@ TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming) {
   auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
   start_timing->blink_initialized_time = start_worker_sent_time;
   start_timing->start_worker_received_time = start_worker_sent_time + latency;
-  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  StartSituation start_situation = StartSituation::EXISTING_READY_PROCESS;
   base::HistogramTester histogram_tester;
 
   ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
@@ -353,7 +358,7 @@ TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming) {
   histogram_tester.ExpectTimeBucketCount(
       "EmbeddedWorkerInstance.Start.StartMessageLatency", latency, 1);
   histogram_tester.ExpectTimeBucketCount(
-      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingProcess",
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingReadyProcess",
       latency, 1);
   histogram_tester.ExpectUniqueSample(
       "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", false, 1);
@@ -420,7 +425,7 @@ TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming_NegativeLatency) {
   auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
   start_timing->blink_initialized_time = start_worker_sent_time;
   start_timing->start_worker_received_time = start_worker_sent_time - latency;
-  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  StartSituation start_situation = StartSituation::EXISTING_READY_PROCESS;
   base::HistogramTester histogram_tester;
 
   ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
@@ -431,7 +436,8 @@ TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming_NegativeLatency) {
   histogram_tester.ExpectTotalCount(
       "EmbeddedWorkerInstance.Start.StartMessageLatency", 0);
   histogram_tester.ExpectTotalCount(
-      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingProcess", 0);
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingReadyProcess",
+      0);
   histogram_tester.ExpectTotalCount(
       "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", 0);
   histogram_tester.ExpectTotalCount(

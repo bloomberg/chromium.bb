@@ -96794,7 +96794,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ServiceWorker.EventDispatchingDelay"/>
   <affected-histogram name="ServiceWorker.StartWorker.StatusByPurpose"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_DuringStartup"/>
-  <affected-histogram name="ServiceWorker.StartWorker.Time_ExistingProcess"/>
+  <affected-histogram
+      name="ServiceWorker.StartWorker.Time_ExistingReadyProcess"/>
+  <affected-histogram
+      name="ServiceWorker.StartWorker.Time_ExistingUnreadyProcess"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_NewProcess"/>
 </histogram_suffixes>
 
@@ -96835,11 +96838,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="ServiceWorker.StartSituation" separator="_">
   <suffix name="DuringStartup"
       label="The worker started up during browser startup."/>
-  <suffix name="NewProcess"
-      label="A new process was created for the worker (or is asyncly being
-             created, depending on the histogram)."/>
-  <suffix name="ExistingProcess"
-      label="An existing process was used for the worker."/>
+  <suffix name="NewProcess" label="A new process was created for the worker."/>
+  <suffix name="ExistingProcess">
+    <obsolete>
+      Deprecated as of 07/2017. Replaced by ExistingUnreadyProcess and
+      ExistingReadyProcess.
+    </obsolete>
+  </suffix>
+  <suffix name="ExistingUnreadyProcess"
+      label="An existing unready process was used for the worker."/>
+  <suffix name="ExistingReadyProcess"
+      label="An existing ready process was used for the worker."/>
   <affected-histogram name="EmbeddedWorkerInstance.Start.StartMessageLatency"/>
   <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToEvaluateScript"/>
   <affected-histogram name="EmbeddedWorkerInstance.Start.TimeToLoad.HttpCache"/>
@@ -96858,8 +96867,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Started a worker during browser startup."/>
   <suffix name="StartWorkerNewProcess"
       label="Started a worker in a new process."/>
-  <suffix name="StartWorkerExistingProcess"
-      label="Started a worker in an existing process."/>
+  <suffix name="StartWorkerExistingProcess">
+    <obsolete>
+      Deprecated as of 07/2017. Replaced by StartWorkerExistingUnreadyProcess
+      and StartWorkerExistingReadyProcess.
+    </obsolete>
+  </suffix>
+  <suffix name="StartWorkerExistingUnreadyProcess"
+      label="Started a worker in an existing unready process."/>
+  <suffix name="StartWorkerExistingReadyProcess"
+      label="Started a worker in an existing ready process."/>
   <suffix name="StartingWorker"
       label="The activated worker was already starting up."/>
   <suffix name="RunningWorker"

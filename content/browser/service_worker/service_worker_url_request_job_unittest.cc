@@ -560,7 +560,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
       "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
       "NavigationPreloadEnabled",
       static_cast<int>(ServiceWorkerMetrics::WorkerPreparationType::
-                           START_IN_EXISTING_PROCESS),
+                           START_IN_EXISTING_READY_PROCESS),
       1);
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.FinishedFirst_MainFrame", false, 1);
@@ -587,7 +587,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
       "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type_"
       "NavigationPreloadEnabled",
       static_cast<int>(ServiceWorkerMetrics::WorkerPreparationType::
-                           START_IN_EXISTING_PROCESS),
+                           START_IN_EXISTING_READY_PROCESS),
       1);
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.FinishedFirst_MainFrame", true, 1);
