@@ -50,6 +50,14 @@ _SHELL_QUOTABLE_CHARS = frozenset('[|&;()<> \t!{}[]=*?~$"\'\\#^')
 _SHELL_ESCAPE_CHARS = r'\"`$'
 
 
+# Name of the LV that contains the active chroot inside the chroot.img file.
+CHROOT_LV_NAME = 'chroot'
+
+
+# Name of the thin pool used for the chroot and snapshots inside chroot.img.
+CHROOT_THINPOOL_NAME = 'thinpool'
+
+
 def ShellQuote(s):
   """Quote |s| in a way that is safe for use in a shell.
 
@@ -1587,9 +1595,22 @@ def MountChroot(chroot=None, buildroot=None, create=True,
   if result.returncode == 0:
     logging.debug('Activating existing VG %s', chroot_vg)
     cmd = ['vgchange', '-q', '-ay', chroot_vg]
+    # Sometimes LVM's internal thin volume check won't finish quickly enough
+    # and this command will fail.  When this is the case, it will succeed if
+    # we retry.  If it fails three times in a row, assume there's a real error
+    # and re-raise the exception.
+    try_count = xrange(1, 4)
+    for i in try_count:
+      try:
+        SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+        break
+      except RunCommandError:
+        logging.warning('Failed to activate VG on try %d.', i)
+        if i == len(try_count):
+          raise
   else:
     cmd = ['vgcreate', '-q', chroot_vg, chroot_dev]
-  SudoRunCommand(cmd, capture_output=True, print_cmd=False)
+    SudoRunCommand(cmd, capture_output=True, print_cmd=False)
 
   # Make sure there is an LV containing a filesystem in our VG.
   chroot_lv = '%s/chroot' % chroot_vg
@@ -1601,8 +1622,9 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     logging.debug('Activating existing LV %s', chroot_lv)
     cmd = ['lvchange', '-q', '-ay', chroot_lv]
   else:
-    cmd = ['lvcreate', '-q', '-L499G', '-T', '%s/thinpool' % chroot_vg,
-           '-V500G', '-n', 'chroot']
+    cmd = ['lvcreate', '-q', '-L499G', '-T',
+           '%s/%s' % (chroot_vg, CHROOT_THINPOOL_NAME), '-V500G',
+           '-n', CHROOT_LV_NAME]
     SudoRunCommand(cmd, capture_output=True, print_cmd=False)
 
     cmd = ['mke2fs', '-q', '-m', '0', '-t', 'ext4', chroot_dev_path]
@@ -1702,7 +1724,7 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
 
   # Clean up all the pieces we found above.
   if vg_name:
-    cmd = ['vgremove', '-f', vg_name]
+    cmd = ['vgchange', '-an', vg_name]
     SudoRunCommand(cmd, capture_output=True, print_cmd=False)
   if chroot_dev:
     cmd = ['losetup', '-d', chroot_dev]

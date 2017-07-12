@@ -2240,7 +2240,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
   _VGS_VG_LOOKUP = ['sudo', '--', 'vgs', partial_mock.Ignore()]
   _LOSETUP_FIND = ['sudo', '--', 'losetup', '-j', partial_mock.Ignore()]
   _LOSETUP_DETACH = ['sudo', '--', 'losetup', '-d', partial_mock.Ignore()]
-  _VGREMOVE = ['sudo', '--', 'vgremove', '-f', partial_mock.Ignore()]
+  _VGCHANGE_N = ['sudo', '--', 'vgchange', '-an', partial_mock.Ignore()]
   _LVM_FAILURE_CODE = 5  # Shell exit code when lvm commands fail.
   _LVM_SUCCESS_CODE = 0  # Shell exit code when lvm commands succeed.
 
@@ -2259,7 +2259,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     with RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
-      rc_mock.AddCmdResult(self._VGREMOVE)
+      rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
 
       cros_build_lib.CleanupChrootMount(
@@ -2277,7 +2277,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     with RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
-      rc_mock.AddCmdResult(self._VGREMOVE)
+      rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
 
       cros_build_lib.CleanupChrootMount(
@@ -2296,7 +2296,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
 
     with RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(self._VGS_DEV_LOOKUP, output='  /dev/loop0')
-      rc_mock.AddCmdResult(self._VGREMOVE)
+      rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
 
       cros_build_lib.CleanupChrootMount(
@@ -2318,7 +2318,7 @@ class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
       rc_mock.AddCmdResult(self._LOSETUP_FIND, output='/dev/loop1')
       rc_mock.AddCmdResult(self._VGS_VG_LOOKUP,
                            returncode=self._LVM_SUCCESS_CODE)
-      rc_mock.AddCmdResult(self._VGREMOVE)
+      rc_mock.AddCmdResult(self._VGCHANGE_N)
       rc_mock.AddCmdResult(self._LOSETUP_DETACH)
 
       cros_build_lib.CleanupChrootMount(

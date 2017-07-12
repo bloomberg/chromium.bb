@@ -92,6 +92,7 @@ SPECIAL_TESTS = {
 
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
+    'scripts/cros_sdk_unittest': OUTSIDE,
 
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
@@ -110,6 +111,8 @@ SLOW_TESTS = {
 
     # cgroups_unittest runs cros_sdk a lot, so is slow.
     'lib/cgroups_unittest': SKIP,
+    # cros_sdk_unittest runs cros_sdk a lot, so is slow.
+    'scripts/cros_sdk_unittest': SKIP,
 }
 
 
