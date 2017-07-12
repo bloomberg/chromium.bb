@@ -34,8 +34,8 @@ struct StructTraits<media::mojom::BitstreamBufferDataView,
     return base::checked_cast<uint32_t>(input.size());
   }
 
-  static uint64_t offset(const media::BitstreamBuffer& input) {
-    return input.offset();
+  static int64_t offset(const media::BitstreamBuffer& input) {
+    return base::checked_cast<int64_t>(input.offset());
   }
 
   static base::TimeDelta timestamp(const media::BitstreamBuffer& input) {
