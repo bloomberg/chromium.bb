@@ -5,6 +5,7 @@
 #ifndef CC_SURFACES_PRIMARY_BEGIN_FRAME_SOURCE_H_
 #define CC_SURFACES_PRIMARY_BEGIN_FRAME_SOURCE_H_
 
+#include "base/containers/flat_set.h"
 #include "cc/scheduler/begin_frame_source.h"
 
 namespace cc {
