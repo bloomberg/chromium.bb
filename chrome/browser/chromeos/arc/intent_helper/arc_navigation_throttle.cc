@@ -13,7 +13,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "components/arc/intent_helper/page_transition_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -179,9 +178,12 @@ ArcNavigationThrottle::HandleRequest() {
   if (!arc_service_manager)
     return content::NavigationThrottle::PROCEED;
 
-  scoped_refptr<LocalActivityResolver> local_resolver =
-      arc_service_manager->activity_resolver();
-  if (local_resolver->ShouldChromeHandleUrl(url)) {
+  auto* intent_helper_bridge =
+      arc_service_manager->GetService<ArcIntentHelperBridge>();
+  if (!intent_helper_bridge)
+    return content::NavigationThrottle::PROCEED;
+
+  if (intent_helper_bridge->ShouldChromeHandleUrl(url)) {
     // Allow navigation to proceed if there isn't an android app that handles
     // the given URL.
     return content::NavigationThrottle::PROCEED;

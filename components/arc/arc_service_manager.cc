@@ -20,8 +20,7 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 }  // namespace
 
 ArcServiceManager::ArcServiceManager()
-    : arc_bridge_service_(base::MakeUnique<ArcBridgeService>()),
-      activity_resolver_(new LocalActivityResolver()) {
+    : arc_bridge_service_(base::MakeUnique<ArcBridgeService>()) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 }
@@ -75,7 +74,6 @@ ArcService* ArcServiceManager::GetNamedServiceInternal(
 
 void ArcServiceManager::Shutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  activity_resolver_ = nullptr;
   services_.clear();
 }
 

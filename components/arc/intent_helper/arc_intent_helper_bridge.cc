@@ -15,7 +15,6 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
-#include "components/arc/intent_helper/local_activity_resolver.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 
@@ -29,12 +28,8 @@ const char ArcIntentHelperBridge::kArcServiceName[] =
 const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
     "org.chromium.arc.intent_helper";
 
-ArcIntentHelperBridge::ArcIntentHelperBridge(
-    ArcBridgeService* bridge_service,
-    const scoped_refptr<LocalActivityResolver>& activity_resolver)
-    : ArcService(bridge_service),
-      binding_(this),
-      activity_resolver_(activity_resolver) {
+ArcIntentHelperBridge::ArcIntentHelperBridge(ArcBridgeService* bridge_service)
+    : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->intent_helper()->AddObserver(this);
 }
 
@@ -100,6 +95,21 @@ ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
   return icon_loader_.GetActivityIcons(activities, callback);
 }
 
+bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    // Chrome will handle everything that is not http and https.
+    return true;
+  }
+
+  for (const IntentFilter& filter : intent_filters_) {
+    if (filter.Match(url))
+      return false;
+  }
+
+  // Didn't find any matches for Android so let Chrome handle it.
+  return true;
+}
+
 void ArcIntentHelperBridge::AddObserver(ArcIntentHelperObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -139,7 +149,7 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(
     std::vector<IntentFilter> filters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  activity_resolver_->UpdateIntentFilters(std::move(filters));
+  intent_filters_ = std::move(filters);
 
   for (auto& observer : observer_list_)
     observer.OnIntentFiltersUpdated();

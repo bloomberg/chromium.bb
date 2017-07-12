@@ -11,7 +11,6 @@
 
 #include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
@@ -31,7 +30,6 @@ namespace arc {
 
 class ArcBridgeService;
 class IntentFilter;
-class LocalActivityResolver;
 
 // Receives intents from ARC.
 class ArcIntentHelperBridge
@@ -40,9 +38,7 @@ class ArcIntentHelperBridge
       public mojom::IntentHelperHost,
       public ash::LinkHandlerModelFactory {
  public:
-  ArcIntentHelperBridge(
-      ArcBridgeService* bridge_service,
-      const scoped_refptr<LocalActivityResolver>& activity_resolver);
+  explicit ArcIntentHelperBridge(ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
 
   void AddObserver(ArcIntentHelperObserver* observer);
@@ -73,6 +69,14 @@ class ArcIntentHelperBridge
   GetResult GetActivityIcons(const std::vector<ActivityName>& activities,
                              const OnIconsReadyCallback& callback);
 
+  // Returns true when |url| can only be handled by Chrome. Otherwise, which is
+  // when there might be one or more ARC apps that can handle |url|, returns
+  // false. This function synchronously checks the |url| without making any IPC
+  // to ARC side. Note that this function only supports http and https. If url's
+  // scheme is neither http nor https, the function immediately returns true
+  // without checking the filters.
+  bool ShouldChromeHandleUrl(const GURL& url);
+
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
 
@@ -90,11 +94,14 @@ class ArcIntentHelperBridge
   static const char kArcIntentHelperPackageName[];
 
  private:
+  THREAD_CHECKER(thread_checker_);
+
   mojo::Binding<mojom::IntentHelperHost> binding_;
   internal::ActivityIconLoader icon_loader_;
-  scoped_refptr<LocalActivityResolver> activity_resolver_;
 
-  THREAD_CHECKER(thread_checker_);
+  // List of intent filters from Android. Used to determine if Chrome should
+  // handle a URL without handing off to Android.
+  std::vector<IntentFilter> intent_filters_;
 
   base::ObserverList<ArcIntentHelperObserver> observer_list_;
 
