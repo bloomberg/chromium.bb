@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -95,5 +96,23 @@ TEST_F(TabCollectionMediatorTest, TestDetachWebState) {
 // webStateList.
 TEST_F(TabCollectionMediatorTest, TestChangeActiveWebState) {
   web_state_list_->ActivateWebStateAt(2);
-  [[consumer_ verify] setSelectedIndex:2];
+  // Due to use of id for OCMock objects, naming collisions can exist. In this
+  // case, the method -setSelectedIndex: collides with a property setter in
+  // UIKit's UITabBarController class. The fix is to cast after calling -verify.
+  auto consumer = static_cast<id<TabCollectionConsumer>>([consumer_ verify]);
+  [consumer setSelectedIndex:2];
+}
+
+// Tests that the consumer is notified that a snapshot has been updated.
+TEST_F(TabCollectionMediatorTest, TestTakeSnapshot) {
+  web::TestWebState* web_state = GetWebStateAt(0);
+  TabIdTabHelper::CreateForWebState(web_state);
+  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
+  NSString* tab_id = tab_helper->tab_id();
+
+  id snapshot_cache = OCMClassMock([SnapshotCache class]);
+  [mediator_ takeSnapshotWithCache:snapshot_cache];
+
+  [[snapshot_cache verify] setImage:[OCMArg any] withSessionID:tab_id];
+  [[consumer_ verify] updateSnapshotAtIndex:0];
 }

@@ -13,6 +13,8 @@ source_set("snapshots") {
     "snapshot_cache_internal.h",
     "snapshot_cache_web_state_list_observer.h",
     "snapshot_cache_web_state_list_observer.mm",
+    "snapshot_constants.h",
+    "snapshot_constants.mm",
     "snapshot_manager.h",
     "snapshot_manager.mm",
     "snapshot_overlay.h",

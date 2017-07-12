@@ -6,9 +6,11 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_item.h"
+#import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,10 +19,12 @@
 
 @interface TestTabCollectionViewController : TabCollectionViewController
 @property(nonatomic, readwrite) NSMutableArray<TabCollectionItem*>* items;
+@property(nonatomic, readwrite) UICollectionView* tabs;
 @end
 
 @implementation TestTabCollectionViewController
 @dynamic items;
+@dynamic tabs;
 @end
 
 class TabCollectionViewControllerTest : public PlatformTest {
@@ -32,10 +36,14 @@ class TabCollectionViewControllerTest : public PlatformTest {
     TabCollectionItem* item1 = [[TabCollectionItem alloc] init];
     item1.title = @"Item1";
     view_controller_.items = [@[ item0, item1 ] mutableCopy];
+
+    tabs_ = OCMClassMock([UICollectionView class]);
+    view_controller_.tabs = tabs_;
   }
 
  protected:
   TestTabCollectionViewController* view_controller_;
+  id tabs_;
 };
 
 // Tests that an item is inserted.
@@ -72,4 +80,14 @@ TEST_F(TabCollectionViewControllerTest, TestInitializeItems) {
   item.title = @"NewItem";
   [view_controller_ populateItems:@[ item ] selectedIndex:0];
   EXPECT_NSEQ(@"NewItem", view_controller_.items[0].title);
+}
+
+// Tests that a snapshot is updated.
+TEST_F(TabCollectionViewControllerTest, TestUpdateSnapshot) {
+  id cell = OCMClassMock([TabCollectionTabCell class]);
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+  OCMStub([tabs_ cellForItemAtIndexPath:indexPath]).andReturn(cell);
+  [view_controller_ updateSnapshotAtIndex:0];
+  [[cell verify] configureCell:view_controller_.items[0]
+                 snapshotCache:[OCMArg any]];
 }
