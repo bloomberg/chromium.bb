@@ -742,7 +742,12 @@ STDMETHODIMP AXPlatformNodeWin::put_accName(
 
 STDMETHODIMP AXPlatformNodeWin::role(LONG* role) {
   COM_OBJECT_VALIDATE_1_ARG(role);
-  *role = MSAARole();
+
+  *role = IA2Role();
+  // If we didn't explicitly set the IAccessible2 role, make it the same
+  // as the MSAA role.
+  if (!*role)
+    *role = MSAARole();
   return S_OK;
 }
 
@@ -1664,6 +1669,144 @@ int32_t AXPlatformNodeWin::IA2State() {
       break;
   }
   return ia2_state;
+}
+
+// IA2Role() only returns a role if the MSAA role doesn't suffice,
+// otherwise this method returns 0. See AXPlatformNodeWin::role().
+int32_t AXPlatformNodeWin::IA2Role() {
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than DOCUMENT so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (IsWebAreaForPresentationalIframe()) {
+    return ROLE_SYSTEM_GROUPING;
+  }
+
+  int32_t ia2_role = 0;
+
+  switch (GetData().role) {
+    case ui::AX_ROLE_BANNER:
+      ia2_role = IA2_ROLE_HEADER;
+      break;
+    case ui::AX_ROLE_BLOCKQUOTE:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ui::AX_ROLE_CANVAS:
+      if (GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
+        ia2_role = IA2_ROLE_CANVAS;
+      }
+      break;
+    case ui::AX_ROLE_CAPTION:
+      ia2_role = IA2_ROLE_CAPTION;
+      break;
+    case ui::AX_ROLE_COLOR_WELL:
+      ia2_role = IA2_ROLE_COLOR_CHOOSER;
+      break;
+    case ui::AX_ROLE_COMPLEMENTARY:
+      ia2_role = IA2_ROLE_NOTE;
+      break;
+    case ui::AX_ROLE_CONTENT_INFO:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_DATE:
+    case ui::AX_ROLE_DATE_TIME:
+      ia2_role = IA2_ROLE_DATE_EDITOR;
+      break;
+    case ui::AX_ROLE_DEFINITION:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_EMBEDDED_OBJECT:
+      if (!delegate_->GetChildCount()) {
+        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
+      }
+      break;
+    case ui::AX_ROLE_FIGCAPTION:
+      ia2_role = IA2_ROLE_CAPTION;
+      break;
+    case ui::AX_ROLE_FORM:
+      ia2_role = IA2_ROLE_FORM;
+      break;
+    case ui::AX_ROLE_FOOTER:
+      ia2_role = IA2_ROLE_FOOTER;
+      break;
+    case ui::AX_ROLE_GENERIC_CONTAINER:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ui::AX_ROLE_HEADING:
+      ia2_role = IA2_ROLE_HEADING;
+      break;
+    case ui::AX_ROLE_IFRAME:
+      ia2_role = IA2_ROLE_INTERNAL_FRAME;
+      break;
+    case ui::AX_ROLE_IMAGE_MAP:
+      ia2_role = IA2_ROLE_IMAGE_MAP;
+      break;
+    case ui::AX_ROLE_LABEL_TEXT:
+    case ui::AX_ROLE_LEGEND:
+      ia2_role = IA2_ROLE_LABEL;
+      break;
+    case ui::AX_ROLE_MAIN:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_MARK:
+      ia2_role = IA2_ROLE_TEXT_FRAME;
+      break;
+    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+      ia2_role = IA2_ROLE_CHECK_MENU_ITEM;
+      break;
+    case ui::AX_ROLE_MENU_ITEM_RADIO:
+      ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
+      break;
+    case ui::AX_ROLE_NAVIGATION:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ui::AX_ROLE_NOTE:
+      ia2_role = IA2_ROLE_NOTE;
+      break;
+    case ui::AX_ROLE_PARAGRAPH:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_PRE:
+      ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ui::AX_ROLE_REGION: {
+      base::string16 html_tag = GetString16Attribute(ui::AX_ATTR_HTML_TAG);
+
+      if (html_tag == L"section") {
+        ia2_role = IA2_ROLE_SECTION;
+      }
+    } break;
+    case ui::AX_ROLE_RUBY:
+      ia2_role = IA2_ROLE_TEXT_FRAME;
+      break;
+    case ui::AX_ROLE_RULER:
+      ia2_role = IA2_ROLE_RULER;
+      break;
+    case ui::AX_ROLE_SCROLL_AREA:
+      ia2_role = IA2_ROLE_SCROLL_PANE;
+      break;
+    case ui::AX_ROLE_SEARCH:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ui::AX_ROLE_SWITCH:
+      ia2_role = IA2_ROLE_TOGGLE_BUTTON;
+      break;
+    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
+      ia2_role = IA2_ROLE_SECTION;
+      break;
+    case ui::AX_ROLE_TOGGLE_BUTTON:
+      ia2_role = IA2_ROLE_TOGGLE_BUTTON;
+      break;
+    case ui::AX_ROLE_ABBR:
+    case ui::AX_ROLE_TIME:
+      ia2_role = IA2_ROLE_TEXT_FRAME;
+      break;
+    default:
+      break;
+  }
+  return ia2_role;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveReadonlyState(

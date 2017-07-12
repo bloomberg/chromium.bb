@@ -683,11 +683,7 @@ STDMETHODIMP BrowserAccessibilityComWin::role(LONG* role) {
   if (!owner())
     return E_FAIL;
 
-  if (!role)
-    return E_INVALIDARG;
-
-  *role = ia2_role();
-  return S_OK;
+  return AXPlatformNodeWin::role(role);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
@@ -3547,7 +3543,17 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   old_win_attributes_.swap(win_attributes_);
   win_attributes_.reset(new WinAttributes());
 
-  InitRoleAndState();
+  win_attributes_->ia_role = MSAARole();
+  win_attributes_->ia_state = MSAAState();
+  win_attributes_->role_name = base::UTF8ToUTF16(StringOverrideForMSAARole());
+
+  win_attributes_->ia2_role = IA2Role();
+  // If we didn't explicitly set the IAccessible2 role, make it the same
+  // as the MSAA role.
+  if (!win_attributes_->ia2_role)
+    win_attributes_->ia2_role = win_attributes_->ia_role;
+
+  win_attributes_->ia2_state = IA2State();
 
   win_attributes_->ia2_attributes.clear();
 
@@ -3731,14 +3737,6 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
     AddRelation(IA2_RELATION_ERROR_MESSAGE, error_message_id);
 
   UpdateRequiredAttributes();
-  // If this is a web area for a presentational iframe, give it a role of
-  // something other than DOCUMENT so that the fact that it's a separate doc
-  // is not exposed to AT.
-  // TODO(dougt): When we move IA2 Role handling to AXPlatformNodeWin, we can
-  // remove this ia2_role special case.
-  if (owner()->IsWebAreaForPresentationalIframe()) {
-    win_attributes_->ia2_role = ROLE_SYSTEM_GROUPING;
-  }
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -4913,145 +4911,6 @@ void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
   (new BrowserAccessibilityEventWin(BrowserAccessibilityEvent::FromTreeChange,
                                     ui::AX_EVENT_NONE, win_event_type, owner()))
       ->Fire();
-}
-
-void BrowserAccessibilityComWin::InitRoleAndState() {
-  int32_t ia2_role = 0;
-
-  base::string16 html_tag = owner()->GetString16Attribute(ui::AX_ATTR_HTML_TAG);
-  switch (owner()->GetRole()) {
-    case ui::AX_ROLE_BANNER:
-      ia2_role = IA2_ROLE_HEADER;
-      break;
-    case ui::AX_ROLE_BLOCKQUOTE:
-      ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_CANVAS:
-      if (owner()->GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
-        ia2_role = IA2_ROLE_CANVAS;
-      }
-      break;
-    case ui::AX_ROLE_CAPTION:
-      ia2_role = IA2_ROLE_CAPTION;
-      break;
-    case ui::AX_ROLE_COLOR_WELL:
-      ia2_role = IA2_ROLE_COLOR_CHOOSER;
-      break;
-    case ui::AX_ROLE_COMPLEMENTARY:
-      ia2_role = IA2_ROLE_NOTE;
-      break;
-    case ui::AX_ROLE_CONTENT_INFO:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_DATE_TIME:
-      ia2_role = IA2_ROLE_DATE_EDITOR;
-      break;
-    case ui::AX_ROLE_DEFINITION:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_EMBEDDED_OBJECT:
-      if (!owner()->PlatformChildCount()) {
-        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
-      }
-      break;
-    case ui::AX_ROLE_FIGCAPTION:
-      ia2_role = IA2_ROLE_CAPTION;
-      break;
-    case ui::AX_ROLE_FORM:
-      ia2_role = IA2_ROLE_FORM;
-      break;
-    case ui::AX_ROLE_FOOTER:
-      ia2_role = IA2_ROLE_FOOTER;
-      break;
-    case ui::AX_ROLE_GENERIC_CONTAINER:
-      ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_HEADING:
-      ia2_role = IA2_ROLE_HEADING;
-      break;
-    case ui::AX_ROLE_IFRAME:
-      ia2_role = IA2_ROLE_INTERNAL_FRAME;
-      break;
-    case ui::AX_ROLE_IMAGE_MAP:
-      ia2_role = IA2_ROLE_IMAGE_MAP;
-      break;
-    case ui::AX_ROLE_LABEL_TEXT:
-    case ui::AX_ROLE_LEGEND:
-      ia2_role = IA2_ROLE_LABEL;
-      break;
-    case ui::AX_ROLE_MAIN:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_MARK:
-      ia2_role = IA2_ROLE_TEXT_FRAME;
-      break;
-    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
-      ia2_role = IA2_ROLE_CHECK_MENU_ITEM;
-      break;
-    case ui::AX_ROLE_MENU_ITEM_RADIO:
-      ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
-      break;
-    case ui::AX_ROLE_NAVIGATION:
-      ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_NOTE:
-      ia2_role = IA2_ROLE_NOTE;
-      break;
-    case ui::AX_ROLE_PARAGRAPH:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_PRE:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
-    case ui::AX_ROLE_REGION:
-      if (html_tag == L"section") {
-        ia2_role = IA2_ROLE_SECTION;
-      }
-      break;
-    case ui::AX_ROLE_RUBY:
-      ia2_role = IA2_ROLE_TEXT_FRAME;
-      break;
-    case ui::AX_ROLE_RULER:
-      ia2_role = IA2_ROLE_RULER;
-      break;
-    case ui::AX_ROLE_SCROLL_AREA:
-      ia2_role = IA2_ROLE_SCROLL_PANE;
-      break;
-    case ui::AX_ROLE_SEARCH:
-      ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_SWITCH:
-      ia2_role = IA2_ROLE_TOGGLE_BUTTON;
-      break;
-    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
-      ia2_role = IA2_ROLE_SECTION;
-      break;
-    case ui::AX_ROLE_TOGGLE_BUTTON:
-      ia2_role = IA2_ROLE_TOGGLE_BUTTON;
-      break;
-    case ui::AX_ROLE_ABBR:
-    case ui::AX_ROLE_TIME:
-      ia2_role = IA2_ROLE_TEXT_FRAME;
-      break;
-    default:
-      break;
-  }
-
-  win_attributes_->ia_role = MSAARole();
-  win_attributes_->ia_state = MSAAState();
-  win_attributes_->role_name = base::UTF8ToUTF16(StringOverrideForMSAARole());
-
-  // If we didn't explicitly set the IAccessible2 role, make it the same
-  // as the MSAA role.
-  if (!ia2_role)
-    ia2_role = win_attributes_->ia_role;
-
-  win_attributes_->ia2_role = ia2_role;
-  win_attributes_->ia2_state = IA2State();
 }
 
 BrowserAccessibilityComWin* ToBrowserAccessibilityComWin(

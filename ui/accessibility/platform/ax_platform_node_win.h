@@ -276,6 +276,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   int32_t IA2State();
 
+  int32_t IA2Role();
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 
