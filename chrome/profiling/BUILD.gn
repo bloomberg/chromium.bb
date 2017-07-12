@@ -33,6 +33,8 @@ if (enable_oop_heap_profiling) {
       "profiling_globals.h",
       "profiling_main.cc",
       "profiling_main.h",
+      "profiling_process.cc",
+      "profiling_process.h",
     ]
 
     deps = [

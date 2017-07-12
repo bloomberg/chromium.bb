@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 if (enable_oop_heap_profiling) {
   static_library("profiling") {
@@ -18,12 +19,21 @@ if (enable_oop_heap_profiling) {
       "memlog_sender_pipe_win.h",
       "memlog_stream.cc",
       "memlog_stream.h",
+      "profiling_constants.cc",
+      "profiling_constants.h",
     ]
 
     deps = [
+      ":interfaces",
       "//base",
       "//base:debugging_flags",
       "//chrome/common:constants",
+    ]
+  }
+
+  mojom("interfaces") {
+    sources = [
+      "profiling_control.mojom",
     ]
   }
 } else {

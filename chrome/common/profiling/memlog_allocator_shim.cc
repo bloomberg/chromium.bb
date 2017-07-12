@@ -13,6 +13,10 @@
 #include "build/build_config.h"
 #include "chrome/common/profiling/memlog_stream.h"
 
+#if defined(OS_POSIX)
+#include <limits.h>
+#endif
+
 namespace profiling {
 
 namespace {
@@ -25,14 +29,20 @@ MemlogSenderPipe* g_sender_pipe = nullptr;
 // to raise this to avoid truncation. This matches the current value in the
 // in-process heap profiler (heap_profiler_allocation_context.h) so the two
 // systems performance and memory overhead can be compared consistently.
-const int kMaxStackEntries = 48;
+constexpr int kMaxStackEntries = 48;
 
+#if defined(OS_WIN)
 // Matches the native buffer size on the pipe.
-const int kSendBufferSize = 65536;
+constexpr int kSendBufferSize = 65536;
+#else
+// Writes on Posix greater than PIPE_BUF are not guaranteed to be atomic so
+// our buffers can't be larger than that.
+constexpr int kSendBufferSize = PIPE_BUF;
+#endif
 
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
-const int kNumSendBuffers = 17;
+constexpr int kNumSendBuffers = 17;
 
 class SendBuffer {
  public:
