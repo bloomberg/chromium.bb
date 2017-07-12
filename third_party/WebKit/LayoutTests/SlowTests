@@ -389,6 +389,8 @@ crbug.com/725548 [ Debug ] storage/indexeddb/objectstore-keycursor.html [ Slow ]
 
 crbug.com/676572 [ Debug ] external/wpt/webstorage/storage_local_setitem_quotaexceedederr.html [ Slow ]
 
+crbug.com/741259 editing/selection/select-bidi-run.html [ Slow ]
+
 # These tests were previously marked Slow in ASANExpectations.
 crbug.com/451577 [ Linux ] inspector/elements/user-properties.html [ Slow ]
 crbug.com/451577 [ Linux ] inspector/layers/layer-canvas-log.html [ Slow ]
