@@ -66,7 +66,7 @@ void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
   std::string bundle_id = base::SysNSStringToUTF8([bundle bundleIdentifier]);
   CHECK(client->SetParameter(Sandbox::kSandboxChromeBundleId, bundle_id));
 
-  CHECK(client->SetParameter(Sandbox::kSandboxChromePID,
+  CHECK(client->SetParameter(Sandbox::kSandboxBrowserPID,
                              std::to_string(getpid())));
 
   std::string logging_path =

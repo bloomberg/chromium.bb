@@ -56,8 +56,11 @@ __attribute__((noreturn)) void SandboxExec(const char* exec_path,
 
   // The name of the parameter containing the executable path.
   const std::string exec_param = "EXECUTABLE_PATH";
+  // The name of the parameter containg the pid of this process.
+  const std::string pid_param = "CURRENT_PID";
 
-  if (!server.SetParameter(exec_param, rp)) {
+  if (!server.SetParameter(exec_param, rp) ||
+      !server.SetParameter(pid_param, std::to_string(getpid()))) {
     fprintf(stderr, "Failed to set up parameters for sandbox.\n");
     abort();
   }
