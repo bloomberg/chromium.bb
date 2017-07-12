@@ -35,9 +35,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
-      blink::mojom::BackgroundFetchError* out_error,
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
-          out_initial_requests) {
+      blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
@@ -45,7 +43,7 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
         registration_id, requests, options,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidCreateRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       out_error, out_initial_requests));
+                       out_error));
     run_loop.Run();
   }
 
@@ -64,15 +62,10 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
   }
 
  private:
-  void DidCreateRegistration(
-      base::Closure quit_closure,
-      blink::mojom::BackgroundFetchError* out_error,
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
-          out_initial_requests,
-      blink::mojom::BackgroundFetchError error,
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
+  void DidCreateRegistration(base::Closure quit_closure,
+                             blink::mojom::BackgroundFetchError* out_error,
+                             blink::mojom::BackgroundFetchError error) {
     *out_error = error;
-    *out_initial_requests = std::move(initial_requests);
 
     quit_closure.Run();
   }
@@ -100,20 +93,19 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   BackgroundFetchOptions options;
 
   blink::mojom::BackgroundFetchError error;
-  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
 
   // Deleting the not-yet-created registration should fail.
   ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_TAG);
 
   // Creating the initial registration should succeed.
-  ASSERT_NO_FATAL_FAILURE(CreateRegistration(registration_id, requests, options,
-                                             &error, &initial_requests));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // Attempting to create it again should yield an error.
-  ASSERT_NO_FATAL_FAILURE(CreateRegistration(registration_id, requests, options,
-                                             &error, &initial_requests));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
 
   // Deleting the registration should succeed.
@@ -121,8 +113,8 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // And then recreating the registration again should work fine.
-  ASSERT_NO_FATAL_FAILURE(CreateRegistration(registration_id, requests, options,
-                                             &error, &initial_requests));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateRegistration(registration_id, requests, options, &error));
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 

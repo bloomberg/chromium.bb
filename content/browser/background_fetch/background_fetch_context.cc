@@ -76,8 +76,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     blink::mojom::BackgroundFetchService::FetchCallback callback,
-    blink::mojom::BackgroundFetchError error,
-    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
+    blink::mojom::BackgroundFetchError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RecordRegistrationCreatedError(error);
@@ -87,7 +86,7 @@ void BackgroundFetchContext::DidCreateRegistration(
   }
 
   // Create the BackgroundFetchJobController, which will do the actual fetching.
-  CreateController(registration_id, options, std::move(initial_requests));
+  CreateController(registration_id, options);
 
   // Create the BackgroundFetchRegistration the renderer process will receive,
   // which enables it to resolve the promise telling the developer it worked.
@@ -142,8 +141,7 @@ BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
 
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchOptions& options,
-    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
+    const BackgroundFetchOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -183,9 +181,9 @@ void BackgroundFetchContext::CreateController(
   // TODO(peter): We should actually be able to use Background Fetch in layout
   // tests. That requires a download manager and a request context.
   if (request_context_getter_) {
-    // Start fetching the |initial_requests| immediately. At some point in the
+    // Start fetching the first few requests immediately. At some point in the
     // future we may want a more elaborate scheduling mechanism here.
-    controller->Start(std::move(initial_requests));
+    controller->Start();
   }
 
   active_fetches_.insert(

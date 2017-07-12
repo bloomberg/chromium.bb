@@ -33,13 +33,14 @@ class ChromeBlobStorageContext;
 // which will keep the metadata up to date.
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
-  using CreateRegistrationCallback = base::OnceCallback<void(
-      blink::mojom::BackgroundFetchError,
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>)>;
+  using CreateRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using DeleteRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+  using MarkedCompleteCallback =
+      base::OnceCallback<void(bool /* has_pending_or_active_requests */)>;
   using SettledFetchesCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               bool /* background_fetch_succeeded */,
@@ -58,6 +59,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const BackgroundFetchOptions& options,
       CreateRegistrationCallback callback);
 
+  // Removes the next request, if any, from the pending requests queue, and
+  // invokes the |callback| with that request, else a null request.
+  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
+                      NextRequestCallback callback);
+
   // Marks that the |request|, part of the Background Fetch identified by
   // |registration_id|, has been started as |download_guid|.
   void MarkRequestAsStarted(
@@ -66,12 +72,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const std::string& download_guid);
 
   // Marks that the |request|, part of the Background Fetch identified by
-  // |registration_id|, has completed. Will invoke the |callback| with the
-  // next request, if any, when the operation has completed.
-  void MarkRequestAsCompleteAndGetNextRequest(
+  // |registration_id|, has completed.
+  void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
       BackgroundFetchRequestInfo* request,
-      NextRequestCallback callback);
+      MarkedCompleteCallback callback);
 
   // Reads all settled fetches for the given |registration_id|. Both the Request
   // and Response objects will be initialised based on the stored data. Will
