@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base.process_launcher;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,6 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -133,19 +131,10 @@ public class ChildConnectionAllocatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        // The tests run on only one thread. Pretend that is the launcher thread so LauncherThread
-        // asserts are not triggered.
-        LauncherThread.setCurrentThreadAsLauncherThread();
-
         mAllocator = ChildConnectionAllocator.createForTest(mCreationParams, TEST_PACKAGE_NAME,
                 "AllocatorTest", MAX_CONNECTION_NUMBER, false /* bindAsExternalService */,
                 false /* useStrongBinding */);
         mAllocator.setConnectionFactoryForTesting(mTestConnectionFactory);
-    }
-
-    @After
-    public void tearDown() {
-        LauncherThread.setLauncherThreadAsLauncherThread();
     }
 
     @Test

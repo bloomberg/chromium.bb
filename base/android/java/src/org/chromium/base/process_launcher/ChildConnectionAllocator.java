@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base.process_launcher;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class ChildConnectionAllocator {
 
     /** Factory interface. Used by tests to specialize created connections. */
     @VisibleForTesting
-    protected interface ConnectionFactory {
+    public interface ConnectionFactory {
         ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle serviceBundle,
                 ChildProcessCreationParams creationParams);
@@ -58,6 +59,9 @@ public class ChildConnectionAllocator {
 
     // Delay between the call to freeConnection and the connection actually beeing   freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
+
+    // The handler of the thread on which all interations should happen.
+    private final Handler mLauncherHandler;
 
     // Connections to services. Indices of the array correspond to the service numbers.
     private final ChildProcessConnection[] mChildProcessConnections;
@@ -79,7 +83,7 @@ public class ChildConnectionAllocator {
      * Factory method that retrieves the service name and number of service from the
      * AndroidManifest.xml.
      */
-    public static ChildConnectionAllocator create(Context context,
+    public static ChildConnectionAllocator create(Context context, Handler launcherHandler,
             ChildProcessCreationParams creationParams, String packageName,
             String serviceClassNameManifestKey, String numChildServicesManifestKey,
             boolean bindAsExternalService, boolean useStrongBinding) {
@@ -110,12 +114,12 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(creationParams, packageName, serviceClassName,
-                bindAsExternalService, useStrongBinding, numServices);
+        return new ChildConnectionAllocator(launcherHandler, creationParams, packageName,
+                serviceClassName, bindAsExternalService, useStrongBinding, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
-    static int getNumberOfServices(
+    public static int getNumberOfServices(
             Context context, String packageName, String numChildServicesManifestKey) {
         int numServices = -1;
         try {
@@ -142,13 +146,15 @@ public class ChildConnectionAllocator {
     public static ChildConnectionAllocator createForTest(ChildProcessCreationParams creationParams,
             String packageName, String serviceClassName, int serviceCount,
             boolean bindAsExternalService, boolean useStrongBinding) {
-        return new ChildConnectionAllocator(creationParams, packageName, serviceClassName,
-                bindAsExternalService, useStrongBinding, serviceCount);
+        return new ChildConnectionAllocator(new Handler(), creationParams, packageName,
+                serviceClassName, bindAsExternalService, useStrongBinding, serviceCount);
     }
 
-    private ChildConnectionAllocator(ChildProcessCreationParams creationParams, String packageName,
-            String serviceClassName, boolean bindAsExternalService, boolean useStrongBinding,
-            int numChildServices) {
+    private ChildConnectionAllocator(Handler launcherHandler,
+            ChildProcessCreationParams creationParams, String packageName, String serviceClassName,
+            boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
+        mLauncherHandler = launcherHandler;
+        assert isRunningOnLauncherThread();
         mCreationParams = creationParams;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
@@ -164,7 +170,7 @@ public class ChildConnectionAllocator {
     /** @return a bound connection, or null if there are no free slots. */
     public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
             final ChildProcessConnection.ServiceCallback serviceCallback) {
-        assert LauncherThread.runningOnLauncherThread();
+        assert isRunningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
             return null;
@@ -182,9 +188,9 @@ public class ChildConnectionAllocator {
                 new ChildProcessConnection.ServiceCallback() {
                     @Override
                     public void onChildStarted() {
-                        assert LauncherThread.runningOnLauncherThread();
+                        assert isRunningOnLauncherThread();
                         if (serviceCallback != null) {
-                            LauncherThread.post(new Runnable() {
+                            mLauncherHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     serviceCallback.onChildStarted();
@@ -195,9 +201,9 @@ public class ChildConnectionAllocator {
 
                     @Override
                     public void onChildStartFailed() {
-                        assert LauncherThread.runningOnLauncherThread();
+                        assert isRunningOnLauncherThread();
                         if (serviceCallback != null) {
-                            LauncherThread.post(new Runnable() {
+                            mLauncherHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     serviceCallback.onChildStartFailed();
@@ -208,9 +214,9 @@ public class ChildConnectionAllocator {
 
                     @Override
                     public void onChildProcessDied(final ChildProcessConnection connection) {
-                        assert LauncherThread.runningOnLauncherThread();
+                        assert isRunningOnLauncherThread();
                         if (serviceCallback != null) {
-                            LauncherThread.post(new Runnable() {
+                            mLauncherHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     serviceCallback.onChildProcessDied(connection);
@@ -224,7 +230,7 @@ public class ChildConnectionAllocator {
                         // time. If a new connection to the same service is bound at that point, the
                         // process is reused and bad things happen (mostly static variables are set
                         // when we don't expect them to).
-                        LauncherThread.postDelayed(new Runnable() {
+                        mLauncherHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 free(connection);
@@ -249,7 +255,7 @@ public class ChildConnectionAllocator {
 
     /** Frees a connection and notifies listeners. */
     private void free(ChildProcessConnection connection) {
-        assert LauncherThread.runningOnLauncherThread();
+        assert isRunningOnLauncherThread();
 
         // mChildProcessConnections is relatively short (20 items at max at this point).
         // We are better of iterating than caching in a map.
@@ -278,7 +284,7 @@ public class ChildConnectionAllocator {
     }
 
     public boolean isFreeConnectionAvailable() {
-        assert LauncherThread.runningOnLauncherThread();
+        assert isRunningOnLauncherThread();
         return !mFreeConnectionIndices.isEmpty();
     }
 
@@ -297,19 +303,23 @@ public class ChildConnectionAllocator {
     }
 
     @VisibleForTesting
-    void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
+    public void setConnectionFactoryForTesting(ConnectionFactory connectionFactory) {
         mConnectionFactory = connectionFactory;
     }
 
     /** @return the count of connections managed by the allocator */
     @VisibleForTesting
-    int allocatedConnectionsCountForTesting() {
-        assert LauncherThread.runningOnLauncherThread();
+    public int allocatedConnectionsCountForTesting() {
+        assert isRunningOnLauncherThread();
         return mChildProcessConnections.length - mFreeConnectionIndices.size();
     }
 
     @VisibleForTesting
-    ChildProcessConnection getChildProcessConnectionAtSlotForTesting(int slotNumber) {
+    public ChildProcessConnection getChildProcessConnectionAtSlotForTesting(int slotNumber) {
         return mChildProcessConnections[slotNumber];
+    }
+
+    private boolean isRunningOnLauncherThread() {
+        return mLauncherHandler.getLooper() == Looper.myLooper();
     }
 }
