@@ -123,8 +123,7 @@ public class AwContents implements SmartClipProvider {
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
-            return "goldfish".equals(Build.HARDWARE) || "ranchu".equals(Build.HARDWARE)
-                    || !nativeHasRequiredHardwareExtensions();
+            return !nativeHasRequiredHardwareExtensions();
         }
     }
 
