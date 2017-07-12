@@ -71,16 +71,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
         ['win'], bug=736926)
 
-    # Failing intermittently with out-of-memory crashes on some Windows bots.
-    self.Flaky('deqp/functional/gles3/texturefiltering/*',
-        ['win'], bug=725664)
-    self.Flaky('deqp/functional/gles3/textureformat/*',
-        ['win'], bug=725664)
-    self.Flaky('deqp/functional/gles3/textureshadow/*',
-        ['win'], bug=725664)
-    self.Flaky('deqp/functional/gles3/texturespecification/*',
-        ['win'], bug=725664)
-
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia', 'd3d11'], bug=631317)
@@ -696,16 +686,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/' +
         'vector-dynamic-indexing-swizzled-lvalue.html',
         ['linux', 'intel'], bug=709874)
-
-    # Intermittently running out of memory.
-    self.Flaky('deqp/functional/gles3/texturefiltering/*',
-        ['linux', 'intel'], bug=725664)
-    self.Flaky('deqp/functional/gles3/textureformat/*',
-        ['linux', 'intel'], bug=725664)
-    self.Flaky('deqp/functional/gles3/textureshadow/*',
-        ['linux', 'intel'], bug=725664)
-    self.Flaky('deqp/functional/gles3/texturespecification/*',
-        ['linux', 'intel'], bug=725664)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
