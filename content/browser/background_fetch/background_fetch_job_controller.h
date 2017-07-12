@@ -48,10 +48,9 @@ class CONTENT_EXPORT BackgroundFetchJobController {
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~BackgroundFetchJobController();
 
-  // Starts fetching the |initial_fetches|. The controller will continue to
+  // Starts fetching the first few requests. The controller will continue to
   // fetch new content until all requests have been handled.
-  void Start(
-      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
+  void Start();
 
   // Updates the representation of this Background Fetch in the user interface
   // to match the given |title|.
@@ -85,9 +84,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   // Called when the given |request| has been completed.
   void DidCompleteRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
 
-  // Called when a completed download has been marked as such in the DataManager
-  // and the next request, if any, has been read from storage.
-  void DidGetNextRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
+  // Called when a completed download has been marked as such in DataManager.
+  void DidMarkRequestCompleted(bool has_pending_or_active_requests);
 
   // The registration id on behalf of which this controller is fetching data.
   BackgroundFetchRegistrationId registration_id_;
@@ -105,9 +103,6 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   // The DataManager's lifetime is controlled by the BackgroundFetchContext and
   // will be kept alive until after the JobController is destroyed.
   BackgroundFetchDataManager* data_manager_;
-
-  // Number of outstanding acknowledgements we still expect to receive.
-  int pending_completed_file_acknowledgements_ = 0;
 
   // Callback for when all fetches have been completed.
   CompletedCallback completed_callback_;

@@ -260,22 +260,33 @@ BackgroundFetchJobController::~BackgroundFetchJobController() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 };
 
-void BackgroundFetchJobController::Start(
-    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
+void BackgroundFetchJobController::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_LE(initial_requests.size(), kMaximumBackgroundFetchParallelRequests);
   DCHECK_EQ(state_, State::INITIALIZED);
 
   state_ = State::FETCHING;
 
-  for (const auto& request : initial_requests)
-    StartRequest(request);
+  // TODO(crbug.com/741609): Enforce kMaximumBackgroundFetchParallelRequests
+  // globally and/or per origin rather than per fetch.
+  for (size_t i = 0; i < kMaximumBackgroundFetchParallelRequests; i++) {
+    data_manager_->PopNextRequest(
+        registration_id_,
+        base::BindOnce(&BackgroundFetchJobController::StartRequest,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void BackgroundFetchJobController::StartRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(state_, State::FETCHING);
+  if (!request) {
+    // This can happen when |Start| tries to start multiple initial requests,
+    // but the fetch does not contain that many pending requests; or when
+    // |DidMarkRequestCompleted| tries to start the next request but there are
+    // none left.
+    return;
+  }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&Core::StartRequest, ui_core_ptr_,
                                      std::move(request), traffic_annotation_));
@@ -295,33 +306,29 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
   // The DataManager must acknowledge that it stored the data and that there are
   // no more pending requests to avoid marking this job as completed too early.
-  pending_completed_file_acknowledgements_++;
-
-  data_manager_->MarkRequestAsCompleteAndGetNextRequest(
+  data_manager_->MarkRequestAsComplete(
       registration_id_, request.get(),
-      base::BindOnce(&BackgroundFetchJobController::DidGetNextRequest,
+      base::BindOnce(&BackgroundFetchJobController::DidMarkRequestCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BackgroundFetchJobController::DidGetNextRequest(
-    scoped_refptr<BackgroundFetchRequestInfo> request) {
+void BackgroundFetchJobController::DidMarkRequestCompleted(
+    bool has_pending_or_active_requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_LE(pending_completed_file_acknowledgements_, 1);
-  pending_completed_file_acknowledgements_--;
+  DCHECK_EQ(state_, State::FETCHING);
 
-  // If a |request| has been given, start downloading the file and bail.
-  if (request) {
-    StartRequest(std::move(request));
+  // If not all requests have completed, start a pending request if there are
+  // any left, and bail.
+  if (has_pending_or_active_requests) {
+    data_manager_->PopNextRequest(
+        registration_id_,
+        base::BindOnce(&BackgroundFetchJobController::StartRequest,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  // If there are outstanding completed file acknowlegements, bail as well.
-  if (pending_completed_file_acknowledgements_ > 0)
-    return;
-
-  state_ = State::COMPLETED;
-
   // Otherwise the job this controller is responsible for has completed.
+  state_ = State::COMPLETED;
   std::move(completed_callback_).Run(this);
 }
 
@@ -334,11 +341,19 @@ void BackgroundFetchJobController::UpdateUI(const std::string& title) {
 void BackgroundFetchJobController::Abort() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  switch (state_) {
+    case State::INITIALIZED:
+    case State::FETCHING:
+      break;
+    case State::ABORTED:
+    case State::COMPLETED:
+      return;  // Ignore attempt to abort after completion/abort.
+  }
+
   // TODO(harkness): Abort all in-progress downloads.
 
   state_ = State::ABORTED;
-
-  // Inform the owner of the controller about the job having completed.
+  // Inform the owner of the controller about the job having aborted.
   std::move(completed_callback_).Run(this);
 }
 
