@@ -17,10 +17,13 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 
 import org.chromium.base.ApiCompatibilityUtils;
 
@@ -410,5 +413,44 @@ public class UiUtils {
         } else {
             return Typeface.create("sans-serif", Typeface.BOLD);
         }
+    }
+
+    /**
+     * Iterates through all items in the specified ListAdapter (including header and footer views)
+     * and returns the width of the widest item (when laid out with height and width set to
+     * WRAP_CONTENT).
+     *
+     * WARNING: do not call this on a ListAdapter with more than a handful of items, the performance
+     * will be terrible since it measures every single item.
+     *
+     * @param adapter The ListAdapter whose widest item's width will be returned.
+     * @return The measured width (in pixels) of the widest item in the passed-in ListAdapter.
+     */
+    public static int computeMaxWidthOfListAdapterItems(ListAdapter adapter) {
+        final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        final int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        int maxWidth = 0;
+        View[] itemViews = new View[adapter.getViewTypeCount()];
+        for (int i = 0; i < adapter.getCount(); ++i) {
+            View itemView;
+            int type = adapter.getItemViewType(i);
+            if (type < 0) {
+                // Type is negative for header/footer views, or views the adapter does not want
+                // recycled.
+                itemView = adapter.getView(i, null, null);
+            } else {
+                itemViews[type] = adapter.getView(i, itemViews[type], null);
+                itemView = itemViews[type];
+            }
+
+            itemView.setLayoutParams(params);
+            itemView.measure(widthMeasureSpec, heightMeasureSpec);
+            maxWidth = Math.max(maxWidth, itemView.getMeasuredWidth());
+        }
+
+        return maxWidth;
     }
 }
