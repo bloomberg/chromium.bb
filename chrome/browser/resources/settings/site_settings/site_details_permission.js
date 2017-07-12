@@ -42,11 +42,6 @@ Polymer({
         this.removePatternWildcard(right);
   },
 
-  /** @private */
-  isCookiesCategory_: function(category) {
-    return category == settings.ContentSettingsTypes.COOKIES;
-  },
-
   /**
    * Updates the drop-down value after |site| has changed.
    * @param {!SiteException} site The site to display.

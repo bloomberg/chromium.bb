@@ -39,14 +39,6 @@ suite('SiteDetails', function() {
           source: 'extension',
         },
       ],
-      cookies: [
-        {
-          embeddingOrigin: 'https://foo-allow.com:443',
-          origin: 'https://foo-allow.com:443',
-          setting: 'allow',
-          source: 'preference',
-        },
-      ],
       geolocation: [
         {
           embeddingOrigin: 'https://foo-allow.com:443',
