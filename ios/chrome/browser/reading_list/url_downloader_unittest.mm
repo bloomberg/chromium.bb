@@ -9,15 +9,14 @@
 #include "base/files/file_util.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -136,15 +135,13 @@ class MockURLDownloader : public URLDownloader {
 namespace {
 class URLDownloaderTest : public testing::Test {
  public:
-  std::unique_ptr<MockURLDownloader> downloader_;
-  web::TestWebThreadBundle bundle_;
-
   URLDownloaderTest() {
     base::FilePath data_dir;
     base::PathService::Get(ios::DIR_USER_DATA, &data_dir);
     RemoveOfflineFilesDirectory(data_dir);
     downloader_.reset(new MockURLDownloader(data_dir));
   }
+
   ~URLDownloaderTest() override {}
 
   void TearDown() override {
@@ -154,10 +151,12 @@ class URLDownloaderTest : public testing::Test {
     downloader_->ClearCompletionTrackers();
   }
 
-  void WaitUntilCondition(ConditionBlock condition) {
-    base::test::ios::WaitUntilCondition(condition, true,
-                                        base::TimeDelta::FromSeconds(1));
-  }
+ protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+  std::unique_ptr<MockURLDownloader> downloader_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLDownloaderTest);
 };
 
 TEST_F(URLDownloaderTest, SingleDownload) {
@@ -168,9 +167,8 @@ TEST_F(URLDownloaderTest, SingleDownload) {
 
   downloader_->DownloadOfflineURL(url);
 
-  WaitUntilCondition(^bool {
-    return base::ContainsValue(downloader_->downloaded_files_, url);
-  });
+  // Wait for all asynchronous tasks to complete.
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
@@ -187,9 +185,8 @@ TEST_F(URLDownloaderTest, SingleDownloadRedirect) {
 
   downloader_->DownloadOfflineURL(url);
 
-  WaitUntilCondition(^bool {
-    return base::ContainsValue(downloader_->downloaded_files_, url);
-  });
+  // Wait for all asynchronous tasks to complete.
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
@@ -205,9 +202,8 @@ TEST_F(URLDownloaderTest, SingleDownloadPDF) {
 
   downloader_->DownloadOfflineURL(url);
 
-  WaitUntilCondition(^bool {
-    return downloader_->fetching_pdf_;
-  });
+  // Wait for all asynchronous tasks to complete.
+  task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
@@ -225,9 +221,8 @@ TEST_F(URLDownloaderTest, DownloadAndRemove) {
   downloader_->RemoveOfflineURL(url);
   downloader_->FakeEndWorking();
 
-  WaitUntilCondition(^bool {
-    return base::ContainsValue(downloader_->removed_files_, url);
-  });
+  // Wait for all asynchronous tasks to complete.
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(!base::ContainsValue(downloader_->downloaded_files_, url));
   ASSERT_EQ(1ul, downloader_->downloaded_files_.size());
@@ -245,9 +240,8 @@ TEST_F(URLDownloaderTest, DownloadAndRemoveAndRedownload) {
   downloader_->DownloadOfflineURL(url);
   downloader_->FakeEndWorking();
 
-  WaitUntilCondition(^bool {
-    return base::ContainsValue(downloader_->removed_files_, url);
-  });
+  // Wait for all asynchronous tasks to complete.
+  task_environment_.RunUntilIdle();
 
   ASSERT_TRUE(base::ContainsValue(downloader_->downloaded_files_, url));
   ASSERT_TRUE(base::ContainsValue(downloader_->removed_files_, url));

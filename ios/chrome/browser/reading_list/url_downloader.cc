@@ -12,12 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
-#include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -60,6 +61,9 @@ URLDownloader::URLDownloader(
       base_directory_(chrome_profile_path),
       mime_type_(),
       url_request_context_getter_(url_request_context_getter),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       task_tracker_() {}
 
 URLDownloader::~URLDownloader() {
@@ -68,9 +72,9 @@ URLDownloader::~URLDownloader() {
 
 void URLDownloader::OfflinePathExists(const base::FilePath& path,
                                       base::Callback<void(bool)> callback) {
-  task_tracker_.PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-      FROM_HERE, base::Bind(&base::PathExists, path), callback);
+  task_tracker_.PostTaskAndReplyWithResult(task_runner_.get(), FROM_HERE,
+                                           base::Bind(&base::PathExists, path),
+                                           callback);
 }
 
 void URLDownloader::RemoveOfflineURL(const GURL& url) {
@@ -117,12 +121,12 @@ void URLDownloader::DownloadCompletionHandler(
     base::FilePath directory_path =
         reading_list::OfflineURLDirectoryAbsolutePath(base_directory_, url);
     task_tracker_.PostTaskAndReply(
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-        FROM_HERE, base::Bind(
-                       [](const base::FilePath& offline_directory_path) {
-                         base::DeleteFile(offline_directory_path, true);
-                       },
-                       directory_path),
+        task_runner_.get(), FROM_HERE,
+        base::Bind(
+            [](const base::FilePath& offline_directory_path) {
+              base::DeleteFile(offline_directory_path, true);
+            },
+            directory_path),
         post_delete);
   } else {
     post_delete.Run();
@@ -150,8 +154,8 @@ void URLDownloader::HandleNextTask() {
 
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-        FROM_HERE, base::Bind(&base::DeleteFile, directory_path, true),
+        task_runner_.get(), FROM_HERE,
+        base::Bind(&base::DeleteFile, directory_path, true),
         base::Bind(&URLDownloader::DeleteCompletionHandler,
                    base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {
@@ -212,9 +216,9 @@ void URLDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   fetcher_->GetResponseAsFilePath(false, &temporary_path);
 
   task_tracker_.PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-      FROM_HERE, base::Bind(&URLDownloader::SavePDFFile, base::Unretained(this),
-                            temporary_path),
+      task_runner_.get(), FROM_HERE,
+      base::Bind(&URLDownloader::SavePDFFile, base::Unretained(this),
+                 temporary_path),
       base::Bind(&URLDownloader::DownloadCompletionHandler,
                  base::Unretained(this), source->GetOriginalURL(), "", path));
 }
@@ -230,13 +234,13 @@ void URLDownloader::FetchPDFFile() {
   fetcher_ = net::URLFetcher::Create(0, pdf_url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(url_request_context_getter_.get());
   fetcher_->SetLoadFlags(net::LOAD_SKIP_CACHE_VALIDATION);
-  fetcher_->SaveResponseToTemporaryFile(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE));
+  fetcher_->SaveResponseToTemporaryFile(task_runner_.get());
   fetcher_->Start();
 }
 
 URLDownloader::SuccessState URLDownloader::SavePDFFile(
     const base::FilePath& temporary_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   if (CreateOfflineURLDirectory(original_url_)) {
     base::FilePath path = reading_list::OfflinePagePath(
         original_url_, reading_list::OFFLINE_TYPE_PDF);
@@ -279,8 +283,7 @@ void URLDownloader::DistillerCallback(
   std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
   std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-      FROM_HERE,
+      task_runner_.get(), FROM_HERE,
       base::Bind(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
                  page_url, images_block, block_html),
       base::Bind(&URLDownloader::DownloadCompletionHandler,
@@ -294,6 +297,7 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images,
     const std::string& html) {
+  base::ThreadRestrictions::AssertIOAllowed();
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url)
                ? DOWNLOAD_SUCCESS
