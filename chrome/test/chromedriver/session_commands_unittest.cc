@@ -60,6 +60,18 @@ class DetachChrome : public StubChrome {
 
 }  // namespace
 
+TEST(SessionCommandsTest, MatchCapabilities) {
+  base::DictionaryValue merged;
+  merged.SetString("browserName", "not chrome");
+
+  ASSERT_FALSE(MatchCapabilities(&merged));
+
+  merged.Clear();
+  merged.SetString("browserName", "chrome");
+
+  ASSERT_TRUE(MatchCapabilities(&merged));
+}
+
 TEST(SessionCommandsTest, Quit) {
   DetachChrome* chrome = new DetachChrome();
   Session session("id", std::unique_ptr<Chrome>(chrome));

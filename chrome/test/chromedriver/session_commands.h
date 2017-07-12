@@ -40,6 +40,8 @@ struct InitSessionParams {
   PortManager* port_manager;
 };
 
+bool MatchCapabilities(base::DictionaryValue* capabilities);
+
 // Initializes a session.
 Status ExecuteInitSession(const InitSessionParams& bound_params,
                           Session* session,
