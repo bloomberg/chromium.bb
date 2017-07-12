@@ -806,6 +806,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueAuto || value_id == CSSValueNone ||
              value_id == CSSValueAntialiased ||
              value_id == CSSValueSubpixelAntialiased;
+    case CSSPropertyLineBreak:
+      return value_id == CSSValueAuto || value_id == CSSValueLoose ||
+             value_id == CSSValueNormal || value_id == CSSValueStrict;
     case CSSPropertyWebkitLineBreak:
       return value_id == CSSValueAuto || value_id == CSSValueLoose ||
              value_id == CSSValueNormal || value_id == CSSValueStrict ||
@@ -952,6 +955,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyFlexWrap:
     case CSSPropertyFontKerning:
     case CSSPropertyWebkitFontSmoothing:
+    case CSSPropertyLineBreak:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitMarginAfterCollapse:
     case CSSPropertyWebkitMarginBeforeCollapse:

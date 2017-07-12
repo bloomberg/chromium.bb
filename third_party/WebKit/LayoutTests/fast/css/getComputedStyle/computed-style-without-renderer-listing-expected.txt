@@ -185,6 +185,7 @@ justify-self: auto
 left: auto
 letter-spacing: normal
 lighting-color: rgb(255, 255, 255)
+line-break: auto
 line-height: normal
 line-height-step: 0px
 list-style-image: none

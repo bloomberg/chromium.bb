@@ -1070,7 +1070,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 554;
     case CSSPropertyMaxBlockSize:
       return 555;
-    case CSSPropertyAliasLineBreak:
+    case CSSPropertyLineBreak:
       return 556;
     case CSSPropertyPlaceContent:
       return 557;
