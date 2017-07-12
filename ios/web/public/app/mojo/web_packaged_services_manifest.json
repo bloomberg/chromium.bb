@@ -19,6 +19,7 @@
         "web_browser": [],
         "service_manager": [
           "service_manager:all_users",
+          "service_manager:client_process",
           "service_manager:user_id"
         ]
       }

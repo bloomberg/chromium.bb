@@ -6,7 +6,8 @@
       "requires": {
         "service_manager_unittest": [
           "service_manager_unittest:create_instance_test"
-        ]
+        ],
+        "service_manager_unittest_target": []
       }
     }
   }

@@ -11,7 +11,8 @@
       "requires": {
         "service_manager": [
           "service_manager:service_manager",
-          "service_manager:client_process"
+          "service_manager:client_process",
+          "service_manager:instance_name"
         ],
         "service_manager_unittest_embedder": [
           "service_manager_unittest:embedder"
