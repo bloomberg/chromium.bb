@@ -347,6 +347,8 @@ blink_core_sources("layout") {
     "ng/geometry/ng_static_position.cc",
     "ng/geometry/ng_static_position.h",
     "ng/inline/empty_offset_mapping_builder.h",
+    "ng/inline/ng_baseline.cc",
+    "ng/inline/ng_baseline.h",
     "ng/inline/ng_bidi_paragraph.cc",
     "ng/inline/ng_bidi_paragraph.h",
     "ng/inline/ng_inline_box_state.cc",

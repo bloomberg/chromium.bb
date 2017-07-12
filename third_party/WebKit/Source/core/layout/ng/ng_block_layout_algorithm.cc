@@ -337,6 +337,8 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
+  PropagateBaselinesFromChildren();
+
   return container_builder_.ToBoxFragment();
 }
 
@@ -679,6 +681,9 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder.SetAvailableSize(child_available_size_)
       .SetPercentageResolutionSize(child_percentage_size_);
 
+  if (NGBaseline::ShouldPropagateBaselines(child))
+    space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
+
   bool is_new_fc = child.CreatesNewFormattingContext();
   space_builder.SetIsNewFormattingContext(is_new_fc)
       .SetBfcOffset(child_data.bfc_offset_estimate)
@@ -719,5 +724,53 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   return space_builder.ToConstraintSpace(
       FromPlatformWritingMode(child_style.GetWritingMode()));
+}
+
+bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
+                                         unsigned child_index) {
+  const NGPhysicalFragment* child =
+      container_builder_.Children()[child_index].Get();
+  if (!child->IsBox())
+    return false;
+  LayoutObject* layout_object = child->GetLayoutObject();
+  if (layout_object->IsFloatingOrOutOfFlowPositioned())
+    return false;
+
+  const NGPhysicalBoxFragment* box = ToNGPhysicalBoxFragment(child);
+  if (const NGBaseline* baseline = box->Baseline(request)) {
+    container_builder_.AddBaseline(
+        request.algorithm_type, request.baseline_type,
+        baseline->offset +
+            container_builder_.Offsets()[child_index].block_offset);
+    return true;
+  }
+  return false;
+}
+
+// Propagate computed baselines from children.
+// Skip children that do not produce baselines (e.g., empty blocks.)
+void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
+  const Vector<NGBaselineRequest>& requests =
+      ConstraintSpace().BaselineRequests();
+  if (requests.IsEmpty())
+    return;
+
+  for (const auto& request : requests) {
+    switch (request.algorithm_type) {
+      case NGBaselineAlgorithmType::kAtomicInline:
+      case NGBaselineAlgorithmType::kAtomicInlineForFirstLine:
+        for (unsigned i = container_builder_.Children().size(); i--;) {
+          if (AddBaseline(request, i))
+            break;
+        }
+        break;
+      case NGBaselineAlgorithmType::kFirstLine:
+        for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
+          if (AddBaseline(request, i))
+            break;
+        }
+        break;
+    }
+  }
 }
 }  // namespace blink

@@ -30,7 +30,8 @@ NGConstraintSpace::NGConstraintSpace(
     const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
     const std::shared_ptr<NGExclusions>& exclusions,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
-    const WTF::Optional<LayoutUnit>& clearance_offset)
+    const WTF::Optional<LayoutUnit>& clearance_offset,
+    Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
       initial_containing_block_size_(initial_containing_block_size),
@@ -53,6 +54,7 @@ NGConstraintSpace::NGConstraintSpace(
       exclusions_(exclusions),
       clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
+  baseline_requests_.swap(baseline_requests);
 }
 
 RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(

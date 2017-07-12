@@ -149,6 +149,19 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
   return *this;
 }
 
+void NGConstraintSpaceBuilder::AddBaselineRequests(
+    const Vector<NGBaselineRequest>& requests) {
+  baseline_requests_.AppendVector(requests);
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
+    NGBaselineAlgorithmType algorithm_type,
+    FontBaseline baseline_type) {
+  baseline_requests_.push_back(
+      NGBaselineRequest{algorithm_type, baseline_type});
+  return *this;
+}
+
 RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
@@ -213,7 +226,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
         is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
-        unpositioned_floats_, clearance_offset));
+        unpositioned_floats_, clearance_offset, baseline_requests_));
   }
   return AdoptRef(new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
@@ -224,7 +237,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
       is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
-      unpositioned_floats_, clearance_offset));
+      unpositioned_floats_, clearance_offset, baseline_requests_));
 }
 
 }  // namespace blink
