@@ -38,6 +38,7 @@ OverlayScrollBar::Thumb::Thumb(OverlayScrollBar* scroll_bar)
 OverlayScrollBar::Thumb::~Thumb() {}
 
 void OverlayScrollBar::Thumb::Init() {
+  EnableCanvasFlippingForRTLUI(true);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   // Animate all changes to the layer except the first one.
@@ -107,9 +108,10 @@ void OverlayScrollBar::Thumb::OnBoundsChanged(
 void OverlayScrollBar::Thumb::OnStateChanged() {
   if (GetState() == CustomButton::STATE_NORMAL) {
     gfx::Transform translation;
+    const int direction = base::i18n::IsRTL() ? -1 : 1;
     translation.Translate(
-        gfx::Vector2d(IsHorizontal() ? 0 : kThumbHoverOffset,
-                      IsHorizontal() ? kThumbHoverOffset: 0));
+        gfx::Vector2d(IsHorizontal() ? 0 : direction * kThumbHoverOffset,
+                      IsHorizontal() ? kThumbHoverOffset : 0));
     layer()->SetTransform(translation);
     layer()->SetOpacity(ui::kOverlayScrollbarThumbNormalAlpha);
 
