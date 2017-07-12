@@ -2281,6 +2281,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wolf',
+      'zoombini',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
@@ -2300,7 +2301,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
       'sentry',
       'wizpig',
-      'zoombini',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
