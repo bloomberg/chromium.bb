@@ -1,19 +1,7 @@
 [
   {
     "cmd": [
-      "python",
-      "-u",
-      "RECIPE_PACKAGE_REPO[depot_tools]\\bootstrap\\win\\git_bootstrap.py",
-      "--verbose"
-    ],
-    "cwd": "RECIPE_PACKAGE_REPO[depot_tools]",
-    "infra_step": true,
-    "name": "ensure git tooling on windows",
-    "timeout": 300
-  },
-  {
-    "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "diff",
       "--cached",
       "--name-only"

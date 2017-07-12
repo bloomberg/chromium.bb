@@ -37,8 +37,20 @@ from StringIO import StringIO
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 IS_WIN = sys.platform == 'win32'
-GIT_EXE = ROOT+'\\git.bat' if IS_WIN else 'git'
 TEST_MODE = False
+
+
+def win_find_git():
+  for elem in os.environ.get('PATH', '').split(os.pathsep):
+    for candidate in ('git.exe', 'git.bat'):
+      path = os.path.join(elem, candidate)
+      if os.path.isfile(path):
+        return path
+  raise ValueError('Could not find Git on PATH.')
+
+
+GIT_EXE = 'git' if not IS_WIN else win_find_git()
+
 
 FREEZE = 'FREEZE'
 FREEZE_SECTIONS = {

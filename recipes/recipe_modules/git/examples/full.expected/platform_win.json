@@ -3,31 +3,17 @@
     "cmd": [
       "python",
       "-u",
-      "RECIPE_PACKAGE_REPO[depot_tools]\\bootstrap\\win\\git_bootstrap.py",
-      "--verbose"
-    ],
-    "cwd": "RECIPE_PACKAGE_REPO[depot_tools]",
-    "infra_step": true,
-    "name": "ensure git tooling on windows",
-    "timeout": 300
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
       "RECIPE_MODULE[depot_tools::git]\\resources\\git_setup.py",
       "--path",
       "[START_DIR]\\src",
       "--url",
-      "https://chromium.googlesource.com/chromium/src.git",
-      "--git_cmd_path",
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat"
+      "https://chromium.googlesource.com/chromium/src.git"
     ],
     "name": "git setup"
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "retry",
       "fetch",
       "origin",
@@ -43,7 +29,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "checkout",
       "-f",
       "FETCH_HEAD"
@@ -54,7 +40,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "rev-parse",
       "HEAD"
     ],
@@ -68,7 +54,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "clean",
       "-f",
       "-d",
@@ -80,7 +66,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "submodule",
       "sync"
     ],
@@ -90,7 +76,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "submodule",
       "update",
       "--init",
@@ -102,7 +88,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "-c",
       "foo=bar",
       "count-objects",
@@ -115,7 +101,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "config",
       "--get",
       "remote.origin.url"
@@ -130,7 +116,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "show",
       "HEAD",
       "--format=%at",
@@ -143,7 +129,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "fetch",
       "origin",
       "--tags"
@@ -154,7 +140,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "status"
     ],
     "cwd": "[START_DIR]\\src",
@@ -163,7 +149,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "status"
     ],
     "cwd": "[START_DIR]\\src",
@@ -172,7 +158,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "status"
     ],
     "cwd": "[START_DIR]\\src",
@@ -181,7 +167,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "new-branch",
       "refactor"
     ],
@@ -194,7 +180,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "new-branch",
       "feature",
       "--upstream",
@@ -209,7 +195,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "rebase",
       "origin/master"
     ],
@@ -219,7 +205,7 @@
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "git",
       "bundle",
       "create",
       "[START_DIR]\\all.bundle",

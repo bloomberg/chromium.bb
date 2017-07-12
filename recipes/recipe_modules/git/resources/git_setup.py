@@ -11,18 +11,17 @@ import os
 import subprocess
 import sys
 
+# Import "git_common" from "depot_tools" root.
+DEPOT_TOOLS_ROOT = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+sys.path.insert(0, DEPOT_TOOLS_ROOT)
+import git_common
 
-def run_git(git_cmd, *args, **kwargs):
-  """Runs git with given arguments.
 
-  kwargs are passed through to subprocess.
-
-  If the kwarg 'throw' is provided, this behaves as check_call, otherwise will
-  return git's return value.
-  """
-  logging.info('Running: %s %s %s', git_cmd, args, kwargs)
-  func = subprocess.check_call if kwargs.pop('throw', True) else subprocess.call
-  return func((git_cmd,)+args, **kwargs)
+def run_git(*cmd, **kwargs):
+  kwargs['stdout'] = sys.stdout
+  kwargs['stderr'] = sys.stderr
+  git_common.run(*cmd, **kwargs)
 
 
 def main():
@@ -31,9 +30,6 @@ def main():
                       required=True)
   parser.add_argument('--url', help='URL of remote to make origin.',
                       required=True)
-  parser.add_argument('--git_cmd_path',
-                      help='Path to the git command to run.',
-                      default='git')
   parser.add_argument('--remote', help='Name of the git remote.',
                       default='origin')
   parser.add_argument('-v', '--verbose', action='store_true')
@@ -49,11 +45,10 @@ def main():
     os.makedirs(path)
 
   if os.path.exists(os.path.join(path, '.git')):
-    run_git(opts.git_cmd_path, 'config', '--remove-section',
-            'remote.%s' % remote, cwd=path)
+    run_git('config', '--remove-section', 'remote.%s' % remote, cwd=path)
   else:
-    run_git(opts.git_cmd_path, 'init', cwd=path)
-  run_git(opts.git_cmd_path, 'remote', 'add', remote, url, cwd=path)
+    run_git('init', cwd=path)
+  run_git('remote', 'add', remote, url, cwd=path)
   return 0
 
 

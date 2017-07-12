@@ -26,6 +26,8 @@ import subprocess
 import sys
 import textwrap
 
+import git_common
+
 from distutils import spawn
 
 
@@ -88,11 +90,8 @@ class GclientCheckout(Checkout):
 class GitCheckout(Checkout):
 
   def run_git(self, *cmd, **kwargs):
-    if sys.platform == 'win32' and not spawn.find_executable('git'):
-      git_path = os.path.join(SCRIPT_PATH, 'git.bat')
-    else:
-      git_path = 'git'
-    return self.run((git_path,) + cmd, **kwargs)
+    print 'Running: git %s' % (' '.join(pipes.quote(x) for x in cmd))
+    return git_common.run(*cmd, **kwargs)
 
 
 class GclientGitCheckout(GclientCheckout, GitCheckout):
