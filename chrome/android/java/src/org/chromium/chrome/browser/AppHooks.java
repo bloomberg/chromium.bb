@@ -120,7 +120,7 @@ public abstract class AppHooks {
      * outside of {@link CustomTabsConnection#getInstance()}.
      */
     public CustomTabsConnection createCustomTabsConnection() {
-        return new CustomTabsConnection();
+        return new CustomTabsConnection(((ChromeApplication) ContextUtils.getApplicationContext()));
     }
 
     /**
