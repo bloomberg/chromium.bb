@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -26,7 +27,6 @@
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
-#include "ios/web/public/web_thread.h"
 
 // static
 scoped_refptr<password_manager::PasswordStore>
@@ -80,8 +80,14 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<base::SequencedTaskRunner> main_thread_runner(
       base::SequencedTaskRunnerHandle::Get());
+  // USER_VISIBLE priority is chosen for the background task runner, because
+  // the passwords obtained through tasks on the background runner influence
+  // what the user sees.
+  // TODO(crbug.com/741660): Create the task runner inside password_manager
+  // component instead.
   scoped_refptr<base::SequencedTaskRunner> db_thread_runner(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(
