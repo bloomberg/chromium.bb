@@ -60,7 +60,7 @@ class EchoHost : public NativeMessageHost {
     if (request_string.find("stopHostTest") != std::string::npos) {
       client_->CloseChannel(kNativeHostExited);
     } else if (request_string.find("bigMessageTest") != std::string::npos) {
-      client_->CloseChannel(kHostInputOuputError);
+      client_->CloseChannel(kHostInputOutputError);
     } else {
       ProcessEcho(*request);
     }

@@ -24,7 +24,7 @@ class NativeMessageHost {
   static const char kNativeHostExited[];
   static const char kNotFoundError[];
   static const char kForbiddenError[];
-  static const char kHostInputOuputError[];
+  static const char kHostInputOutputError[];
 
   // Callback interface for receiving messages from the native host.
   class Client {
