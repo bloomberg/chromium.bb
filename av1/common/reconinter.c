@@ -1242,6 +1242,9 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
       conv_params.ref = ref;
       conv_params.do_average = ref;
 #if CONFIG_EXT_INTER
+      if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
+        conv_params = get_conv_params(ref, ref, plane);
+
       if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
         av1_make_masked_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
