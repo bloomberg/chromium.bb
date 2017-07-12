@@ -205,7 +205,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   std::string result;
   std::string script =
       "function onInput(e) {"
-      "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send(getInputFieldText());"
       "}"
       "inputField = document.getElementById('text-field');"
@@ -277,7 +276,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // have an <input>, then two <iframe> elements, then another <input>.
   std::string script =
       "function onFocus(e) {"
-      "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
       "}"
       "var input1 = document.createElement('input');"
@@ -366,7 +364,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // iframe: 55,18;55,67
   std::string script =
       "function onFocus(e) {"
-      "  domAutomationController.setAutomationId(0);"
       "  console.log(window.name + '-focused-' + e.target.id);"
       "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
       "}"
@@ -588,7 +585,6 @@ void AddFullscreenChangeListener(content::RenderFrameHost* frame,
                                  const std::string& id) {
   std::string script = base::StringPrintf(
       "document.addEventListener('webkitfullscreenchange', function() {"
-      "    domAutomationController.setAutomationId(0);"
       "    domAutomationController.send('fullscreenchange %s');});",
       id.c_str());
   EXPECT_TRUE(ExecuteScript(frame, script));
