@@ -95,6 +95,7 @@ struct weston_desktop_xdg_toplevel {
 	} pending;
 	struct {
 		struct weston_desktop_xdg_toplevel_state state;
+		struct weston_size size;
 		struct weston_size min_size, max_size;
 	} next;
 	struct {
@@ -424,6 +425,7 @@ static void
 weston_desktop_xdg_toplevel_ack_configure(struct weston_desktop_xdg_toplevel *toplevel)
 {
 	toplevel->next.state = toplevel->pending.state;
+	toplevel->next.size = toplevel->pending.size;
 }
 
 static void
@@ -626,8 +628,8 @@ weston_desktop_xdg_toplevel_committed(struct weston_desktop_xdg_toplevel *toplev
 		return;
 
 	if ((toplevel->next.state.maximized || toplevel->next.state.fullscreen) &&
-	    (toplevel->pending.size.width != wsurface->width ||
-	     toplevel->pending.size.height != wsurface->height)) {
+	    (toplevel->next.size.width != wsurface->width ||
+	     toplevel->next.size.height != wsurface->height)) {
 		struct weston_desktop_client *client =
 			weston_desktop_surface_get_client(toplevel->base.desktop_surface);
 		struct wl_resource *client_resource =

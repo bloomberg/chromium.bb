@@ -60,6 +60,7 @@ struct weston_desktop_xdg_surface {
 	} pending;
 	struct {
 		struct weston_desktop_xdg_surface_state state;
+		struct weston_size size;
 	} next;
 	struct {
 		struct weston_desktop_xdg_surface_state state;
@@ -244,8 +245,8 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 	bool reconfigure = false;
 
 	if (surface->next.state.maximized || surface->next.state.fullscreen)
-		reconfigure = surface->pending.size.width != wsurface->width ||
-			      surface->pending.size.height != wsurface->height;
+		reconfigure = surface->next.size.width != wsurface->width ||
+			      surface->next.size.height != wsurface->height;
 
 	if (reconfigure) {
 		weston_desktop_xdg_surface_schedule_configure(surface, true);
@@ -447,6 +448,7 @@ weston_desktop_xdg_surface_protocol_ack_configure(struct wl_client *wl_client,
 		return;
 
 	surface->next.state = surface->pending.state;
+	surface->next.size = surface->pending.size;
 }
 
 static void
