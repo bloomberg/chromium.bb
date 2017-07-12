@@ -31,21 +31,6 @@ namespace media {
 
 namespace {
 
-bool MakeDecoderContextCurrent(
-    const base::WeakPtr<gpu::GpuCommandBufferStub> stub) {
-  if (!stub) {
-    DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
-    return false;
-  }
-
-  if (!stub->decoder()->MakeCurrent()) {
-    DLOG(ERROR) << "Failed to MakeCurrent()";
-    return false;
-  }
-
-  return true;
-}
-
 void DropSharedMemory(std::unique_ptr<base::SharedMemory> shm) {
   // Just let |shm| fall out of scope.
 }
@@ -124,8 +109,6 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
       weak_this_factory_for_encoder_worker_.GetWeakPtr();
   weak_this_ = weak_this_factory_.GetWeakPtr();
   stub_->AddDestructionObserver(this);
-  make_context_current_ =
-      base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
 }
 
 GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
