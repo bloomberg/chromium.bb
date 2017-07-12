@@ -123,11 +123,6 @@
   // explanation of what this method needs to do.
 }
 
-- (void)locationBarChanged {
-  // TODO(crbug.com/708341): Implement this method or edit this comment with an
-  // explanation of what this method needs to do.
-}
-
 - (web::WebState*)getWebState {
   return _webStateList->GetActiveWebState();
 }

@@ -193,7 +193,6 @@ void LocationBarControllerImpl::OnChanged() {
     }
   }
   UpdateRightDecorations();
-  [delegate_ locationBarChanged];
 
   NSString* placeholderText =
       show_hint_text_ ? l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT) : nil;
