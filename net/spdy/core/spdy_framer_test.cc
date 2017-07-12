@@ -4051,7 +4051,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     if (flags & SETTINGS_FLAG_ACK) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
-      EXPECT_CALL(visitor, OnSettings(flags & SETTINGS_FLAG_ACK));
+      EXPECT_CALL(visitor, OnSettings());
       EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
       EXPECT_CALL(visitor, OnSettingsEnd());
     }

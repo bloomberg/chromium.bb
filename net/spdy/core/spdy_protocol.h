@@ -123,11 +123,6 @@ enum SpdyPushPromiseFlags {
   PUSH_PROMISE_FLAG_PADDED = 0x08,
 };
 
-// Flags on the SETTINGS control frame.
-enum SpdySettingsControlFlags {
-  SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS = 0x01,
-};
-
 enum Http2SettingsControlFlags {
   SETTINGS_FLAG_ACK = 0x01,
 };

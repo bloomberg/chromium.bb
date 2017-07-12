@@ -100,8 +100,8 @@ void SpdyFramerVisitorAdapter::OnPing(SpdyPingId unique_id, bool is_ack) {
   visitor_->OnPing(unique_id, is_ack);
 }
 
-void SpdyFramerVisitorAdapter::OnSettings(bool clear_persisted) {
-  visitor_->OnSettings(clear_persisted);
+void SpdyFramerVisitorAdapter::OnSettings() {
+  visitor_->OnSettings();
 }
 
 void SpdyFramerVisitorAdapter::OnSettingsAck() {

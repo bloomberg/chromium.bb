@@ -166,7 +166,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
                      bool end) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
-  void OnSettings(bool clear_persisted) override;
+  void OnSettings() override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
   void OnStreamFrameData(SpdyStreamId stream_id,
@@ -618,8 +618,7 @@ void SpdyTestDeframerImpl::OnSetting(SpdySettingsIds id, uint32_t value) {
 // Called at the start of a SETTINGS frame with setting entries, but not the
 // (required) ACK of a SETTINGS frame. There is no stream_id because
 // the settings apply to the entire connection, not to an individual stream.
-// The |clear_persisted| flag is a pre-HTTP/2 remnant.
-void SpdyTestDeframerImpl::OnSettings(bool /*clear_persisted*/) {
+void SpdyTestDeframerImpl::OnSettings() {
   DVLOG(1) << "OnSettings";
   CHECK_EQ(frame_type_, UNSET) << "   frame_type_="
                                << Http2FrameTypeToString(frame_type_);

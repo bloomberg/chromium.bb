@@ -375,7 +375,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
       frame_header_ = header;
       has_frame_header_ = true;
-      visitor()->OnSettings(0);
+      visitor()->OnSettings();
     }
   }
 

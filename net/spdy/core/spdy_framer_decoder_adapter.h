@@ -118,7 +118,7 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
   void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
   void OnPing(SpdyPingId unique_id, bool is_ack) override;
-  void OnSettings(bool clear_persisted) override;
+  void OnSettings() override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
   void OnGoAway(SpdyStreamId last_accepted_stream_id,

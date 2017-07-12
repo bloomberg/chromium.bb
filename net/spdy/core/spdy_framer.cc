@@ -1164,8 +1164,7 @@ size_t SpdyFramer::ProcessSettingsFrameHeader(const char* data, size_t len) {
       visitor_->OnSettingsAck();
       CHANGE_STATE(SPDY_FRAME_COMPLETE);
     } else {
-      visitor_->OnSettings(current_frame_flags_ &
-                           SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
+      visitor_->OnSettings();
       CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
     }
   }
