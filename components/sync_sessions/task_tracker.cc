@@ -109,17 +109,30 @@ TaskTracker::TaskTracker() {}
 TaskTracker::~TaskTracker() {}
 
 TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
-                                   SessionID::id_type parent_id) {
-  if (local_tab_tasks_map_.count(tab_id) > 0)
+                                   SessionID::id_type parent_tab_id) {
+  DVLOG(1) << "Getting tab tasks for " << tab_id << " with parent "
+           << parent_tab_id;
+  // If an existing TabTasks exists, attempt to reuse it. The caveat is that if
+  // a parent tab id is provided, it must match the parent tab id associated
+  // with the existing TabTasks. Otherwise a new TabTasks should be created from
+  // the specified parent. This is to handle the case where at the time the
+  // initial GetTabTasks is called, the parent id is not yet known, but it
+  // becomes known at a later time.
+  if (local_tab_tasks_map_.count(tab_id) > 0 &&
+      (parent_tab_id == kInvalidTabID ||
+       local_tab_tasks_map_[tab_id]->parent_tab_id() == parent_tab_id)) {
     return local_tab_tasks_map_[tab_id].get();
+  }
 
-  if (local_tab_tasks_map_.count(parent_id) > 0) {
+  DVLOG(1) << "Creating tab tasks for " << tab_id;
+  if (local_tab_tasks_map_.count(parent_tab_id) > 0) {
     // If the parent id is set, it means this tab forked from another tab.
     // In that case, the task for the current navigation might be part of a
     // larger task encompassing the parent tab. Perform a deep copy of the
     // parent's TabTasks object in order to simplify tracking this relationship.
     local_tab_tasks_map_[tab_id] =
-        base::MakeUnique<TabTasks>(*local_tab_tasks_map_[parent_id]);
+        base::MakeUnique<TabTasks>(*local_tab_tasks_map_[parent_tab_id]);
+    local_tab_tasks_map_[tab_id]->set_parent_tab_id(parent_tab_id);
   } else {
     local_tab_tasks_map_[tab_id] = base::MakeUnique<TabTasks>();
   }
