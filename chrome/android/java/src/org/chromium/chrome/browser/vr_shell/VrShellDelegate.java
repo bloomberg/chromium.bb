@@ -674,15 +674,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      */
     private boolean enterVrAfterDon() {
         if (mNativeVrShellDelegate == 0) return false;
-
-        // Normally, if the active page doesn't have a vrdisplayactivate listener, and WebVR was not
-        // presenting and VrShell was not enabled, the Daydream Homescreen should show after the DON
-        // flow. However, due to a failure in unregisterDaydreamIntent, we still try to enterVR, so
-        // detect this case and fail to enter VR.
-        if (!mListeningForWebVrActivateBeforePause && !mRequestedWebVr
-                && !canEnterVr(mActivity.getActivityTab())) {
-            return false;
-        }
+        if (!canEnterVr(mActivity.getActivityTab(), true)) return false;
 
         // If the page is listening for vrdisplayactivate we assume it wants to request
         // presentation. Go into WebVR mode tentatively. If the page doesn't request presentation
@@ -848,25 +840,21 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         clearVrModeWindowFlags();
     }
 
-    /* package */ boolean canEnterVr(Tab tab) {
-        if (!LibraryLoader.isInitialized()) {
-            return false;
-        }
+    /* package */ boolean canEnterVr(Tab tab, boolean justCompletedDon) {
+        if (!LibraryLoader.isInitialized()) return false;
         if (mVrSupportLevel == VR_NOT_AVAILABLE || mNativeVrShellDelegate == 0) return false;
+
         // If vr shell is not enabled and this is not a web vr request, then return false.
-        if (!isVrShellEnabled(mVrSupportLevel)
-                && !(mRequestedWebVr || mListeningForWebVrActivate)) {
-            return false;
-        }
+        boolean presenting = mRequestedWebVr || mListeningForWebVrActivate
+                || (justCompletedDon && mListeningForWebVrActivateBeforePause) || mAutopresentWebVr;
+        if (!isVrShellEnabled(mVrSupportLevel) && !presenting) return false;
+
         // TODO(mthiesse): When we have VR UI for opening new tabs, etc., allow VR Shell to be
         // entered without any current tabs.
-        if (tab == null) {
-            return false;
-        }
+        if (tab == null) return false;
+
         // For now we don't handle sad tab page. crbug.com/661609
-        if (tab.isShowingSadTab()) {
-            return false;
-        }
+        if (tab.isShowingSadTab()) return false;
         return true;
     }
 
@@ -903,7 +891,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         // Update VR support level as it can change at runtime
         updateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
-        if (!canEnterVr(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
+        if (!canEnterVr(mActivity.getActivityTab(), false)) return ENTER_VR_CANCELLED;
         enterVr(false);
         return ENTER_VR_REQUESTED;
     }
@@ -1130,7 +1118,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 // UI which is suboptimal.
                 nativeDisplayActivate(mNativeVrShellDelegate);
             }
-        } else if (!canEnterVr(mActivity.getActivityTab())) {
+        } else if (!canEnterVr(mActivity.getActivityTab(), false)) {
             unregisterDaydreamIntent(mVrDaydreamApi);
         }
     }

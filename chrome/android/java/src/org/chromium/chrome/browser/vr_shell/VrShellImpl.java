@@ -391,7 +391,7 @@ public class VrShellImpl
     private void swapToForegroundTab() {
         Tab tab = mActivity.getActivityTab();
         if (tab == mTab) return;
-        if (!mDelegate.canEnterVr(tab)) {
+        if (!mDelegate.canEnterVr(tab, false)) {
             forceExitVr();
             return;
         }
