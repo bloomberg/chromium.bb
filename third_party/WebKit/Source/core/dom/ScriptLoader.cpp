@@ -973,13 +973,6 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
     return;
   }
 
-  if (ErrorOccurred()) {
-    context_document->GetScriptRunner()->NotifyScriptLoadError(
-        this, async_exec_type_);
-    DetachPendingScript();
-    DispatchErrorEvent();
-    return;
-  }
   context_document->GetScriptRunner()->NotifyScriptReady(this,
                                                          async_exec_type_);
   pending_script_->StopWatchingForLoad();
