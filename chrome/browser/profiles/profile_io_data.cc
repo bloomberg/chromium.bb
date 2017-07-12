@@ -83,6 +83,7 @@
 #include "extensions/features/features.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_network_session.h"
@@ -1148,8 +1149,8 @@ void ProfileIOData::Init(
       base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
                  ct_tree_tracker_.get());
 
-  main_request_context_->set_ct_policy_enforcer(
-      io_thread_globals->system_request_context->ct_policy_enforcer());
+  main_request_context_storage_->set_ct_policy_enforcer(
+      base::MakeUnique<net::CTPolicyEnforcer>());
 
   InitializeInternal(profile_params_.get(), protocol_handlers,
                      std::move(request_interceptors));
