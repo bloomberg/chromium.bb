@@ -296,54 +296,40 @@ void ElementAnimations::SetNeedsUpdateImplClientState() {
   SetNeedsPushProperties();
 }
 
-void ElementAnimations::NotifyClientOpacityAnimated(
-    float opacity,
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  if (notify_active_elements && has_element_in_active_list())
+void ElementAnimations::NotifyClientOpacityAnimated(float opacity,
+                                                    Animation* animation) {
+  if (AnimationAffectsActiveElements(animation))
     OnOpacityAnimated(ElementListType::ACTIVE, opacity);
-  if (notify_pending_elements && has_element_in_pending_list())
+  if (AnimationAffectsPendingElements(animation))
     OnOpacityAnimated(ElementListType::PENDING, opacity);
-}
-
-void ElementAnimations::NotifyClientTransformOperationsAnimated(
-    const TransformOperations& operations,
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  gfx::Transform transform = operations.Apply();
-  if (notify_active_elements && has_element_in_active_list())
-    OnTransformAnimated(ElementListType::ACTIVE, transform);
-  if (notify_pending_elements && has_element_in_pending_list())
-    OnTransformAnimated(ElementListType::PENDING, transform);
 }
 
 void ElementAnimations::NotifyClientFilterAnimated(
     const FilterOperations& filters,
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  if (notify_active_elements && has_element_in_active_list())
+    Animation* animation) {
+  if (AnimationAffectsActiveElements(animation))
     OnFilterAnimated(ElementListType::ACTIVE, filters);
-  if (notify_pending_elements && has_element_in_pending_list())
+  if (AnimationAffectsPendingElements(animation))
     OnFilterAnimated(ElementListType::PENDING, filters);
+}
+
+void ElementAnimations::NotifyClientTransformOperationsAnimated(
+    const TransformOperations& operations,
+    Animation* animation) {
+  gfx::Transform transform = operations.Apply();
+  if (AnimationAffectsActiveElements(animation))
+    OnTransformAnimated(ElementListType::ACTIVE, transform);
+  if (AnimationAffectsPendingElements(animation))
+    OnTransformAnimated(ElementListType::PENDING, transform);
 }
 
 void ElementAnimations::NotifyClientScrollOffsetAnimated(
     const gfx::ScrollOffset& scroll_offset,
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  if (notify_active_elements && has_element_in_active_list())
+    Animation* animation) {
+  if (AnimationAffectsActiveElements(animation))
     OnScrollOffsetAnimated(ElementListType::ACTIVE, scroll_offset);
-  if (notify_pending_elements && has_element_in_pending_list())
+  if (AnimationAffectsPendingElements(animation))
     OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
-}
-
-void ElementAnimations::NotifyClientBoundsAnimated(
-    const gfx::SizeF& size,
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  // TODO(vollick): once we have an animation observer, we can remove client
-  // animated notifications we do not use in element animations, such as this
-  // one.
 }
 
 void ElementAnimations::UpdateClientAnimationState() {
@@ -484,6 +470,24 @@ gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   }
 
   return gfx::ScrollOffset();
+}
+
+bool ElementAnimations::AnimationAffectsActiveElements(
+    Animation* animation) const {
+  // When we force an animation update due to a notification, we do not have an
+  // Animation instance. In this case, we force an update of active elements.
+  if (!animation)
+    return true;
+  return animation->affects_active_elements() && has_element_in_active_list();
+}
+
+bool ElementAnimations::AnimationAffectsPendingElements(
+    Animation* animation) const {
+  // When we force an animation update due to a notification, we do not have an
+  // Animation instance. In this case, we force an update of pending elements.
+  if (!animation)
+    return true;
+  return animation->affects_pending_elements() && has_element_in_pending_list();
 }
 
 }  // namespace cc

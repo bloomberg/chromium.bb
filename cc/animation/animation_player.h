@@ -109,7 +109,12 @@ class CC_ANIMATION_EXPORT AnimationPlayer
                                 AnimationEvents* events);
   void MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
                                  AnimationEvents* events);
+
+  static void TickAnimation(base::TimeTicks monotonic_time,
+                            Animation* animation,
+                            AnimationTarget* target);
   void TickAnimations(base::TimeTicks monotonic_time);
+
   void MarkFinishedAnimations(base::TimeTicks monotonic_time);
 
   // Make animations affect active elements if and only if they affect

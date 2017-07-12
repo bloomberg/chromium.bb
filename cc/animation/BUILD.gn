@@ -21,6 +21,7 @@ cc_component("animation") {
     "animation_id_provider.h",
     "animation_player.cc",
     "animation_player.h",
+    "animation_target.h",
     "animation_timeline.cc",
     "animation_timeline.h",
     "element_animations.cc",
