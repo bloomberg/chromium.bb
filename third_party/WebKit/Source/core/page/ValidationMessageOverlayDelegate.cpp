@@ -7,6 +7,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
@@ -94,6 +95,11 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
     page_->GetVisualViewport().SetSize(view_size);
   }
   AdjustBubblePosition(view_size);
+
+  // This manual invalidation is necessary to avoid a DCHECK failure in
+  // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
+  FrameView().GetLayoutView()->SetMayNeedPaintInvalidationSubtree();
+
   FrameView().UpdateAllLifecyclePhases();
 }
 
@@ -141,6 +147,8 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   bubble_size_.Expand(1, 0);
   container.SetInlineStyleProperty(CSSPropertyMinWidth, bubble_size_.Width(),
                                    CSSPrimitiveValue::UnitType::kPixels);
+  container.setAttribute(HTMLNames::classAttr, "shown-initially");
+  FrameView().UpdateAllLifecyclePhases();
 }
 
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
@@ -208,12 +216,14 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.SetInlineStyleProperty(CSSPropertyTop, bubble_y,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.SetInlineStyleProperty(CSSPropertyOpacity, 1.0,
-                                   CSSPrimitiveValue::UnitType::kNumber);
-  if (show_bottom_arrow)
-    container.setAttribute(HTMLNames::classAttr, "bottom-arrow");
-  else
-    container.removeAttribute(HTMLNames::classAttr);
+  if (show_bottom_arrow) {
+    container.setAttribute(HTMLNames::classAttr, "shown-fully bottom-arrow");
+    container.SetInlineStyleProperty(CSSPropertyTransformOrigin,
+                                     "center bottom");
+  } else {
+    container.setAttribute(HTMLNames::classAttr, "shown-fully");
+    container.SetInlineStyleProperty(CSSPropertyTransformOrigin, "center top");
+  }
 
   // Should match to --arrow-size in validation_bubble.css.
   const int kArrowSize = 8;
