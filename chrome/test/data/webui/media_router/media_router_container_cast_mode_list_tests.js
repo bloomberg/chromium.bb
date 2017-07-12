@@ -271,14 +271,15 @@ cr.define('media_router_container_cast_mode_list', function() {
                                       'container-header',
                                       'device-missing']);
 
-          // Set a non-blocking issue. The issue should stay hidden.
+          // Set a non-blocking issue. The issue should be visible.
           container.issue = fakeNonBlockingIssue;
           setTimeout(function() {
-            checkElementsVisibleWithId(['cast-mode-list',
-                                        'container-header',
-                                        'device-missing']);
+            checkElementsVisibleWithId([
+              'cast-mode-list', 'container-header', 'device-missing',
+              'issue-banner'
+            ]);
 
-            // Set a blocking issue. The issue should stay hidden.
+            // Set a blocking issue. The cast mode list should not be displayed.
             container.issue = fakeBlockingIssue;
             setTimeout(function() {
               checkElementsVisibleWithId(['container-header',

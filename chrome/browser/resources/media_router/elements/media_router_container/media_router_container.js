@@ -790,7 +790,8 @@ Polymer({
    */
   computeIssueBannerShown_: function(view, issue) {
     return !!issue &&
-        (view == media_router.MediaRouterView.SINK_LIST ||
+        (view == media_router.MediaRouterView.CAST_MODE_LIST ||
+         view == media_router.MediaRouterView.SINK_LIST ||
          view == media_router.MediaRouterView.FILTER ||
          view == media_router.MediaRouterView.ISSUE);
   },
@@ -1332,11 +1333,11 @@ Polymer({
         // Make space for the non-blocking issue in the sink list.
         this.updateElementPositioning_();
       }
-    } else {
-      // Switch back to the sink list if the issue was cleared. If the previous
-      // issue was non-blocking, this would be a no-op. It is expected that
-      // the only way to clear an issue is by user action; the IssueManager
-      // (C++ side) does not clear issues in the UI.
+    } else if (this.currentView_ == media_router.MediaRouterView.ISSUE) {
+      // Switch back to the sink list if the issue was cleared and it was
+      // showing an issue. It is expected that the only way to clear an issue is
+      // by user action; the IssueManager (C++ side) does not clear issues in
+      // the UI.
       this.showSinkList_();
     }
 
