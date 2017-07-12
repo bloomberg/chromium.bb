@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_CONTROLS_FOCUS_RING_H_
 #define UI_VIEWS_CONTROLS_FOCUS_RING_H_
 
-#include "base/optional.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
 
@@ -21,23 +20,26 @@ class FocusRing : public View {
   // Create a FocusRing and adds it to |parent|, or updates the one that already
   // exists. |override_color_id| will be used in place of the default coloration
   // when provided.
-  static View* Install(views::View* parent,
-                      ui::NativeTheme::ColorId override_color_id =
-                          ui::NativeTheme::kColorId_NumColors);
+  static View* Install(View* parent,
+                       ui::NativeTheme::ColorId override_color_id =
+                           ui::NativeTheme::kColorId_NumColors);
 
   // Removes the FocusRing from |parent|.
-  static void Uninstall(views::View* parent);
+  static void Uninstall(View* parent);
+
+  // Configure |view| for painting focus ring highlights.
+  static void InitFocusRing(View* view);
 
   // View:
   const char* GetClassName() const override;
-  bool CanProcessEventsWithinSubtree() const override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
 
- private:
+ protected:
   FocusRing();
   ~FocusRing() override;
 
+ private:
   ui::NativeTheme::ColorId override_color_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
