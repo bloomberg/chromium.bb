@@ -227,6 +227,7 @@ All changes to this list should go through Blink's feature review process: http:
     left
     letter-spacing
     lighting-color
+    line-break
     line-height
     line-height-step
     list-style-image
@@ -781,6 +782,4 @@ All changes to this list should go through Blink's feature review process: http:
         transition-timing-function
     -webkit-user-select
         user-select
-    line-break
-        -webkit-line-break
 

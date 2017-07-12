@@ -174,7 +174,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyVectorEffect, CSSPropertyPaintOrder, CSSPropertyD, CSSPropertyCx,
     CSSPropertyCy, CSSPropertyX, CSSPropertyY, CSSPropertyR, CSSPropertyRx,
     CSSPropertyRy, CSSPropertyTranslate, CSSPropertyRotate, CSSPropertyScale,
-    CSSPropertyCaretColor};
+    CSSPropertyCaretColor, CSSPropertyLineBreak};
 
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
