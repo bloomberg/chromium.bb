@@ -81,6 +81,10 @@ class SVGAnimatedPropertyBase
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
+  }
+
  protected:
   SVGAnimatedPropertyBase(AnimatedPropertyType,
                           SVGElement*,

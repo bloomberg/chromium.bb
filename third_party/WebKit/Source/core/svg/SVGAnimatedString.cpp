@@ -20,7 +20,8 @@ String SVGAnimatedString::animVal() {
 }
 
 DEFINE_TRACE_WRAPPERS(SVGAnimatedString) {
-  visitor->TraceWrappers(contextElement());
+  SVGAnimatedProperty<SVGString>::TraceWrappers(visitor);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink
