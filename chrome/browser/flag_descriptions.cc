@@ -2013,7 +2013,9 @@ const char kReaderModeHeuristicsAlwaysOn[] = "Always";
 
 const char kChromeHomeName[] = "Chrome Home";
 
-const char kChromeHomeDescription[] = "Enables Chrome Home on Android.";
+const char kChromeHomeDescription[] =
+    "Enables Chrome Home on Android. You must restart the browser"
+    " twice for changes to take effect.";
 
 const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 
