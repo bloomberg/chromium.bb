@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 
@@ -14,27 +15,98 @@ namespace {
 // The minimum size of an image that we should consider checkering.
 size_t kMinImageSizeToCheckerBytes = 512 * 1024;
 
-size_t SafeSizeOfImage(const SkImage* image) {
-  base::CheckedNumeric<size_t> checked_size = 4;
-  checked_size *= image->width();
-  checked_size *= image->height();
-  return checked_size.ValueOrDefault(std::numeric_limits<size_t>::max());
-}
+// The enum for recording checker-imaging decision UMA metric. Keep this
+// consistent with the ordering in CheckerImagingDecision in enums.xml.
+// Note that this enum is used to back a UMA histogram so should be treated as
+// append only.
+enum class CheckerImagingDecision {
+  kCanChecker,
+
+  // Animation State vetoes.
+  kVetoedAnimatedImage,
+  kVetoedVideoFrame,
+  kVetoedAnimationUnknown,
+  kVetoedMultipartImage,
+
+  // Load state vetoes.
+  kVetoedPartiallyLoadedImage,
+  kVetoedLoadStateUnknown,
+
+  // Size associated vetoes.
+  kVetoedSmallerThanCheckeringSize,
+  kVetoedLargerThanCacheSize,
+
+  kCheckerImagingDecisionCount,
+};
 
 std::string ToString(PaintImage::Id paint_image_id,
                      SkImageId sk_image_id,
-                     bool complete,
-                     bool static_image,
-                     bool fits_size_constraints,
-                     bool is_multipart,
-                     size_t size) {
+                     CheckerImagingDecision decision) {
   std::ostringstream str;
   str << "paint_image_id[" << paint_image_id << "] sk_image_id[" << sk_image_id
-      << "] complete[" << complete << "] static[" << static_image
-      << "], fits_size_constraints[" << fits_size_constraints << "], size["
-      << size << "]"
-      << " is_multipart[" << is_multipart << "]";
+      << "] decision[" << static_cast<int>(decision) << "]";
   return str.str();
+}
+
+CheckerImagingDecision GetAnimationDecision(const PaintImage& image) {
+  if (image.is_multipart())
+    return CheckerImagingDecision::kVetoedMultipartImage;
+
+  switch (image.animation_type()) {
+    case PaintImage::AnimationType::UNKNOWN:
+      return CheckerImagingDecision::kVetoedAnimationUnknown;
+    case PaintImage::AnimationType::ANIMATED:
+      return CheckerImagingDecision::kVetoedAnimatedImage;
+    case PaintImage::AnimationType::VIDEO:
+      return CheckerImagingDecision::kVetoedVideoFrame;
+    case PaintImage::AnimationType::STATIC:
+      return CheckerImagingDecision::kCanChecker;
+  }
+
+  NOTREACHED();
+  return CheckerImagingDecision::kCanChecker;
+}
+
+CheckerImagingDecision GetLoadDecision(const PaintImage& image) {
+  switch (image.completion_state()) {
+    case PaintImage::CompletionState::UNKNOWN:
+      return CheckerImagingDecision::kVetoedLoadStateUnknown;
+    case PaintImage::CompletionState::DONE:
+      return CheckerImagingDecision::kCanChecker;
+    case PaintImage::CompletionState::PARTIALLY_DONE:
+      return CheckerImagingDecision::kVetoedPartiallyLoadedImage;
+  }
+
+  NOTREACHED();
+  return CheckerImagingDecision::kCanChecker;
+}
+
+CheckerImagingDecision GetSizeDecision(const PaintImage& image,
+                                       size_t max_bytes) {
+  base::CheckedNumeric<size_t> checked_size = 4;
+  checked_size *= image.sk_image()->width();
+  checked_size *= image.sk_image()->height();
+  size_t size = checked_size.ValueOrDefault(std::numeric_limits<size_t>::max());
+
+  if (size < kMinImageSizeToCheckerBytes)
+    return CheckerImagingDecision::kVetoedSmallerThanCheckeringSize;
+  else if (size > max_bytes)
+    return CheckerImagingDecision::kVetoedLargerThanCacheSize;
+  else
+    return CheckerImagingDecision::kCanChecker;
+}
+
+CheckerImagingDecision GetCheckerImagingDecision(const PaintImage& image,
+                                                 size_t max_bytes) {
+  CheckerImagingDecision decision = GetAnimationDecision(image);
+  if (decision != CheckerImagingDecision::kCanChecker)
+    return decision;
+
+  decision = GetLoadDecision(image);
+  if (decision != CheckerImagingDecision::kCanChecker)
+    return decision;
+
+  return GetSizeDecision(image, max_bytes);
 }
 
 }  // namespace
@@ -207,15 +279,6 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
       std::pair<PaintImage::Id, DecodeState>(image_id, DecodeState()));
   auto it = insert_result.first;
   if (insert_result.second) {
-    bool complete =
-        image.completion_state() == PaintImage::CompletionState::DONE;
-    bool static_image =
-        image.animation_type() == PaintImage::AnimationType::STATIC;
-    size_t size = SafeSizeOfImage(image.sk_image().get());
-    bool fits_size_constraints =
-        size >= kMinImageSizeToCheckerBytes &&
-        size <= image_controller_->image_cache_max_limit_bytes();
-
     // The following conditions must be true for an image to be checkerable:
     //
     // 1) Complete: The data for the image should have been completely loaded.
@@ -229,17 +292,19 @@ bool CheckerImageTracker::ShouldCheckerImage(const DrawImage& draw_image,
     // 4) Multipart images: Multipart images can be used to display mjpg video
     // frames, checkering which would cause each video frame to flash and
     // therefore should not be checkered.
-    bool can_checker_image = complete && static_image &&
-                             fits_size_constraints && !image.is_multipart();
-    if (can_checker_image)
-      it->second.policy = DecodePolicy::ASYNC;
+    CheckerImagingDecision decision = GetCheckerImagingDecision(
+        image, image_controller_->image_cache_max_limit_bytes());
+    it->second.policy = decision == CheckerImagingDecision::kCanChecker
+                            ? DecodePolicy::ASYNC
+                            : DecodePolicy::SYNC;
 
-    TRACE_EVENT2(
-        TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-        "CheckerImageTracker::CheckerImagingDecision", "can_checker_image",
-        can_checker_image, "image_params",
-        ToString(image_id, image.sk_image()->uniqueID(), complete, static_image,
-                 fits_size_constraints, image.is_multipart(), size));
+    UMA_HISTOGRAM_ENUMERATION(
+        "Compositing.Renderer.CheckerImagingDecision", decision,
+        CheckerImagingDecision::kCheckerImagingDecisionCount);
+
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                 "CheckerImageTracker::CheckerImagingDecision", "image_params",
+                 ToString(image_id, image.sk_image()->uniqueID(), decision));
   }
 
   // Update the decode state from the latest image we have seen. Note that it

@@ -4060,6 +4060,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Stream was never read at all"/>
 </enum>
 
+<enum name="CheckerImagingDecision">
+  <int value="0" label="Can decode asynchronously."/>
+  <int value="1" label="Image is animated."/>
+  <int value="2" label="Image is a video frame."/>
+  <int value="3" label="Image animation state is unknown."/>
+  <int value="4" label="Image is fetched using a multi-part response."/>
+  <int value="5" label="Image is partially loaded."/>
+  <int value="6" label="Image load state is unknown."/>
+  <int value="7" label="Image was too small to consider checkering."/>
+  <int value="8" label="Image was larger than the allowed cache limit."/>
+</enum>
+
 <enum name="ChromeChannelForHistogram">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="CANARY"/>
