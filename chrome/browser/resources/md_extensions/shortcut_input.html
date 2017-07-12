@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -8,11 +9,7 @@
 
 <dom-module id="extensions-shortcut-input">
   <template>
-    <style>
-      [hidden] {
-        display: none !important;
-      }
-
+    <style include="cr-hidden-style">
       #main {
         position: relative;
         width: 200px;

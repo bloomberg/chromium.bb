@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -15,11 +16,7 @@
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex">
-      [hidden] {
-        display: none !important;
-      }
-
+    <style include="iron-flex cr-hidden-style">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;

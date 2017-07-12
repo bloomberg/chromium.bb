@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -24,11 +25,7 @@
 
 <dom-module id="extensions-manager">
   <template>
-    <style>
-      [hidden] {
-        display: none !important;
-      }
-
+    <style include="cr-hidden-style">
       :host {
         height: 100%;
       }
