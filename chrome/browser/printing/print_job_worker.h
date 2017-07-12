@@ -137,6 +137,8 @@ class PrintJobWorker {
   // The printed document. Only has read-only access.
   scoped_refptr<PrintedDocument> document_;
 
+  int render_process_id_;
+  int render_frame_id_;
   // The print job owning this worker thread. It is guaranteed to outlive this
   // object.
   PrintJobWorkerOwner* owner_;

@@ -186,10 +186,13 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jurl,
       const base::android::JavaParamRef<jstring>& jtitle);
-  bool Print(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  bool Print(JNIEnv* env,
+             const base::android::JavaParamRef<jobject>& obj,
+             jint render_process_id,
+             jint render_frame_id);
 
   // Sets the tab as content to be printed through JNI.
-  void SetPendingPrint();
+  void SetPendingPrint(int render_process_id, int render_frame_id);
 
   // Called to get default favicon of current tab, return null if no
   // favicon is avaliable for current tab.
