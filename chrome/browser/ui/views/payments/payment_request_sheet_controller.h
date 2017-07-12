@@ -58,6 +58,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Caller should not take ownership of the result.
   PaymentRequestDialogView* dialog() { return dialog_; }
 
+  // Returns the title to be displayed in this sheet's header.
+  virtual base::string16 GetSheetTitle() = 0;
+
  protected:
   // Clears the content part of the view represented by this view controller and
   // calls FillContentView again to re-populate it with updated views.
@@ -89,9 +92,6 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Returns whether this sheet should display a back arrow in the header next
   // to the title.
   virtual bool ShouldShowHeaderBackArrow();
-
-  // Returns the title to be displayed in this sheet's header.
-  virtual base::string16 GetSheetTitle() = 0;
 
   // Implemented by subclasses to populate |content_view| with the views that
   // should be displayed in their content area (between the header and the

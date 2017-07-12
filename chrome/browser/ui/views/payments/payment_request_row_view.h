@@ -21,6 +21,9 @@ class PaymentRequestRowView : public views::CustomButton {
                         const gfx::Insets& insets);
   ~PaymentRequestRowView() override;
 
+ protected:
+  bool clickable() { return clickable_; }
+
  private:
   // Sets this row's background to the theme's hovered color to indicate that
   // it's begin hovered or it's focused.
