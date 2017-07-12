@@ -346,6 +346,17 @@ interface AudioParam
     method setValueAtTime
     method setValueCurveAtTime
     setter value
+interface AudioParamMap
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface AudioProcessingEvent : Event
     attribute @@toStringTag
     getter inputBuffer
