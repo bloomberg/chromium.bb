@@ -7,13 +7,12 @@
 
 #import <UIKit/UIKIt.h>
 
-#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_protocol.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_delegate.h"
 
 // Accessory View above the keyboard.
 // Shows keys that are shortcuts to commonly used characters or strings,
 // and buttons to start Voice Search or a Camera Search.
-@interface NewKeyboardAccessoryView
-    : UIInputView<KeyboardAccessoryViewProtocol, UIInputViewAudioFeedback>
+@interface NewKeyboardAccessoryView : UIInputView<UIInputViewAudioFeedback>
 
 // Designated initializer. |buttonTitles| lists the titles of the shortcut
 // buttons. |delegate| receives the various events triggered in the view. Not

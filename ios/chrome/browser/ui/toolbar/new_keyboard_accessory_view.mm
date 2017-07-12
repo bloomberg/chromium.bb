@@ -34,9 +34,6 @@
 
 @implementation NewKeyboardAccessoryView
 
-// Unused by this implementation of |KeyboardAccessoryViewProtocol|.
-@synthesize mode = _mode;
-
 @synthesize buttonTitles = _buttonTitles;
 @synthesize delegate = _delegate;
 
@@ -84,18 +81,18 @@
   UIButton* voiceSearchButton =
       [self iconButton:@"keyboard_accessory_voice_search"];
   [voiceSearchButton addTarget:_delegate
-                        action:@selector(keyboardAccessoryVoiceSearchTouchDown)
+                        action:@selector(keyboardAccessoryVoiceSearchTouchDown:)
               forControlEvents:UIControlEventTouchDown];
   SetA11yLabelAndUiAutomationName(voiceSearchButton,
                                   IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH,
                                   @"Voice Search");
   [voiceSearchButton
              addTarget:_delegate
-                action:@selector(keyboardAccessoryVoiceSearchTouchUpInside)
+                action:@selector(keyboardAccessoryVoiceSearchTouchUpInside:)
       forControlEvents:UIControlEventTouchUpInside];
   UIButton* cameraButton = [self iconButton:@"keyboard_accessory_qr_scanner"];
   [cameraButton addTarget:_delegate
-                   action:@selector(keyboardAccessoryCameraSearchTouchUpInside)
+                   action:@selector(keyboardAccessoryCameraSearchTouchUpInside:)
          forControlEvents:UIControlEventTouchUpInside];
   SetA11yLabelAndUiAutomationName(
       cameraButton, IDS_IOS_KEYBOARD_ACCESSORY_VIEW_QR_CODE_SEARCH,
