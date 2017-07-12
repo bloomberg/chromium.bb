@@ -133,69 +133,17 @@ class ForceHolAckListener : public QuicAckListenerInterface {
   DISALLOW_COPY_AND_ASSIGN(ForceHolAckListener);
 };
 
-enum Http2DecoderChoice {
-  HTTP2_DECODER_SPDY,
-  HTTP2_DECODER_NEW
-};
-std::ostream& operator<<(std::ostream& os, Http2DecoderChoice v) {
-  switch (v) {
-    case HTTP2_DECODER_SPDY:
-      return os << "SPDY";
-    case HTTP2_DECODER_NEW:
-      return os << "NEW";
-  }
-  return os;
-}
-
-enum HpackDecoderChoice { HPACK_DECODER_SPDY, HPACK_DECODER3 };
-std::ostream& operator<<(std::ostream& os, HpackDecoderChoice v) {
-  switch (v) {
-    case HPACK_DECODER_SPDY:
-      return os << "SPDY";
-    case HPACK_DECODER3:
-      return os << "HPACK_DECODER3";
-  }
-  return os;
-}
-
-typedef testing::
-    tuple<QuicVersion, Perspective, Http2DecoderChoice, HpackDecoderChoice>
-        TestParamsTuple;
+typedef testing::tuple<QuicVersion, Perspective> TestParamsTuple;
 
 struct TestParams {
   explicit TestParams(TestParamsTuple params)
-      : version(testing::get<0>(params)),
-        perspective(testing::get<1>(params)),
-        http2_decoder(testing::get<2>(params)),
-        hpack_decoder(testing::get<3>(params)) {
-    switch (http2_decoder) {
-      case HTTP2_DECODER_SPDY:
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
-        break;
-      case HTTP2_DECODER_NEW:
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
-        // Http2FrameDecoderAdapter needs the new header methods, else
-        // --use_http2_frame_decoder_adapter=true will be ignored.
-        break;
-    }
-    switch (hpack_decoder) {
-      case HPACK_DECODER_SPDY:
-        FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3 = false;
-        break;
-      case HPACK_DECODER3:
-        FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3 = true;
-        break;
-    }
+      : version(testing::get<0>(params)), perspective(testing::get<1>(params)) {
     QUIC_LOG(INFO) << "TestParams: version: " << QuicVersionToString(version)
-                   << ", perspective: " << perspective
-                   << ", http2_decoder: " << http2_decoder
-                   << ", hpack_decoder: " << hpack_decoder;
+                   << ", perspective: " << perspective;
   }
 
   QuicVersion version;
   Perspective perspective;
-  Http2DecoderChoice http2_decoder;
-  HpackDecoderChoice hpack_decoder;
 };
 
 class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
@@ -401,17 +349,13 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
   QuicStreamId next_stream_id_;
 };
 
-// Run all tests with each version, perspective (client or server),
-// HTTP/2 and HPACK decoder.
+// Run all tests with each version, perspective (client or server)..
 INSTANTIATE_TEST_CASE_P(
     Tests,
     QuicHeadersStreamTest,
     ::testing::Combine(::testing::ValuesIn(AllSupportedVersions()),
                        ::testing::Values(Perspective::IS_CLIENT,
-                                         Perspective::IS_SERVER),
-                       ::testing::Values(HTTP2_DECODER_SPDY,
-                                         HTTP2_DECODER_NEW),
-                       ::testing::Values(HPACK_DECODER_SPDY, HPACK_DECODER3)));
+                                         Perspective::IS_SERVER)));
 
 TEST_P(QuicHeadersStreamTest, StreamId) {
   EXPECT_EQ(3u, headers_stream_->id());

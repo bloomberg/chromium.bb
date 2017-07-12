@@ -20,7 +20,6 @@
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/spdy/chromium/spdy_flags.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
-#include "net/spdy/core/hpack/hpack_decoder.h"
 #include "net/spdy/core/hpack/hpack_decoder3.h"
 #include "net/spdy/core/http2_frame_decoder_adapter.h"
 #include "net/spdy/core/spdy_bitmasks.h"
@@ -61,12 +60,8 @@ void UnpackStreamDependencyValues(uint32_t packed,
 // used. This code is isolated to hopefully make merging into Chromium easier.
 std::unique_ptr<SpdyFramerDecoderAdapter> DecoderAdapterFactory(
     SpdyFramer* outer) {
-  if (FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter) {
-    DVLOG(1) << "Creating Http2FrameDecoderAdapter.";
-    return CreateHttp2FrameDecoderAdapter(outer);
-  }
-
-  return nullptr;
+  DVLOG(1) << "Creating Http2FrameDecoderAdapter.";
+  return CreateHttp2FrameDecoderAdapter(outer);
 }
 
 // Used to indicate no flags in a HTTP2 flags field.
@@ -2819,11 +2814,7 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
 
 HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
   if (hpack_decoder_.get() == nullptr) {
-    if (FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3) {
-      hpack_decoder_ = SpdyMakeUnique<HpackDecoder3>();
-    } else {
-      hpack_decoder_ = SpdyMakeUnique<HpackDecoder>();
-    }
+    hpack_decoder_ = SpdyMakeUnique<HpackDecoder3>();
   }
   return hpack_decoder_.get();
 }
