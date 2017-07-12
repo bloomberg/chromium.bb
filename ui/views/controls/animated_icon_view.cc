@@ -21,6 +21,13 @@ AnimatedIconView::AnimatedIconView(const gfx::VectorIcon& icon)
 
 AnimatedIconView::~AnimatedIconView() {}
 
+void AnimatedIconView::SetColor(SkColor color) {
+  if (color_ != color) {
+    color_ = color;
+    UpdateStaticImage();
+  }
+}
+
 void AnimatedIconView::Animate(State target) {
   SetState(target);
   if (!IsAnimating())

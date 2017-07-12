@@ -26,7 +26,7 @@ class VIEWS_EXPORT AnimatedIconView : public views::ImageView,
   explicit AnimatedIconView(const gfx::VectorIcon& icon);
   ~AnimatedIconView() override;
 
-  void set_color(SkColor color) { color_ = color; }
+  void SetColor(SkColor color);
 
   // Animates to the end or start state.
   void Animate(State target);
