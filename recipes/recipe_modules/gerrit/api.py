@@ -154,6 +154,6 @@ class GerritApi(recipe_api.RecipeApi):
     return self(
         kwargs.pop('name', 'changes'),
         args,
-        step_test_data=lambda: self.test_api.get_changes_response_data(),
+        step_test_data=lambda: self.test_api.get_one_change_response_data(),
         **kwargs
     ).json.output

@@ -455,6 +455,12 @@ def force_revision(folder_name, revision):
   if revision and revision.upper() != 'HEAD':
     git('checkout', '--force', revision, cwd=folder_name)
   else:
+    # TODO(machenbach): This won't work with branch-heads, as Gerrit's
+    # destination branch would be e.g. refs/branch-heads/123. But here
+    # we need to pass refs/remotes/branch-heads/123 to check out.
+    # This will also not work if somebody passes a local refspec like
+    # refs/heads/master. It needs to translate to refs/remotes/origin/master
+    # first. See also https://crbug.com/740456 .
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
     git('checkout', '--force', ref, cwd=folder_name)
 

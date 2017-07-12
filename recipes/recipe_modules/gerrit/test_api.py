@@ -5,6 +5,27 @@
 from recipe_engine import recipe_test_api
 
 
+# Exemplary change. Note: This contains only a subset of the key/value pairs
+# present in production to limit recipe simulation output.
+EXAMPLE_CHANGE = {
+  'status': 'NEW',
+  'created': '2017-01-30 13:11:20.000000000',
+  '_number': '91827',
+  'change_id': 'Ideadbeef',
+  'project': 'chromium/src',
+  'has_review_started': False,
+  'branch': 'master',
+  'subject': 'Change title',
+  'revisions': {
+    '184ebe53805e102605d11f6b143486d15c23a09c': {
+      '_number': '1',
+      'commit': {
+        'message': 'Change commit message',
+      },
+    },
+  },
+}
+
 class GerritTestApi(recipe_test_api.RecipeTestApi):
 
   def _make_gerrit_response_json(self, data):
@@ -23,29 +44,10 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
       "revision": "67ebf73496383c6777035e374d2d664009e2aa5c"
     })
 
-  def get_changes_response_data(self):
-    # Exemplary list of changes. Note: This contains only a subset of the
-    # key/value pairs present in production to limit recipe simulation output.
-    return self._make_gerrit_response_json([
-      {
-        'status': 'NEW',
-        'created': '2017-01-30 13:11:20.000000000',
-        '_number': '91827',
-        'change_id': 'Ideadbeef',
-        'project': 'chromium/src',
-        'has_review_started': False,
-        'branch': 'master',
-        'subject': 'Change title',
-        'revisions': {
-            '184ebe53805e102605d11f6b143486d15c23a09c': {
-                '_number': '1',
-                'commit': {
-                    'message': 'Change commit message',
-                },
-            },
-        },
-      },
-    ])
+  def get_one_change_response_data(self, **kwargs):
+    change = EXAMPLE_CHANGE.copy()
+    change.update(kwargs)
+    return self._make_gerrit_response_json([change])
 
   def get_empty_changes_response_data(self):
     return self._make_gerrit_response_json([])

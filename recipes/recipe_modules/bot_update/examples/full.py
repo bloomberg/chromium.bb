@@ -5,6 +5,7 @@
 DEPS = [
   'bot_update',
   'gclient',
+  'gerrit',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
@@ -25,7 +26,9 @@ def RunSteps(api):
   else:
     api.gclient.c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
     api.gclient.c.got_revision_reverse_mapping['got_revision'] = 'src'
+    api.gclient.c.got_revision_reverse_mapping['got_v8_revision'] = 'src/v8'
   api.gclient.c.patch_projects['v8'] = ('src/v8', 'HEAD')
+  api.gclient.c.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
                                                  'HEAD')
   patch = api.properties.get('patch', True)
@@ -41,6 +44,11 @@ def RunSteps(api):
   gerrit_no_reset = True if api.properties.get('gerrit_no_reset') else False
   gerrit_no_rebase_patch_ref = bool(
       api.properties.get('gerrit_no_rebase_patch_ref'))
+
+  # TODO(machenbach): Remove this as soon as the feature is on by default.
+  if (api.properties.get('patch_project') == 'v8/v8' or
+      api.properties.get('buildername') == 'feature_rel'):
+    api.bot_update.enable_destination_branch_check()
 
   if api.properties.get('test_apply_gerrit_ref'):
     api.bot_update.apply_gerrit_ref(
@@ -165,6 +173,28 @@ def GenTests(api):
       gerrit_project='angle/angle',
       patch_issue=338811,
       patch_set=3,
+  )
+  yield api.test('tryjob_gerrit_v8') + api.properties.tryserver(
+      gerrit_project='v8/v8',
+      patch_issue=338811,
+      patch_set=3,
+  )
+  yield api.test('tryjob_gerrit_v8_feature_branch') + api.properties.tryserver(
+      gerrit_project='v8/v8',
+      patch_issue=338811,
+      patch_set=3,
+  ) + api.step_data(
+      'gerrit get_patch_destination_branch',
+      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
+  )
+  yield api.test('tryjob_gerrit_feature_branch') + api.properties.tryserver(
+      buildername='feature_rel',
+      gerrit_project='chromium/src',
+      patch_issue=338811,
+      patch_set=3,
+  ) + api.step_data(
+      'gerrit get_patch_destination_branch',
+      api.gerrit.get_one_change_response_data(branch='experimental/feature'),
   )
   yield api.test('tryjob_gerrit_angle_deprecated') + api.properties.tryserver(
       patch_project='angle/angle',
