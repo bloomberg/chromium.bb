@@ -8,6 +8,7 @@
 
 #include "base/at_exit.h"
 #include "base/atomicops.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -37,9 +38,9 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/core/quic_versions.h"
 #include "net/socket/ssl_client_socket.h"
@@ -85,6 +86,18 @@ class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextGetter);
 };
+
+void SignalEvent(base::WaitableEvent* event) {
+  event->Signal();
+}
+
+// TODO(eroman): Creating the file(s) for a netlog is an internal detail for
+// FileNetLogObsever. This code assumes that the unbounded format is being used,
+// which writes a single file at |path| (creating or overwriting it).
+bool IsNetLogPathValid(const base::FilePath& path) {
+  base::ScopedFILE file(base::OpenFile(path, "w"));
+  return !!file;
+}
 
 }  // namespace
 
@@ -141,42 +154,39 @@ void CronetEnvironment::Initialize() {
 
 bool CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
                                     bool log_bytes) {
-  if (!file_name.length())
+  if (file_name.empty())
     return false;
 
   base::FilePath path(file_name);
-
-  base::ScopedFILE file(base::OpenFile(path, "w"));
-  if (!file) {
+  if (!IsNetLogPathValid(path)) {
     LOG(ERROR) << "Can not start NetLog to " << path.value() << ": "
                << strerror(errno);
     return false;
   }
 
   LOG(WARNING) << "Starting NetLog to " << path.value();
-  PostToNetworkThread(
-      FROM_HERE,
-      base::Bind(&CronetEnvironment::StartNetLogOnNetworkThread,
-                 base::Unretained(this), base::Passed(&file), log_bytes));
+  PostToNetworkThread(FROM_HERE,
+                      base::Bind(&CronetEnvironment::StartNetLogOnNetworkThread,
+                                 base::Unretained(this), path, log_bytes));
 
   return true;
 }
 
-void CronetEnvironment::StartNetLogOnNetworkThread(base::ScopedFILE file,
+void CronetEnvironment::StartNetLogOnNetworkThread(const base::FilePath& path,
                                                    bool log_bytes) {
   DCHECK(net_log_);
 
-  if (net_log_observer_)
+  if (file_net_log_observer_)
     return;
 
   net::NetLogCaptureMode capture_mode =
       log_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
                 : net::NetLogCaptureMode::Default();
 
-  net_log_observer_.reset(new net::WriteToFileNetLogObserver());
-  net_log_observer_->set_capture_mode(capture_mode);
-  net_log_observer_->StartObserving(main_context_->net_log(), std::move(file),
-                                    nullptr, main_context_.get());
+  file_net_log_observer_ =
+      net::FileNetLogObserver::CreateUnbounded(path, nullptr);
+  file_net_log_observer_->StartObserving(main_context_->net_log(),
+                                         capture_mode);
   LOG(WARNING) << "Started NetLog";
 }
 
@@ -192,12 +202,14 @@ void CronetEnvironment::StopNetLog() {
 
 void CronetEnvironment::StopNetLogOnNetworkThread(
     base::WaitableEvent* log_stopped_event) {
-  if (net_log_observer_) {
+  if (file_net_log_observer_) {
     DLOG(WARNING) << "Stopped NetLog.";
-    net_log_observer_->StopObserving(main_context_.get());
-    net_log_observer_.reset();
+    file_net_log_observer_->StopObserving(
+        nullptr, base::BindOnce(&SignalEvent, log_stopped_event));
+    file_net_log_observer_.reset();
+  } else {
+    log_stopped_event->Signal();
   }
-  log_stopped_event->Signal();
 }
 
 net::HttpNetworkSession* CronetEnvironment::GetHttpNetworkSession(
