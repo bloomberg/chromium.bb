@@ -962,6 +962,570 @@ STDMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
 }
 
 //
+// IAccessibleTable methods.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_accessibleAt(long row,
+                                                 long column,
+                                                 IUnknown** accessible) {
+  if (!accessible)
+    return E_INVALIDARG;
+
+  AXPlatformNodeBase* cell =
+      GetTableCell(static_cast<int>(row), static_cast<int>(column));
+  if (cell) {
+    auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
+    node_win->AddRef();
+
+    *accessible = static_cast<IAccessible*>(node_win);
+    return S_OK;
+  }
+
+  *accessible = nullptr;
+  return E_INVALIDARG;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_caption(IUnknown** accessible) {
+  if (!accessible)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): implement
+  *accessible = nullptr;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_childIndex(long row,
+                                               long column,
+                                               long* cell_index) {
+  if (!cell_index)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(static_cast<int>(row), static_cast<int>(column));
+  if (cell) {
+    *cell_index = static_cast<LONG>(cell->GetTableCellIndex());
+    return S_OK;
+  }
+
+  *cell_index = 0;
+  return E_INVALIDARG;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnDescription(long column,
+                                                      BSTR* description) {
+  if (!description)
+    return E_INVALIDARG;
+
+  int columns = GetTableColumnCount();
+  if (column < 0 || column >= columns)
+    return E_INVALIDARG;
+
+  int rows = GetTableRowCount();
+  if (rows <= 0) {
+    *description = nullptr;
+    return S_FALSE;
+  }
+
+  for (int i = 0; i < rows; ++i) {
+    auto* cell = GetTableCell(i, column);
+    if (cell && cell->GetData().role == ui::AX_ROLE_COLUMN_HEADER) {
+      base::string16 cell_name = cell->GetString16Attribute(ui::AX_ATTR_NAME);
+      if (cell_name.size() > 0) {
+        *description = SysAllocString(cell_name.c_str());
+        return S_OK;
+      }
+
+      cell_name = cell->GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
+      if (cell_name.size() > 0) {
+        *description = SysAllocString(cell_name.c_str());
+        return S_OK;
+      }
+    }
+  }
+
+  *description = nullptr;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnExtentAt(long row,
+                                                   long column,
+                                                   long* n_columns_spanned) {
+  if (!n_columns_spanned)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(static_cast<int>(row), static_cast<int>(column));
+  if (!cell)
+    return E_INVALIDARG;
+
+  *n_columns_spanned = cell->GetTableColumnSpan();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnHeader(
+    IAccessibleTable** accessible_table,
+    long* starting_row_index) {
+  // TODO(dmazzoni): implement
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnIndex(long cell_index,
+                                                long* column_index) {
+  if (!column_index)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(cell_index);
+  if (!cell)
+    return E_INVALIDARG;
+  *column_index = cell->GetTableColumn();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nColumns(long* column_count) {
+  if (!column_count)
+    return E_INVALIDARG;
+
+  *column_count = GetTableColumnCount();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nRows(long* row_count) {
+  if (!row_count)
+    return E_INVALIDARG;
+
+  *row_count = GetTableRowCount();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(long* cell_count) {
+  if (!cell_count)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): add support for selected cells/rows/columns in tables.
+  *cell_count = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(long* column_count) {
+  if (!column_count)
+    return E_INVALIDARG;
+
+  *column_count = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nSelectedRows(long* row_count) {
+  if (!row_count)
+    return E_INVALIDARG;
+
+  *row_count = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowDescription(long row,
+                                                   BSTR* description) {
+  if (!description)
+    return E_INVALIDARG;
+
+  if (row < 0 || row >= GetTableRowCount())
+    return E_INVALIDARG;
+
+  int columns = GetTableColumnCount();
+  if (columns <= 0) {
+    *description = nullptr;
+    return S_FALSE;
+  }
+
+  for (int i = 0; i < columns; ++i) {
+    auto* cell = GetTableCell(row, i);
+    if (cell && cell->GetData().role == ui::AX_ROLE_ROW_HEADER) {
+      base::string16 cell_name = cell->GetString16Attribute(ui::AX_ATTR_NAME);
+      if (cell_name.size() > 0) {
+        *description = SysAllocString(cell_name.c_str());
+        return S_OK;
+      }
+      cell_name = cell->GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
+      if (cell_name.size() > 0) {
+        *description = SysAllocString(cell_name.c_str());
+        return S_OK;
+      }
+    }
+  }
+
+  *description = nullptr;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowExtentAt(long row,
+                                                long column,
+                                                long* n_rows_spanned) {
+  if (!n_rows_spanned)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(row, column);
+  if (!cell)
+    return E_INVALIDARG;
+
+  *n_rows_spanned = GetTableRowSpan();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowHeader(
+    IAccessibleTable** accessible_table,
+    long* starting_column_index) {
+  // TODO(dmazzoni): implement
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowIndex(long cell_index, long* row_index) {
+  if (!row_index)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(cell_index);
+  if (!cell)
+    return E_INVALIDARG;
+
+  *row_index = cell->GetTableRow();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedChildren(long max_children,
+                                                     long** children,
+                                                     long* n_children) {
+  if (!children || !n_children)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_children = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedColumns(long max_columns,
+                                                    long** columns,
+                                                    long* n_columns) {
+  if (!columns || !n_columns)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_columns = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedRows(long max_rows,
+                                                 long** rows,
+                                                 long* n_rows) {
+  if (!rows || !n_rows)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_rows = 0;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_summary(IUnknown** accessible) {
+  if (!accessible)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): implement
+  *accessible = nullptr;
+  return S_FALSE;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_isColumnSelected(long column,
+                                                     boolean* is_selected) {
+  if (!is_selected)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *is_selected = false;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_isRowSelected(long row,
+                                                  boolean* is_selected) {
+  if (!is_selected)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *is_selected = false;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_isSelected(long row,
+                                               long column,
+                                               boolean* is_selected) {
+  if (!is_selected)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *is_selected = false;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowColumnExtentsAtIndex(
+    long index,
+    long* row,
+    long* column,
+    long* row_extents,
+    long* column_extents,
+    boolean* is_selected) {
+  if (!row || !column || !row_extents || !column_extents || !is_selected)
+    return E_INVALIDARG;
+
+  auto* cell = GetTableCell(index);
+  if (!cell)
+    return E_INVALIDARG;
+
+  *row = cell->GetTableRow();
+  *column = cell->GetTableColumn();
+  *row_extents = GetTableRowSpan();
+  *column_extents = GetTableColumnSpan();
+  *is_selected = false;  // Not supported.
+
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::selectRow(long row) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::selectColumn(long column) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::unselectRow(long row) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::unselectColumn(long column) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+AXPlatformNodeWin::get_modelChange(IA2TableModelChange* model_change) {
+  return E_NOTIMPL;
+}
+
+//
+// IAccessibleTable2 methods.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_cellAt(long row,
+                                           long column,
+                                           IUnknown** cell) {
+  if (!cell)
+    return E_INVALIDARG;
+
+  AXPlatformNodeBase* table_cell =
+      GetTableCell(static_cast<int>(row), static_cast<int>(column));
+  if (table_cell) {
+    auto* node_win = static_cast<AXPlatformNodeWin*>(table_cell);
+    node_win->AddRef();
+    *cell = static_cast<IAccessible*>(node_win);
+    return S_OK;
+  }
+
+  *cell = nullptr;
+  return E_INVALIDARG;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_nSelectedCells(long* cell_count) {
+  return get_nSelectedChildren(cell_count);
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedCells(IUnknown*** cells,
+                                                  long* n_selected_cells) {
+  if (!cells || !n_selected_cells)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_selected_cells = 0;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedColumns(long** columns,
+                                                    long* n_columns) {
+  if (!columns || !n_columns)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_columns = 0;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_selectedRows(long** rows, long* n_rows) {
+  if (!rows || !n_rows)
+    return E_INVALIDARG;
+
+  // TODO(dmazzoni): Implement this.
+  *n_rows = 0;
+  return S_OK;
+}
+
+//
+// IAccessibleTableCell methods.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_columnExtent(long* n_columns_spanned) {
+  if (!n_columns_spanned)
+    return E_INVALIDARG;
+
+  *n_columns_spanned = GetTableColumnSpan();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
+    IUnknown*** cell_accessibles,
+    long* n_column_header_cells) {
+  if (!cell_accessibles || !n_column_header_cells)
+    return E_INVALIDARG;
+
+  *n_column_header_cells = 0;
+  auto* table = GetTable();
+  if (!table) {
+    NOTREACHED();
+    return S_FALSE;
+  }
+
+  int column = GetTableColumn();
+  int columns = GetTableColumnCount();
+  int rows = GetTableRowCount();
+  if (columns <= 0 || rows <= 0 || column < 0 || column >= columns)
+    return S_FALSE;
+
+  for (int i = 0; i < rows; ++i) {
+    auto* cell = GetTableCell(i, column);
+    if (cell && cell->GetData().role == ui::AX_ROLE_COLUMN_HEADER)
+      (*n_column_header_cells)++;
+  }
+
+  *cell_accessibles = static_cast<IUnknown**>(
+      CoTaskMemAlloc((*n_column_header_cells) * sizeof(cell_accessibles[0])));
+  int index = 0;
+  for (int i = 0; i < rows; ++i) {
+    AXPlatformNodeBase* cell = GetTableCell(i, column);
+    if (cell && cell->GetData().role == ui::AX_ROLE_COLUMN_HEADER) {
+      auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
+      node_win->AddRef();
+
+      (*cell_accessibles)[index] = static_cast<IAccessible*>(node_win);
+      ++index;
+    }
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_columnIndex(long* column_index) {
+  if (!column_index)
+    return E_INVALIDARG;
+
+  *column_index = GetTableColumn();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowExtent(long* n_rows_spanned) {
+  if (!n_rows_spanned)
+    return E_INVALIDARG;
+
+  *n_rows_spanned = GetTableRowSpan();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowHeaderCells(IUnknown*** cell_accessibles,
+                                                   long* n_row_header_cells) {
+  if (!cell_accessibles || !n_row_header_cells)
+    return E_INVALIDARG;
+
+  *n_row_header_cells = 0;
+  auto* table = GetTable();
+  if (!table) {
+    NOTREACHED();
+    return S_FALSE;
+  }
+
+  int row = GetTableRow();
+  int columns = GetTableColumnCount();
+  int rows = GetTableRowCount();
+  if (columns <= 0 || rows <= 0 || row < 0 || row >= rows)
+    return S_FALSE;
+
+  for (int i = 0; i < columns; ++i) {
+    auto* cell = GetTableCell(row, i);
+    if (cell && cell->GetData().role == ui::AX_ROLE_ROW_HEADER)
+      (*n_row_header_cells)++;
+  }
+
+  *cell_accessibles = static_cast<IUnknown**>(
+      CoTaskMemAlloc((*n_row_header_cells) * sizeof(cell_accessibles[0])));
+  int index = 0;
+  for (int i = 0; i < columns; ++i) {
+    AXPlatformNodeBase* cell = GetTableCell(row, i);
+    if (cell && cell->GetData().role == ui::AX_ROLE_ROW_HEADER) {
+      auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
+      node_win->AddRef();
+
+      (*cell_accessibles)[index] = static_cast<IAccessible*>(node_win);
+      ++index;
+    }
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowIndex(long* row_index) {
+  if (!row_index)
+    return E_INVALIDARG;
+
+  *row_index = GetTableRow();
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_isSelected(boolean* is_selected) {
+  if (!is_selected)
+    return E_INVALIDARG;
+
+  *is_selected = false;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_rowColumnExtents(long* row_index,
+                                                     long* column_index,
+                                                     long* row_extents,
+                                                     long* column_extents,
+                                                     boolean* is_selected) {
+  if (!row_index || !column_index || !row_extents || !column_extents ||
+      !is_selected) {
+    return E_INVALIDARG;
+  }
+
+  *row_index = GetTableRow();
+  *column_index = GetTableColumn();
+  *row_extents = GetTableRowSpan();
+  *column_extents = GetTableColumnSpan();
+  *is_selected = false;  // Not supported.
+
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_table(IUnknown** table) {
+  if (!table)
+    return E_INVALIDARG;
+
+  auto* find_table = GetTable();
+  if (!find_table) {
+    *table = nullptr;
+    return S_FALSE;
+  }
+
+  // The IAccessibleTable interface is still on the AXPlatformNodeWin
+  // class.
+  auto* node_win = static_cast<AXPlatformNodeWin*>(find_table);
+  node_win->AddRef();
+
+  *table = static_cast<IAccessibleTable*>(node_win);
+  return S_OK;
+}
+
+//
 // IAccessibleText
 //
 

@@ -28,6 +28,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
 
   AXPlatformNode* ax_platform_node() { return platform_node_; }
 
+  void BuildAllWrappers(AXTree* tree, AXNode* node);
+
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
