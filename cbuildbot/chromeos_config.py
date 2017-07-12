@@ -2224,6 +2224,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'auron',
+      'auron_yuna',
       'beaglebone',
       'butterfly',
       'caroline',
@@ -2283,7 +2284,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # from landing, a red paladin from a bad CL in the CQ is a working paladin.
   _paladin_new_boards = frozenset([
       'auron_paine',
-      'auron_yuna',
       'betty',
       'bob',
       'edgar',
