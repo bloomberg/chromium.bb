@@ -82,6 +82,19 @@ class OfflinePageModel : public base::SupportsUserData {
     std::string request_origin;
   };
 
+  // Information about a deleted page.
+  struct DeletedPageInfo {
+    DeletedPageInfo(int64_t offline_id,
+                    const ClientId& client_id,
+                    const std::string& request_origin);
+    // The ID of the deleted page.
+    int64_t offline_id;
+    // Client ID of the deleted page.
+    ClientId client_id;
+    // The origin that the page was saved on behalf of.
+    std::string request_origin;
+  };
+
   // Observer of the OfflinePageModel.
   class Observer {
    public:
@@ -93,8 +106,7 @@ class OfflinePageModel : public base::SupportsUserData {
                                   const OfflinePageItem& added_page) = 0;
 
     // Invoked when an offline copy related to |offline_id| was deleted.
-    virtual void OfflinePageDeleted(int64_t offline_id,
-                                    const ClientId& client_id) = 0;
+    virtual void OfflinePageDeleted(const DeletedPageInfo& page_info) = 0;
 
    protected:
     virtual ~Observer() = default;

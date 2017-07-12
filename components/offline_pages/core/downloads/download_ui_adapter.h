@@ -109,8 +109,8 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageAdded(OfflinePageModel* model,
                         const OfflinePageItem& added_page) override;
-  void OfflinePageDeleted(int64_t offline_id,
-                          const ClientId& client_id) override;
+  void OfflinePageDeleted(
+      const OfflinePageModel::DeletedPageInfo& page_info) override;
 
   // RequestCoordinator::Observer
   void OnAdded(const SavePageRequest& request) override;

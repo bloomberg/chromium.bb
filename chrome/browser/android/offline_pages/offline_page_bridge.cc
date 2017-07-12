@@ -80,6 +80,16 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
       offline_page.access_count, offline_page.last_access_time.ToJavaTime());
 }
 
+ScopedJavaLocalRef<jobject> ToJavaDeletedPageInfo(
+    JNIEnv* env,
+    const OfflinePageModel::DeletedPageInfo& deleted_page) {
+  return Java_OfflinePageBridge_createDeletedPageInfo(
+      env, deleted_page.offline_id,
+      ConvertUTF8ToJavaString(env, deleted_page.client_id.name_space),
+      ConvertUTF8ToJavaString(env, deleted_page.client_id.id),
+      ConvertUTF8ToJavaString(env, deleted_page.request_origin));
+}
+
 void CheckPagesExistOfflineCallback(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
     const OfflinePageModel::CheckPagesExistOfflineResult& offline_pages) {
@@ -297,11 +307,11 @@ void OfflinePageBridge::OfflinePageAdded(OfflinePageModel* model,
       env, java_ref_, ToJavaOfflinePageItem(env, added_page));
 }
 
-void OfflinePageBridge::OfflinePageDeleted(int64_t offline_id,
-                                           const ClientId& client_id) {
+void OfflinePageBridge::OfflinePageDeleted(
+    const OfflinePageModel::DeletedPageInfo& page_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_OfflinePageBridge_offlinePageDeleted(env, java_ref_, offline_id,
-                                            CreateClientId(env, client_id));
+  Java_OfflinePageBridge_offlinePageDeleted(
+      env, java_ref_, ToJavaDeletedPageInfo(env, page_info));
 }
 
 void OfflinePageBridge::CheckPagesExistOffline(

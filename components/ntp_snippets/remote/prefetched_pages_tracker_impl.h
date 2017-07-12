@@ -41,8 +41,9 @@ class PrefetchedPagesTrackerImpl
   void OfflinePageAdded(
       offline_pages::OfflinePageModel* model,
       const offline_pages::OfflinePageItem& added_page) override;
-  void OfflinePageDeleted(int64_t offline_id,
-                          const offline_pages::ClientId& client_id) override;
+  void OfflinePageDeleted(
+      const offline_pages::OfflinePageModel::DeletedPageInfo& page_info)
+      override;
 
  private:
   void Initialize(const std::vector<offline_pages::OfflinePageItem>&
