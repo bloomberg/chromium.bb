@@ -80,7 +80,7 @@ void AutofillPaymentInstrument::InvokePaymentApp(
                                                weak_ptr_factory_.GetWeakPtr());
 }
 
-bool AutofillPaymentInstrument::IsCompleteForPayment() {
+bool AutofillPaymentInstrument::IsCompleteForPayment() const {
   // COMPLETE or EXPIRED cards are considered valid for payment. The user will
   // be prompted to enter the new expiration at the CVC step.
   return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
@@ -88,17 +88,17 @@ bool AutofillPaymentInstrument::IsCompleteForPayment() {
          autofill::CREDIT_CARD_EXPIRED;
 }
 
-bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() {
+bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
   return matches_merchant_card_type_exactly_;
 }
 
-base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() {
+base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() const {
   return autofill::GetCompletionMessageForCard(
       autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
                                            billing_profiles_));
 }
 
-bool AutofillPaymentInstrument::IsValidForCanMakePayment() {
+bool AutofillPaymentInstrument::IsValidForCanMakePayment() const {
   autofill::CreditCardCompletionStatus status =
       autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
                                            billing_profiles_);

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -101,6 +102,12 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
       item.phoneNumber =
           GetPhoneNumberLabelFromAutofillProfile(*contactProfile);
     }
+    item.notification =
+        payment_request_util::GetContactNotificationLabelFromAutofillProfile(
+            *_paymentRequest, *contactProfile);
+    item.complete =
+        _paymentRequest->profile_comparator()->IsContactInfoComplete(
+            contactProfile);
     if (_paymentRequest->selected_contact_profile() == contactProfile)
       _selectedItemIndex = index;
 

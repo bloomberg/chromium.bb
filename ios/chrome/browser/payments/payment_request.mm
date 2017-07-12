@@ -315,6 +315,12 @@ PaymentsProfileComparator* PaymentRequest::profile_comparator() {
   return &profile_comparator_;
 }
 
+const PaymentsProfileComparator* PaymentRequest::profile_comparator() const {
+  // Return a const version of what the non-const |profile_comparator| method
+  // returns.
+  return const_cast<PaymentRequest*>(this)->profile_comparator();
+}
+
 bool PaymentRequest::CanMakePayment() const {
   for (PaymentInstrument* payment_method : payment_methods_) {
     if (payment_method->IsValidForCanMakePayment()) {

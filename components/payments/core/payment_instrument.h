@@ -40,17 +40,17 @@ class PaymentInstrument {
   virtual void InvokePaymentApp(Delegate* delegate) = 0;
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
-  virtual bool IsCompleteForPayment() = 0;
+  virtual bool IsCompleteForPayment() const = 0;
   // Returns whether the instrument is exactly matching all filters provided by
   // the merchant. For example, this can return "false" for unknown card types,
   // if the merchant requested only debit cards.
-  virtual bool IsExactlyMatchingMerchantRequest() = 0;
+  virtual bool IsExactlyMatchingMerchantRequest() const = 0;
   // Returns a message to indicate to the user what's missing for the instrument
   // to be complete for payment.
-  virtual base::string16 GetMissingInfoLabel() = 0;
+  virtual base::string16 GetMissingInfoLabel() const = 0;
   // Returns whether the instrument is valid for the purposes of responding to
   // canMakePayment.
-  virtual bool IsValidForCanMakePayment() = 0;
+  virtual bool IsValidForCanMakePayment() const = 0;
   // Records the use of this payment instrument.
   virtual void RecordUse() = 0;
   // Return the sub/label of payment instrument, to be displayed to the user.

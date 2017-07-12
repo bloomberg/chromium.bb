@@ -51,13 +51,13 @@ NSString* GetEmailLabelFromAutofillProfile(
 // Helper function to create a notification label for an address cell from an
 // autofill profile. Returns nil if the resulting label is empty.
 NSString* GetAddressNotificationLabelFromAutofillProfile(
-    payments::PaymentRequest& payment_request,
+    const payments::PaymentRequest& payment_request,
     const autofill::AutofillProfile& profile);
 
 // Helper function to create a notification label for what's missing from a
 // payment method. Returns nil if the resulting label is empty.
 NSString* GetPaymentMethodNotificationLabelFromPaymentMethod(
-    payments::PaymentInstrument& payment_method,
+    const payments::PaymentInstrument& payment_method,
     const std::vector<autofill::AutofillProfile*>& billing_profiles);
 
 // Returns the title for the shipping section of the payment summary view given
@@ -73,6 +73,12 @@ NSString* GetShippingAddressSelectorErrorMessage(
 // view given the shipping type specified in |payment_request|.
 NSString* GetShippingOptionSelectorErrorMessage(
     const payments::PaymentRequest& payment_request);
+
+// Helper function to create a notification label for a contact info entry from
+// an autofill profile. Returns nil if the resulting label is empty.
+NSString* GetContactNotificationLabelFromAutofillProfile(
+    const payments::PaymentRequest& payment_request,
+    const autofill::AutofillProfile& profile);
 
 }  // namespace payment_request_util
 

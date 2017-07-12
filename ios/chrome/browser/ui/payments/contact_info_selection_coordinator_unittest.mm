@@ -26,11 +26,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const int kCompleteProfileIndex = 0;
+const int kIncompleteProfileIndex = 1;
+}  // namespace
+
 class PaymentRequestContactInfoSelectionCoordinatorTest : public PlatformTest {
  protected:
   PaymentRequestContactInfoSelectionCoordinatorTest()
       : autofill_profile_1_(autofill::test::GetFullProfile()),
-        autofill_profile_2_(autofill::test::GetFullProfile2()),
+        autofill_profile_2_(autofill::test::GetIncompleteProfile2()),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
     // Add testing profiles to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_1_);
@@ -99,9 +104,14 @@ TEST_F(PaymentRequestContactInfoSelectionCoordinatorTest, SelectedContactInfo) {
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(ContactInfoSelectionCoordinatorDelegate)];
-  autofill::AutofillProfile* profile = payment_request_->contact_profiles()[1];
-  [[delegate expect] contactInfoSelectionCoordinator:coordinator
-                             didSelectContactProfile:profile];
+  [[delegate expect]
+      contactInfoSelectionCoordinator:coordinator
+              didSelectContactProfile:payment_request_->contact_profiles()
+                                          [kCompleteProfileIndex]];
+  [[delegate reject]
+      contactInfoSelectionCoordinator:coordinator
+              didSelectContactProfile:payment_request_->contact_profiles()
+                                          [kIncompleteProfileIndex]];
   [coordinator setDelegate:delegate];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
@@ -115,11 +125,15 @@ TEST_F(PaymentRequestContactInfoSelectionCoordinatorTest, SelectedContactInfo) {
   PaymentRequestSelectorViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  EXPECT_TRUE([coordinator paymentRequestSelectorViewController:view_controller
-                                           didSelectItemAtIndex:1]);
+  EXPECT_TRUE([coordinator
+      paymentRequestSelectorViewController:view_controller
+                      didSelectItemAtIndex:kCompleteProfileIndex]);
 
   // Wait for the coordinator delegate to be notified.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_FALSE([coordinator
+      paymentRequestSelectorViewController:view_controller
+                      didSelectItemAtIndex:kIncompleteProfileIndex]);
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

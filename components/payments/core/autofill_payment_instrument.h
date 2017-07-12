@@ -41,10 +41,10 @@ class AutofillPaymentInstrument
 
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
-  bool IsCompleteForPayment() override;
-  bool IsExactlyMatchingMerchantRequest() override;
-  base::string16 GetMissingInfoLabel() override;
-  bool IsValidForCanMakePayment() override;
+  bool IsCompleteForPayment() const override;
+  bool IsExactlyMatchingMerchantRequest() const override;
+  base::string16 GetMissingInfoLabel() const override;
+  bool IsValidForCanMakePayment() const override;
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
