@@ -12,6 +12,7 @@
 
 #import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/display/gl_display_handler.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
@@ -301,7 +302,18 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 - (void)fetchThirdPartyTokenForUrl:(NSString*)tokenUrl
                           clientId:(NSString*)clientId
                              scope:(NSString*)scope {
-  NSLog(@"TODO(nicholss): implement this, fetchThirdPartyTokenForUrl.");
+  // Not supported for iOS yet.
+  _sessionDetails.state = SessionCancelled;
+  [self disconnectFromHost];
+  NSString* message = [NSString
+      stringWithFormat:@"[ThirdPartyAuth] Unable to authenticate with %@.",
+                       _sessionDetails.hostInfo.hostName];
+  [MDCSnackbarManager showMessage:[MDCSnackbarMessage messageWithText:message]];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kHostSessionStatusChanged
+                    object:self
+                  userInfo:[NSDictionary dictionaryWithObject:_sessionDetails
+                                                       forKey:kSessionDetails]];
 }
 
 - (void)setCapabilities:(NSString*)capabilities {

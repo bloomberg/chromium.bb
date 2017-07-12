@@ -577,6 +577,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       // If the session closes, offer the user to reconnect.
       state = ClientViewReconnect;
       break;
+    case SessionCancelled:
+      state = ClientViewClosed;
+      break;
     default:
       LOG(ERROR) << "Unknown State for Session, " << sessionDetails.state;
       return;
