@@ -9,7 +9,6 @@ template("remoting_android_client_java_tmpl") {
   android_library(target_name) {
     _java_file_prefix = "//remoting/android/java/src/org/chromium/chromoting"
     _java_files = [
-      "AccountsAdapter.java",
       "ActivityLifecycleListener.java",
       "AnimationJob.java",
       "Capabilities.java",
@@ -55,6 +54,7 @@ template("remoting_android_client_java_tmpl") {
       "TrackpadInputStrategy.java",
       "TapEventParameter.java",
       "TwoPointsEventParameter.java",
+      "accountswitcher/AccountManagerCompat.java",
       "accountswitcher/AccountSwitcher.java",
       "accountswitcher/AccountSwitcherBase.java",
       "accountswitcher/AccountSwitcherBasic.java",

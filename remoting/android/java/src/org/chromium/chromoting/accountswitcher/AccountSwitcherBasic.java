@@ -4,38 +4,59 @@
 
 package org.chromium.chromoting.accountswitcher;
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
-import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.TextView;
 
-import org.chromium.chromoting.AccountsAdapter;
+import org.chromium.chromoting.R;
 
 /**
- * This class implements a basic UI for a user account switcher.
+ * This class implements a basic UI for a user account switcher. This implementation works on
+ * Android O where the app can only see a list of accounts that have already been authorised for
+ * the app. The only way to present a list of all Google accounts is by launching the Intent from
+ * {@link android.accounts.AccountManager#newChooseAccountIntent()}. Accounts only become
+ * authorised after the user has selected them from that list. So instead of showing a drop-down
+ * list of all accounts, this implementation simply provides a label showing the current account,
+ * and a button for the user to launch the Intent to select a new account.
+ * <p>
+ * A consequence is that this implementation never calls
+ * {@link AccountSwitcher.Callback#onAccountsListEmpty()} because there is no way to distinguish
+ * "the device has no accounts" from "no accounts are authorised for the app".
+ * <p>
+ * This implementation needs no special Android permissions, as it only tries to access the list
+ * of accounts via launching an Intent, which needs no permissions.
  */
 public class AccountSwitcherBasic extends AccountSwitcherBase {
     /** Only accounts of this type will be selectable. */
     private static final String ACCOUNT_TYPE = "com.google";
 
+    /**
+     * Request code used for showing the choose-account dialog. It must be different from other
+     * REQUEST_CODEs in the app.
+     */
+    private static final int REQUEST_CODE_CHOOSE_ACCOUNT = 200;
+
+    /** The currently-selected account. Can be null if no account is selected yet. */
     private String mSelectedAccount;
 
-    private Spinner mAccountsSpinner;
+    /**
+     * UI which appears above the navigation menu, showing currently-selected account and button.
+     */
+    private View mAccountsUi;
+
     private LinearLayout mContainer;
+
+    /** Label showing the currently selected account name. */
+    private TextView mAccountName;
 
     private Activity mActivity;
 
-    /**
-     * The registered callback instance.
-     */
+    /** The registered callback instance. */
     private Callback mCallback;
 
     /**
@@ -47,15 +68,17 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
     public AccountSwitcherBasic(Activity activity, Callback callback) {
         mActivity = activity;
         mCallback = callback;
-        mAccountsSpinner = new Spinner(activity);
-        mAccountsSpinner.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-        int padding = (int) (activity.getResources().getDisplayMetrics().density * 16f);
-        mAccountsSpinner.setPadding(padding, padding, padding, padding);
         mContainer = new LinearLayout(activity);
         mContainer.setOrientation(LinearLayout.VERTICAL);
-        mContainer.addView(mAccountsSpinner);
+        mAccountsUi = activity.getLayoutInflater().inflate(R.layout.account_ui, mContainer, false);
+        mContainer.addView(mAccountsUi);
+        mAccountName = (TextView) mAccountsUi.findViewById(R.id.account_name);
+        Button chooseAccount = (Button) mAccountsUi.findViewById(R.id.choose_account);
+        chooseAccount.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onChooseAccount();
+            }
+        });
     }
 
     @Override
@@ -66,7 +89,7 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
     @Override
     public void setNavigation(View view) {
         mContainer.removeAllViews();
-        mContainer.addView(mAccountsSpinner);
+        mContainer.addView(mAccountsUi);
         mContainer.addView(view);
     }
 
@@ -78,6 +101,7 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
     public void setSelectedAndRecentAccounts(String selected, String[] recents) {
         // This implementation does not support recents.
         mSelectedAccount = selected;
+        mAccountName.setText(selected);
     }
 
     @Override
@@ -87,60 +111,36 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
 
     @Override
     public void reloadAccounts() {
-        // AccountManager.getAccountsByType() requires the GET_ACCOUNTS permission, which is
-        // classed as a dangerous permission. If the permission is not granted, an exception might
-        // be thrown or the account-list might wrongly appear to be empty. Check if the permission
-        // has been granted, and request it if not, so the user is aware of the cause of this
-        // problem.
-        if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.GET_ACCOUNTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mActivity,
-                    new String[] {Manifest.permission.GET_ACCOUNTS}, 0);
-            return;
+        // This implementation does not maintain a list of accounts, so there's nothing to reload.
+        // Instead, trigger the app to reload the host-list for any currently-selected account.
+        // This ensures the host-list gets loaded when the user launches the app.
+        if (mSelectedAccount != null) {
+            mCallback.onAccountSelected(mSelectedAccount);
         }
-
-        Account[] accounts = AccountManager.get(mActivity).getAccountsByType(ACCOUNT_TYPE);
-        if (accounts.length == 0) {
-            mCallback.onAccountsListEmpty();
-            return;
-        }
-
-        // Arbitrarily default to the first account if the currently-selected account is not in the
-        // list.
-        int selectedIndex = 0;
-        for (int i = 0; i < accounts.length; i++) {
-            if (accounts[i].name.equals(mSelectedAccount)) {
-                selectedIndex = i;
-                break;
-            }
-        }
-        mSelectedAccount = accounts[selectedIndex].name;
-
-        AccountsAdapter adapter = new AccountsAdapter(getView().getContext(), accounts);
-        mAccountsSpinner.setAdapter(adapter);
-        mAccountsSpinner.setSelection(selectedIndex);
-        mAccountsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int itemPosition,
-                    long itemId) {
-                Account selected = (Account) parent.getItemAtPosition(itemPosition);
-                mSelectedAccount = selected.name;
-                mCallback.onAccountSelected(mSelectedAccount);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        mCallback.onAccountSelected(mSelectedAccount);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_CHOOSE_ACCOUNT && resultCode == Activity.RESULT_OK) {
+            mSelectedAccount = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            mAccountName.setText(mSelectedAccount);
+            mCallback.onAccountSelected(mSelectedAccount);
+            mCallback.onRequestCloseDrawer();
+        }
     }
 
     @Override
     public void destroy() {
+    }
+
+    /** Called when the choose-account button is pressed. */
+    private void onChooseAccount() {
+        Account selected = null;
+        if (mSelectedAccount != null) {
+            selected = new Account(mSelectedAccount, ACCOUNT_TYPE);
+        }
+        Intent intent = AccountManagerCompat.newChooseAccountIntent(
+                selected, null, new String[] {ACCOUNT_TYPE}, null, null, null, null);
+        mActivity.startActivityForResult(intent, REQUEST_CODE_CHOOSE_ACCOUNT);
     }
 }

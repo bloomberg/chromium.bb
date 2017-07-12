@@ -619,6 +619,9 @@
         <message desc="Label for the button on the Android popup dialog that is shown when there are no Google accounts on the device. Pressing this button launches the Android system screen for adding a new Google account to the device." name="IDS_NOACCOUNTS_ADD_ACCOUNT" formatter_data="android_java">
           Add account
         </message>
+        <message desc="Button which appears below the user's current account name. Pressing it brings up an account-chooser dialog." name="IDS_CHANGE_ACCOUNT" formatter_data="android_java">
+          Change account
+        </message>
         <message desc="Error that is shown if a network error occurs, including the case where the device is off-line." name="IDS_ERROR_NETWORK_ERROR" formatter_data="android_java">
           A network error occurred. Please check that your device is on-line and try again.
         </message>
