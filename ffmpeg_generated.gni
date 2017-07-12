@@ -371,7 +371,6 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
     "libavcodec/amrnbdec.c",
     "libavcodec/amrwbdec.c",
     "libavcodec/autorename_libavcodec_blockdsp.c",
-    "libavcodec/autorename_libavcodec_gsmdec.c",
     "libavcodec/autorename_libavcodec_idctdsp.c",
     "libavcodec/autorename_libavcodec_me_cmp.c",
     "libavcodec/autorename_libavcodec_mpegvideo.c",
@@ -389,6 +388,7 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
     "libavcodec/fdctdsp.c",
     "libavcodec/flvdec.c",
     "libavcodec/gsm_parser.c",
+    "libavcodec/gsmdec.c",
     "libavcodec/gsmdec_data.c",
     "libavcodec/h263.c",
     "libavcodec/h263_parser.c",
@@ -414,12 +414,6 @@ if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding
     "libavcodec/tiff_common.c",
     "libavformat/amr.c",
     "libavformat/avidec.c",
-  ]
-}
-
-if ((use_linux_config && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "arm64" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "mipsel" && ffmpeg_branding == "ChromeOS") || (use_linux_config && current_cpu == "x86" && ffmpeg_branding == "ChromeOS")) {
-  ffmpeg_c_sources += [
-    "libavformat/gsmdec.c",
   ]
 }
 
