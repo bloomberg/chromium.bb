@@ -91,7 +91,7 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
             eventWithMagnification:0.0f
                   locationInWindow:NSMakePoint(gesture_event->x,
                                                gesture_event->y)];
-        [cocoa_view_ beginGestureWithEvent:event];
+        [cocoa_view_ handleBeginGestureWithEvent:event];
         return;
       }
       case WebInputEvent::kGesturePinchEnd: {
@@ -99,7 +99,7 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
             eventWithMagnification:0.0f
                   locationInWindow:NSMakePoint(gesture_event->x,
                                                gesture_event->y)];
-        [cocoa_view_ endGestureWithEvent:event];
+        [cocoa_view_ handleEndGestureWithEvent:event];
         return;
       }
       case WebInputEvent::kGesturePinchUpdate: {

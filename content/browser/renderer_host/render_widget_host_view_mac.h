@@ -189,6 +189,22 @@ struct TextInputState;
 @property(nonatomic, readonly) NSRange selectedRange;
 @property(nonatomic, readonly) BOOL suppressNextEscapeKeyUp;
 
+// Common code path for handling begin gesture events. This helper method is
+// called via different codepaths based on OS version and SDK:
+// - On 10.11 and later, when linking with the 10.11 SDK, it is called from
+//   |magnifyWithEvent:| when the given event's phase is NSEventPhaseBegin.
+// - On 10.10 and earlier, or when linking with an earlier SDK, it is called
+//   by |beginGestureWithEvent:| when a gesture begins.
+- (void)handleBeginGestureWithEvent:(NSEvent*)event;
+
+// Common code path for handling end gesture events. This helper method is
+// called via different codepaths based on OS version and SDK:
+// - On 10.11 and later, when linking with the 10.11 SDK, it is called from
+//   |magnifyWithEvent:| when the given event's phase is NSEventPhaseEnded.
+// - On 10.10 and earlier, or when linking with an earlier SDK, it is called
+//   by |endGestureWithEvent:| when a gesture ends.
+- (void)handleEndGestureWithEvent:(NSEvent*)event;
+
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setOpaque:(BOOL)opaque;

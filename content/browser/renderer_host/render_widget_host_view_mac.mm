@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -156,7 +157,6 @@ RenderWidgetHostView* GetRenderWidgetHostViewToUse(
                    consumed:(BOOL)consumed;
 - (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event
                            consumed:(BOOL)consumed;
-
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
@@ -2358,7 +2358,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 }
 
-- (void)beginGestureWithEvent:(NSEvent*)event {
+- (void)handleBeginGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ beginGestureWithEvent:event];
   gestureBeginEvent_.reset(
       new WebGestureEvent(WebGestureEventBuilder::Build(event, self)));
@@ -2371,7 +2371,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   }
 }
 
-- (void)endGestureWithEvent:(NSEvent*)event {
+- (void)handleEndGestureWithEvent:(NSEvent*)event {
   [responderDelegate_ endGestureWithEvent:event];
   gestureBeginEvent_.reset();
 
@@ -2383,6 +2383,38 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     endEvent.SetType(WebInputEvent::kGesturePinchEnd);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(endEvent);
     gestureBeginPinchSent_ = NO;
+  }
+}
+
+- (void)beginGestureWithEvent:(NSEvent*)event {
+  // This method must be handled when linking with the 10.10 SDK or earlier, or
+  // when the app is running on 10.10 or earlier.  In other circumstances, the
+  // event will be handled by |magnifyWithEvent:|, so this method should do
+  // nothing.
+  bool shouldHandle = true;
+#if defined(MAC_OS_X_VERSION_10_11) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
+  shouldHandle = base::mac::IsAtMostOS10_10();
+#endif
+
+  if (shouldHandle) {
+    [self handleBeginGestureWithEvent:event];
+  }
+}
+
+- (void)endGestureWithEvent:(NSEvent*)event {
+  // This method must be handled when linking with the 10.10 SDK or earlier, or
+  // when the app is running on 10.10 or earlier.  In other circumstances, the
+  // event will be handled by |magnifyWithEvent:|, so this method should do
+  // nothing.
+  bool shouldHandle = true;
+#if defined(MAC_OS_X_VERSION_10_11) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
+  shouldHandle = base::mac::IsAtMostOS10_10();
+#endif
+
+  if (shouldHandle) {
+    [self handleEndGestureWithEvent:event];
   }
 }
 
@@ -2600,6 +2632,33 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 - (void)magnifyWithEvent:(NSEvent*)event {
   if (!renderWidgetHostView_->render_widget_host_)
     return;
+
+#if defined(MAC_OS_X_VERSION_10_11) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
+  // When linking against the 10.11 (or later) SDK and running on 10.11 or
+  // later, check the phase of the event and specially handle the "begin" and
+  // "end" phases.
+  if (base::mac::IsAtLeastOS10_11()) {
+    if (event.phase == NSEventPhaseBegan) {
+      [self handleBeginGestureWithEvent:event];
+      return;
+    }
+
+    if (event.phase == NSEventPhaseEnded ||
+        event.phase == NSEventPhaseCancelled) {
+      [self handleEndGestureWithEvent:event];
+      return;
+    }
+  }
+#endif
+
+  // If this conditional evalutes to true, and the function has not
+  // short-circuited from the previous block, then this event is a duplicate of
+  // a gesture event, and should be ignored.
+  if (event.phase == NSEventPhaseBegan || event.phase == NSEventPhaseEnded ||
+      event.phase == NSEventPhaseCancelled) {
+    return;
+  }
 
   // If, due to nesting of multiple gestures (e.g, from multiple touch
   // devices), the beginning of the gesture has been lost, skip the remainder
