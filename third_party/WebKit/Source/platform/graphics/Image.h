@@ -38,6 +38,8 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintImage.h"
+#include "platform/graphics/paint/PaintRecord.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -198,6 +200,15 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   static FloatRect ComputeSubsetForTile(const FloatRect& tile,
                                         const FloatRect& dest,
                                         const FloatSize& image_size);
+
+  virtual sk_sp<PaintRecord> PaintRecordForContainer(
+      const KURL& url,
+      const IntSize& container_size,
+      const IntRect& draw_src_rect,
+      const IntRect& draw_dst_rect,
+      bool flip_y) {
+    return nullptr;
+  }
 
  protected:
   Image(ImageObserver* = 0, bool is_multipart = false);
