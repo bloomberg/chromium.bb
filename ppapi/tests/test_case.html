@@ -168,10 +168,8 @@ function RemovePluginWhenFinished() {
 }
 
 function sendAutomationMessage(msg) {
-  if (window.domAutomationController) {
-    window.domAutomationController.setAutomationId(0);
+  if (window.domAutomationController)
     window.domAutomationController.send(msg);
-  }
 }
 
 function LogTestTime(test_time) {
