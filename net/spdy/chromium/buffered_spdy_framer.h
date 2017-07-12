@@ -153,7 +153,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override;
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
-  void OnSettings(bool clear_persisted) override;
+  void OnSettings() override;
   void OnSetting(SpdySettingsIds id, uint32_t value) override;
   void OnSettingsAck() override;
   void OnSettingsEnd() override;
