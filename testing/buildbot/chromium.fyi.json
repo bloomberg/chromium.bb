@@ -10817,7 +10817,8 @@
   },
   "Fuchsia": {
     "additional_compile_targets": [
-      "d8"
+      "d8",
+      "net_unittests"
     ],
     "gtest_tests": [
       {
@@ -10842,7 +10843,8 @@
   },
   "Fuchsia (dbg)": {
     "additional_compile_targets": [
-      "d8"
+      "d8",
+      "net_unittests"
     ],
     "gtest_tests": [
       {
