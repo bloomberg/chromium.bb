@@ -217,6 +217,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
+  bool ShouldSendClientHint(WebClientHintsType,
+                            const ClientHintsPreferences&) const;
 
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;

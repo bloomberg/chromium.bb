@@ -17,6 +17,7 @@
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,12 +85,15 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
       EXPECT_STREQ(base_url,
                    preload_request_->BaseURL().GetString().Ascii().data());
       EXPECT_EQ(width, preload_request_->ResourceWidth());
-      EXPECT_EQ(preferences.ShouldSendDPR(),
-                preload_request_->Preferences().ShouldSendDPR());
-      EXPECT_EQ(preferences.ShouldSendResourceWidth(),
-                preload_request_->Preferences().ShouldSendResourceWidth());
-      EXPECT_EQ(preferences.ShouldSendViewportWidth(),
-                preload_request_->Preferences().ShouldSendViewportWidth());
+      EXPECT_EQ(
+          preferences.ShouldSend(kWebClientHintsTypeDpr),
+          preload_request_->Preferences().ShouldSend(kWebClientHintsTypeDpr));
+      EXPECT_EQ(preferences.ShouldSend(kWebClientHintsTypeResourceWidth),
+                preload_request_->Preferences().ShouldSend(
+                    kWebClientHintsTypeResourceWidth));
+      EXPECT_EQ(preferences.ShouldSend(kWebClientHintsTypeViewportWidth),
+                preload_request_->Preferences().ShouldSend(
+                    kWebClientHintsTypeViewportWidth));
     }
   }
 
@@ -503,12 +507,12 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   ClientHintsPreferences resource_width;
   ClientHintsPreferences all;
   ClientHintsPreferences viewport_width;
-  dpr.SetShouldSendDPR(true);
-  all.SetShouldSendDPR(true);
-  resource_width.SetShouldSendResourceWidth(true);
-  all.SetShouldSendResourceWidth(true);
-  viewport_width.SetShouldSendViewportWidth(true);
-  all.SetShouldSendViewportWidth(true);
+  dpr.SetShouldSendForTesting(kWebClientHintsTypeDpr);
+  all.SetShouldSendForTesting(kWebClientHintsTypeDpr);
+  resource_width.SetShouldSendForTesting(kWebClientHintsTypeResourceWidth);
+  all.SetShouldSendForTesting(kWebClientHintsTypeResourceWidth);
+  viewport_width.SetShouldSendForTesting(kWebClientHintsTypeViewportWidth);
+  all.SetShouldSendForTesting(kWebClientHintsTypeViewportWidth);
   TestCase test_cases[] = {
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, "
