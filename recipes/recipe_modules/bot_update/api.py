@@ -225,8 +225,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       if fixed_revision:
         fixed_revisions[name] = fixed_revision
         if fixed_revision.upper() == 'HEAD':
-          # Prefix with correct destination branch if HEAD was specified.
-          fixed_revision = self._destination_branch_prefix(cfg, name) + 'HEAD'
+          # Sync to correct destination branch if HEAD was specified.
+          fixed_revision = self._destination_branch(cfg, name)
         flags.append(['--revision', '%s@%s' % (name, fixed_revision)])
 
     # Add extra fetch refspecs.
@@ -333,9 +333,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
   def enable_destination_branch_check(self):
     self._enable_destination_branch_check = True
 
-  def _destination_branch_prefix(self, cfg, path):
-    """Returns the destination branch prefix of a CL for the matching project
-    if available.
+  def _destination_branch(self, cfg, path):
+    """Returns the destination branch of a CL for the matching project
+    if available or HEAD otherwise.
 
     This is a noop if there's no Gerrit CL associated with the run.
     Otherwise this queries Gerrit for the correct destination branch, which
@@ -347,20 +347,20 @@ class BotUpdateApi(recipe_api.RecipeApi):
           'src/v8'. The query will only be made for the project that matches
           the CL's project.
     Returns:
-        A destination branch prefix as understood by bot_update.py if available
-        and if different from master, an empty string otherwise.
+        A destination branch as understood by bot_update.py if available
+        and if different from master, returns 'HEAD' otherwise.
     """
     # Bail out if the feature is not enabled or if this is not a gerrit issue.
     if (not self._enable_destination_branch_check or
         not self.m.tryserver.is_gerrit_issue or
         not self._gerrit or not self._issue):
-      return ''
+      return 'HEAD'
 
     # Ignore other project paths than the one belonging to the CL.
     if path != cfg.patch_projects.get(
         self.m.properties.get('patch_project'),
         (cfg.solutions[0].name, None))[0]:
-      return ''
+      return 'HEAD'
 
     # Query Gerrit to check if a CL's destination branch differs from master.
     destination_branch = self.m.gerrit.get_change_destination_branch(
@@ -370,7 +370,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     )
 
     # Only use prefix if different from bot_update.py's default.
-    return destination_branch + ':' if destination_branch != 'master' else ''
+    return destination_branch if destination_branch != 'master' else 'HEAD'
 
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective

@@ -67,7 +67,7 @@
       "--revision",
       "src@HEAD",
       "--revision",
-      "src/v8@experimental/feature:HEAD",
+      "src/v8@experimental/feature",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {

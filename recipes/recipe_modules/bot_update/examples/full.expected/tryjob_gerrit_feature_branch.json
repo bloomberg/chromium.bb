@@ -65,7 +65,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@experimental/feature:HEAD",
+      "src@experimental/feature",
       "--disable-syntax-validation"
     ],
     "env_prefixes": {
