@@ -42,7 +42,7 @@ The easiest way to check the status of recent imports is to look at:
 -   Recent logs on Buildbot for [wpt-importer
     builder](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-importer)
 -   Recent CLs created by
-    [blink-w3c-test-autoroller@chromium.org](https://codereview.chromium.org/search?owner=blink-w3c-test-autoroller%40chromium.org).
+    [blink-w3c-test-autoroller@chromium.org](https://chromium-review.googlesource.com/q/owner:blink-w3c-test-autoroller%40chromium.org).
 
 Automatic imports are intended to run at least once every 24 hours.
 
