@@ -615,6 +615,7 @@ mojom("mojo_bindings") {
     "service_worker/embedded_worker.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_event_dispatcher.mojom",
+    "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_provider.mojom",
     "service_worker/service_worker_provider_interfaces.mojom",
     "service_worker/service_worker_types.mojom",

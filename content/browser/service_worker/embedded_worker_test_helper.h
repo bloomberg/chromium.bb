@@ -79,10 +79,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                      mojo::ScopedMessagePipeHandle request);
 
    protected:
-    // Implementation of mojo interfaces.
+    // mojom::EmbeddedWorkerInstanceClient implementation.
     void StartWorker(
         const EmbeddedWorkerStartParams& params,
         mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+        mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
         mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host)
         override;
     void StopWorker() override;
