@@ -182,20 +182,10 @@
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/sync/android/sync_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
-#include "device/vr/features/features.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "printing/printing_context_android.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_core_info.h"
-#include "chrome/browser/android/vr_shell/vr_shell.h"
-#include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
-#include "third_party/gvr-android-sdk/display_synchronizer_jni.h"
-#include "third_party/gvr-android-sdk/gvr_api_jni.h"
-#include "third_party/gvr-android-sdk/native_callbacks_jni.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES_HARNESS)
@@ -413,15 +403,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UsbChooserDialogAndroid", UsbChooserDialogAndroid::Register},
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
-#if BUILDFLAG(ENABLE_VR)
-    {"VrCoreInfo", vr_shell::RegisterVrCoreInfo},
-    {"VrShell", vr_shell::RegisterVrShell},
-    {"VrShellDelegate", vr_shell::RegisterVrShellDelegate},
-    {"DisplaySynchronizer",
-     DisplaySynchronizer::RegisterDisplaySynchronizerNatives},
-    {"GvrApi", GvrApi::RegisterGvrApiNatives},
-    {"NativeCallbacks", NativeCallbacks::RegisterNativeCallbacksNatives},
-#endif
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},
     {"WebApkUpdateManager", WebApkUpdateManager::Register},
