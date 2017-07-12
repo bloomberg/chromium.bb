@@ -619,6 +619,16 @@ by a child template that "extends" this file.
             android:excludeFromRecents="true">
         </activity>
 
+        <activity
+            android:name="org.chromium.chrome.browser.vr_shell.VrCancelAnimationActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:enableVrMode="@string/gvr_vr_mode_component">
+            {{ self.supports_vr() }}
+        </activity>
+
         <!-- Service for handling Nearby Messages -->
         <service android:name="org.chromium.chrome.browser.physicalweb.NearbyMessageIntentService"
             android:exported="false" />
