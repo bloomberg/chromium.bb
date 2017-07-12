@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/platform_handle.h"
@@ -125,10 +126,10 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
     os_buffer.type = SHARED_BUFFER_PLATFORM_HANDLE_TYPE;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     os_buffer.value = static_cast<uint64_t>(memory_handle.GetMemoryObject());
-#elif defined(OS_POSIX)
-  os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
 #elif defined(OS_WIN)
-  os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
+    os_buffer.value = reinterpret_cast<uint64_t>(memory_handle.GetHandle());
+#else
+    os_buffer.value = static_cast<uint64_t>(memory_handle.GetHandle());
 #endif
 
     MojoSharedBufferGuid mojo_guid;
@@ -180,6 +181,10 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
       static_cast<mach_port_t>(os_buffer.value), size, guid);
+#elif defined(OS_FUCHSIA)
+  ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE, os_buffer.type);
+  base::SharedMemoryHandle memory_handle(
+      static_cast<mx_handle_t>(os_buffer.value), size, guid);
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(

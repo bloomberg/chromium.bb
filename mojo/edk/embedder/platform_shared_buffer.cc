@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/sys_info.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/platform_handle_utils.h"
 
 #if defined(OS_NACL)
@@ -247,6 +248,9 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::SharedMemoryHandle handle = base::SharedMemoryHandle(
       platform_handle.release().port, num_bytes_, guid);
+#elif defined(OS_FUCHSIA)
+  base::SharedMemoryHandle handle =
+      base::SharedMemoryHandle(platform_handle.release(), num_bytes_, guid);
 #else
   base::SharedMemoryHandle handle(
       base::FileDescriptor(platform_handle.release().handle, false), num_bytes_,
