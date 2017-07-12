@@ -58,8 +58,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC : public media::AudioOutputIPC {
                                     const std::string& device_id,
                                     AuthorizationCB callback);
 
-  void ReceivedDeviceAuthorization(base::ScopedClosureRunner fallback_closure,
-                                   media::OutputDeviceStatus status,
+  void ReceivedDeviceAuthorization(media::OutputDeviceStatus status,
                                    const media::AudioParameters& params,
                                    const std::string& device_id) const;
 
