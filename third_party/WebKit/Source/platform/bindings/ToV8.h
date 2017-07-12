@@ -233,6 +233,8 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
     const Sequence& sequence,
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate,
+                           RuntimeCallStats::CounterId::kToV8SequenceInternal);
   v8::Local<v8::Array> array;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());

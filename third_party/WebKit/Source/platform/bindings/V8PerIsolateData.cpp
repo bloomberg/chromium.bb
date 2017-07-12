@@ -221,6 +221,8 @@ void V8PerIsolateData::ClearScriptRegexpContext() {
 bool V8PerIsolateData::HasInstance(
     const WrapperTypeInfo* untrusted_wrapper_type_info,
     v8::Local<v8::Value> value) {
+  RUNTIME_CALL_TIMER_SCOPE(GetIsolate(),
+                           RuntimeCallStats::CounterId::kHasInstance);
   return HasInstance(untrusted_wrapper_type_info, value,
                      interface_template_map_for_main_world_) ||
          HasInstance(untrusted_wrapper_type_info, value,

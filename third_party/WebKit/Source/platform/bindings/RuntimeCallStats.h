@@ -176,20 +176,28 @@ class PLATFORM_EXPORT RuntimeCallStats {
   V(AssociateObjectWithWrapper)                                         \
   V(CollectGarbage)                                                     \
   V(CreateWrapper)                                                      \
+  V(GetEventListener)                                                   \
+  V(HasInstance)                                                        \
+  V(DocumentFragmentParseHTML)                                          \
   V(PaintContents)                                                      \
   V(PerformIdleLazySweep)                                               \
   V(ProcessStyleSheet)                                                  \
   V(ToExecutionContext)                                                 \
   V(ToV8DOMWindow)                                                      \
+  V(ToV8SequenceInternal)                                               \
   V(UpdateLayerPositionsAfterLayout)                                    \
   V(UpdateLayout)                                                       \
   V(UpdateStyle)                                                        \
   V(SetReturnValueFromStringSlow)                                       \
   V(V8ExternalStringSlow)                                               \
   V(V8)                                                                 \
+  BINDINGS_METHOD(V, ElementGetBoundingClientRect)                      \
   BINDINGS_METHOD(V, EventTargetDispatchEvent)                          \
   BINDINGS_METHOD(V, HTMLElementClick)                                  \
+  BINDINGS_METHOD(V, NodeAppendChild)                                   \
+  BINDINGS_METHOD(V, NodeRemoveChild)                                   \
   BINDINGS_METHOD(V, WindowSetTimeout)                                  \
+  BINDINGS_ATTRIBUTE(V, DocumentCookie)                                 \
   BINDINGS_ATTRIBUTE(V, ElementInnerHTML)                               \
   V(TestCounter1)                                                       \
   V(TestCounter2)                                                       \
