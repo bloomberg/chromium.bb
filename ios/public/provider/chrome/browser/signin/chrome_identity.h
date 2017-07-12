@@ -14,19 +14,19 @@
 
 // Identity/account email address. This can be shown to the user, but is not a
 // unique identifier (@see gaiaID).
-@property(nonatomic, readonly) NSString* userEmail;
+@property(strong, nonatomic, readonly) NSString* userEmail;
 
 // The unique GAIA user identifier for this identity/account.
 // You may use this as a unique identifier to remember a particular identity.
-@property(nonatomic, readonly) NSString* gaiaID;
+@property(strong, nonatomic, readonly) NSString* gaiaID;
 
 // Returns the full name of the identity.
 // Could be nil if no full name has been fetched for this account yet.
-@property(nonatomic, readonly) NSString* userFullName;
+@property(strong, nonatomic, readonly) NSString* userFullName;
 
 // Cached Hashed Gaia ID. This is used to pass the currently signed in account
 // between apps.
-@property(nonatomic, readonly) NSString* hashedGaiaID;
+@property(strong, nonatomic, readonly) NSString* hashedGaiaID;
 
 @end
 
