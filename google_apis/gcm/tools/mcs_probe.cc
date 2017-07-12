@@ -49,7 +49,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
-#include "net/log/write_to_file_net_log_observer.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
@@ -251,7 +251,7 @@ class MCSProbe {
   // Network state.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::NetLog net_log_;
-  std::unique_ptr<net::WriteToFileNetLogObserver> logger_;
+  std::unique_ptr<net::FileNetLogObserver> logger_;
   std::unique_ptr<net::HostResolver> host_resolver_;
   std::unique_ptr<net::CertVerifier> cert_verifier_;
   std::unique_ptr<net::ChannelIDService> system_channel_id_service_;
@@ -310,7 +310,7 @@ MCSProbe::MCSProbe(
 
 MCSProbe::~MCSProbe() {
   if (logger_)
-    logger_->StopObserving(nullptr);
+    logger_->StopObserving(nullptr, base::OnceClosure());
   file_thread_.Stop();
 }
 
@@ -377,20 +377,12 @@ void MCSProbe::UpdateCallback(bool success) {
 }
 
 void MCSProbe::InitializeNetworkState() {
-  base::ScopedFILE log_file;
   if (command_line_.HasSwitch(kLogFileSwitch)) {
     base::FilePath log_path = command_line_.GetSwitchValuePath(kLogFileSwitch);
-#if defined(OS_WIN)
-    log_file.reset(_wfopen(log_path.value().c_str(), L"w"));
-#elif defined(OS_POSIX)
-    log_file.reset(fopen(log_path.value().c_str(), "w"));
-#endif
-  }
-  if (log_file.get()) {
-    logger_.reset(new net::WriteToFileNetLogObserver());
-    logger_->set_capture_mode(
-        net::NetLogCaptureMode::IncludeCookiesAndCredentials());
-    logger_->StartObserving(&net_log_, std::move(log_file), nullptr, nullptr);
+    logger_ = net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
+    net::NetLogCaptureMode capture_mode =
+        net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+    logger_->StartObserving(&net_log_, capture_mode);
   }
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);
@@ -519,6 +511,8 @@ int MCSProbeMain(int argc, char* argv[]) {
 
   base::RunLoop run_loop;
   run_loop.Run();
+
+  base::TaskScheduler::GetInstance()->Shutdown();
 
   return 0;
 }
