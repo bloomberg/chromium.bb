@@ -55,6 +55,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         @Override
         public void onSheetClosed() {
             onPrimaryColorChanged(true);
+            updateMenuButtonClickableState();
         }
 
         @Override
@@ -90,7 +91,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
             boolean buttonsClickable = heightFraction == 0.f;
             mToggleTabStackButton.setClickable(buttonsClickable);
-            mMenuButton.setClickable(buttonsClickable);
+            updateMenuButtonClickableState();
             if (!mUseToolbarHandle) mExpandButton.setClickable(buttonsClickable);
         }
     };
@@ -129,9 +130,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private TintedImageButton mExpandButton;
 
     /**
-     * Whether the toolbar buttons should be hidden regardless of whether the URL bar is focused.
+     * Whether some of the toolbar buttons are hidden regardless of whether the URL bar is focused.
+     * If {@link #mShowMenuButtonWhenSheetOpen} is false, all buttons are hidden.
+     * If {@link #mShowMenuButtonWhenSheetOpen} is true, all buttons besides the menu button are
+     * hidden.
      */
-    private boolean mShouldHideToolbarButtons;
+    private boolean mHidingSomeToolbarButtons;
 
     /**
      * This tracks the height fraction of the bottom bar to determine if it is moving up or down.
@@ -158,6 +162,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     /** Whether the disappearance of the toolbar buttons is currently animating. */
     private boolean mAnimatingToolbarButtonDisappearance;
+
+    /** Whether the menu button should be shown while the sheet is open. */
+    private boolean mShowMenuButtonWhenSheetOpen;
 
     /**
      * Constructs a BottomToolbarPhone object.
@@ -371,16 +378,30 @@ public class BottomToolbarPhone extends ToolbarPhone {
         }
     }
 
+    private int getToolbarButtonsWidthForBackgroundOffset() {
+        return mShowMenuButtonWhenSheetOpen
+                ? mToolbarButtonsContainer.getMeasuredWidth() - mMenuButton.getMeasuredWidth()
+                : mToolbarButtonsContainer.getMeasuredWidth();
+    }
+
     private int getLocationBarBackgroundLeftOffset() {
         return !ApiCompatibilityUtils.isLayoutRtl(this)
                 ? 0
-                : mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding;
+                : getToolbarButtonsWidthForBackgroundOffset() - mToolbarSidePadding;
     }
 
     private int getLocationBarBackgroundRightOffset() {
         return !ApiCompatibilityUtils.isLayoutRtl(this)
-                ? mToolbarButtonsContainer.getMeasuredWidth() - mToolbarSidePadding
+                ? getToolbarButtonsWidthForBackgroundOffset() - mToolbarSidePadding
                 : 0;
+    }
+
+    @Override
+    protected int getBoundsAfterAccountingForRightButtons() {
+        if (!mHidingSomeToolbarButtons) return super.getBoundsAfterAccountingForRightButtons();
+
+        return !mShowMenuButtonWhenSheetOpen ? mToolbarSidePadding
+                                             : mMenuButton.getMeasuredWidth() + mToolbarSidePadding;
     }
 
     @Override
@@ -502,6 +523,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
             ColorStateList tint = isIncognito() ? mLightModeTint : mDarkModeTint;
             mExpandButton.setTint(tint);
         }
+
+        if (mBottomSheet.isSheetOpen()) {
+            mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
+            updateButtonsContainerVisibilityAndTranslation();
+            updateMenuButtonClickableState();
+        }
     }
 
     @Override
@@ -591,8 +618,35 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
-    protected boolean shouldHideToolbarButtons() {
-        return mShouldHideToolbarButtons;
+    protected int getToolbarButtonVisibility() {
+        if (mUrlExpansionPercent == 1f) return INVISIBLE;
+        if (mShowMenuButtonWhenSheetOpen) return VISIBLE;
+        if (mHidingSomeToolbarButtons) return INVISIBLE;
+        return VISIBLE;
+    }
+
+    @Override
+    protected float getUrlActionsTranslationXForExpansionAnimation(
+            boolean isLocationBarRtl, boolean isRtl, float locationBarBaseTranslationX) {
+        if (!mHidingSomeToolbarButtons) {
+            return super.getUrlActionsTranslationXForExpansionAnimation(
+                    isLocationBarRtl, isRtl, locationBarBaseTranslationX);
+        }
+
+        float urlActionsTranslationX = 0;
+        // When the end toolbar buttons are not hidden, URL actions are shown and hidden due to
+        // a change in location bar's width. When the end toolbar buttons are hidden, the
+        // location bar's width does not change by as much, causing the end location for the URL
+        // actions to be immediately visible. Translate the URL action container so that their
+        // appearance is animated.
+        float urlActionsTranslationXOffset =
+                mUrlActionContainer.getWidth() * (1 - mUrlExpansionPercent);
+        if (isLocationBarRtl) {
+            urlActionsTranslationX -= urlActionsTranslationXOffset;
+        } else {
+            urlActionsTranslationX += urlActionsTranslationXOffset;
+        }
+        return urlActionsTranslationX;
     }
 
     @Override
@@ -633,7 +687,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         if (mUrlFocusChangeInProgress) {
             if (visible) {
-                mShouldHideToolbarButtons = false;
+                mHidingSomeToolbarButtons = false;
                 mToolbarButtonVisibilityPercent = 1.f;
 
                 mToolbarButtonsContainer.setAlpha(1.f);
@@ -664,7 +718,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 mAnimatingToolbarButtonAppearance = visible;
 
                 if (!visible) {
-                    mShouldHideToolbarButtons = true;
+                    mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
+                    mHidingSomeToolbarButtons = true;
                     mLayoutLocationBarInFocusedMode = true;
                     requestLayout();
                 } else {
@@ -684,9 +739,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
             @Override
             public void onEnd(Animator animation) {
                 if (visible) {
-                    mShouldHideToolbarButtons = false;
+                    mHidingSomeToolbarButtons = false;
                     mDisableLocationBarRelayout = false;
                     mLayoutLocationBarInFocusedMode = false;
+                    mShowMenuButtonWhenSheetOpen = false;
                     requestLayout();
                 }
 
@@ -702,22 +758,16 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     protected void onUrlFocusChangeAnimationFinished() {
         if (urlHasFocus()) {
-            mShouldHideToolbarButtons = true;
+            mHidingSomeToolbarButtons = true;
             mToolbarButtonVisibilityPercent = 0.f;
         }
+        updateMenuButtonClickableState();
     }
 
     private void updateToolbarButtonVisibility() {
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-        float toolbarButtonsContainerWidth = mToolbarButtonsContainer.getMeasuredWidth();
-        float toolbarButtonsTranslationX =
-                toolbarButtonsContainerWidth * (1.f - mToolbarButtonVisibilityPercent);
-        if (isRtl) toolbarButtonsTranslationX *= -1;
 
-        mToolbarButtonsContainer.setTranslationX(toolbarButtonsTranslationX);
-        mToolbarButtonsContainer.setAlpha(mToolbarButtonVisibilityPercent);
-        mToolbarButtonsContainer.setVisibility(
-                mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
+        updateButtonsContainerVisibilityAndTranslation();
 
         float locationBarTranslationX;
         boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
@@ -758,5 +808,59 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // bar text as a result of the bounds changing.
         mLocationBar.invalidate();
         invalidate();
+    }
+
+    /**
+     * Updates the visibility, alpha and translation of the buttons container based on
+     * {@link #mToolbarButtonVisibilityPercent}. If {@link #mShowMenuButtonWhenSheetOpen} is true,
+     * the tab switcher button and, if present, the expand button are faded out; nothing is
+     * translated. If {@link #mShowMenuButtonWhenSheetOpen} is false, the entire
+     * {@link #mToolbarButtonsContainer} is faded out and translated so that the buttons appear to
+     * slide off the toolbar.
+     */
+    private void updateButtonsContainerVisibilityAndTranslation() {
+        if (mShowMenuButtonWhenSheetOpen) {
+            mToolbarButtonsContainer.setTranslationX(0);
+            mToolbarButtonsContainer.setAlpha(1.f);
+            mToolbarButtonsContainer.setVisibility(View.VISIBLE);
+
+            float buttonAlpha = mToolbarButtonVisibilityPercent <= 0.5
+                    ? 0
+                    : 1.f - ((1.f - mToolbarButtonVisibilityPercent) * 2);
+            mToggleTabStackButton.setAlpha(buttonAlpha);
+            mToggleTabStackButton.setVisibility(
+                    mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
+
+            if (!mUseToolbarHandle) {
+                if (mTabSwitcherState != ENTERING_TAB_SWITCHER) mExpandButton.setAlpha(buttonAlpha);
+                mExpandButton.setVisibility(
+                        mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
+            }
+        } else {
+            mToggleTabStackButton.setAlpha(1.f);
+            mToggleTabStackButton.setVisibility(View.VISIBLE);
+
+            if (!mUseToolbarHandle) {
+                if (mTabSwitcherState != ENTERING_TAB_SWITCHER) mExpandButton.setAlpha(1.f);
+                mExpandButton.setVisibility(View.VISIBLE);
+            }
+
+            boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+
+            float toolbarButtonsContainerWidth = mToolbarButtonsContainer.getMeasuredWidth();
+            float toolbarButtonsTranslationX =
+                    toolbarButtonsContainerWidth * (1.f - mToolbarButtonVisibilityPercent);
+            if (isRtl) toolbarButtonsTranslationX *= -1;
+
+            mToolbarButtonsContainer.setTranslationX(toolbarButtonsTranslationX);
+            mToolbarButtonsContainer.setAlpha(mToolbarButtonVisibilityPercent);
+            mToolbarButtonsContainer.setVisibility(
+                    mToolbarButtonVisibilityPercent > 0.f ? View.VISIBLE : View.INVISIBLE);
+        }
+    }
+
+    private void updateMenuButtonClickableState() {
+        mMenuButton.setClickable(
+                !urlHasFocus() && (!mBottomSheet.isSheetOpen() || mBottomSheet.isShowingNewTab()));
     }
 }
