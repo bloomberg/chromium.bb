@@ -429,6 +429,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Populates |throttles_| with the throttles for this navigation.
   void RegisterNavigationThrottles();
 
+  // Takes ownership of |throttle| (if any) and appends it to |throttles_|.
+  void AddThrottle(std::unique_ptr<NavigationThrottle> throttle);
+
   // Checks for attempts to navigate to a page that is already referenced more
   // than once in the frame's ancestors.  This is a helper function used by
   // WillStartRequest and WillRedirectRequest to prevent the navigation.
