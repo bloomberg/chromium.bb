@@ -402,9 +402,9 @@ bool IsCertificateCleared() {
 
   id<GREYMatcher> visibilityMatcher =
       saved ? grey_sufficientlyVisible() : grey_notVisible();
-  [[EarlGrey selectElementWithMatcher:
-                 grey_text(l10n_util::GetNSString(
-                     IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE))]
+  [[EarlGrey
+      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                   IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING))]
       assertWithMatcher:visibilityMatcher];
 
   // Close the Settings.
