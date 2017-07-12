@@ -103,11 +103,6 @@ class SessionRestore {
   static CallbackSubscription RegisterOnSessionRestoredCallback(
       const base::Callback<void(int)>& callback);
 
-  // Add |urls| to URLs-to-open list, so that they will be opened after session
-  // URLs when session is restored.
-  static void AddURLsToOpen(const Profile* profile,
-                            const std::vector<GURL>& urls);
-
   // Add/remove an observer to/from this session restore.
   static void AddObserver(SessionRestoreObserver* observer);
   static void RemoveObserver(SessionRestoreObserver* observer);
