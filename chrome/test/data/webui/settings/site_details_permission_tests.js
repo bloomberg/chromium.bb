@@ -26,22 +26,6 @@ suite('SiteDetailsPermission', function() {
     }
   };
 
-  /**
-   * An example pref with only one entry allowed.
-   */
-  var prefsCookies = {
-    exceptions: {
-      cookies: [
-        {
-          embeddingOrigin: '',
-          origin: 'https://www.example.com',
-          setting: 'allow',
-          source: 'preference',
-        },
-      ]
-    }
-  };
-
   // Initialize a site-details-permission before each test.
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -108,36 +92,6 @@ suite('SiteDetailsPermission', function() {
         .then(function() {
           return validatePermissionFlipWorks(
               origin, settings.ContentSetting.ALLOW);
-        });
-  });
-
-  test('cookies category', function() {
-    var origin = 'https://www.example.com';
-    browserProxy.setPrefs(prefsCookies);
-    testElement.category = settings.ContentSettingsTypes.COOKIES;
-    testElement.label = 'Cookies';
-    testElement.site = {
-      origin: origin,
-      embeddingOrigin: '',
-    };
-
-    assertFalse(testElement.$.details.hidden);
-
-    var header = testElement.$.details.querySelector('#permissionHeader');
-    assertEquals(
-        'Cookies', header.innerText.trim(),
-        'Widget should be labelled correctly');
-
-    // Flip the permission and validate that prefs stay in sync.
-    return validatePermissionFlipWorks(
-               origin, settings.ContentSetting.SESSION_ONLY)
-        .then(function() {
-          return validatePermissionFlipWorks(
-              origin, settings.ContentSetting.ALLOW);
-        })
-        .then(function() {
-          return validatePermissionFlipWorks(
-              origin, settings.ContentSetting.BLOCK);
         });
   });
 });
