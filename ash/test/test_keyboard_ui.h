@@ -30,7 +30,6 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
  private:
   // Overridden from keyboard::KeyboardUI:
   ui::InputMethod* GetInputMethod() override;
-  void SetUpdateInputType(ui::TextInputType type) override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& keyboard_bounds) override;
   void ResetInsets() override;

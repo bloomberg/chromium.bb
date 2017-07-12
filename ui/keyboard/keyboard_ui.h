@@ -55,9 +55,6 @@ class KEYBOARD_EXPORT KeyboardUI {
   // necesasry animation, or delay the visibility change as it desires.
   virtual void HideKeyboardContainer(aura::Window* container);
 
-  // Updates the type of the focused text input box.
-  virtual void SetUpdateInputType(ui::TextInputType type) = 0;
-
   // Ensures caret in current work area (not occluded by virtual keyboard
   // window).
   virtual void EnsureCaretInWorkArea();

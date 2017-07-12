@@ -541,7 +541,6 @@ void KeyboardController::OnTextInputStateChanged(
       keyboard_visible_ = true;
       ChangeState(KeyboardControllerState::SHOWN);
     }
-    ui_->SetUpdateInputType(type);
     // Do not explicitly show the Virtual keyboard unless it is in the process
     // of hiding. Instead, the virtual keyboard is shown in response to a user
     // gesture (mouse or touch) that is received while an element has input

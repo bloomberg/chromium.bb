@@ -38,7 +38,6 @@ ui::InputMethod* TestKeyboardUI::GetInputMethod() {
   return root_window->GetHost()->GetInputMethod();
 }
 
-void TestKeyboardUI::SetUpdateInputType(ui::TextInputType type) {}
 void TestKeyboardUI::ReloadKeyboardIfNeeded() {}
 void TestKeyboardUI::InitInsets(const gfx::Rect& keyboard_bounds) {}
 void TestKeyboardUI::ResetInsets() {}

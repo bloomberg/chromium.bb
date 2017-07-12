@@ -45,15 +45,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUIContent,
   void SetController(keyboard::KeyboardController* controller) override;
   void ShowKeyboardContainer(aura::Window* container) override;
 
-  // The overridden implementation dispatches
-  // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to
-  // provide the input type information. Naturally, when the virtual keyboard
-  // extension is used as an IME then chrome.input.ime.onFocus provides the
-  // information, but not when the virtual keyboard is used in conjunction with
-  // another IME. virtualKeyboardPrivate.onTextInputBoxFocused is the remedy in
-  // that case.
-  void SetUpdateInputType(ui::TextInputType type) override;
-
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
