@@ -18,6 +18,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -68,10 +69,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/mac/font_descriptor.h"
-#endif
-
 #if defined(OS_WIN)
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
@@ -81,6 +78,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "content/common/mac/font_loader.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -227,29 +225,18 @@ void RenderMessageFilter::GetSharedBitmapAllocationNotifier(
 #if defined(OS_MACOSX)
 
 void RenderMessageFilter::OnLoadFont(const FontDescriptor& font,
-                                          IPC::Message* reply_msg) {
-  FontLoader::Result* result = new FontLoader::Result;
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&FontLoader::LoadFont, font, result),
-      base::Bind(&RenderMessageFilter::SendLoadFontReply, this, reply_msg,
-                 base::Owned(result)));
+                                     IPC::Message* reply_msg) {
+  FontLoader::LoadFont(
+      font,
+      base::BindOnce(&RenderMessageFilter::SendLoadFontReply, this, reply_msg));
 }
 
 void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
-                                                 FontLoader::Result* result) {
-  base::SharedMemoryHandle handle;
-  if (result->font_data_size == 0 || result->font_id == 0) {
-    result->font_data_size = 0;
-    result->font_id = 0;
-  } else {
-    handle = result->font_data.handle().Duplicate();
-    result->font_data.Unmap();
-    result->font_data.Close();
-  }
-  RenderProcessHostMsg_LoadFont::WriteReplyParams(
-      reply, result->font_data_size, handle, result->font_id);
+                                            uint32_t data_size,
+                                            base::SharedMemoryHandle handle,
+                                            uint32_t font_id) {
+  RenderProcessHostMsg_LoadFont::WriteReplyParams(reply, data_size, handle,
+                                                  font_id);
   Send(reply);
 }
 
@@ -277,10 +264,13 @@ void RenderMessageFilter::SetThreadPriorityOnFileThread(
 
 void RenderMessageFilter::OnSetThreadPriority(base::PlatformThreadId ns_tid,
                                               base::ThreadPriority priority) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-      base::Bind(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
-                 ns_tid, priority));
+  constexpr base::TaskTraits kTraits = {
+      base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+  base::PostTaskWithTraits(
+      FROM_HERE, kTraits,
+      base::BindOnce(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
+                     ns_tid, priority));
 }
 #endif
 

@@ -37,13 +37,6 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/common/mac/font_loader.h"
-#endif
-
-#if defined(OS_ANDROID)
-#endif
-
 class GURL;
 struct FontDescriptor;
 
@@ -106,7 +99,10 @@ class CONTENT_EXPORT RenderMessageFilter
 #if defined(OS_MACOSX)
   // Messages for OOP font loading.
   void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
-  void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
+  void SendLoadFontReply(IPC::Message* reply,
+                         uint32_t data_size,
+                         base::SharedMemoryHandle handle,
+                         uint32_t font_id);
 #endif
 
   // mojom::RenderMessageFilter:
