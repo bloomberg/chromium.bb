@@ -8,12 +8,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <list>
 #include <map>
 #include <set>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -116,11 +118,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   void DestroyVDA();
 
   // Request a shared-memory segment of at least |min_size| bytes.  Will
-  // allocate as necessary.
+  // allocate as necessary. May return nullptr during Shutdown.
   std::unique_ptr<base::SharedMemory> GetSharedMemory(size_t min_size);
 
   // Return a shared-memory segment to the available pool.
-  void PutSharedMemory(std::unique_ptr<base::SharedMemory> shm_buffer);
+  void PutSharedMemory(std::unique_ptr<base::SharedMemory> shm_buffer,
+                       int32_t last_bitstream_buffer_id);
 
   // Destroy all PictureBuffers in |buffers|, and delete their textures.
   void DestroyPictureBuffers(PictureBufferMap* buffers);
@@ -176,10 +179,20 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   VideoDecoderConfig config_;
 
-  // Shared-memory buffer pool.  Since allocating SHM segments requires a
-  // round-trip to the browser process, we keep allocation out of the
-  // steady-state of the decoder.
-  std::vector<std::unique_ptr<base::SharedMemory>> available_shm_segments_;
+  // Shared-memory buffer pool.  Since allocating SHM segments requires a round-
+  // trip to the browser process, we try to keep allocation out of the steady-
+  // state of the decoder.
+  //
+  // The second value in the ShMemEntry is the last bitstream buffer id assigned
+  // to that segment; it's used to erase segments which are no longer active.
+  using ShMemEntry = std::pair<std::unique_ptr<base::SharedMemory>, int32_t>;
+  class ShMemEntrySortedBySize {
+   public:
+    bool operator()(const ShMemEntry& lhs, const ShMemEntry& rhs) const {
+      return lhs.first->mapped_size() < rhs.first->mapped_size();
+    }
+  };
+  base::flat_set<ShMemEntry, ShMemEntrySortedBySize> available_shm_segments_;
 
   // Placeholder sync token that was created and validated after the most
   // recent picture buffers were created.
@@ -234,6 +247,16 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Set during Initialize(); given to the VDA for purposes for handling
   // encrypted content.
   int cdm_id_;
+
+  // Minimum size for shared memory segments. Ideally chosen to optimize the
+  // number of segments and total size of allocations over the course of a
+  // playback.  See Initialize() for more details.
+  size_t min_shared_memory_segment_size_;
+
+  // |next_bitstream_buffer_id_| at the time we last performed a GC of no longer
+  // used ShMemEntry objects in |available_shm_segments_|.  Updated whenever
+  // PutSharedMemory() performs a GC.
+  int32_t bitstream_buffer_id_of_last_gc_;
 
   // Bound to factories_->GetMessageLoop().
   // NOTE: Weak pointers must be invalidated before all other member variables.
