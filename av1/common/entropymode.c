@@ -714,8 +714,8 @@ static const aom_prob
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, -OBMC_CAUSAL
 };
-static const aom_cdf_prob
-    default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] = {
+static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
+    {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
       { 255 }, { 255 }, { 255 },
 #endif
