@@ -53,10 +53,6 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
   return view;
 }
 
-LayoutEmbeddedContent* RemoteFrameView::OwnerLayoutObject() const {
-  return remote_frame_->OwnerLayoutObject();
-}
-
 void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     DocumentLifecycle::LifecycleState target_state) {
   if (!remote_frame_->OwnerLayoutObject())
@@ -132,6 +128,11 @@ void RemoteFrameView::FrameRectsChanged() {
   if (LocalFrameView* parent = ParentFrameView())
     new_rect = parent->ConvertToRootFrame(parent->ContentsToFrame(new_rect));
   remote_frame_->Client()->FrameRectsChanged(new_rect);
+}
+
+void RemoteFrameView::UpdateGeometry() {
+  if (LayoutEmbeddedContent* layout = remote_frame_->OwnerLayoutObject())
+    layout->UpdateGeometry(*this);
 }
 
 void RemoteFrameView::Hide() {

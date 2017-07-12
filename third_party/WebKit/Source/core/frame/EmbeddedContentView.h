@@ -13,7 +13,6 @@ namespace blink {
 class CullRect;
 class GraphicsContext;
 class IntRect;
-class LayoutEmbeddedContent;
 
 // EmbeddedContentView is a pure virtual class which is implemented by
 // LocalFrameView, RemoteFrameView, and PluginView.
@@ -24,7 +23,6 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual bool IsLocalFrameView() const { return false; }
   virtual bool IsPluginView() const { return false; }
 
-  virtual LayoutEmbeddedContent* OwnerLayoutObject() const = 0;
   virtual void AttachToLayout() = 0;
   virtual void DetachFromLayout() = 0;
   virtual bool IsAttached() const = 0;
@@ -33,6 +31,10 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual void FrameRectsChanged() = 0;
   virtual const IntRect& FrameRect() const = 0;
   virtual void Paint(GraphicsContext&, const CullRect&) const = 0;
+  // Called when the size of the view changes.  Implementations of
+  // EmbeddedContentView should call LayoutEmbeddedContent::UpdateGeometry in
+  // addition to any internal logic.
+  virtual void UpdateGeometry() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void Dispose() = 0;

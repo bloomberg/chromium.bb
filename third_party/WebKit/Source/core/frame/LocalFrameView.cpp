@@ -1442,34 +1442,48 @@ LayoutReplaced* LocalFrameView::EmbeddedReplacedContent() const {
   return nullptr;
 }
 
-LayoutEmbeddedContent* LocalFrameView::OwnerLayoutObject() const {
-  return frame_->OwnerLayoutObject();
-}
-
 void LocalFrameView::UpdateGeometries() {
-  Vector<LayoutEmbeddedContent*> parts;
-  ForAllChildViewsAndPlugins([&](EmbeddedContentView& embedded_content_view) {
-    if (LayoutEmbeddedContent* part = embedded_content_view.OwnerLayoutObject())
-      parts.push_back(part);
-  });
+  HeapVector<Member<EmbeddedContentView>> views;
+  ForAllChildViewsAndPlugins(
+      [&](EmbeddedContentView& view) { views.push_back(view); });
 
-  for (auto part : parts) {
+  for (const auto& view : views) {
     // Script or plugins could detach the frame so abort processing if that
     // happens.
     if (GetLayoutViewItem().IsNull())
       break;
 
-    if (part->GetEmbeddedContentView()) {
-      if (LocalFrameView* frame_view = part->ChildFrameView()) {
-        bool did_need_layout = frame_view->NeedsLayout();
-        part->UpdateGeometry();
-        if (!did_need_layout && !frame_view->ShouldThrottleRendering())
-          frame_view->CheckDoesNotNeedLayout();
-      } else {
-        part->UpdateGeometry();
-      }
-    }
+    view->UpdateGeometry();
   }
+}
+
+void LocalFrameView::UpdateGeometry() {
+  LayoutEmbeddedContent* layout = frame_->OwnerLayoutObject();
+  if (!layout)
+    return;
+
+  bool did_need_layout = NeedsLayout();
+
+  LayoutRect new_frame = layout->ReplacedContentRect();
+  DCHECK(new_frame.Size() == RoundedIntSize(new_frame.Size()));
+  bool bounds_will_change = LayoutSize(Size()) != new_frame.Size();
+
+  // If frame bounds are changing mark the view for layout. Also check the
+  // frame's page to make sure that the frame isn't in the process of being
+  // destroyed. If iframe scrollbars needs reconstruction from native to custom
+  // scrollbar, then also we need to layout the frameview.
+  if (bounds_will_change || NeedsScrollbarReconstruction())
+    SetNeedsLayout();
+
+  layout->UpdateGeometry(*this);
+  // If view needs layout, either because bounds have changed or possibly
+  // indicating content size is wrong, we have to do a layout to set the right
+  // LocalFrameView size.
+  if (NeedsLayout())
+    UpdateLayout();
+
+  if (!did_need_layout && !ShouldThrottleRendering())
+    CheckDoesNotNeedLayout();
 }
 
 void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
@@ -2499,7 +2513,8 @@ bool LocalFrameView::UpdatePlugins() {
 
     if (element->NeedsPluginUpdate())
       element->UpdatePlugin();
-    object.UpdateGeometry();
+    if (EmbeddedContentView* view = element->OwnedEmbeddedContentView())
+      view->UpdateGeometry();
 
     // Prevent plugins from causing infinite updates of themselves.
     // FIXME: Do we really need to prevent this?

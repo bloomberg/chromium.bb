@@ -51,7 +51,6 @@ class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
 class IntRect;
 class KeyboardEvent;
-class LayoutEmbeddedContent;
 class LocalFrameView;
 class MouseEvent;
 class ResourceError;
@@ -89,18 +88,15 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void SetFocused(bool, WebFocusType) override;
   void HandleEvent(Event*) override;
   void FrameRectsChanged() override;
-  void GeometryMayHaveChanged() override;
   bool IsPluginContainer() const override { return true; }
   bool IsErrorplaceholder() override;
   void EventListenersRemoved() override;
 
   // EmbeddedContentView methods
-  LayoutEmbeddedContent* OwnerLayoutObject() const override;
-  void SetFrameRect(const IntRect& frame_rect) override {
-    frame_rect_ = frame_rect;
-  }
+  void SetFrameRect(const IntRect&) override;
   const IntRect& FrameRect() const override { return frame_rect_; }
   void Paint(GraphicsContext&, const CullRect&) const override;
+  void UpdateGeometry() override;
   void Show() override;
   void Hide() override;
 
