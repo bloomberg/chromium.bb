@@ -9,11 +9,11 @@
 #include "chromeos/components/tether/active_host_network_state_updater.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
-#include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
 #include "chromeos/components/tether/host_scan_scheduler.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/keep_alive_scheduler.h"
+#include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/notification_presenter.h"
@@ -199,7 +199,7 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   active_host_network_state_updater_ =
       base::MakeUnique<ActiveHostNetworkStateUpdater>(active_host_.get(),
                                                       network_state_handler_);
-  host_scan_cache_ = base::MakeUnique<HostScanCache>(
+  host_scan_cache_ = base::MakeUnique<MasterHostScanCache>(
       network_state_handler_, active_host_.get(),
       tether_host_response_recorder_.get(),
       device_id_tether_network_guid_map_.get());

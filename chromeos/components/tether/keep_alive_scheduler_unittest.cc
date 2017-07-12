@@ -134,10 +134,9 @@ class KeepAliveSchedulerTest : public testing::Test {
                           const std::string& carrier,
                           int battery_percentage,
                           int signal_strength) {
-    const FakeHostScanCache::CacheEntry* entry =
-        fake_host_scan_cache_->GetCacheEntry(
-            device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
-                remote_device.GetDeviceId()));
+    const HostScanCacheEntry* entry = fake_host_scan_cache_->GetCacheEntry(
+        device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+            remote_device.GetDeviceId()));
     ASSERT_TRUE(entry);
     EXPECT_EQ(carrier, entry->carrier);
     EXPECT_EQ(battery_percentage, entry->battery_percentage);

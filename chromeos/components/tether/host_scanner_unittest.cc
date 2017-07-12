@@ -20,6 +20,7 @@
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/host_scanner.h"
+#include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -283,40 +284,40 @@ class HostScannerTest : public testing::Test {
       std::string tether_network_guid =
           device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
               scanned_device_info.remote_device.GetDeviceId());
-      const FakeHostScanCache::CacheEntry* cache_item =
+      const HostScanCacheEntry* entry =
           fake_host_scan_cache_->GetCacheEntry(tether_network_guid);
-      ASSERT_TRUE(cache_item);
+      ASSERT_TRUE(entry);
       VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(scanned_device_info,
-                                                        *cache_item);
+                                                        *entry);
     }
   }
 
   void VerifyScannedDeviceInfoAndCacheEntryAreEquivalent(
       const HostScannerOperation::ScannedDeviceInfo& scanned_device_info,
-      const FakeHostScanCache::CacheEntry& cache_item) {
-    EXPECT_EQ(scanned_device_info.remote_device.name, cache_item.device_name);
+      const HostScanCacheEntry& entry) {
+    EXPECT_EQ(scanned_device_info.remote_device.name, entry.device_name);
 
     const DeviceStatus& status = scanned_device_info.device_status;
     if (!status.has_cell_provider() || status.cell_provider().empty())
-      EXPECT_EQ("unknown-carrier", cache_item.carrier);
+      EXPECT_EQ("unknown-carrier", entry.carrier);
     else
-      EXPECT_EQ(status.cell_provider(), cache_item.carrier);
+      EXPECT_EQ(status.cell_provider(), entry.carrier);
 
     if (!status.has_battery_percentage() || status.battery_percentage() > 100)
-      EXPECT_EQ(100, cache_item.battery_percentage);
+      EXPECT_EQ(100, entry.battery_percentage);
     else if (status.battery_percentage() < 0)
-      EXPECT_EQ(0, cache_item.battery_percentage);
+      EXPECT_EQ(0, entry.battery_percentage);
     else
-      EXPECT_EQ(status.battery_percentage(), cache_item.battery_percentage);
+      EXPECT_EQ(status.battery_percentage(), entry.battery_percentage);
 
     if (!status.has_connection_strength() || status.connection_strength() > 4)
-      EXPECT_EQ(100, cache_item.signal_strength);
+      EXPECT_EQ(100, entry.signal_strength);
     else if (status.connection_strength() < 0)
-      EXPECT_EQ(0, cache_item.signal_strength);
+      EXPECT_EQ(0, entry.signal_strength);
     else
-      EXPECT_EQ(status.connection_strength() * 25, cache_item.signal_strength);
+      EXPECT_EQ(status.connection_strength() * 25, entry.signal_strength);
 
-    EXPECT_EQ(scanned_device_info.setup_required, cache_item.setup_required);
+    EXPECT_EQ(scanned_device_info.setup_required, entry.setup_required);
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
@@ -570,7 +571,8 @@ TEST_F(HostScannerTest, HasRecentlyScanned) {
   // We have just scanned.
   EXPECT_TRUE(host_scanner_->HasRecentlyScanned());
 
-  int time_limit_minutes = HostScanCache::kNumMinutesBeforeCacheEntryExpires;
+  int time_limit_minutes =
+      MasterHostScanCache::kNumMinutesBeforeCacheEntryExpires;
   int time_limit_seconds = time_limit_minutes * 60;
   int time_limit_half_seconds = time_limit_seconds / 2;
   int time_limit_threshold_seconds =

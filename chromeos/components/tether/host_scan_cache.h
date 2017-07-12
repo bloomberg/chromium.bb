@@ -5,111 +5,46 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_CACHE_H_
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_CACHE_H_
 
-#include <memory>
-#include <unordered_map>
-
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
-#include "chromeos/components/tether/tether_host_response_recorder.h"
+#include "chromeos/components/tether/host_scan_cache_entry.h"
 
 namespace chromeos {
 
-class NetworkStateHandler;
-
 namespace tether {
 
-class ActiveHost;
-class DeviceIdTetherNetworkGuidMap;
-class TetherHostResponseRecorder;
-class TimerFactory;
-
-// Caches scan results and inserts them into the network stack.
-class HostScanCache : public TetherHostResponseRecorder::Observer {
+// Caches host scan results.
+class HostScanCache {
  public:
-  // The number of minutes that a cache entry is considered to be valid before
-  // it becomes stale. Once a cache entry is inserted, it will be automatically
-  // removed after this amount of time passes unless it corresponds to the
-  // active host. This value was chosen for two reasons:
-  //     (1) Tether properties such as battery percentage and signal strength
-  //         are ephemeral in nature, so keeping these values cached for more
-  //         than a short period makes it likely that the values will be wrong.
-  //     (2) Tether networks rely on proximity to a tether host device, so it is
-  //         possible that host devices have physically moved away from each
-  //         other. We assume that the devices do not stay in proximity to one
-  //         another until a new scan result is received which proves that they
-  //         are still within the distance needed to communicate.
-  static constexpr int kNumMinutesBeforeCacheEntryExpires = 5;
-
-  HostScanCache(
-      NetworkStateHandler* network_state_handler,
-      ActiveHost* active_host,
-      TetherHostResponseRecorder* tether_host_response_recorder,
-      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
-  virtual ~HostScanCache();
+  HostScanCache() {}
+  virtual ~HostScanCache() {}
 
   // Updates the cache to include this scan result. If no scan result for
   // |tether_network_guid| exists in the cache, a scan result will be added;
   // if a scan result is already present, it is updated with the new data
-  // provided as parameters to this function. Once scan results have been
-  // updated, a timer starts counting down |kNumMinutesBeforeCacheEntryExpires|
-  // minutes. Once the timer fires, the scan result is automatically removed
-  // from the cache unless it corresponds to the active host.
-  // Note: |signal_strength| should be in the range [0, 100]. This is different
-  // from the |connection_strength| field received in ConnectTetheringResponse
-  // and KeepAliveTickleResponse messages (the range is [0, 4] in those cases).
-  // |battery_percentage| should also be in the range [0, 100].
-  // |setup_required| indicates that the host device requires first-time setup,
-  // i.e., user interaction to allow tethering.
-  virtual void SetHostScanResult(const std::string& tether_network_guid,
-                                 const std::string& device_name,
-                                 const std::string& carrier,
-                                 int battery_percentage,
-                                 int signal_strength,
-                                 bool setup_required);
+  // provided as parameters to this function.
+  virtual void SetHostScanResult(const HostScanCacheEntry& entry) = 0;
 
   // Removes the scan result with GUID |tether_network_guid| from the cache. If
-  // no cache result with that GUID was present in the cache, this function is
+  // no scan result with that GUID was present in the cache, this function is
   // a no-op. Returns whether a scan result was actually removed.
-  virtual bool RemoveHostScanResult(const std::string& tether_network_guid);
+  virtual bool RemoveHostScanResult(const std::string& tether_network_guid) = 0;
 
   // Removes all scan results from the cache unless they correspond to the
   // active host; the active host must always remain in the cache while
   // connecting/connected to ensure the UI is up to date.
-  virtual void ClearCacheExceptForActiveHost();
+  // TODO(khorimoto): Remove this function. Currently, scan results are cleared
+  // when a new scan starts and are filled back in as the scan completes. This
+  // allows for a situation to occur where the UI removes a network then adds
+  // it back at some time later, which is undesirable as a user. Instead,
+  // existing scan results should remain in the cache until a scan concludes and
+  // no updated scan results for those existing results exist.
+  virtual void ClearCacheExceptForActiveHost() = 0;
 
-  // Returns true if the host device requires first-time setup, i.e., user
-  // interaction to allow tethering.
-  virtual bool DoesHostRequireSetup(const std::string& tether_network_guid);
-
-  // TetherHostResponseRecorder::Observer:
-  void OnPreviouslyConnectedHostIdsChanged() override;
+  // Returns whether the scan result corresponding to |tether_network_guid|
+  // requires first-time setup (i.e., user interaction) to allow tethering.
+  virtual bool DoesHostRequireSetup(const std::string& tether_network_guid) = 0;
 
  private:
-  friend class HostScanCacheTest;
-
-  void SetTimerFactoryForTest(
-      std::unique_ptr<TimerFactory> timer_factory_for_test);
-
-  bool HasConnectedToHost(const std::string& tether_network_guid);
-  void StartTimer(const std::string& tether_network_guid);
-  void OnTimerFired(const std::string& tether_network_guid);
-
-  std::unique_ptr<TimerFactory> timer_factory_;
-  NetworkStateHandler* network_state_handler_;
-  ActiveHost* active_host_;
-  TetherHostResponseRecorder* tether_host_response_recorder_;
-  DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
-
-  // Maps from the Tether network GUID to a Timer object. While a scan result is
-  // active in the cache, the corresponding Timer object starts running; if the
-  // timer fires, the result is removed (unless it corresponds to the active
-  // host).
-  std::unordered_map<std::string, std::unique_ptr<base::Timer>>
-      tether_guid_to_timer_map_;
-  std::unordered_set<std::string> setup_required_tether_guids_;
-  base::WeakPtrFactory<HostScanCache> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(HostScanCache);
 };
 
