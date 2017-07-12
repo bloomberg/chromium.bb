@@ -1091,6 +1091,14 @@ const FeatureEntry::FeatureVariation
          kClientPlaceholdersForServerLoFiEnabled,
          arraysize(kClientPlaceholdersForServerLoFiEnabled), nullptr}};
 
+const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flags_ui::kGenericExperimentChoiceEnabled,
+     cc::switches::kEnableCheckerImaging, ""},
+    {flags_ui::kGenericExperimentChoiceDisabled,
+     cc::switches::kDisableCheckerImaging, ""},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3166,6 +3174,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsWin | kOsLinux,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDelayReloadStopButtonChange)},
 #endif  // TOOLKIT_VIEWS
+
+    {"enable-async-image-decoding", flag_descriptions::kAsyncImageDecodingName,
+     flag_descriptions::kAsyncImageDecodingDescription, kOsAll,
+     MULTI_VALUE_TYPE(kAsyncImageDecodingChoices)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in

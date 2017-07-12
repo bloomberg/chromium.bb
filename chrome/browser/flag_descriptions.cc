@@ -37,6 +37,10 @@ const char kAppBannersDescription[] =
     "Enable the display of Progressive Web App banners, which prompt a user to "
     "add a web app to their shelf, or other platform-specific equivalent.";
 
+const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
+const char kAsyncImageDecodingDescription[] =
+    "Enables asynchronous decoding of images from raster for web content";
+
 const char kAutoplayPolicyName[] = "Autoplay policy";
 const char kAutoplayPolicyDescription[] =
     "Policy used when deciding if audio or video is allowed to autoplay.";
