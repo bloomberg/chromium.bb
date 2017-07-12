@@ -45,6 +45,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/media_stream_request.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
 #include "ppapi/features/features.h"
 #include "ui/gfx/geometry/rect.h"
@@ -283,8 +284,11 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
 #if BUILDFLAG(ENABLE_VR)
-  if (vr_shell::VrTabHelper::IsInVr(web_contents))
+  if (vr_shell::VrTabHelper::IsInVr(web_contents)) {
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
     return;
+  }
 #endif
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, callback, nullptr);
