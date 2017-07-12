@@ -576,10 +576,6 @@ static INLINE MV average_split_mvs(const struct macroblockd_plane *pd,
   return res;
 }
 
-void av1_build_inter_predictor_sub8x8(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      int plane, int i, int ir, int ic,
-                                      int mi_row, int mi_col);
-
 void av1_build_inter_predictors_sby(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                     int mi_row, int mi_col, BUFFER_SET *ctx,
                                     BLOCK_SIZE bsize);
