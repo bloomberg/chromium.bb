@@ -29,25 +29,9 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     return UNKNOWN_TYPE;
   }
 
-  // Check if the request came through the Data Reduction Proxy before checking
-  // if proxies are bypassed, to avoid misreporting cases where the Data
-  // Reduction Proxy was bypassed between the request being sent out and the
-  // response coming in. For 304 responses, check if the request was sent to the
-  // Data Reduction Proxy, since 304s aren't required to have a Via header even
-  // if they came through the Data Reduction Proxy.
   if (request.response_headers() &&
-      (HasDataReductionProxyViaHeader(*request.response_headers(), nullptr) ||
-       (request.response_headers()->response_code() == net::HTTP_NOT_MODIFIED &&
-        config.WasDataReductionProxyUsed(&request, nullptr)))) {
+      HasDataReductionProxyViaHeader(*request.response_headers(), nullptr)) {
     return VIA_DATA_REDUCTION_PROXY;
-  }
-
-  base::TimeDelta bypass_delay;
-  if (config.AreDataReductionProxiesBypassed(
-      request, data_reduction_proxy_config, &bypass_delay)) {
-    if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
-      return LONG_BYPASS;
-    return SHORT_BYPASS;
   }
 
   // Treat bypasses that only apply to the individual request as SHORT_BYPASS.
@@ -61,6 +45,31 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
       config.IsBypassedByDataReductionProxyLocalRules(
           request, data_reduction_proxy_config)) {
     return SHORT_BYPASS;
+  }
+
+  if (request.proxy_server().is_direct() ||
+      !request.proxy_server().is_valid()) {
+    return DIRECT_HTTP;
+  }
+
+  base::TimeDelta bypass_delay;
+  if (config.AreDataReductionProxiesBypassed(
+          request, data_reduction_proxy_config, &bypass_delay)) {
+    if (bypass_delay > base::TimeDelta::FromSeconds(kLongBypassDelayInSeconds))
+      return LONG_BYPASS;
+    return SHORT_BYPASS;
+  }
+
+  // Check if the request came through the Data Reduction Proxy before checking
+  // if proxies are bypassed, to avoid misreporting cases where the Data
+  // Reduction Proxy was bypassed between the request being sent out and the
+  // response coming in. For 304 responses, check if the request was sent to the
+  // Data Reduction Proxy, since 304s aren't required to have a Via header even
+  // if they came through the Data Reduction Proxy.
+  if (request.response_headers() &&
+      request.response_headers()->response_code() == net::HTTP_NOT_MODIFIED &&
+      config.WasDataReductionProxyUsed(&request, nullptr)) {
+    return VIA_DATA_REDUCTION_PROXY;
   }
 
   return UNKNOWN_TYPE;
