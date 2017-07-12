@@ -41,12 +41,13 @@ class ShellSpeechRecognitionManagerDelegate
   // SpeechRecognitionManagerDelegate methods.
   void CheckRecognitionIsAllowed(
       int session_id,
-      base::Callback<void(bool ask_user, bool is_allowed)> callback) override;
+      base::OnceCallback<void(bool ask_user, bool is_allowed)> callback)
+      override;
   content::SpeechRecognitionEventListener* GetEventListener() override;
   bool FilterProfanities(int render_process_id) override;
 
   static void CheckRenderViewType(
-      base::Callback<void(bool ask_user, bool is_allowed)> callback,
+      base::OnceCallback<void(bool ask_user, bool is_allowed)> callback,
       int render_process_id,
       int render_view_id);
 

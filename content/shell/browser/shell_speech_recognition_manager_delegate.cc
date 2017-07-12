@@ -6,18 +6,19 @@
 
 #include "content/public/browser/browser_thread.h"
 
-using base::Callback;
+using base::OnceCallback;
 
 namespace content {
 
 void ShellSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
-    int session_id, Callback<void(bool ask_user, bool is_allowed)> callback) {
+    int session_id,
+    OnceCallback<void(bool ask_user, bool is_allowed)> callback) {
   // In content_shell, we expect speech recognition to happen when requested.
   // Therefore we simply authorize it by calling back with is_allowed=true. The
   // first parameter, ask_user, is set to false because we don't want to prompt
   // the user for permission with an infobar.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, false, true));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(std::move(callback), false, true));
 }
 
 SpeechRecognitionEventListener*
