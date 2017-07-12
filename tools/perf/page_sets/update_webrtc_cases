@@ -22,6 +22,7 @@ TEST_PAGES_LOCATION_BY_REPO = {
         'dirs': [
             'src/canvas-capture',
             'src/multiple-peerconnections',
+            'src/pause-play',
         ],
     },
     'samples': {
@@ -60,7 +61,7 @@ JS_COPYRIGHT_NOTICE = ' * '.join(['/*\n'] + COPYRIGHT_NOTICE) + ' */\n'
 HTML_COPYRIGHT_NOTICE = ' * '.join(['<!--\n'] + COPYRIGHT_NOTICE) + '-->\n'
 
 STRIPPED_TAGS_RE = ('( *<meta.*?>\n?| *<link.*?>\n?|'
-                    ' *<script.*>.*?</script>\n?|</body>.*?</html>)')
+                    ' *<script.*>.*?</script>\n?| *</body>.*?</html>)')
 
 
 class TemporaryDirectory(object):
