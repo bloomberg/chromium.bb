@@ -12,12 +12,14 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_job.h"
+#include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -25,6 +27,23 @@ namespace content {
 
 class AppCacheRequest;
 class NetToMojoPendingBuffer;
+class URLLoaderFactoryGetter;
+struct SubresourceLoadInfo;
+
+// Holds information about the subresource load request like the routing id,
+// request id, the client pointer, etc.
+struct SubresourceLoadInfo {
+  SubresourceLoadInfo();
+  ~SubresourceLoadInfo();
+
+  mojom::URLLoaderAssociatedRequest url_loader_request;
+  int32_t routing_id;
+  int32_t request_id;
+  uint32_t options;
+  ResourceRequest request;
+  mojom::URLLoaderClientPtr client;
+  net::MutableNetworkTrafficAnnotationTag traffic_annotation;
+};
 
 // AppCacheJob wrapper for a mojom::URLLoader implementation which returns
 // responses stored in the AppCache.
@@ -54,8 +73,23 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
 
-  void set_loader_callback(LoaderCallback callback) {
-    loader_callback_ = std::move(callback);
+  void set_main_resource_loader_callback(LoaderCallback callback) {
+    main_resource_loader_callback_ = std::move(callback);
+  }
+
+  // Subresource request load information is passed in the
+  // |subresource_load_info| parameter. This includes the request id, the
+  // client pointer, etc.
+  // |default_url_loader| is used to retrieve the network loader for requests
+  // intended to be sent to the network.
+  void SetSubresourceLoadInfo(
+      std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
+      URLLoaderFactoryGetter* default_url_loader);
+
+  // Ownership of the |handler| is transferred to us via this call. This is
+  // only for subresource requests.
+  void set_request_handler(std::unique_ptr<AppCacheRequestHandler> handler) {
+    sub_resource_handler_ = std::move(handler);
   }
 
  protected:
@@ -123,8 +157,29 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   mojo::SimpleWatcher writable_handle_watcher_;
 
   // The Callback to be invoked in the network service land to indicate if
-  // the request can be serviced via the AppCache.
-  LoaderCallback loader_callback_;
+  // the main resource request can be serviced via the AppCache.
+  LoaderCallback main_resource_loader_callback_;
+
+  // We own the AppCacheRequestHandler instance for subresource requests.
+  std::unique_ptr<AppCacheRequestHandler> sub_resource_handler_;
+
+  scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
+
+  // Holds subresource url loader information.
+  std::unique_ptr<SubresourceLoadInfo> subresource_load_info_;
+
+  // Timing information for the most recent request.  Its start times are
+  // populated in DeliverAppCachedResponse().
+  net::LoadTimingInfo load_timing_info_;
+
+  // Used for subresource requests which go to the network.
+  mojom::URLLoaderAssociatedPtr network_loader_request_;
+
+  // Binds the subresource URLLoaderClient with us. We can use the regular
+  // binding_ member above when we remove the need for the associated requests
+  // issue with URLLoaderFactory.
+  std::unique_ptr<mojo::AssociatedBinding<mojom::URLLoader>>
+      associated_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderJob);
 };

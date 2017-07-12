@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -194,6 +195,9 @@ class CONTENT_EXPORT AppCacheHost
   void PrepareForTransfer();
   void CompleteTransfer(int host_id, AppCacheFrontend* frontend);
 
+  // Returns a weak pointer reference to the host.
+  base::WeakPtr<AppCacheHost> GetWeakPtr();
+
  private:
   friend class content::AppCacheHostTest;
   friend class content::AppCacheStorageImplTest;
@@ -352,6 +356,8 @@ class CONTENT_EXPORT AppCacheHost
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheBlocked);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheTwice);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheTest, CleanupUnusedCache);
+
+  base::WeakPtrFactory<AppCacheHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);
 };

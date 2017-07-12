@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_SUBRESOURCE_URL_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -13,6 +14,7 @@
 
 namespace content {
 
+class AppCacheHost;
 class AppCacheJob;
 class AppCacheServiceImpl;
 class URLLoaderFactoryGetter;
@@ -25,10 +27,15 @@ class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
   // Factory function to create an instance of the factory.
   // 1. The |factory_getter| parameter is used to query the network service
   //    to pass network requests to.
-  // Returns a URLLoaderFactoryPtr instance which controls the lifetime of the
-  // factory.
-  static mojom::URLLoaderFactoryPtr CreateURLLoaderFactory(
-      URLLoaderFactoryGetter* factory_getter);
+  // 2. The |host| parameter contains the appcache host instance. This is used
+  //    to create the AppCacheRequestHandler instances for handling subresource
+  //    requests.
+  // Returns the AppCacheSubresourceURLFactory instance. The URLLoaderFactoryPtr
+  // is returned in the |loader_factory| parameter.
+  static AppCacheSubresourceURLFactory* CreateURLLoaderFactory(
+      URLLoaderFactoryGetter* factory_getter,
+      base::WeakPtr<AppCacheHost> host,
+      mojom::URLLoaderFactoryPtr* loader_factory);
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -47,7 +54,8 @@ class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
 
  private:
   AppCacheSubresourceURLFactory(mojom::URLLoaderFactoryRequest request,
-                                URLLoaderFactoryGetter* factory_getter);
+                                URLLoaderFactoryGetter* factory_getter,
+                                base::WeakPtr<AppCacheHost> host);
 
   void OnConnectionError();
 
@@ -57,6 +65,8 @@ class AppCacheSubresourceURLFactory : public mojom::URLLoaderFactory {
   // Used to retrieve the network service factory to pass unhandled requests to
   // the network service.
   scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
+
+  base::WeakPtr<AppCacheHost> appcache_host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheSubresourceURLFactory);
 };

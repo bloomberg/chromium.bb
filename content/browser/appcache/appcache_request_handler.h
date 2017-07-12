@@ -32,7 +32,8 @@ class AppCacheNavigationHandleCore;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
 class AppCacheURLRequestJob;
-struct ResourceRequest;
+class AppCacheHost;
+struct SubresourceLoadInfo;
 
 // An instance is created for each net::URLRequest. The instance survives all
 // http transactions involved in the processing of its net::URLRequest, and is
@@ -79,6 +80,15 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const ResourceRequest& request,
       AppCacheNavigationHandleCore* appcache_handle_core,
       URLLoaderFactoryGetter* url_loader_factory_getter);
+
+  // The following setters only apply for the network service code.
+  void set_network_url_loader_factory_getter(
+      URLLoaderFactoryGetter* url_loader_factory_getter) {
+    network_url_loader_factory_getter_ = url_loader_factory_getter;
+  }
+
+  void SetSubresourceRequestLoadInfo(
+      std::unique_ptr<SubresourceLoadInfo> subresource_load_info);
 
  private:
   friend class AppCacheHost;
@@ -152,11 +162,6 @@ class CONTENT_EXPORT AppCacheRequestHandler
                          LoaderCallback callback) override;
   mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory() override;
 
-  void set_network_url_loader_factory_getter(
-      URLLoaderFactoryGetter* url_loader_factory_getter) {
-    network_url_loader_factory_getter_ = url_loader_factory_getter;
-  }
-
   // Data members -----------------------------------------------
 
   // What host we're servicing a request for.
@@ -217,6 +222,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   std::unique_ptr<AppCacheRequest> request_;
 
+  // Network service related members.
+
   // In the network service world we are queried via the URLLoaderRequestHandler
   // interface to see if the navigation request can be handled via the
   // AppCache. We hold onto the AppCache job created here until the client
@@ -229,6 +236,13 @@ class CONTENT_EXPORT AppCacheRequestHandler
   scoped_refptr<URLLoaderFactoryGetter> network_url_loader_factory_getter_;
 
   friend class content::AppCacheRequestHandlerTest;
+
+  // Subresource load information.
+  std::unique_ptr<SubresourceLoadInfo> subresource_load_info_;
+
+  // The AppCache host instance. We pass this to the
+  // AppCacheSubresourceURLFactory instance on creation.
+  base::WeakPtr<AppCacheHost> appcache_host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };
