@@ -26,6 +26,8 @@ const char kCryptAuthPath[] = "cryptauth/v1/";
 const char kGetMyDevicesPath[] = "deviceSync/getmydevices";
 const char kFindEligibleUnlockDevicesPath[] =
     "deviceSync/findeligibleunlockdevices";
+const char kFindEligibleForPromotionPath[] =
+    "deviceSync/findeligibleforpromotion";
 const char kSendDeviceSyncTicklePath[] = "deviceSync/senddevicesynctickle";
 const char kToggleEasyUnlockPath[] = "deviceSync/toggleeasyunlock";
 const char kSetupEnrollmentPath[] = "enrollment/setup";
@@ -102,6 +104,36 @@ void CryptAuthClientImpl::FindEligibleUnlockDevices(
         }
       })");
   MakeApiCall(kFindEligibleUnlockDevicesPath, request, callback, error_callback,
+              partial_traffic_annotation);
+}
+
+void CryptAuthClientImpl::FindEligibleForPromotion(
+    const FindEligibleForPromotionRequest& request,
+    const FindEligibleForPromotionCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_find_eligible_for_promotion", "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "Promotion Manager"
+        description:
+          "Return whether the current device is eligible for a Smart Lock promotion."
+        trigger:
+          "This request is sent when the user starts the Smart Lock setup flow."
+        data: "OAuth 2.0 token and the device's public key."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled in settings"
+        chrome_policy {
+          EasyUnlockAllowed {
+            EasyUnlockAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(kFindEligibleForPromotionPath, request, callback, error_callback,
               partial_traffic_annotation);
 }
 
