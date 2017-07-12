@@ -424,11 +424,6 @@ class LocalDeviceInstrumentationTestRun(
 
     logcat_url = logmon.GetLogcatURL()
     duration_ms = time_ms() - start_ms
-    if flags_to_add or flags_to_remove:
-      self._flag_changers[str(device)].Restore()
-    if test_timeout_scale:
-      valgrind_tools.SetChromeTimeoutScale(
-          device, self._test_instance.timeout_scale)
 
     # TODO(jbudorick): Make instrumentation tests output a JSON so this
     # doesn't have to parse the output.
@@ -436,20 +431,53 @@ class LocalDeviceInstrumentationTestRun(
         self._test_instance.ParseAmInstrumentRawOutput(output))
     results = self._test_instance.GenerateTestResults(
         result_code, result_bundle, statuses, start_ms, duration_ms)
+
+    def restore_flags():
+      if flags_to_add or flags_to_remove:
+        self._flag_changers[str(device)].Restore()
+
+    def restore_timeout_scale():
+      if test_timeout_scale:
+        valgrind_tools.SetChromeTimeoutScale(
+            device, self._test_instance.timeout_scale)
+
+    def handle_coverage_data():
+      if self._test_instance.coverage_directory:
+        device.PullFile(coverage_directory,
+            self._test_instance.coverage_directory)
+        device.RunShellCommand(
+            'rm -f %s' % posixpath.join(coverage_directory, '*'),
+            check_return=True, shell=True)
+
+    def handle_render_test_data():
+      if _IsRenderTest(test):
+        # Render tests do not cause test failure by default. So we have to check
+        # to see if any failure images were generated even if the test does not
+        # fail.
+        try:
+          self._ProcessRenderTestResults(
+              device, render_tests_device_output_dir, results)
+        finally:
+          device.RemovePath(render_tests_device_output_dir,
+                            recursive=True, force=True)
+
+    # While constructing the TestResult objects, we can parallelize several
+    # steps that involve ADB. These steps should NOT depend on any info in
+    # the results! Things such as whether the test CRASHED have not yet been
+    # determined.
+    post_test_steps = [restore_flags, restore_timeout_scale,
+                       handle_coverage_data, handle_render_test_data]
+    if self._env.concurrent_adb:
+      post_test_step_thread_group = reraiser_thread.ReraiserThreadGroup(
+          reraiser_thread.ReraiserThread(f) for f in post_test_steps)
+      post_test_step_thread_group.StartAll(will_block=True)
+    else:
+      for step in post_test_steps:
+        step()
+
     for result in results:
       if logcat_url:
         result.SetLink('logcat', logcat_url)
-
-    if _IsRenderTest(test):
-      # Render tests do not cause test failure by default. So we have to check
-      # to see if any failure images were generated even if the test does not
-      # fail.
-      try:
-        self._ProcessRenderTestResults(
-            device, render_tests_device_output_dir, results)
-      finally:
-        device.RemovePath(render_tests_device_output_dir,
-                          recursive=True, force=True)
 
     # Update the result name if the test used flags.
     if flags_to_add or flags_to_remove:
@@ -503,12 +531,6 @@ class LocalDeviceInstrumentationTestRun(
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
         logging.debug('  %s', l)
-    if self._test_instance.coverage_directory:
-      device.PullFile(coverage_directory,
-          self._test_instance.coverage_directory)
-      device.RunShellCommand(
-          'rm -f %s' % posixpath.join(coverage_directory, '*'),
-          check_return=True, shell=True)
     if self._test_instance.store_tombstones:
       tombstones_url = None
       for result in results:
@@ -525,6 +547,9 @@ class LocalDeviceInstrumentationTestRun(
             tombstones_url = logdog_helper.text(
                 stream_name, '\n'.join(resolved_tombstones))
           result.SetLink('tombstones', tombstones_url)
+
+    if self._env.concurrent_adb:
+      post_test_step_thread_group.JoinAll()
     return results, None
 
   def _SaveScreenshot(self, device, screenshot_host_dir, screenshot_device_file,
