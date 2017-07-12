@@ -109,6 +109,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   void AbortTransactionsAndCompactDatabase(
       const url::Origin& origin,
       AbortTransactionsAndCompactDatabaseCallback callback) override;
+  void AbortTransactionsForDatabase(
+      const url::Origin& origin,
+      AbortTransactionsForDatabaseCallback callback) override;
 
   void InvalidateWeakPtrsAndClearBindings();
 

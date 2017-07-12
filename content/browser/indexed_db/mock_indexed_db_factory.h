@@ -62,6 +62,15 @@ class MockIndexedDBFactory : public IndexedDBFactory {
     base::OnceCallback<void(leveldb::Status)>* callback_ref = &callback;
     AbortTransactionsAndCompactDatabaseProxy(callback_ref, origin);
   }
+  MOCK_METHOD2(AbortTransactionsForDatabaseProxy,
+               void(base::OnceCallback<void(leveldb::Status)>* callback,
+                    const url::Origin& origin));
+  virtual void AbortTransactionsForDatabase(
+      base::OnceCallback<void(leveldb::Status)> callback,
+      const url::Origin& origin) {
+    base::OnceCallback<void(leveldb::Status)>* callback_ref = &callback;
+    AbortTransactionsForDatabaseProxy(callback_ref, origin);
+  }
 
   MOCK_METHOD1(HandleBackingStoreFailure, void(const url::Origin& origin));
   MOCK_METHOD2(HandleBackingStoreCorruption,
