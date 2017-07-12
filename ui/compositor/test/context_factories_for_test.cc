@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -32,10 +33,12 @@ void ConnectFrameSinkManager() {
       mojo::MakeRequest(&manager_mojo);
 
   // Make the Mojo connections on both ends.
-  g_frame_sink_manager_impl->BindPtrAndSetClient(
-      std::move(manager_mojo_request), std::move(host_mojo));
-  g_host_frame_sink_manager->BindManagerClientAndSetManagerPtr(
-      std::move(host_mojo_request), std::move(manager_mojo));
+  g_frame_sink_manager_impl->BindAndSetClient(
+      std::move(manager_mojo_request), base::SequencedTaskRunnerHandle::Get(),
+      std::move(host_mojo));
+  g_host_frame_sink_manager->BindAndSetManager(
+      std::move(host_mojo_request), base::SequencedTaskRunnerHandle::Get(),
+      std::move(manager_mojo));
 }
 
 }  // namespace

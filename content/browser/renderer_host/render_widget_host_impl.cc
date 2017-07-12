@@ -34,6 +34,7 @@
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
@@ -2558,17 +2559,9 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     cc::mojom::CompositorFrameSinkClientPtr client) {
   if (compositor_frame_sink_binding_.is_bound())
     compositor_frame_sink_binding_.Close();
-#if defined(OS_MACOSX)
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      ui::WindowResizeHelperMac::Get()->task_runner();
-  // In tests, task_runner might not be initialized.
-  if (task_runner)
-    compositor_frame_sink_binding_.Bind(std::move(request), task_runner);
-  else
-    compositor_frame_sink_binding_.Bind(std::move(request));
-#else
-  compositor_frame_sink_binding_.Bind(std::move(request));
-#endif
+  compositor_frame_sink_binding_.Bind(
+      std::move(request),
+      BrowserMainLoop::GetInstance()->GetResizeTaskRunner());
   if (view_)
     view_->DidCreateNewRendererCompositorFrameSink(client.get());
   renderer_compositor_frame_sink_ = std::move(client);

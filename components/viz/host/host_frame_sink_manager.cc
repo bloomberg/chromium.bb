@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/sequenced_task_runner.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 
@@ -15,11 +16,12 @@ HostFrameSinkManager::HostFrameSinkManager() : binding_(this) {}
 
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 
-void HostFrameSinkManager::BindManagerClientAndSetManagerPtr(
+void HostFrameSinkManager::BindAndSetManager(
     cc::mojom::FrameSinkManagerClientRequest request,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     cc::mojom::FrameSinkManagerPtr ptr) {
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request), std::move(task_runner));
   frame_sink_manager_ptr_ = std::move(ptr);
 }
 
