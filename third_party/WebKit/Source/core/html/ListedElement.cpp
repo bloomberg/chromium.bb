@@ -283,7 +283,7 @@ bool ListedElement::IsFormControlElementWithState() const {
 const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
   if (listed_element.IsFormControlElement())
     return ToHTMLFormControlElement(listed_element);
-  return toHTMLObjectElement(listed_element);
+  return ToHTMLObjectElementFromListedElement(listed_element);
 }
 
 const HTMLElement* ToHTMLElement(const ListedElement* listed_element) {
