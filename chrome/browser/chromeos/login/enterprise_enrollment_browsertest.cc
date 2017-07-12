@@ -166,7 +166,6 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
         "login.OAuthEnrollmentScreen.showStep = function(step) {"
         "  testShowStep(step);"
         "  if (step == 'working') {"
-        "    window.domAutomationController.setAutomationId(0);"
         "    window.domAutomationController.send('ShowSpinnerScreen');"
         "  }"
         "}");
@@ -175,7 +174,6 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
         "login.OAuthEnrollmentScreen.invalidateAd = function(machineName, "
         "user, errorState) {"
         "  testInvalidateAd(machineName, user, errorState);"
-        "  window.domAutomationController.setAutomationId(0);"
         "  window.domAutomationController.send('ShowJoinDomainError');"
         "}");
   }

@@ -112,7 +112,6 @@ class LoginTest : public LoginManagerTest {
       "authenticator.addEventListener('ready',"
         "function f() {"
           "authenticator.removeEventListener('ready', f);"
-          "window.domAutomationController.setAutomationId(0);"
           "window.domAutomationController.send('offlineLoaded');"
         "});"
       "$('error-offline-login-link').onclick();"
@@ -149,7 +148,6 @@ class LoginTest : public LoginManagerTest {
         animated_pages +
         ".addEventListener('neon-animation-finish',"
         "function() {"
-        "window.domAutomationController.setAutomationId(0);"
         "window.domAutomationController.send('switchToPassword');"
         "})";
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
@@ -289,7 +287,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
         "var testInvalidateAd = login.GaiaSigninScreen.invalidateAd;"
         "login.GaiaSigninScreen.invalidateAd = function(user, errorState) {"
         "  testInvalidateAd(user, errorState);"
-        "  window.domAutomationController.setAutomationId(0);"
         "  window.domAutomationController.send('ShowAuthError');"
         "}");
   }
