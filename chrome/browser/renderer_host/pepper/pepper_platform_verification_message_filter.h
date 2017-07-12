@@ -57,6 +57,8 @@ class PepperPlatformVerificationMessageFilter
       const std::string& platform_key_certificate);
 #endif
 
+  int32_t OnGetStorageId(ppapi::host::HostMessageContext* context);
+
   // Used to lookup the WebContents associated with this PP_Instance.
   int render_process_id_;
   int render_frame_id_;

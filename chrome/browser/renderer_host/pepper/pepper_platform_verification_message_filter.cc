@@ -45,6 +45,8 @@ int32_t PepperPlatformVerificationMessageFilter::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_PlatformVerification_ChallengePlatform,
         OnChallengePlatform)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_PlatformVerification_GetStorageId, OnGetStorageId)
   PPAPI_END_MESSAGE_MAP()
 
   return PP_ERROR_FAILED;
@@ -110,5 +112,17 @@ void PepperPlatformVerificationMessageFilter::ChallengePlatformCallback(
                 platform_key_certificate));
 }
 #endif
+
+int32_t PepperPlatformVerificationMessageFilter::OnGetStorageId(
+    ppapi::host::HostMessageContext* context) {
+  // TODO(jrummell): Implement Storage ID. For now simply returns empty string.
+  // http://crbug.com/478960.
+  ppapi::host::ReplyMessageContext reply_context =
+      context->MakeReplyMessageContext();
+  reply_context.params.set_result(PP_OK);
+  SendReply(reply_context,
+            PpapiHostMsg_PlatformVerification_GetStorageIdReply(std::string()));
+  return PP_OK_COMPLETIONPENDING;
+}
 
 }  // namespace chrome

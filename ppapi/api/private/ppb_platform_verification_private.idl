@@ -11,7 +11,7 @@
 [generate_thunk]
 
 label Chrome {
-  M32 = 0.2
+  M61 = 0.3
 };
 
 /**
@@ -81,5 +81,22 @@ interface PPB_PlatformVerification_Private {
       [out] PP_Var signed_data,
       [out] PP_Var signed_data_signature,
       [out] PP_Var platform_key_certificate,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Requests the device's storage ID.
+   *
+   * @param[out] storage_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> that contains the storage ID.
+   *
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
+   * the storage ID has been obtained. This callback will only run if
+   * the return code is <code>PP_OK_COMPLETIONPENDING</code>.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  int32_t GetStorageId(
+      [in] PP_Resource instance,
+      [out] PP_Var storage_id,
       [in] PP_CompletionCallback callback);
 };

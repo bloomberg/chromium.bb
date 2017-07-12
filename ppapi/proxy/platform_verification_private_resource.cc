@@ -100,5 +100,38 @@ void PlatformVerificationPrivateResource::OnChallengePlatformReply(
   output_params.callback->Run(params.result());
 }
 
+int32_t PlatformVerificationPrivateResource::GetStorageId(
+    PP_Var* storage_id,
+    const scoped_refptr<TrackedCallback>& callback) {
+  // Prevent null types for obvious reasons, but also ref-counted types to
+  // avoid leaks on failures (since they're only written to on success).
+  if (!storage_id || VarTracker::IsVarTypeRefcounted(storage_id->type)) {
+    return PP_ERROR_BADARGUMENT;
+  }
+
+  GetStorageIdParams output_params = {storage_id, callback};
+
+  Call<PpapiHostMsg_PlatformVerification_GetStorageIdReply>(
+      BROWSER, PpapiHostMsg_PlatformVerification_GetStorageId(),
+      base::Bind(&PlatformVerificationPrivateResource::OnGetStorageIdReply,
+                 base::Unretained(this), output_params));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void PlatformVerificationPrivateResource::OnGetStorageIdReply(
+    GetStorageIdParams output_params,
+    const ResourceMessageReplyParams& params,
+    const std::string& storage_id) {
+  if (!TrackedCallback::IsPending(output_params.callback) ||
+      TrackedCallback::IsScheduledToRun(output_params.callback)) {
+    return;
+  }
+
+  if (params.result() == PP_OK) {
+    *(output_params.storage_id) = (new StringVar(storage_id))->GetPPVar();
+  }
+  output_params.callback->Run(params.result());
+}
+
 }  // namespace proxy
 }  // namespace ppapi

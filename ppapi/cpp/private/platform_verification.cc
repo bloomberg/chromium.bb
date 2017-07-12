@@ -15,16 +15,17 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_PlatformVerification_Private_0_2>() {
-  return PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2;
+template <>
+const char* interface_name<PPB_PlatformVerification_Private_0_3>() {
+  return PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_3;
 }
 
 inline bool HasInterface() {
-  return has_interface<PPB_PlatformVerification_Private_0_2>();
+  return has_interface<PPB_PlatformVerification_Private_0_3>();
 }
 
-inline const PPB_PlatformVerification_Private_0_2* GetInterface() {
-  return get_interface<PPB_PlatformVerification_Private_0_2>();
+inline const PPB_PlatformVerification_Private_0_3* GetInterface() {
+  return get_interface<PPB_PlatformVerification_Private_0_3>();
 }
 
 }  // namespace
@@ -51,6 +52,16 @@ int32_t PlatformVerification::ChallengePlatform(
       const_cast<PP_Var*>(&signed_data->pp_var()),
       const_cast<PP_Var*>(&signed_data_signature->pp_var()),
       const_cast<PP_Var*>(&platform_key_certificate->pp_var()),
+      callback.pp_completion_callback());
+}
+
+int32_t PlatformVerification::GetStorageId(Var* storage_id,
+                                           const CompletionCallback& callback) {
+  if (!HasInterface())
+    return callback.MayForce(PP_ERROR_NOINTERFACE);
+
+  return GetInterface()->GetStorageId(
+      pp_resource(), const_cast<PP_Var*>(&storage_id->pp_var()),
       callback.pp_completion_callback());
 }
 
