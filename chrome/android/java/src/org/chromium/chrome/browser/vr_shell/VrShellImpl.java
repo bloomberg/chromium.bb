@@ -72,8 +72,6 @@ public class VrShellImpl
 
     // Increasing DPR any more than this doesn't appear to increase text quality.
     private static final float DEFAULT_DPR = 1.4f;
-    // For WebVR we just create a DPR 1.0 display that matches the physical display size.
-    private static final float WEBVR_DPR = 1.0f;
     // Fairly arbitrary values that put a good amount of content on the screen without making the
     // text too small to read.
     @VisibleForTesting
@@ -361,7 +359,7 @@ public class VrShellImpl
         setSplashScreenIcon();
 
         // Set the UI and content sizes before we load the UI.
-        updateWebVrDisplaySize(forWebVr);
+        setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
 
         reparentAllTabs(mContentVrWindowAndroid);
         swapToForegroundTab();
@@ -586,17 +584,6 @@ public class VrShellImpl
     public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
         mContentVrWindowAndroid.setVSyncPaused(enabled);
         nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
-        updateWebVrDisplaySize(enabled);
-    }
-
-    private void updateWebVrDisplaySize(boolean inWebVr) {
-        if (inWebVr) {
-            DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(mActivity);
-            setContentCssSize(
-                    primaryDisplay.getDisplayWidth(), primaryDisplay.getDisplayHeight(), WEBVR_DPR);
-        } else {
-            setContentCssSize(DEFAULT_CONTENT_WIDTH, DEFAULT_CONTENT_HEIGHT, DEFAULT_DPR);
-        }
     }
 
     @Override

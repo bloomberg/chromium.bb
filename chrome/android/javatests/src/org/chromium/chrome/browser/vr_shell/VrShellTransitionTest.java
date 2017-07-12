@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.concurrent.TimeoutException;
 
@@ -138,27 +137,20 @@ public class VrShellTransitionTest {
                 mVrTestRule.getHtmlTestFile("test_navigation_webvr_page"), PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
-        // Validate our size is what we expect while presenting.
-        DisplayAndroid primaryDisplay =
-                DisplayAndroid.getNonMultiDisplay(mVrTestRule.getActivity());
-        float expectedWidth = primaryDisplay.getDisplayWidth();
-        float expectedHeight = primaryDisplay.getDisplayHeight();
+        // Validate our size is what we expect while in VR.
+        float expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
+        float expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
+        String javascript = "Math.abs(screen.width - " + expectedWidth + ") <= 1 && "
+                + "Math.abs(screen.height - " + expectedHeight + ") <= 1";
         Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
-                "screen.width == " + expectedWidth + " && screen.height == " + expectedHeight,
-                POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
+                javascript, POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
 
         // Exit presentation through JavaScript.
         mVrTestRule.runJavaScriptOrFail("vrDisplay.exitPresent();", POLL_TIMEOUT_SHORT_MS,
                 mVrTestRule.getFirstTabWebContents());
 
-        // Validate our size is what we expect while in the VR browser.
-        expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
-        expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
-
         // We aren't comparing for equality because there is some rounding that occurs.
-        Assert.assertTrue(
-                mVrTestRule.pollJavaScriptBoolean("Math.abs(screen.width - " + expectedWidth
-                                + ") < 2 && Math.abs(screen.height - " + expectedHeight + ") < 2",
-                        POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
+        Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
+                javascript, POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
     }
 }
