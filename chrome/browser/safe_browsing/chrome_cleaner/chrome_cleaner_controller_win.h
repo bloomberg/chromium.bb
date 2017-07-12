@@ -137,12 +137,17 @@ class ChromeCleanerController {
   static bool ShouldShowCleanupInSettingsUI();
 
   State state() const { return state_; }
+  IdleReason idle_reason() const { return idle_reason_; }
 
   // Called by Chrome Cleaner's UI when the user changes Cleaner logs upload
   // permissions. Observers are notified if |logs_enabled| is different from the
   // current permission state.
   void SetLogsEnabled(bool logs_enabled);
   bool logs_enabled() const { return logs_enabled_; }
+
+  // Called by the Chrome Cleaner's UI when the user dismisses the card while
+  // in the kIdle state. Does nothing if the current state is not |kIdle|.
+  void ResetIdleState();
 
   // |AddObserver()| immediately notifies |observer| of the controller's state
   // by calling the corresponding |On*()| function.

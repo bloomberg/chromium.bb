@@ -131,6 +131,7 @@ void ChromeCleanupHandler::HandleDismiss(const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
 
   controller_->RemoveObserver(this);
+  controller_->ResetIdleState();
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("chrome-cleanup-on-dismiss"));

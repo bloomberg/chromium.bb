@@ -196,8 +196,11 @@ bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
     return false;
 
   State state = GetInstance()->state();
+  IdleReason reason = GetInstance()->idle_reason();
   return state == State::kInfected || state == State::kCleaning ||
-         state == State::kRebootRequired;
+         state == State::kRebootRequired ||
+         (state == State::kIdle && (reason == IdleReason::kCleaningFailed ||
+                                    reason == IdleReason::kConnectionLost));
 }
 
 void ChromeCleanerController::SetLogsEnabled(bool logs_enabled) {
@@ -207,6 +210,18 @@ void ChromeCleanerController::SetLogsEnabled(bool logs_enabled) {
   logs_enabled_ = logs_enabled;
   for (auto& observer : observer_list_)
     observer.OnLogsEnabledChanged(logs_enabled_);
+}
+
+void ChromeCleanerController::ResetIdleState() {
+  if (state() != State::kIdle || idle_reason() == IdleReason::kInitial)
+    return;
+
+  idle_reason_ = IdleReason::kInitial;
+
+  // SetStateAndNotifyObservers doesn't allow transitions to the same state.
+  // Notify observers directly instead.
+  for (auto& observer : observer_list_)
+    NotifyObserver(&observer);
 }
 
 void ChromeCleanerController::SetDelegateForTesting(
