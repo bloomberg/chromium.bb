@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script type="text/javascript">
 'use strict';
 
 test(function() {
     let e1 = new MouseEvent('test1');
     let e2 = new MouseEvent('test2');
-    
+
     while (e1.timeStamp == e2.timeStamp)
         e2 = new MouseEvent('test2');
 
