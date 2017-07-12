@@ -45,12 +45,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -72,7 +75,7 @@ namespace {
 vr_shell::VrShell* g_instance;
 
 constexpr base::TimeDelta poll_media_access_interval_ =
-    base::TimeDelta::FromSecondsD(0.1);
+    base::TimeDelta::FromSecondsD(0.2);
 
 constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
     base::TimeDelta::FromSeconds(5);
@@ -640,6 +643,12 @@ void VrShell::PollMediaAccessFlag() {
     if (web_contents->IsConnectedToBluetoothDevice())
       num_tabs_bluetooth_connected++;
   }
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface("content_browser", &geolocation_config_);
+
+  geolocation_config_->IsHighAccuracyLocationBeingCaptured(
+      base::Bind(&VrShell::SetHighAccuracyLocation, base::Unretained(this)));
 
   bool is_capturing_audio = num_tabs_capturing_audio > 0;
   bool is_capturing_video = num_tabs_capturing_video > 0;
@@ -661,6 +670,13 @@ void VrShell::PollMediaAccessFlag() {
     ui_->SetBluetoothConnectedIndicator(is_bluetooth_connected);
     is_bluetooth_connected_ = is_bluetooth_connected;
   }
+}
+
+void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
+  if (high_accuracy_location == high_accuracy_location_)
+    return;
+  ui_->SetLocationAccessIndicator(high_accuracy_location);
+  high_accuracy_location_ = high_accuracy_location;
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {

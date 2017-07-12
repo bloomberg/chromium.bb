@@ -46,6 +46,9 @@
           "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu"
         ],
+        "geolocation_config": [
+          "device::mojom::GeolocationConfig"
+        ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
         ],
@@ -57,7 +60,13 @@
       "requires": {
         "*": [ "app" ],
         // In classic ash, the browser supplies ash interfaces to itself.
-        "content_browser": [ "ash", "display", "memory_instrumentation", "url_keyed_metrics" ],
+        "content_browser": [
+          "ash",
+          "display",
+          "memory_instrumentation",
+          "url_keyed_metrics",
+          "geolocation_config"
+        ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],

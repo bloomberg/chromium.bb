@@ -209,6 +209,12 @@ void VrGLThread::SetAudioCapturingIndicator(bool enabled) {
                             weak_scene_manager_, enabled));
 }
 
+void VrGLThread::SetLocationAccessIndicator(bool enabled) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&vr::UiSceneManager::SetLocationAccessIndicator,
+                            weak_scene_manager_, enabled));
+}
+
 void VrGLThread::SetVideoCapturingIndicator(bool enabled) {
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&vr::UiSceneManager::SetVideoCapturingIndicator,
