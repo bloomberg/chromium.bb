@@ -20,6 +20,7 @@ AnimatedIcon::AnimatedIcon(const gfx::VectorIcon& icon, NSView* host_view)
 AnimatedIcon::~AnimatedIcon() {}
 
 void AnimatedIcon::Animate() {
+  animation_->End();
   animation_->Start();
 }
 

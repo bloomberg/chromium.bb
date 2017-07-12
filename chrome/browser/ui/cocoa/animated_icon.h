@@ -29,7 +29,7 @@ class AnimatedIcon : public gfx::AnimationDelegate {
 
   void set_color(SkColor color) { color_ = color; }
 
-  // Animates the icon.
+  // Animates the icon. Restart from the beginning if it's already running.
   void Animate();
 
   // Paints the icon on the current drawing context, centered in |frame|.
