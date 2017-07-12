@@ -234,6 +234,18 @@ command line, you can use `iossim`. For example, to run a debug build of
 $ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/Chromium.app
 ```
 
+### Running EarlGrey tests
+
+EarlGrey tests are run differently than other test targets, as there is an
+XCTest bundle that is injected into the target application. Therefore you must
+also pass in the test bundle:
+
+```shell
+$ out/Debug-iphonesimulator/iossim \
+    out/Debug-iphonesimulator/ios_chrome_ui_egtests.app \
+    out/Debug-iphonesimulator/ios_chrome_ui_egtests.app/PlugIns/ios_chrome_ui_egtests_module.xctest
+```
+
 ## Update your checkout
 
 To update an existing checkout, you can run
