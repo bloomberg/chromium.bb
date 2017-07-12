@@ -212,22 +212,12 @@ TEST_F(CoordinationUnitImplTest, GetSetProperty) {
   EXPECT_EQ(base::Value(),
             coordination_unit->GetProperty(mojom::PropertyType::kTest));
 
-  // An empty value should be able to set a property
-  coordination_unit->SetProperty(mojom::Property::New(
-      mojom::PropertyType::kTest, base::MakeUnique<base::Value>()));
-  EXPECT_EQ(0u, coordination_unit->properties_for_testing().size());
-
-  base::Value int_val(41);
-
   // Perform a valid storage property set
-  coordination_unit->SetProperty(mojom::Property::New(
-      mojom::PropertyType::kTest, base::MakeUnique<base::Value>(int_val)));
+  coordination_unit->SetProperty(mojom::PropertyType::kTest,
+                                 base::MakeUnique<base::Value>(41));
   EXPECT_EQ(1u, coordination_unit->properties_for_testing().size());
-  EXPECT_EQ(int_val,
+  EXPECT_EQ(base::Value(41),
             coordination_unit->GetProperty(mojom::PropertyType::kTest));
-
-  coordination_unit->ClearProperty(mojom::PropertyType::kTest);
-  EXPECT_EQ(0u, coordination_unit->properties_for_testing().size());
 }
 
 TEST_F(CoordinationUnitImplTest,

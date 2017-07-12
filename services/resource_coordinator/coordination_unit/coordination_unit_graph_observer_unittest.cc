@@ -64,8 +64,10 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
       const CoordinationUnitImpl* parent_coordination_unit) override {
     ++parent_added_count_;
   }
+
   void OnPropertyChanged(const CoordinationUnitImpl* coordination_unit,
-                         const mojom::PropertyPtr& property) override {
+                         const mojom::PropertyType property_type,
+                         const base::Value& value) override {
     ++property_changed_count_;
   }
   void OnChildRemoved(
@@ -159,10 +161,10 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
   // |root_frame_coordination_unit| and |frame_coordination_unit| because
   // they are CoordinationUnitType::kFrame, so OnPropertyChanged
   // will only be called for |root_frame_coordination_unit|.
-  root_frame_coordination_unit->SetProperty(mojom::Property::New(
-      mojom::PropertyType::kTest, base::MakeUnique<base::Value>(42)));
-  process_coordination_unit->SetProperty(mojom::Property::New(
-      mojom::PropertyType::kTest, base::MakeUnique<base::Value>(42)));
+  root_frame_coordination_unit->SetProperty(mojom::PropertyType::kTest,
+                                            base::MakeUnique<base::Value>(42));
+  process_coordination_unit->SetProperty(mojom::PropertyType::kTest,
+                                         base::MakeUnique<base::Value>(42));
   EXPECT_EQ(1u, observer->property_changed_count());
 
   coordination_unit_manager().OnBeforeCoordinationUnitDestroyed(
