@@ -209,8 +209,7 @@ class PrintPreviewObserver : public WebContentsObserver {
     }
 
     ASSERT_FALSE(script_argument.empty());
-    GetUI()->web_ui()->CallJavascriptFunctionUnsafe(
-        "onManipulateSettingsForTest", script_argument);
+    GetUI()->SendManipulateSettingsForTest(script_argument);
   }
 
   // Saves the print preview settings to be sent to the print preview dialog.
@@ -283,8 +282,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 
     ui->web_ui()->AddMessageHandler(
         base::MakeUnique<UIDoneLoadingMessageHandler>(this));
-    ui->web_ui()->CallJavascriptFunctionUnsafe(
-        "onEnableManipulateSettingsForTest");
+    ui->SendEnableManipulateSettingsForTest();
   }
 
   void DidCloneToNewWebContents(WebContents* old_web_contents,

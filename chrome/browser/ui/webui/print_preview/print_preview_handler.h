@@ -133,6 +133,12 @@ class PrintPreviewHandler
   // Sets |pdf_file_saved_closure_| to |closure|.
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
 
+  // Fires the 'enable-manipulate-settings-for-test' WebUI event.
+  void SendEnableManipulateSettingsForTest();
+
+  // Fires the 'manipulate-settings-for-test' WebUI event with |settings|.
+  void SendManipulateSettingsForTest(const base::DictionaryValue& settings);
+
  protected:
   // If |prompt_user| is true, starts a task to create the default Save As PDF
   // directory if needed. OnDirectoryCreated() will be called when it

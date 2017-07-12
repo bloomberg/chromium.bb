@@ -1959,3 +1959,12 @@ void PrintPreviewHandler::SetPdfSavedClosureForTesting(
     const base::Closure& closure) {
   pdf_file_saved_closure_ = closure;
 }
+
+void PrintPreviewHandler::SendEnableManipulateSettingsForTest() {
+  FireWebUIListener("enable-manipulate-settings-for-test", base::Value());
+}
+
+void PrintPreviewHandler::SendManipulateSettingsForTest(
+    const base::DictionaryValue& settings) {
+  FireWebUIListener("manipulate-settings-for-test", settings);
+}
