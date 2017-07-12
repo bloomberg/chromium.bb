@@ -24,7 +24,7 @@ class SpeechRecognitionManagerDelegate {
   // This is called on the IO thread.
   virtual void CheckRecognitionIsAllowed(
       int session_id,
-      base::Callback<void(bool ask_user, bool is_allowed)> callback) = 0;
+      base::OnceCallback<void(bool ask_user, bool is_allowed)> callback) = 0;
 
   // Checks whether the delegate is interested (returning a non nullptr ptr) or
   // not (returning nullptr) in receiving a copy of all sessions events.

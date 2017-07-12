@@ -156,9 +156,9 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
   if (delegate_) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
-        base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   weak_factory_.GetWeakPtr(),
-                   session_id));
+        base::BindOnce(
+            &SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
+            weak_factory_.GetWeakPtr(), session_id));
   }
 }
 
@@ -274,7 +274,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   SessionsTable::iterator iter = sessions_.find(session_id);
   if (iter->second->ui) {
     // Notify the UI that the devices are being used.
-    iter->second->ui->OnStarted(base::Closure(),
+    iter->second->ui->OnStarted(base::OnceClosure(),
                                 MediaStreamUIProxy::WindowIdCallback());
   }
 
