@@ -26,13 +26,15 @@
 const NSInteger kVisibleIncognitoOnly = 1 << 0;
 const NSInteger kVisibleNotIncognitoOnly = 1 << 1;
 
-// Declare all the possible items.
+// Declare all the possible items. If adding or removing items update
+// kToolsMenuNumberOfItems with the new total count.
+
 // Formatting note: While these items are being refactored to use selectors
 // and the dispatcher instead of ChromeExecuteCommand (see crbug.com/738881),
 // the |command_id| and |selector| fields are grouped together, since one will
 // be either 0 or nullptr. Once the refactor is complete, all of the
 // |command_id| values will be 0, and that struct field will be removed.
-const MenuItemInfo itemInfoList[] = {
+const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     // clang-format off
   { IDS_IOS_TOOLS_MENU_NEW_TAB,           kToolsMenuNewTabId,
     IDC_NEW_TAB, nullptr,                 ToolbarTypeAll,

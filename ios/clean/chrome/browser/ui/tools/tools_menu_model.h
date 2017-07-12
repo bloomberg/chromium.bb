@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 // Total number of possible menu items.
-const int kToolsMenuNumberOfItems = 16;
+const int kToolsMenuNumberOfItems = 15;
 
 // Struct for a single MenuModelItem.
 struct MenuModelItem {
