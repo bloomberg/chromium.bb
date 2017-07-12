@@ -153,4 +153,32 @@ TEST(SharedBufferTest, constructorWithSizeOnly) {
   ASSERT_EQ(length, shared_buffer->GetSomeData(data, static_cast<size_t>(0u)));
 }
 
+TEST(SharedBufferTest, FlatData) {
+  auto check_flat_data = [](RefPtr<const SharedBuffer> shared_buffer) {
+    const SharedBuffer::DeprecatedFlatData flat_buffer(shared_buffer);
+
+    EXPECT_EQ(shared_buffer->size(), flat_buffer.size());
+    shared_buffer->ForEachSegment([&flat_buffer](
+                                      const char* segment, size_t segment_size,
+                                      size_t segment_offset) -> bool {
+      EXPECT_EQ(
+          memcmp(segment, flat_buffer.Data() + segment_offset, segment_size),
+          0);
+
+      // If the SharedBuffer is not segmented, FlatData doesn't copy any data.
+      EXPECT_EQ(segment_size == flat_buffer.size(),
+                segment == flat_buffer.Data());
+      return true;
+    });
+  };
+
+  RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
+
+  // Add enough data to hit a couple of segments.
+  while (shared_buffer->size() < 10000) {
+    check_flat_data(shared_buffer);
+    shared_buffer->Append("FooBarBaz", 9u);
+  }
+}
+
 }  // namespace blink
