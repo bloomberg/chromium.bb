@@ -6,7 +6,7 @@ package org.chromium.chromoting;
 
 import android.graphics.PointF;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.jni.TouchEventData;

@@ -6,14 +6,20 @@ package org.chromium.chromoting;
 
 import android.graphics.PointF;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.view.MotionEvent;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chromoting.jni.TouchEventData;
 
 /** Tests for {@link TouchInputStrategy}. */
-public class TouchInputStrategyTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class TouchInputStrategyTest {
     // Tests are run using a screen which is smaller than the size of the remote desktop and is
     // translated to the middle of the remote desktop area.  This allows us to verify that the
     // remote events which are 'injected' are correctly mapped and represent the remote coordinates.
@@ -47,7 +53,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         event.recycle();
     }
 
-    @Override
+    @Before
     public void setUp() {
         mRenderData = new RenderData();
         mInputInjector = new MockInputStub();
@@ -62,13 +68,15 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mRenderData.transform.postTranslate(-TRANSLATE_OFFSET_PX, -TRANSLATE_OFFSET_PX);
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOnTapWithNoEvents() throws Exception {
-        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
+        Assert.assertFalse(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerTap() throws Exception {
@@ -76,12 +84,13 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(0);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
+        Assert.assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
         mInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testLifoTwoFingerTap() throws Exception {
@@ -93,12 +102,13 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(0);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
+        Assert.assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
 
         mInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testFifoTwoFingerTap() throws Exception {
@@ -110,12 +120,13 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(1);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
+        Assert.assertTrue(mInputStrategy.onTap(InputStub.BUTTON_RIGHT));
 
         mInputInjector.assertRightClickInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testThreeFingerTap() throws Exception {
@@ -127,10 +138,11 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(0);
         mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
+        Assert.assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerTapSequence() throws Exception {
@@ -140,7 +152,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
             injectUpEvent(0);
             mInputInjector.assertEmpty();
 
-            assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
+            Assert.assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
             int remoteOffsetPx = TRANSLATE_OFFSET_PX + i;
             mInputInjector.assertTapInjected(remoteOffsetPx, remoteOffsetPx);
@@ -148,6 +160,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testInvalidThenValidTap() throws Exception {
@@ -160,7 +173,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(0);
         mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
+        Assert.assertFalse(mInputStrategy.onTap(InputStub.BUTTON_MIDDLE));
         mInputInjector.assertEmpty();
 
         // Next a valid tap, verify it is handled.
@@ -168,26 +181,28 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectUpEvent(0);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
+        Assert.assertTrue(mInputStrategy.onTap(InputStub.BUTTON_LEFT));
 
         mInputInjector.assertTapInjected(TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOnPressAndHoldWithNoEvents() throws Exception {
-        assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        Assert.assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerLongPress() throws Exception {
         injectDownEvent(0, 0, 0);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        Assert.assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
         mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
                 TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
@@ -197,13 +212,14 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerLongPressThenPan() throws Exception {
         injectDownEvent(0, 0, 0);
         mInputInjector.assertEmpty();
 
-        assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
+        Assert.assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
         mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
                 TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
@@ -219,6 +235,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testTwoFingerLongPress() throws Exception {
@@ -226,7 +243,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         injectDownEvent(1, 1, 1);
         mInputInjector.assertEmpty();
 
-        assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_RIGHT));
+        Assert.assertFalse(mInputStrategy.onPressAndHold(InputStub.BUTTON_RIGHT));
         mInputInjector.assertEmpty();
 
         injectUpEvent(0);
@@ -234,6 +251,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerPan() throws Exception {
@@ -249,6 +267,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testVerticalTwoFingerPan() throws Exception {
@@ -289,6 +308,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testHorizontalTwoFingerPan() throws Exception {
@@ -329,6 +349,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testCancelledTwoFingerPan() throws Exception {
@@ -378,6 +399,7 @@ public class TouchInputStrategyTest extends InstrumentationTestCase {
         mInputInjector.assertEmpty();
     }
 
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testTooManyEventsCancelsGesture() throws Exception {
