@@ -51,6 +51,9 @@ class UDIFParser {
   // If this returns false, it is not legal to call any other methods.
   bool Parse();
 
+  // Returns the blob of DMG signature data.
+  const std::vector<uint8_t>& GetCodeSignature();
+
   // Returns the number of partitions in this UDIF image.
   size_t GetNumberOfPartitions();
 
@@ -79,6 +82,7 @@ class UDIFParser {
   // All blocks in the UDIF image.
   std::vector<std::unique_ptr<const UDIFBlock>> blocks_;
   uint16_t block_size_;  // The image's block size, in bytes.
+  std::vector<uint8_t> signature_blob_;  // DMG signature.
 
   DISALLOW_COPY_AND_ASSIGN(UDIFParser);
 };

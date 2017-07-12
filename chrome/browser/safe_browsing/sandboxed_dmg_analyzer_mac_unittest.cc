@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -139,6 +140,45 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
 
   EXPECT_TRUE(got_executable);
   EXPECT_TRUE(got_dylib);
+}
+
+TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgNoSignature) {
+  base::FilePath unsigned_dmg;
+  ASSERT_NO_FATAL_FAILURE(unsigned_dmg = GetFilePath("mach_o_in_dmg.dmg"));
+
+  ArchiveAnalyzerResults results;
+  AnalyzeFile(unsigned_dmg, &results);
+
+  EXPECT_TRUE(results.success);
+  EXPECT_EQ(0u, results.signature_blob.size());
+  EXPECT_EQ(nullptr, results.signature_blob.data());
+}
+
+TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgWithSignature) {
+  base::FilePath signed_dmg;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg));
+  signed_dmg = signed_dmg.AppendASCII("safe_browsing")
+                   .AppendASCII("mach_o")
+                   .AppendASCII("signed-archive.dmg");
+
+  ArchiveAnalyzerResults results;
+  AnalyzeFile(signed_dmg, &results);
+
+  EXPECT_TRUE(results.success);
+  EXPECT_EQ(2215u, results.signature_blob.size());
+
+  base::FilePath signed_dmg_signature;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &signed_dmg_signature));
+  signed_dmg_signature = signed_dmg_signature.AppendASCII("safe_browsing")
+                             .AppendASCII("mach_o")
+                             .AppendASCII("signed-archive-signature.data");
+
+  std::string from_file;
+  base::ReadFileToString(signed_dmg_signature, &from_file);
+  EXPECT_EQ(2215u, from_file.length());
+  std::string signature(results.signature_blob.begin(),
+                        results.signature_blob.end());
+  EXPECT_EQ(from_file, signature);
 }
 
 }  // namespace

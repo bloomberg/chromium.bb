@@ -35,6 +35,10 @@ bool DMGIterator::Open() {
   return partitions_.size() > 0;
 }
 
+const std::vector<uint8_t>& DMGIterator::GetCodeSignature() {
+  return udif_.GetCodeSignature();
+}
+
 bool DMGIterator::Next() {
   // Iterate through all the HFS partitions in the DMG file.
   for (; current_partition_ < partitions_.size(); ++current_partition_) {

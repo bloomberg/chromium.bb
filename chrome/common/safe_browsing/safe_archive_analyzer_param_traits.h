@@ -8,6 +8,7 @@
 #error FULL_SAFE_BROWSING should be defined.
 #endif
 
+#include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
 #include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
@@ -91,4 +92,7 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
   IPC_STRUCT_TRAITS_MEMBER(archived_binary)
   IPC_STRUCT_TRAITS_MEMBER(archived_archive_filenames)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_TRAITS_MEMBER(signature_blob)
+#endif  // OS_MACOSX
 IPC_STRUCT_TRAITS_END()

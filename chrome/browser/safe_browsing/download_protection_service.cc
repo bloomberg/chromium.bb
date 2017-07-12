@@ -362,6 +362,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
         tab_referrer_url_(item->GetTabReferrerUrl()),
         archived_executable_(false),
         archive_is_valid_(ArchiveValid::UNSET),
+#if defined(OS_MACOSX)
+        disk_image_signature_(nullptr),
+#endif
         callback_(callback),
         service_(service),
         binary_feature_extractor_(binary_feature_extractor),
@@ -826,6 +829,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (!service_)
       return;
 
+    if (results.signature_blob.size() > 0) {
+      disk_image_signature_ =
+          base::MakeUnique<std::vector<uint8_t>>(results.signature_blob);
+    }
+
     // Even if !results.success, some of the DMG may have been parsed.
     archive_is_valid_ =
         (results.success ? ArchiveValid::VALID : ArchiveValid::INVALID);
@@ -1071,6 +1079,18 @@ class DownloadProtectionService::CheckClientDownloadRequest
             request.mutable_referrer_chain());
     }
 
+#if defined(OS_MACOSX)
+    UMA_HISTOGRAM_BOOLEAN(
+        "SBClientDownload."
+        "DownloadFileHasDmgSignature",
+        disk_image_signature_ != nullptr);
+
+    if (disk_image_signature_) {
+      request.set_udif_code_signature(disk_image_signature_->data(),
+                                      disk_image_signature_->size());
+    }
+#endif
+
     if (archive_is_valid_ != ArchiveValid::UNSET)
       request.set_archive_valid(archive_is_valid_ == ArchiveValid::VALID);
     request.mutable_signature()->CopyFrom(signature_info_);
@@ -1265,6 +1285,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   bool archived_executable_;
   ArchiveValid archive_is_valid_;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<std::vector<uint8_t>> disk_image_signature_;
+#endif
 
   ClientDownloadRequest_SignatureInfo signature_info_;
   std::unique_ptr<ClientDownloadRequest_ImageHeaders> image_headers_;

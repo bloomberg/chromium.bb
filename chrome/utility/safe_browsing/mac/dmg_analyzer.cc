@@ -126,6 +126,8 @@ void AnalyzeDMGFile(base::File dmg_file, ArchiveAnalyzerResults* results) {
   if (!iterator.Open())
     return;
 
+  results->signature_blob = iterator.GetCodeSignature();
+
   while (iterator.Next()) {
     std::unique_ptr<ReadStream> stream = iterator.GetReadStream();
     if (!stream || !feature_extractor.IsMachO(stream.get()))
