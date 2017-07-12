@@ -434,7 +434,7 @@ void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
       AppBannerSettingsHelper::HasSufficientEngagement(score)) {
     has_sufficient_engagement_ = true;
 
-    if (is_pending_engagement()) {
+    if (state_ == State::PENDING_ENGAGEMENT) {
       // We have already finished the installability eligibility checks. Proceed
       // directly to sending the banner prompt request.
       UpdateState(State::ACTIVE);
