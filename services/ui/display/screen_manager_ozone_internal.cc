@@ -201,31 +201,6 @@ void ScreenManagerOzoneInternal::ToggleAddRemoveDisplay() {
   }
 }
 
-void ScreenManagerOzoneInternal::ToggleDisplayResolution() {
-  if (primary_display_id_ == kInvalidDisplayId)
-    return;
-
-  // Internal displays don't have alternate resolutions.
-  if (Display::HasInternalDisplay() &&
-      primary_display_id_ == Display::InternalDisplayId())
-    return;
-
-  DVLOG(1) << "ToggleDisplayResolution";
-
-  const ManagedDisplayInfo& info =
-      display_manager_->GetDisplayInfo(primary_display_id_);
-  scoped_refptr<ManagedDisplayMode> mode =
-      GetDisplayModeForNextResolution(info, true);
-
-  // Loop back to first mode from last.
-  if (mode->size() == info.bounds_in_native().size())
-    mode = info.display_modes()[0];
-
-  // Set mode only if it's different from current.
-  if (mode->size() != info.bounds_in_native().size())
-    display_manager_->SetDisplayMode(primary_display_id_, mode);
-}
-
 void ScreenManagerOzoneInternal::IncreaseInternalDisplayZoom() {
   if (Display::HasInternalDisplay())
     display_manager_->ZoomInternalDisplay(false);

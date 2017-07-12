@@ -9,7 +9,6 @@
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 
 namespace ash {
 namespace mus {
@@ -75,10 +74,11 @@ void AcceleratorControllerDelegateMus::PerformAction(
     const ui::Accelerator& accelerator) {
   switch (action) {
     case DEV_ADD_REMOVE_DISPLAY: {
-      display::mojom::TestDisplayControllerPtr test_display_controller;
-      window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
-                                                  &test_display_controller);
-      test_display_controller->ToggleAddRemoveDisplay();
+      if (!test_display_controller_) {
+        window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                                    &test_display_controller_);
+      }
+      test_display_controller_->ToggleAddRemoveDisplay();
       break;
     }
     case TOUCH_HUD_PROJECTION_TOGGLE: {

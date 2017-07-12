@@ -55,7 +55,6 @@ class ScreenManagerOzoneInternal : public ScreenManager,
 
   // mojom::TestDisplayController:
   void ToggleAddRemoveDisplay() override;
-  void ToggleDisplayResolution() override;
 
   // mojom::DisplayController:
   void IncreaseInternalDisplayZoom() override;

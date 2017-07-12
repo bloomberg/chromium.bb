@@ -7,6 +7,7 @@
 
 #include "ash/accelerators/accelerator_controller_delegate.h"
 #include "base/macros.h"
+#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 
 namespace ash {
 namespace mus {
@@ -29,6 +30,8 @@ class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
 
  private:
   WindowManager* window_manager_;
+
+  display::mojom::TestDisplayControllerPtr test_display_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMus);
 };

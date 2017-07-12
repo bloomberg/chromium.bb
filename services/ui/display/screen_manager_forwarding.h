@@ -6,12 +6,13 @@
 #define SERVICES_UI_DISPLAY_SCREEN_MANAGER_FORWARDING_H_
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/display/screen_manager.h"
+#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/mojo/native_display_delegate.mojom.h"
 #include "ui/display/types/native_display_observer.h"
 
@@ -21,12 +22,14 @@ struct BindSourceInfo;
 
 namespace display {
 
+class FakeDisplayController;
 class NativeDisplayDelegate;
 
 // ScreenManager implementation that implements mojom::NativeDisplayDelegate.
 // This will own a real NativeDisplayDelegate and forwards calls to and
 // responses from it over Mojo.
 class ScreenManagerForwarding : public ScreenManager,
+                                public mojom::TestDisplayController,
                                 public NativeDisplayObserver,
                                 public mojom::NativeDisplayDelegate {
  public:
@@ -65,10 +68,16 @@ class ScreenManagerForwarding : public ScreenManager,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) override;
 
+  // mojom::TestDisplayController:
+  void ToggleAddRemoveDisplay() override;
+
  private:
   void BindNativeDisplayDelegateRequest(
       const service_manager::BindSourceInfo& source_info,
       mojom::NativeDisplayDelegateRequest request);
+  void BindTestDisplayControllerRequest(
+      const service_manager::BindSourceInfo& source_info,
+      mojom::TestDisplayControllerRequest request);
 
   // Forwards results from GetDisplays() back with |callback|.
   void ForwardGetDisplays(const GetDisplaysCallback& callback,
@@ -86,10 +95,16 @@ class ScreenManagerForwarding : public ScreenManager,
   mojo::Binding<mojom::NativeDisplayDelegate> binding_;
   mojom::NativeDisplayObserverPtr observer_;
 
+  mojo::Binding<mojom::TestDisplayController> test_controller_binding_;
+
   std::unique_ptr<display::NativeDisplayDelegate> native_display_delegate_;
 
   // Cached pointers to snapshots owned by the |native_display_delegate_|.
-  std::unordered_map<int64_t, DisplaySnapshot*> snapshot_map_;
+  base::flat_map<int64_t, DisplaySnapshot*> snapshot_map_;
+
+  // If not null it provides a way to modify the display state when running off
+  // device (eg. running mustash on Linux).
+  FakeDisplayController* fake_display_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerForwarding);
 };
