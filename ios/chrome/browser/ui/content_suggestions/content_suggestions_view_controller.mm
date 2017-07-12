@@ -70,7 +70,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
         initWithDataSource:dataSource];
-    self.collectionView.prefetchingEnabled = NO;
   }
   return self;
 }
