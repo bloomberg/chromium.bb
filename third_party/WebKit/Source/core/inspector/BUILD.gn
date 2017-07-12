@@ -11,6 +11,8 @@ _inspector_protocol_dir = "//third_party/inspector_protocol"
 
 blink_core_sources("inspector") {
   sources = [
+    "AddStringToDigestor.cpp",
+    "AddStringToDigestor.h",
     "ConsoleMessage.cpp",
     "ConsoleMessage.h",
     "ConsoleMessageStorage.cpp",
@@ -95,9 +97,6 @@ blink_core_sources("inspector") {
   ]
 
   jumbo_excluded_sources = [
-    # Collides with DOMPatchSupport.cpp (patch incoming)
-    "InspectorAnimationAgent.cpp",
-
     # Collides with InspectorPageAgent.cpp and
     # NetworkResourcesData.cpp (patch incoming)
     "InspectorNetworkAgent.cpp",

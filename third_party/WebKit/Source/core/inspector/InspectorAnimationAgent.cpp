@@ -22,6 +22,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/AddStringToDigestor.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
@@ -453,13 +454,6 @@ static CSSPropertyID g_transition_properties[] = {
     CSSPropertyTransitionDelay, CSSPropertyTransitionDuration,
     CSSPropertyTransitionProperty, CSSPropertyTransitionTimingFunction,
 };
-
-static void AddStringToDigestor(WebCryptoDigestor* digestor,
-                                const String& string) {
-  digestor->Consume(
-      reinterpret_cast<const unsigned char*>(string.Ascii().data()),
-      string.length());
-}
 
 String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
   String type =
