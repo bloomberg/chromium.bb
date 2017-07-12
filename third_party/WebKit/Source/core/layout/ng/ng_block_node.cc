@@ -120,10 +120,7 @@ void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
 
 }  // namespace
 
-NGBlockNode::NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box) {
-  if (box)
-    box->SetLayoutNGInline(false);
-}
+NGBlockNode::NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
 
 RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                                            NGBreakToken* break_token) {
