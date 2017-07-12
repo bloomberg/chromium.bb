@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
@@ -23,9 +24,11 @@ namespace content {
 // Implements the URLLoaderFactory mojom for AppCache requests.
 AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
     mojom::URLLoaderFactoryRequest request,
-    URLLoaderFactoryGetter* default_url_loader_factory_getter)
+    URLLoaderFactoryGetter* default_url_loader_factory_getter,
+    base::WeakPtr<AppCacheHost> host)
     : binding_(this, std::move(request)),
-      default_url_loader_factory_getter_(default_url_loader_factory_getter) {
+      default_url_loader_factory_getter_(default_url_loader_factory_getter),
+      appcache_host_(host) {
   binding_.set_connection_error_handler(
       base::Bind(&AppCacheSubresourceURLFactory::OnConnectionError,
                  base::Unretained(this)));
@@ -34,17 +37,17 @@ AppCacheSubresourceURLFactory::AppCacheSubresourceURLFactory(
 AppCacheSubresourceURLFactory::~AppCacheSubresourceURLFactory() {}
 
 // static
-mojom::URLLoaderFactoryPtr
+AppCacheSubresourceURLFactory*
 AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-    URLLoaderFactoryGetter* default_url_loader_factory_getter) {
-  mojom::URLLoaderFactoryPtr loader_factory;
-  mojom::URLLoaderFactoryRequest request = mojo::MakeRequest(&loader_factory);
+    URLLoaderFactoryGetter* default_url_loader_factory_getter,
+    base::WeakPtr<AppCacheHost> host,
+    mojom::URLLoaderFactoryPtr* loader_factory) {
+  mojom::URLLoaderFactoryRequest request = mojo::MakeRequest(loader_factory);
 
   // This instance will get deleted when the client drops the connection.
   // Please see OnConnectionError() for details.
-  new AppCacheSubresourceURLFactory(std::move(request),
-                                    default_url_loader_factory_getter);
-  return loader_factory;
+  return new AppCacheSubresourceURLFactory(
+      std::move(request), default_url_loader_factory_getter, host);
 }
 
 void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
@@ -57,11 +60,42 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DLOG(WARNING) << "Received request for loading : " << request.url.spec();
-  default_url_loader_factory_getter_->GetNetworkFactory()
-      ->get()
-      ->CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest(), routing_id,
-                             request_id, options, request, std::move(client),
-                             traffic_annotation);
+
+  // If the host is invalid, it means that the renderer has probably died.
+  // (Frame has navigated elsewhere?)
+  if (!appcache_host_.get())
+    return;
+
+  std::unique_ptr<AppCacheRequestHandler> handler =
+      appcache_host_->CreateRequestHandler(
+          AppCacheURLLoaderRequest::Create(request), request.resource_type,
+          request.should_reset_appcache);
+  if (!handler) {
+    ResourceRequestCompletionStatus request_result;
+    request_result.error_code = net::ERR_FAILED;
+    client->OnComplete(request_result);
+    return;
+  }
+
+  handler->set_network_url_loader_factory_getter(
+      default_url_loader_factory_getter_.get());
+
+  std::unique_ptr<SubresourceLoadInfo> load_info(new SubresourceLoadInfo());
+  load_info->url_loader_request = std::move(url_loader_request);
+  load_info->routing_id = routing_id;
+  load_info->request_id = request_id;
+  load_info->options = options;
+  load_info->request = request;
+  load_info->client = std::move(client);
+  load_info->traffic_annotation = traffic_annotation;
+
+  handler->SetSubresourceRequestLoadInfo(std::move(load_info));
+
+  AppCacheJob* job = handler->MaybeLoadResource(nullptr);
+  if (job) {
+    // The handler is owned by the job.
+    job->AsURLLoaderJob()->set_request_handler(std::move(handler));
+  }
 }
 
 void AppCacheSubresourceURLFactory::SyncLoad(int32_t routing_id,

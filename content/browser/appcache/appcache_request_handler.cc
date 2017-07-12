@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -18,6 +19,7 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
@@ -101,7 +103,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadResource(
   // If its been setup to deliver a network response, we can just delete
   // it now and return NULL instead to achieve that since it couldn't
   // have been started yet.
-  if (job && job->IsDeliveringNetworkResponse()) {
+  if (job && job->IsDeliveringNetworkResponse() && !job->AsURLLoaderJob()) {
     DCHECK(!job->IsStarted());
     job.reset();
   }
@@ -238,8 +240,14 @@ AppCacheRequestHandler::InitializeForNavigationNetworkService(
       appcache_handle_core->host()->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request), request.resource_type,
           request.should_reset_appcache);
-  handler->set_network_url_loader_factory_getter(url_loader_factory_getter);
+  handler->network_url_loader_factory_getter_ = url_loader_factory_getter;
+  handler->appcache_host_ = appcache_handle_core->host()->GetWeakPtr();
   return handler;
+}
+
+void AppCacheRequestHandler::SetSubresourceRequestLoadInfo(
+    std::unique_ptr<SubresourceLoadInfo> subresource_load_info) {
+  subresource_load_info_ = std::move(subresource_load_info);
 }
 
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
@@ -322,6 +330,15 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
       base::Bind(&AppCacheRequestHandler::OnPrepareToRestart,
                  base::Unretained(this)));
   job_ = job->GetWeakPtr();
+  if (!is_main_resource() &&
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
+    AppCacheURLLoaderJob* loader_job = job_->AsURLLoaderJob();
+
+    loader_job->SetSubresourceLoadInfo(
+        std::move(subresource_load_info_),
+        network_url_loader_factory_getter_.get());
+  }
+
   return job;
 }
 
@@ -543,14 +560,19 @@ void AppCacheRequestHandler::MaybeCreateLoader(
     std::move(callback).Run(StartLoaderCallback());
     return;
   }
-  navigation_request_job_->AsURLLoaderJob()->set_loader_callback(
+  navigation_request_job_->AsURLLoaderJob()->set_main_resource_loader_callback(
       std::move(callback));
 }
 
 mojom::URLLoaderFactoryPtr
 AppCacheRequestHandler::MaybeCreateSubresourceFactory() {
-  return AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-      network_url_loader_factory_getter_.get());
+  mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
+
+  // The factory is destroyed when the renderer drops the connection.
+  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
+      network_url_loader_factory_getter_.get(), appcache_host_, &factory_ptr);
+
+  return factory_ptr;
 }
 
 }  // namespace content
