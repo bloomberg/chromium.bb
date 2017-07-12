@@ -128,11 +128,12 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     private void clearAutocompleteText() {
         if (DEBUG) Log.i(TAG, "clearAutocomplete");
         mPreviouslySetState.clearAutocompleteText();
-        if (!mCurrentState.hasAutocompleteText()) {
-            notifyAutocompleteTextStateChanged();
-            return;
-        }
         mCurrentState.clearAutocompleteText();
+    }
+
+    private void clearAutocompleteTextAndUpdateSpan() {
+        if (DEBUG) Log.i(TAG, "clearAutocompleteAndUpdateSpan");
+        clearAutocompleteText();
         // Take effect and notify if not already in a batch edit.
         if (mInputConnection != null) {
             mInputConnection.beginBatchEdit();
@@ -176,7 +177,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
                 if (mInputConnection != null) mInputConnection.commitAutocomplete();
             } else {
                 if (DEBUG) Log.i(TAG, "Touching before the cursor removes autocomplete.");
-                clearAutocompleteText();
+                clearAutocompleteTextAndUpdateSpan();
             }
         }
         notifyAutocompleteTextStateChanged();
@@ -195,7 +196,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         if (mBatchEditNestCount > 0) return; // let endBatchEdit() handles changes from IME.
         // An external change such as text paste occurred.
         mLastEditWasTyping = false;
-        clearAutocompleteText();
+        clearAutocompleteTextAndUpdateSpan();
     }
 
     @Override
@@ -436,6 +437,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
                 }
                 mLastEditWasTyping = false;
                 clearAutocompleteText();
+                notifyAutocompleteTextStateChanged();
                 return retVal;
             }
             if (!setAutocompleteSpan()) {
