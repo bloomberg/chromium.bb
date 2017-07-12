@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_SECCOMP_SANDBOX_STATUS_ANDROID_H_
 #define CONTENT_RENDERER_SECCOMP_SANDBOX_STATUS_ANDROID_H_
 
-#include "content/public/renderer/seccomp_sandbox_status_android.h"
+#include "sandbox/linux/seccomp-bpf-helpers/seccomp_starter_android.h"
 
 namespace content {
 
-void SetSeccompSandboxStatus(SeccompSandboxStatus status);
+void SetSeccompSandboxStatus(sandbox::SeccompSandboxStatus status);
 
 }  // namespace content
 

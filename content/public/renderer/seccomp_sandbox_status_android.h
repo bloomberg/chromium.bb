@@ -7,20 +7,12 @@
 
 #include "content/common/content_export.h"
 
+#include "sandbox/linux/seccomp-bpf-helpers/seccomp_starter_android.h"
+
 namespace content {
 
-enum class SeccompSandboxStatus {
-  NOT_SUPPORTED = 0,  // Seccomp is not supported.
-  DETECTION_FAILED,   // Run-time detection of Seccomp+TSYNC failed.
-  FEATURE_DISABLED,   // Sandbox was disabled by FeatureList.
-  FEATURE_ENABLED,    // Sandbox was enabled by FeatureList.
-  ENGAGED,            // Sandbox was enabled and successfully turned on.
-  STATUS_MAX
-  // This enum is used by an UMA histogram, so only append values.
-};
-
 // Gets the SeccompSandboxStatus of the current process.
-CONTENT_EXPORT SeccompSandboxStatus GetSeccompSandboxStatus();
+CONTENT_EXPORT sandbox::SeccompSandboxStatus GetSeccompSandboxStatus();
 
 }  // namespace content
 

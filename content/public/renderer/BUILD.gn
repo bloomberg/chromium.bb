@@ -101,6 +101,11 @@ target(link_target_type, "renderer_sources") {
     "//content/renderer",
   ]
 
+  if (is_android) {
+    # For seccomp_sandbox_status_android.h.
+    deps += [ "//sandbox" ]
+  }
+
   if (enable_webrtc) {
     sources += [
       "media_stream_audio_renderer.h",
