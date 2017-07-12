@@ -136,6 +136,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private final Handler mEnterVrHandler;
     private final Handler mExpectPauseOrDonSucceeded;
     private boolean mProbablyInDon;
+    private boolean mNeedsAnimationCancel;
+    private boolean mCancellingEntryAnimation;
 
     // Whether or not the VR Device ON flow succeeded. If this is true it means the user has a VR
     // headset on, but we haven't switched into VR mode yet.
@@ -196,13 +198,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
                 // However, if we're already in VR (in one of the cases where we chose not to exit
                 // VR before the DON flow), we don't need to add the overlay.
                 if (!sInstance.mInVr) sInstance.addOverlayView();
+                sInstance.mNeedsAnimationCancel = !sInstance.mInVr;
 
-                // We start the Activity with a custom animation that keeps it hidden for a few
-                // hundred milliseconds - enough time for us to draw the first black view.
-                // TODO(mthiesse): This is really hacky. If we can find a way to cancel the
-                // transition animation (I couldn't), then we can just make it indefinite until the
-                // VR UI is ready, and then cancel it, rather than trying to guess how long it will
-                // take to draw the first view, and possibly adding latency to VR startup.
+                // We start the Activity with a custom animation that keeps it hidden while starting
+                // up to avoid Android showing stale 2D screenshots when the user is in their VR
+                // headset. The animation lasts up to 10 seconds, but is cancelled when we're
+                // resumed as at that time we'll be showing the black overlay added above.
                 int animation = sInstance.mInVr ? 0 : R.anim.stay_hidden;
                 Bundle options =
                         ActivityOptions.makeCustomAnimation(activity, animation, 0).toBundle();
@@ -591,6 +592,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             case ActivityState.STOPPED:
                 if (activity == mActivity) onStop();
                 break;
+            case ActivityState.STARTED:
+                if (activity == mActivity) onStart();
+                break;
             case ActivityState.RESUMED:
                 if (mInVr && activity != mActivity) {
                     if (mShowingDaydreamDoff) {
@@ -710,6 +714,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             cancelPendingVrEntry();
             return;
         }
+        mVrClassesWrapper.setVrModeEnabled(mActivity, true);
         if (!isWindowModeCorrectForVr()) {
             setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             mEnterVrHandler.post(new Runnable() {
@@ -742,12 +747,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mDonSucceeded = false;
         if (!createVrShell()) {
             maybeSetPresentResult(false, donSuceeded);
-            mVrDaydreamApi.launchVrHomescreen();
             cancelPendingVrEntry();
             mInVr = false;
+            mVrDaydreamApi.launchVrHomescreen();
             return;
         }
-        mVrClassesWrapper.setVrModeEnabled(mActivity, true);
         mShouldShowPageInfo = false;
         shutdownNonPresentingNativeContext();
 
@@ -773,6 +777,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         maybeSetPresentResult(true, donSuceeded);
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
         removeOverlayView();
+
         if (!donSuceeded && !mAutopresentWebVr && isDaydreamCurrentViewer()) {
             // TODO(mthiesse): This is a VERY dirty hack. We need to know whether or not entering VR
             // will trigger the DON flow, so that we can wait for it to complete before we let the
@@ -892,7 +897,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
      */
     @EnterVRResult
     private int enterVrInternal() {
+        if (mPaused) return ENTER_VR_CANCELLED;
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
+
         // Update VR support level as it can change at runtime
         updateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
@@ -918,6 +925,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private void onResume() {
+        if (mNeedsAnimationCancel) {
+            mCancellingEntryAnimation = true;
+            Bundle options = ActivityOptions.makeCustomAnimation(mActivity, 0, 0).toBundle();
+            mActivity.startActivity(
+                    new Intent(mActivity, VrCancelAnimationActivity.class), options);
+            mNeedsAnimationCancel = false;
+            return;
+        }
         mPaused = false;
 
         updateVrSupportLevel();
@@ -956,6 +971,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
 
         if (mDonSucceeded) {
+            mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
         } else if (mRestoreOrientation != null) {
             // This means the user backed out of the DON flow, and we won't be entering VR.
@@ -980,8 +996,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private void onPause() {
-        mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         mPaused = true;
+        if (mCancellingEntryAnimation) return;
+        mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         unregisterDaydreamIntent(mVrDaydreamApi);
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
 
@@ -1003,8 +1020,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mIsDaydreamCurrentViewer = null;
     }
 
+    private void onStart() {
+        if (mDonSucceeded) {
+            // We're about to enter VR, so set the VR Mode as early as possible to avoid screen
+            // brightness flickering while in the headset.
+            mVrClassesWrapper.setVrModeEnabled(mActivity, true);
+            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+    }
+
     private void onStop() {
         cancelPendingVrEntry();
+        assert !mCancellingEntryAnimation;
         // We defer pausing of VrShell until the app is stopped to keep head tracking working for
         // as long as possible while going to daydream home.
         if (mInVr) mVrShell.pause();
@@ -1113,6 +1140,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mEnterVrHandler.removeCallbacksAndMessages(null);
         mDonSucceeded = false;
         removeOverlayView();
+        mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+        restoreWindowMode();
     }
 
     /**
