@@ -744,7 +744,7 @@ void TextControlElement::SelectionChanged(bool user_triggered) {
     return;
   const SelectionInDOMTree& selection =
       frame->Selection().GetSelectionInDOMTree();
-  if (selection.SelectionTypeWithLegacyGranularity() != kRangeSelection)
+  if (selection.Type() != kRangeSelection)
     return;
   DispatchEvent(Event::CreateBubble(EventTypeNames::select));
 }
