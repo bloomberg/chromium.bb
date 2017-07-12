@@ -13,6 +13,11 @@ namespace switches {
 // Enables software based mirroring.
 const char kEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
+// Force all monitors to be treated as though they have the specified color
+// profile. Accepted values are "srgb" and "generic-rgb" (currently used by Mac
+// layout tests) and "color-spin-gamma24" (used by layout tests).
+const char kForceColorProfile[] = "force-color-profile";
+
 // Overrides the device scale factor for the browser UI and the contents.
 const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 

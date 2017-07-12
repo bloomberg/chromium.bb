@@ -94,7 +94,7 @@ void DisplayAndroidManager::UpdateDisplay(
     display.set_device_scale_factor(dipScale);
   // TODO(ccameron): Know the ideal color profile to use here.
   // https://crbug.com/735658
-  if (!gfx::ICCProfile::HasForcedProfile())
+  if (!Display::HasForceColorProfile())
     display.set_color_space(gfx::ColorSpace::CreateSRGB());
 
   display.set_size_in_pixels(bounds_in_pixels.size());

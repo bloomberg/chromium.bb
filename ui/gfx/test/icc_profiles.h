@@ -20,7 +20,4 @@ ICCProfile ICCProfileForTestingA2BOnly();
 // A profile that with an approxmation that shoots above 1.
 ICCProfile ICCProfileForTestingOvershoot();
 
-// The default profile that is being used by layout tests in this process.
-ICCProfile ICCProfileForLayoutTests();
-
 }  // namespace gfx

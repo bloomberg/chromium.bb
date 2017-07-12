@@ -42,7 +42,7 @@
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/gfx/color_space_switches.h"
+#include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
