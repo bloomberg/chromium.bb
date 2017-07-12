@@ -24,6 +24,11 @@
           accessibilityIdentifier:(NSString*)accessibilityIdentifier
                          selector:(SEL)selector
                           command:(int)commandID;
+
+// The object that should be sent via -chromeExecuteCommand: when this item is
+// tapped.
+- (id)command;
+
 @end
 
 @interface ToolsMenuViewCell : UICollectionViewCell

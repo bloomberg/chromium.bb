@@ -101,6 +101,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_mail_composer_command.h"
@@ -2025,21 +2026,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 #pragma mark - Tap handling
 
 - (void)setLastTapPoint:(id)sender {
-  CGPoint center;
-  UIView* parentView = nil;
-  if ([sender isKindOfClass:[UIView class]]) {
-    center = [sender center];
-    parentView = [sender superview];
-  }
-  if ([sender isKindOfClass:[ToolsMenuViewItem class]]) {
-    parentView = [[sender tableViewCell] superview];
-    center = [[sender tableViewCell] center];
-  }
+  NewTabCommand* command = base::mac::ObjCCast<NewTabCommand>(sender);
+  if (!command)
+    return;
 
-  if (parentView) {
-    _lastTapPoint = [parentView convertPoint:center toView:self.view];
-    _lastTapTime = CACurrentMediaTime();
+  if (CGPointEqualToPoint(command.originPoint, CGPointZero)) {
+    _lastTapPoint = CGPointZero;
+  } else {
+    _lastTapPoint =
+        [self.view.window convertPoint:command.originPoint toView:self.view];
   }
+  _lastTapTime = CACurrentMediaTime();
 }
 
 - (CGPoint)lastTapPoint {
@@ -3526,7 +3523,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Dismiss the soft keyboard (if open).
   Tab* tab = [_model currentTab];
   [tab.webController dismissKeyboard];
-
   web::NavigationItemList backwardItems =
       [tab navigationManager]->GetBackwardItems();
   [_toolbarController showTabHistoryPopupInView:[self view]
@@ -3673,7 +3669,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (entry->type != sessions::TabRestoreService::TAB)
     return;
 
-  [self chromeExecuteCommand:[GenericChromeCommand commandWithTag:IDC_NEW_TAB]];
+  [self chromeExecuteCommand:[[NewTabCommand alloc] initWithIncognito:NO]];
   TabRestoreServiceDelegateImplIOS* const delegate =
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           _browserState);

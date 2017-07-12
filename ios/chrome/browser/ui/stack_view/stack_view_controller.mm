@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
@@ -2016,20 +2017,15 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 }
 
 - (void)setLastTapPoint:(id)sender {
-  UIView* parentView = nil;
-  CGPoint center;
-  if ([sender isKindOfClass:[UIView class]]) {
-    center = [sender center];
-    parentView = [sender superview];
-  }
-  if ([sender isKindOfClass:[ToolsMenuViewItem class]]) {
-    parentView = [[sender tableViewCell] superview];
-    center = [[sender tableViewCell] center];
-  }
+  NewTabCommand* command = base::mac::ObjCCast<NewTabCommand>(sender);
+  if (!command)
+    return;
 
-  if (parentView) {
-    CGPoint viewCoordinate = [parentView convertPoint:center toView:self.view];
-    _lastTapPoint = viewCoordinate;
+  if (CGPointEqualToPoint(command.originPoint, CGPointZero)) {
+    _lastTapPoint = CGPointZero;
+  } else {
+    _lastTapPoint =
+        [self.view.window convertPoint:command.originPoint toView:self.view];
   }
 }
 
@@ -3484,9 +3480,18 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 - (NSArray*)keyCommands {
   __weak StackViewController* weakSelf = self;
 
-  // Block to execute a command from the |tag|.
-  void (^execute)(NSInteger) = ^(NSInteger tag) {
-    [weakSelf chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
+  // New tab blocks.
+  void (^newTab)() = ^{
+    [weakSelf
+        chromeExecuteCommand:[[NewTabCommand alloc]
+                                 initWithIncognito:[weakSelf
+                                                       isCurrentSetIncognito]]];
+
+  };
+
+  void (^newIncognitoTab)() = ^{
+    [weakSelf
+        chromeExecuteCommand:[[NewTabCommand alloc] initWithIncognito:YES]];
   };
 
   return @[
@@ -3494,29 +3499,17 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
                            modifierFlags:UIKeyModifierCommand
                                    title:l10n_util::GetNSStringWithFixup(
                                              IDS_IOS_TOOLS_MENU_NEW_TAB)
-                                  action:^{
-                                    if ([weakSelf isCurrentSetIncognito])
-                                      execute(IDC_NEW_INCOGNITO_TAB);
-                                    else
-                                      execute(IDC_NEW_TAB);
-                                  }],
+                                  action:newTab],
     [UIKeyCommand
         cr_keyCommandWithInput:@"n"
                  modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
                          title:l10n_util::GetNSStringWithFixup(
                                    IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)
-                        action:^{
-                          execute(IDC_NEW_INCOGNITO_TAB);
-                        }],
+                        action:newIncognitoTab],
     [UIKeyCommand cr_keyCommandWithInput:@"n"
                            modifierFlags:UIKeyModifierCommand
                                    title:nil
-                                  action:^{
-                                    if ([weakSelf isCurrentSetIncognito])
-                                      execute(IDC_NEW_INCOGNITO_TAB);
-                                    else
-                                      execute(IDC_NEW_TAB);
-                                  }],
+                                  action:newTab],
   ];
 }
 
