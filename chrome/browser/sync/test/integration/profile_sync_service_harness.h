@@ -46,9 +46,6 @@ class ProfileSyncServiceHarness {
       SigninType signin_type);
   virtual ~ProfileSyncServiceHarness();
 
-  // Sets the GAIA credentials with which to sign in to sync.
-  void SetCredentials(const std::string& username, const std::string& password);
-
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync for all available datatypes. Returns true only after sync has
   // been fully initialized and authenticated, and we are ready to process

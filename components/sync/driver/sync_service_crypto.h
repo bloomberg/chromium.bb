@@ -79,21 +79,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // Takes the previously saved nigori state; null if there isn't any.
   std::unique_ptr<SyncEncryptionHandler::NigoriState> TakeSavedNigoriState();
 
-  // Sets the cached passphrase.
-  void CachePassphrase(const std::string& passphrase) {
-    cached_passphrase_ = passphrase;
-  }
-
-  // During initial signin, ProfileSyncService caches the user's signin
-  // passphrase so it can be used to encrypt/decrypt data after sync starts up.
-  // This routine is invoked once the engine has started up to use the
-  // cached passphrase and clear it out when it is done.
-  void ConsumeCachedPassphraseIfPossible();
-
   PassphraseRequiredReason passphrase_required_reason() const {
     return passphrase_required_reason_;
   }
-  const std::string& cached_passphrase() { return cached_passphrase_; }
   bool encryption_pending() { return encryption_pending_; }
 
  private:
@@ -122,12 +110,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // because a new passphrase is required?
   PassphraseRequiredReason passphrase_required_reason_ =
       REASON_PASSPHRASE_NOT_REQUIRED;
-
-  // Sometimes we need to temporarily hold on to a passphrase because we don't
-  // yet have a engine to send it to.  This happens during initialization as
-  // we don't StartUp until we have a valid token, which happens after valid
-  // credentials were provided.
-  std::string cached_passphrase_;
 
   // The current set of encrypted types.  Always a superset of
   // Cryptographer::SensitiveTypes().
