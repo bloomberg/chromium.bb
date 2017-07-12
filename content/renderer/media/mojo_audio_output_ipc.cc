@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "media/audio/audio_device_description.h"
+#include "media/base/scoped_callback_runner.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
@@ -44,22 +45,17 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
   DCHECK(!StreamCreationRequested());
   delegate_ = delegate;
 
-  // We pass in a ScopedClosureRunner to detect the case when the mojo
-  // connection is terminated prior to receiving the response. In this case,
-  // the closure runner will be destructed and call ReceivedDeviceAuthorization
-  // with an error.
+  // We wrap the callback in a ScopedCallbackRunner to detect the case when the
+  // mojo connection is terminated prior to receiving the response. In this
+  // case, the callback runner will be destructed and call
+  // ReceivedDeviceAuthorization with an error.
   DoRequestDeviceAuthorization(
       session_id, device_id,
-      base::BindOnce(
-          &MojoAudioOutputIPC::ReceivedDeviceAuthorization,
-          weak_factory_.GetWeakPtr(),
-          base::ScopedClosureRunner(base::Bind(
-              &MojoAudioOutputIPC::ReceivedDeviceAuthorization,
-              weak_factory_.GetWeakPtr(),
-              base::Passed(base::ScopedClosureRunner()),
-              media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL,
-              media::AudioParameters::UnavailableDeviceParams(),
-              std::string()))));
+      media::ScopedCallbackRunner(
+          base::BindOnce(&MojoAudioOutputIPC::ReceivedDeviceAuthorization,
+                         weak_factory_.GetWeakPtr()),
+          media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL,
+          media::AudioParameters::UnavailableDeviceParams(), std::string()));
 }
 
 void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
@@ -167,13 +163,11 @@ bool MojoAudioOutputIPC::DoRequestDeviceAuthorization(
 }
 
 void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
-    base::ScopedClosureRunner fallback_closure,
     media::OutputDeviceStatus status,
     const media::AudioParameters& params,
     const std::string& device_id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
-  ignore_result(fallback_closure.Release());
   delegate_->OnDeviceAuthorized(status, params, device_id);
 }
 
