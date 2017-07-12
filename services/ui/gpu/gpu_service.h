@@ -153,7 +153,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
       const GetVideoMemoryUsageStatsCallback& callback) override;
   void RequestCompleteGpuInfo(
       const RequestCompleteGpuInfoCallback& callback) override;
-  void LoadedShader(const std::string& data) override;
+  void LoadedShader(const std::string& key, const std::string& data) override;
   void DestroyingVideoSurface(
       int32_t surface_id,
       const DestroyingVideoSurfaceCallback& callback) override;

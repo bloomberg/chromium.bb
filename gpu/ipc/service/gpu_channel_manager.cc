@@ -167,9 +167,10 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
   }
 }
 
-void GpuChannelManager::PopulateShaderCache(const std::string& program_proto) {
+void GpuChannelManager::PopulateShaderCache(const std::string& key,
+                                            const std::string& program) {
   if (program_cache())
-    program_cache()->LoadProgram(program_proto);
+    program_cache()->LoadProgram(key, program);
 }
 
 void GpuChannelManager::LoseAllContexts() {

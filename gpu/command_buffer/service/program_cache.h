@@ -71,7 +71,8 @@ class GPU_EXPORT ProgramCache {
       GLenum transform_feedback_buffer_mode,
       GLES2DecoderClient* client) = 0;
 
-  virtual void LoadProgram(const std::string& program) = 0;
+  virtual void LoadProgram(const std::string& key,
+                           const std::string& program) = 0;
 
   // clears the cache
   void Clear();

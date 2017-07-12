@@ -429,13 +429,13 @@ void GpuService::CloseChannel(int32_t client_id) {
   gpu_channel_manager_->RemoveChannel(client_id);
 }
 
-void GpuService::LoadedShader(const std::string& data) {
+void GpuService::LoadedShader(const std::string& key, const std::string& data) {
   if (io_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuService::LoadedShader, weak_ptr_, data));
+        FROM_HERE, base::Bind(&GpuService::LoadedShader, weak_ptr_, key, data));
     return;
   }
-  gpu_channel_manager_->PopulateShaderCache(data);
+  gpu_channel_manager_->PopulateShaderCache(key, data);
 }
 
 void GpuService::DestroyingVideoSurface(

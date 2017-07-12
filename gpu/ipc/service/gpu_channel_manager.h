@@ -85,7 +85,7 @@ class GPU_EXPORT GpuChannelManager {
                                uint64_t client_tracing_id,
                                bool is_gpu_host);
 
-  void PopulateShaderCache(const std::string& shader);
+  void PopulateShaderCache(const std::string& key, const std::string& program);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const SyncToken& sync_token);
