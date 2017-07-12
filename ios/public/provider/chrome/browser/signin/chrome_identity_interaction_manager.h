@@ -30,7 +30,7 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
 @interface ChromeIdentityInteractionManager : NSObject
 
 // Delegate used to present and dismiss the view controllers.
-@property(nonatomic, assign) id<ChromeIdentityInteractionManagerDelegate>
+@property(nonatomic, weak) id<ChromeIdentityInteractionManagerDelegate>
     delegate;
 
 // Whether the manager is currently being canceled. Delegates may inquire if the

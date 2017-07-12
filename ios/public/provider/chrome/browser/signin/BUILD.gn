@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("signin") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "chrome_identity.h",
     "chrome_identity.mm",
