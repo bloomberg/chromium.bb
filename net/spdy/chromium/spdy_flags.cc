@@ -6,9 +6,6 @@
 
 namespace net {
 
-// Log compressed size of HTTP/2 requests.
-bool FLAGS_chromium_http2_flag_log_compressed_size = true;
-
 // Use NestedSpdyFramerDecoder.
 bool FLAGS_use_nested_spdy_framer_decoder = false;
 
