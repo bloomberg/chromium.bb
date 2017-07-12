@@ -44,7 +44,6 @@ namespace {
 
 const char kGaiaId[] = "12345";
 const char kEmail[] = "test_user@gmail.com";
-const char kDummyPassword[] = "foobar";
 
 class SyncServiceObserverMock : public syncer::SyncServiceObserver {
  public:
@@ -119,14 +118,14 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                                                                         kEmail);
     pref_service()->SetString(prefs::kGoogleServicesAccountId, account_id);
 #if !defined(OS_CHROMEOS)
+    const char kDummyPassword[] = "foobar";
     profile_sync_service_bundle_.signin_manager()->SignIn(kGaiaId, kEmail,
                                                           kDummyPassword);
 #else
     profile_sync_service_bundle_.signin_manager()->SetAuthenticatedAccountInfo(
         kGaiaId, kEmail);
     if (sync_service)
-      sync_service->GoogleSigninSucceededWithPassword(account_id, kEmail,
-                                                      kDummyPassword);
+      sync_service->GoogleSigninSucceeded(account_id, kEmail);
 #endif
     return account_id;
   }

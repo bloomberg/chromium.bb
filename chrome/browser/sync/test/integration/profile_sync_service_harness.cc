@@ -124,12 +124,6 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
 
 ProfileSyncServiceHarness::~ProfileSyncServiceHarness() { }
 
-void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
-                                               const std::string& password) {
-  username_ = username;
-  password_ = password;
-}
-
 bool ProfileSyncServiceHarness::SetupSync() {
   bool result = SetupSync(syncer::UserSelectableTypes(), false);
   if (!result) {
@@ -181,8 +175,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
     std::string gaia_id = GetGaiaIdForUsername(username_);
     service()->signin()->SetAuthenticatedAccountInfo(gaia_id, username_);
     std::string account_id = service()->signin()->GetAuthenticatedAccountId();
-    service()->GoogleSigninSucceededWithPassword(account_id, username_,
-                                                 password_);
+    service()->GoogleSigninSucceeded(account_id, username_);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       UpdateCredentials(account_id, GenerateFakeOAuth2RefreshTokenString());
   } else {
