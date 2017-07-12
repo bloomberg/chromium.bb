@@ -1126,7 +1126,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   std::string result;
   std::string script =
       "function onInput(e) {"
-      "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send(getInputFieldText());"
       "}"
       "inputField = document.getElementById('text-field');"
