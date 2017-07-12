@@ -48,6 +48,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'pointerdown': 'onPointerdown_',
+  },
+
   /** @private {?IntersectionObserver} */
   intersectionObserver_: null,
 
@@ -197,5 +201,26 @@ Polymer({
   onCancel_: function(e) {
     if (this.noCancel)
       e.preventDefault();
+  },
+
+  /** @param {!PointerEvent} e */
+  onPointerdown_: function(e) {
+    // Only show pulse animation if user left-clicked outside of the dialog
+    // contents.
+    if (e.button != 0 || e.composedPath()[0].tagName !== 'DIALOG')
+      return;
+
+    this.animate(
+        [
+          {transform: 'scale(1)', offset: 0},
+          {transform: 'scale(1.02)', offset: 0.4},
+          {transform: 'scale(1.02)', offset: 0.6},
+          {transform: 'scale(1)', offset: 1},
+        ],
+        /** @type {!KeyframeEffectOptions} */ ({
+          duration: 180,
+          easing: 'ease-in-out',
+          iterations: 1,
+        }));
   },
 });
