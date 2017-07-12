@@ -53,9 +53,6 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  // TODO(eseckler): This should become a SequencedTaskRunner once net:: APIs
-  // accept a SequencedTaskRunner, see https://crbug.com/735368.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   // The |options| object given to the constructor is not guaranteed to outlive
   // this class, so we make copies of the parts we need to access on the IO

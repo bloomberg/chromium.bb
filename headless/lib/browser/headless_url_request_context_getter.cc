@@ -29,8 +29,6 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     net::NetLog* net_log,
     HeadlessBrowserContextImpl* headless_browser_context)
     : io_task_runner_(std::move(io_task_runner)),
-      file_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
       user_agent_(options->user_agent()),
       host_resolver_rules_(options->host_resolver_rules()),
       proxy_config_(options->proxy_config()),
@@ -70,7 +68,6 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     // TODO(skyostil): Make these configurable.
     builder.set_data_enabled(true);
     builder.set_file_enabled(true);
-    builder.SetFileTaskRunner(file_task_runner_);
     if (proxy_config_) {
       builder.set_proxy_service(net::ProxyService::CreateFixed(*proxy_config_));
     } else {

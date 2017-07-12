@@ -659,7 +659,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     json_pref_store_ =
         new JsonPrefStore(filepath, GetFileThread()->task_runner(),
                           std::unique_ptr<PrefFilter>());
-    context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
+    context_builder.SetCacheThreadTaskRunner(GetFileThread()->task_runner());
 
     // Register prefs and set up the PrefService.
     PrefServiceFactory factory;
