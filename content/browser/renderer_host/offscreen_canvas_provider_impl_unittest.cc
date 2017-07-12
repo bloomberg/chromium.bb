@@ -155,7 +155,8 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
     frame_sink_manager_ =
         base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_.get());
+        host_frame_sink_manager_.get(), frame_sink_manager_.get(),
+        message_loop_.task_runner());
 
     provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
         host_frame_sink_manager_.get(), kRendererClientId);

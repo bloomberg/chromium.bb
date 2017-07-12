@@ -926,6 +926,18 @@ void BrowserMainLoop::CreateStartupTasks() {
 #endif
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+BrowserMainLoop::GetResizeTaskRunner() {
+#if defined(OS_MACOSX)
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ui::WindowResizeHelperMac::Get()->task_runner();
+  // In tests, WindowResizeHelperMac task runner might not be initialized.
+  return task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
+#else
+  return base::ThreadTaskRunnerHandle::Get();
+#endif
+}
+
 gpu::GpuChannelEstablishFactory*
 BrowserMainLoop::gpu_channel_establish_factory() const {
   return BrowserGpuChannelHostFactory::instance();
@@ -1460,12 +1472,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
+        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get(),
+        GetResizeTaskRunner());
   }
 #endif
 
   DCHECK(factory);
-  ImageTransportFactory::Initialize();
+  ImageTransportFactory::Initialize(GetResizeTaskRunner());
   ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(factory);
 #if defined(USE_AURA)
   if (env_->mode() == aura::Env::Mode::LOCAL) {

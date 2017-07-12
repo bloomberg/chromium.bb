@@ -117,8 +117,9 @@ class HostFrameSinkManagerTest : public testing::Test {
         mojo::MakeRequest(&manager_mojo);
     manager_impl_->BindAndSetClient(std::move(manager_impl_request),
                                     std::move(host_mojo));
-    host_manager_->BindManagerClientAndSetManagerPtr(
-        std::move(host_mojo_request), std::move(manager_mojo));
+    host_manager_->BindAndSetManager(std::move(host_mojo_request),
+                                     message_loop_.task_runner(),
+                                     std::move(manager_mojo));
   }
 
  private:

@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -183,8 +184,9 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
 
   frame_sink_manager_ = base::MakeUnique<viz::FrameSinkManagerImpl>(
       true, display_provider_.get());
-  frame_sink_manager_->BindPtrAndSetClient(std::move(request),
-                                           std::move(client));
+  frame_sink_manager_->BindAndSetClient(std::move(request),
+                                        base::SequencedTaskRunnerHandle::Get(),
+                                        std::move(client));
 }
 
 void GpuMain::TearDownOnCompositorThread() {

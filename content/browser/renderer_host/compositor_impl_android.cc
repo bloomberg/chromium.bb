@@ -105,7 +105,8 @@ struct CompositorDependencies {
     frame_sink_manager_impl =
         base::MakeUnique<viz::FrameSinkManagerImpl>(false, nullptr);
     surface_utils::ConnectWithInProcessFrameSinkManager(
-        &host_frame_sink_manager, frame_sink_manager_impl.get());
+        &host_frame_sink_manager, frame_sink_manager_impl.get(),
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   SingleThreadTaskGraphRunner task_graph_runner;
