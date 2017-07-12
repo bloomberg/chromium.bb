@@ -6,7 +6,6 @@
 """This script ensures that a given directory is an initialized git repo."""
 
 import argparse
-import logging
 import os
 import subprocess
 import sys
@@ -32,14 +31,11 @@ def main():
                       required=True)
   parser.add_argument('--remote', help='Name of the git remote.',
                       default='origin')
-  parser.add_argument('-v', '--verbose', action='store_true')
   opts = parser.parse_args()
 
   path = opts.path
   remote = opts.remote
   url = opts.url
-
-  logging.getLogger().setLevel(logging.DEBUG if opts.verbose else logging.WARN)
 
   if not os.path.exists(path):
     os.makedirs(path)
