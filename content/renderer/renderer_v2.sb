@@ -127,8 +127,9 @@
   (global-name "com.apple.system.opendirectoryd.libinfo")
   (global-name "com.apple.windowserver.active"))
 
-; MacOS dropped FontServer to replace it with the (XPC based) com.apple.fonts.
-(if (< os-version 1010)
+; MacOS dropped FontServer to replace it with the (XPC based) com.apple.fonts,
+; but 10.9 through 10.11 use FontServer.
+(if (< os-version 1012)
   (allow mach-lookup (global-name "com.apple.FontServer")))
 
 ; sysctl
