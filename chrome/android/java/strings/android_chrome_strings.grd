@@ -3106,6 +3106,9 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content when accessibility is enabled.">
         Tap to see bookmarks, downloads, and history
       </message>
+     <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused.">
+        Navigation panel
+      </message>
       <message name="IDS_BOTTOM_SHEET_OPENED" desc="Accessibility string read when the bottom navigation panel is opened.">
         Navigation panel opened
       </message>

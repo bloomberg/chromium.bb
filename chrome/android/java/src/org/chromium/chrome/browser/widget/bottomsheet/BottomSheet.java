@@ -996,6 +996,12 @@ public class BottomSheet
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened));
         mActivity.addViewObscuringAllTabs(this);
+
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        setContentDescription(
+                getResources().getString(R.string.bottom_sheet_accessibility_description));
+        if (getFocusedChild() == null) requestFocus();
     }
 
     /**
@@ -1010,6 +1016,10 @@ public class BottomSheet
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
         clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
+
+        setFocusable(false);
+        setFocusableInTouchMode(false);
+        setContentDescription(null);
 
         showHelpBubbleIfNecessary();
     }
