@@ -208,7 +208,7 @@ deps = {
     Var('chromium_git') + '/webm/libvpx.git' + '@' +  '4e16f7070354fa91c1a617ee18335e580a0b8c8c',
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'ddb09a0d5aaf6aacf846355b7629953b2496b8ea',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + 'f82eb1989c0cdd5ed179ee4979ffb18a8030c78a',
 
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '2f6478eb8d40f1766a96b5b033ed26c0c2244589',
