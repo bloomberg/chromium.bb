@@ -1,7 +1,3 @@
-# TODO: fix these. They fail because ShellPortMash::IsMouseEventsEnabled() isn't
-# implemented. http://crbug.com/734808.
--ImmersiveFullscreenControllerTest.EndRevealViaGesture
-
 # TODO: fix these. They all timeout. http://crbug.com/734811.
 -ScreenRotationAnimatorSmoothAnimationTest.OverviewButtonTrayHideAnimationAlwaysCompletes
 -ScreenRotationAnimatorSmoothAnimationTest.RemoveExternalPrimaryDisplayBeforeSecondCopyCallback
