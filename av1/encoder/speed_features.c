@@ -171,12 +171,24 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
 #if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V;
+#else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
+#endif  // CONFIG_CFL
 #endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V;
+#else
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC_H_V;
+#endif
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V;
+#else
     sf->intra_uv_mode_mask[TX_16X16] = INTRA_DC_H_V;
+#endif
 
     sf->tx_size_search_breakout = 1;
     sf->partition_search_breakout_rate_thr = 80;
@@ -227,10 +239,18 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mode_skip_start = 6;
 #if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC;
+#else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC;
+#endif  // CONFIG_CFL
 #endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC;
+#else
     sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC;
+#endif  // CONFIG_CFL
     sf->adaptive_interp_filter_search = 1;
   }
 
@@ -255,7 +275,11 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->disable_filter_search_var_thresh = 500;
     for (i = 0; i < TX_SIZES; ++i) {
       sf->intra_y_mode_mask[i] = INTRA_DC;
+#if CONFIG_CFL
+      sf->intra_uv_mode_mask[i] = UV_INTRA_DC;
+#else
       sf->intra_uv_mode_mask[i] = INTRA_DC;
+#endif  // CONFIG_CFL
     }
     sf->partition_search_breakout_rate_thr = 500;
     sf->mv.reduce_first_step_size = 1;
@@ -405,7 +429,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
+#if CONFIG_CFL
+    sf->intra_uv_mode_mask[i] = UV_INTRA_ALL;
+#else
     sf->intra_uv_mode_mask[i] = INTRA_ALL;
+#endif  // CONFIG_CFL
   }
   sf->use_rd_breakout = 0;
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;

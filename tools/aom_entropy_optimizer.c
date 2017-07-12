@@ -364,14 +364,15 @@ int main(int argc, const char **argv) {
 
   /* Intra mode (chroma) */
   cts_each_dim[0] = INTRA_MODES;
-  cts_each_dim[1] = INTRA_MODES;
+  cts_each_dim[1] = UV_INTRA_MODES;
   optimize_entropy_table(&fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
                          av1_intra_mode_tree, 0,
                          "static const aom_prob default_uv_probs[INTRA_MODES]"
-                         "[INTRA_MODES - 1]");
-  optimize_cdf_table(&fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob\n"
-                     "default_uv_mode_cdf[INTRA_MODES][CDF_SIZE(INTRA_MODES)]");
+                         "[UV_INTRA_MODES - 1]");
+  optimize_cdf_table(
+      &fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
+      "static const aom_cdf_prob\n"
+      "default_uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)]");
 
   /* Partition */
   cts_each_dim[0] = PARTITION_CONTEXTS;

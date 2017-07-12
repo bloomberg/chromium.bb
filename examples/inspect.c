@@ -219,6 +219,22 @@ const map_entry prediction_mode_map[] = { ENUM(DC_PRED),
                                           ENUM(INTRA_INVALID),
                                           LAST_ENUM };
 
+#if CONFIG_CFL
+const map_entry uv_prediction_mode_map[] = {
+  ENUM(UV_DC_PRED),       ENUM(UV_V_PRED),        ENUM(UV_H_PRED),
+  ENUM(UV_D45_PRED),      ENUM(UV_D135_PRED),     ENUM(UV_D117_PRED),
+  ENUM(UV_D153_PRED),     ENUM(UV_D207_PRED),     ENUM(UV_D63_PRED),
+#if CONFIG_ALT_INTRA
+  ENUM(UV_SMOOTH_PRED),
+#if CONFIG_SMOOTH_HV
+  ENUM(UV_SMOOTH_V_PRED), ENUM(UV_SMOOTH_H_PRED),
+#endif  // CONFIG_SMOOTH_HV
+#endif  // CONFIG_ALT_INTRA
+  ENUM(UV_TM_PRED),       ENUM(UV_MODE_INVALID),  LAST_ENUM
+};
+#else
+#define uv_prediction_mode_map prediction_mode_map
+#endif
 #define NO_SKIP 0
 #define SKIP 1
 
@@ -505,7 +521,7 @@ void inspect(void *pbi, void *data) {
                           offsetof(insp_mi_data, mode));
   }
   if (layers & UV_MODE_LAYER) {
-    buf += put_block_info(buf, prediction_mode_map, "uv_mode",
+    buf += put_block_info(buf, uv_prediction_mode_map, "uv_mode",
                           offsetof(insp_mi_data, uv_mode));
   }
   if (layers & SKIP_LAYER) {

@@ -3045,18 +3045,19 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
 
 void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
                                     int blk_col, int blk_row, TX_SIZE tx_size) {
+  const MODE_INFO *mi = xd->mi[0];
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int block_raster_idx =
       av1_block_index_to_raster_order(tx_size, block_idx);
-  const PREDICTION_MODE mode =
-      (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
-
+  const PREDICTION_MODE mode = (plane == AOM_PLANE_Y)
+                                   ? get_y_mode(mi, block_raster_idx)
+                                   : get_uv_mode(mbmi->uv_mode);
 #if CONFIG_CFL
-  if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
+  if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_DC_PRED) {
     if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
       // Avoid computing the CfL parameters twice, if they have already been
       // computed in cfl_rd_pick_alpha.

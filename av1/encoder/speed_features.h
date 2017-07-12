@@ -29,6 +29,24 @@ enum {
 #endif  // CONFIG_SMOOTH_HV
 #endif  // CONFIG_ALT_INTRA
               (1 << TM_PRED),
+#if CONFIG_CFL
+  UV_INTRA_ALL = (1 << UV_DC_PRED) | (1 << UV_V_PRED) | (1 << UV_H_PRED) |
+                 (1 << UV_D45_PRED) | (1 << UV_D135_PRED) |
+                 (1 << UV_D117_PRED) | (1 << UV_D153_PRED) |
+                 (1 << UV_D207_PRED) | (1 << UV_D63_PRED) |
+#if CONFIG_ALT_INTRA
+                 (1 << UV_SMOOTH_PRED) |
+#if CONFIG_SMOOTH_HV
+                 (1 << UV_SMOOTH_V_PRED) | (1 << UV_SMOOTH_H_PRED) |
+#endif  // CONFIG_SMOOTH_HV
+#endif  // CONFIG_ALT_INTRA
+                 (1 << UV_TM_PRED),
+  UV_INTRA_DC = (1 << UV_DC_PRED),
+  UV_INTRA_DC_TM = (1 << UV_DC_PRED) | (1 << UV_TM_PRED),
+  UV_INTRA_DC_H_V = (1 << UV_DC_PRED) | (1 << UV_V_PRED) | (1 << UV_H_PRED),
+  UV_INTRA_DC_TM_H_V = (1 << UV_DC_PRED) | (1 << UV_TM_PRED) |
+                       (1 << UV_V_PRED) | (1 << UV_H_PRED),
+#endif  // CONFIG_CFL
   INTRA_DC = (1 << DC_PRED),
   INTRA_DC_TM = (1 << DC_PRED) | (1 << TM_PRED),
   INTRA_DC_H_V = (1 << DC_PRED) | (1 << V_PRED) | (1 << H_PRED),

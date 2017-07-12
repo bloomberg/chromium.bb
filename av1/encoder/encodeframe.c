@@ -5662,8 +5662,8 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
 #if CONFIG_ENTROPY_STATS
   const PREDICTION_MODE y_mode = mbmi->mode;
-  const PREDICTION_MODE uv_mode = mbmi->uv_mode;
-#else
+  const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
+#else   // CONFIG_ENTROPY_STATS
   (void)counts;
   (void)above_mi;
   (void)left_mi;
@@ -5710,7 +5710,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
           mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
       ++counts->filter_intra[0][use_filter_intra_mode];
     }
-    if (mbmi->uv_mode == DC_PRED
+    if (mbmi->uv_mode == UV_DC_PRED
 #if CONFIG_CB4X4
         &&
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,

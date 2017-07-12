@@ -1235,7 +1235,7 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
   (void)mi_col;
 #endif  // CONFIG_CB4X4
 
-  if (mbmi->uv_mode == DC_PRED
+  if (mbmi->uv_mode == UV_DC_PRED
 #if CONFIG_PALETTE
       && mbmi->palette_mode_info.palette_size[1] == 0
 #endif  // CONFIG_PALETTE
@@ -1277,7 +1277,7 @@ static void write_intra_angle_info(const MACROBLOCKD *xd,
 #endif  // CONFIG_INTRA_INTERP
   }
 
-  if (av1_is_directional_mode(mbmi->uv_mode, bsize)) {
+  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
                   MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
   }
@@ -1492,7 +1492,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 
-  if (mbmi->uv_mode == DC_PRED) {
+  if (mbmi->uv_mode == UV_DC_PRED) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
     aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
@@ -1612,10 +1612,10 @@ static void write_intra_mode(FRAME_CONTEXT *frame_ctx, BLOCK_SIZE bsize,
 }
 
 static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
-                                PREDICTION_MODE uv_mode, PREDICTION_MODE y_mode,
-                                aom_writer *w) {
-  aom_write_symbol(w, av1_intra_mode_ind[uv_mode],
-                   frame_ctx->uv_mode_cdf[y_mode], INTRA_MODES);
+                                UV_PREDICTION_MODE uv_mode,
+                                PREDICTION_MODE y_mode, aom_writer *w) {
+  aom_write_symbol(w, av1_intra_mode_ind[get_uv_mode(uv_mode)],
+                   frame_ctx->uv_mode_cdf[y_mode], UV_INTRA_MODES);
 }
 
 #if CONFIG_CFL
@@ -1782,7 +1782,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
-      if (mbmi->uv_mode == DC_PRED) {
+      if (mbmi->uv_mode == UV_DC_PRED) {
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
       }
 #endif
@@ -2149,7 +2149,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
     aom_write(w, use_intrabc, ec_ctx->intrabc_prob);
     if (use_intrabc) {
       assert(mbmi->mode == DC_PRED);
-      assert(mbmi->uv_mode == DC_PRED);
+      assert(mbmi->uv_mode == UV_DC_PRED);
       if (enable_tx_size && !mbmi->skip) write_selected_tx_size(cm, xd, w);
       int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
       av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
@@ -2191,7 +2191,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
 #endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
-    if (mbmi->uv_mode == DC_PRED) {
+    if (mbmi->uv_mode == UV_DC_PRED) {
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
     }
 #endif

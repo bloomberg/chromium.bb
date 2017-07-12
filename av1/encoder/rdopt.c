@@ -524,6 +524,23 @@ static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
   D135_PRED,     D207_PRED,     D153_PRED, D63_PRED, D117_PRED, D45_PRED,
 };
 
+#if CONFIG_CFL
+static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
+  UV_DC_PRED,       UV_H_PRED,        UV_V_PRED,
+#if CONFIG_ALT_INTRA
+  UV_SMOOTH_PRED,
+#endif  // CONFIG_ALT_INTRA
+  UV_TM_PRED,
+#if CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
+  UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
+#endif  // CONFIG_ALT_INTRA && CONFIG_SMOOTH_HV
+  UV_D135_PRED,     UV_D207_PRED,     UV_D153_PRED,
+  UV_D63_PRED,      UV_D117_PRED,     UV_D45_PRED,
+};
+#else
+#define uv_rd_search_mode_order intra_rd_search_mode_order
+#endif  // CONFIG_CFL
+
 #if CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA || CONFIG_PALETTE
 static INLINE int write_uniform_cost(int n, int v) {
   const int l = get_unsigned_bits(n);
@@ -1866,11 +1883,12 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_DPCM_INTRA
     const int block_raster_idx =
         av1_block_index_to_raster_order(tx_size, block);
-    const PREDICTION_MODE mode =
-        (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
+    const PREDICTION_MODE mode = (plane == AOM_PLANE_Y)
+                                     ? get_y_mode(xd->mi[0], block_raster_idx)
+                                     : get_uv_mode(mbmi->uv_mode);
     TX_TYPE tx_type =
-        av1_get_tx_type((plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV, xd,
-                        blk_row, blk_col, block, tx_size);
+        av1_get_tx_type((plane == AOM_PLANE_Y) ? PLANE_TYPE_Y : PLANE_TYPE_UV,
+                        xd, blk_row, blk_col, block, tx_size);
     if (av1_use_dpcm_intra(plane, mode, tx_type, mbmi)) {
       int8_t skip;
       av1_encode_block_intra_dpcm(cm, x, mode, plane, block, blk_row, blk_col,
@@ -5102,7 +5120,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                            &plane_block_height, &rows, &cols);
   if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return;
 
-  mbmi->uv_mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
@@ -5286,7 +5304,7 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   av1_zero(filter_intra_mode_info);
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 1;
-  mbmi->uv_mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[1] = 0;
 #endif  // CONFIG_PALETTE
@@ -5313,7 +5331,7 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   if (filter_intra_selected_flag) {
-    mbmi->uv_mode = DC_PRED;
+    mbmi->uv_mode = UV_DC_PRED;
     mbmi->filter_intra_mode_info.use_filter_intra_mode[1] =
         filter_intra_mode_info.use_filter_intra_mode[1];
     mbmi->filter_intra_mode_info.filter_intra_mode[1] =
@@ -5576,7 +5594,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, TX_SIZE tx_size) {
 #endif  // CONFIG_CFL
 
 static void init_sbuv_mode(MB_MODE_INFO *const mbmi) {
-  mbmi->uv_mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[1] = 0;
 #endif  // CONFIG_PALETTE
@@ -5602,10 +5620,10 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 #endif  // CONFIG_PALETTE
 
-  for (int mode_idx = 0; mode_idx < INTRA_MODES; ++mode_idx) {
+  for (int mode_idx = 0; mode_idx < UV_INTRA_MODES; ++mode_idx) {
     int this_rate;
     RD_STATS tokenonly_rd_stats;
-    PREDICTION_MODE mode = intra_rd_search_mode_order[mode_idx];
+    UV_PREDICTION_MODE mode = uv_rd_search_mode_order[mode_idx];
 #if CONFIG_EXT_INTRA
     const int is_directional_mode =
         av1_is_directional_mode(mode, mbmi->sb_type);
@@ -5617,7 +5635,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->uv_mode = mode;
 #if CONFIG_CFL
     int cfl_alpha_rate = 0;
-    if (mode == DC_PRED) {
+    if (mode == UV_DC_PRED) {
       const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
       cfl_alpha_rate = cfl_rd_pick_alpha(x, uv_tx_size);
     }
@@ -5645,7 +5663,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
 
 #if CONFIG_CFL
-    if (mode == DC_PRED) {
+    if (mode == UV_DC_PRED) {
       this_rate += cfl_alpha_rate;
     }
 #endif
@@ -5661,7 +5679,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_PALETTE
     if (cpi->common.allow_screen_content_tools && mbmi->sb_type >= BLOCK_8X8 &&
-        mode == DC_PRED)
+        mode == UV_DC_PRED)
       this_rate += av1_cost_bit(
           av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0], 0);
 #endif  // CONFIG_PALETTE
@@ -5685,7 +5703,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (cpi->common.allow_screen_content_tools && mbmi->sb_type >= BLOCK_8X8) {
     uint8_t *best_palette_color_map = x->palette_buffer->best_palette_color_map;
     rd_pick_palette_intra_sbuv(cpi, x,
-                               cpi->intra_uv_mode_cost[mbmi->mode][DC_PRED],
+                               cpi->intra_uv_mode_cost[mbmi->mode][UV_DC_PRED],
                                best_palette_color_map, &best_mbmi, &best_rd,
                                rate, rate_tokenonly, distortion, skippable);
   }
@@ -5709,7 +5727,7 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                  PICK_MODE_CONTEXT *ctx, BLOCK_SIZE bsize,
                                  TX_SIZE max_tx_size, int *rate_uv,
                                  int *rate_uv_tokenonly, int64_t *dist_uv,
-                                 int *skip_uv, PREDICTION_MODE *mode_uv) {
+                                 int *skip_uv, UV_PREDICTION_MODE *mode_uv) {
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   (void)ctx;
@@ -5724,7 +5742,7 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     *rate_uv_tokenonly = 0;
     *dist_uv = 0;
     *skip_uv = 1;
-    *mode_uv = DC_PRED;
+    *mode_uv = UV_DC_PRED;
     return;
   }
   BLOCK_SIZE bs = scale_chroma_bsize(bsize, x->e_mbd.plane[1].subsampling_x,
@@ -9337,7 +9355,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 #endif
     mbmi->use_intrabc = 1;
     mbmi->mode = DC_PRED;
-    mbmi->uv_mode = DC_PRED;
+    mbmi->uv_mode = UV_DC_PRED;
     mbmi->mv[0].as_mv = dv;
 #if CONFIG_DUAL_FILTER
     for (int idx = 0; idx < 4; ++idx) mbmi->interp_filter[idx] = BILINEAR;
@@ -9629,7 +9647,8 @@ static void pick_filter_intra_interframe(
     const AV1_COMP *cpi, MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
     BLOCK_SIZE bsize, int mi_row, int mi_col, int *rate_uv_intra,
     int *rate_uv_tokenonly, int64_t *dist_uv, int *skip_uv,
-    PREDICTION_MODE *mode_uv, FILTER_INTRA_MODE_INFO *filter_intra_mode_info_uv,
+    UV_PREDICTION_MODE *mode_uv,
+    FILTER_INTRA_MODE_INFO *filter_intra_mode_info_uv,
 #if CONFIG_EXT_INTRA
     int8_t *uv_angle_delta,
 #endif  // CONFIG_EXT_INTRA
@@ -9666,7 +9685,7 @@ static void pick_filter_intra_interframe(
   // TODO(huisu): use skip_mask for further speedup.
   (void)skip_mask;
   mbmi->mode = DC_PRED;
-  mbmi->uv_mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
   if (!rd_pick_filter_intra_sby(cpi, x, &rate_dummy, &rate_y, &distortion_y,
@@ -9873,7 +9892,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int rate_uv_intra[TX_SIZES_ALL], rate_uv_tokenonly[TX_SIZES_ALL];
   int64_t dist_uvs[TX_SIZES_ALL];
   int skip_uvs[TX_SIZES_ALL];
-  PREDICTION_MODE mode_uv[TX_SIZES_ALL];
+  UV_PREDICTION_MODE mode_uv[TX_SIZES_ALL];
 #if CONFIG_PALETTE
   PALETTE_MODE_INFO pmi_uv[TX_SIZES_ALL];
 #endif  // CONFIG_PALETTE
@@ -10436,7 +10455,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     mbmi->mode = this_mode;
-    mbmi->uv_mode = DC_PRED;
+    mbmi->uv_mode = UV_DC_PRED;
     mbmi->ref_frame[0] = ref_frame;
     mbmi->ref_frame[1] = second_ref_frame;
 #if CONFIG_PALETTE
@@ -10618,7 +10637,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
               mbmi->filter_intra_mode_info.filter_intra_mode[0]);
         }
       }
-      if (mbmi->uv_mode == DC_PRED) {
+      if (mbmi->uv_mode == UV_DC_PRED) {
         rate2 +=
             av1_cost_bit(cpi->common.fc->filter_intra_probs[1],
                          mbmi->filter_intra_mode_info.use_filter_intra_mode[1]);
@@ -11413,7 +11432,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     MB_MODE_INFO best_mbmi_palette = best_mbmode;
 
     mbmi->mode = DC_PRED;
-    mbmi->uv_mode = DC_PRED;
+    mbmi->uv_mode = UV_DC_PRED;
     mbmi->ref_frame[0] = INTRA_FRAME;
     mbmi->ref_frame[1] = NONE_FRAME;
     rate_overhead_palette = rd_pick_palette_intra_sby(
@@ -11849,7 +11868,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 #endif  // CONFIG_FILTER_INTRA
   mbmi->mode = ZEROMV;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
-  mbmi->uv_mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = LAST_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
 #if CONFIG_GLOBAL_MOTION
