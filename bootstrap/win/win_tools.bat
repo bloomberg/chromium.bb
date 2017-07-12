@@ -26,19 +26,13 @@ if "%1" == "force" (
 
 
 :PYTHON_CHECK
-:: Support revert from https://chromium-review.googlesource.com/c/563036
-::
-:: If the "python.bat" from that CL is installed, we will not know to
-:: replace it if the CL is reverted. To support this, we will actively
-:: destroy our "python.bat" if we detect a "python_bin_reldir.txt" file
-:: present, causing us to reinstall Python.
-if exist "%WIN_TOOLS_ROOT_DIR%\python_bin_reldir.txt" (
-  call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
-  del "%WIN_TOOLS_ROOT_DIR%\python_bin_reldir.txt"
-)
-
 if not exist "%WIN_TOOLS_ROOT_DIR%\python276_bin" goto :PY27_INSTALL
 if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY27_INSTALL
+
+:: Support revert from https://chromium-review.googlesource.com/c/563036
+:: Temporary fix, always install "python.bat" (crbug.com/741650).
+call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+
 set ERRORLEVEL=0
 goto :GIT_CHECK
 
