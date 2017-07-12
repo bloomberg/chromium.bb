@@ -81,6 +81,8 @@ blink_core_sources("workers") {
     "WorkletGlobalScope.cpp",
     "WorkletGlobalScope.h",
     "WorkletGlobalScopeProxy.h",
+    "WorkletModuleResponsesMap.cpp",
+    "WorkletModuleResponsesMap.h",
     "WorkletModuleTreeClient.cpp",
     "WorkletModuleTreeClient.h",
     "WorkletPendingTasks.cpp",
