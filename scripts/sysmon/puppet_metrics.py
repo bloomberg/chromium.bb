@@ -14,6 +14,7 @@ import yaml
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 
+
 logger = logging.getLogger(__name__)
 
 LAST_RUN_FILE = '/var/lib/cros_puppet/state/last_run_summary.yaml'
@@ -35,12 +36,10 @@ _resources_metric = metrics.GaugeMetric(
     ' run')
 _times_metric = metrics.FloatMetric(
     'puppet/times',
-    description='Time taken to perform various parts of the last puppet run',
-    units=metrics.MetricsDataUnits.SECONDS)
+    description='Time taken to perform various parts of the last puppet run')
 _age_metric = metrics.FloatMetric(
     'puppet/age',
-    description='Time since last run',
-    units=metrics.MetricsDataUnits.SECONDS)
+    description='Time since last run')
 
 
 class _PuppetRunSummary(object):

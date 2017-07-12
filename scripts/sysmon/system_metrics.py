@@ -29,12 +29,10 @@ _cpu_time_metric = metrics.FloatMetric(
 
 _disk_free_metric = metrics.GaugeMetric(
     'dev/disk/free',
-    description='Available bytes on disk partition.',
-    units=metrics.MetricsDataUnits.BYTES)
+    description='Available bytes on disk partition.')
 _disk_total_metric = metrics.GaugeMetric(
     'dev/disk/total',
-    description='Total bytes on disk partition.',
-    units=metrics.MetricsDataUnits.BYTES)
+    description='Total bytes on disk partition.')
 
 _inodes_free_metric = metrics.GaugeMetric(
     'dev/inodes/free',
@@ -49,29 +47,24 @@ _mem_free_metric = metrics.GaugeMetric(
     'dev/mem/free',
     description='Amount of memory available to a '
     'process (in Bytes). Buffers are considered '
-    'free memory.',
-    units=metrics.MetricsDataUnits.BYTES)
+    'free memory.')
 
 _mem_total_metric = metrics.GaugeMetric(
     'dev/mem/total',
-    description='Total physical memory in Bytes.',
-    units=metrics.MetricsDataUnits.BYTES)
+    description='Total physical memory in Bytes.')
 
 _BOOT_TIME = psutil.boot_time()
 
 _disk_read_metric = metrics.CounterMetric(
     'dev/disk/read', start_time=_BOOT_TIME,
-    description='Number of Bytes read on disk.',
-    units=metrics.MetricsDataUnits.BYTES)
+    description='Number of Bytes read on disk.')
 _disk_write_metric = metrics.CounterMetric(
     'dev/disk/write', start_time=_BOOT_TIME,
-    description='Number of Bytes written on disk.',
-    units=metrics.MetricsDataUnits.BYTES)
+    description='Number of Bytes written on disk.')
 
 _uptime_metric = metrics.GaugeMetric(
     'dev/uptime',
-    description='Machine uptime, in seconds.',
-    units=metrics.MetricsDataUnits.SECONDS)
+    description='Machine uptime, in seconds.')
 
 _load_average_metric = metrics.FloatMetric(
     'dev/proc/load_average',

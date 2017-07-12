@@ -32,12 +32,12 @@ class _ProcessMetricsCollector(object):
 
   def __init__(self):
     self._metrics = [
-      _ProcessMetric('autoserv',
-                     test_func=_is_parent_autoserv),
-      _ProcessMetric('sysmon',
-                     test_func=_is_sysmon),
-      _ProcessMetric('apache',
-                     test_func=_is_apache),
+        _ProcessMetric('autoserv',
+                       test_func=_is_parent_autoserv),
+        _ProcessMetric('sysmon',
+                       test_func=_is_sysmon),
+        _ProcessMetric('apache',
+                       test_func=_is_apache),
     ]
     self._other_metric = _ProcessMetric('other')
 
@@ -72,7 +72,7 @@ class _ProcessMetric(object):
     default test is to count every process.
     """
     self._fields = {
-      'process_name': process_name,
+        'process_name': process_name,
     }
     self._test_func = test_func
     self._count = 0

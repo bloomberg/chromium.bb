@@ -237,10 +237,11 @@ def _Metric(fn):
 
 @_Metric
 def CounterMetric(name, reset_after=False, description=None,
-                  field_spec=_MISSING):
+                  field_spec=_MISSING, start_time=None):
   """Returns a metric handle for a counter named |name|."""
   return ts_mon.CounterMetric(name,
-                              description=description, field_spec=field_spec)
+                              description=description, field_spec=field_spec,
+                              start_time=start_time)
 Counter = CounterMetric
 
 
