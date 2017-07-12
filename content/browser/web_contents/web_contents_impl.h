@@ -845,7 +845,7 @@ class CONTENT_EXPORT WebContentsImpl
                     const WebContentsObserver::MediaPlayerId& id);
 
   int GetCurrentlyPlayingVideoCount() override;
-  base::Optional<gfx::Size> GetFullscreenVideoSize() override;
+  const VideoSizeMap& GetCurrentlyPlayingVideoSizes() override;
   bool IsFullscreen() override;
 
   MediaWebContentsObserver* media_web_contents_observer() {
