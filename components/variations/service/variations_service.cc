@@ -59,6 +59,10 @@ const int64_t kServerTimeResolutionMs = 1000;
 // Maximum age permitted for a variations seed, in days.
 const int kMaxVariationsSeedAgeDays = 30;
 
+// Whether the VariationsService should always be created, even in Chromium
+// builds.
+bool g_enabled_for_testing = false;
+
 // Wrapper around channel checking, used to enable channel mocking for
 // testing. If the current browser channel is not UNKNOWN, this will return
 // that channel value. Otherwise, if the fake channel flag is provided, this
@@ -488,7 +492,8 @@ std::unique_ptr<VariationsService> VariationsService::Create(
   // Unless the URL was provided, unsupported builds should return NULL to
   // indicate that the service should not be used.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kVariationsServerURL)) {
+          switches::kVariationsServerURL) &&
+      !g_enabled_for_testing) {
     DVLOG(1) << "Not creating VariationsService in unofficial build without --"
              << switches::kVariationsServerURL << " specified.";
     return result;
@@ -503,14 +508,8 @@ std::unique_ptr<VariationsService> VariationsService::Create(
 }
 
 // static
-std::unique_ptr<VariationsService> VariationsService::CreateForTesting(
-    std::unique_ptr<VariationsServiceClient> client,
-    PrefService* local_state) {
-  return base::WrapUnique(new VariationsService(
-      std::move(client),
-      base::MakeUnique<web_resource::ResourceRequestAllowedNotifier>(
-          local_state, nullptr),
-      local_state, nullptr, UIStringOverrider()));
+void VariationsService::EnableForTesting() {
+  g_enabled_for_testing = true;
 }
 
 void VariationsService::DoActualFetch() {
@@ -597,11 +596,6 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
     return false;
   }
   RecordLastFetchTime();
-
-  // Perform seed simulation only if |state_manager_| is not-NULL. The state
-  // manager may be NULL for some unit tests.
-  if (!state_manager_)
-    return true;
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
@@ -808,11 +802,8 @@ void VariationsService::PerformSimulationWithVersion(
 void VariationsService::RecordLastFetchTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // local_state_ is NULL in tests, so check it first.
-  if (local_state_) {
-    local_state_->SetInt64(prefs::kVariationsLastFetchTime,
-                           base::Time::Now().ToInternalValue());
-  }
+  local_state_->SetInt64(prefs::kVariationsLastFetchTime,
+                         base::Time::Now().ToInternalValue());
 }
 
 std::string VariationsService::GetInvalidVariationsSeedSignature() const {
