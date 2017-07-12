@@ -4,26 +4,37 @@
 
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/threading/thread_local.h"
 
 namespace ui {
 
-// static
-CursorFactoryOzone* CursorFactoryOzone::impl_ = NULL;
+namespace {
+
+// TODO(mfomitchev): crbug.com/741106
+// Until the above bug is fixed, CursorFactoryOzone singleton needs to be
+// thread-local, because Ash creates its own instance.
+base::LazyInstance<base::ThreadLocalPointer<CursorFactoryOzone>>::Leaky
+    lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 CursorFactoryOzone::CursorFactoryOzone() {
-  DCHECK(!impl_) << "There should only be a single CursorFactoryOzone.";
-  impl_ = this;
+  DCHECK(!lazy_tls_ptr.Pointer()->Get())
+      << "There should only be a single CursorFactoryOzone per thread.";
+  lazy_tls_ptr.Pointer()->Set(this);
 }
 
 CursorFactoryOzone::~CursorFactoryOzone() {
-  DCHECK_EQ(impl_, this);
-  impl_ = NULL;
+  DCHECK_EQ(lazy_tls_ptr.Pointer()->Get(), this);
+  lazy_tls_ptr.Pointer()->Set(nullptr);
 }
 
 CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
-  DCHECK(impl_) << "No CursorFactoryOzone implementation set.";
-  return impl_;
+  CursorFactoryOzone* result = lazy_tls_ptr.Pointer()->Get();
+  DCHECK(result) << "No CursorFactoryOzone implementation set.";
+  return result;
 }
 
 PlatformCursor CursorFactoryOzone::GetDefaultCursor(CursorType type) {

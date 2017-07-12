@@ -13,8 +13,12 @@
 
 namespace ui {
 
+class CursorFactoryOzone;
+
 class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
  public:
+  // CursorLoaderOzone will use CursorFactoryOzone corresponding to the thread
+  // it was constructed on.
   CursorLoaderOzone();
   ~CursorLoaderOzone() override;
 
@@ -33,6 +37,7 @@ class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
   // Pointers are owned by ResourceBundle and must not be freed here.
   typedef std::map<CursorType, PlatformCursor> ImageCursorMap;
   ImageCursorMap cursors_;
+  CursorFactoryOzone* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);
 };
