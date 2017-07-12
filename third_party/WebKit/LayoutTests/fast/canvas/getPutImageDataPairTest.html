@@ -3,6 +3,8 @@
 
 <script>
 var canvas = document.createElement('canvas');
+canvas.width = 5;
+canvas.height = 5;
 var ctx = canvas.getContext('2d');
 
 function getPutImageData(numIters, ctx, rgba) {
@@ -39,15 +41,15 @@ function getPutImageData(numIters, ctx, rgba) {
 }
 
 var testScenarios = [
-    ['GetPutImageDataTestCase ', 50, ctx, '0, 0, 0, 0.0'],
-    ['GetPutImageDataTestCase ', 50, ctx, '0, 0, 0, 0.5'],
-    ['GetPutImageDataTestCase ', 50, ctx, '0, 0, 0, 1.0'],
-    ['GetPutImageDataTestCase ', 50, ctx, '127, 128, 129, 0.49'],
-    ['GetPutImageDataTestCase ', 50, ctx, '127, 128, 129, 0.51'],
-    ['GetPutImageDataTestCase ', 50, ctx, '127, 128, 129, 0.5'],
-    ['GetPutImageDataTestCase ', 50, ctx, '128, 128, 128, 0.0'],
-    ['GetPutImageDataTestCase ', 50, ctx, '128, 128, 128, 0.5'],
-    ['GetPutImageDataTestCase ', 50, ctx, '128, 128, 128, 1.0'],
+    ['GetPutImageDataTestCase0 ', 50, ctx, '0, 0, 0, 0.0'],
+    ['GetPutImageDataTestCase1 ', 50, ctx, '0, 0, 0, 0.5'],
+    ['GetPutImageDataTestCase2 ', 50, ctx, '0, 0, 0, 1.0'],
+    ['GetPutImageDataTestCase3 ', 50, ctx, '127, 128, 129, 0.49'],
+    ['GetPutImageDataTestCase4 ', 50, ctx, '127, 128, 129, 0.51'],
+    ['GetPutImageDataTestCase5 ', 50, ctx, '127, 128, 129, 0.5'],
+    ['GetPutImageDataTestCase6 ', 50, ctx, '128, 128, 128, 0.0'],
+    ['GetPutImageDataTestCase7 ', 50, ctx, '128, 128, 128, 0.5'],
+    ['GetPutImageDataTestCase8 ', 50, ctx, '128, 128, 128, 1.0'],
 ];
 
 generate_tests(getPutImageData, testScenarios);
