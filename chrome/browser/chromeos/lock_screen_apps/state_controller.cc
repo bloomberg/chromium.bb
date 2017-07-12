@@ -112,6 +112,19 @@ void StateController::SetPrimaryProfile(Profile* profile) {
       "" /* supervised_user_id */);
 }
 
+void StateController::Shutdown() {
+  session_observer_.RemoveAll();
+  if (app_manager_) {
+    app_manager_->Stop();
+    ResetNoteTakingWindowAndMoveToNextState(true /*close_window*/);
+    app_manager_.reset();
+  }
+  power_manager_client_observer_.RemoveAll();
+  input_devices_observer_.RemoveAll();
+  binding_.Close();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
 void StateController::OnProfilesReady(Profile* primary_profile,
                                       Profile* lock_screen_profile,
                                       Profile::CreateStatus status) {
