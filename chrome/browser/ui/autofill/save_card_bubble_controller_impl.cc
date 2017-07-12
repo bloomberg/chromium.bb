@@ -88,7 +88,8 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
 
-  if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_)) {
+  if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
+                               /*escape_apostrophes=*/true)) {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
         is_uploading_, is_reshow_,
