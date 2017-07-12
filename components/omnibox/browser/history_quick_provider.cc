@@ -196,40 +196,29 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.typed_count = info.typed_count();
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
+
+  // The inline_autocomplete_offset should be adjusted based on the formatting
+  // applied to |fill_into_edit|.
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
       autocomplete_input_.text(), FixupUserInput(autocomplete_input_).second,
       false, base::UTF8ToUTF16(info.url().spec()));
-
-  base::OffsetAdjuster::Adjustments adjustments;
-  auto format_types =
-      AutocompleteMatch::GetFormatTypes(!history_match.match_in_scheme);
-  match.contents = url_formatter::FormatUrlWithAdjustments(
-      info.url(), format_types, net::UnescapeRule::SPACES, nullptr, nullptr,
-      &adjustments);
+  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitAll;
+  if (history_match.match_in_scheme)
+    fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          info.url(), match.contents, client()->GetSchemeClassifier());
-  std::vector<size_t> offsets =
-      OffsetsFromTermMatches(history_match.url_matches);
-  // In addition to knowing how |offsets| is transformed, we need to know how
-  // |inline_autocomplete_offset| is transformed.  We add it to the end of
-  // |offsets|, compute how everything is transformed, then remove it from the
-  // end.
-  offsets.push_back(inline_autocomplete_offset);
-  base::OffsetAdjuster::AdjustOffsets(adjustments, &offsets);
-  inline_autocomplete_offset = offsets.back();
-  offsets.pop_back();
-  TermMatches new_matches =
-      ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
-  match.contents_class =
-      SpansFromTermMatch(new_matches, match.contents.length(), true);
+          info.url(),
+          url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
+                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   &inline_autocomplete_offset),
+          client()->GetSchemeClassifier());
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   if (inline_autocomplete_offset != base::string16::npos) {
     // |inline_autocomplete_offset| may be beyond the end of the
     // |match.fill_into_edit| if the user has typed an URL with a scheme and the
     // last character typed is a slash.  That slash is removed by the
-    // FormatURLWithAdjustments call above.
+    // FormatUrlWithOffsets call above.
     if (inline_autocomplete_offset < match.fill_into_edit.length()) {
       match.inline_autocompletion =
           match.fill_into_edit.substr(inline_autocomplete_offset);
@@ -239,6 +228,20 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   }
   match.EnsureUWYTIsAllowedToBeDefault(autocomplete_input_,
                                        client()->GetTemplateURLService());
+
+  // The term match offsets should be adjusted based on the formatting
+  // applied to the suggestion contents displayed in the dropdown.
+  std::vector<size_t> offsets =
+      OffsetsFromTermMatches(history_match.url_matches);
+  match.contents = url_formatter::FormatUrlWithOffsets(
+      info.url(),
+      AutocompleteMatch::GetFormatTypes(!history_match.match_in_scheme),
+      net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
+
+  TermMatches new_matches =
+      ReplaceOffsetsInTermMatches(history_match.url_matches, offsets);
+  match.contents_class =
+      SpansFromTermMatch(new_matches, match.contents.length(), true);
 
   // Format the description autocomplete presentation.
   match.description = info.title();
