@@ -816,6 +816,12 @@ void TabAndroid::AttachToTabContentManager(
     tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
 }
 
+void TabAndroid::ClearThumbnailPlaceholder(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  if (tab_content_manager_)
+    tab_content_manager_->NativeRemoveTabThumbnail(GetAndroidId());
+}
+
 scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
   return devtools_host_;
 }

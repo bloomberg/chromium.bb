@@ -92,6 +92,7 @@ class TabContentManager : public ThumbnailCacheObserver {
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jintArray>& priority,
                         jint primary_tab_id);
+  void NativeRemoveTabThumbnail(int tab_id);
   void RemoveTabThumbnail(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint tab_id);

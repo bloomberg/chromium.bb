@@ -231,6 +231,10 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jtab_content_manager);
 
+  void ClearThumbnailPlaceholder(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   bool HasPrerenderedUrl(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& url);
