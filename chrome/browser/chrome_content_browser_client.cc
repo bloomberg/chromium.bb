@@ -3082,8 +3082,9 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  services->emplace(printing::mojom::kServiceName,
-                    base::ASCIIToUTF16("PDF Compositor Service"));
+  (*services)[printing::mojom::kServiceName] = {
+      base::ASCIIToUTF16("PDF Compositor Service"),
+      content::SANDBOX_TYPE_UTILITY};
 #endif
 }
 

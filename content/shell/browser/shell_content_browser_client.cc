@@ -246,8 +246,8 @@ void ShellContentBrowserClient::RegisterInProcessServices(
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
-  services->insert(std::make_pair(kTestServiceUrl,
-                                  base::UTF8ToUTF16("Test Service")));
+  (*services)[kTestServiceUrl] = {base::UTF8ToUTF16("Test Service"),
+                                  SANDBOX_TYPE_UTILITY};
 }
 
 std::unique_ptr<base::Value>

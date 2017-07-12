@@ -168,8 +168,11 @@ void UtilityProcessHostImpl::SetExposedDir(const base::FilePath& dir) {
   exposed_dir_ = dir;
 }
 
-void UtilityProcessHostImpl::DisableSandbox() {
-  no_sandbox_ = true;
+void UtilityProcessHostImpl::SetSandboxType(SandboxType sandbox_type) {
+  DCHECK(sandbox_type != SANDBOX_TYPE_INVALID);
+
+  // TODO(tsepez): Store sandbox type itself.
+  no_sandbox_ = IsUnsandboxedSandboxType(sandbox_type);
 }
 
 #if defined(OS_WIN)

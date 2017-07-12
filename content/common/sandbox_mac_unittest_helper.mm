@@ -15,6 +15,7 @@ extern "C" {
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "content/common/sandbox_mac.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/test/test_content_client.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -56,15 +57,17 @@ bool MacSandboxTest::RunTestInAllSandboxTypes(const char* test_name,
   for(int i = static_cast<int>(SANDBOX_TYPE_FIRST_TYPE);
       i < SANDBOX_TYPE_AFTER_LAST_TYPE;
       ++i) {
-    if (!RunTestInSandbox(static_cast<SandboxType>(i),
-            test_name, test_data)) {
-      LOG(ERROR) << "Sandboxed test (" << test_name << ")" <<
-          "Failed in sandbox type " << i <<
-          "user data: (" << test_data << ")";
+    if (IsUnsandboxedSandboxType(static_cast<SandboxType>(i)))
+      continue;
+
+    if (!RunTestInSandbox(static_cast<SandboxType>(i), test_name, test_data)) {
+      LOG(ERROR) << "Sandboxed test (" << test_name << ")"
+                 << "Failed in sandbox type " << i << "user data: ("
+                 << test_data << ")";
       return false;
     }
   }
- return true;
+  return true;
 }
 
 bool MacSandboxTest::RunTestInSandbox(SandboxType sandbox_type,

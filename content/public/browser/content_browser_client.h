@@ -23,6 +23,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/sandbox_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "media/media_features.h"
@@ -684,22 +685,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
 
-  using OutOfProcessServiceMap = std::map<std::string, base::string16>;
+  using OutOfProcessServiceMap =
+      std::map<std::string, std::pair<base::string16, SandboxType>>;
 
-  // Registers services to be loaded out of the browser process, in a sandboxed
-  // utility process. The value of each map entry should be the process name to
-  // use for the service's host process when launched.
-  virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
-
-  // Registers services to be loaded out of the browser process (in a utility
-  // process) without the sandbox.
+  // Registers services to be loaded out of the browser process, in an
+  // utility process. The value of each map entry should be a { process name,
+  // sandbox type } pair to use for the service's host process when launched.
   //
-  // WARNING: This path is NOT recommended! If a service needs another service
-  // that is only available out of the sandbox, it could ask the browser
-  // process to provide it. Only use this method when that approach does not
-  // work.
-  virtual void RegisterUnsandboxedOutOfProcessServices(
-      OutOfProcessServiceMap* services) {}
+  // WARNING: SANDBOX_TYPE_NO_SANDBOX is NOT recommended as it creates an
+  // unsandboxed process! If a service needs another service that is only
+  // available out of the sandbox, it could ask the browser process to provide
+  // it. Only use this method when that approach does not work.
+  virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
 
   // Allow the embedder to provide a dictionary loaded from a JSON file
   // resembling a service manifest whose capabilities section will be merged
