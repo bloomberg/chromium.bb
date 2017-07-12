@@ -29,6 +29,13 @@ using content::NavigationSimulator;
 
 namespace {
 
+struct ExpectedFrameBytes {
+  ExpectedFrameBytes(size_t cached_kb, size_t uncached_kb)
+      : cached_kb(cached_kb), uncached_kb(uncached_kb) {}
+  size_t cached_kb;
+  size_t uncached_kb;
+};
+
 enum class ResourceCached { NOT_CACHED, CACHED };
 enum class FrameType { AD = 0, NON_AD };
 
@@ -109,6 +116,97 @@ class DelayWillProcessResponseObserver : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(DelayWillProcessResponseObserver);
 };
+
+// Verifies that the histograms match what is expected given |google_ad_frames|
+// ad frame byte counts and non-ad counts (|other_cached_kb| and
+// |other_uncached_kb|).
+void TestHistograms(const base::HistogramTester& histograms,
+                    const std::vector<ExpectedFrameBytes>& google_ad_frames,
+                    size_t non_ad_cached_kb,
+                    size_t non_ad_uncached_kb) {
+  size_t total_ad_cached_kb = 0;
+  size_t total_ad_uncached_kb = 0;
+  size_t total_ad_kb = 0;
+  size_t ad_frame_count = 0;
+
+  std::map<size_t, int> frames_with_total_byte_count;
+  std::map<size_t, int> frames_with_network_byte_count;
+  std::map<size_t, int> frames_with_percent_network_count;
+
+  // Perform some initial calculations on the number of bytes, of each type,
+  // in each ad frame.
+  for (const ExpectedFrameBytes& bytes : google_ad_frames) {
+    total_ad_cached_kb += bytes.cached_kb;
+    total_ad_uncached_kb += bytes.uncached_kb;
+    total_ad_kb += bytes.cached_kb + bytes.uncached_kb;
+
+    if (total_ad_kb == 0)
+      continue;
+
+    ad_frame_count += 1;
+
+    size_t total_frame_kb = bytes.cached_kb + bytes.uncached_kb;
+
+    frames_with_total_byte_count[total_frame_kb] += 1;
+    frames_with_network_byte_count[bytes.uncached_kb] += 1;
+    frames_with_percent_network_count[(bytes.uncached_kb * 100) /
+                                      total_frame_kb] += 1;
+  }
+
+  // Test the histograms.
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames",
+      ad_frame_count, 1);
+
+  if (ad_frame_count == 0)
+    return;
+
+  for (const auto& total_bytes_and_count : frames_with_total_byte_count) {
+    histograms.ExpectBucketCount(
+        "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total",
+        total_bytes_and_count.first, total_bytes_and_count.second);
+  }
+  for (const auto& network_bytes_and_count : frames_with_network_byte_count) {
+    histograms.ExpectBucketCount(
+        "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network",
+        network_bytes_and_count.first, network_bytes_and_count.second);
+  }
+  for (const auto& percent_network_and_count :
+       frames_with_percent_network_count) {
+    histograms.ExpectBucketCount(
+        "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork",
+        percent_network_and_count.first, percent_network_and_count.second);
+  }
+
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", total_ad_kb,
+      1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network",
+      total_ad_uncached_kb, 1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total",
+      non_ad_cached_kb + non_ad_uncached_kb + total_ad_kb, 1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network",
+      non_ad_uncached_kb + total_ad_uncached_kb, 1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total",
+      non_ad_cached_kb + non_ad_uncached_kb, 1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds",
+      (total_ad_kb * 100) /
+          (total_ad_kb + non_ad_cached_kb + non_ad_uncached_kb),
+      1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
+      ((total_ad_uncached_kb * 100) / total_ad_kb), 1);
+  histograms.ExpectUniqueSample(
+      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds",
+      (total_ad_uncached_kb * 100) /
+          (total_ad_uncached_kb + non_ad_uncached_kb),
+      1);
+}
 
 }  // namespace
 
@@ -199,8 +297,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNoAds) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 0, 1);
+  TestHistograms(histogram_tester(), {}, 0 /* non_ad_cached_kb */,
+                 30 /* non_ad_uncached_kb */);
+
+  // Verify that other UMA wasn't written.
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 0);
 }
@@ -226,39 +326,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // 20KB total were loaded from network, one of which was in an ad frame.
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-
-  // Individual Ad Frame Metrics
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 10, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 10, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
-      1);
-
-  // Page percentages
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 50, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
-      100, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 50, 1);
-
-  // Page byte counts
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 10, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 10, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 10, 1);
+  TestHistograms(histogram_tester(), {{0, 10}}, 0 /* non_ad_cached_kb */,
+                 10 /*non_ad_uncached_kb*/);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
@@ -298,53 +367,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrames) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Individual Ad Frame Metrics
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 10, 3);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 20, 1);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 10, 3);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 0, 1);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 0,
-      1);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
-      2);
-  histogram_tester().ExpectBucketCount(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 50,
-      1);
-
-  // Counts
+  TestHistograms(histogram_tester(), {{10, 0}, {0, 10}, {0, 10}, {10, 10}},
+                 10 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 4, 1);
-
-  // Page percentages
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 71, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork", 60,
-      1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 75, 1);
-
-  // Page byte counts
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 50, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 30, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 70, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 40, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 20, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageLoadSubFrameRenavigationMetrics) {
@@ -402,43 +430,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Individual Ad Frame Metrics
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
-      1);
-
-  // Counts
+  TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
+                 10 /* non_ad_uncached_kb */);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-
-  // Page percentages
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 66, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
-      100, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 66, 1);
-
-  // Page byte counts
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 30, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 30, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 10, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
@@ -468,43 +465,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNonAdFrameThatRenavigatesToAd) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // Individual Ad Frame Metrics
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 10, 2);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 10, 2);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
-      2);
-
-  // Counts
+  TestHistograms(histogram_tester(), {{0, 10}, {0, 10}},
+                 0 /* non_ad_cached_kb */, 20 /* non_ad_uncached_kb */);
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound", 0);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 2, 1);
-
-  // Page percentages
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 50, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
-      100, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 50, 1);
-
-  // Page byte counts
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 40, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 40, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 20, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
@@ -530,12 +496,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedNavigation) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 30, 1);
+  TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
+                 10 /* non_ad_uncached_kb */);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
@@ -563,12 +525,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, CountAbortedSecondNavigationForFrame) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 40, 1);
+  TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
+                 20 /* non_ad_uncached_kb */);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
@@ -602,48 +560,14 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
 
-  // 30KB in total was loaded. Ten for the main page, ten for an aborted
-  // ad subframe, and ten for a successful ad subframe. The aborted ad
-  // subframe's bytes count.
+  TestHistograms(histogram_tester(), {{0, 20}}, 0 /* non_ad_cached_kb */,
+                 10 /* non_ad_uncached_kb */);
 
-  // Individual Ad Frame Metrics
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.PerFrame.PercentNetwork", 100,
-      1);
-
-  // Counts
   histogram_tester().ExpectBucketCount(
       "PageLoad.Clients.Ads.Google.ParentExistsForSubFrame", 0, 0);
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.ResourceTypeWhenNoFrameFound",
       content::RESOURCE_TYPE_SUB_FRAME, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 1, 1);
-
-  // Page percentages
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total.PercentAds", 66, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.PercentNetwork",
-      100, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network.PercentAds", 66, 1);
-
-  // Page byte counts
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Total", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.AdFrames.Aggregate.Network", 20, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Total", 30, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.FullPage.Network", 30, 1);
-  histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.Ads.Google.Bytes.NonAdFrames.Aggregate.Total", 10, 1);
 }
 
 // This tests an issue that is believed to be the cause of
@@ -708,10 +632,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   // main frame resource was properly tracked and attributed.
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.Google.FrameCounts.AnyParentFrame.AdFrames", 0, 1);
-
-  // There shouldn't be any other histograms for a page with no ad resources.
+  // There shouldn't be any other histograms for a page with no ad
+  // resources.
   EXPECT_EQ(1u, histogram_tester()
-                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
+                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.Google.")
                     .size());
 }
 
