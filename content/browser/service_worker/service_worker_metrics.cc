@@ -232,12 +232,21 @@ enum EventHandledRatioType {
 
 using ScopedEventRecorder = ServiceWorkerMetrics::ScopedEventRecorder;
 
-ScopedEventRecorder::ScopedEventRecorder() {}
+ScopedEventRecorder::ScopedEventRecorder(
+    ServiceWorkerMetrics::EventType start_worker_purpose)
+    : start_worker_purpose_(start_worker_purpose) {}
 
 ScopedEventRecorder::~ScopedEventRecorder() {
   for (const auto& ev : event_stats_) {
     RecordEventHandledRatio(ev.first, ev.second.handled_events,
                             ev.second.fired_events);
+  }
+  if (start_worker_purpose_ == EventType::NAVIGATION_HINT) {
+    bool frame_fetch_event_fired =
+        event_stats_[EventType::FETCH_MAIN_FRAME].fired_events ||
+        event_stats_[EventType::FETCH_SUB_FRAME].fired_events;
+    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.StartHintPrecision",
+                          frame_fetch_event_fired);
   }
 }
 
