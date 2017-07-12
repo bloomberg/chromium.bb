@@ -308,6 +308,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
         scoped_feature_list_.InitWithFeatures(
             {media::kExternalClearKeyForTesting}, {});
       }
+    } else {
+      if (cdm_host_type == CdmHostType::kMojo) {
+        scoped_feature_list_.InitWithFeatures(
+            {media::kMojoCdm, media::kSupportExperimentalCdmInterface}, {});
+      }
     }
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
   }

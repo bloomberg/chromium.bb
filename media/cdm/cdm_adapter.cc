@@ -279,8 +279,14 @@ void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
 
   input_buffer->data = encrypted_buffer->data();
   input_buffer->data_size = encrypted_buffer->data_size();
+  input_buffer->timestamp = encrypted_buffer->timestamp().InMicroseconds();
 
   const DecryptConfig* decrypt_config = encrypted_buffer->decrypt_config();
+  if (!decrypt_config) {
+    DVLOG(2) << __func__ << ": Clear buffer.";
+    return;
+  }
+
   input_buffer->key_id =
       reinterpret_cast<const uint8_t*>(decrypt_config->key_id().data());
   input_buffer->key_id_size = decrypt_config->key_id().size();
@@ -300,7 +306,6 @@ void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
 
   input_buffer->subsamples = subsamples->data();
   input_buffer->num_subsamples = num_subsamples;
-  input_buffer->timestamp = encrypted_buffer->timestamp().InMicroseconds();
 }
 
 void* GetCdmHost(int host_interface_version, void* user_data) {
