@@ -40,6 +40,12 @@ foreach $w (@block_widths) {
     push @block_sizes, [$w, $h] if ($w <= 2*$h && $h <= 2*$w) ;
   }
 }
+if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
+  push @block_sizes, [4, 16];
+  push @block_sizes, [16, 4];
+  push @block_sizes, [8, 32];
+  push @block_sizes, [32, 8];
+}
 
 @tx_dims = (2, 4, 8, 16, 32);
 if (aom_config("CONFIG_TX64X64") eq "yes") {
@@ -979,6 +985,22 @@ specialize qw/aom_sub_pixel_avg_variance8x8        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance8x4        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance4x8        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance4x4        msa sse2 ssse3/;
+
+if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
+  specialize qw/aom_variance4x16 sse2/;
+  specialize qw/aom_variance16x4 sse2/;
+  specialize qw/aom_variance8x32 sse2/;
+  specialize qw/aom_variance32x8 sse2/;
+  specialize qw/aom_sub_pixel_variance4x16 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance16x4 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance8x32 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance32x8 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance4x16 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance16x4 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance8x32 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance32x8 sse2 ssse3/;
+}
+
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   foreach $bd (8, 10, 12) {
     add_proto qw/unsigned int/, "aom_highbd_${bd}_variance2x2", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
@@ -995,6 +1017,8 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
       if ($w != 128 && $h != 128 && $w != 4 && $h != 4) {
         specialize "aom_highbd_${bd}_variance${w}x${h}", "sse2";
       }
+      # TODO(david.barker): When ext-partition-types is enabled, we currenly
+      # don't have vectorized 4x16 highbd variance functions
       if ($w == 4 && $h == 4) {
         specialize "aom_highbd_${bd}_variance${w}x${h}", "sse4_1";
       }

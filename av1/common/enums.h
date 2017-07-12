@@ -130,6 +130,8 @@ typedef enum {
   PARTITION_HORZ_B,  // HORZ split and the right partition is split again
   PARTITION_VERT_A,  // VERT split and the top partition is split again
   PARTITION_VERT_B,  // VERT split and the bottom partition is split again
+  PARTITION_HORZ_4,  // 4:1 horizontal partition
+  PARTITION_VERT_4,  // 4:1 vertical partition
   EXT_PARTITION_TYPES,
 #endif  // CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPES = PARTITION_SPLIT + 1,

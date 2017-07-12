@@ -35,14 +35,14 @@ DECLARE_ALIGNED(16, static uint8_t,
                               [MASK_MASTER_SIZE * MASK_MASTER_SIZE]);
 
 DECLARE_ALIGNED(16, static uint8_t,
-                wedge_signflip_lookup[BLOCK_SIZES][MAX_WEDGE_TYPES]);
+                wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]);
 
-// 3 * MAX_WEDGE_SQUARE is an easy to compute and fairly tight upper bound
+// 4 * MAX_WEDGE_SQUARE is an easy to compute and fairly tight upper bound
 // on the sum of all mask sizes up to an including MAX_WEDGE_SQUARE.
 DECLARE_ALIGNED(16, static uint8_t,
-                wedge_mask_buf[2 * MAX_WEDGE_TYPES * 3 * MAX_WEDGE_SQUARE]);
+                wedge_mask_buf[2 * MAX_WEDGE_TYPES * 4 * MAX_WEDGE_SQUARE]);
 
-static wedge_masks_type wedge_masks[BLOCK_SIZES][2];
+static wedge_masks_type wedge_masks[BLOCK_SIZES_ALL][2];
 
 // Some unused wedge codebooks left temporarily to facilitate experiments.
 // To be removed when settled.
@@ -159,7 +159,7 @@ static const wedge_code_type wedge_codebook_16_heqw[16] = {
   { WEDGE_OBLIQUE117, 2, 4 }, { WEDGE_OBLIQUE117, 6, 4 },
 };
 
-const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
+const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
@@ -216,6 +216,14 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
 #endif  // CONFIG_EXT_PARTITION
+  { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_4X16], 0,
+    wedge_masks[BLOCK_4X16] },
+  { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X4], 0,
+    wedge_masks[BLOCK_16X4] },
+  { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X32], 0,
+    wedge_masks[BLOCK_8X32] },
+  { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8], 0,
+    wedge_masks[BLOCK_32X8] },
 };
 
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
@@ -531,7 +539,7 @@ static void init_wedge_master_masks() {
 static void init_wedge_signs() {
   BLOCK_SIZE sb_type;
   memset(wedge_signflip_lookup, 0, sizeof(wedge_signflip_lookup));
-  for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES; ++sb_type) {
+  for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES_ALL; ++sb_type) {
     const int bw = block_size_wide[sb_type];
     const int bh = block_size_high[sb_type];
     const wedge_params_type wedge_params = wedge_params_lookup[sb_type];
@@ -565,7 +573,7 @@ static void init_wedge_masks() {
   uint8_t *dst = wedge_mask_buf;
   BLOCK_SIZE bsize;
   memset(wedge_masks, 0, sizeof(wedge_masks));
-  for (bsize = BLOCK_4X4; bsize < BLOCK_SIZES; ++bsize) {
+  for (bsize = BLOCK_4X4; bsize < BLOCK_SIZES_ALL; ++bsize) {
     const uint8_t *mask;
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
@@ -2688,12 +2696,13 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,
   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
-static int ii_size_scales[BLOCK_SIZES] = {
+static int ii_size_scales[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     32, 32, 32,
 #endif
     32, 16, 16, 16, 8, 8, 8, 4,
     4,  4,  2,  2,  2, 1, 1, 1,
+    16, 16, 8, 8,
 };
 #else
 static const int ii_weights1d[MAX_SB_SIZE] = {
@@ -2702,12 +2711,13 @@ static const int ii_weights1d[MAX_SB_SIZE] = {
   6,  6,  6,  5,  5,  4,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,
   2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
-static int ii_size_scales[BLOCK_SIZES] = {
+static int ii_size_scales[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     16, 16, 16,
 #endif
     16, 8, 8, 8, 4, 4, 4,
     2,  2, 2, 1, 1, 1,
+    8, 8, 4, 4,
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION

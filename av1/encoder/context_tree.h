@@ -81,6 +81,8 @@ typedef struct PC_TREE {
   PICK_MODE_CONTEXT horizontalb[3];
   PICK_MODE_CONTEXT verticala[3];
   PICK_MODE_CONTEXT verticalb[3];
+  PICK_MODE_CONTEXT horizontal4[4];
+  PICK_MODE_CONTEXT vertical4[4];
 #endif
   union {
     struct PC_TREE *split[4];

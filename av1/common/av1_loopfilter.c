@@ -99,7 +99,7 @@ static const uint64_t above_64x64_txform_mask[TX_SIZES] = {
 //  00000000
 //  00000000
 //  00000000
-static const uint64_t left_prediction_mask[BLOCK_SIZES] = {
+static const uint64_t left_prediction_mask[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2,
   0x0000000000000001ULL,  // BLOCK_2X4,
@@ -117,11 +117,15 @@ static const uint64_t left_prediction_mask[BLOCK_SIZES] = {
   0x0000000001010101ULL,  // BLOCK_32X32,
   0x0101010101010101ULL,  // BLOCK_32X64,
   0x0000000001010101ULL,  // BLOCK_64X32,
-  0x0101010101010101ULL,  // BLOCK_64X64
+  0x0101010101010101ULL,  // BLOCK_64X64,
+  0x0000000000000101ULL,  // BLOCK_4X16,
+  0x0000000000000001ULL,  // BLOCK_16X4,
+  0x0000000001010101ULL,  // BLOCK_8X32,
+  0x0000000000000001ULL,  // BLOCK_32X8
 };
 
 // 64 bit mask to shift and set for each prediction size.
-static const uint64_t above_prediction_mask[BLOCK_SIZES] = {
+static const uint64_t above_prediction_mask[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2
   0x0000000000000001ULL,  // BLOCK_2X4
@@ -139,12 +143,16 @@ static const uint64_t above_prediction_mask[BLOCK_SIZES] = {
   0x000000000000000fULL,  // BLOCK_32X32,
   0x000000000000000fULL,  // BLOCK_32X64,
   0x00000000000000ffULL,  // BLOCK_64X32,
-  0x00000000000000ffULL,  // BLOCK_64X64
+  0x00000000000000ffULL,  // BLOCK_64X64,
+  0x0000000000000001ULL,  // BLOCK_4X16,
+  0x0000000000000003ULL,  // BLOCK_16X4,
+  0x0000000000000001ULL,  // BLOCK_8X32,
+  0x000000000000000fULL,  // BLOCK_32X8
 };
 // 64 bit mask to shift and set for each prediction size. A bit is set for
-// each 8x8 block that would be in the left most block of the given block
+// each 8x8 block that would be in the top left most block of the given block
 // size in the 64x64 block.
-static const uint64_t size_mask[BLOCK_SIZES] = {
+static const uint64_t size_mask[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2
   0x0000000000000001ULL,  // BLOCK_2X4
@@ -162,7 +170,11 @@ static const uint64_t size_mask[BLOCK_SIZES] = {
   0x000000000f0f0f0fULL,  // BLOCK_32X32,
   0x0f0f0f0f0f0f0f0fULL,  // BLOCK_32X64,
   0x00000000ffffffffULL,  // BLOCK_64X32,
-  0xffffffffffffffffULL,  // BLOCK_64X64
+  0xffffffffffffffffULL,  // BLOCK_64X64,
+  0x0000000000000101ULL,  // BLOCK_4X16,
+  0x0000000000000003ULL,  // BLOCK_16X4,
+  0x0000000001010101ULL,  // BLOCK_8X32,
+  0x000000000000000fULL,  // BLOCK_32X8
 };
 
 // These are used for masking the left and above 32x32 borders.
@@ -197,7 +209,7 @@ static const uint16_t above_64x64_txform_mask_uv[TX_SIZES] = {
 };
 
 // 16 bit left mask to shift and set for each uv prediction size.
-static const uint16_t left_prediction_mask_uv[BLOCK_SIZES] = {
+static const uint16_t left_prediction_mask_uv[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2,
   0x0001,  // BLOCK_2X4,
@@ -215,10 +227,15 @@ static const uint16_t left_prediction_mask_uv[BLOCK_SIZES] = {
   0x0011,  // BLOCK_32X32,
   0x1111,  // BLOCK_32X64
   0x0011,  // BLOCK_64X32,
-  0x1111,  // BLOCK_64X64
+  0x1111,  // BLOCK_64X64,
+  0x0001,  // BLOCK_4X16,
+  0x0001,  // BLOCK_16X4,
+  0x0011,  // BLOCK_8X32,
+  0x0001,  // BLOCK_32X8
 };
+
 // 16 bit above mask to shift and set for uv each prediction size.
-static const uint16_t above_prediction_mask_uv[BLOCK_SIZES] = {
+static const uint16_t above_prediction_mask_uv[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2
   0x0001,  // BLOCK_2X4
@@ -236,11 +253,15 @@ static const uint16_t above_prediction_mask_uv[BLOCK_SIZES] = {
   0x0003,  // BLOCK_32X32,
   0x0003,  // BLOCK_32X64,
   0x000f,  // BLOCK_64X32,
-  0x000f,  // BLOCK_64X64
+  0x000f,  // BLOCK_64X64,
+  0x0001,  // BLOCK_4X16,
+  0x0001,  // BLOCK_16X4,
+  0x0001,  // BLOCK_8X32,
+  0x0003,  // BLOCK_32X8
 };
 
 // 64 bit mask to shift and set for each uv prediction size
-static const uint16_t size_mask_uv[BLOCK_SIZES] = {
+static const uint16_t size_mask_uv[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2
   0x0001,  // BLOCK_2X4
@@ -258,7 +279,11 @@ static const uint16_t size_mask_uv[BLOCK_SIZES] = {
   0x0033,  // BLOCK_32X32,
   0x3333,  // BLOCK_32X64,
   0x00ff,  // BLOCK_64X32,
-  0xffff,  // BLOCK_64X64
+  0xffff,  // BLOCK_64X64,
+  0x0001,  // BLOCK_4X16,
+  0x0001,  // BLOCK_16X4,
+  0x0011,  // BLOCK_8X32,
+  0x0003,  // BLOCK_32X8
 };
 static const uint16_t left_border_uv = 0x1111;
 static const uint16_t above_border_uv = 0x000f;
@@ -1892,7 +1917,7 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
 
 #if CONFIG_PARALLEL_DEBLOCKING
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
-static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
+static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
   // mask for vertical edges filtering
   {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
@@ -1916,8 +1941,12 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
 #if CONFIG_EXT_PARTITION
       64 - 1,   // BLOCK_64X128
       128 - 1,  // BLOCK_128X64
-      128 - 1   // BLOCK_128X128
+      128 - 1,  // BLOCK_128X128
 #endif          // CONFIG_EXT_PARTITION
+      4 - 1,    // BLOCK_4X16,
+      16 - 1,   // BLOCK_16X4,
+      8 - 1,    // BLOCK_8X32,
+      32 - 1    // BLOCK_32X8
   },
   // mask for horizontal edges filtering
   {
@@ -1942,8 +1971,12 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES] = {
 #if CONFIG_EXT_PARTITION
       128 - 1,  // BLOCK_64X128
       64 - 1,   // BLOCK_128X64
-      128 - 1   // BLOCK_128X128
+      128 - 1,  // BLOCK_128X128
 #endif          // CONFIG_EXT_PARTITION
+      16 - 1,   // BLOCK_4X16,
+      4 - 1,    // BLOCK_16X4,
+      32 - 1,   // BLOCK_8X32,
+      8 - 1     // BLOCK_32X8
   },
 };
 

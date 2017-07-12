@@ -418,7 +418,7 @@ typedef struct SPEED_FEATURES {
 
   // A binary mask indicating if NEARESTMV, NEARMV, ZEROMV, NEWMV
   // modes are used in order from LSB to MSB for each BLOCK_SIZE.
-  int inter_mode_mask[BLOCK_SIZES];
+  int inter_mode_mask[BLOCK_SIZES_ALL];
 
   // This feature controls whether we do the expensive context update and
   // calculation in the rd coefficient costing loop.

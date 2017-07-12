@@ -307,8 +307,8 @@ static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
 // TODO(jingning) All spatially adaptive variables should go to TileDataEnc.
 typedef struct TileDataEnc {
   TileInfo tile_info;
-  int thresh_freq_fact[BLOCK_SIZES][MAX_MODES];
-  int mode_map[BLOCK_SIZES][MAX_MODES];
+  int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
+  int mode_map[BLOCK_SIZES_ALL][MAX_MODES];
   int m_search_count;
   int ex_search_count;
 #if CONFIG_PVQ
@@ -482,7 +482,7 @@ typedef struct AV1_COMP {
   fractional_mv_step_fp *find_fractional_mv_step;
   av1_full_search_fn_t full_search_sad;  // It is currently unused.
   av1_diamond_search_fn_t diamond_search_sad;
-  aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES];
+  aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
   uint64_t time_receive_data;
   uint64_t time_compress_data;
   uint64_t time_pick_lpf;
@@ -558,9 +558,9 @@ typedef struct AV1_COMP {
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-  int motion_mode_cost[BLOCK_SIZES][MOTION_MODES];
+  int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-  int motion_mode_cost1[BLOCK_SIZES][2];
+  int motion_mode_cost1[BLOCK_SIZES_ALL][2];
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   int intra_uv_mode_cost[INTRA_MODES][INTRA_MODES];

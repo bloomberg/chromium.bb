@@ -924,7 +924,7 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 
 #if CONFIG_RECT_TX
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
-  static const char LUT[BLOCK_SIZES] = {
+  static const char LUT[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
@@ -948,6 +948,10 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
     0,  // BLOCK_128X64
     0,  // BLOCK_128X128
 #endif  // CONFIG_EXT_PARTITION
+    0,  // BLOCK_4X16
+    0,  // BLOCK_16X4
+    0,  // BLOCK_8X32
+    0,  // BLOCK_32X8
   };
 
   return LUT[bsize];
@@ -961,7 +965,7 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 
 #if CONFIG_RECT_TX_EXT
 static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
-  static const char LUT_QTTX[BLOCK_SIZES] = {
+  static const char LUT_QTTX[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
@@ -985,6 +989,10 @@ static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
     0,  // BLOCK_128X64
     0,  // BLOCK_128X128
 #endif  // CONFIG_EXT_PARTITION
+    0,  // BLOCK_4X16
+    0,  // BLOCK_16X4
+    0,  // BLOCK_8X32
+    0,  // BLOCK_32X8
   };
 
   return LUT_QTTX[bsize];
@@ -1296,7 +1304,7 @@ static INLINE int is_interintra_allowed(const MB_MODE_INFO *mbmi) {
 
 static INLINE int is_interintra_allowed_bsize_group(int group) {
   int i;
-  for (i = 0; i < BLOCK_SIZES; i++) {
+  for (i = 0; i < BLOCK_SIZES_ALL; i++) {
     if (size_group_lookup[i] == group &&
         is_interintra_allowed_bsize((BLOCK_SIZE)i)) {
       return 1;

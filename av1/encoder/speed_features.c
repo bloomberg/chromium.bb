@@ -199,7 +199,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
             : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
                   FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR;
     sf->disable_filter_search_var_thresh = 100;
-    sf->comp_inter_joint_search_thresh = BLOCK_SIZES;
+    sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
     sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->use_upsampled_references = 0;
@@ -413,7 +413,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_fast_coef_costing = 0;
   sf->mode_skip_start = MAX_MODES;  // Mode index at which mode skip mask set
   sf->schedule_mode_search = 0;
-  for (i = 0; i < BLOCK_SIZES; ++i) sf->inter_mode_mask[i] = INTER_ALL;
+  for (i = 0; i < BLOCK_SIZES_ALL; ++i) sf->inter_mode_mask[i] = INTER_ALL;
   sf->max_intra_bsize = BLOCK_LARGEST;
   sf->reuse_inter_pred_sby = 0;
   // This setting only takes effect when partition_search_type is set

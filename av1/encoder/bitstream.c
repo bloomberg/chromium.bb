@@ -2442,7 +2442,8 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
   xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
   m = xd->mi[0];
 
-  assert(m->mbmi.sb_type <= cm->sb_size);
+  assert(m->mbmi.sb_type <= cm->sb_size ||
+         (m->mbmi.sb_type >= BLOCK_4X16 && m->mbmi.sb_type <= BLOCK_32X8));
 
   bh = mi_size_high[m->mbmi.sb_type];
   bw = mi_size_wide[m->mbmi.sb_type];
@@ -2510,7 +2511,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
   xd->mi = cm->mi_grid_visible + mi_offset;
 
-  assert(mbmi->sb_type <= cm->sb_size);
+  assert(mbmi->sb_type <= cm->sb_size ||
+         (mbmi->sb_type >= BLOCK_4X16 && mbmi->sb_type <= BLOCK_32X8));
 
   bh = mi_size_high[mbmi->sb_type];
   bw = mi_size_wide[mbmi->sb_type];
@@ -2896,6 +2898,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   const int hbs = mi_size_wide[bsize] / 2;
+#if CONFIG_EXT_PARTITION_TYPES
+  const int quarter_step = mi_size_wide[bsize] / 4;
+  int i;
+#endif
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_CB4X4
@@ -3000,6 +3006,24 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
                               mi_row, mi_col + hbs);
         write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
                               mi_row + hbs, mi_col + hbs);
+        break;
+      case PARTITION_HORZ_4:
+        for (i = 0; i < 4; ++i) {
+          int this_mi_row = mi_row + i * quarter_step;
+          if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+          write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                                this_mi_row, mi_col);
+        }
+        break;
+      case PARTITION_VERT_4:
+        for (i = 0; i < 4; ++i) {
+          int this_mi_col = mi_col + i * quarter_step;
+          if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+          write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled,
+                                mi_row, this_mi_col);
+        }
         break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
       default: assert(0);
@@ -4611,7 +4635,12 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
       }
 #endif
 #if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
-      for (i = 0; i < BLOCK_SIZES; i++) {
+#if CONFIG_EXT_PARTITION_TYPES
+      int block_sizes_to_update = BLOCK_SIZES_ALL;
+#else
+      int block_sizes_to_update = BLOCK_SIZES;
+#endif
+      for (i = 0; i < block_sizes_to_update; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
           av1_cond_prob_diff_update(header_bc, &fc->wedge_interintra_prob[i],
                                     cm->counts.wedge_interintra[i], probwt);

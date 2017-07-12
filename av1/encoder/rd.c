@@ -50,14 +50,15 @@
 // certain modes are assumed to be based on 8x8 blocks.
 // This table is used to correct for block size.
 // The factors here are << 2 (2 = x0.5, 32 = x8 etc).
-static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES] = {
+static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   2,  2,  2,
 #endif
-  2,  3,  3, 4, 6, 6, 8, 12, 12, 16, 24, 24, 32,
+  2,  3,  3,  4, 6, 6, 8, 12, 12, 16, 24, 24, 32,
 #if CONFIG_EXT_PARTITION
-  48, 48, 64
+  48, 48, 64,
 #endif  // CONFIG_EXT_PARTITION
+  4,  4,  8,  8
 };
 
 static void fill_mode_costs(AV1_COMP *cpi) {
@@ -302,7 +303,7 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
               0, MAXQ);
     const int q = compute_rd_thresh_factor(qindex, cm->bit_depth);
 
-    for (bsize = 0; bsize < BLOCK_SIZES; ++bsize) {
+    for (bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
       // Threshold here seems unnecessarily harsh but fine given actual
       // range of values used for cpi->sf.thresh_mult[].
       const int t = q * rd_thresh_block_size_factor[bsize];
@@ -458,12 +459,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-      for (i = BLOCK_8X8; i < BLOCK_SIZES; i++) {
+      for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
         av1_cost_tokens((int *)cpi->motion_mode_cost[i],
                         cm->fc->motion_mode_prob[i], av1_motion_mode_tree);
       }
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-      for (i = BLOCK_8X8; i < BLOCK_SIZES; i++) {
+      for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
         cpi->motion_mode_cost1[i][0] = av1_cost_bit(cm->fc->obmc_prob[i], 0);
         cpi->motion_mode_cost1[i][1] = av1_cost_bit(cm->fc->obmc_prob[i], 1);
       }

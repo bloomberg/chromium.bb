@@ -1182,6 +1182,7 @@ static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
   BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
   const BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+  const int quarter_step = mi_size_wide[bsize] / 4;
 #endif
 #if CONFIG_CB4X4
   const int unify_bsize = 1;
@@ -1259,6 +1260,24 @@ static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
                       &pc_tree->verticalb[1]);
       set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col + hbs, bsize2,
                       &pc_tree->verticalb[2]);
+      break;
+    case PARTITION_HORZ_4:
+      for (int i = 0; i < 4; ++i) {
+        int this_mi_row = mi_row + i * quarter_step;
+        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+        set_mode_info_b(cpi, tile, td, this_mi_row, mi_col, subsize,
+                        &pc_tree->horizontal4[i]);
+      }
+      break;
+    case PARTITION_VERT_4:
+      for (int i = 0; i < 4; ++i) {
+        int this_mi_col = mi_col + i * quarter_step;
+        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+        set_mode_info_b(cpi, tile, td, mi_row, this_mi_col, subsize,
+                        &pc_tree->vertical4[i]);
+      }
       break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
     default: assert(0 && "Invalid partition type."); break;
@@ -2030,6 +2049,8 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
   const BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+  int quarter_step = mi_size_wide[bsize] / 4;
+  int i;
 #endif
 
 #if CONFIG_CB4X4
@@ -2227,6 +2248,24 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
                partition, &pc_tree->verticalb[1], rate);
       encode_b(cpi, tile, td, tp, mi_row + hbs, mi_col + hbs, dry_run, bsize2,
                partition, &pc_tree->verticalb[2], rate);
+      break;
+    case PARTITION_HORZ_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_row = mi_row + i * quarter_step;
+        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+        encode_b(cpi, tile, td, tp, this_mi_row, mi_col, dry_run, subsize,
+                 partition, &pc_tree->horizontal4[i], rate);
+      }
+      break;
+    case PARTITION_VERT_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_col = mi_col + i * quarter_step;
+        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+        encode_b(cpi, tile, td, tp, mi_row, this_mi_col, dry_run, subsize,
+                 partition, &pc_tree->vertical4[i], rate);
+      }
       break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
     default: assert(0 && "Invalid partition type."); break;
@@ -2585,7 +2624,9 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
     case PARTITION_VERT_A:
     case PARTITION_VERT_B:
     case PARTITION_HORZ_A:
-    case PARTITION_HORZ_B: assert(0 && "Cannot handle extended partiton types");
+    case PARTITION_HORZ_B:
+    case PARTITION_HORZ_4:
+    case PARTITION_VERT_4: assert(0 && "Cannot handle extended partiton types");
 #endif  //  CONFIG_EXT_PARTITION_TYPES
     default: assert(0); break;
   }
@@ -2735,7 +2776,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 }
 
 /* clang-format off */
-static const BLOCK_SIZE min_partition_size[BLOCK_SIZES] = {
+static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_2X2,   BLOCK_2X2,   BLOCK_2X2,    //    2x2,    2x4,     4x2
 #endif
@@ -2745,11 +2786,13 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES] = {
   BLOCK_8X8,   BLOCK_8X8,   BLOCK_16X16,  //  16x32,  32x16,   32x32
   BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  //  32x64,  64x32,   64x64
 #if CONFIG_EXT_PARTITION
-  BLOCK_16X16, BLOCK_16X16, BLOCK_16X16   // 64x128, 128x64, 128x128
+  BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
+  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
+  BLOCK_8X8                                 //   32x8
 };
 
-static const BLOCK_SIZE max_partition_size[BLOCK_SIZES] = {
+static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_4X4,     BLOCK_4X4,       BLOCK_4X4,    //    2x2,    2x4,     4x2
 #endif
@@ -2759,12 +2802,14 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES] = {
   BLOCK_64X64,   BLOCK_64X64,   BLOCK_64X64,    //  16x32,  32x16,   32x32
   BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  //  32x64,  64x32,   64x64
 #if CONFIG_EXT_PARTITION
-  BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST   // 64x128, 128x64, 128x128
+  BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
+  BLOCK_16X16,   BLOCK_16X16,   BLOCK_32X32,    //   4x16,   16x4,    8x32
+  BLOCK_32X32                                   //   32x8
 };
 
 // Next square block size less or equal than current block size.
-static const BLOCK_SIZE next_square_size[BLOCK_SIZES] = {
+static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   BLOCK_2X2,   BLOCK_2X2,     BLOCK_2X2,    //    2x2,    2x4,     4x2
 #endif
@@ -2774,8 +2819,10 @@ static const BLOCK_SIZE next_square_size[BLOCK_SIZES] = {
   BLOCK_16X16, BLOCK_16X16,   BLOCK_32X32,  //  16x32,  32x16,   32x32
   BLOCK_32X32, BLOCK_32X32,   BLOCK_64X64,  //  32x64,  64x32,   64x64
 #if CONFIG_EXT_PARTITION
-  BLOCK_64X64, BLOCK_64X64, BLOCK_128X128   // 64x128, 128x64, 128x128
+  BLOCK_64X64, BLOCK_64X64, BLOCK_128X128,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
+  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
+  BLOCK_8X8                                 //   32x8
 };
 /* clang-format on */
 
@@ -4215,6 +4262,120 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        bsize2, mi_row + mi_step, mi_col + mi_step, bsize2);
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
+
+  // PARTITION_HORZ_4
+  // TODO(david.barker): For this and PARTITION_VERT_4,
+  // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
+  //   chroma plane
+  // * Add support for supertx
+  if (bsize == BLOCK_32X32 && partition_horz_allowed && !force_horz_split &&
+      (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
+    int i;
+    const int quarter_step = mi_size_high[bsize] / 4;
+    PICK_MODE_CONTEXT *ctx_prev = ctx_none;
+
+    subsize = get_subsize(bsize, PARTITION_HORZ_4);
+    av1_zero(sum_rdc);
+
+    for (i = 0; i < 4; ++i) {
+      int this_mi_row = mi_row + i * quarter_step;
+
+      if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_prev);
+
+      ctx_prev = &pc_tree->horizontal4[i];
+
+      rd_pick_sb_modes(cpi, tile_data, x, this_mi_row, mi_col, &this_rdc,
+                       PARTITION_HORZ_4, subsize, ctx_prev,
+                       best_rdc.rdcost - sum_rdc.rdcost);
+
+      if (this_rdc.rate == INT_MAX) {
+        sum_rdc.rdcost = INT64_MAX;
+        break;
+      } else {
+        sum_rdc.rate += this_rdc.rate;
+        sum_rdc.dist += this_rdc.dist;
+        sum_rdc.rdcost += this_rdc.rdcost;
+      }
+
+      if (sum_rdc.rdcost >= best_rdc.rdcost) break;
+
+      if (i < 3) {
+        update_state(cpi, td, ctx_prev, this_mi_row, mi_col, subsize, 1);
+        encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, this_mi_row, mi_col,
+                          subsize, NULL);
+      }
+    }
+
+    if (sum_rdc.rdcost < best_rdc.rdcost) {
+      sum_rdc.rate += partition_cost[PARTITION_HORZ_4];
+      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
+      if (sum_rdc.rdcost < best_rdc.rdcost) {
+        best_rdc = sum_rdc;
+        pc_tree->partitioning = PARTITION_HORZ_4;
+      }
+    }
+#if !CONFIG_PVQ
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif
+  }
+  // PARTITION_VERT_4
+  if (bsize == BLOCK_32X32 && partition_vert_allowed && !force_vert_split &&
+      (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
+    int i;
+    const int quarter_step = mi_size_wide[bsize] / 4;
+    PICK_MODE_CONTEXT *ctx_prev = ctx_none;
+
+    subsize = get_subsize(bsize, PARTITION_VERT_4);
+    av1_zero(sum_rdc);
+
+    for (i = 0; i < 4; ++i) {
+      int this_mi_col = mi_col + i * quarter_step;
+
+      if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_prev);
+
+      ctx_prev = &pc_tree->vertical4[i];
+
+      rd_pick_sb_modes(cpi, tile_data, x, mi_row, this_mi_col, &this_rdc,
+                       PARTITION_VERT_4, subsize, ctx_prev,
+                       best_rdc.rdcost - sum_rdc.rdcost);
+
+      if (this_rdc.rate == INT_MAX) {
+        sum_rdc.rdcost = INT64_MAX;
+      } else {
+        sum_rdc.rate += this_rdc.rate;
+        sum_rdc.dist += this_rdc.dist;
+        sum_rdc.rdcost += this_rdc.rdcost;
+      }
+
+      if (sum_rdc.rdcost >= best_rdc.rdcost) break;
+
+      if (i < 3) {
+        update_state(cpi, td, ctx_prev, mi_row, this_mi_col, subsize, 1);
+        encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, this_mi_col,
+                          subsize, NULL);
+      }
+    }
+
+    if (sum_rdc.rdcost < best_rdc.rdcost) {
+      sum_rdc.rate += partition_cost[PARTITION_VERT_4];
+      sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
+      if (sum_rdc.rdcost < best_rdc.rdcost) {
+        best_rdc = sum_rdc;
+        pc_tree->partitioning = PARTITION_VERT_4;
+      }
+    }
+#if !CONFIG_PVQ
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+#else
+    restore_context(x, &x_ctx, mi_row, mi_col, &pre_rdo_buf, bsize);
+#endif
+  }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_SPEED_REFS
@@ -4569,7 +4730,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
         TileDataEnc *const tile_data =
             &cpi->tile_data[tile_row * tile_cols + tile_col];
         int i, j;
-        for (i = 0; i < BLOCK_SIZES; ++i) {
+        for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
           for (j = 0; j < MAX_MODES; ++j) {
             tile_data->thresh_freq_fact[i][j] = 32;
             tile_data->mode_map[i][j] = j;

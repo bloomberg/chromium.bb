@@ -338,6 +338,52 @@ unsigned int aom_mse16x16_sse2(const uint8_t *src, int src_stride,
   return *sse;
 }
 
+#if CONFIG_EXT_PARTITION_TYPES
+unsigned int aom_variance4x16_sse2(const uint8_t *src, int src_stride,
+                                   const uint8_t *ref, int ref_stride,
+                                   unsigned int *sse) {
+  int sum;
+  variance_sse2(src, src_stride, ref, ref_stride, 4, 16, sse, &sum,
+                get4x4var_sse2, 4);
+  assert(sum <= 255 * 4 * 16);
+  assert(sum >= -255 * 4 * 16);
+  return *sse - (unsigned int)(((int64_t)sum * sum) >> 6);
+}
+
+unsigned int aom_variance16x4_sse2(const uint8_t *src, int src_stride,
+                                   const uint8_t *ref, int ref_stride,
+                                   unsigned int *sse) {
+  int sum;
+  variance_sse2(src, src_stride, ref, ref_stride, 16, 4, sse, &sum,
+                get4x4var_sse2, 4);
+  assert(sum <= 255 * 16 * 4);
+  assert(sum >= -255 * 16 * 4);
+  return *sse - (unsigned int)(((int64_t)sum * sum) >> 6);
+}
+
+unsigned int aom_variance8x32_sse2(const uint8_t *src, int src_stride,
+                                   const uint8_t *ref, int ref_stride,
+                                   unsigned int *sse) {
+  int sum;
+  variance_sse2(src, src_stride, ref, ref_stride, 8, 32, sse, &sum,
+                aom_get8x8var_sse2, 8);
+  assert(sum <= 255 * 8 * 32);
+  assert(sum >= -255 * 8 * 32);
+  return *sse - (unsigned int)(((int64_t)sum * sum) >> 8);
+}
+
+unsigned int aom_variance32x8_sse2(const uint8_t *src, int src_stride,
+                                   const uint8_t *ref, int ref_stride,
+                                   unsigned int *sse) {
+  int sum;
+  variance_sse2(src, src_stride, ref, ref_stride, 32, 8, sse, &sum,
+                aom_get8x8var_sse2, 8);
+  assert(sum <= 255 * 32 * 8);
+  assert(sum >= -255 * 32 * 8);
+  return *sse - (unsigned int)(((int64_t)sum * sum) >> 8);
+}
+#endif
+
 // The 2 unused parameters are place holders for PIC enabled build.
 // These definitions are for functions defined in subpel_variance.asm
 #define DECL(w, opt)                                                           \
@@ -387,6 +433,26 @@ DECLS(ssse3);
     return sse - (unsigned int)(cast_prod(cast se * se) >> (wlog2 + hlog2));   \
   }
 
+#if CONFIG_EXT_PARTITION_TYPES
+#define FNS(opt)                                    \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));  \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));  \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));  \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));  \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));  \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t)); \
+  FN(16, 8, 16, 4, 3, opt, (int32_t), (int32_t));   \
+  FN(8, 16, 8, 3, 4, opt, (int32_t), (int32_t));    \
+  FN(8, 8, 8, 3, 3, opt, (int32_t), (int32_t));     \
+  FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t));     \
+  FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t));     \
+  FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t));     \
+  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));    \
+  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));   \
+  FN(8, 32, 8, 3, 5, opt, (int32_t), (int32_t));    \
+  FN(32, 8, 16, 5, 3, opt, (int32_t), (int32_t))
+#else
 #define FNS(opt)                                    \
   FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
   FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));  \
@@ -401,6 +467,7 @@ DECLS(ssse3);
   FN(8, 4, 8, 3, 2, opt, (int32_t), (int32_t));     \
   FN(4, 8, 4, 2, 3, opt, (int32_t), (int32_t));     \
   FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t))
+#endif
 
 FNS(sse2);
 FNS(ssse3);
@@ -458,6 +525,26 @@ DECLS(ssse3);
     return sse - (unsigned int)(cast_prod(cast se * se) >> (wlog2 + hlog2));   \
   }
 
+#if CONFIG_EXT_PARTITION_TYPES
+#define FNS(opt)                                    \
+  FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
+  FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));  \
+  FN(32, 64, 16, 5, 6, opt, (int64_t), (int64_t));  \
+  FN(32, 32, 16, 5, 5, opt, (int64_t), (int64_t));  \
+  FN(32, 16, 16, 5, 4, opt, (int64_t), (int64_t));  \
+  FN(16, 32, 16, 4, 5, opt, (int64_t), (int64_t));  \
+  FN(16, 16, 16, 4, 4, opt, (uint32_t), (int64_t)); \
+  FN(16, 8, 16, 4, 3, opt, (uint32_t), (int32_t));  \
+  FN(8, 16, 8, 3, 4, opt, (uint32_t), (int32_t));   \
+  FN(8, 8, 8, 3, 3, opt, (uint32_t), (int32_t));    \
+  FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t));    \
+  FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t));    \
+  FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t));    \
+  FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));    \
+  FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));   \
+  FN(8, 32, 8, 3, 5, opt, (int32_t), (int32_t));    \
+  FN(32, 8, 16, 5, 3, opt, (int32_t), (int32_t))
+#else
 #define FNS(opt)                                    \
   FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
   FN(64, 32, 16, 6, 5, opt, (int64_t), (int64_t));  \
@@ -472,6 +559,7 @@ DECLS(ssse3);
   FN(8, 4, 8, 3, 2, opt, (uint32_t), (int32_t));    \
   FN(4, 8, 4, 2, 3, opt, (uint32_t), (int32_t));    \
   FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t))
+#endif
 
 FNS(sse2);
 FNS(ssse3);

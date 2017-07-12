@@ -185,6 +185,11 @@ VAR_FN(16, 16, 16, 8);
 VAR_FN(16, 8, 8, 7);
 VAR_FN(8, 16, 8, 7);
 VAR_FN(8, 8, 8, 6);
+#if CONFIG_EXT_PARTITION_TYPES
+VAR_FN(16, 4, 16, 6);
+VAR_FN(8, 32, 8, 8);
+VAR_FN(32, 8, 16, 8);
+#endif
 
 #undef VAR_FN
 
@@ -391,6 +396,7 @@ DECLS(sse2);
     return (var >= 0) ? (uint32_t)var : 0;                                     \
   }
 
+#if CONFIG_EXT_PARTITION_TYPES
 #define FNS(opt)                        \
   FN(64, 64, 16, 6, 6, opt, (int64_t)); \
   FN(64, 32, 16, 6, 5, opt, (int64_t)); \
@@ -402,7 +408,24 @@ DECLS(sse2);
   FN(16, 8, 16, 4, 3, opt, (int64_t));  \
   FN(8, 16, 8, 3, 4, opt, (int64_t));   \
   FN(8, 8, 8, 3, 3, opt, (int64_t));    \
-  FN(8, 4, 8, 3, 2, opt, (int64_t));
+  FN(8, 4, 8, 3, 2, opt, (int64_t));    \
+  FN(16, 4, 16, 4, 2, opt, (int64_t));  \
+  FN(8, 32, 8, 3, 5, opt, (int64_t));   \
+  FN(32, 8, 16, 5, 3, opt, (int64_t))
+#else
+#define FNS(opt)                        \
+  FN(64, 64, 16, 6, 6, opt, (int64_t)); \
+  FN(64, 32, 16, 6, 5, opt, (int64_t)); \
+  FN(32, 64, 16, 5, 6, opt, (int64_t)); \
+  FN(32, 32, 16, 5, 5, opt, (int64_t)); \
+  FN(32, 16, 16, 5, 4, opt, (int64_t)); \
+  FN(16, 32, 16, 4, 5, opt, (int64_t)); \
+  FN(16, 16, 16, 4, 4, opt, (int64_t)); \
+  FN(16, 8, 16, 4, 3, opt, (int64_t));  \
+  FN(8, 16, 8, 3, 4, opt, (int64_t));   \
+  FN(8, 8, 8, 3, 3, opt, (int64_t));    \
+  FN(8, 4, 8, 3, 2, opt, (int64_t))
+#endif
 
 FNS(sse2);
 
@@ -550,6 +573,23 @@ DECLS(sse2);
     return (var >= 0) ? (uint32_t)var : 0;                                     \
   }
 
+#if CONFIG_EXT_PARTITION_TYPES
+#define FNS(opt)                        \
+  FN(64, 64, 16, 6, 6, opt, (int64_t)); \
+  FN(64, 32, 16, 6, 5, opt, (int64_t)); \
+  FN(32, 64, 16, 5, 6, opt, (int64_t)); \
+  FN(32, 32, 16, 5, 5, opt, (int64_t)); \
+  FN(32, 16, 16, 5, 4, opt, (int64_t)); \
+  FN(16, 32, 16, 4, 5, opt, (int64_t)); \
+  FN(16, 16, 16, 4, 4, opt, (int64_t)); \
+  FN(16, 8, 16, 4, 3, opt, (int64_t));  \
+  FN(8, 16, 8, 3, 4, opt, (int64_t));   \
+  FN(8, 8, 8, 3, 3, opt, (int64_t));    \
+  FN(8, 4, 8, 3, 2, opt, (int64_t));    \
+  FN(16, 4, 16, 4, 2, opt, (int64_t));  \
+  FN(8, 32, 8, 3, 5, opt, (int64_t));   \
+  FN(32, 8, 16, 5, 3, opt, (int64_t));
+#else
 #define FNS(opt)                        \
   FN(64, 64, 16, 6, 6, opt, (int64_t)); \
   FN(64, 32, 16, 6, 5, opt, (int64_t)); \
@@ -562,6 +602,7 @@ DECLS(sse2);
   FN(8, 16, 8, 3, 4, opt, (int64_t));   \
   FN(8, 8, 8, 3, 3, opt, (int64_t));    \
   FN(8, 4, 8, 3, 2, opt, (int64_t));
+#endif
 
 FNS(sse2);
 

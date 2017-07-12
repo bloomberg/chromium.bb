@@ -582,6 +582,18 @@ post_process_cmdline() {
       log_echo "disabling tile_groups"
       disable_feature tile_groups
     fi
+    if enabled ext_partition_types; then
+      if enabled fp_mb_stats; then
+        log_echo "ext_partition_types not compatible with fp_mb_stats;"
+        log_echo "disabling fp_mb_stats"
+        disable_feature fp_mb_stats
+      fi
+      if enabled supertx; then
+        log_echo "ext_partition_types not compatible with supertx;"
+        log_echo "disabling supertx"
+        disable_feature supertx
+      fi
+    fi
     # Enable accounting and inspection when building the analyzer
     if enabled analyzer; then
       soft_enable accounting

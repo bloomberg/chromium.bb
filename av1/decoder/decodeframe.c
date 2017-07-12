@@ -2311,6 +2311,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+  const int quarter_step = num_8x8_wh / 4;
+  int i;
 #endif
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
@@ -2331,7 +2333,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
 #if CONFIG_PVQ
   assert(partition < PARTITION_TYPES);
-  assert(subsize < BLOCK_SIZES);
+  assert(subsize < BLOCK_SIZES_ALL);
 #endif
 #if CONFIG_SUPERTX
   if (!frame_is_intra_only(cm) && partition != PARTITION_NONE &&
@@ -2505,7 +2507,31 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
                      mi_row + hbs, mi_col + hbs, r, partition, bsize2);
         break;
+      case PARTITION_HORZ_4:
+        for (i = 0; i < 4; ++i) {
+          int this_mi_row = mi_row + i * quarter_step;
+          if (i > 0 && this_mi_row >= cm->mi_rows) break;
+
+          decode_block(pbi, xd,
+#if CONFIG_SUPERTX
+                       supertx_enabled,
 #endif
+                       this_mi_row, mi_col, r, partition, subsize);
+        }
+        break;
+      case PARTITION_VERT_4:
+        for (i = 0; i < 4; ++i) {
+          int this_mi_col = mi_col + i * quarter_step;
+          if (i > 0 && this_mi_col >= cm->mi_cols) break;
+
+          decode_block(pbi, xd,
+#if CONFIG_SUPERTX
+                       supertx_enabled,
+#endif
+                       mi_row, this_mi_col, r, partition, subsize);
+        }
+        break;
+#endif  // CONFIG_EXT_PARTITION_TYPES
       default: assert(0 && "Invalid partition type");
     }
   }
@@ -4921,7 +4947,12 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
       }
 #endif
 #if CONFIG_WEDGE && !CONFIG_NEW_MULTISYMBOL
-      for (i = 0; i < BLOCK_SIZES; i++) {
+#if CONFIG_EXT_PARTITION_TYPES
+      int block_sizes_to_update = BLOCK_SIZES_ALL;
+#else
+      int block_sizes_to_update = BLOCK_SIZES;
+#endif
+      for (i = 0; i < block_sizes_to_update; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {
           av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);
         }

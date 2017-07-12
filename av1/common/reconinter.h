@@ -226,7 +226,7 @@ typedef struct {
   wedge_masks_type *masks;
 } wedge_params_type;
 
-extern const wedge_params_type wedge_params_lookup[BLOCK_SIZES];
+extern const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL];
 
 static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
                                               BLOCK_SIZE sb_type) {
