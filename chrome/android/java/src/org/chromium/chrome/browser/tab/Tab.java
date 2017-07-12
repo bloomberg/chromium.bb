@@ -2509,6 +2509,11 @@ public class Tab
             mFullscreenManager.setPersistentFullscreenMode(enableFullscreen);
         }
 
+        // When going into fullscreen, we want to remove any cached thumbnail of the Tab.
+        if (enableFullscreen && mNativeTabAndroid != 0) {
+            nativeClearThumbnailPlaceholder(mNativeTabAndroid);
+        }
+
         RewindableIterator<TabObserver> observers = getTabObservers();
         while (observers.hasNext()) {
             observers.next().onToggleFullscreenMode(this, enableFullscreen);
@@ -3133,6 +3138,7 @@ public class Tab
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,
             TabContentManager tabContentManager);
+    private native void nativeClearThumbnailPlaceholder(long nativeTabAndroid);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
     private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);

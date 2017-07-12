@@ -1200,6 +1200,17 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
   surface_returned_resources_.clear();
 }
 
+void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
+  if (host_->delegate()->IsFullscreenForCurrentTab() &&
+      current_surface_size_ != view_.GetPhysicalBackingSize()) {
+    // When we're in a fullscreen and the frame size doesn't match the view
+    // size (e.g. during a fullscreen rotation), we show black instead of the
+    // incorrectly-sized frame.
+    EvictDelegatedFrame();
+    UpdateBackgroundColor(SK_ColorBLACK);
+  }
+}
+
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
@@ -1259,6 +1270,7 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
 
   frame_evictor_->DiscardedFrame();
   delegated_frame_host_->DestroyDelegatedContent();
+  current_surface_size_.SetSize(0, 0);
 }
 
 void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
@@ -1519,6 +1531,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
                      frame_metadata.max_page_scale_factor),
       frame_metadata.root_layer_size, frame_metadata.scrollable_viewport_size,
       top_content_offset, top_shown_pix, top_changed, is_mobile_optimized);
+
+  EvictFrameIfNecessary();
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
@@ -2143,6 +2157,7 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
+  EvictFrameIfNecessary();
   WasResized();
 }
 
