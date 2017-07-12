@@ -1,10 +1,8 @@
 This is a testharness.js-based test.
-PASS Let target be the request which is dispatching the event. 
+FAIL Let target be the request which is dispatching the event. Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 FAIL Calling .updateWith() with an undispatched untrusted event throws "InvalidStateError" assert_throws: untrusted event of type "just a test" must throw "InvalidStateError" function "() => {
         ev.updateWith(Promise.resolve());
       }" did not throw
-FAIL Calling .updateWith() with a dispatched, untrusted event, throws "InvalidStateError" assert_throws: untrusted event of type "just a test" must throw "InvalidStateError" function "() => {
-        ev.updateWith(Promise.resolve())
-      }" did not throw
+FAIL Calling .updateWith() with a dispatched, untrusted event, throws "InvalidStateError" Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
 Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL PaymentRequest setting allowpaymentrequest after load and then navigating assert_equals: after navigation expected "Success" but got "Exception"
+FAIL PaymentRequest setting allowpaymentrequest after load and then navigating assert_array_equals: before navigation property 0, expected true but got false
 Harness: the test ran to completion.
 

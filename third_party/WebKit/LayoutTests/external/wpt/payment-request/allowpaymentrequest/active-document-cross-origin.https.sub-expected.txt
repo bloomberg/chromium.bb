@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL PaymentRequest <iframe allowpaymentrequest> in non-active document (cross-origin) assert_throws: function "() => {
+        new grabbedPaymentRequest(...paymentArgs);
+      }" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "[object Object]" ("SecurityError")
+Harness: the test ran to completion.
+

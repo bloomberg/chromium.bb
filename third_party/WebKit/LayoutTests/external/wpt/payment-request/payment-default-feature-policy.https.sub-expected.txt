@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL Default "payment" feature policy ["self"] allows the top-level document. assert_unreached: Reached unreachable code
+PASS Default "payment" feature policy ["self"] allows same-origin iframes. 
+PASS Default "payment" feature policy ["self"] disallows cross-origin iframes. 
+PASS Default "payment" feature policy ["self"] allowpaymentrequest=true allows same-origin iframes. 
+PASS Default "payment" feature policy ["self"] allowpaymentrequest=true allows cross-origin iframes. 
+Harness: the test ran to completion.
+
