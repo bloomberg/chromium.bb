@@ -303,7 +303,6 @@ void FrameSelection::SetSelection(const SelectionInFlatTree& new_selection,
   builder.SetAffinity(new_selection.Affinity())
       .SetBaseAndExtent(ToPositionInDOMTree(new_selection.Base()),
                         ToPositionInDOMTree(new_selection.Extent()))
-      .SetGranularity(new_selection.Granularity())
       .SetIsDirectional(new_selection.IsDirectional())
       .SetIsHandleVisible(new_selection.IsHandleVisible());
   return SetSelection(builder.Build(), options, align, granularity);
@@ -593,8 +592,7 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
 
   // Check if the selection contains the entire frame contents; if not, then
   // there is nothing to do.
-  if (GetSelectionInDOMTree().SelectionTypeWithLegacyGranularity() !=
-      kRangeSelection) {
+  if (GetSelectionInDOMTree().Type() != kRangeSelection) {
     return;
   }
 
