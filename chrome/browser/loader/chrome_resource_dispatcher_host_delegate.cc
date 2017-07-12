@@ -982,7 +982,8 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
     return content::PREVIEWS_OFF;
 
   // If the allowed previews are limited, ensure we honor those limits.
-  if (previews_state != content::PREVIEWS_OFF &&
+  if (previews_to_allow != content::PREVIEWS_UNSPECIFIED &&
+      previews_state != content::PREVIEWS_OFF &&
       previews_state != content::PREVIEWS_NO_TRANSFORM) {
     previews_state = previews_state & previews_to_allow;
     // If no valid previews are left, set the state explictly to PREVIEWS_OFF.
