@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -54,6 +55,16 @@ base::Optional<SyncPasswordData> HashPasswordManager::RetrievePasswordHash() {
       RetrivedDecryptedStringFromPrefs(prefs::kSyncPasswordLengthAndHashSalt),
       &result.length, &result.salt);
   return result;
+}
+
+void HashPasswordManager::ReportIsSyncPasswordHashSavedMetric() {
+  if (!prefs_)
+    return;
+  auto hash_password_state =
+      prefs_->HasPrefPath(prefs::kSyncPasswordHash)
+          ? metrics_util::IsSyncPasswordHashSaved::SAVED
+          : metrics_util::IsSyncPasswordHashSaved::NOT_SAVED;
+  metrics_util::LogIsSyncPasswordHashSaved(hash_password_state);
 }
 
 std::string HashPasswordManager::CreateRandomSalt() {

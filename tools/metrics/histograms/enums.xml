@@ -20779,6 +20779,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Failed to determine"/>
 </enum>
 
+<enum name="IsSyncPasswordHashSaved">
+  <int value="0" label="Not saved"/>
+  <int value="1" label="Saved"/>
+</enum>
+
 <enum name="JavaScriptAPIName">
   <int value="0" label="GetUserMedia"/>
   <int value="1" label="PeerConnection00"/>

@@ -52375,6 +52375,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.IsSyncPasswordHashSaved"
+    enum="IsSyncPasswordHashSaved">
+  <owner>dvadym@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    This metric reports whether a sync password hash is saved. Recorded shortly
+    after Chrome startup.
+  </summary>
+</histogram>
+
 <histogram
     name="PasswordManager.KeychainMigration.NumChromeOwnedInaccessiblePasswords">
   <obsolete>
