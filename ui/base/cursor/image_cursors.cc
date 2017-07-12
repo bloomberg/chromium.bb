@@ -60,9 +60,15 @@ const CursorType kAnimatedCursorIds[] = {CursorType::kWait,
 
 }  // namespace
 
-ImageCursors::ImageCursors() : cursor_size_(CursorSize::kNormal) {}
+ImageCursors::ImageCursors()
+    : cursor_size_(CursorSize::kNormal), weak_ptr_factory_(this) {}
 
 ImageCursors::~ImageCursors() {
+}
+
+void ImageCursors::Initialize() {
+  if (!cursor_loader_)
+    cursor_loader_.reset(CursorLoader::Create());
 }
 
 float ImageCursors::GetScale() const {
@@ -140,6 +146,10 @@ void ImageCursors::SetCursorSize(CursorSize cursor_size) {
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {
   cursor_loader_->SetPlatformCursor(cursor);
+}
+
+base::WeakPtr<ImageCursors> ImageCursors::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace ui
