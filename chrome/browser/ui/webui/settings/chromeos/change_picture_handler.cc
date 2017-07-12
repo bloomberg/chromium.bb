@@ -127,23 +127,9 @@ void ChangePictureHandler::OnJavascriptDisallowed() {
 }
 
 void ChangePictureHandler::SendDefaultImages() {
-  base::ListValue image_urls;
-  for (int i = default_user_image::kFirstDefaultImageIndex;
-       i < default_user_image::kDefaultImagesCount; ++i) {
-    std::unique_ptr<base::DictionaryValue> image_data(
-        new base::DictionaryValue);
-    image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
-    image_data->SetString("author",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageAuthorIDs[i]));
-    image_data->SetString("website",
-                          l10n_util::GetStringUTF16(
-                              default_user_image::kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title",
-                          default_user_image::GetDefaultImageDescription(i));
-    image_urls.Append(std::move(image_data));
-  }
-  FireWebUIListener("default-images-changed", image_urls);
+  std::unique_ptr<base::ListValue> image_urls =
+      default_user_image::GetAsDictionary();
+  FireWebUIListener("default-images-changed", *image_urls);
 }
 
 void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {

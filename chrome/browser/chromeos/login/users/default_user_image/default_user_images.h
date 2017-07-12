@@ -7,10 +7,15 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string16.h"
 #include "chromeos/chromeos_export.h"
+
+namespace base {
+class ListValue;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -73,6 +78,10 @@ CHROMEOS_EXPORT extern const int kHistogramImagesCount;
 
 // Returns the histogram value corresponding to the given default image index.
 CHROMEOS_EXPORT int GetDefaultImageHistogramValue(int index);
+
+// Returns a list of dictionary values with url, author, website, and title
+// properties set for each default user image.
+CHROMEOS_EXPORT std::unique_ptr<base::ListValue> GetAsDictionary();
 
 }  // namespace default_user_image
 }  // namespace chromeos
