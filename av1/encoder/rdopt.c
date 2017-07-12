@@ -2274,6 +2274,11 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
     // transforms should be considered for pruning
     prune = prune_tx_types(cpi, bs, x, xd, -1);
 
+#if CONFIG_MRC_TX
+  // MRC_DCT only implemented for TX_32X32 so only include this tx in
+  // the search for TX_32X32
+  if (tx_type == MRC_DCT && tx_size != TX_32X32) return 1;
+#endif  // CONFIG_MRC_TX
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
   if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, tx_size))
     return 1;
@@ -4503,7 +4508,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #endif
   }
 
+#if CONFIG_MRC_TX
+  // If the tx type we are trying is MRC_DCT, we cannot partition the transform
+  // into anything smaller than TX_32X32
+  if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && mbmi->tx_type != MRC_DCT) {
+#else
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH) {
+#endif
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
     int sub_step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];
@@ -4841,6 +4852,11 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (tx_type = txk_start; tx_type < txk_end; ++tx_type) {
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
+#if CONFIG_MRC_TX
+    // MRC_DCT only implemented for TX_32X32 so only include this tx in
+    // the search for TX_32X32
+    if (tx_type == MRC_DCT && max_tx_size != TX_32X32) continue;
+#endif  // CONFIG_MRC_TX
 #if CONFIG_EXT_TX
     if (is_inter) {
       if (!ext_tx_used_inter[ext_tx_set][tx_type]) continue;

@@ -917,6 +917,9 @@ void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
   __m256i in[16];
   int tx_type = txfm_param->tx_type;
+#if CONFIG_MRC_TX
+  assert(tx_type != MRC_DCT && "Invalid tx type for tx size");
+#endif
 
   switch (tx_type) {
     case DCT_DCT:
@@ -1514,6 +1517,9 @@ void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
   __m256i in0[32];  // left 32 columns
   __m256i in1[32];  // right 32 columns
   int tx_type = txfm_param->tx_type;
+#if CONFIG_MRC_TX
+  assert(tx_type != MRC_DCT && "No avx2 32x32 implementation of MRC_DCT");
+#endif
 
   switch (tx_type) {
     case DCT_DCT:

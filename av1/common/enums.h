@@ -227,6 +227,8 @@ typedef enum {
   ADST_1D = 1,
   FLIPADST_1D = 2,
   IDTX_1D = 3,
+  // TODO(sarahparker) need to eventually put something here for the
+  // mrc experiment to make this work with the ext-tx pruning functions
   TX_TYPES_1D = 4,
 } TX_TYPE_1D;
 
@@ -249,6 +251,9 @@ typedef enum {
   V_FLIPADST = 14,
   H_FLIPADST = 15,
 #endif  // CONFIG_EXT_TX
+#if CONFIG_MRC_TX
+  MRC_DCT,  // DCT in both directions with mrc based bitmask
+#endif      // CONFIG_MRC_TX
   TX_TYPES,
 } TX_TYPE;
 
@@ -273,10 +278,15 @@ typedef enum {
 #if CONFIG_CHROMA_2X2
 #define EXT_TX_SIZES 5  // number of sizes that use extended transforms
 #else
-#define EXT_TX_SIZES 4       // number of sizes that use extended transforms
-#endif                       // CONFIG_CHROMA_2X2
+#define EXT_TX_SIZES 4  // number of sizes that use extended transforms
+#endif                  // CONFIG_CHROMA_2X2
+#if CONFIG_MRC_TX
+#define EXT_TX_SETS_INTER 5  // Sets of transform selections for INTER
+#define EXT_TX_SETS_INTRA 4  // Sets of transform selections for INTRA
+#else                        // CONFIG_MRC_TX
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
 #define EXT_TX_SETS_INTRA 3  // Sets of transform selections for INTRA
+#endif                       // CONFIG_MRC_TX
 #else
 #if CONFIG_CHROMA_2X2
 #define EXT_TX_SIZES 4  // number of sizes that use extended transforms
