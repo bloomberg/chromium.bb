@@ -199,11 +199,20 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
                             SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SyncPasswordHashChange", event,
       SyncPasswordHashChange::SAVED_SYNC_PASSWORD_CHANGE_COUNT);
 }
+
+void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.IsSyncPasswordHashSaved", state,
+      IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+}
+#endif
 
 }  // namespace metrics_util
 

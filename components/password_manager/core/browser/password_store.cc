@@ -270,6 +270,12 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
     task_runner->PostDelayedTask(FROM_HERE, task,
                                  base::TimeDelta::FromSeconds(30));
   }
+
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (!sync_username.empty())
+    hash_password_manager_.ReportIsSyncPasswordHashSavedMetric();
+#endif
 }
 
 void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
