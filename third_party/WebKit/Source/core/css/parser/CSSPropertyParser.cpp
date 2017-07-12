@@ -2356,18 +2356,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeShorthandGreedily(textDecorationShorthand(), important);
     case CSSPropertyPadding:
       return Consume4Values(paddingShorthand(), important);
-    case CSSPropertyOutline:
-      return ConsumeShorthandGreedily(outlineShorthand(), important);
-    case CSSPropertyWebkitBorderStart:
-      return ConsumeShorthandGreedily(webkitBorderStartShorthand(), important);
-    case CSSPropertyWebkitBorderEnd:
-      return ConsumeShorthandGreedily(webkitBorderEndShorthand(), important);
-    case CSSPropertyWebkitBorderBefore:
-      return ConsumeShorthandGreedily(webkitBorderBeforeShorthand(), important);
-    case CSSPropertyWebkitBorderAfter:
-      return ConsumeShorthandGreedily(webkitBorderAfterShorthand(), important);
-    case CSSPropertyWebkitTextStroke:
-      return ConsumeShorthandGreedily(webkitTextStrokeShorthand(), important);
     case CSSPropertyMarker: {
       const CSSValue* marker = ParseSingleValue(CSSPropertyMarkerStart);
       if (!marker || !range_.AtEnd())
