@@ -1,0 +1,116 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+
+source_set("cdm_api") {
+  sources = [
+    "api/content_decryption_module.h",
+  ]
+}
+
+source_set("cdm") {
+  visibility = [ "//media/*" ]
+
+  sources = [
+    "aes_decryptor.cc",
+    "aes_decryptor.h",
+    "cdm_adapter.cc",
+    "cdm_adapter.h",
+    "cdm_allocator.cc",
+    "cdm_allocator.h",
+    "cdm_file_adapter.cc",
+    "cdm_file_adapter.h",
+    "cdm_file_io.cc",
+    "cdm_file_io.h",
+    "cdm_helpers.cc",
+    "cdm_helpers.h",
+    "cdm_wrapper.h",
+    "default_cdm_factory.cc",
+    "default_cdm_factory.h",
+    "json_web_key.cc",
+    "json_web_key.h",
+    "player_tracker_impl.cc",
+    "player_tracker_impl.h",
+    "supported_cdm_versions.cc",
+    "supported_cdm_versions.h",
+  ]
+
+  # TODO(wolenetz): Fix size_t to int truncation in win64.
+  # See http://crbug.com/171009
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  deps = [
+    ":cdm_api",
+    "//crypto",
+    "//media:media_features",
+    "//media:shared_memory_support",
+    "//ui/gfx/geometry",
+    "//url",
+  ]
+
+  public_deps = [
+    "//media/formats",
+  ]
+
+  configs += [ "//media:media_implementation" ]
+  all_dependent_configs = [ "//media:media_dependent_config" ]
+
+  if (proprietary_codecs) {
+    sources += [
+      "cenc_utils.cc",
+      "cenc_utils.h",
+    ]
+  }
+
+  # TODO(xhwang): Move other library CDM related files to this block as well.
+  if (enable_pepper_cdms) {
+    deps += [
+      ":cdm_paths",
+
+      # TODO(xhwang): Remove this after Widevine specific logic is removed in
+      # CdmAdapterFactory. See http://crbug.com/510604
+      "//third_party/widevine/cdm:headers",
+    ]
+    sources += [
+      "cdm_adapter_factory.cc",
+      "cdm_adapter_factory.h",
+    ]
+  }
+}
+
+config("cdm_manager_implementation") {
+  defines = [ "CDM_MANAGER_IMPLEMENTATION" ]
+}
+
+# cdm_manager must not be a source_set() because CdmManager exposes a static
+# singleton, shared by multiple component()s.
+#
+# TODO(xhwang): Remove this component once AVDA no longer depends on it.
+component("cdm_manager") {
+  visibility = [
+    "//media/gpu",
+    "//media/mojo/services:lib",
+  ]
+  sources = [
+    "cdm_manager.cc",
+    "cdm_manager.h",
+    "cdm_manager_export.h",
+  ]
+  configs += [ ":cdm_manager_implementation" ]
+  deps = [
+    "//base",
+    "//media",
+  ]
+}
+
+static_library("cdm_paths") {
+  sources = [
+    "cdm_paths.cc",
+    "cdm_paths.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}

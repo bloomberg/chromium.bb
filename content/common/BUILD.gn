@@ -562,7 +562,7 @@ source_set("common") {
       "media/cdm_host_files.h",
     ]
     deps += [
-      "//media:cdm_paths",
+      "//media/cdm:cdm_paths",
 
       # Needed for finding CDM path from CDM adapter path.
       # TODO(xhwang): Remove this dependency when CDM adapter is deprecated.
