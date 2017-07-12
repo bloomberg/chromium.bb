@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
@@ -42,12 +41,12 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/system_memory_stats_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -841,6 +840,8 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     ReloadWebContentsIfDiscarded(new_contents,
                                  GetWebContentsData(new_contents));
   }
+
+  ResumeTabNavigationIfNeeded(new_contents);
 }
 
 void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
@@ -974,6 +975,123 @@ void TabManager::RecordSwitchToTab(content::WebContents* contents) const {
                               GetWebContentsData(contents)->tab_loading_state(),
                               TAB_LOADING_STATE_MAX);
   }
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+TabManager::MaybeThrottleNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!ShouldDelayNavigation(navigation_handle)) {
+    loading_contents_.insert(navigation_handle->GetWebContents());
+    return content::NavigationThrottle::PROCEED;
+  }
+
+  // TODO(zhenw): Try to set the favicon and title from history service if this
+  // navigation will be delayed.
+  GetWebContentsData(navigation_handle->GetWebContents())
+      ->SetTabLoadingState(TAB_IS_NOT_LOADING);
+  pending_navigations_.push_back(navigation_handle);
+
+  return content::NavigationThrottle::DEFER;
+}
+
+bool TabManager::ShouldDelayNavigation(
+    content::NavigationHandle* navigation_handle) const {
+  // Do not delay the navigation if no tab is currently loading.
+  if (loading_contents_.empty())
+    return false;
+
+  return true;
+}
+
+void TabManager::OnDidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  auto it = pending_navigations_.begin();
+  while (it != pending_navigations_.end()) {
+    content::NavigationHandle* pending_handle = *it;
+    if (pending_handle == navigation_handle) {
+      pending_navigations_.erase(it);
+      break;
+    }
+    it++;
+  }
+}
+
+void TabManager::OnDidStopLoading(content::WebContents* contents) {
+  DCHECK_EQ(TAB_IS_LOADED, GetWebContentsData(contents)->tab_loading_state());
+  loading_contents_.erase(contents);
+  LoadNextBackgroundTabIfNeeded();
+}
+
+void TabManager::OnWebContentsDestroyed(content::WebContents* contents) {
+  RemovePendingNavigationIfNeeded(contents);
+  loading_contents_.erase(contents);
+  LoadNextBackgroundTabIfNeeded();
+}
+
+void TabManager::LoadNextBackgroundTabIfNeeded() {
+  // Do not load more background tabs until all currently loading tabs have
+  // finished.
+  if (!loading_contents_.empty())
+    return;
+
+  if (pending_navigations_.empty())
+    return;
+
+  content::NavigationHandle* navigation_handle = pending_navigations_.front();
+  pending_navigations_.erase(pending_navigations_.begin());
+  ResumeNavigation(navigation_handle);
+}
+
+void TabManager::ResumeTabNavigationIfNeeded(content::WebContents* contents) {
+  content::NavigationHandle* navigation_handle =
+      RemovePendingNavigationIfNeeded(contents);
+  if (navigation_handle)
+    ResumeNavigation(navigation_handle);
+}
+
+void TabManager::ResumeNavigation(
+    content::NavigationHandle* navigation_handle) {
+  GetWebContentsData(navigation_handle->GetWebContents())
+      ->SetTabLoadingState(TAB_IS_LOADING);
+  loading_contents_.insert(navigation_handle->GetWebContents());
+
+  navigation_handle->Resume();
+}
+
+content::NavigationHandle* TabManager::RemovePendingNavigationIfNeeded(
+    content::WebContents* contents) {
+  content::NavigationHandle* navigation_handle = nullptr;
+  auto it = pending_navigations_.begin();
+  while (it != pending_navigations_.end()) {
+    navigation_handle = *it;
+    if ((*it)->GetWebContents() == contents) {
+      navigation_handle = *it;
+      pending_navigations_.erase(it);
+      break;
+    }
+    it++;
+  }
+  return navigation_handle;
+}
+
+bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
+  if (loading_contents_.count(contents) == 1) {
+    DCHECK_EQ(TAB_IS_LOADING,
+              GetWebContentsData(contents)->tab_loading_state());
+    return true;
+  }
+
+  DCHECK_NE(TAB_IS_LOADING, GetWebContentsData(contents)->tab_loading_state());
+  return false;
+}
+
+bool TabManager::IsNavigationDelayedForTest(
+    const content::NavigationHandle* navigation_handle) const {
+  for (const auto* nav : pending_navigations_) {
+    if (nav == navigation_handle)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace resource_coordinator

@@ -39,11 +39,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::NavigationHandle;
+using content::NavigationThrottle;
 using content::WebContents;
 using content::WebContentsTester;
 
 namespace resource_coordinator {
 namespace {
+
+const char kTestUrl[] = "http://www.example.com";
 
 class TabStripDummyDelegate : public TestTabStripModelDelegate {
  public:
@@ -114,6 +118,45 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     web_contents->NavigateAndCommit(GURL("https://www.example.com"));
     return web_contents;
   }
+
+  std::unique_ptr<NavigationHandle> CreateTabAndNavigation() {
+    content::TestWebContents* web_contents =
+        content::TestWebContents::Create(profile(), nullptr);
+    return content::NavigationHandle::CreateNavigationHandleForTesting(
+        GURL(kTestUrl), web_contents->GetMainFrame());
+  }
+
+  // Simulate creating 3 tabs and their navigations.
+  void MaybeThrottleNavigations(TabManager* tab_manager) {
+    nav_handle1_ = CreateTabAndNavigation();
+    nav_handle2_ = CreateTabAndNavigation();
+    nav_handle3_ = CreateTabAndNavigation();
+    contents1_ = nav_handle1_->GetWebContents();
+    contents2_ = nav_handle2_->GetWebContents();
+    contents3_ = nav_handle3_->GetWebContents();
+
+    NavigationThrottle::ThrottleCheckResult result1 =
+        tab_manager->MaybeThrottleNavigation(nav_handle1_.get());
+    NavigationThrottle::ThrottleCheckResult result2 =
+        tab_manager->MaybeThrottleNavigation(nav_handle2_.get());
+    NavigationThrottle::ThrottleCheckResult result3 =
+        tab_manager->MaybeThrottleNavigation(nav_handle3_.get());
+
+    // First tab starts navigation right away because there is no tab loading.
+    EXPECT_EQ(content::NavigationThrottle::PROCEED, result1);
+
+    // The other 2 tabs's navigations are delayed.
+    EXPECT_EQ(content::NavigationThrottle::DEFER, result2);
+    EXPECT_EQ(content::NavigationThrottle::DEFER, result3);
+  }
+
+ protected:
+  std::unique_ptr<NavigationHandle> nav_handle1_;
+  std::unique_ptr<NavigationHandle> nav_handle2_;
+  std::unique_ptr<NavigationHandle> nav_handle3_;
+  WebContents* contents1_;
+  WebContents* contents2_;
+  WebContents* contents3_;
 };
 
 // TODO(georgesak): Add tests for protection to tabs with form input and
@@ -690,6 +733,114 @@ TEST_F(TabManagerTest, HistogramsSessionRestoreSwitchToTab) {
 
   // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.
   tab_strip.CloseAllTabs();
+}
+
+TEST_F(TabManagerTest, MaybeThrottleNavigation) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  // Tab 1 is loading. The other 2 tabs's navigations are delayed.
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
+TEST_F(TabManagerTest, OnDidFinishNavigation) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  tab_manager->GetWebContentsData(contents2_)
+      ->DidFinishNavigation(nav_handle2_.get());
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+}
+
+TEST_F(TabManagerTest, OnDidStopLoading) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+
+  // Simulate tab 1 has finished loading.
+  tab_manager->GetWebContentsData(contents1_)->DidStopLoading();
+
+  // After tab 1 has finished loading, TabManager starts loading the next tab.
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+}
+
+TEST_F(TabManagerTest, OnWebContentsDestroyed) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  // Tab 2 is destroyed when its navigation is still delayed. Its states are
+  // cleaned up.
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  tab_manager->OnWebContentsDestroyed(contents2_);
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+
+  // Tab 1 is destroyed when it is still loading. Its states are cleaned up and
+  // Tabmanager starts to load the next tab (tab 3).
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+  tab_manager->GetWebContentsData(contents1_)->WebContentsDestroyed();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
+TEST_F(TabManagerTest, OnDelayedTabSelected) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  MaybeThrottleNavigations(tab_manager);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // Simulate selecting tab 3, which should start loading immediately.
+  tab_manager->ActiveTabChanged(
+      contents1_, contents3_, 2,
+      TabStripModelObserver::CHANGE_REASON_USER_GESTURE);
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // Simulate tab 1 has finished loading. TabManager will NOT load the next tab
+  // (tab 2) because tab 3 is still loading.
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  tab_manager->GetWebContentsData(contents1_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+
+  // Simulate tab 3 has finished loading. TabManager starts loading the next tab
+  // (tab 2).
+  tab_manager->GetWebContentsData(contents3_)->DidStopLoading();
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
 }
 
 }  // namespace resource_coordinator

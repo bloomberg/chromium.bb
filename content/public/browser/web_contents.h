@@ -442,6 +442,11 @@ class WebContents : public PageNavigator,
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
+  // Whether the WebContents is visible. This can return true even if the page
+  // is still loading, as opposed to RenderWidgetHostView::IsShowing(), which
+  // always returns false when the page is still loading.
+  virtual bool IsVisible() const = 0;
+
   // Returns true if the before unload and unload listeners need to be
   // fired. The value of this changes over time. For example, if true and the
   // before unload listener is executed and allows the user to exit, then this

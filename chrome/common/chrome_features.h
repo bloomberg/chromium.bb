@@ -9,6 +9,7 @@
 #define CHROME_COMMON_CHROME_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
@@ -184,6 +185,10 @@ extern const base::Feature kSiteDetails;
 
 #if defined(OS_ANDROID)
 extern const base::Feature kSiteNotificationChannels;
+#endif
+
+#if !defined(OS_ANDROID)
+extern const base::Feature kStaggeredBackgroundTabOpen;
 #endif
 
 extern const base::Feature kSupervisedUserCreation;

@@ -9,7 +9,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 using base::TimeTicks;
@@ -42,6 +44,7 @@ void TabManager::WebContentsData::DidStopLoading() {
   // when available.
   if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
     SetTabLoadingState(TAB_IS_LOADED);
+    g_browser_process->GetTabManager()->OnDidStopLoading(web_contents());
   }
 }
 
@@ -56,6 +59,11 @@ void TabManager::WebContentsData::DidStartNavigation(
     return;
 
   SetTabLoadingState(TAB_IS_LOADING);
+}
+
+void TabManager::WebContentsData::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  g_browser_process->GetTabManager()->OnDidFinishNavigation(navigation_handle);
 }
 
 void TabManager::WebContentsData::WebContentsDestroyed() {
@@ -73,6 +81,9 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
                                base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
   }
+
+  SetTabLoadingState(TAB_IS_NOT_LOADING);
+  g_browser_process->GetTabManager()->OnWebContentsDestroyed(web_contents());
 }
 
 bool TabManager::WebContentsData::IsDiscarded() {
