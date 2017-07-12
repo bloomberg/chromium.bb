@@ -230,7 +230,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
                                 RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, url::Origin(GURL(kOrigin)), nullptr,
                         std::move(route_response_callbacks),
@@ -269,7 +269,7 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
                                 RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, url::Origin(GURL(kOrigin)), nullptr,
                         std::move(route_response_callbacks),
@@ -300,7 +300,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
               DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, url::Origin(GURL(kOrigin)), nullptr,
                         std::move(route_response_callbacks),
@@ -332,7 +332,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
                                 RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, url::Origin(GURL(kOrigin)), nullptr,
                         std::move(route_response_callbacks),
@@ -421,7 +421,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
                                 RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, url::Origin(GURL(kOrigin)),
                       nullptr, std::move(route_response_callbacks),
@@ -437,7 +437,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteNotFoundFails) {
                                 RouteRequestResult::ROUTE_NOT_FOUND))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, url::Origin(GURL(kOrigin)),
                       nullptr, std::move(route_response_callbacks),
@@ -473,7 +473,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
               DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, url::Origin(GURL(kOrigin)),
                       nullptr, std::move(route_response_callbacks),
@@ -516,7 +516,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteIncognitoMismatchFails) {
                                 RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, url::Origin(GURL(kOrigin)),
                       nullptr, std::move(route_response_callbacks),
@@ -556,7 +556,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
                                 RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->ConnectRouteByRouteId(
       kSource, kRouteId, url::Origin(GURL(kOrigin)), nullptr,
@@ -587,7 +587,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
               DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->ConnectRouteByRouteId(
       kSource, kRouteId, url::Origin(GURL(kOrigin)), nullptr,
@@ -624,7 +624,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdIncognitoMismatchFails) {
                                 RouteRequestResult::INCOGNITO_MISMATCH))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
+  route_response_callbacks.push_back(base::BindOnce(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->ConnectRouteByRouteId(
       kSource, kRouteId, url::Origin(GURL(kOrigin)), nullptr,
@@ -978,8 +978,8 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
   EXPECT_CALL(handler, Invoke(true))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->SendRouteMessage(kRouteId, kMessage,
-                             base::Bind(&SendMessageCallbackHandler::Invoke,
-                                        base::Unretained(&handler)));
+                             base::BindOnce(&SendMessageCallbackHandler::Invoke,
+                                            base::Unretained(&handler)));
   run_loop.Run();
 }
 
@@ -1002,8 +1002,8 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->SendRouteBinaryMessage(
       kRouteId, std::move(expected_binary_data),
-      base::Bind(&SendMessageCallbackHandler::Invoke,
-                 base::Unretained(&handler)));
+      base::BindOnce(&SendMessageCallbackHandler::Invoke,
+                     base::Unretained(&handler)));
   run_loop.Run();
 }
 
@@ -1211,7 +1211,7 @@ TEST_F(MediaRouterMojoImplTest, SearchSinks) {
 
   SinkResponseCallbackHandler sink_handler;
   EXPECT_CALL(sink_handler, Invoke(kSinkId2)).Times(1);
-  MediaSinkSearchResponseCallback sink_callback = base::Bind(
+  MediaSinkSearchResponseCallback sink_callback = base::BindOnce(
       &SinkResponseCallbackHandler::Invoke, base::Unretained(&sink_handler));
 
   router()->SearchSinks(kSinkId, kSource, search_input, domain,
@@ -1449,8 +1449,8 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   void RegisterMediaRouteProvider() {
     media_router_proxy_->RegisterMediaRouteProvider(
         std::move(media_route_provider_proxy_),
-        base::Bind(&RegisterMediaRouteProviderHandler::Invoke,
-                   base::Unretained(&provider_handler_)));
+        base::BindOnce(&RegisterMediaRouteProviderHandler::Invoke,
+                       base::Unretained(&provider_handler_)));
   }
 
   void ProcessEventLoop() { base::RunLoop().RunUntilIdle(); }

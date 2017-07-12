@@ -70,10 +70,10 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
             RenderFrameHostId(1, 2),
             {GURL("http://example.com"), GURL("http://example2.com")},
             url::Origin(GURL("http://google.com")),
-            base::Bind(&MediaRouterDialogControllerTest::RequestSuccess,
-                       base::Unretained(this)),
-            base::Bind(&MediaRouterDialogControllerTest::RequestError,
-                       base::Unretained(this))));
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
+                           base::Unretained(this)),
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
+                           base::Unretained(this))));
   }
 
   std::unique_ptr<TestMediaRouterDialogController> dialog_controller_;

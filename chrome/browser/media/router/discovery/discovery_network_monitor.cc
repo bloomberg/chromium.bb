@@ -107,8 +107,8 @@ void DiscoveryNetworkMonitor::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DiscoveryNetworkMonitor::UpdateNetworkInfo,
-                 base::Unretained(this)));
+      base::BindOnce(&DiscoveryNetworkMonitor::UpdateNetworkInfo,
+                     base::Unretained(this)));
 }
 
 void DiscoveryNetworkMonitor::UpdateNetworkInfo() {

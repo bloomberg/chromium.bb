@@ -62,8 +62,8 @@ void BrowserPresentationConnectionProxy::OnMessagesReceived(
   // TODO(imcheng): It would be slightly more efficient to send messages in
   // a single batch.
   for (const auto& message : messages) {
-    target_connection_ptr_->OnMessage(message,
-                                      base::Bind(&OnMessageReceivedByRenderer));
+    target_connection_ptr_->OnMessage(
+        message, base::BindOnce(&OnMessageReceivedByRenderer));
   }
 }
 }  // namespace media_router
