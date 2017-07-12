@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -31,6 +32,8 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
@@ -263,6 +266,65 @@ void ResumeRequestsContinuation(
     LOG(WARNING) << "ResumeRequestsContinuation has no valid coordinator.";
 }
 
+content::WebContents* GetWebContentsByFrameID(int render_process_id,
+                                              int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return NULL;
+  return content::WebContents::FromRenderFrameHost(render_frame_host);
+}
+
+content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
+    content::WebContents* web_contents) {
+  // PlzNavigate: The FrameTreeNode ID should be used to access the WebContents.
+  int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
+  if (frame_tree_node_id != -1) {
+    return base::Bind(content::WebContents::FromFrameTreeNodeId,
+                      frame_tree_node_id);
+  }
+
+  // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
+  // the WebContents.
+  return base::Bind(&GetWebContentsByFrameID,
+                    web_contents->GetRenderProcessHost()->GetID(),
+                    web_contents->GetMainFrame()->GetRoutingID());
+}
+
+void OnAcquireFileAccessPermissionDone(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    bool granted) {
+  if (!granted)
+    return;
+
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
+    return;
+
+  GURL url = web_contents->GetLastCommittedURL();
+  if (url.is_empty())
+    return;
+
+  content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
+      web_contents->GetBrowserContext());
+  std::unique_ptr<content::DownloadUrlParameters> dl_params(
+      content::DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
+
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  // |entry| should not be null since otherwise an empty URL is returned from
+  // calling GetLastCommittedURL and we should bail out earlier.
+  DCHECK(entry);
+  content::Referrer referrer =
+      content::Referrer::SanitizeForRequest(url, entry->GetReferrer());
+  dl_params->set_referrer(referrer);
+
+  dl_params->set_prefer_cache(true);
+  dl_params->set_prompt(false);
+  dlm->DownloadUrl(std::move(dl_params));
+}
+
 }  // namespace
 
 OfflinePageDownloadBridge::OfflinePageDownloadBridge(
@@ -351,24 +413,11 @@ void OfflinePageDownloadBridge::StartDownload(
   // If the page is not a HTML page, route to DownloadManager.
   if (!offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(
           url, web_contents->GetContentsMimeType())) {
-    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
-        web_contents->GetBrowserContext());
-    std::unique_ptr<content::DownloadUrlParameters> dl_params(
-        content::DownloadUrlParameters::CreateForWebContentsMainFrame(
-            web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
-
-    content::NavigationEntry* entry =
-        web_contents->GetController().GetLastCommittedEntry();
-    // |entry| should not be null since otherwise an empty URL is returned from
-    // calling GetLastCommittedURL and we should bail out earlier.
-    DCHECK(entry);
-    content::Referrer referrer =
-        content::Referrer::SanitizeForRequest(url, entry->GetReferrer());
-    dl_params->set_referrer(referrer);
-
-    dl_params->set_prefer_cache(true);
-    dl_params->set_prompt(false);
-    dlm->DownloadUrl(std::move(dl_params));
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
+        GetWebContentsGetter(web_contents);
+    DownloadControllerBase::Get()->AcquireFileAccessPermission(
+        web_contents_getter,
+        base::Bind(&OnAcquireFileAccessPermissionDone, web_contents_getter));
     return;
   }
 
