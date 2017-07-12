@@ -124,6 +124,33 @@ bool IndexedDBFactoryImpl::HasLastBackingStoreReference(
   return ptr->HasOneRef();
 }
 
+leveldb::Status IndexedDBFactoryImpl::AbortTransactions(const Origin& origin) {
+  const scoped_refptr<IndexedDBBackingStore>& backing_store =
+      backing_store_map_[origin];
+  if (!backing_store) {
+    return leveldb::Status::IOError(
+        "Internal error opening backing store for "
+        "indexedDB.abortTransactions.");
+  }
+
+  leveldb::Status get_names_status;
+  std::vector<base::string16> db_names =
+      backing_store->GetDatabaseNames(&get_names_status);
+  if (!get_names_status.ok()) {
+    return leveldb::Status::IOError(
+        "Internal error getting origin database names for "
+        "indexedDB.abortTransactions.");
+  }
+
+  for (base::string16& name : db_names) {
+    const scoped_refptr<IndexedDBDatabase>& db =
+        database_map_[std::make_pair(origin, name)];
+    db->AbortAllTransactionsForConnections();
+  }
+
+  return leveldb::Status::OK();
+}
+
 void IndexedDBFactoryImpl::ForceClose(const Origin& origin) {
   OriginDBs range = GetOpenDatabasesForOrigin(origin);
 
@@ -299,7 +326,7 @@ void IndexedDBFactoryImpl::DatabaseDeleted(
 
 void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
     base::OnceCallback<void(leveldb::Status)> callback,
-    const url::Origin& origin) {
+    const Origin& origin) {
   IDB_TRACE("IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase");
   const scoped_refptr<IndexedDBBackingStore>& backing_store =
       backing_store_map_[origin];
@@ -309,24 +336,22 @@ void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
         "indexedDB.abortTransactionsAndCompactDatabase."));
     return;
   }
+  leveldb::Status status = AbortTransactions(origin);
+  backing_store->Compact();
+  std::move(callback).Run(status);
+}
 
-  leveldb::Status get_names_status;
-  std::vector<base::string16> db_names =
-      backing_store->GetDatabaseNames(&get_names_status);
-  if (!get_names_status.ok()) {
-    std::move(callback).Run(leveldb::Status::IOError(
-        "Internal error getting origin database names for "
-        "indexedDB.abortTransactionsAndCompactDatabase."));
+void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
+    base::OnceCallback<void(leveldb::Status)> callback,
+    const Origin& origin) {
+  IDB_TRACE("IndexedDBFactoryImpl::AbortTransactionsForDatabase");
+  if (!backing_store_map_[origin]) {
+    std::move(callback).Run(
+        leveldb::Status::IOError("Internal error opening backing store for "
+                                 "indexedDB.abortTransactionsForDatabase."));
     return;
   }
-  for (base::string16& name : db_names) {
-    const scoped_refptr<IndexedDBDatabase>& db =
-        database_map_[std::make_pair(origin, name)];
-    db->AbortAllTransactionsForConnections();
-  }
-
-  backing_store->Compact();
-  std::move(callback).Run(leveldb::Status::OK());
+  std::move(callback).Run(AbortTransactions(origin));
 }
 
 void IndexedDBFactoryImpl::HandleBackingStoreFailure(const Origin& origin) {

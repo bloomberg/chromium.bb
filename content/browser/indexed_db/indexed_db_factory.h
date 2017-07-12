@@ -67,6 +67,9 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual void AbortTransactionsAndCompactDatabase(
       base::OnceCallback<void(leveldb::Status)> callback,
       const url::Origin& origin) = 0;
+  virtual void AbortTransactionsForDatabase(
+      base::OnceCallback<void(leveldb::Status)> callback,
+      const url::Origin& origin) = 0;
 
   virtual void HandleBackingStoreFailure(const url::Origin& origin) = 0;
   virtual void HandleBackingStoreCorruption(

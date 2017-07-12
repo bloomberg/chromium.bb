@@ -90,9 +90,13 @@ enum TransactionMode {
   VersionChange,
 };
 
-enum CompactionStatus {
+enum Status {
   OK,
-  Error,
+  NotFound,
+  Corruption,
+  NotSupported,
+  InvalidArgument,
+  IOError,
 };
 
 struct IndexMetadata {
@@ -335,5 +339,6 @@ interface Factory {
        mojo.common.mojom.String16 name, int64 version, int64 transaction_id);
   DeleteDatabase(associated Callbacks callbacks, url.mojom.Origin origin,
                  mojo.common.mojom.String16 name, bool force_close);
-  AbortTransactionsAndCompactDatabase(url.mojom.Origin origin) => (CompactionStatus status);
+  AbortTransactionsAndCompactDatabase(url.mojom.Origin origin) => (Status status);
+  AbortTransactionsForDatabase(url.mojom.Origin origin) => (Status status);
 };
