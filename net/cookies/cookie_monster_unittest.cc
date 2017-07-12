@@ -165,6 +165,20 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
+  bool SetCookieWithCreationTime(CookieMonster* cm,
+                                 const GURL& url,
+                                 const std::string& cookie_line,
+                                 base::Time creation_time) {
+    DCHECK(cm);
+    ResultSavingCookieCallback<bool> callback;
+    cm->SetCookieWithCreationTimeForTesting(
+        url, cookie_line, creation_time,
+        base::Bind(&ResultSavingCookieCallback<bool>::Run,
+                   base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.result();
+  }
+
   uint32_t DeleteAllCreatedBetween(CookieMonster* cm,
                                    const base::Time& delete_begin,
                                    const base::Time& delete_end) {
@@ -1387,15 +1401,19 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps) {
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
-      cm->SetCookieWithCreationTime(http_www_foo_.url(), "T-0=Now", now));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-1=Yesterday", now - TimeDelta::FromDays(1)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-2=DayBefore", now - TimeDelta::FromDays(2)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-3=ThreeDays", now - TimeDelta::FromDays(3)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(http_www_foo_.url(), "T-7=LastWeek",
-                                            now - TimeDelta::FromDays(7)));
+      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-1=Yesterday",
+                                        now - TimeDelta::FromDays(1)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-2=DayBefore",
+                                        now - TimeDelta::FromDays(2)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-3=ThreeDays",
+                                        now - TimeDelta::FromDays(3)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-7=LastWeek",
+                                        now - TimeDelta::FromDays(7)));
 
   // Try to delete threedays and the daybefore.
   EXPECT_EQ(2u, DeleteAllCreatedBetween(cm.get(), now - TimeDelta::FromDays(3),
@@ -1436,15 +1454,19 @@ TEST_F(CookieMonsterTest,
 
   // Create 5 cookies with different creation dates.
   EXPECT_TRUE(
-      cm->SetCookieWithCreationTime(http_www_foo_.url(), "T-0=Now", now));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-1=Yesterday", now - TimeDelta::FromDays(1)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-2=DayBefore", now - TimeDelta::FromDays(2)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(
-      http_www_foo_.url(), "T-3=ThreeDays", now - TimeDelta::FromDays(3)));
-  EXPECT_TRUE(cm->SetCookieWithCreationTime(http_www_foo_.url(), "T-7=LastWeek",
-                                            now - TimeDelta::FromDays(7)));
+      SetCookieWithCreationTime(cm.get(), http_www_foo_.url(), "T-0=Now", now));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-1=Yesterday",
+                                        now - TimeDelta::FromDays(1)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-2=DayBefore",
+                                        now - TimeDelta::FromDays(2)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-3=ThreeDays",
+                                        now - TimeDelta::FromDays(3)));
+  EXPECT_TRUE(SetCookieWithCreationTime(cm.get(), http_www_foo_.url(),
+                                        "T-7=LastWeek",
+                                        now - TimeDelta::FromDays(7)));
 
   // Try to delete threedays and the daybefore, but we should do nothing due
   // to the predicate.

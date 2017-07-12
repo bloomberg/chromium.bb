@@ -51,9 +51,9 @@ class CookieMonsterDelegate;
 //
 // A cookie task is either pending loading of the entire cookie store, or
 // loading of cookies for a specific domain key(eTLD+1). In the former case, the
-// cookie task will be queued in tasks_pending_ while PersistentCookieStore
+// cookie callback will be queued in tasks_pending_ while PersistentCookieStore
 // chain loads the cookie store on DB thread. In the latter case, the cookie
-// task will be queued in tasks_pending_for_key_ while PermanentCookieStore
+// callback will be queued in tasks_pending_for_key_ while PermanentCookieStore
 // loads cookies for the specified domain key(eTLD+1) on DB thread.
 //
 // TODO(deanm) Implement CookieMonster, the cookie database.
@@ -228,37 +228,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool IsEphemeral() override;
 
+  void SetCookieWithCreationTimeForTesting(const GURL& url,
+                                           const std::string& cookie_line,
+                                           const base::Time& creation_time,
+                                           SetCookiesCallback callback);
+
  private:
   CookieMonster(PersistentCookieStore* store,
                 CookieMonsterDelegate* delegate,
                 ChannelIDService* channel_id_service,
                 base::TimeDelta last_access_threshold);
-
-  // For queueing the cookie monster calls.
-  class CookieMonsterTask;
-  template <typename Result>
-  class DeleteTask;
-  class DeleteAllCreatedBetweenTask;
-  class DeleteAllCreatedBetweenWithPredicateTask;
-  class DeleteCookieTask;
-  class DeleteCanonicalCookieTask;
-  class GetCookieListForURLWithOptionsTask;
-  class GetAllCookiesTask;
-  class GetCookiesWithOptionsTask;
-  class GetCookieListWithOptionsTask;
-  class SetAllCookiesTask;
-  class SetCookieWithDetailsTask;
-  class SetCookieWithOptionsTask;
-  class SetCanonicalCookieTask;
-  class DeleteSessionCookiesTask;
-
-  // Testing support.
-  // For SetCookieWithCreationTime.
-  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
-                           TestCookieDeleteAllCreatedBetweenTimestamps);
-  FRIEND_TEST_ALL_PREFIXES(
-      CookieMonsterTest,
-      TestCookieDeleteAllCreatedBetweenTimestampsWithPredicate);
 
   // For garbage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
@@ -417,7 +396,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // The following are synchronous calls to which the asynchronous methods
   // delegate either immediately (if the store is loaded) or through a deferred
   // task (if the store is not yet loaded).
-  bool SetCookieWithDetails(const GURL& url,
+  void SetCookieWithDetails(const GURL& url,
                             const std::string& name,
                             const std::string& value,
                             const std::string& domain,
@@ -428,47 +407,53 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             bool secure,
                             bool http_only,
                             CookieSameSite same_site,
-                            CookiePriority priority);
+                            CookiePriority priority,
+                            SetCookiesCallback callback);
 
   // Sets a canonical cookie, deletes equivalents and performs garbage
   // collection.  |source_secure| indicates if the cookie is being set
   // from a secure source (e.g. a cryptographic scheme).
   // |modify_http_only| indicates if this setting operation is allowed
   // to affect http_only cookies.
-  bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
+  void SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
                           bool secure_source,
-                          bool can_modify_httponly);
+                          bool can_modify_httponly,
+                          SetCookiesCallback callback);
 
-  CookieList GetAllCookies();
+  void GetAllCookies(GetCookieListCallback callback);
 
-  CookieList GetCookieListWithOptions(const GURL& url,
-                                      const CookieOptions& options);
+  void GetCookieListWithOptions(const GURL& url,
+                                const CookieOptions& options,
+                                GetCookieListCallback callback);
 
-  uint32_t DeleteAllCreatedBetween(const base::Time& delete_begin,
-                                   const base::Time& delete_end);
+  void DeleteAllCreatedBetween(const base::Time& delete_begin,
+                               const base::Time& delete_end,
+                               DeleteCallback callback);
 
   // Predicate will be called with the calling thread.
-  uint32_t DeleteAllCreatedBetweenWithPredicate(
+  void DeleteAllCreatedBetweenWithPredicate(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      const base::Callback<bool(const CanonicalCookie&)>& predicate);
+      const base::Callback<bool(const CanonicalCookie&)>& predicate,
+      DeleteCallback callback);
 
-  bool SetCookieWithOptions(const GURL& url,
+  void SetCookieWithOptions(const GURL& url,
                             const std::string& cookie_line,
-                            const CookieOptions& options);
+                            const CookieOptions& options,
+                            SetCookiesCallback callback);
 
-  std::string GetCookiesWithOptions(const GURL& url,
-                                    const CookieOptions& options);
+  void GetCookiesWithOptions(const GURL& url,
+                             const CookieOptions& options,
+                             GetCookiesCallback callback);
 
-  void DeleteCookie(const GURL& url, const std::string& cookie_name);
+  void DeleteCookie(const GURL& url,
+                    const std::string& cookie_name,
+                    base::OnceClosure callback);
 
-  uint32_t DeleteCanonicalCookie(const CanonicalCookie& cookie);
+  void DeleteCanonicalCookie(const CanonicalCookie& cookie,
+                             DeleteCallback callback);
 
-  bool SetCookieWithCreationTime(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const base::Time& creation_time);
-
-  uint32_t DeleteSessionCookies();
+  void DeleteSessionCookies(DeleteCallback callback);
 
   // The first access to the cookie store initializes it. This method should be
   // called before any access to the cookie store.
@@ -552,15 +537,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Helper function that sets cookies with more control.
   // Not exposed as we don't want callers to have the ability
   // to specify (potentially duplicate) creation times.
-  bool SetCookieWithCreationTimeAndOptions(const GURL& url,
+  void SetCookieWithCreationTimeAndOptions(const GURL& url,
                                            const std::string& cookie_line,
                                            const base::Time& creation_time,
-                                           const CookieOptions& options);
+                                           const CookieOptions& options,
+                                           SetCookiesCallback callback);
 
   // Sets all cookies from |list| after deleting any equivalent cookie.
   // For data gathering purposes, this routine is treated as if it is
   // restoring saved cookies; some statistics are not gathered in this case.
-  bool SetAllCookies(const CookieList& list);
+  void SetAllCookies(CookieList list, SetCookiesCallback callback);
 
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                       const base::Time& current_time);
@@ -644,14 +630,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // ugly and increment when we've seen the same time twice.
   base::Time CurrentTime();
 
-  // Runs the task if, or defers the task until, the full cookie database is
-  // loaded.
-  void DoCookieTask(const scoped_refptr<CookieMonsterTask>& task_item);
+  // Runs the callback if, or defers the callback until, the full cookie
+  // database is loaded.
+  void DoCookieCallback(base::OnceClosure callback);
 
-  // Runs the task if, or defers the task until, the cookies for the given URL
-  // are loaded.
-  void DoCookieTaskForURL(const scoped_refptr<CookieMonsterTask>& task_item,
-                          const GURL& url);
+  // Runs the callback if, or defers the callback until, the cookies for the
+  // given URL are loaded.
+  void DoCookieCallbackForURL(base::OnceClosure callback, const GURL& url);
 
   // Computes the difference between |old_cookies| and |new_cookies|, and writes
   // the result in |cookies_to_add| and |cookies_to_delete|.
@@ -662,10 +647,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                          CookieList* new_cookies,
                          CookieList* cookies_to_add,
                          CookieList* cookies_to_delete);
-
-  // Runs the given callback. Used to avoid running callbacks after the store
-  // has been destroyed.
-  void RunCallback(base::OnceClosure callback);
 
   // Run all cookie changed callbacks that are monitoring |cookie|.
   // |removed| is true if the cookie was deleted.
@@ -699,16 +680,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Map of domain keys to their associated task queues. These tasks are blocked
   // until all cookies for the associated domain key eTLD+1 are loaded from the
   // backend store.
-  std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask>>>
-      tasks_pending_for_key_;
+  std::map<std::string, std::deque<base::OnceClosure>> tasks_pending_for_key_;
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  std::deque<scoped_refptr<CookieMonsterTask>> tasks_pending_;
+  std::deque<base::OnceClosure> tasks_pending_;
 
   // Once a global cookie task has been seen, all per-key tasks must be put in
   // |tasks_pending_| instead of |tasks_pending_for_key_| to ensure a reasonable
-  // view of the cookie store. This more to ensure fancy cookie export/import
+  // view of the cookie store. This is more to ensure fancy cookie export/import
   // code has a consistent view of the CookieStore, rather than out of concern
   // for typical use.
   bool seen_global_task_;
