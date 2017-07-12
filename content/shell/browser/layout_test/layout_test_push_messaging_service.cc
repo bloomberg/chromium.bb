@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -95,11 +96,11 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
 
     subscribed_service_worker_registration_ = service_worker_registration_id;
     callback.Run("layoutTestRegistrationId", p256dh, auth,
-                 PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
+                 mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
     callback.Run("registration_id", std::vector<uint8_t>() /* p256dh */,
                  std::vector<uint8_t>() /* auth */,
-                 PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+                 mojom::PushRegistrationStatus::PERMISSION_DENIED);
   }
 }
 
@@ -131,7 +132,7 @@ bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {
 }
 
 void LayoutTestPushMessagingService::Unsubscribe(
-    PushUnregistrationReason reason,
+    mojom::PushUnregistrationReason reason,
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
@@ -139,11 +140,12 @@ void LayoutTestPushMessagingService::Unsubscribe(
   ClearPushSubscriptionId(
       LayoutTestContentBrowserClient::Get()->browser_context(),
       requesting_origin, service_worker_registration_id,
-      base::Bind(callback,
-                 service_worker_registration_id ==
-                         subscribed_service_worker_registration_
-                     ? PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED
-                     : PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED));
+      base::Bind(
+          callback,
+          service_worker_registration_id ==
+                  subscribed_service_worker_registration_
+              ? mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED
+              : mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED));
   if (service_worker_registration_id ==
       subscribed_service_worker_registration_) {
     subscribed_service_worker_registration_ =

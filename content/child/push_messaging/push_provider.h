@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/push_messaging.mojom.h"
 #include "content/public/child/worker_thread.h"
-#include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushProvider.h"
 
@@ -27,10 +26,15 @@ struct WebPushSubscriptionOptions;
 
 namespace content {
 
+namespace mojom {
+enum class PushGetRegistrationStatus;
+enum class PushRegistrationStatus;
+}  // namespace mojom
+
 struct PushSubscriptionOptions;
 
 blink::WebPushError PushRegistrationStatusToWebPushError(
-    PushRegistrationStatus status);
+    mojom::PushRegistrationStatus status);
 
 class PushProvider : public blink::WebPushProvider,
                      public WorkerThread::Observer {
@@ -70,9 +74,9 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidSubscribe(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      content::PushRegistrationStatus status,
+      mojom::PushRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<content::PushSubscriptionOptions>& options,
+      const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 
@@ -84,9 +88,9 @@ class PushProvider : public blink::WebPushProvider,
 
   void DidGetSubscription(
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-      content::PushGetRegistrationStatus status,
+      mojom::PushGetRegistrationStatus status,
       const base::Optional<GURL>& endpoint,
-      const base::Optional<content::PushSubscriptionOptions>& options,
+      const base::Optional<PushSubscriptionOptions>& options,
       const base::Optional<std::vector<uint8_t>>& p256dh,
       const base::Optional<std::vector<uint8_t>>& auth);
 

@@ -13,6 +13,8 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
+#include "content/common/push_messaging.mojom.h"
+#include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/render_frame_impl.h"
@@ -83,7 +85,7 @@ void PushMessagingClient::DidGetManifest(
   // the caller.
   if (manifest.IsEmpty()) {
     DidSubscribe(std::move(callbacks),
-                 PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING,
+                 mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
                  base::nullopt, base::nullopt, base::nullopt, base::nullopt);
     return;
   }
@@ -110,8 +112,9 @@ void PushMessagingClient::DoSubscribe(
           ->RegistrationId();
 
   if (options.sender_info.empty()) {
-    DidSubscribe(std::move(callbacks), PUSH_REGISTRATION_STATUS_NO_SENDER_ID,
-                 base::nullopt, base::nullopt, base::nullopt, base::nullopt);
+    DidSubscribe(std::move(callbacks),
+                 mojom::PushRegistrationStatus::NO_SENDER_ID, base::nullopt,
+                 base::nullopt, base::nullopt, base::nullopt);
     return;
   }
 
@@ -126,15 +129,15 @@ void PushMessagingClient::DoSubscribe(
 
 void PushMessagingClient::DidSubscribe(
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
-    content::PushRegistrationStatus status,
+    mojom::PushRegistrationStatus status,
     const base::Optional<GURL>& endpoint,
-    const base::Optional<content::PushSubscriptionOptions>& options,
+    const base::Optional<PushSubscriptionOptions>& options,
     const base::Optional<std::vector<uint8_t>>& p256dh,
     const base::Optional<std::vector<uint8_t>>& auth) {
   DCHECK(callbacks);
 
-  if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE ||
-      status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE) {
+  if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
+      status == mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
     DCHECK(endpoint);
     DCHECK(options);
     DCHECK(p256dh);

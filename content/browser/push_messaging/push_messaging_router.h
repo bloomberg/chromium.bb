@@ -12,11 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace mojom {
+enum class PushDeliveryStatus;
+}
 
 class BrowserContext;
 struct PushEventPayload;
@@ -26,7 +29,8 @@ class ServiceWorkerVersion;
 
 class PushMessagingRouter {
  public:
-  typedef base::Callback<void(PushDeliveryStatus)> DeliverMessageCallback;
+  using DeliverMessageCallback =
+      base::Callback<void(mojom::PushDeliveryStatus)>;
 
   // Delivers a push message with |data| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|. Must be called on the UI

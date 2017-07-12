@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "content/common/push_messaging.mojom.h"
+#include "content/public/common/push_messaging_status.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
@@ -27,30 +28,12 @@ struct StructTraits<content::mojom::PushSubscriptionOptionsDataView,
 };
 
 template <>
-struct EnumTraits<content::mojom::PushRegistrationStatus,
-                  content::PushRegistrationStatus> {
-  static content::mojom::PushRegistrationStatus ToMojom(
-      content::PushRegistrationStatus input);
-  static bool FromMojom(content::mojom::PushRegistrationStatus input,
-                        content::PushRegistrationStatus* output);
-};
-
-template <>
 struct EnumTraits<content::mojom::PushErrorType,
                   blink::WebPushError::ErrorType> {
   static content::mojom::PushErrorType ToMojom(
       blink::WebPushError::ErrorType input);
   static bool FromMojom(content::mojom::PushErrorType input,
                         blink::WebPushError::ErrorType* output);
-};
-
-template <>
-struct EnumTraits<content::mojom::PushGetRegistrationStatus,
-                  content::PushGetRegistrationStatus> {
-  static content::mojom::PushGetRegistrationStatus ToMojom(
-      content::PushGetRegistrationStatus input);
-  static bool FromMojom(content::mojom::PushGetRegistrationStatus input,
-                        content::PushGetRegistrationStatus* output);
 };
 
 template <>

@@ -11,11 +11,16 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "url/gurl.h"
 
 namespace content {
+
+namespace mojom {
+enum class PushRegistrationStatus;
+enum class PushUnregistrationReason;
+enum class PushUnregistrationStatus;
+}  // namespace mojom
 
 class BrowserContext;
 struct PushSubscriptionOptions;
@@ -28,8 +33,9 @@ class CONTENT_EXPORT PushMessagingService {
       base::Callback<void(const std::string& registration_id,
                           const std::vector<uint8_t>& p256dh,
                           const std::vector<uint8_t>& auth,
-                          PushRegistrationStatus status)>;
-  using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
+                          mojom::PushRegistrationStatus status)>;
+  using UnregisterCallback =
+      base::Callback<void(mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
                           const std::vector<uint8_t>& p256dh,
@@ -80,7 +86,7 @@ class CONTENT_EXPORT PushMessagingService {
   // Unsubscribe the given |sender_id| from the push messaging service. Locally
   // deactivates the subscription, then runs |callback|, then asynchronously
   // attempts to unsubscribe with the push service.
-  virtual void Unsubscribe(PushUnregistrationReason reason,
+  virtual void Unsubscribe(mojom::PushUnregistrationReason reason,
                            const GURL& requesting_origin,
                            int64_t service_worker_registration_id,
                            const std::string& sender_id,
