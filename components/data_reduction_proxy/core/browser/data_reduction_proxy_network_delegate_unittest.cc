@@ -884,8 +884,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   net::ProxyInfo data_reduction_proxy_info;
   net::ProxyRetryInfoMap proxy_retry_info;
   std::string data_reduction_proxy;
-  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+  data_reduction_proxy_info.UseProxyServer(
+      params()->proxies_for_http().front().proxy_server());
 
   net::HttpRequestHeaders headers;
   // Call network delegate methods to ensure that appropriate chrome proxy
@@ -949,11 +949,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
 
     net::ProxyInfo data_reduction_proxy_info;
     std::string proxy;
-    if (tests[i].is_data_reduction_proxy)
-      base::TrimString(params()->DefaultOrigin(), "/", &proxy);
-    else
+    if (tests[i].is_data_reduction_proxy) {
+      data_reduction_proxy_info.UseProxyServer(
+          params()->proxies_for_http().front().proxy_server());
+    } else {
       base::TrimString(kOtherProxy, "/", &proxy);
-    data_reduction_proxy_info.UseNamedProxy(proxy);
+      data_reduction_proxy_info.UseNamedProxy(proxy);
+    }
 
     // Needed as a parameter, but functionality is not tested.
     TestPreviewsDecider test_previews_decider;
@@ -1091,12 +1093,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
 
   for (const auto& test : tests) {
     net::ProxyInfo data_reduction_proxy_info;
-    std::string data_reduction_proxy;
-    base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-    if (test.used_data_reduction_proxy)
-      data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
-    else
+    if (test.used_data_reduction_proxy) {
+      data_reduction_proxy_info.UseProxyServer(
+          params()->proxies_for_http().front().proxy_server());
+    } else {
       data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
+    }
     // Main frame loaded. Lo-Fi should be used.
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
@@ -1199,9 +1201,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   Init(USE_INSECURE_PROXY, false);
   net::ProxyInfo data_reduction_proxy_info;
-  std::string data_reduction_proxy;
-  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+  data_reduction_proxy_info.UseProxyServer(
+      params()->proxies_for_http().front().proxy_server());
 
   // Main frame loaded. Lo-Fi should be used.
   net::HttpRequestHeaders headers_original;
@@ -1840,9 +1841,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   // This is unaffacted by brotil and insecure proxy.
   Init(USE_INSECURE_PROXY, false /* enable_brotli_globally */);
   net::ProxyInfo data_reduction_proxy_info;
-  std::string data_reduction_proxy;
-  base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-  data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+  data_reduction_proxy_info.UseProxyServer(
+      params()->proxies_for_http().front().proxy_server());
 
   std::unique_ptr<net::URLRequest> request =
       context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,

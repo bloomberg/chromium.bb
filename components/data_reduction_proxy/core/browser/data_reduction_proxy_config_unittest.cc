@@ -568,10 +568,19 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
   };
 
   // The retry map has the scheme prefix for https but not for http.
-  std::string origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultOrigin());
-  std::string fallback_origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultFallbackOrigin());
+  std::string origin = GetRetryMapKeyFromOrigin(params()
+                                                    ->proxies_for_http()
+                                                    .front()
+                                                    .proxy_server()
+                                                    .host_port_pair()
+                                                    .ToString());
+  std::string fallback_origin =
+      GetRetryMapKeyFromOrigin(params()
+                                   ->proxies_for_http()
+                                   .at(1)
+                                   .proxy_server()
+                                   .host_port_pair()
+                                   .ToString());
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     net::ProxyConfig::ProxyRules rules;
@@ -611,10 +620,19 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
 }
 
 TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
-  std::string origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultOrigin());
-  std::string fallback_origin = GetRetryMapKeyFromOrigin(
-      TestDataReductionProxyParams::DefaultFallbackOrigin());
+  std::string origin = GetRetryMapKeyFromOrigin(params()
+                                                    ->proxies_for_http()
+                                                    .front()
+                                                    .proxy_server()
+                                                    .host_port_pair()
+                                                    .ToString());
+  std::string fallback_origin =
+      GetRetryMapKeyFromOrigin(params()
+                                   ->proxies_for_http()
+                                   .at(1)
+                                   .proxy_server()
+                                   .host_port_pair()
+                                   .ToString());
 
   net::ProxyConfig::ProxyRules rules;
   std::vector<std::string> proxies;
@@ -675,22 +693,12 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
     net::ProxyServer expected_second;
     bool expected_is_fallback;
   } tests[] = {
-      {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
-                                 net::ProxyServer::SCHEME_HTTP),
-       true,
-       net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
-                                 net::ProxyServer::SCHEME_HTTP),
-       net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP),
-       false},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP),
-       true, net::ProxyServer::FromURI(
-                 TestDataReductionProxyParams::DefaultFallbackOrigin(),
-                 net::ProxyServer::SCHEME_HTTP),
-       net::ProxyServer(), true},
+      {params()->proxies_for_http().front().proxy_server(), true,
+       params()->proxies_for_http().front().proxy_server(),
+       params()->proxies_for_http().at(1).proxy_server(), false},
+      {params()->proxies_for_http().at(1).proxy_server(), true,
+       params()->proxies_for_http().at(1).proxy_server(), net::ProxyServer(),
+       true},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<TestDataReductionProxyParams> params(

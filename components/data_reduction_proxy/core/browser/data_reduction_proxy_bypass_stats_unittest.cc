@@ -272,9 +272,9 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     // fully bypassed.
     std::vector<DataReductionProxyServer> data_reduction_proxy_servers;
     data_reduction_proxy_servers.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI(config()->test_params()->DefaultOrigin(),
-                                  net::ProxyServer::SCHEME_HTTP),
+        config()->test_params()->proxies_for_http().front().proxy_server(),
         ProxyServer::CORE));
+    config()->test_params()->UseNonSecureProxiesForHttp();
     config()->test_params()->SetProxiesForHttp(data_reduction_proxy_servers);
   }
 
@@ -796,11 +796,14 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNetErrorOther) {
   // Make the data reduction proxy host fail to resolve.
-  net::ProxyServer origin =
-      config()->test_params()->proxies_for_http().front().proxy_server();
   std::unique_ptr<net::MockHostResolver> host_resolver(
       new net::MockHostResolver());
-  host_resolver->rules()->AddSimulatedFailure(origin.host_port_pair().host());
+
+  for (const auto& proxy_server : config()->test_params()->proxies_for_http()) {
+    host_resolver->rules()->AddSimulatedFailure(
+        proxy_server.proxy_server().host_port_pair().host());
+  }
+
   set_host_resolver(host_resolver.get());
   InitializeContext();
 
@@ -1059,27 +1062,6 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest, HttpProxyScheme) {
                           kNextBody.c_str(), nullptr, nullptr);
   histogram_tester.ExpectUniqueSample("DataReductionProxy.ProxySchemeUsed",
                                       1 /*PROXY_SCHEME_HTTP */, 1);
-}
-
-// Verifies that the scheme of the HTTPS data reduction proxy used is recorded
-// correctly.
-TEST_F(DataReductionProxyBypassStatsEndToEndTest, HttpsProxyScheme) {
-  net::ProxyServer origin =
-      net::ProxyServer::FromURI("test.com:443", net::ProxyServer::SCHEME_HTTPS);
-  std::vector<DataReductionProxyServer> data_reduction_proxy_servers;
-  data_reduction_proxy_servers.push_back(
-      DataReductionProxyServer(origin, ProxyServer::UNSPECIFIED_TYPE));
-  config()->test_params()->SetProxiesForHttp(data_reduction_proxy_servers);
-
-  InitializeContext();
-
-  base::HistogramTester histogram_tester;
-  CreateAndExecuteRequest(GURL("http://bar.com"), net::LOAD_NORMAL, net::OK,
-                          "HTTP/1.1 200 OK\r\n"
-                          "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-                          kNextBody.c_str(), nullptr, nullptr);
-  histogram_tester.ExpectUniqueSample("DataReductionProxy.ProxySchemeUsed",
-                                      2 /*PROXY_SCHEME_HTTPS */, 1);
 }
 
 }  // namespace data_reduction_proxy

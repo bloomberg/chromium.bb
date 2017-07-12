@@ -145,10 +145,13 @@ class ContentLoFiDeciderTest : public testing::Test {
     net::ProxyRetryInfoMap proxy_retry_info;
 
     if (use_data_reduction_proxy) {
-      std::string data_reduction_proxy;
-      base::TrimString(test_context_->config()->test_params()->DefaultOrigin(),
-                       "/", &data_reduction_proxy);
-      data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+      test_context_->config()->test_params()->UseNonSecureProxiesForHttp();
+      data_reduction_proxy_info.UseProxyServer(test_context_->config()
+                                                   ->test_params()
+                                                   ->proxies_for_http()
+                                                   .front()
+                                                   .proxy_server());
+
     } else {
       data_reduction_proxy_info.UseNamedProxy("proxy.com");
     }

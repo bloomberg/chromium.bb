@@ -743,9 +743,21 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       BYPASS_EVENT_TYPE_SHORT
     },
   };
-  std::string primary = test_context_->config()->test_params()->DefaultOrigin();
-  std::string fallback =
-      test_context_->config()->test_params()->DefaultFallbackOrigin();
+  test_context_->config()->test_params()->UseNonSecureProxiesForHttp();
+  std::string primary = test_context_->config()
+                            ->test_params()
+                            ->proxies_for_http()
+                            .front()
+                            .proxy_server()
+                            .host_port_pair()
+                            .ToString();
+  std::string fallback = test_context_->config()
+                             ->test_params()
+                             ->proxies_for_http()
+                             .at(1)
+                             .proxy_server()
+                             .host_port_pair()
+                             .ToString();
   for (size_t i = 0; i < arraysize(tests); ++i) {
     ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
         net::ProxyServer::FromURI(
@@ -930,6 +942,7 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
     AttachToContextAndInit();
     if (test.enable_data_reduction_proxy)
       drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+    drp_test_context()->config()->test_params()->UseNonSecureProxiesForHttp();
 
     MockRead reads[] = {MockRead(test.response_headers),
                         MockRead(""),

@@ -16,24 +16,23 @@ class DataReductionProxyServer;
 class TestDataReductionProxyParams : public DataReductionProxyParams {
  public:
   TestDataReductionProxyParams();
-  bool init_result() const;
+
+  ~TestDataReductionProxyParams() override;
 
   void SetProxiesForHttp(const std::vector<DataReductionProxyServer>& proxies);
 
-  // Test values to replace the values specified in preprocessor defines.
-  static std::string DefaultOrigin();
-  static std::string DefaultFallbackOrigin();
+  // Use non-secure data saver proxies. Useful when a URL request is fetched
+  // from non-SSL mock sockets.
+  void UseNonSecureProxiesForHttp() { override_non_secure_proxies_ = true; }
 
-  static std::string FlagOrigin();
-  static std::string FlagFallbackOrigin();
-
- protected:
-  std::string GetDefaultOrigin() const override;
-
-  std::string GetDefaultFallbackOrigin() const override;
+  const std::vector<DataReductionProxyServer>& proxies_for_http()
+      const override;
 
  private:
-  bool init_result_;
+  bool override_non_secure_proxies_;
+
+  std::vector<DataReductionProxyServer> proxies_for_http_;
 };
+
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_
