@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
@@ -127,8 +128,12 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateAudible() {
+#if defined(OS_ANDROID)
+// WasRecentlyAudible is not available on Android.
+#else
     content::WebContentsTester::For(web_contents())
         ->SetWasRecentlyAudible(true);
+#endif
   }
 
   void SimulateInaudible() {
