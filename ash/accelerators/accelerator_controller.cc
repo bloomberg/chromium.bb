@@ -11,6 +11,7 @@
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
@@ -62,6 +63,9 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/message_center/message_center.h"
@@ -239,6 +243,12 @@ void HandleMediaPrevTrack() {
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
+void HandleToggleMirrorMode() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Mirror_Mode"));
+  bool mirror = !Shell::Get()->display_manager()->IsInMirrorMode();
+  Shell::Get()->display_configuration_controller()->SetMirrorMode(mirror);
+}
+
 bool CanHandleNewIncognitoWindow() {
   return Shell::Get()->shell_delegate()->IsIncognitoAllowed();
 }
@@ -293,6 +303,37 @@ void HandlePreviousIme(const ui::Accelerator& accelerator) {
     Shell::Get()->ime_controller()->SwitchToPreviousIme();
   }
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
+}
+
+display::Display::Rotation GetNextRotation(display::Display::Rotation current) {
+  switch (current) {
+    case display::Display::ROTATE_0:
+      return display::Display::ROTATE_90;
+    case display::Display::ROTATE_90:
+      return display::Display::ROTATE_180;
+    case display::Display::ROTATE_180:
+      return display::Display::ROTATE_270;
+    case display::Display::ROTATE_270:
+      return display::Display::ROTATE_0;
+  }
+  NOTREACHED() << "Unknown rotation:" << current;
+  return display::Display::ROTATE_0;
+}
+
+// Rotates the screen.
+void HandleRotateScreen() {
+  if (Shell::Get()->display_manager()->IsInUnifiedMode())
+    return;
+
+  base::RecordAction(UserMetricsAction("Accel_Rotate_Screen"));
+  gfx::Point point = display::Screen::GetScreen()->GetCursorScreenPoint();
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point);
+  const display::ManagedDisplayInfo& display_info =
+      Shell::Get()->display_manager()->GetDisplayInfo(display.id());
+  Shell::Get()->display_configuration_controller()->SetDisplayRotation(
+      display.id(), GetNextRotation(display_info.GetActiveRotation()),
+      display::Display::ROTATION_SOURCE_USER);
 }
 
 void HandleRestoreTab() {
@@ -359,6 +400,16 @@ void HandleShowTaskManager() {
   Shell::Get()->new_window_controller()->ShowTaskManager();
 }
 
+void HandleSwapPrimaryDisplay() {
+  base::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
+
+  // TODO(rjkroege): This is not correct behaviour on devices with more than
+  // two screens. Behave the same as mirroring: fail and notify if there are
+  // three or more screens.
+  Shell::Get()->display_configuration_controller()->SetPrimaryDisplayId(
+      Shell::Get()->display_manager()->GetSecondaryDisplay().id());
+}
+
 bool CanHandleSwitchIme(const ui::Accelerator& accelerator) {
   return Shell::Get()->ime_controller()->CanSwitchImeWithAccelerator(
       accelerator);
@@ -407,6 +458,11 @@ void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
 void HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
   Shell::Get()->window_selector_controller()->ToggleOverview();
+}
+
+void HandleToggleUnifiedDesktop() {
+  Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(
+      !Shell::Get()->display_manager()->unified_desktop_enabled());
 }
 
 bool CanHandleWindowSnap() {
@@ -915,12 +971,15 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
     case DEBUG_SHOW_TOAST:
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       return debug::DebugAcceleratorsEnabled();
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
+      return debug::DeveloperAcceleratorsEnabled();
     case DISABLE_CAPS_LOCK:
       return CanHandleDisableCapsLock(previous_accelerator);
     case LOCK_SCREEN:
@@ -931,12 +990,20 @@ bool AcceleratorController::CanPerformAction(
       return CanCycleInputMethod();
     case PREVIOUS_IME:
       return CanCycleInputMethod();
+    case ROTATE_SCREEN:
+      return true;
+    case SCALE_UI_DOWN:
+    case SCALE_UI_RESET:
+    case SCALE_UI_UP:
+      return accelerators::IsInternalDisplayZoomEnabled();
     case SHOW_MESSAGE_CENTER_BUBBLE:
       return CanHandleShowMessageCenterBubble();
     case SHOW_STYLUS_TOOLS:
       return CanHandleShowStylusTools();
     case START_VOICE_INTERACTION:
       return CanHandleStartVoiceInteraction();
+    case SWAP_PRIMARY_DISPLAY:
+      return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:
       return CanHandleSwitchIme(accelerator);
     case SWITCH_TO_PREVIOUS_USER:
@@ -946,6 +1013,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
+    case TOGGLE_MIRROR_MODE:
+      return true;
     case WINDOW_CYCLE_SNAP_LEFT:
     case WINDOW_CYCLE_SNAP_RIGHT:
       return CanHandleWindowSnap();
@@ -1043,12 +1112,16 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
     case DEBUG_SHOW_TOAST:
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
     case DEBUG_TOGGLE_TOUCH_VIEW:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       debug::PerformDebugActionIfEnabled(action);
+      break;
+    case DEV_TOGGLE_UNIFIED_DESKTOP:
+      HandleToggleUnifiedDesktop();
       break;
     case DISABLE_CAPS_LOCK:
       HandleDisableCapsLock();
@@ -1149,11 +1222,23 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
       break;
+    case ROTATE_SCREEN:
+      HandleRotateScreen();
+      break;
     case RESTORE_TAB:
       HandleRestoreTab();
       break;
     case ROTATE_WINDOW:
       HandleRotateActiveWindow();
+      break;
+    case SCALE_UI_DOWN:
+      accelerators::ZoomInternalDisplay(false /* down */);
+      break;
+    case SCALE_UI_RESET:
+      accelerators::ResetInternalDisplayZoom();
+      break;
+    case SCALE_UI_UP:
+      accelerators::ZoomInternalDisplay(true /* up */);
       break;
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();
@@ -1179,6 +1264,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case SUSPEND:
       HandleSuspend();
       break;
+    case SWAP_PRIMARY_DISPLAY:
+      HandleSwapPrimaryDisplay();
+      break;
     case SWITCH_IME:
       HandleSwitchIme(accelerator);
       break;
@@ -1202,6 +1290,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case TOGGLE_MAXIMIZED:
       accelerators::ToggleMaximized();
+      break;
+    case TOGGLE_MIRROR_MODE:
+      HandleToggleMirrorMode();
       break;
     case TOGGLE_OVERVIEW:
       HandleToggleOverview();

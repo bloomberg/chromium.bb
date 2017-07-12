@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -194,6 +195,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       Shell::Get()->toast_manager()->Show(
           ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
                     base::ASCIIToUTF16("Dismiss")));
+      break;
+    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
+      Shell::Get()->display_manager()->ToggleDisplayScaleFactor();
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

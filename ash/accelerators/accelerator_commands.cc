@@ -10,9 +10,33 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/managed_display_info.h"
 
 namespace ash {
 namespace accelerators {
+
+bool IsInternalDisplayZoomEnabled() {
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  return display_manager->IsDisplayUIScalingEnabled() ||
+         display_manager->IsInUnifiedMode();
+}
+
+bool ZoomInternalDisplay(bool up) {
+  if (up)
+    base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Up"));
+  else
+    base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Down"));
+
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  return display_manager->ZoomInternalDisplay(up);
+}
+
+void ResetInternalDisplayZoom() {
+  base::RecordAction(base::UserMetricsAction("Accel_Scale_Ui_Reset"));
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display_manager->ResetInternalDisplayZoom();
+}
 
 bool ToggleMinimized() {
   aura::Window* window = wm::GetActiveWindow();

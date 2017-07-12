@@ -4,7 +4,7 @@
 
 #include "ui/display/manager/display_manager.h"
 
-#include "ash/accelerators/accelerator_commands_aura.h"
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_util.h"
