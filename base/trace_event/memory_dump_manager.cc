@@ -11,19 +11,13 @@
 #include <utility>
 
 #include "base/allocator/features.h"
-#include "base/atomic_sequence_num.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/pattern.h"
-#include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
@@ -35,7 +29,6 @@
 #include "base/trace_event/memory_dump_scheduler.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/memory_peak_detector.h"
-#include "base/trace_event/memory_tracing_observer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -51,16 +44,6 @@ namespace trace_event {
 namespace {
 
 MemoryDumpManager* g_instance_for_testing = nullptr;
-
-void FillOsDumpFromProcessMemoryDump(
-    const ProcessMemoryDump* pmd,
-    MemoryDumpCallbackResult::OSMemDump* osDump) {
-  if (pmd->has_process_totals()) {
-    const ProcessMemoryTotals* totals = pmd->process_totals();
-    osDump->resident_set_kb = totals->resident_set_bytes() / 1024;
-    osDump->platform_private_footprint = totals->GetPlatformPrivateFootprint();
-  }
-}
 
 // Temporary (until peak detector and scheduler are moved outside of here)
 // trampoline function to match the |request_dump_function| passed to Initialize
@@ -242,10 +225,6 @@ void MemoryDumpManager::Initialize(
     TraceLog::GetInstance()->SetEnabled(filtering_trace_config,
                                         TraceLog::FILTERING_MODE);
   }
-
-  // TODO(hjd): Move out of MDM. See: crbug.com/703184
-  tracing_observer_ =
-      MakeUnique<MemoryTracingObserver>(TraceLog::GetInstance(), this);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
@@ -427,7 +406,7 @@ void MemoryDumpManager::CreateProcessDump(
     VLOG(1) << "CreateProcessDump() FAIL: MemoryDumpManager is not initialized";
     if (!callback.is_null()) {
       callback.Run(false /* success */, args.dump_guid,
-                   Optional<MemoryDumpCallbackResult>());
+                   ProcessMemoryDumpsMap());
     }
     return;
   }
@@ -458,7 +437,8 @@ void MemoryDumpManager::CreateProcessDump(
     // absent we fail the dump immediately.
     if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
         heap_profiling_enabled_ && !heap_profiler_serialization_state_) {
-      callback.Run(false /* success */, args.dump_guid, base::nullopt);
+      callback.Run(false /* success */, args.dump_guid,
+                   ProcessMemoryDumpsMap());
       return;
     }
 
@@ -635,18 +615,6 @@ void MemoryDumpManager::InvokeOnMemoryDump(
   SetupNextMemoryDump(std::move(pmd_async_state));
 }
 
-// static
-uint32_t MemoryDumpManager::GetDumpsSumKb(const std::string& pattern,
-                                          const ProcessMemoryDump* pmd) {
-  uint64_t sum = 0;
-  for (const auto& kv : pmd->allocator_dumps()) {
-    auto name = StringPiece(kv.first);
-    if (MatchPattern(name, pattern))
-      sum += kv.second->GetSize();
-  }
-  return sum / 1024;
-}
-
 void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
   HEAP_PROFILER_SCOPED_IGNORE;
@@ -663,65 +631,9 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinalizeDumpAndAddToTrace");
 
-  // The results struct to fill.
-  // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-  Optional<MemoryDumpCallbackResult> result;
-
-  bool dump_successful = pmd_async_state->dump_successful;
-
-  for (const auto& kv : pmd_async_state->process_dumps) {
-    ProcessId pid = kv.first;  // kNullProcessId for the current process.
-    ProcessMemoryDump* process_memory_dump = kv.second.get();
-
-    // SUMMARY_ONLY dumps are just return the summarized result in the
-    // ProcessMemoryDumpCallback. These shouldn't be added to the trace to
-    // avoid confusing trace consumers.
-    if (pmd_async_state->req_args.dump_type != MemoryDumpType::SUMMARY_ONLY) {
-      bool added_to_trace = tracing_observer_->AddDumpToTraceIfEnabled(
-          &pmd_async_state->req_args, pid, process_memory_dump);
-
-      dump_successful = dump_successful && added_to_trace;
-    }
-
-    // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-    // Don't try to fill the struct in detailed mode since it is hard to avoid
-    // double counting.
-    if (pmd_async_state->req_args.level_of_detail ==
-        MemoryDumpLevelOfDetail::DETAILED)
-      continue;
-    if (!result.has_value())
-      result = MemoryDumpCallbackResult();
-    // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-    if (pid == kNullProcessId) {
-      result->chrome_dump.malloc_total_kb =
-          GetDumpsSumKb("malloc", process_memory_dump);
-      result->chrome_dump.v8_total_kb =
-          GetDumpsSumKb("v8/*", process_memory_dump);
-
-      result->chrome_dump.command_buffer_total_kb =
-          GetDumpsSumKb("gpu/gl/textures/*", process_memory_dump);
-      result->chrome_dump.command_buffer_total_kb +=
-          GetDumpsSumKb("gpu/gl/buffers/*", process_memory_dump);
-      result->chrome_dump.command_buffer_total_kb +=
-          GetDumpsSumKb("gpu/gl/renderbuffers/*", process_memory_dump);
-
-      // partition_alloc reports sizes for both allocated_objects and
-      // partitions. The memory allocated_objects uses is a subset of
-      // the partitions memory so to avoid double counting we only
-      // count partitions memory.
-      result->chrome_dump.partition_alloc_total_kb =
-          GetDumpsSumKb("partition_alloc/partitions/*", process_memory_dump);
-      result->chrome_dump.blink_gc_total_kb =
-          GetDumpsSumKb("blink_gc", process_memory_dump);
-      FillOsDumpFromProcessMemoryDump(process_memory_dump, &result->os_dump);
-    } else {
-      auto& os_dump = result->extra_processes_dumps[pid];
-      FillOsDumpFromProcessMemoryDump(process_memory_dump, &os_dump);
-    }
-  }
-
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(dump_successful, dump_guid, result);
+    pmd_async_state->callback.Run(pmd_async_state->dump_successful, dump_guid,
+                                  std::move(pmd_async_state->process_dumps));
     pmd_async_state->callback.Reset();
   }
 
