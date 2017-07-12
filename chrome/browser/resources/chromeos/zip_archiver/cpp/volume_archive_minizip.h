@@ -24,13 +24,16 @@ const char kArchiveNextHeaderError[] =
 const char kArchiveReadDataError[] = "Failed to read archive data.";
 const char kArchiveReadFreeError[] = "Failed to close archive.";
 
-// The size of the buffer used to skip unnecessary data.
-// Should be positive and less than size_t maximum.
-const int64_t kDummyBufferSize = 512 * 1024;  // 512 KB
+// The size of the buffer used to skip unnecessary data. Should be positive and
+// UINT16_MAX or less. unzReadCurrentFile in third_party/minizip/src/unzip.c
+// supports to read a data up to UINT16_MAX at a time.
+const int64_t kDummyBufferSize = UINT16_MAX;  // ~64 KB
 
-// The size of the buffer used by ReadInProgress to decompress data.
-// Should be positive and less than size_t maximum.
-const int64_t kDecompressBufferSize = 512 * 1024;  // 512 KB.
+// The size of the buffer used by ReadInProgress to decompress data. Should be
+// positive and UINT16_MAX or less. unzReadCurrentFile in
+// third_party/minizip/src/unzip.c supports to read a data up to UINT16_MAX at a
+// time.
+const int64_t kDecompressBufferSize = UINT16_MAX;  // ~64 KB.
 
 // The maximum data chunk size for VolumeReader::Read requests.
 // Should be positive.
