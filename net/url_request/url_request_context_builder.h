@@ -44,8 +44,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class SequencedTaskRunner;
-class TaskRunner;
 }
 
 namespace net {
@@ -282,10 +280,12 @@ class NET_EXPORT URLRequestContextBuilder {
       std::unique_ptr<CookieStore> cookie_store,
       std::unique_ptr<ChannelIDService> channel_id_service);
 
-  // Sets the task runner used to perform file operations. If not set,
-  // TaskSchedulers will be used instead.
-  void SetFileTaskRunner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  // Sets the SingleThreadTaskRunner used to perform cache operations. If not
+  // set, one will be created via a TaskScheduler instead. Other file tasks will
+  // use the task scheduler, but the cache needs a SingleThreadTaskRunner, so
+  // best to keep that configurable by the consumer.
+  void SetCacheThreadTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> cache_thread_task_runner);
 
   // Note that if SDCH is enabled without a policy object observing
   // the SDCH manager and handling at least Get-Dictionary events, the
@@ -315,16 +315,6 @@ class NET_EXPORT URLRequestContextBuilder {
       NetworkDelegate* network_delegate,
       NetLog* net_log);
 
-  // Returns a TaskRunner with the specified traits. If |file_task_runner_| is
-  // non-NULL, uses that. Otherwise, uses base/task_scheduler/ and the specified
-  // traits.
-  scoped_refptr<base::TaskRunner> GetFileTaskRunner(
-      const base::TaskTraits& traits);
-  scoped_refptr<base::SequencedTaskRunner> GetFileSequencedTaskRunner(
-      const base::TaskTraits& traits);
-  scoped_refptr<base::SingleThreadTaskRunner> GetFileSingleThreadTaskRunner(
-      const base::TaskTraits& traits);
-
  private:
   const char* name_;
   bool enable_brotli_;
@@ -347,7 +337,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool sdch_enabled_;
   bool cookie_store_set_by_client_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_task_runner_;
   HttpCacheParams http_cache_params_;
   HttpNetworkSession::Params http_network_session_params_;
   base::FilePath transport_security_persister_path_;

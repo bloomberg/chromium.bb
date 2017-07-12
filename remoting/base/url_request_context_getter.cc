@@ -25,7 +25,6 @@ URLRequestContextGetter::URLRequestContextGetter(
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_.get()) {
     net::URLRequestContextBuilder builder;
-    builder.SetFileTaskRunner(file_task_runner_);
     net_log_.reset(new VlogNetLog());
     builder.set_net_log(net_log_.get());
     builder.DisableHttpCache();
