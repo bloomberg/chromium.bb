@@ -1085,6 +1085,26 @@
             ]
         }
     ],
+    "ExpectCTDynamic": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "DynamicExpectCTEnabled",
+                    "enable_features": [
+                        "DynamicExpectCT"
+                    ]
+                }
+            ]
+        }
+    ],
     "ExpectCTReporting": [
         {
             "platforms": [
