@@ -7,25 +7,7 @@ import("//build/config/android/rules.gni")
 import("generate_resource_rewriter.gni")
 import("glue.gni")
 
-# There are two copies of this file: one upstream and one downstream,
-# all targets defined in this file will finally generate two targets.
-# is_upstream could be used to differentiate those two targets, see
-# 'glue' target for details.
-is_upstream = rebase_path(".", "//android_webview/glue") == "."
-
-webview_framework_ijar = "frameworks.interface.jar"
 webview_public_framework_ijar = "frameworks.public.interface.jar"
-
-# Mark webview_framework_ijar is used, otherwise it isn't used if there
-# is no internal code.
-assert(webview_framework_ijar != "")
-
-if (defined(webview_internal_framework_jar)) {
-  generate_interface_jar("framework_ijar") {
-    input_jar = webview_internal_framework_jar
-    output_jar = "$target_out_dir/$webview_framework_ijar"
-  }
-}
 
 generate_interface_jar("public_framework_ijar") {
   input_jar = webview_public_framework_jar
@@ -43,16 +25,8 @@ android_library("glue") {
   deps = glue_library_deps
   srcjar_deps = [ ":glue_resource_rewriter" ]
 
-  # Always build upstream or downstream target with public or internal
-  # framework jar respectively.
-  if (is_upstream) {
-    alternative_android_sdk_ijar_dep = ":public_framework_ijar"
-    _ijar = webview_public_framework_ijar
-  } else {
-    assert(defined(webview_internal_framework_jar))
-    alternative_android_sdk_ijar_dep = ":framework_ijar"
-    _ijar = webview_framework_ijar
-  }
+  alternative_android_sdk_ijar_dep = ":public_framework_ijar"
+  _ijar = webview_public_framework_ijar
   _ijar_dir = get_label_info(alternative_android_sdk_ijar_dep, "target_out_dir")
   alternative_android_sdk_ijar = "$_ijar_dir/$_ijar"
   java_files = [
