@@ -28,7 +28,8 @@ size_t GetUnderestimatedStackSize() {
 // FIXME: On Mac OSX and Linux, this method cannot estimate stack size
 // correctly for the main thread.
 
-#if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD)
+#if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD) || \
+    defined(OS_FUCHSIA)
   // pthread_getattr_np() can fail if the thread is not invoked by
   // pthread_create() (e.g., the main thread of webkit_unit_tests).
   // If so, a conservative size estimate is returned.
@@ -95,7 +96,8 @@ size_t GetUnderestimatedStackSize() {
 }
 
 void* GetStackStart() {
-#if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD)
+#if defined(__GLIBC__) || defined(OS_ANDROID) || defined(OS_FREEBSD) || \
+    defined(OS_FUCHSIA)
   pthread_attr_t attr;
   int error;
 #if defined(OS_FREEBSD)
