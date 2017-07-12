@@ -1132,84 +1132,10 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   if (!DrawingCanvas())
     return;
 
-  RefPtr<Image> image;
-  FloatSize default_object_size(Width(), Height());
-  SourceImageStatus source_image_status = kInvalidSourceImageStatus;
-  if (!image_source->IsVideoElement()) {
-    AccelerationHint hint = GetImageBuffer()->IsAccelerated()
-                                ? kPreferAcceleration
-                                : kPreferNoAcceleration;
-    image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
-                                                  kSnapshotReasonDrawImage,
-                                                  default_object_size);
-    if (source_image_status == kUndecodableSourceImageStatus)
-      exception_state.ThrowDOMException(
-          kInvalidStateError,
-          "The HTMLImageElement provided is in the 'broken' state.");
-    if (!image || !image->width() || !image->height())
-      return;
-  } else {
-    if (!static_cast<HTMLVideoElement*>(image_source)->HasAvailableVideoFrame())
-      return;
-  }
-
-  if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) ||
-      !std::isfinite(dh) || !std::isfinite(sx) || !std::isfinite(sy) ||
-      !std::isfinite(sw) || !std::isfinite(sh) || !dw || !dh || !sw || !sh)
-    return;
-
-  FloatRect src_rect = NormalizeRect(FloatRect(sx, sy, sw, sh));
-  FloatRect dst_rect = NormalizeRect(FloatRect(dx, dy, dw, dh));
-  FloatSize image_size = image_source->ElementSize(default_object_size);
-
-  ClipRectsToImageRect(FloatRect(FloatPoint(), image_size), &src_rect,
-                       &dst_rect);
-
-  image_source->AdjustDrawRects(&src_rect, &dst_rect);
-
-  if (src_rect.IsEmpty())
-    return;
-
-  DisableDeferralReason reason = kDisableDeferralReasonUnknown;
-  if (ShouldDisableDeferral(image_source, &reason))
-    DisableDeferral(reason);
-  else if (image->IsTextureBacked())
-    DisableDeferral(kDisableDeferralDrawImageWithTextureBackedSourceImage);
-
-  ValidateStateStack();
-
-  WillDrawImage(image_source);
-
-  ValidateStateStack();
-
-  // Heuristic for disabling acceleration based on anticipated texture upload
-  // overhead.
-  // See comments in CanvasHeuristicParameters.h for explanation.
-  ImageBuffer* buffer = GetImageBuffer();
-  if (buffer && buffer->IsAccelerated() && !image_source->IsAccelerated()) {
-    float src_area = src_rect.Width() * src_rect.Height();
-    if (src_area >
-        CanvasHeuristicParameters::kDrawImageTextureUploadHardSizeLimit) {
-      buffer->DisableAcceleration();
-    } else if (src_area > CanvasHeuristicParameters::
-                              kDrawImageTextureUploadSoftSizeLimit) {
-      SkRect bounds = dst_rect;
-      SkMatrix ctm = DrawingCanvas()->getTotalMatrix();
-      ctm.mapRect(&bounds);
-      float dst_area = dst_rect.Width() * dst_rect.Height();
-      if (src_area >
-          dst_area * CanvasHeuristicParameters::
-                         kDrawImageTextureUploadSoftSizeLimitScaleThreshold) {
-        buffer->DisableAcceleration();
-      }
-    }
-  }
-
-  ValidateStateStack();
-
   // TODO(xidachen): After collecting some data, come back and prune off
   // the ones that is not needed.
-  Optional<ScopedUsHistogramTimer> timer;
+  double start_time = WTF::MonotonicallyIncreasingTime();
+  Optional<CustomCountHistogram> timer;
   if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
     if (image_source->IsVideoElement()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -1293,6 +1219,82 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
     }
   }
 
+  RefPtr<Image> image;
+  FloatSize default_object_size(Width(), Height());
+  SourceImageStatus source_image_status = kInvalidSourceImageStatus;
+  if (!image_source->IsVideoElement()) {
+    AccelerationHint hint = GetImageBuffer()->IsAccelerated()
+                                ? kPreferAcceleration
+                                : kPreferNoAcceleration;
+    image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
+                                                  kSnapshotReasonDrawImage,
+                                                  default_object_size);
+    if (source_image_status == kUndecodableSourceImageStatus) {
+      exception_state.ThrowDOMException(
+          kInvalidStateError,
+          "The HTMLImageElement provided is in the 'broken' state.");
+    }
+    if (!image || !image->width() || !image->height())
+      return;
+  } else {
+    if (!static_cast<HTMLVideoElement*>(image_source)->HasAvailableVideoFrame())
+      return;
+  }
+
+  if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dw) ||
+      !std::isfinite(dh) || !std::isfinite(sx) || !std::isfinite(sy) ||
+      !std::isfinite(sw) || !std::isfinite(sh) || !dw || !dh || !sw || !sh)
+    return;
+
+  FloatRect src_rect = NormalizeRect(FloatRect(sx, sy, sw, sh));
+  FloatRect dst_rect = NormalizeRect(FloatRect(dx, dy, dw, dh));
+  FloatSize image_size = image_source->ElementSize(default_object_size);
+
+  ClipRectsToImageRect(FloatRect(FloatPoint(), image_size), &src_rect,
+                       &dst_rect);
+
+  image_source->AdjustDrawRects(&src_rect, &dst_rect);
+
+  if (src_rect.IsEmpty())
+    return;
+
+  DisableDeferralReason reason = kDisableDeferralReasonUnknown;
+  if (ShouldDisableDeferral(image_source, &reason))
+    DisableDeferral(reason);
+  else if (image->IsTextureBacked())
+    DisableDeferral(kDisableDeferralDrawImageWithTextureBackedSourceImage);
+
+  ValidateStateStack();
+
+  WillDrawImage(image_source);
+
+  ValidateStateStack();
+
+  // Heuristic for disabling acceleration based on anticipated texture upload
+  // overhead.
+  // See comments in CanvasHeuristicParameters.h for explanation.
+  ImageBuffer* buffer = GetImageBuffer();
+  if (buffer && buffer->IsAccelerated() && !image_source->IsAccelerated()) {
+    float src_area = src_rect.Width() * src_rect.Height();
+    if (src_area >
+        CanvasHeuristicParameters::kDrawImageTextureUploadHardSizeLimit) {
+      buffer->DisableAcceleration();
+    } else if (src_area > CanvasHeuristicParameters::
+                              kDrawImageTextureUploadSoftSizeLimit) {
+      SkRect bounds = dst_rect;
+      SkMatrix ctm = DrawingCanvas()->getTotalMatrix();
+      ctm.mapRect(&bounds);
+      float dst_area = dst_rect.Width() * dst_rect.Height();
+      if (src_area >
+          dst_area * CanvasHeuristicParameters::
+                         kDrawImageTextureUploadSoftSizeLimitScaleThreshold) {
+        buffer->DisableAcceleration();
+      }
+    }
+  }
+
+  ValidateStateStack();
+
   Draw(
       [this, &image_source, &image, &src_rect, dst_rect](
           PaintCanvas* c, const PaintFlags* flags)  // draw lambda
@@ -1328,6 +1330,9 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   if (OriginClean() &&
       WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
     SetOriginTainted();
+
+  timer->Count((WTF::MonotonicallyIncreasingTime() - start_time) *
+               WTF::Time::kMicrosecondsPerSecond);
 }
 
 void BaseRenderingContext2D::ClearCanvas() {
