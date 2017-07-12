@@ -15,6 +15,7 @@
 #import "remoting/ios/display/gl_display_handler.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
+#import "remoting/ios/keychain_wrapper.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/client/chromoting_client_runtime.h"
@@ -31,7 +32,11 @@ NSString* const kHostSessionStatusChanged = @"kHostSessionStatusChanged";
 NSString* const kHostSessionPinProvided = @"kHostSessionPinProvided";
 
 NSString* const kSessionDetails = @"kSessionDetails";
+NSString* const kSessionSupportsPairing = @"kSessionSupportsPairing";
 NSString* const kSessonStateErrorCode = @"kSessonStateErrorCode";
+
+NSString* const kHostSessionCreatePairing = @"kHostSessionCreatePairing";
+NSString* const kHostSessionHostName = @"kHostSessionHostName";
 NSString* const kHostSessionPin = @"kHostSessionPin";
 
 @interface RemotingClient () {
@@ -91,10 +96,18 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   info.host_os = base::SysNSStringToUTF8(hostInfo.hostOs);
   info.host_os_version = base::SysNSStringToUTF8(hostInfo.hostOsVersion);
   info.host_version = base::SysNSStringToUTF8(hostInfo.hostVersion);
-  // TODO(nicholss): If iOS supports pairing, pull the stored data and
-  // insert it here.
-  info.pairing_id = "";
-  info.pairing_secret = "";
+
+  NSDictionary* pairing =
+      [KeychainWrapper.instance pairingCredentialsForHost:hostInfo.hostId];
+  if (pairing) {
+    info.pairing_id =
+        base::SysNSStringToUTF8([pairing objectForKey:kKeychainPairingId]);
+    info.pairing_secret =
+        base::SysNSStringToUTF8([pairing objectForKey:kKeychainPairingSecret]);
+  } else {
+    info.pairing_id = "";
+    info.pairing_secret = "";
+  }
 
   // TODO(nicholss): I am not sure about the following fields yet.
   // info.capabilities =
@@ -120,10 +133,11 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
         [[NSNotificationCenter defaultCenter]
             postNotificationName:kHostSessionStatusChanged
                           object:weakSelf
-                        userInfo:[NSDictionary
-                                     dictionaryWithObject:strongSelf
-                                                              ->_sessionDetails
-                                                   forKey:kSessionDetails]];
+                        userInfo:@{
+                          kSessionDetails : strongSelf->_sessionDetails,
+                          kSessionSupportsPairing :
+                              [NSNumber numberWithBool:pairing_supported],
+                        }];
       });
 
   // TODO(nicholss): Add audio support to iOS.
@@ -164,6 +178,18 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 
 - (void)hostSessionPinProvided:(NSNotification*)notification {
   NSString* pin = [[notification userInfo] objectForKey:kHostSessionPin];
+  NSString* name = UIDevice.currentDevice.name;
+  BOOL createPairing = [[[notification userInfo]
+      objectForKey:kHostSessionCreatePairing] boolValue];
+
+  // TODO(nicholss): Look into refactoring ProvideSecret. It is mis-named and
+  // does not use pin.
+  if (_session) {
+    _session->ProvideSecret(base::SysNSStringToUTF8(pin),
+                            (createPairing == YES),
+                            base::SysNSStringToUTF8(name));
+  }
+
   if (_secretFetchedCallback) {
     remoting::protocol::SecretFetchedCallback callback = _secretFetchedCallback;
     _runtime->network_task_runner()->PostTask(
@@ -267,7 +293,9 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 - (void)commitPairingCredentialsForHost:(NSString*)host
                                      id:(NSString*)id
                                  secret:(NSString*)secret {
-  NSLog(@"TODO(nicholss): implement this, commitPairingCredentialsForHost.");
+  [KeychainWrapper.instance commitPairingCredentialsForHost:host
+                                                         id:id
+                                                     secret:secret];
 }
 
 - (void)fetchThirdPartyTokenForUrl:(NSString*)tokenUrl

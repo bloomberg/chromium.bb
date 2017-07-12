@@ -145,6 +145,12 @@ void ChromotingSession::ProvideSecret(const std::string& pin,
                                       const std::string& device_name) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
 
+  // TODO(nicholss): |pin| here is not used. Maybe there was an api refactor and
+  // this was not cleaned up. The auth pin providing mechanism seems to be call
+  // ProvideSecret, and then call the auth callback. When session moves to
+  // Connected state, this chromoing session calls RequestPairing  based on
+  // create_pairing.
+
   create_pairing_ = create_pairing;
 
   if (create_pairing)

@@ -28,6 +28,7 @@ static const int kMinPinLength = 6;
 @implementation PinEntryView
 
 @synthesize delegate = _delegate;
+@synthesize supportsPairing = _supportsPairing;
 
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -82,6 +83,8 @@ static const int kMinPinLength = 6;
         initializeLayoutConstraintsWithViews:NSDictionaryOfVariableBindings(
                                                  _pairingSwitch, _pairingLabel,
                                                  _pinButton, _pinEntry)];
+
+    _supportsPairing = YES;
   }
   return self;
 }
@@ -131,6 +134,15 @@ static const int kMinPinLength = 6;
 
 - (BOOL)endEditing:(BOOL)force {
   return [_pinEntry endEditing:force];
+}
+
+#pragma mark - Properties
+
+- (void)setSupportsPairing:(BOOL)supportsPairing {
+  _supportsPairing = supportsPairing;
+  _pairingSwitch.hidden = !_supportsPairing;
+  [_pairingSwitch setOn:NO animated:NO];
+  _pairingLabel.hidden = !_supportsPairing;
 }
 
 #pragma mark - UITextFieldDelegate

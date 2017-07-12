@@ -8,9 +8,16 @@
 
 #import "remoting/ios/keychain_wrapper.h"
 
+#include "base/logging.h"
+
 #import "remoting/ios/domain/host_info.h"
 
 static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
+
+NSString* const kPairingSecretSeperator = @"|";
+
+NSString* const kKeychainPairingId = @"kKeychainPairingId";
+NSString* const kKeychainPairingSecret = @"kKeychainPairingSecret";
 
 @interface KeychainWrapper () {
   NSMutableDictionary* _keychainData;
@@ -19,6 +26,16 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
 @end
 
 @implementation KeychainWrapper
+
+// KeychainWrapper is a singleton.
++ (KeychainWrapper*)instance {
+  static KeychainWrapper* sharedInstance = nil;
+  static dispatch_once_t guard;
+  dispatch_once(&guard, ^{
+    sharedInstance = [[KeychainWrapper alloc] init];
+  });
+  return sharedInstance;
+}
 
 - (id)init {
   if ((self = [super init])) {
@@ -30,7 +47,7 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
         [NSData dataWithBytes:kKeychainItemIdentifier
                        length:strlen((const char*)kKeychainItemIdentifier)];
     [_userInfoQuery setObject:keychainItemID
-                       forKey:(__bridge id)kSecAttrGeneric];
+                       forKey:(__bridge id)kSecAttrService];
     [_userInfoQuery setObject:(__bridge id)kSecMatchLimitOne
                        forKey:(__bridge id)kSecMatchLimit];
     [_userInfoQuery setObject:(__bridge id)kCFBooleanTrue
@@ -61,6 +78,8 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
   return self;
 }
 
+#pragma mark - Public
+
 - (void)setRefreshToken:(NSString*)refreshToken {
   [self setObject:refreshToken forKey:(__bridge id)kSecValueData];
 }
@@ -68,6 +87,74 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
 - (NSString*)refreshToken {
   return [self objectForKey:(__bridge id)kSecValueData];
 }
+
+- (void)commitPairingCredentialsForHost:(NSString*)host
+                                     id:(NSString*)pairingId
+                                 secret:(NSString*)secret {
+  NSString* keysString = [self objectForKey:(__bridge id)kSecAttrGeneric];
+  NSMutableDictionary* keys = [self stringToMap:keysString];
+  NSString* pairingIdAndSecret = [NSString
+      stringWithFormat:@"%@%@%@", pairingId, kPairingSecretSeperator, secret];
+  [keys setObject:pairingIdAndSecret forKey:host];
+  [self setObject:[self mapToString:keys] forKey:(__bridge id)kSecAttrGeneric];
+}
+
+- (NSDictionary*)pairingCredentialsForHost:(NSString*)host {
+  NSString* keysString = [self objectForKey:(__bridge id)kSecAttrGeneric];
+  NSMutableDictionary* keys = [self stringToMap:keysString];
+  NSString* pairingIdAndSecret = [keys objectForKey:host];
+  if (!pairingIdAndSecret ||
+      [pairingIdAndSecret rangeOfString:kPairingSecretSeperator].location ==
+          NSNotFound) {
+    return nil;
+  }
+  NSArray* components =
+      [pairingIdAndSecret componentsSeparatedByString:kPairingSecretSeperator];
+  DCHECK(components.count == 2);
+  return @{
+    kKeychainPairingId : components[0],
+    kKeychainPairingSecret : components[1],
+  };
+}
+
+#pragma mark - Map to String helpers
+
+- (NSMutableDictionary*)stringToMap:(NSString*)mapString {
+  NSError* err;
+
+  if (mapString &&
+      [mapString respondsToSelector:@selector(dataUsingEncoding:)]) {
+    NSData* data = [mapString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary* pairingMap;
+    if (data) {
+      pairingMap = (NSDictionary*)[NSJSONSerialization
+          JSONObjectWithData:data
+                     options:NSJSONReadingMutableContainers
+                       error:&err];
+    }
+    if (!err) {
+      return [NSMutableDictionary dictionaryWithDictionary:pairingMap];
+    }
+  }
+  // failed to load a dictionary, make a new one.
+  return [NSMutableDictionary dictionaryWithCapacity:1];
+}
+
+- (NSString*)mapToString:(NSDictionary*)map {
+  if (map) {
+    NSError* err;
+    NSData* jsonData =
+        [NSJSONSerialization dataWithJSONObject:map options:0 error:&err];
+    if (!err) {
+      return [[NSString alloc] initWithData:jsonData
+                                   encoding:NSUTF8StringEncoding];
+    }
+  }
+  // failed to convert the map, make nil string.
+  return nil;
+}
+
+#pragma mark - Private
 
 // Implement the mySetObject:forKey method, which writes attributes to the
 // keychain:
@@ -106,6 +193,8 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
   [_keychainData setObject:@"Gaia fresh token"
                     forKey:(__bridge id)kSecAttrDescription];
   [_keychainData setObject:@"" forKey:(__bridge id)kSecValueData];
+  [_keychainData setObject:@"" forKey:(__bridge id)kSecClass];
+  [_keychainData setObject:@"" forKey:(__bridge id)kSecAttrGeneric];
 }
 
 - (NSMutableDictionary*)dictionaryToSecItemFormat:
@@ -117,7 +206,7 @@ static const UInt8 kKeychainItemIdentifier[] = "org.chromium.RemoteDesktop\0";
       [NSData dataWithBytes:kKeychainItemIdentifier
                      length:strlen((const char*)kKeychainItemIdentifier)];
   [returnDictionary setObject:keychainItemID
-                       forKey:(__bridge id)kSecAttrGeneric];
+                       forKey:(__bridge id)kSecAttrService];
   [returnDictionary setObject:(__bridge id)kSecClassGenericPassword
                        forKey:(__bridge id)kSecClass];
 

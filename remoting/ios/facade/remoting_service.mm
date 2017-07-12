@@ -168,7 +168,21 @@ NSString* const kUserInfo = @"kUserInfo";
   [_authentication
       callbackWithAccessToken:^(RemotingAuthenticationStatus status,
                                 NSString* userEmail, NSString* accessToken) {
-        [self startHostListFetchWith:accessToken];
+        switch (status) {
+          case RemotingAuthenticationStatusSuccess:
+            [self startHostListFetchWith:accessToken];
+            break;
+          case RemotingAuthenticationStatusNetworkError:
+            NSLog(
+                @"TODO(nicholss): implement this, "
+                @"RemotingAuthenticationStatusNetworkError.");
+            break;
+          case RemotingAuthenticationStatusAuthError:
+            NSLog(
+                @"TODO(nicholss): implement this, "
+                @"RemotingAuthenticationStatusAuthError.");
+            break;
+        }
       }];
 }
 

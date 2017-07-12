@@ -93,7 +93,7 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _keychainWrapper = [[KeychainWrapper alloc] init];
+    _keychainWrapper = KeychainWrapper.instance;
     _user = nil;
     _firstLoadUserAttempt = YES;
   }
