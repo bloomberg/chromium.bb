@@ -176,6 +176,8 @@ void TabletPowerButtonController::OnPowerButtonEvent(
         base::TimeDelta::FromMilliseconds(kIgnorePowerButtonAfterResumeMs)) {
       force_off_on_button_up_ = false;
     }
+
+    last_button_down_time_ = tick_clock_->NowTicks();
     screen_off_when_power_button_down_ = brightness_level_is_zero_;
     SetDisplayForcedOff(false);
     StartShutdownTimer();
@@ -184,13 +186,20 @@ void TabletPowerButtonController::OnPowerButtonEvent(
     if (power_button_down_was_spurious_)
       return;
 
+    const base::TimeTicks previous_up_time = last_button_up_time_;
+    last_button_up_time_ = tick_clock_->NowTicks();
+
+    if (max_accelerometer_samples_) {
+      base::TimeDelta duration = last_button_up_time_ - last_button_down_time_;
+      VLOG(1) << "Power button released after " << duration.InMilliseconds()
+              << " ms";
+    }
+
     // When power button is released, cancel shutdown animation whenever it is
     // still cancellable.
     if (controller_->CanCancelShutdownAnimation())
       controller_->CancelShutdownAnimation();
 
-    const base::TimeTicks previous_up_time = last_button_up_time_;
-    last_button_up_time_ = tick_clock_->NowTicks();
     // Ignore the event if it comes too soon after the last one.
     if (timestamp - previous_up_time <=
         base::TimeDelta::FromMilliseconds(kIgnoreRepeatedButtonUpMs)) {
