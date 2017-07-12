@@ -20,8 +20,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.Linker;
+import org.chromium.base.process_launcher.ChildConnectionAllocator;
+import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.ChildProcessConstants;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
+import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
@@ -313,10 +316,10 @@ public class ChildProcessLauncherHelper {
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator =
-                        ChildConnectionAllocator.create(context, creationParams, packageName,
-                                PRIVILEGED_SERVICES_NAME_KEY, NUM_PRIVILEGED_SERVICES_KEY,
-                                bindAsExternalService, true /* useStrongBinding */);
+                sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
+                        LauncherThread.getHandler(), creationParams, packageName,
+                        PRIVILEGED_SERVICES_NAME_KEY, NUM_PRIVILEGED_SERVICES_KEY,
+                        bindAsExternalService, true /* useStrongBinding */);
             }
             return sPrivilegedChildConnectionAllocator;
         }
@@ -336,8 +339,9 @@ public class ChildProcessLauncherHelper {
                         packageName, serviceName, sSandboxedServicesCountForTesting,
                         bindAsExternalService, false /* useStrongBinding */);
             } else {
-                connectionAllocator = ChildConnectionAllocator.create(context, creationParams,
-                        packageName, SANDBOXED_SERVICES_NAME_KEY, NUM_SANDBOXED_SERVICES_KEY,
+                connectionAllocator = ChildConnectionAllocator.create(context,
+                        LauncherThread.getHandler(), creationParams, packageName,
+                        SANDBOXED_SERVICES_NAME_KEY, NUM_SANDBOXED_SERVICES_KEY,
                         bindAsExternalService, false /* useStrongBinding */);
             }
             if (sSandboxedServiceFactoryForTesting != null) {
@@ -404,11 +408,13 @@ public class ChildProcessLauncherHelper {
                                     connectionAllocator, serviceCallback);
                         }
                     };
-            mLauncher = ChildProcessLauncher.createWithBoundConnectionProvider(mLauncherDelegate,
-                    commandLine, filesToBeMapped, connectionProvider, binderCallback);
+            mLauncher = ChildProcessLauncher.createWithBoundConnectionProvider(
+                    LauncherThread.getHandler(), mLauncherDelegate, commandLine, filesToBeMapped,
+                    connectionProvider, binderCallback);
         } else {
-            mLauncher = ChildProcessLauncher.createWithConnectionAllocator(mLauncherDelegate,
-                    commandLine, filesToBeMapped, connectionAllocator, binderCallback);
+            mLauncher = ChildProcessLauncher.createWithConnectionAllocator(
+                    LauncherThread.getHandler(), mLauncherDelegate, commandLine, filesToBeMapped,
+                    connectionAllocator, binderCallback);
         }
     }
 

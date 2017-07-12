@@ -18,6 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.process_launcher.ChildConnectionAllocator;
+import org.chromium.base.process_launcher.ChildProcessConnection;
+import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
@@ -101,10 +104,10 @@ public class ChildProcessLauncherTest {
                     public ChildConnectionAllocator call() {
                         Context context =
                                 InstrumentationRegistry.getInstrumentation().getTargetContext();
-                        return ChildConnectionAllocator.create(context, null /* creationParams */,
-                                SERVICE_PACKAGE_NAME, SERVICE_NAME_META_DATA_KEY,
-                                SERVICE_COUNT_META_DATA_KEY, false /* bindAsExternalService */,
-                                false /* useStrongBinding */);
+                        return ChildConnectionAllocator.create(context, LauncherThread.getHandler(),
+                                null /* creationParams */, SERVICE_PACKAGE_NAME,
+                                SERVICE_NAME_META_DATA_KEY, SERVICE_COUNT_META_DATA_KEY,
+                                false /* bindAsExternalService */, false /* useStrongBinding */);
                     }
                 });
     }
@@ -304,8 +307,9 @@ public class ChildProcessLauncherTest {
                     public ChildProcessLauncher createChildProcessLauncher(
                             ChildProcessLauncher.Delegate delegate, String[] commandLine,
                             FileDescriptorInfo[] filesToBeMapped, IBinder binderCallback) {
-                        return ChildProcessLauncher.createWithConnectionAllocator(delegate,
-                                commandLine, filesToBeMapped, mConnectionAllocator, binderCallback);
+                        return ChildProcessLauncher.createWithConnectionAllocator(
+                                LauncherThread.getHandler(), delegate, commandLine, filesToBeMapped,
+                                mConnectionAllocator, binderCallback);
                     }
                 };
 
@@ -388,8 +392,9 @@ public class ChildProcessLauncherTest {
                     public ChildProcessLauncher createChildProcessLauncher(
                             ChildProcessLauncher.Delegate delegate, String[] commandLine,
                             FileDescriptorInfo[] filesToBeMapped, IBinder binderCallback) {
-                        return ChildProcessLauncher.createWithBoundConnectionProvider(delegate,
-                                commandLine, filesToBeMapped, connectionProvider, binderCallback);
+                        return ChildProcessLauncher.createWithBoundConnectionProvider(
+                                LauncherThread.getHandler(), delegate, commandLine, filesToBeMapped,
+                                connectionProvider, binderCallback);
                     }
                 };
 
@@ -534,9 +539,9 @@ public class ChildProcessLauncherTest {
                     public ChildProcessLauncher call() {
                         ChildProcessLauncher processLauncher =
                                 ChildProcessLauncher.createWithConnectionAllocator(
-                                        EMPTY_LAUNCHER_DELEGATE, new String[0],
-                                        new FileDescriptorInfo[0], connectionAllocator,
-                                        null /* binderCallback */);
+                                        LauncherThread.getHandler(), EMPTY_LAUNCHER_DELEGATE,
+                                        new String[0], new FileDescriptorInfo[0],
+                                        connectionAllocator, null /* binderCallback */);
                         if (!processLauncher.start(setupConnection, queueIfNoFreeConnection)) {
                             return null;
                         }

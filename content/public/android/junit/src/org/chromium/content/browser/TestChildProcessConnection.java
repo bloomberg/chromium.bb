@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.os.Bundle;
 import android.os.IBinder;
 
+import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.ICallbackInt;
 import org.chromium.base.process_launcher.IChildProcessService;
