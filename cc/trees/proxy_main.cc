@@ -212,20 +212,25 @@ void ProxyMain::BeginMainFrame(
     return;
   }
 
-  bool can_cancel_this_commit = final_pipeline_stage_ < COMMIT_PIPELINE_STAGE &&
-                                !begin_main_frame_state->evicted_ui_resources;
+  // If UI resources were evicted on the impl thread, we need a commit.
+  if (begin_main_frame_state->evicted_ui_resources)
+    final_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
 
   current_pipeline_stage_ = UPDATE_LAYERS_PIPELINE_STAGE;
   bool should_update_layers =
       final_pipeline_stage_ >= UPDATE_LAYERS_PIPELINE_STAGE;
   bool updated = should_update_layers && layer_tree_host_->UpdateLayers();
 
+  // If updating the layers resulted in a content update, we need a commit.
+  if (updated)
+    final_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
+
   layer_tree_host_->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host_->GetId());
 
   current_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
-  if (!updated && can_cancel_this_commit) {
+  if (final_pipeline_stage_ < COMMIT_PIPELINE_STAGE) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
