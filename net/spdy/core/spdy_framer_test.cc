@@ -744,35 +744,15 @@ SpdyStringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
                          frame.size() - framer.GetHeadersMinimumSize());
 }
 
-enum DecoderChoice { DECODER_SELF, DECODER_HTTP2 };
-enum HpackChoice { HPACK_DECODER_1, HPACK_DECODER_3 };
 enum Output { USE, NOT_USE };
 
-class SpdyFramerTest : public ::testing::TestWithParam<
-                           std::tuple<DecoderChoice, HpackChoice, Output>> {
+class SpdyFramerTest : public ::testing::TestWithParam<Output> {
  public:
   SpdyFramerTest() : output_(output_buffer, kSize) {}
 
  protected:
   void SetUp() override {
-    auto param = GetParam();
-    switch (std::get<0>(param)) {
-      case DECODER_SELF:
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = false;
-        break;
-      case DECODER_HTTP2:
-        FLAGS_chromium_http2_flag_spdy_use_http2_frame_decoder_adapter = true;
-        break;
-    }
-    switch (std::get<1>(param)) {
-      case HPACK_DECODER_1:
-        FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3 = false;
-        break;
-      case HPACK_DECODER_3:
-        FLAGS_chromium_http2_flag_spdy_use_hpack_decoder3 = true;
-        break;
-    }
-    switch (std::get<2>(param)) {
+    switch (GetParam()) {
       case USE:
         use_output_ = true;
         break;
@@ -811,11 +791,7 @@ class SpdyFramerTest : public ::testing::TestWithParam<
 
 INSTANTIATE_TEST_CASE_P(SpdyFramerTests,
                         SpdyFramerTest,
-                        ::testing::Combine(::testing::Values(DECODER_SELF,
-                                                             DECODER_HTTP2),
-                                           ::testing::Values(HPACK_DECODER_1,
-                                                             HPACK_DECODER_3),
-                                           ::testing::Values(USE, NOT_USE)));
+                        ::testing::Values(USE, NOT_USE));
 
 // Test that we can encode and decode a SpdyHeaderBlock in serialized form.
 TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
