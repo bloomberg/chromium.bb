@@ -1245,12 +1245,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_CONFIRM_PASSWORD_DELETION" desc="Label of a confirmation dialogue button which allows the user to confirm deletion of a stored password. [Length: one line] [iOS only]">
         Delete Saved Password
       </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited. [Length: one line] [iOS only]">
-      Saved Passwords
-      </message>
-      <message name="IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING" desc="The title for a list of sites where passwords will not be saved. These items are already saved by the browser and can only be deleted. [Length: one line] [iOS only]">
-      Never Saved
-      </message>
       <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_OK_BUTTON" desc="The title of the OK button of the Signed In Accounts view [iOS only] [20em]">
         OK, Got It
       </message>
