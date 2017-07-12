@@ -91,7 +91,7 @@ interface Element : Node {
     // CSSOM View Module
     // https://dev.w3.org/csswg/cssom-view/#extension-to-the-element-interface
     DOMRectList getClientRects();
-    DOMRect getBoundingClientRect();
+    [RuntimeCallStatsCounter=ElementGetBoundingClientRect] DOMRect getBoundingClientRect();
 
     // TODO(sunyunjia): Add default value for scrollIntoView() once
     // crbug.com/734599 is fixed.

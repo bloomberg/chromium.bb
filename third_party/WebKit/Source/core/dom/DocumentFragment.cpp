@@ -25,6 +25,8 @@
 #include "core/dom/Document.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
 
@@ -67,6 +69,9 @@ Node* DocumentFragment::cloneNode(bool deep, ExceptionState&) {
 void DocumentFragment::ParseHTML(const String& source,
                                  Element* context_element,
                                  ParserContentPolicy parser_content_policy) {
+  RUNTIME_CALL_TIMER_SCOPE(
+      V8PerIsolateData::MainThreadIsolate(),
+      RuntimeCallStats::CounterId::kDocumentFragmentParseHTML);
   HTMLDocumentParser::ParseDocumentFragment(source, this, context_element,
                                             parser_content_policy);
 }

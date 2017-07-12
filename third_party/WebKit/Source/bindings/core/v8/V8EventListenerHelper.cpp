@@ -41,6 +41,8 @@ EventListener* V8EventListenerHelper::GetEventListener(
     v8::Local<v8::Value> value,
     bool is_attribute,
     ListenerLookupType lookup) {
+  RUNTIME_CALL_TIMER_SCOPE(script_state->GetIsolate(),
+                           RuntimeCallStats::CounterId::kGetEventListener);
   if (lookup == kListenerFindOnly) {
     // Used by EventTarget::removeEventListener, specifically
     // EventTargetV8Internal::removeEventListenerMethod
