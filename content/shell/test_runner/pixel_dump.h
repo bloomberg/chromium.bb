@@ -6,34 +6,43 @@
 #define CONTENT_SHELL_TEST_RUNNER_PIXEL_DUMP_H_
 
 #include "base/callback_forward.h"
-#include "content/shell/test_runner/test_runner_export.h"
 
 class SkBitmap;
 
 namespace blink {
-class WebView;
+class WebLocalFrame;
 }  // namespace blink
 
 namespace test_runner {
 
-class LayoutTestRuntimeFlags;
+// Asks |web_frame|'s widget to dump its pixels and calls |callback| with the
+// result.
+void DumpPixelsAsync(blink::WebLocalFrame* web_frame,
+                     float device_scale_factor_for_test,
+                     base::OnceCallback<void(const SkBitmap&)> callback);
 
-// Dumps image snapshot of |web_view|.  Exact dump mode depends on |flags| (i.e.
-// dump_selection_rect and/or is_printing).  Caller needs to ensure that
-// |layout_test_runtime_flags| stays alive until |callback| gets called.
-TEST_RUNNER_EXPORT void DumpPixelsAsync(
-    blink::WebView* web_view,
-    const LayoutTestRuntimeFlags& layout_test_runtime_flags,
-    float device_scale_factor_for_test,
-    const base::Callback<void(const SkBitmap&)>& callback);
+// Asks |web_frame| to print itself and calls |callback| with the result.
+void PrintFrameAsync(blink::WebLocalFrame* web_frame,
+                     base::OnceCallback<void(const SkBitmap&)> callback);
 
-// Copy to clipboard the image present at |x|, |y| coordinates in |web_view|
+// Captures the current selection bounds rect of |web_frame| and creates a
+// callback that will draw the rect (if any) on top of the |original_bitmap|,
+// before passing |bitmap_with_selection_bounds_rect| to the
+// |original_callback|.  Selection bounds rect is the rect enclosing the
+// (possibly transformed) selection.
+base::OnceCallback<void(const SkBitmap& original_bitmap)>
+CreateSelectionBoundsRectDrawingCallback(
+    blink::WebLocalFrame* web_frame,
+    base::OnceCallback<void(const SkBitmap& bitmap_with_selection_bounds_rect)>
+        original_callback);
+
+// Copy to clipboard the image present at |x|, |y| coordinates in |web_frame|
 // and pass the captured image to |callback|.
 void CopyImageAtAndCapturePixels(
-    blink::WebView* web_view,
+    blink::WebLocalFrame* web_frame,
     int x,
     int y,
-    const base::Callback<void(const SkBitmap&)>& callback);
+    base::OnceCallback<void(const SkBitmap&)> callback);
 
 }  // namespace test_runner
 

@@ -1768,8 +1768,8 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
 }
 
 void TestRunner::DumpPixelsAsync(
-    blink::WebView* web_view,
-    const base::Callback<void(const SkBitmap&)>& callback) {
+    blink::WebLocalFrame* frame,
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   if (layout_test_runtime_flags_.dump_drag_image()) {
     if (drag_image_.IsNull()) {
       // This means the test called dumpDragImage but did not initiate a drag.
@@ -1777,16 +1777,29 @@ void TestRunner::DumpPixelsAsync(
       SkBitmap bitmap;
       bitmap.allocN32Pixels(1, 1);
       bitmap.eraseColor(0);
-      callback.Run(bitmap);
+      std::move(callback).Run(bitmap);
       return;
     }
 
-    callback.Run(drag_image_.GetSkBitmap());
+    std::move(callback).Run(drag_image_.GetSkBitmap());
     return;
   }
 
-  test_runner::DumpPixelsAsync(web_view, layout_test_runtime_flags_,
-                               delegate_->GetDeviceScaleFactor(), callback);
+  // See if we need to draw the selection bounds rect on top of the snapshot.
+  if (layout_test_runtime_flags_.dump_selection_rect()) {
+    callback =
+        CreateSelectionBoundsRectDrawingCallback(frame, std::move(callback));
+  }
+
+  // Request appropriate kind of pixel dump.
+  if (layout_test_runtime_flags_.is_printing()) {
+    test_runner::PrintFrameAsync(frame, std::move(callback));
+  } else {
+    // TODO(lukasza): Ask the |delegate_| to capture the pixels in the browser
+    // process, so that OOPIF pixels are also captured.
+    test_runner::DumpPixelsAsync(frame, delegate_->GetDeviceScaleFactor(),
+                                 std::move(callback));
+  }
 }
 
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
