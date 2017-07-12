@@ -15,9 +15,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGrid;
@@ -102,6 +107,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mBottomSpacer = new SpacingItem();
             mRoot.addChild(mBottomSpacer);
         }
+
+        RemoteSuggestionsStatusObserver suggestionsObserver = new RemoteSuggestionsStatusObserver();
+        mUiDelegate.addDestructionObserver(suggestionsObserver);
 
         updateAllDismissedVisibility();
         mRoot.setParent(this);
@@ -222,7 +230,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     private void updateAllDismissedVisibility() {
-        boolean showAllDismissed = hasAllBeenDismissed();
+        boolean showAllDismissed = hasAllBeenDismissed()
+                && mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled();
         mAllDismissed.setVisible(showAllDismissed);
         mFooter.setVisible(!showAllDismissed);
     }
@@ -308,5 +317,25 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     InnerNode getRootForTesting() {
         return mRoot;
+    }
+
+    private class RemoteSuggestionsStatusObserver
+            extends SuggestionsSource.EmptyObserver implements DestructionObserver {
+        public RemoteSuggestionsStatusObserver() {
+            mUiDelegate.getSuggestionsSource().addObserver(this);
+        }
+
+        @Override
+        public void onCategoryStatusChanged(
+                @CategoryInt int category, @CategoryStatus int newStatus) {
+            if (!SnippetsBridge.isCategoryRemote(category)) return;
+
+            updateAllDismissedVisibility();
+        }
+
+        @Override
+        public void onDestroy() {
+            mUiDelegate.getSuggestionsSource().removeObserver(this);
+        }
     }
 }

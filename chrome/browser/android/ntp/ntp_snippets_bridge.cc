@@ -163,18 +163,6 @@ static void SetRemoteSuggestionsEnabled(JNIEnv* env,
   content_suggestions_service->SetRemoteSuggestionsEnabled(enabled);
 }
 
-static jboolean AreRemoteSuggestionsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(
-          ProfileManager::GetLastUsedProfile());
-  if (!content_suggestions_service)
-    return false;
-
-  return content_suggestions_service->AreRemoteSuggestionsEnabled();
-}
-
 // Returns true if the remote provider is managed by an adminstrator's policy.
 static jboolean AreRemoteSuggestionsManaged(
     JNIEnv* env,
@@ -286,6 +274,12 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
   return ToJavaSuggestionList(
       env, category,
       content_suggestions_service_->GetSuggestionsForCategory(category));
+}
+
+jboolean NTPSnippetsBridge::AreRemoteSuggestionsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return content_suggestions_service_->AreRemoteSuggestionsEnabled();
 }
 
 void NTPSnippetsBridge::FetchSuggestionImage(
