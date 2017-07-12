@@ -2226,6 +2226,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_yuna',
       'beaglebone',
+      'bob',
       'butterfly',
       'caroline',
       'cave',
@@ -2285,7 +2286,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron_paine',
       'betty',
-      'bob',
       'edgar',
       'hana',
       'kevin',
