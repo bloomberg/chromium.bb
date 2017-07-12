@@ -36,11 +36,12 @@ namespace {
 // set to True if the experiment is currently running at a probability other
 // than 1 or 0, or to False otherwise.
 std::vector<std::pair<const base::Feature*, bool>>
+
 GetExperimentalFeaturesList() {
   std::vector<std::pair<const base::Feature*, bool>> experimental_features_list{
       std::make_pair(&kLocalDatabaseManagerEnabled, true),
       std::make_pair(&kV4OnlyEnabled, true),
-      std::make_pair(&kThreatDomDetailsTagAndAttributeFeature, true)};
+      std::make_pair(&kThreatDomDetailsTagAndAttributeFeature, false)};
 
   return experimental_features_list;
 }
