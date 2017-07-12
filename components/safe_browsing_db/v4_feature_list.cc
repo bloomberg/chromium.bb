@@ -2,21 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/feature_list.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
+
+#include "base/feature_list.h"
+#include "components/safe_browsing/features.h"
 
 namespace safe_browsing {
 
 namespace V4FeatureList {
-
-namespace {
-
-const base::Feature kLocalDatabaseManagerEnabled{
-    "SafeBrowsingV4LocalDatabaseManagerEnabled",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kV4OnlyEnabled{"SafeBrowsingV4OnlyEnabled",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsV4OnlyEnabled() {
   return base::FeatureList::IsEnabled(kV4OnlyEnabled);
@@ -26,8 +19,6 @@ bool IsLocalDatabaseManagerEnabled() {
   return base::FeatureList::IsEnabled(kLocalDatabaseManagerEnabled) ||
          IsV4OnlyEnabled();
 }
-
-}  // namespace
 
 V4UsageStatus GetV4UsageStatus() {
   V4UsageStatus v4_usage_status;

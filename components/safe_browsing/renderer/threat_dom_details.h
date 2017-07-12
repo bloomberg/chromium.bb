@@ -19,7 +19,6 @@ struct SafeBrowsingHostMsg_ThreatDOMDetails_Node;
 
 namespace safe_browsing {
 
-extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 extern const char kTagAndAttributeParamName[];
 
 // Represents the tag name of an HTML Element and its associated attributes.
