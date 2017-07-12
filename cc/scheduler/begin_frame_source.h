@@ -11,8 +11,6 @@
 #include <set>
 #include <string>
 
-#include "base/containers/flat_set.h"
-#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
