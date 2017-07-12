@@ -287,6 +287,11 @@ const char kEnableDataReductionProxySavingsPromoDescription[] =
     "saved 1 MB of data, then the promo will not be shown. Data Saver must be "
     "enabled for the promo to be shown.";
 
+const char kEnableDesktopPWAWindowingName[] =
+    "Windowing related features for desktop PWAs.";
+const char kEnableDesktopPWAWindowingDescription[] =
+    "Enable experimental windowing features for desktop PWAs.";
+
 const char kEnableEnumeratingAudioDevicesName[] =
     "Experimentally enable enumerating audio devices.";
 const char kEnableEnumeratingAudioDevicesDescription[] =

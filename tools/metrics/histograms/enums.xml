@@ -22766,6 +22766,7 @@ from previous Chrome versions.
   <int value="-856016114" label="NTPOfflinePages:disabled"/>
   <int value="-855130893" label="enable-touch-calibration-setting"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
+  <int value="-848691867" label="DesktopPWAWindowing:enabled"/>
   <int value="-844537521" label="HttpFormWarning:disabled"/>
   <int value="-842438090" label="enable-md-feedback"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
@@ -22958,6 +22959,7 @@ from previous Chrome versions.
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
+  <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-119055644" label="GenericSensor:enabled"/>

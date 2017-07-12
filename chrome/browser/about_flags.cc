@@ -2020,6 +2020,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)},
+    {"enable-desktop-pwa-windowing",
+     flag_descriptions::kEnableDesktopPWAWindowingName,
+     flag_descriptions::kEnableDesktopPWAWindowingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAWindowing)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(
