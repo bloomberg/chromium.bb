@@ -146,8 +146,15 @@ def remove_footer(message, key):
   top_lines, footer_lines, _ = split_footers(message)
   if not footer_lines:
     return message
-  new_footer_lines = [
-      l for l in footer_lines if normalize_name(parse_footer(l)[0]) != key]
+  new_footer_lines = []
+  for line in footer_lines:
+    try:
+      f = normalize_name(parse_footer(line)[0])
+      if f != key:
+        new_footer_lines.append(line)
+    except TypeError:
+      # If the footer doesn't parse (i.e. is malformed), just let it carry over.
+      new_footer_lines.append(line)
   return '\n'.join(top_lines + new_footer_lines)
 
 
