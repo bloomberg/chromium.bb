@@ -21,6 +21,7 @@ class ListValue;
 }
 
 namespace extensions {
+class ExceptionHandler;
 
 // A wrapper around a map for extension API calls. Contains all pending requests
 // and the associated context and callback. Designed to be used on a single
@@ -54,7 +55,8 @@ class APIRequestHandler {
 
   APIRequestHandler(const SendRequestMethod& send_request,
                     const CallJSFunction& call_js,
-                    APILastError last_error);
+                    APILastError last_error,
+                    ExceptionHandler* exception_handler);
   ~APIRequestHandler();
 
   // Begins the process of processing the request. Returns the identifier of the
@@ -126,6 +128,10 @@ class APIRequestHandler {
   CallJSFunction call_js_;
 
   APILastError last_error_;
+
+  // The exception handler for the bindings system; guaranteed to be valid
+  // during this object's lifetime.
+  ExceptionHandler* const exception_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandler);
 };

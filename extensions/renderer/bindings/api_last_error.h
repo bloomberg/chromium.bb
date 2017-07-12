@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "extensions/renderer/bindings/api_binding_types.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -26,12 +27,9 @@ class APILastError {
   using GetParent = base::Callback<v8::Local<v8::Object>(
       v8::Local<v8::Context>,
       v8::Local<v8::Object>* secondary_parent)>;
-  // Adds an error message to the context's console.
-  using AddConsoleError =
-      base::Callback<void(v8::Local<v8::Context>, const std::string& error)>;
 
   APILastError(const GetParent& get_parent,
-               const AddConsoleError& add_console_error);
+               const binding::AddConsoleError& add_console_error);
   APILastError(APILastError&& other);
   ~APILastError();
 
@@ -60,7 +58,7 @@ class APILastError {
 
   GetParent get_parent_;
 
-  AddConsoleError add_console_error_;
+  binding::AddConsoleError add_console_error_;
 
   DISALLOW_COPY_AND_ASSIGN(APILastError);
 };

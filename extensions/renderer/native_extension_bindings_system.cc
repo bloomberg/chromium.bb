@@ -363,6 +363,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
           base::Bind(&APIActivityLogger::LogAPICall),
+          base::Bind(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
       weak_factory_(this) {

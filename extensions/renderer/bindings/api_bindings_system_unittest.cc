@@ -123,10 +123,10 @@ void APIBindingsSystemTest::SetUp() {
       base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
       base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
                  base::Unretained(this)),
-      base::Bind(&DoNothingWithSilentRequest),
+      base::Bind(&DoNothingWithSilentRequest), binding::AddConsoleError(),
       APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,
                               base::Unretained(this)),
-                   APILastError::AddConsoleError()));
+                   binding::AddConsoleError()));
 }
 
 void APIBindingsSystemTest::TearDown() {
