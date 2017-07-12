@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
+#include "components/sync_sessions/synced_tab_delegate.h"
 #include "ui/base/page_transition_types.h"
 
 namespace sync_sessions {
@@ -39,6 +40,11 @@ class TabTasks {
   TabTasks();
   explicit TabTasks(const TabTasks& rhs);
   virtual ~TabTasks();
+
+  SessionID::id_type parent_tab_id() { return parent_tab_id_; }
+  void set_parent_tab_id(SessionID::id_type parent_tab_id) {
+    parent_tab_id_ = parent_tab_id;
+  }
 
   // Gets root->leaf task id list for the navigation denoted by |nav_id|.
   // Returns an empty vector if |nav_id| is not found.
@@ -77,6 +83,9 @@ class TabTasks {
   // The most recent navigation id seen for this tab.
   int most_recent_nav_id_ = kInvalidNavID;
 
+  // The parent id for this tab (if there is one).
+  SessionID::id_type parent_tab_id_ = kInvalidTabID;
+
   DISALLOW_ASSIGN(TabTasks);
 };
 
@@ -90,12 +99,12 @@ class TaskTracker {
   virtual ~TaskTracker();
 
   // Returns a TabTasks pointer, which is owned by this object, for the tab of
-  // given |tab_id|. |parent_id|, if set, can be used to link the task ids
+  // given |tab_id|. |parent_tab_id|, if set, can be used to link the task ids
   // from one tab to another (e.g. when opening a navigation in a new tab, the
   // task ids from the original tab are necessary to continue tracking the
   // task chain).
   TabTasks* GetTabTasks(SessionID::id_type tab_id,
-                        SessionID::id_type parent_id);
+                        SessionID::id_type parent_tab_id);
 
   // Cleans tracked task ids of navigations in the tab of |tab_id|.
   void CleanTabTasks(SessionID::id_type tab_id);
