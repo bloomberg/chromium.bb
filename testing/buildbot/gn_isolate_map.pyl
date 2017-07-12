@@ -626,8 +626,18 @@
     "label": "//components/leveldb:leveldb_service_unittests",
     "type": "console_test_launcher",
   },
+  # See http://crbug.com/585151
+  "libaddressinput_unittests": {
+    "label": "//third_party/libaddressinput:libaddressinput_unittests",
+    "type": "console_test_launcher",
+  },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
+    "type": "console_test_launcher",
+  },
+  # See http://crbug.com/585151
+  "libphonenumber_unittests": {
+    "label": "//third_party/libphonenumber:libphonenumber_unittests",
     "type": "console_test_launcher",
   },
   "mac_installer_unittests": {
@@ -781,6 +791,14 @@
   "pdf_unittests": {
     "label": "//pdf:pdf_unittests",
     "type": "console_test_launcher",
+  },
+  "pdfium_test": {
+    "label": "//third_party/pdfium/samples:pdfium_test",
+    "type": "additional_compile_target",
+  },
+  "postmortem-metadata": {
+    "label": "//v8:postmortem-metadata",
+    "type": "additional_compile_target",
   },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",

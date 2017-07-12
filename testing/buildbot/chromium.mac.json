@@ -1,4 +1,31 @@
 {
+  "Mac GYP": {
+    "additional_compile_targets": [
+      "base_unittests",
+      "browser_tests",
+      "chrome",
+      "content_browsertests",
+      "content_unittests",
+      "interactive_ui_tests",
+      "ipc_tests",
+      "media_unittests",
+      "net_unittests",
+      "pdf_unittests",
+      "printing_unittests",
+      "skia_unittests",
+      "snapshot_unittests",
+      "sql_unittests",
+      "storage_unittests",
+      "ui_base_unittests",
+      "unit_tests",
+      "url_unittests"
+    ]
+  },
+  "Mac GYP (dbg)": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Mac10.10 Tests": {
     "gtest_tests": [
       {

@@ -497,6 +497,16 @@
       }
     ]
   },
+  "Win x64 GN": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
+  "Win x64 GN (dbg)": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
   "Win10 Tests x64": {
     "gtest_tests": [
       {
@@ -2038,6 +2048,16 @@
           "shards": 2
         }
       }
+    ]
+  },
+  "Win8 GYP": {
+    "additional_compile_targets": [
+      "chrome_official_builder"
+    ]
+  },
+  "Win8 GYP (dbg)": {
+    "additional_compile_targets": [
+      "all"
     ]
   }
 }
