@@ -106,6 +106,10 @@ void ConflictingModuleView::ShowBubble() {
   bubble_shown.SetValue(bubble_shown.GetValue() + 1);
 }
 
+ui::AXRole ConflictingModuleView::GetAccessibleWindowRole() const {
+  return ui::AX_ROLE_ALERT_DIALOG;
+}
+
 void ConflictingModuleView::OnWidgetClosing(views::Widget* widget) {
   views::BubbleDialogDelegateView::OnWidgetClosing(widget);
   base::RecordAction(
@@ -154,10 +158,6 @@ void ConflictingModuleView::Init() {
   UMA_HISTOGRAM_ENUMERATION("ConflictingModule.UserSelection",
       EnumerateModulesModel::ACTION_BUBBLE_SHOWN,
       EnumerateModulesModel::ACTION_BOUNDARY);
-}
-
-void ConflictingModuleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_ALERT_DIALOG;
 }
 
 void ConflictingModuleView::OnConflictsAcknowledged() {
