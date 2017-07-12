@@ -127,7 +127,6 @@ class GpuVideoEncodeAccelerator
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
   std::unique_ptr<VideoEncodeAccelerator> encoder_;
-  base::Callback<bool(void)> make_context_current_;
 
   // Video encoding parameters.
   VideoPixelFormat input_format_;
