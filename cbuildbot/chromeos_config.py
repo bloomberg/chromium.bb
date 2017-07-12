@@ -2231,6 +2231,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'guado',
       'guado_moblab',
+      'hana',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2279,7 +2280,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron_paine',
       'betty',
-      'hana',
       'kevin',
       'quawks',
   ])
