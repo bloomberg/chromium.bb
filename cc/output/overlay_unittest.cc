@@ -492,6 +492,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
 
 TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  gfx::Rect output_rect = pass->output_rect;
   TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
       resource_provider_.get(), pass->shared_quad_state_list.back(),
       pass.get());
@@ -518,6 +519,9 @@ TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   EXPECT_EQ(1U, candidate_list.size());
   // Check that the right resource id got extracted.
   EXPECT_EQ(original_resource_id, candidate_list.front().resource_id);
+  gfx::Rect overlay_damage_rect =
+      overlay_processor_->GetAndResetOverlayDamage();
+  EXPECT_EQ(output_rect, overlay_damage_rect);
 }
 
 TEST_F(FullscreenOverlayTest, AlphaFail) {
@@ -857,6 +861,9 @@ TEST_F(SingleOverlayOnTopTest, AcceptBlending) {
       &damage_rect_, &content_bounds_);
   EXPECT_EQ(1U, candidate_list.size());
   EXPECT_FALSE(damage_rect_.IsEmpty());
+  gfx::Rect overlay_damage_rect =
+      overlay_processor_->GetAndResetOverlayDamage();
+  EXPECT_FALSE(overlay_damage_rect.IsEmpty());
 }
 
 TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {

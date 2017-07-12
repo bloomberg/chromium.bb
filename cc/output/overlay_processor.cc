@@ -177,15 +177,18 @@ void OverlayProcessor::UpdateDamageRect(
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
   for (const OverlayCandidate& overlay : *candidates) {
-    if (overlay.plane_z_order > 0 && overlay.is_opaque) {
+    if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
           ToEnclosedRect(overlay.display_rect);
-      overlay_damage_rect_.Union(overlay_display_rect);
-      damage_rect->Subtract(overlay_display_rect);
-      if (overlay.use_output_surface_for_resource)
-        output_surface_overlay_damage_rect.Union(overlay_display_rect);
-    } else if (overlay.plane_z_order < 0 && overlay.is_unoccluded &&
-               this_frame_underlay_rect.IsEmpty()) {
+      if (overlay.use_output_surface_for_resource) {
+        if (overlay.plane_z_order > 0)
+          output_surface_overlay_damage_rect.Union(overlay_display_rect);
+      } else {
+        overlay_damage_rect_.Union(overlay_display_rect);
+        if (overlay.is_opaque)
+          damage_rect->Subtract(overlay_display_rect);
+      }
+    } else if (overlay.is_unoccluded && this_frame_underlay_rect.IsEmpty()) {
       this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
     }
   }
