@@ -58,8 +58,6 @@ class PortLocker {
 #endif
 
  private:
-  static bool ComparePortRefsByPortAddress(const PortRef* a, const PortRef* b);
-
   const PortRef** const port_refs_;
   const size_t num_ports_;
 
