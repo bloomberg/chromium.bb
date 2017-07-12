@@ -21,9 +21,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/mac/bluetooth_utility.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -549,17 +546,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   is_screen_observer_ = true;
 
 #if !defined(OS_ANDROID)
-  const BrowserList* browser_list = BrowserList::GetInstance();
-
-  auto first_browser = browser_list->begin();
-  if (first_browser != browser_list->end()) {
-    TabStripModel* tab_strip = (*first_browser)->tab_strip_model();
-    DCHECK(tab_strip);
-    // In case this code becomes reachable with empty tab strip,
-    // startup_metric_utils::SetNonBrowserUIDisplayed() should be used.
-    DCHECK(!tab_strip->empty());
-    metrics::BeginFirstWebContentsProfiling();
-  }
+  metrics::BeginFirstWebContentsProfiling();
   metrics::TabUsageRecorder::InitializeIfNeeded();
 #endif  // !defined(OS_ANDROID)
 }
