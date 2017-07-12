@@ -499,9 +499,13 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
       break;
 
     default:
-      UMA_HISTOGRAM_ENUMERATION(
-          "UMA.SubprocessMetricsProvider.UntrackedProcesses",
-          data_.process_type, PROCESS_TYPE_CONTENT_END);
+      // Report new processes. "Custom" ones are renumbered to 1000+ so that
+      // they won't conflict with any standard ones in the future.
+      int process_type = data_.process_type;
+      if (process_type >= PROCESS_TYPE_CONTENT_END)
+        process_type += 1000 - PROCESS_TYPE_CONTENT_END;
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "UMA.SubprocessMetricsProvider.UntrackedProcesses", process_type);
       return;
   }
 

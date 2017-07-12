@@ -35605,6 +35605,20 @@ from previous Chrome versions.
   <int value="3" label="Iframe with different signon realm"/>
 </enum>
 
+<enum name="SubprocessType">
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Browser"/>
+  <int value="3" label="Renderer"/>
+  <int value="4" label="Plugin (deprecated)"/>
+  <int value="5" label="Worker (deprecated)"/>
+  <int value="6" label="Utility"/>
+  <int value="7" label="Zygote"/>
+  <int value="8" label="Sandbox Helper"/>
+  <int value="9" label="GPU"/>
+  <int value="10" label="PPAPI Plugin"/>
+  <int value="11" label="PPAPI Broker"/>
+</enum>
+
 <enum name="SubresourceFilterActions">
   <int value="0" label="New Navigation"/>
   <int value="1" label="UI Shown"/>
