@@ -61,7 +61,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   LayoutRect ReplacedContentRect() const final;
 
   void UpdateOnEmbeddedContentViewChange();
-  void UpdateGeometry();
+  void UpdateGeometry(EmbeddedContentView&);
 
   bool IsLayoutEmbeddedContent() const final { return true; }
   virtual void PaintContents(const PaintInfo&, const LayoutPoint&) const;
@@ -77,7 +77,6 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   CursorDirective GetCursor(const LayoutPoint&, Cursor&) const final;
 
  private:
-  void UpdateGeometryInternal(EmbeddedContentView&);
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void WillBeDestroyed() final;

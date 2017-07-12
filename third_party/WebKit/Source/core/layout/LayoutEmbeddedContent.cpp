@@ -322,7 +322,7 @@ void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
     return;
 
   if (!NeedsLayout())
-    UpdateGeometryInternal(*embedded_content_view);
+    UpdateGeometry(*embedded_content_view);
 
   if (Style()->Visibility() != EVisibility::kVisible) {
     embedded_content_view->Hide();
@@ -334,39 +334,7 @@ void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
   }
 }
 
-void LayoutEmbeddedContent::UpdateGeometry() {
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-  if (!embedded_content_view)
-    return;
-
-  LayoutRect new_frame = ReplacedContentRect();
-  DCHECK(new_frame.Size() == RoundedIntSize(new_frame.Size()));
-  bool bounds_will_change =
-      LayoutSize(embedded_content_view->FrameRect().Size()) != new_frame.Size();
-
-  // If frame bounds are changing mark the view for layout. Also check the
-  // frame's page to make sure that the frame isn't in the process of being
-  // destroyed. If iframe scrollbars needs reconstruction from native to custom
-  // scrollbar, then also we need to layout the frameview.
-  LocalFrameView* frame_view = ChildFrameView();
-  if (frame_view && frame_view->GetFrame().GetPage() &&
-      (bounds_will_change || frame_view->NeedsScrollbarReconstruction()))
-    frame_view->SetNeedsLayout();
-
-  UpdateGeometryInternal(*embedded_content_view);
-
-  // If view needs layout, either because bounds have changed or possibly
-  // indicating content size is wrong, we have to do a layout to set the right
-  // LocalFrameView size.
-  if (frame_view && frame_view->NeedsLayout() &&
-      frame_view->GetFrame().GetPage())
-    frame_view->UpdateLayout();
-
-  if (PluginView* plugin = Plugin())
-    plugin->GeometryMayHaveChanged();
-}
-
-void LayoutEmbeddedContent::UpdateGeometryInternal(
+void LayoutEmbeddedContent::UpdateGeometry(
     EmbeddedContentView& embedded_content_view) {
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
@@ -390,8 +358,6 @@ void LayoutEmbeddedContent::UpdateGeometryInternal(
       LocalToAbsoluteQuad(FloatRect(ReplacedContentRect())).BoundingBox();
   frame_rect.SetLocation(RoundedIntPoint(absolute_bounding_box.Location()));
 
-  // Why is the protector needed?
-  RefPtr<LayoutEmbeddedContent> protector(this);
   embedded_content_view.SetFrameRect(frame_rect);
 }
 

@@ -35,7 +35,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
     return *remote_frame_;
   }
 
-  LayoutEmbeddedContent* OwnerLayoutObject() const override;
   void Dispose() override;
   // Override to notify remote frame that its viewport size has changed.
   void FrameRectsChanged() override;
@@ -43,6 +42,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void SetFrameRect(const IntRect&) override;
   const IntRect& FrameRect() const override { return frame_rect_; }
   void Paint(GraphicsContext&, const CullRect&) const override {}
+  void UpdateGeometry() override;
   void Hide() override;
   void Show() override;
   void SetParentVisible(bool) override;

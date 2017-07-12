@@ -53,7 +53,6 @@ class CORE_EXPORT PluginView : public EmbeddedContentView {
   bool IsPluginView() const override { return true; }
 
   virtual void SetFocused(bool, WebFocusType) = 0;
-  virtual void GeometryMayHaveChanged() = 0;
   virtual void HandleEvent(Event*) = 0;
   virtual void EventListenersRemoved() = 0;
   virtual bool IsPluginContainer() const { return false; }
