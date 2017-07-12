@@ -101,9 +101,14 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
                    base::Unretained(this), args));
     return;
   }
+
   coordinator_->RequestGlobalMemoryDump(
       args, mojom::Coordinator::RequestGlobalMemoryDumpCallback());
 }
+
+void ClientProcessImpl::RequestOSMemoryDump(
+    const std::vector<base::ProcessId>& ids,
+    const RequestOSMemoryDumpCallback& callback) {}
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,
                                   const std::string& service_name,
