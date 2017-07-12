@@ -1935,8 +1935,4 @@ ICCProfile ICCProfileForTestingOvershoot() {
       arraysize(overshoot_profile_data), ICCProfile::test_id_overshoot_);
 }
 
-ICCProfile ICCProfileForLayoutTests() {
-  return ICCProfile::GetForcedProfile();
-}
-
 }  // namespace gfx

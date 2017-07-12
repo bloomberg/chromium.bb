@@ -108,41 +108,9 @@ ICCProfile ICCProfile::FromDataWithId(const void* data,
     defined(OS_IOS)
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
-  if (HasForcedProfile())
-    return GetForcedProfile();
   return ICCProfile();
 }
 #endif
-
-// static
-bool ICCProfile::HasForcedProfile() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceColorProfile);
-}
-
-// static
-ICCProfile ICCProfile::GetForcedProfile() {
-  DCHECK(HasForcedProfile());
-  ICCProfile icc_profile;
-  std::string value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kForceColorProfile);
-  if (value == "srgb") {
-    ColorSpace::CreateSRGB().GetICCProfile(&icc_profile);
-  } else if (value == "generic-rgb") {
-    ColorSpace generic_rgb_color_space(ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
-                                       ColorSpace::TransferID::GAMMA18);
-    generic_rgb_color_space.GetICCProfile(&icc_profile);
-  } else if (value == "color-spin-gamma24") {
-    ColorSpace color_spin_color_space(
-        ColorSpace::PrimaryID::WIDE_GAMUT_COLOR_SPIN,
-        ColorSpace::TransferID::GAMMA24);
-    color_spin_color_space.GetICCProfile(&icc_profile);
-  } else {
-    LOG(ERROR) << "Invalid forced color profile";
-  }
-  return icc_profile;
-}
 
 // static
 const std::vector<char>& ICCProfile::GetData() const {

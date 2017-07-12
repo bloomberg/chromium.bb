@@ -43,9 +43,6 @@ bool g_has_initialized_best_monitor_color_space = false;
 
 // static
 ICCProfile ICCProfile::FromBestMonitor() {
-  if (HasForcedProfile())
-    return GetForcedProfile();
-
   base::AutoLock lock(g_best_monitor_color_space_lock.Get());
   return g_best_monitor_color_space.Get();
 }

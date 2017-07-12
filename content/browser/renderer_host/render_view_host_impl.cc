@@ -338,7 +338,12 @@ bool RenderViewHostImpl::CreateRenderView(
     gfx::ColorSpace::CreateSRGB().GetICCProfile(
         &params->image_decode_color_space);
   } else {
-    params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
+    if (display::Display::HasForceColorProfile()) {
+      display::Display::GetForcedColorProfile().GetICCProfile(
+          &params->image_decode_color_space);
+    } else {
+      params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
+    }
   }
 
   GetWidget()->GetResizeParams(&params->initial_size);

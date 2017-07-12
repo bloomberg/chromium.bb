@@ -15,10 +15,4 @@ GFX_SWITCHES_EXPORT extern const base::Feature kColorCorrectRendering;
 
 }  // namespace features
 
-namespace switches {
-
-GFX_SWITCHES_EXPORT extern const char kForceColorProfile[];
-
-}  // namespace switches
-
 #endif  // UI_GFX_COLOR_SPACE_SWITCHES_H_

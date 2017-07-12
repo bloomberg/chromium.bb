@@ -57,11 +57,6 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // Create directly from profile data.
   static ICCProfile FromData(const void* icc_profile, size_t size);
 
-  // TODO(ccameron): Move this flag to display::Display, like forcing device
-  // scale factor.
-  static bool HasForcedProfile();
-  static ICCProfile GetForcedProfile();
-
   // Return a ColorSpace that references this ICCProfile. ColorTransforms
   // created using this ColorSpace will match this ICCProfile precisely.
   const ColorSpace& GetColorSpace() const;

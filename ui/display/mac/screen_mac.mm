@@ -81,16 +81,15 @@ Display BuildDisplayForScreen(NSScreen* screen) {
 
   display.set_device_scale_factor(scale);
 
-  // On Sierra, we need to operate in a single screen's color space because
-  // IOSurfaces do not opt-out of color correction.
-  // https://crbug.com/654488
-  CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
-  static bool color_correct_rendering_enabled =
-      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
-  if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
-    color_space = base::mac::GetSystemColorSpace();
-
-  if (!gfx::ICCProfile::HasForcedProfile()) {
+  if (!Display::HasForceColorProfile()) {
+    // On Sierra, we need to operate in a single screen's color space because
+    // IOSurfaces do not opt-out of color correction.
+    // https://crbug.com/654488
+    CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
+    static bool color_correct_rendering_enabled =
+        base::FeatureList::IsEnabled(features::kColorCorrectRendering);
+    if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
+      color_space = base::mac::GetSystemColorSpace();
     display.set_color_space(
         gfx::ICCProfile::FromCGColorSpace(color_space).GetColorSpace());
   }
