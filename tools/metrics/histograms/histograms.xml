@@ -81119,13 +81119,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.SubprocessMetricsProvider.UntrackedProcesses"
-    units="subprocesses">
+    enum="SubprocessType">
   <owner>asvitkine@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
   <summary>
     The number of subprocesses, by type, from which persistent metrics are NOT
     collected because there is no information about this (likely new) process
-    type.
+    type. Process numbers 1000 or greater are &quot;custom&quot; processes used
+    by embedders.
   </summary>
 </histogram>
 
