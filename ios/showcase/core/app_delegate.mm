@@ -4,12 +4,14 @@
 
 #import "ios/showcase/core/app_delegate.h"
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "ios/chrome/app/startup/ios_chrome_main.h"
 #import "ios/showcase/core/showcase_model.h"
 #import "ios/showcase/core/showcase_view_controller.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/public/app/web_main_parts.h"
+#import "ios/web/public/web_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,6 +20,42 @@
 
 @implementation AppDelegate
 @synthesize window = _window;
+
+namespace {
+
+class ShowcaseWebMainParts : public web::WebMainParts {
+  void PreMainMessageLoopStart() override {
+    ResourceBundle::InitSharedInstanceWithLocale(
+        std::string(), nullptr, ResourceBundle::LOAD_COMMON_RESOURCES);
+
+    base::FilePath pak_path;
+    PathService::Get(base::DIR_MODULE, &pak_path);
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        pak_path.AppendASCII("showcase_resources.pak"), ui::SCALE_FACTOR_100P);
+  }
+};
+
+class ShowcaseWebClient : public web::WebClient {
+ public:
+  ShowcaseWebClient() {}
+  ~ShowcaseWebClient() override {}
+
+  // WebClient implementation.
+  std::unique_ptr<web::WebMainParts> CreateWebMainParts() override {
+    return base::MakeUnique<ShowcaseWebMainParts>();
+  }
+  base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor) const override {
+    return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+        resource_id, scale_factor);
+  }
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override {
+    return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+        resource_id);
+  }
+};
+}
 
 - (void)setupUI {
   ShowcaseViewController* viewController =
@@ -31,9 +69,11 @@
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  base::CommandLine::Init(0, nullptr);
-  ResourceBundle::InitSharedInstanceWithLocale(
-      std::string(), nullptr, ResourceBundle::LOAD_COMMON_RESOURCES);
+  // TODO(crbug.com/738880): Showcase ideally shouldn't be an embedder of
+  // //ios/web, in which case it wouldn't have to do this. This almost
+  // certainly means not creating IOSChromeMain.
+  web::SetWebClient(new ShowcaseWebClient());
+  base::MakeUnique<IOSChromeMain>();
 
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   [self setupUI];

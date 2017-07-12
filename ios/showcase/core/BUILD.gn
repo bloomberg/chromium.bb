@@ -13,9 +13,15 @@ source_set("core") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app/startup:startup_basic",
     "//ios/showcase/common",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
+
+    # TODO(crbug.com/738880): Showcase ideally shouldn't be an embedder of
+    # //ios/web.
+    "//ios/web",
+    "//ios/web/public/app",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
