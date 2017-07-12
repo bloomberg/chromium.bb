@@ -2542,6 +2542,34 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 }
 
+// Ensure multi-profile panels are properly added / removed from the shelf.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       PanelUpdateOnUserSwitch) {
+  InitLauncherController();
+
+  // Check the shelf model used by ShelfWindowWatcher.
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
+  ASSERT_EQ(1, shelf_model->item_count());
+  EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[0].type);
+
+  // Add an app panel window; ShelfWindowWatcher will add a shelf item.
+  V2App panel(profile(), extension_platform_app_.get(),
+              extensions::AppWindow::WINDOW_TYPE_PANEL);
+  ASSERT_EQ(2, model_.item_count());
+  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[1].type);
+
+  // After switching users the item should go away.
+  TestingProfile* profile2 = CreateMultiUserProfile("user2");
+  SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile2));
+  ASSERT_EQ(1, shelf_model->item_count());
+  EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[0].type);
+
+  // And it should come back when switching back.
+  SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile()));
+  ASSERT_EQ(2, shelf_model->item_count());
+  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[1].type);
+}
+
 // Check that a running windowed V1 application will be properly pinned and
 // unpinned when the order gets changed through a profile / policy change.
 TEST_F(ChromeLauncherControllerTest,

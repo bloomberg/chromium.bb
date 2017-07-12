@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -46,9 +48,15 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
     extensions::AppWindow* app_window = *it;
     Profile* profile =
         Profile::FromBrowserContext(app_window->browser_context());
-    if (!multi_user_util::IsProfileFromActiveUser(profile) &&
-        IsRegisteredApp(app_window->GetNativeWindow()))
-      UnregisterApp(app_window->GetNativeWindow());
+    if (!multi_user_util::IsProfileFromActiveUser(profile)) {
+      if (IsRegisteredApp(app_window->GetNativeWindow())) {
+        UnregisterApp(app_window->GetNativeWindow());
+      } else if (app_window->window_type_is_panel()) {
+        // Panels are not registered; hide by clearing the shelf item type.
+        app_window->GetNativeWindow()->SetProperty<int>(ash::kShelfItemTypeKey,
+                                                        ash::TYPE_UNDEFINED);
+      }
+    }
   }
   for (AppWindowList::iterator it = app_window_list_.begin();
        it != app_window_list_.end();
