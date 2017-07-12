@@ -53,7 +53,7 @@ class SafeDMG {
   bool EnableSandbox();
 
   // Performs the actual DMG operation.
-  bool ParseDMG();
+  __attribute__((availability(macos, introduced = 10.10))) bool ParseDMG();
 
   base::File dmg_file_;
 
@@ -91,8 +91,13 @@ int SafeDMG::Main(int argc, const char* argv[]) {
   if (!EnableSandbox())
     return EXIT_FAILURE;
 
-  if (!ParseDMG())
+  if (__builtin_available(macOS 10.10, *)) {
+    if (!ParseDMG())
+      return EXIT_FAILURE;
+  } else {
+    LOG(ERROR) << "Requires 10.10 or higher";
     return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }
