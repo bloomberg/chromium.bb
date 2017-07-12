@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
-import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -450,9 +449,6 @@ public class ProcessInitializationHandler {
                     // This is needed to ensure the right behavior when the process is suddenly
                     // killed.
                     BookmarkWidgetProvider.refreshAllWidgets(context);
-
-                    // Initialize whether or not precaching is enabled.
-                    PrecacheLauncher.updatePrecachingEnabled(context);
 
                     WebApkVersionManager.updateWebApksIfNeeded();
 
