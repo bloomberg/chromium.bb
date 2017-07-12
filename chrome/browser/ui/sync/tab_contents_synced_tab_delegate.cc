@@ -114,9 +114,13 @@ void TabContentsSyncedTabDelegate::GetSerializedNavigationAtIndex(
     sessions::SerializedNavigationEntry* serialized_entry) const {
   NavigationEntry* entry = GetPossiblyPendingEntryAtIndex(web_contents_, i);
   if (entry) {
+    // Explicitly exclude page state when serializing the navigation entry.
+    // Sync ignores the page state anyway (e.g. form data is not synced), and
+    // the page state can be expensive to serialize.
     *serialized_entry =
         sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-            i, *entry);
+            i, *entry,
+            sessions::ContentSerializedNavigationBuilder::EXCLUDE_PAGE_STATE);
   }
 }
 
