@@ -1347,7 +1347,6 @@ void DownloadItemImpl::Start(
             ? new_create_info.save_info->hash_state->Clone()
             : nullptr;
 
-    destination_info_.current_path = new_create_info.save_info->file_path;
     destination_info_.received_bytes = offset;
     hash_state_ = std::move(hash_state);
     destination_info_.hash.clear();
