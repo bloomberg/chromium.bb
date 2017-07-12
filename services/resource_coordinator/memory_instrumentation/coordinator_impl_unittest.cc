@@ -117,6 +117,10 @@ class MockClientProcess : public mojom::ClientProcess {
                void(const MemoryDumpRequestArgs& args,
                     const RequestProcessMemoryDumpCallback& callback));
 
+  MOCK_METHOD2(RequestOSMemoryDump,
+               void(const std::vector<base::ProcessId>& args,
+                    const RequestOSMemoryDumpCallback& callback));
+
  private:
   mojo::Binding<mojom::ClientProcess> binding_;
 };

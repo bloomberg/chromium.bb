@@ -110,6 +110,22 @@ interface ClientProcess {
   // returned in case of success.
   RequestProcessMemoryDump(RequestArgs args) =>
       (bool success, uint64 dump_id, RawProcessMemoryDump? process_memory_dump);
+
+  // Requests an OSMemDump for each pid in |pids|.
+  // The Memory-infra service deals with two kinds of information:
+  // 1) Chrome's view of its own memory use (recorded as ChromeMemDumps)
+  // 2) The OS's view of Chrome's memory use (recorded as OSMemDumps)
+  // Both of these are collected per process. On most platforms each process
+  // can make the system calls to collect its own OSMemDump however on some
+  // platforms *cough* Linux *cough* due to sandboxing only the browser
+  // process can collect OSMemDumps. This API allows for these two cases.
+  // On most platforms we send this message to each ClientProcess with
+  // with one pid - kNullProcessId - meaning return just your own OSMemDump.
+  // On Linux we call this once on the browser process ClientProcess passing
+  // the pids for all processes.
+  // See crbug.com/461788
+  RequestOSMemoryDump(array<mojo.common.mojom.ProcessId> pids) =>
+      (bool success, map<mojo.common.mojom.ProcessId, RawOSMemDump> dumps);
 };
 
 // The memory-infra service implements this interface. There is one instance for
