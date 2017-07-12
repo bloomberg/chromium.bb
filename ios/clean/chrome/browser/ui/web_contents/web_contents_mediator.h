@@ -24,9 +24,6 @@ class WebState;
 // object and may be nil.
 @property(nonatomic, weak) id<WebContentsConsumer> consumer;
 
-// Sets the active webState's webUsageEnabled to false.
-- (void)disconnect;
-
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_WEB_CONTENTS_WEB_CONTENTS_MEDIATOR_H_

@@ -45,7 +45,6 @@ class WebContentsMediatorTest : public PlatformTest {
 
     mediator_ = [[WebContentsMediator alloc] init];
   }
-  ~WebContentsMediatorTest() override { [mediator_ disconnect]; }
 
   TabNavigationManager* navigation_manager() {
     return static_cast<TabNavigationManager*>(
@@ -62,25 +61,6 @@ class WebContentsMediatorTest : public PlatformTest {
   web::TestWebState test_web_state_;
   web::TestWebState new_test_web_state_;
 };
-
-// Tests that webUsage is disabled when mediator is disconnected.
-TEST_F(WebContentsMediatorTest, TestDisconnect) {
-  mediator_.webState = &test_web_state_;
-  EXPECT_TRUE(test_web_state_.IsWebUsageEnabled());
-  [mediator_ disconnect];
-  EXPECT_FALSE(test_web_state_.IsWebUsageEnabled());
-}
-
-// Tests that both the old and new active web states have WebUsageEnabled
-// updated.
-TEST_F(WebContentsMediatorTest, TestWebUsageEnabled) {
-  mediator_.webState = &test_web_state_;
-  test_web_state_.SetWebUsageEnabled(true);
-  new_test_web_state_.SetWebUsageEnabled(false);
-  mediator_.webState = &new_test_web_state_;
-  EXPECT_FALSE(test_web_state_.IsWebUsageEnabled());
-  EXPECT_TRUE(new_test_web_state_.IsWebUsageEnabled());
-}
 
 // Tests that a URL is loaded if the new active web state has zero navigation
 // items.
