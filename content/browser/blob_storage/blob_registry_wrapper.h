@@ -28,7 +28,7 @@ class BlobRegistryWrapper
     : public base::RefCountedThreadSafe<BlobRegistryWrapper,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  BlobRegistryWrapper(
+  static scoped_refptr<BlobRegistryWrapper> Create(
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
       scoped_refptr<storage::FileSystemContext> file_system_context);
 
@@ -37,6 +37,7 @@ class BlobRegistryWrapper
             storage::mojom::BlobRegistryRequest request);
 
  private:
+  BlobRegistryWrapper();
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<BlobRegistryWrapper>;
   ~BlobRegistryWrapper();

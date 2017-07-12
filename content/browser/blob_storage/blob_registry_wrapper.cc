@@ -36,16 +36,21 @@ class BindingDelegate : public storage::BlobRegistryImpl::Delegate {
 
 }  // namespace
 
-BlobRegistryWrapper::BlobRegistryWrapper(
+// static
+scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
     scoped_refptr<storage::FileSystemContext> file_system_context) {
-  DCHECK(base::FeatureList::IsEnabled(features::kMojoBlobs));
-
+  scoped_refptr<BlobRegistryWrapper> result(new BlobRegistryWrapper());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread, this,
+      base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread, result,
                      std::move(blob_storage_context),
                      std::move(file_system_context)));
+  return result;
+}
+
+BlobRegistryWrapper::BlobRegistryWrapper() {
+  DCHECK(base::FeatureList::IsEnabled(features::kMojoBlobs));
 }
 
 void BlobRegistryWrapper::Bind(
