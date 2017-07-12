@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/host_scan_cache.h"
+#include "chromeos/components/tether/master_host_scan_cache.h"
 
 #include <memory>
 #include <unordered_map>
@@ -38,10 +38,10 @@ const char kTetherGuid1[] = "kTetherGuid1";
 const char kTetherGuid2[] = "kTetherGuid2";
 const char kTetherGuid3[] = "kTetherGuid3";
 
-const char kTetherDeviceName0[] = "kDeviceName1";
-const char kTetherDeviceName1[] = "kDeviceName2";
-const char kTetherDeviceName2[] = "kDeviceName3";
-const char kTetherDeviceName3[] = "kDeviceName4";
+const char kTetherDeviceName0[] = "kDeviceName0";
+const char kTetherDeviceName1[] = "kDeviceName1";
+const char kTetherDeviceName2[] = "kDeviceName2";
+const char kTetherDeviceName3[] = "kDeviceName3";
 
 const char kTetherCarrier0[] = "kTetherCarrier0";
 const char kTetherCarrier1[] = "kTetherCarrier1";
@@ -117,11 +117,11 @@ class TestTimerFactory : public TimerFactory {
 
 // TODO(khorimoto): The test uses a FakeHostScanCache to keep an in-memory
 // cache of expected values. This has the potential to be confusing, since this
-// is the test for HostScanCache. Clean this up to avoid using FakeHostScanCache
-// if possible.
-class HostScanCacheTest : public NetworkStateTest {
+// is the test for MasterHostScanCache. Clean this up to avoid using
+// FakeHostScanCache if possible.
+class MasterHostScanCacheTest : public NetworkStateTest {
  protected:
-  HostScanCacheTest() {}
+  MasterHostScanCacheTest() {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -138,10 +138,10 @@ class HostScanCacheTest : public NetworkStateTest {
 
     ON_CALL(*mock_tether_host_response_recorder_,
             GetPreviouslyConnectedHostIds())
-        .WillByDefault(
-            Invoke(this, &HostScanCacheTest::GetPreviouslyConnectedHostIds));
+        .WillByDefault(Invoke(
+            this, &MasterHostScanCacheTest::GetPreviouslyConnectedHostIds));
 
-    host_scan_cache_ = base::MakeUnique<HostScanCache>(
+    host_scan_cache_ = base::MakeUnique<MasterHostScanCache>(
         network_state_handler(), fake_active_host_.get(),
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get());
@@ -205,75 +205,54 @@ class HostScanCacheTest : public NetworkStateTest {
     // There are 4 sets of test constants.
     ASSERT_TRUE(index >= 0 && index <= 3);
 
-    std::string tether_network_guid;
-    std::string device_name;
-    std::string carrier;
-    int battery_percentage;
-    int signal_strength;
-    bool setup_required;
+    HostScanCacheEntry::Builder builder;
 
     switch (index) {
       case 0:
-        tether_network_guid = kTetherGuid0;
-        device_name = kTetherDeviceName0;
-        carrier = kTetherCarrier0;
-        battery_percentage = kTetherBatteryPercentage0;
-        signal_strength = kTetherSignalStrength0;
-        setup_required = kTetherSetupRequired0;
+        builder.SetTetherNetworkGuid(kTetherGuid0)
+            .SetDeviceName(kTetherDeviceName0)
+            .SetCarrier(kTetherCarrier0)
+            .SetBatteryPercentage(kTetherBatteryPercentage0)
+            .SetSignalStrength(kTetherSignalStrength0)
+            .SetSetupRequired(kTetherSetupRequired0);
         break;
       case 1:
-        tether_network_guid = kTetherGuid1;
-        device_name = kTetherDeviceName1;
-        carrier = kTetherCarrier1;
-        battery_percentage = kTetherBatteryPercentage1;
-        signal_strength = kTetherSignalStrength1;
-        setup_required = kTetherSetupRequired1;
+        builder.SetTetherNetworkGuid(kTetherGuid1)
+            .SetDeviceName(kTetherDeviceName1)
+            .SetCarrier(kTetherCarrier1)
+            .SetBatteryPercentage(kTetherBatteryPercentage1)
+            .SetSignalStrength(kTetherSignalStrength1)
+            .SetSetupRequired(kTetherSetupRequired1);
         break;
       case 2:
-        tether_network_guid = kTetherGuid2;
-        device_name = kTetherDeviceName2;
-        carrier = kTetherCarrier2;
-        battery_percentage = kTetherBatteryPercentage2;
-        signal_strength = kTetherSignalStrength2;
-        setup_required = kTetherSetupRequired2;
+        builder.SetTetherNetworkGuid(kTetherGuid2)
+            .SetDeviceName(kTetherDeviceName2)
+            .SetCarrier(kTetherCarrier2)
+            .SetBatteryPercentage(kTetherBatteryPercentage2)
+            .SetSignalStrength(kTetherSignalStrength2)
+            .SetSetupRequired(kTetherSetupRequired2);
         break;
       case 3:
-        tether_network_guid = kTetherGuid3;
-        device_name = kTetherDeviceName3;
-        carrier = kTetherCarrier3;
-        battery_percentage = kTetherBatteryPercentage3;
-        signal_strength = kTetherSignalStrength3;
-        setup_required = kTetherSetupRequired3;
+        builder.SetTetherNetworkGuid(kTetherGuid3)
+            .SetDeviceName(kTetherDeviceName3)
+            .SetCarrier(kTetherCarrier3)
+            .SetBatteryPercentage(kTetherBatteryPercentage3)
+            .SetSignalStrength(kTetherSignalStrength3)
+            .SetSetupRequired(kTetherSetupRequired3);
         break;
       default:
         NOTREACHED();
-        // Set values for |battery_percentage|, |signal_strength| and
-        // |setup_required| here to prevent a compiler warning which says that
-        // they may be unset at this point.
-        battery_percentage = 0;
-        signal_strength = 0;
-        setup_required = false;
         break;
     }
 
-    SetHostScanResult(tether_network_guid, device_name, carrier,
-                      battery_percentage, signal_strength, setup_required);
+    SetHostScanResult(*builder.Build());
   }
 
-  void SetHostScanResult(const std::string& tether_network_guid,
-                         const std::string& device_name,
-                         const std::string& carrier,
-                         int battery_percentage,
-                         int signal_strength,
-                         bool setup_required) {
+  void SetHostScanResult(const HostScanCacheEntry& entry) {
     test_timer_factory_->set_tether_network_guid_for_next_timer(
-        tether_network_guid);
-    host_scan_cache_->SetHostScanResult(tether_network_guid, device_name,
-                                        carrier, battery_percentage,
-                                        signal_strength, setup_required);
-    expected_cache_->SetHostScanResult(tether_network_guid, device_name,
-                                       carrier, battery_percentage,
-                                       signal_strength, setup_required);
+        entry.tether_network_guid);
+    host_scan_cache_->SetHostScanResult(entry);
+    expected_cache_->SetHostScanResult(entry);
   }
 
   void RemoveHostScanResult(const std::string& tether_network_guid) {
@@ -299,20 +278,19 @@ class HostScanCacheTest : public NetworkStateTest {
   void VerifyCacheMatchesNetworkStack() {
     for (auto& it : expected_cache_->cache()) {
       const std::string tether_network_guid = it.first;
-      const FakeHostScanCache::CacheEntry cache_entry = it.second;
+      const HostScanCacheEntry& entry = it.second;
 
       // Ensure that each entry in |expected_cache_| matches the
       // corresponding entry in NetworkStateHandler.
       const NetworkState* tether_network_state =
           network_state_handler()->GetNetworkStateFromGuid(tether_network_guid);
       ASSERT_TRUE(tether_network_state);
-      EXPECT_EQ(cache_entry.device_name, tether_network_state->name());
-      EXPECT_EQ(cache_entry.carrier, tether_network_state->carrier());
-      EXPECT_EQ(cache_entry.battery_percentage,
+      EXPECT_EQ(entry.device_name, tether_network_state->name());
+      EXPECT_EQ(entry.carrier, tether_network_state->carrier());
+      EXPECT_EQ(entry.battery_percentage,
                 tether_network_state->battery_percentage());
-      EXPECT_EQ(cache_entry.signal_strength,
-                tether_network_state->signal_strength());
-      EXPECT_EQ(cache_entry.setup_required,
+      EXPECT_EQ(entry.signal_strength, tether_network_state->signal_strength());
+      EXPECT_EQ(entry.setup_required,
                 host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
       EXPECT_EQ(HasConnectedToHost(tether_network_guid),
                 tether_network_state->tether_has_connected_to_host());
@@ -339,13 +317,13 @@ class HostScanCacheTest : public NetworkStateTest {
   std::vector<std::string> has_connected_to_host_device_ids_;
   std::unique_ptr<FakeHostScanCache> expected_cache_;
 
-  std::unique_ptr<HostScanCache> host_scan_cache_;
+  std::unique_ptr<MasterHostScanCache> host_scan_cache_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HostScanCacheTest);
+  DISALLOW_COPY_AND_ASSIGN(MasterHostScanCacheTest);
 };
 
-TEST_F(HostScanCacheTest, TestSetScanResultsAndLetThemExpire) {
+TEST_F(MasterHostScanCacheTest, TestSetScanResultsAndLetThemExpire) {
   SetCacheScanResultForDeviceIndex(0);
   EXPECT_EQ(1u, expected_cache_->size());
   VerifyCacheMatchesNetworkStack();
@@ -379,16 +357,21 @@ TEST_F(HostScanCacheTest, TestSetScanResultsAndLetThemExpire) {
   VerifyCacheMatchesNetworkStack();
 }
 
-TEST_F(HostScanCacheTest, TestSetScanResultThenUpdateAndRemove) {
+TEST_F(MasterHostScanCacheTest, TestSetScanResultThenUpdateAndRemove) {
   SetCacheScanResultForDeviceIndex(0);
   EXPECT_EQ(1u, expected_cache_->size());
   VerifyCacheMatchesNetworkStack();
 
   // Change the fields for tether network with GUID |kTetherGuid0| to the
   // fields corresponding to |kTetherGuid1|.
-  SetHostScanResult(kTetherGuid0, kTetherDeviceName0, kTetherCarrier1,
-                    kTetherBatteryPercentage1, kTetherSignalStrength1,
-                    kTetherSetupRequired1);
+  SetHostScanResult(*HostScanCacheEntry::Builder()
+                         .SetTetherNetworkGuid(kTetherGuid0)
+                         .SetDeviceName(kTetherDeviceName0)
+                         .SetCarrier(kTetherCarrier1)
+                         .SetBatteryPercentage(kTetherBatteryPercentage1)
+                         .SetSignalStrength(kTetherSignalStrength1)
+                         .SetSetupRequired(kTetherSetupRequired1)
+                         .Build());
   EXPECT_EQ(1u, expected_cache_->size());
   VerifyCacheMatchesNetworkStack();
 
@@ -398,7 +381,7 @@ TEST_F(HostScanCacheTest, TestSetScanResultThenUpdateAndRemove) {
   VerifyCacheMatchesNetworkStack();
 }
 
-TEST_F(HostScanCacheTest, TestSetScanResult_SetActiveHost_ThenClear) {
+TEST_F(MasterHostScanCacheTest, TestSetScanResult_SetActiveHost_ThenClear) {
   SetCacheScanResultForDeviceIndex(0);
   EXPECT_EQ(1u, expected_cache_->size());
   VerifyCacheMatchesNetworkStack();
@@ -440,7 +423,7 @@ TEST_F(HostScanCacheTest, TestSetScanResult_SetActiveHost_ThenClear) {
   VerifyCacheMatchesNetworkStack();
 }
 
-TEST_F(HostScanCacheTest, TestHasConnectedToHost) {
+TEST_F(MasterHostScanCacheTest, TestHasConnectedToHost) {
   // Before the test starts, set device 0 as having already connected.
   SetHasConnectedToHost(kTetherGuid0);
 

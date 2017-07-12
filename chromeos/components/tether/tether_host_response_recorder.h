@@ -69,7 +69,7 @@ class TetherHostResponseRecorder {
   virtual std::vector<std::string> GetPreviouslyConnectedHostIds() const;
 
  private:
-  friend class HostScanCacheTest;
+  friend class MasterHostScanCacheTest;
 
   void NotifyObserversPreviouslyConnectedHostIdsChanged();
 

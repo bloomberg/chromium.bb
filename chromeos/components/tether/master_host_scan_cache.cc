@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/host_scan_cache.h"
+#include "chromeos/components/tether/master_host_scan_cache.h"
 
 #include <algorithm>
 
@@ -19,7 +19,7 @@ namespace chromeos {
 
 namespace tether {
 
-HostScanCache::HostScanCache(
+MasterHostScanCache::MasterHostScanCache(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     TetherHostResponseRecorder* tether_host_response_recorder,
@@ -33,55 +33,52 @@ HostScanCache::HostScanCache(
   tether_host_response_recorder_->AddObserver(this);
 }
 
-HostScanCache::~HostScanCache() {
+MasterHostScanCache::~MasterHostScanCache() {
   tether_host_response_recorder_->RemoveObserver(this);
 }
 
-void HostScanCache::SetHostScanResult(const std::string& tether_network_guid,
-                                      const std::string& device_name,
-                                      const std::string& carrier,
-                                      int battery_percentage,
-                                      int signal_strength,
-                                      bool setup_required) {
-  DCHECK(!tether_network_guid.empty());
-
-  auto found_iter = tether_guid_to_timer_map_.find(tether_network_guid);
+void MasterHostScanCache::SetHostScanResult(const HostScanCacheEntry& entry) {
+  auto found_iter = tether_guid_to_timer_map_.find(entry.tether_network_guid);
 
   if (found_iter == tether_guid_to_timer_map_.end()) {
     // Add the Tether network to NetworkStateHandler and create an associated
     // Timer.
     network_state_handler_->AddTetherNetworkState(
-        tether_network_guid, device_name, carrier, battery_percentage,
-        signal_strength, HasConnectedToHost(tether_network_guid));
-    tether_guid_to_timer_map_.emplace(tether_network_guid,
+        entry.tether_network_guid, entry.device_name, entry.carrier,
+        entry.battery_percentage, entry.signal_strength,
+        HasConnectedToHost(entry.tether_network_guid));
+    tether_guid_to_timer_map_.emplace(entry.tether_network_guid,
                                       timer_factory_->CreateOneShotTimer());
 
     PA_LOG(INFO) << "Added scan result for Tether network with GUID "
-                 << tether_network_guid << ". Device name: " << device_name
-                 << ", carrier: " << carrier
-                 << ", battery percentage: " << battery_percentage
-                 << ", signal strength: " << signal_strength;
+                 << entry.tether_network_guid << ". "
+                 << "Device name: " << entry.device_name << ", "
+                 << "carrier: " << entry.carrier << ", "
+                 << "battery percentage: " << entry.battery_percentage << ", "
+                 << "signal strength: " << entry.signal_strength;
   } else {
     // Update the existing network and stop the associated Timer.
     network_state_handler_->UpdateTetherNetworkProperties(
-        tether_network_guid, carrier, battery_percentage, signal_strength);
+        entry.tether_network_guid, entry.carrier, entry.battery_percentage,
+        entry.signal_strength);
     found_iter->second->Stop();
 
     PA_LOG(INFO) << "Updated scan result for Tether network with GUID "
-                 << tether_network_guid << ". New carrier: " << carrier << ", "
-                 << "new battery percentage: " << battery_percentage << ", "
-                 << "new signal strength: " << signal_strength;
+                 << entry.tether_network_guid << ". "
+                 << "New carrier: " << entry.carrier << ", "
+                 << "new battery percentage: " << entry.battery_percentage
+                 << ", new signal strength: " << entry.signal_strength;
   }
 
-  if (setup_required)
-    setup_required_tether_guids_.insert(tether_network_guid);
+  if (entry.setup_required)
+    setup_required_tether_guids_.insert(entry.tether_network_guid);
   else
-    setup_required_tether_guids_.erase(tether_network_guid);
+    setup_required_tether_guids_.erase(entry.tether_network_guid);
 
-  StartTimer(tether_network_guid);
+  StartTimer(entry.tether_network_guid);
 }
 
-bool HostScanCache::RemoveHostScanResult(
+bool MasterHostScanCache::RemoveHostScanResult(
     const std::string& tether_network_guid) {
   DCHECK(!tether_network_guid.empty());
 
@@ -105,7 +102,7 @@ bool HostScanCache::RemoveHostScanResult(
   return network_state_handler_->RemoveTetherNetworkState(tether_network_guid);
 }
 
-void HostScanCache::ClearCacheExceptForActiveHost() {
+void MasterHostScanCache::ClearCacheExceptForActiveHost() {
   // Create a list of all Tether network GUIDs serving as keys to
   // |tether_guid_to_timer_map_|.
   std::vector<std::string> tether_network_guids;
@@ -140,13 +137,13 @@ void HostScanCache::ClearCacheExceptForActiveHost() {
   }
 }
 
-bool HostScanCache::DoesHostRequireSetup(
+bool MasterHostScanCache::DoesHostRequireSetup(
     const std::string& tether_network_guid) {
   return setup_required_tether_guids_.find(tether_network_guid) !=
          setup_required_tether_guids_.end();
 }
 
-void HostScanCache::OnPreviouslyConnectedHostIdsChanged() {
+void MasterHostScanCache::OnPreviouslyConnectedHostIdsChanged() {
   for (auto& map_entry : tether_guid_to_timer_map_) {
     const std::string& tether_network_guid = map_entry.first;
     if (!HasConnectedToHost(tether_network_guid))
@@ -168,12 +165,13 @@ void HostScanCache::OnPreviouslyConnectedHostIdsChanged() {
   }
 }
 
-void HostScanCache::SetTimerFactoryForTest(
+void MasterHostScanCache::SetTimerFactoryForTest(
     std::unique_ptr<TimerFactory> timer_factory_for_test) {
   timer_factory_ = std::move(timer_factory_for_test);
 }
 
-bool HostScanCache::HasConnectedToHost(const std::string& tether_network_guid) {
+bool MasterHostScanCache::HasConnectedToHost(
+    const std::string& tether_network_guid) {
   std::string device_id =
       device_id_tether_network_guid_map_->GetDeviceIdForTetherNetworkGuid(
           tether_network_guid);
@@ -183,7 +181,7 @@ bool HostScanCache::HasConnectedToHost(const std::string& tether_network_guid) {
                    device_id) != connected_device_ids.end();
 }
 
-void HostScanCache::StartTimer(const std::string& tether_network_guid) {
+void MasterHostScanCache::StartTimer(const std::string& tether_network_guid) {
   auto found_iter = tether_guid_to_timer_map_.find(tether_network_guid);
   DCHECK(found_iter != tether_guid_to_timer_map_.end());
   DCHECK(!found_iter->second->IsRunning());
@@ -195,11 +193,11 @@ void HostScanCache::StartTimer(const std::string& tether_network_guid) {
   found_iter->second->Start(
       FROM_HERE,
       base::TimeDelta::FromMinutes(kNumMinutesBeforeCacheEntryExpires),
-      base::Bind(&HostScanCache::OnTimerFired, weak_ptr_factory_.GetWeakPtr(),
-                 tether_network_guid));
+      base::Bind(&MasterHostScanCache::OnTimerFired,
+                 weak_ptr_factory_.GetWeakPtr(), tether_network_guid));
 }
 
-void HostScanCache::OnTimerFired(const std::string& tether_network_guid) {
+void MasterHostScanCache::OnTimerFired(const std::string& tether_network_guid) {
   if (active_host_->GetTetherNetworkGuid() == tether_network_guid) {
     // Log as a warning. This situation should be uncommon in practice since
     // KeepAliveScheduler should schedule a new keep-alive status update every

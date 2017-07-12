@@ -202,9 +202,15 @@ class TetherConnectorTest : public NetworkStateTest {
     network_state_handler()->AddTetherNetworkState(
         tether_network_guid, device_name, carrier, battery_percentage,
         signal_strength, has_connected_to_host);
-    fake_host_scan_cache_->SetHostScanResult(tether_network_guid, device_name,
-                                             carrier, battery_percentage,
-                                             signal_strength, setup_required);
+    fake_host_scan_cache_->SetHostScanResult(
+        *HostScanCacheEntry::Builder()
+             .SetTetherNetworkGuid(tether_network_guid)
+             .SetDeviceName(device_name)
+             .SetCarrier(carrier)
+             .SetBatteryPercentage(battery_percentage)
+             .SetSignalStrength(signal_strength)
+             .SetSetupRequired(setup_required)
+             .Build());
   }
 
   void SuccessfullyJoinWifiNetwork() {
