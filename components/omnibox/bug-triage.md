@@ -1,6 +1,6 @@
 # Omnibox Bug Triage Process
 
-*last update: 2017/06/05*
+*last update: 2017/07/11*
 
 *The current triage process owner is `mpearson@`.*
 
@@ -173,6 +173,14 @@ excluding bugs on this hotlist.)
 
 ## Example request for chrome://omnibox data
 
+NOTE: If you ask someone for chrome://omnibox data on a public bug, label the
+bug with Restrict-View-Google so that any personal data from the reporter's
+chrome://omnibox output is not made public. Do this *before* they respond.
+As the original reporter, they should still have access to the bug even with the
+restrict applied.
+
+Example request:
+
 > Please submit chrome://omnibox output for “\_\_\_”.  Check both the "show
 > all details" and "show results per provider" boxes.  This will help us
 > figure out what's going on.
@@ -186,9 +194,9 @@ excluding bugs on this hotlist.)
   [crbug/91378](https://bugs.chromium.org/p/chromium/issues/detail?id=91378).
 
   * Try to understand the motivation of the user making the request.  Please
-  ask the user for examples, with chrome://omnibox detail, of times where the
-  omnibox doesn’t do what they want.  Ideally we should be able make to make the
-  omnibox smart enough that such a feature isn’t necessary.
+  ask the user for examples, with chrome://omnibox detail (see above), of times
+  where the omnibox doesn’t do what they want.  Ideally we should be able make
+  to make the omnibox smart enough that such a feature isn’t necessary.
 
 * “I typed in something like go/foo and got redirected to a search results page
   instead.” See
@@ -211,7 +219,7 @@ excluding bugs on this hotlist.)
 [Omnibox bugs that we intend/hope to tackle this year](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20NextAction%3C2018/1/1%20OR%20component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20-has:NextAction%20&sort=pri&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified),
 broken down:
 
-* [User-facing](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20-Hotlist=CodeHealth%20-Hotlist=Refactoring%20-component:Test%20NextAction%3C2018/1/1%20OR%20component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20-Hotlist=CodeHealth%20-Hotlist=Refactoring%20-component:Test%20-has:NextAction&sort=pri&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified
+* [User-facing](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20-Hotlist=CodeHealth%20-Hotlist=Refactoring%20-component:Test%20NextAction%3C2018/1/1%20OR%20component:UI%3EBrowser%3EOmnibox%20-component:UI%3EBrowser%3EOmnibox%3ESecurityIndicators%20status:Available,Assigned,Started%20-Hotlist=CodeHealth%20-Hotlist=Refactoring%20-component:Test%20-has:NextAction&sort=pri&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified)
   (everything not tagged as one of the non-user-facing categories below).  Some
   of these can be further categorized: Performance, Polish, Enterprise, Answers
   in Suggest, Tab To Search, Zero Suggest.
