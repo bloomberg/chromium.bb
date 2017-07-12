@@ -245,6 +245,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // available only on initial start.
   ArcPaiStarter* pai_starter() { return pai_starter_.get(); }
 
+  // Returns true if the current ARC run has started with skipping user ToS
+  // negotiation, because the user had accepted already or policy does not
+  // require ToS acceptance. Returns false in other cases, including one when
+  // ARC is not currently running.
+  bool is_directly_started() const { return directly_started_; }
+
   // Injectors for testing.
   void SetArcSessionRunnerForTesting(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
@@ -269,7 +275,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // RequestEnable() has a check in order not to trigger starting procedure
   // twice. This method can be called to bypass that check when restarting.
-  void RequestEnableImpl();
+  // Returns true if ARC is started directly.
+  bool RequestEnableImpl();
 
   // Negotiates the terms of service to user, if necessary.
   // Otherwise, move to StartAndroidManagementCheck().
@@ -360,6 +367,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // |IsOobeOptInActive| will be changed by the time when |oobe_start_| is
   // checked to prevent the Play Store auto-launch.
   bool oobe_start_ = false;
+  bool directly_started_ = false;
   base::OneShotTimer arc_sign_in_timer_;
 
   std::unique_ptr<ArcSupportHost> support_host_;

@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -617,8 +619,7 @@ bool ArcAppListPrefs::IsShortcut(const std::string& app_id) const {
   return app_info && app_info->shortcut;
 }
 
-void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
-                                        const base::Time& time) {
+void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id) {
   if (!IsRegistered(app_id)) {
     NOTREACHED();
     return;
@@ -628,10 +629,29 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id,
   if (!arc::ShouldShowInLauncher(app_id))
     return;
 
+  const base::Time time = base::Time::Now();
   ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
   const std::string string_value = base::Int64ToString(time.ToInternalValue());
   app_dict->SetString(kLastLaunchTime, string_value);
+
+  if (first_launch_app_request_) {
+    first_launch_app_request_ = false;
+    // UI Shown time may not be set in unit tests.
+    const user_manager::UserManager* user_manager =
+        user_manager::UserManager::Get();
+    if (arc::ArcSessionManager::Get()->is_directly_started() &&
+        !user_manager->IsLoggedInAsKioskApp() &&
+        !user_manager->IsLoggedInAsArcKioskApp() &&
+        !chromeos::UserSessionManager::GetInstance()
+             ->ui_shown_time()
+             .is_null()) {
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Arc.FirstAppLaunchRequest.TimeDelta",
+          time - chromeos::UserSessionManager::GetInstance()->ui_shown_time(),
+          base::TimeDelta::FromSeconds(1), base::TimeDelta::FromMinutes(2), 20);
+    }
+  }
 }
 
 void ArcAppListPrefs::DisableAllApps() {
@@ -817,7 +837,7 @@ void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
   DCHECK(IsArcAndroidEnabledForProfile(profile_));
   const std::string app_id = GetAppId(package_name, activity);
   if (IsRegistered(app_id)) {
-    SetLastLaunchTime(app_id, base::Time::Now());
+    SetLastLaunchTime(app_id);
   } else {
     // Create runtime app entry that is valid for the current user session. This
     // entry is not shown in App Launcher and only required for shelf

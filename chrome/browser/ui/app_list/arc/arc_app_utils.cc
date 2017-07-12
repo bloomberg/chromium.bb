@@ -166,7 +166,7 @@ bool LaunchAppWithRect(content::BrowserContext* context,
     app_instance->LaunchApp(app_info->package_name, app_info->activity,
                             target_rect);
   }
-  prefs->SetLastLaunchTime(app_id, base::Time::Now());
+  prefs->SetLastLaunchTime(app_id);
 
   return true;
 }
@@ -316,7 +316,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
         // deferred launch request when PlayStore item enables Google Play
         // Store.
         if (app_id == kPlayStoreAppId) {
-          prefs->SetLastLaunchTime(app_id, base::Time::Now());
+          prefs->SetLastLaunchTime(app_id);
           return true;
         }
       } else {
@@ -334,7 +334,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
         // deferred launch request when PlayStore item enables Google Play
         // Store.
         if (app_id == kPlayStoreAppId) {
-          prefs->SetLastLaunchTime(app_id, base::Time::Now());
+          prefs->SetLastLaunchTime(app_id);
           return true;
         }
       }
@@ -353,7 +353,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       // tries to launch an ARC app.
       SetArcCpuRestriction(false);
     }
-    prefs->SetLastLaunchTime(app_id, base::Time::Now());
+    prefs->SetLastLaunchTime(app_id);
     return true;
   }
   return (new AppLauncher(context, app_id, launch_intent, landscape_layout,

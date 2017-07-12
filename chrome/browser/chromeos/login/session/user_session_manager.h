@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/eol_notification.h"
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
@@ -249,6 +250,8 @@ class UserSessionManager
 
   const UserContext& user_context() const { return user_context_; }
   bool has_auth_cookies() const { return has_auth_cookies_; }
+
+  const base::Time& ui_shown_time() const { return ui_shown_time_; }
 
   void Shutdown();
 
@@ -511,6 +514,9 @@ class UserSessionManager
 
   // Child account status is necessary for InitializeStartUrls call.
   bool waiting_for_child_account_status_;
+
+  // If set then contains the time when UI is shown.
+  base::Time ui_shown_time_;
 
   scoped_refptr<HatsNotificationController> hats_notification_controller_;
 
