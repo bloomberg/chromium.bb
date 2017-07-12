@@ -6731,6 +6731,71 @@ void av1_update_neighbors(int tx_size, const int16_t *scan,
   neighbors[tx2d_size * MAX_NEIGHBORS + 1] = scan[0];
 }
 
+typedef struct SCAN_NB_QUEUE {
+  int nb_ci_queue[COEFF_IDX_SIZE + 1];
+  int pr_si_queue[COEFF_IDX_SIZE + 1];
+  int size;
+  int start;
+  int end;
+} SCAN_NB_QUEUE;
+
+static void assign_scan_idx(int16_t coeff_idx, int16_t *scan_idx, int tx_width,
+                            int tx_height, int16_t *scan, int16_t *iscan,
+                            int16_t *visit, SCAN_NB_QUEUE *queue) {
+  if (visit[coeff_idx] != 2) {
+    assert(*scan_idx < tx_width * tx_height);
+    scan[*scan_idx] = coeff_idx;
+    iscan[coeff_idx] = *scan_idx;
+    visit[coeff_idx] = 2;
+    int row = coeff_idx / tx_width;
+    int col = coeff_idx % tx_width;
+    int right_ci = coeff_idx + 1;
+    if (col + 1 < tx_width && visit[right_ci] == 0) {
+      visit[right_ci] = 1;
+      queue->pr_si_queue[queue->end] = *scan_idx;
+      queue->nb_ci_queue[queue->end] = right_ci;
+      queue->end = (queue->end + 1) % queue->size;
+    }
+    int down_ci = coeff_idx + tx_width;
+    if (row + 1 < tx_height && visit[down_ci] == 0) {
+      visit[down_ci] = 1;
+      queue->pr_si_queue[queue->end] = *scan_idx;
+      queue->nb_ci_queue[queue->end] = down_ci;
+      queue->end = (queue->end + 1) % queue->size;
+    }
+    ++(*scan_idx);
+  }
+}
+static void limit_nb_scan_distance(TX_SIZE tx_size, int16_t *scan,
+                                   int16_t *iscan) {
+  const int tx2d_size = tx_size_2d[tx_size];
+  int16_t visit[COEFF_IDX_SIZE] = { 0 };
+  int16_t org_scan[COEFF_IDX_SIZE];
+  memcpy(org_scan, scan, tx2d_size * sizeof(*scan));
+  const int tx_width = tx_size_wide[tx_size];
+  const int tx_height = tx_size_high[tx_size];
+  const int limit = 2 * AOMMAX(tx_width, tx_height);
+  SCAN_NB_QUEUE queue;
+  queue.size = tx2d_size;
+  queue.start = 0;
+  queue.end = 0;
+  int16_t new_si = 0;
+  for (int16_t si = 0; si < tx2d_size; ++si) {
+    while (queue.start != queue.end &&
+           queue.pr_si_queue[queue.start] + limit <= new_si) {
+      int nb_ci = queue.nb_ci_queue[queue.start];
+      assign_scan_idx(nb_ci, &new_si, tx_width, tx_height, scan, iscan, visit,
+                      &queue);
+      queue.start = (queue.start + 1) % queue.size;
+    }
+
+    int16_t ci = org_scan[si];
+    assign_scan_idx(ci, &new_si, tx_width, tx_height, scan, iscan, visit,
+                    &queue);
+  }
+  assert(new_si == tx2d_size);
+}
+
 void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
                            const uint32_t *non_zero_prob, int16_t *sort_order) {
   const SCAN_ORDER *sc = get_default_scan(tx_size, tx_type, 0);
@@ -6778,6 +6843,7 @@ static void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
   assert(tx_size_2d[tx_size] <= COEFF_IDX_SIZE);
   av1_update_sort_order(tx_size, tx_type, non_zero_prob, sort_order);
   av1_update_scan_order(tx_size, sort_order, scan, iscan);
+  limit_nb_scan_distance(tx_size, scan, iscan);
   av1_update_neighbors(tx_size, scan, iscan, nb);
 }
 
