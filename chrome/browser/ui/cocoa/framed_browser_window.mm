@@ -110,7 +110,9 @@ const CGFloat kWindowGradientHeight = 24.0;
   bool shouldUseFullSizeContentView =
       chrome::ShouldUseFullSizeContentView() && hasTabStrip;
   if (shouldUseFullSizeContentView) {
-    styleMask |= NSFullSizeContentViewWindowMask;
+    if (@available(macOS 10.10, *)) {
+      styleMask |= NSFullSizeContentViewWindowMask;
+    }
   }
 
   if ((self = [super initWithContentRect:contentRect
@@ -273,29 +275,33 @@ const CGFloat kWindowGradientHeight = 24.0;
   NSButton* button = [self standardWindowButton:buttonType];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  // Do not use leadingAnchor because |ShouldFlipWindowControlsInRTL|
-  // should determine if current locale is RTL.
-  NSLayoutXAxisAnchor* leadingSourceAnchor = [button leftAnchor];
-  NSLayoutXAxisAnchor* leadingTargetAnchor = [[button superview] leftAnchor];
-  if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL()) {
-    leadingSourceAnchor = [button rightAnchor];
-    leadingTargetAnchor = [[button superview] rightAnchor];
-    leadingOffset = -leadingOffset;
-  }
+  if (@available(macOS 10.11, *)) {
+    // Do not use leadingAnchor because |ShouldFlipWindowControlsInRTL|
+    // should determine if current locale is RTL.
+    NSLayoutXAxisAnchor* leadingSourceAnchor = [button leftAnchor];
+    NSLayoutXAxisAnchor* leadingTargetAnchor = [[button superview] leftAnchor];
+    if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL()) {
+      leadingSourceAnchor = [button rightAnchor];
+      leadingTargetAnchor = [[button superview] rightAnchor];
+      leadingOffset = -leadingOffset;
+    }
 
 #if !defined(MAC_OS_X_VERSION_10_11) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
-  id leadingSourceAnchorDuck = leadingSourceAnchor;
+    id leadingSourceAnchorDuck = leadingSourceAnchor;
 #else
-  NSLayoutXAxisAnchor* leadingSourceAnchorDuck = leadingSourceAnchor;
+    NSLayoutXAxisAnchor* leadingSourceAnchorDuck = leadingSourceAnchor;
 #endif
-  [[leadingSourceAnchorDuck constraintEqualToAnchor:leadingTargetAnchor
-                                           constant:leadingOffset]
-      setActive:YES];
+    [[leadingSourceAnchorDuck constraintEqualToAnchor:leadingTargetAnchor
+                                             constant:leadingOffset]
+        setActive:YES];
 
-  [[[button bottomAnchor]
-      constraintEqualToAnchor:[[button superview] bottomAnchor]]
-          setActive:YES];
+    [[[button bottomAnchor]
+        constraintEqualToAnchor:[[button superview] bottomAnchor]]
+        setActive:YES];
+  } else {
+    NOTREACHED();
+  }
 }
 
 - (void)adjustCloseButton:(NSNotification*)notification {

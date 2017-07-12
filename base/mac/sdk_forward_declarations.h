@@ -158,10 +158,6 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @property(readonly) NSInteger stage;
 @end
 
-@interface NSView (Yosemite_3_SDK)
-- (void)setPressureConfiguration:(NSPressureConfiguration*)aConfiguration;
-@end
-
 #endif  // MAC_OS_X_VERSION_10_10
 
 // ----------------------------------------------------------------------------
@@ -191,10 +187,16 @@ BASE_EXPORT extern NSString* const CIDetectorTypeText;
 @end
 
 @interface NSView (ElCapitanSDK)
-@property(readonly, strong) NSLayoutXAxisAnchor* leftAnchor;
-@property(readonly, strong) NSLayoutXAxisAnchor* rightAnchor;
-@property(readonly, strong) NSLayoutYAxisAnchor* bottomAnchor;
-@property(readonly, strong) NSLayoutDimension* widthAnchor;
+- (void)setPressureConfiguration:(NSPressureConfiguration*)aConfiguration
+    __attribute__((availability(macos, introduced = 10.11)));
+@property(readonly, strong) NSLayoutXAxisAnchor* leftAnchor
+    __attribute__((availability(macos, introduced = 10.11)));
+@property(readonly, strong) NSLayoutXAxisAnchor* rightAnchor
+    __attribute__((availability(macos, introduced = 10.11)));
+@property(readonly, strong) NSLayoutYAxisAnchor* bottomAnchor
+    __attribute__((availability(macos, introduced = 10.11)));
+@property(readonly, strong) NSLayoutDimension* widthAnchor
+    __attribute__((availability(macos, introduced = 10.11)));
 @end
 
 @interface NSWindow (ElCapitanSDK)
