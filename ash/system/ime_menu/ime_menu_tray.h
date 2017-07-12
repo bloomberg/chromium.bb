@@ -89,7 +89,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   void OnKeyboardSuppressionChanged(bool suppressed) override;
 
  private:
-  // To allow the test class to access |label_|.
   friend class ImeMenuTrayTest;
 
   // Show the IME menu bubble immediately.
