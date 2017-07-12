@@ -144,30 +144,6 @@ ios_framework_bundle("web_view") {
   ]
 }
 
-# Same framework as ChromeWebView above, but also exposes CrNet.
-ios_framework_bundle("crnet_web_view_combined") {
-  output_name = "CrNetChromeWebView"
-  info_plist = "Info.plist"
-
-  public_headers = ios_web_view_public_headers
-  public_headers += [ "../crnet/CrNet.h" ]
-
-  public = [
-    "public/ChromeWebView.h",
-  ]
-
-  sources = ios_web_view_sources
-  sources += [ "../crnet/CrNet.h" ]
-
-  deps = ios_web_view_deps
-  deps += [ "//ios/crnet:crnet_sources" ]
-
-  configs += [
-    ":config",
-    "//build/config/compiler:enable_arc",
-  ]
-}
-
 # Same framework as ChromeWebView above, but also exposes Cronet.
 ios_framework_bundle("cronet_web_view_combined") {
   output_name = "CronetChromeWebView"
