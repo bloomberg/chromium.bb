@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -189,6 +190,22 @@ bool AXPlatformNodeBase::GetString16Attribute(
   return GetData().GetString16Attribute(attribute, value);
 }
 
+bool AXPlatformNodeBase::HasIntListAttribute(
+    ui::AXIntListAttribute attribute) const {
+  return GetData().HasIntListAttribute(attribute);
+}
+
+const std::vector<int32_t>& AXPlatformNodeBase::GetIntListAttribute(
+    ui::AXIntListAttribute attribute) const {
+  return GetData().GetIntListAttribute(attribute);
+}
+
+bool AXPlatformNodeBase::GetIntListAttribute(
+    ui::AXIntListAttribute attribute,
+    std::vector<int32_t>* value) const {
+  return GetData().GetIntListAttribute(attribute, value);
+}
+
 AXPlatformNodeBase::AXPlatformNodeBase() {
 }
 
@@ -286,6 +303,127 @@ bool AXPlatformNodeBase::IsRangeValueSupported() const {
     default:
       return false;
   }
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
+  AXPlatformNodeBase* table = const_cast<AXPlatformNodeBase*>(this);
+  while (table && !ui::IsTableLikeRole(table->GetData().role)) {
+    gfx::NativeViewAccessible parent_accessible = table->GetParent();
+    AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
+
+    table = parent;
+  }
+  return table;
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
+  DCHECK(delegate_);
+
+  if (!ui::IsTableLikeRole(GetData().role) &&
+      !ui::IsCellOrTableHeaderRole(GetData().role))
+    return nullptr;
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return nullptr;
+  const std::vector<int32_t>& unique_cell_ids =
+      table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
+  if (index < 0 || index >= static_cast<int>(unique_cell_ids.size()))
+    return nullptr;
+
+  return static_cast<AXPlatformNodeBase*>(
+      table->delegate_->GetFromNodeID(unique_cell_ids[index]));
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
+                                                     int column) const {
+  if (!ui::IsTableLikeRole(GetData().role) &&
+      !ui::IsCellOrTableHeaderRole(GetData().role))
+    return nullptr;
+
+  if (row < 0 || row >= GetTableRowCount() || column < 0 ||
+      column >= GetTableColumnCount()) {
+    return nullptr;
+  }
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return nullptr;
+
+  // In contrast to unique cell IDs, these are duplicated whenever a cell spans
+  // multiple columns or rows.
+  const std::vector<int32_t>& cell_ids =
+      table->GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
+  DCHECK_EQ(GetTableRowCount() * GetTableColumnCount(),
+            static_cast<int>(cell_ids.size()));
+  int position = row * GetTableColumnCount() + column;
+  if (position < 0 || position >= static_cast<int>(cell_ids.size()))
+    return nullptr;
+
+  return static_cast<AXPlatformNodeBase*>(
+      table->delegate_->GetFromNodeID(cell_ids[position]));
+}
+
+int AXPlatformNodeBase::GetTableCellIndex() const {
+  if (!ui::IsCellOrTableHeaderRole(GetData().role))
+    return -1;
+
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return -1;
+
+  const std::vector<int32_t>& unique_cell_ids =
+      table->GetIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS);
+  auto iter =
+      std::find(unique_cell_ids.begin(), unique_cell_ids.end(), GetData().id);
+  if (iter == unique_cell_ids.end())
+    return -1;
+
+  return std::distance(unique_cell_ids.begin(), iter);
+}
+
+int AXPlatformNodeBase::GetTableColumn() const {
+  return GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX);
+}
+
+int AXPlatformNodeBase::GetTableColumnCount() const {
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return 0;
+
+  return table->GetIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT);
+}
+
+int AXPlatformNodeBase::GetTableColumnSpan() const {
+  if (!ui::IsCellOrTableHeaderRole(GetData().role))
+    return 0;
+
+  int column_span;
+  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &column_span))
+    return column_span;
+  return 1;
+}
+
+int AXPlatformNodeBase::GetTableRow() const {
+  return GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX);
+}
+
+int AXPlatformNodeBase::GetTableRowCount() const {
+  AXPlatformNodeBase* table = GetTable();
+  if (!table)
+    return 0;
+
+  return table->GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT);
+}
+
+int AXPlatformNodeBase::GetTableRowSpan() const {
+  if (!ui::IsCellOrTableHeaderRole(GetData().role))
+    return 0;
+
+  int row_span;
+  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &row_span))
+    return row_span;
+  return 1;
 }
 
 }  // namespace ui

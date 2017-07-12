@@ -33,6 +33,7 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   base::string16 GetText() const override;
 
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
+  ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
 
   class BrowserAccessibilityComWin* GetCOM() const;
 

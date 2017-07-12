@@ -108,6 +108,10 @@ bool AXSystemCaretWin::AccessibilityPerformAction(
   return false;
 }
 
+AXPlatformNode* AXSystemCaretWin::GetFromNodeID(int32_t id) {
+  return nullptr;
+}
+
 bool AXSystemCaretWin::ShouldIgnoreHoveredStateForTesting() {
   return false;
 }
