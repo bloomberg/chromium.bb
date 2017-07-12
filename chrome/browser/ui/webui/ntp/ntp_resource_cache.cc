@@ -336,20 +336,26 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  std::string enterprise_domain = connector->GetEnterpriseDomain();
 
-  // TODO(jamescook): What about Active Directory managed devices?
-  if (!enterprise_domain.empty()) {
-    // Device is enterprise enrolled.
+  if (connector->IsEnterpriseManaged()) {
     localized_strings.SetString("enterpriseInfoVisible", "true");
-    base::string16 enterprise_info =
-        l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                   base::UTF8ToUTF16(enterprise_domain));
-    localized_strings.SetString("enterpriseInfoMessage", enterprise_info);
     localized_strings.SetString("enterpriseLearnMore",
-        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+                                l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     localized_strings.SetString("enterpriseInfoHintLink",
                                 chrome::kLearnMoreEnterpriseURL);
+    base::string16 enterprise_info;
+    if (connector->IsCloudManaged()) {
+      const std::string enterprise_domain = connector->GetEnterpriseDomain();
+      enterprise_info =
+          l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                     base::UTF8ToUTF16(enterprise_domain));
+    } else if (connector->IsActiveDirectoryManaged()) {
+      enterprise_info =
+          l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED);
+    } else {
+      NOTREACHED() << "Unknown management type";
+    }
+    localized_strings.SetString("enterpriseInfoMessage", enterprise_info);
   } else {
     localized_strings.SetString("enterpriseInfoVisible", "false");
     localized_strings.SetString("enterpriseInfoMessage", "");
