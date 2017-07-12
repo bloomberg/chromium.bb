@@ -308,16 +308,15 @@ static void write_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_COMPOUND_SINGLEREF
-static void write_inter_singleref_comp_mode(AV1_COMMON *cm, aom_writer *w,
+static void write_inter_singleref_comp_mode(MACROBLOCKD *xd, aom_writer *w,
                                             PREDICTION_MODE mode,
                                             const int16_t mode_ctx) {
   assert(is_inter_singleref_comp_mode(mode));
-  const aom_prob *const inter_singleref_comp_probs =
-      cm->fc->inter_singleref_comp_mode_probs[mode_ctx];
+  aom_cdf_prob *const inter_singleref_comp_cdf =
+      xd->tile_ctx->inter_singleref_comp_mode_cdf[mode_ctx];
 
-  av1_write_token(
-      w, av1_inter_singleref_comp_mode_tree, inter_singleref_comp_probs,
-      &inter_singleref_comp_mode_encodings[INTER_SINGLEREF_COMP_OFFSET(mode)]);
+  aom_write_symbol(w, INTER_SINGLEREF_COMP_OFFSET(mode),
+                   inter_singleref_comp_cdf, INTER_SINGLEREF_COMP_MODES);
 }
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_EXT_INTER
@@ -327,7 +326,7 @@ static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
   aom_wb_write_literal(wb, data, get_unsigned_bits(max));
 }
 
-#if CONFIG_NCOBMC_ADAPT_WEIGHT || CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
 static void prob_diff_update(const aom_tree_index *tree,
                              aom_prob probs[/*n - 1*/],
                              const unsigned int counts[/* n */], int n,
@@ -343,26 +342,6 @@ static void prob_diff_update(const aom_tree_index *tree,
     av1_cond_prob_diff_update(w, &probs[i], branch_ct[i], probwt);
 }
 #endif
-
-#if CONFIG_COMPOUND_SINGLEREF
-static int prob_diff_update_savings(const aom_tree_index *tree,
-                                    aom_prob probs[/*n - 1*/],
-                                    const unsigned int counts[/*n - 1*/], int n,
-                                    int probwt) {
-  int i;
-  unsigned int branch_ct[32][2];
-  int savings = 0;
-
-  // Assuming max number of probabilities <= 32
-  assert(n <= 32);
-  av1_tree_probs_from_distribution(tree, branch_ct, counts);
-  for (i = 0; i < n - 1; ++i) {
-    savings +=
-        av1_cond_prob_diff_update_savings(&probs[i], branch_ct[i], probwt);
-  }
-  return savings;
-}
-#endif  // CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_VAR_TX
 static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -493,34 +472,6 @@ static void update_inter_mode_probs(AV1_COMMON *cm, aom_writer *w,
                               probwt);
 }
 #endif
-
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-static void update_inter_singleref_comp_mode_probs(AV1_COMMON *cm, int probwt,
-                                                   aom_writer *w) {
-  const int savings_thresh = av1_cost_one(GROUP_DIFF_UPDATE_PROB) -
-                             av1_cost_zero(GROUP_DIFF_UPDATE_PROB);
-  int i;
-  int savings = 0;
-  int do_update = 0;
-  for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
-    savings +=
-        prob_diff_update_savings(av1_inter_singleref_comp_mode_tree,
-                                 cm->fc->inter_singleref_comp_mode_probs[i],
-                                 cm->counts.inter_singleref_comp_mode[i],
-                                 INTER_SINGLEREF_COMP_MODES, probwt);
-  }
-  do_update = savings > savings_thresh;
-  aom_write(w, do_update, GROUP_DIFF_UPDATE_PROB);
-  if (do_update) {
-    for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
-      prob_diff_update(av1_inter_singleref_comp_mode_tree,
-                       cm->fc->inter_singleref_comp_mode_probs[i],
-                       cm->counts.inter_singleref_comp_mode[i],
-                       INTER_SINGLEREF_COMP_MODES, probwt, w);
-    }
-  }
-}
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int segment_id, const MODE_INFO *mi, aom_writer *w) {
@@ -1915,7 +1866,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           write_inter_compound_mode(cm, xd, w, mode, mode_ctx);
 #if CONFIG_COMPOUND_SINGLEREF
         else if (is_inter_singleref_comp_mode(mode))
-          write_inter_singleref_comp_mode(cm, w, mode, mode_ctx);
+          write_inter_singleref_comp_mode(xd, w, mode, mode_ctx);
 #endif  // CONFIG_COMPOUND_SINGLEREF
         else if (is_inter_singleref_mode(mode))
 #endif  // CONFIG_EXT_INTER
@@ -4625,10 +4576,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     update_inter_mode_probs(cm, header_bc, counts);
 #endif
 #if CONFIG_EXT_INTER
-#if CONFIG_COMPOUND_SINGLEREF
-    update_inter_singleref_comp_mode_probs(cm, probwt, header_bc);
-#endif  // CONFIG_COMPOUND_SINGLEREF
-
 #if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {

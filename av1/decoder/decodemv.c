@@ -404,13 +404,12 @@ static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_COMPOUND_SINGLEREF
-static PREDICTION_MODE read_inter_singleref_comp_mode(AV1_COMMON *cm,
-                                                      MACROBLOCKD *xd,
+static PREDICTION_MODE read_inter_singleref_comp_mode(MACROBLOCKD *xd,
                                                       aom_reader *r,
                                                       int16_t ctx) {
   const int mode =
-      aom_read_tree(r, av1_inter_singleref_comp_mode_tree,
-                    cm->fc->inter_singleref_comp_mode_probs[ctx], ACCT_STR);
+      aom_read_symbol(r, xd->tile_ctx->inter_singleref_comp_mode_cdf[ctx],
+                      INTER_SINGLEREF_COMP_MODES, ACCT_STR);
   FRAME_COUNTS *counts = xd->counts;
 
   if (counts) ++counts->inter_singleref_comp_mode[ctx][mode];
@@ -2284,7 +2283,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
 #if CONFIG_COMPOUND_SINGLEREF
       else if (is_singleref_comp_mode)
-        mbmi->mode = read_inter_singleref_comp_mode(cm, xd, r, mode_ctx);
+        mbmi->mode = read_inter_singleref_comp_mode(xd, r, mode_ctx);
 #endif  // CONFIG_COMPOUND_SINGLEREF
       else
 #endif  // CONFIG_EXT_INTER

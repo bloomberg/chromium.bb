@@ -177,21 +177,6 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 }
 #endif
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-static void read_inter_singleref_comp_mode_probs(FRAME_CONTEXT *fc,
-                                                 aom_reader *r) {
-  int i, j;
-  if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
-    for (j = 0; j < INTER_MODE_CONTEXTS; ++j) {
-      for (i = 0; i < INTER_SINGLEREF_COMP_MODES - 1; ++i) {
-        av1_diff_update_prob(r, &fc->inter_singleref_comp_mode_probs[j][i],
-                             ACCT_STR);
-      }
-    }
-  }
-}
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (is_compound_reference_allowed(cm)) {
@@ -4932,10 +4917,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_EXT_INTER
-#if CONFIG_COMPOUND_SINGLEREF
-    read_inter_singleref_comp_mode_probs(fc, &r);
-#endif  // CONFIG_COMPOUND_SINGLEREF
-
 #if CONFIG_INTERINTRA
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {

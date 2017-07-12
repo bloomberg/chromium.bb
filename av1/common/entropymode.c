@@ -490,6 +490,18 @@ static const aom_prob default_inter_singleref_comp_mode_probs
       { 17, 81, 52 },   // 5 = one intra neighbour
       { 25, 29, 50 },   // 6 = two intra neighbours
     };
+
+static const aom_cdf_prob
+    default_inter_singleref_comp_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
+        INTER_SINGLEREF_COMP_MODES)] = {
+      { AOM_ICDF(21971), AOM_ICDF(24771), AOM_ICDF(25027), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(18053), AOM_ICDF(26690), AOM_ICDF(27586), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(20667), AOM_ICDF(26182), AOM_ICDF(27078), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(11703), AOM_ICDF(22103), AOM_ICDF(22999), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(7936), AOM_ICDF(13888), AOM_ICDF(14912), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(9679), AOM_ICDF(13927), AOM_ICDF(16103), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(3349), AOM_ICDF(8470), AOM_ICDF(11670), AOM_ICDF(32768), 0 }
+    };
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
@@ -4827,6 +4839,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->inter_singleref_comp_mode_probs,
            default_inter_singleref_comp_mode_probs);
+  av1_copy(fc->inter_singleref_comp_mode_cdf,
+           default_inter_singleref_comp_mode_cdf);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
