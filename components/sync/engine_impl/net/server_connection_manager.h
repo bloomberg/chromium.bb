@@ -99,7 +99,7 @@ class ServerConnectionEventListener {
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-class ServerConnectionManager : public CancelationObserver {
+class ServerConnectionManager {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
@@ -146,10 +146,11 @@ class ServerConnectionManager : public CancelationObserver {
     }
 
     std::string buffer_;
-    ServerConnectionManager* scm_;
 
    private:
     int ReadResponse(std::string* buffer, int length);
+
+    ServerConnectionManager* scm_;
   };
 
   ServerConnectionManager(const std::string& server,
@@ -157,7 +158,7 @@ class ServerConnectionManager : public CancelationObserver {
                           bool use_ssl,
                           CancelationSignal* cancelation_signal);
 
-  ~ServerConnectionManager() override;
+  virtual ~ServerConnectionManager();
 
   // POSTS buffer_in and reads a response into buffer_out. Uses our currently
   // set auth token in our headers.
@@ -177,13 +178,7 @@ class ServerConnectionManager : public CancelationObserver {
 
   // Factory method to create an Connection object we can use for
   // communication with the server.
-  virtual Connection* MakeConnection();
-
-  // Closes any active network connections to the sync server.
-  // We expect this to get called on a different thread than the valid
-  // ThreadChecker thread, as we want to kill any pending http traffic without
-  // having to wait for the request to complete.
-  void OnSignalReceived() final;
+  virtual std::unique_ptr<Connection> MakeConnection();
 
   void set_client_id(const std::string& client_id) {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -219,34 +214,11 @@ class ServerConnectionManager : public CancelationObserver {
   // known bad token.
   void InvalidateAndClearAuthToken();
 
-  // Helper to check terminated flags and build a Connection object, installing
-  // it as the |active_connection_|.  If this ServerConnectionManager has been
-  // terminated, this will return null.
-  Connection* MakeActiveConnection();
-
-  // Called by Connection objects as they are destroyed to allow the
-  // ServerConnectionManager to cleanup active connections.
-  void OnConnectionDestroyed(Connection* connection);
+  // Helper to check terminated flags and build a Connection object. If this
+  // ServerConnectionManager has been terminated, this will return null.
+  std::unique_ptr<Connection> MakeActiveConnection();
 
  private:
-  // A class to help deal with cleaning up active Connection objects when (for
-  // ex) multiple early-exits are present in some scope. ScopedConnectionHelper
-  // informs the ServerConnectionManager before the Connection object it takes
-  // ownership of is destroyed.
-  class ScopedConnectionHelper {
-   public:
-    // |manager| must outlive this. Takes ownership of |connection|.
-    ScopedConnectionHelper(ServerConnectionManager* manager,
-                           Connection* connection);
-    ~ScopedConnectionHelper();
-    Connection* get();
-
-   private:
-    ServerConnectionManager* manager_;
-    std::unique_ptr<Connection> connection_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedConnectionHelper);
-  };
-
   void NotifyStatusChanged();
 
   // The sync_server_ is the server that requests will be made to.
@@ -276,19 +248,7 @@ class ServerConnectionManager : public CancelationObserver {
 
   base::ThreadChecker thread_checker_;
 
-  // Protects all variables below to allow bailing out of active connections.
-  base::Lock terminate_connection_lock_;
-
-  // If true, we've been told to terminate IO and expect to be destroyed
-  // shortly.  No future network requests will be made.
-  bool terminated_;
-
-  // A non-owning pointer to any active http connection, so that we can abort
-  // it if necessary.
-  Connection* active_connection_;
-
   CancelationSignal* const cancelation_signal_;
-  bool signal_handler_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };

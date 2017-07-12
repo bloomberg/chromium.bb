@@ -20,10 +20,12 @@ class HttpPostProviderInterface;
 
 // This provides HTTP Post functionality through the interface provided
 // by the application hosting the syncer backend.
-class SyncBridgedConnection : public ServerConnectionManager::Connection {
+class SyncBridgedConnection : public ServerConnectionManager::Connection,
+                              public CancelationObserver {
  public:
   SyncBridgedConnection(ServerConnectionManager* scm,
-                        HttpPostProviderFactory* factory);
+                        HttpPostProviderFactory* factory,
+                        CancelationSignal* cancelation_signal);
 
   ~SyncBridgedConnection() override;
 
@@ -34,10 +36,16 @@ class SyncBridgedConnection : public ServerConnectionManager::Connection {
 
   void Abort() override;
 
+  void OnSignalReceived() override;
+
  private:
   // Pointer to the factory we use for creating HttpPostProviders. We do not
   // own |factory_|.
   HttpPostProviderFactory* factory_;
+
+  // Cancelation signal is signalled when engine shuts down. Current blocking
+  // operation should be aborted.
+  CancelationSignal* cancelation_signal_;
 
   HttpPostProviderInterface* post_provider_;
 
@@ -57,7 +65,7 @@ class SyncServerConnectionManager : public ServerConnectionManager {
   ~SyncServerConnectionManager() override;
 
   // ServerConnectionManager overrides.
-  Connection* MakeConnection() override;
+  std::unique_ptr<Connection> MakeConnection() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncServerConnectionManagerTest, VeryEarlyAbortPost);
@@ -69,6 +77,10 @@ class SyncServerConnectionManager : public ServerConnectionManager {
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.
   std::unique_ptr<HttpPostProviderFactory> post_provider_factory_;
+
+  // Cancelation signal is signalled when engine shuts down. Current blocking
+  // operation should be aborted.
+  CancelationSignal* cancelation_signal_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncServerConnectionManager);
 };

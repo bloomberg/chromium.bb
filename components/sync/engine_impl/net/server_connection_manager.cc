@@ -97,22 +97,6 @@ bool ServerConnectionManager::Connection::ReadDownloadResponse(
   return true;
 }
 
-ServerConnectionManager::ScopedConnectionHelper::ScopedConnectionHelper(
-    ServerConnectionManager* manager,
-    Connection* connection)
-    : manager_(manager), connection_(connection) {}
-
-ServerConnectionManager::ScopedConnectionHelper::~ScopedConnectionHelper() {
-  if (connection_)
-    manager_->OnConnectionDestroyed(connection_.get());
-  connection_.reset();
-}
-
-ServerConnectionManager::Connection*
-ServerConnectionManager::ScopedConnectionHelper::get() {
-  return connection_.get();
-}
-
 namespace {
 
 string StripTrailingSlash(const string& s) {
@@ -157,46 +141,16 @@ ServerConnectionManager::ServerConnectionManager(
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
-      terminated_(false),
-      active_connection_(nullptr),
-      cancelation_signal_(cancelation_signal),
-      signal_handler_registered_(false) {
-  signal_handler_registered_ = cancelation_signal_->TryRegisterHandler(this);
-  if (!signal_handler_registered_) {
-    // Calling a virtual function from a constructor.  We can get away with it
-    // here because ServerConnectionManager::OnSignalReceived() is the function
-    // we want to call.
-    OnSignalReceived();
-  }
-}
+      cancelation_signal_(cancelation_signal) {}
 
-ServerConnectionManager::~ServerConnectionManager() {
-  if (signal_handler_registered_) {
-    cancelation_signal_->UnregisterHandler(this);
-  }
-}
+ServerConnectionManager::~ServerConnectionManager() = default;
 
-ServerConnectionManager::Connection*
+std::unique_ptr<ServerConnectionManager::Connection>
 ServerConnectionManager::MakeActiveConnection() {
-  base::AutoLock lock(terminate_connection_lock_);
-  DCHECK(!active_connection_);
-  if (terminated_)
+  if (cancelation_signal_->IsSignalled())
     return nullptr;
 
-  active_connection_ = MakeConnection();
-  return active_connection_;
-}
-
-void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
-  DCHECK(connection);
-  base::AutoLock lock(terminate_connection_lock_);
-  // |active_connection_| can be null already if it was aborted. Also,
-  // it can legitimately be a different Connection object if a new Connection
-  // was created after a previous one was Aborted and destroyed.
-  if (active_connection_ != connection)
-    return;
-
-  active_connection_ = nullptr;
+  return MakeConnection();
 }
 
 bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
@@ -271,17 +225,15 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
     return false;
   }
 
-  // When our connection object falls out of scope, it clears itself from
-  // active_connection_.
-  ScopedConnectionHelper post(this, MakeActiveConnection());
-  if (!post.get()) {
+  std::unique_ptr<Connection> connection = MakeActiveConnection();
+  if (!connection.get()) {
     params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
 
   // Note that |post| may be aborted by now, which will just cause Init to fail
   // with CONNECTION_UNAVAILABLE.
-  bool ok = post.get()->Init(path.c_str(), auth_token, params->buffer_in,
+  bool ok = connection->Init(path.c_str(), auth_token, params->buffer_in,
                              &params->response);
 
   if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
@@ -291,7 +243,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (!ok || net::HTTP_OK != params->response.response_code)
     return false;
 
-  if (post.get()->ReadBufferResponse(&params->buffer_out, &params->response,
+  if (connection->ReadBufferResponse(&params->buffer_out, &params->response,
                                      true)) {
     params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
     return true;
@@ -311,19 +263,9 @@ void ServerConnectionManager::RemoveListener(
   listeners_.RemoveObserver(listener);
 }
 
-ServerConnectionManager::Connection* ServerConnectionManager::MakeConnection() {
+std::unique_ptr<ServerConnectionManager::Connection>
+ServerConnectionManager::MakeConnection() {
   return nullptr;  // For testing.
-}
-
-void ServerConnectionManager::OnSignalReceived() {
-  base::AutoLock lock(terminate_connection_lock_);
-  terminated_ = true;
-  if (active_connection_)
-    active_connection_->Abort();
-
-  // Sever our ties to this connection object. Note that it still may exist,
-  // since we don't own it, but it has been neutered.
-  active_connection_ = nullptr;
 }
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr) {

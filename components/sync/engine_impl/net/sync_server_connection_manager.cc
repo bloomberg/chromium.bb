@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "base/callback_helpers.h"
+#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/net/http_post_provider_interface.h"
 #include "net/base/net_errors.h"
@@ -13,9 +15,13 @@
 
 namespace syncer {
 
-SyncBridgedConnection::SyncBridgedConnection(ServerConnectionManager* scm,
-                                             HttpPostProviderFactory* factory)
-    : Connection(scm), factory_(factory) {
+SyncBridgedConnection::SyncBridgedConnection(
+    ServerConnectionManager* scm,
+    HttpPostProviderFactory* factory,
+    CancelationSignal* cancelation_signal)
+    : Connection(scm),
+      factory_(factory),
+      cancelation_signal_(cancelation_signal) {
   post_provider_ = factory_->Create();
 }
 
@@ -51,6 +57,15 @@ bool SyncBridgedConnection::Init(const char* path,
   // Issue the POST, blocking until it finishes.
   int error_code = 0;
   int response_code = 0;
+  if (!cancelation_signal_->TryRegisterHandler(this)) {
+    // Return early because cancelation signal was signaled.
+    response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    return false;
+  }
+  base::ScopedClosureRunner auto_unregister(base::Bind(
+      &CancelationSignal::UnregisterHandler,
+      base::Unretained(cancelation_signal_), base::Unretained(this)));
+
   if (!http->MakeSynchronousPost(&error_code, &response_code)) {
     DCHECK_NE(error_code, net::OK);
     DVLOG(1) << "Http POST failed, error returns: " << error_code;
@@ -81,6 +96,11 @@ void SyncBridgedConnection::Abort() {
   post_provider_->Abort();
 }
 
+void SyncBridgedConnection::OnSignalReceived() {
+  DCHECK(post_provider_);
+  post_provider_->Abort();
+}
+
 SyncServerConnectionManager::SyncServerConnectionManager(
     const std::string& server,
     int port,
@@ -88,15 +108,17 @@ SyncServerConnectionManager::SyncServerConnectionManager(
     HttpPostProviderFactory* factory,
     CancelationSignal* cancelation_signal)
     : ServerConnectionManager(server, port, use_ssl, cancelation_signal),
-      post_provider_factory_(factory) {
+      post_provider_factory_(factory),
+      cancelation_signal_(cancelation_signal) {
   DCHECK(post_provider_factory_.get());
 }
 
-SyncServerConnectionManager::~SyncServerConnectionManager() {}
+SyncServerConnectionManager::~SyncServerConnectionManager() = default;
 
-ServerConnectionManager::Connection*
+std::unique_ptr<ServerConnectionManager::Connection>
 SyncServerConnectionManager::MakeConnection() {
-  return new SyncBridgedConnection(this, post_provider_factory_.get());
+  return base::MakeUnique<SyncBridgedConnection>(
+      this, post_provider_factory_.get(), cancelation_signal_);
 }
 
 }  // namespace syncer
