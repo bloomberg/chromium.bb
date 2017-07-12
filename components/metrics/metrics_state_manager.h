@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
@@ -65,8 +64,7 @@ class MetricsStateManager {
   // Checks if this install was cloned or imaged from another machine. If a
   // clone is detected, resets the client id and low entropy source. This
   // should not be called more than once.
-  void CheckForClonedInstall(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void CheckForClonedInstall();
 
   // Returns the preferred entropy provider used to seed persistent activities
   // based on whether or not metrics reporting is permitted on this client.

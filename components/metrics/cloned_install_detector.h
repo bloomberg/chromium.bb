@@ -7,25 +7,18 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace metrics {
-
-class MachineIdProvider;
 
 // A class for detecting if an install is cloned. It does this by detecting
 // when the hardware running Chrome changes.
 class ClonedInstallDetector {
  public:
-  explicit ClonedInstallDetector(MachineIdProvider* raw_id_provider);
+  ClonedInstallDetector();
   virtual ~ClonedInstallDetector();
 
   // Posts a task to |task_runner| to generate a machine ID and store it to a
@@ -34,9 +27,7 @@ class ClonedInstallDetector {
   // 24-bit value based off of machine characteristics. This value should never
   // be sent over the network.
   // TODO(jwd): Implement change detection.
-  void CheckForClonedInstall(
-      PrefService* local_state,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void CheckForClonedInstall(PrefService* local_state);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -49,7 +40,6 @@ class ClonedInstallDetector {
   // task.
   void SaveMachineId(PrefService* local_state, const std::string& raw_id);
 
-  scoped_refptr<MachineIdProvider> raw_id_provider_;
   base::WeakPtrFactory<ClonedInstallDetector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClonedInstallDetector);

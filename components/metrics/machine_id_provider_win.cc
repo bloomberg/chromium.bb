@@ -16,14 +16,14 @@
 
 namespace metrics {
 
-MachineIdProvider::MachineIdProvider() {
-}
-
-MachineIdProvider::~MachineIdProvider() {
+// static
+bool MachineIdProvider::HasId() {
+  return true;
 }
 
 // On windows, the machine id is based on the serial number of the drive Chrome
 // is running from.
+// static
 std::string MachineIdProvider::GetMachineId() {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -109,10 +109,4 @@ std::string MachineIdProvider::GetMachineId() {
 
   return std::string(serial_number);
 }
-
-// static
-MachineIdProvider* MachineIdProvider::CreateInstance() {
-  return new MachineIdProvider();
-}
-
 }  //  namespace metrics

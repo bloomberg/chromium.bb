@@ -27,10 +27,8 @@ TEST(ClonedInstallDetectorTest, SaveId) {
   TestingPrefServiceSimple prefs;
   ClonedInstallDetector::RegisterPrefs(prefs.registry());
 
-  std::unique_ptr<ClonedInstallDetector> detector(
-      new ClonedInstallDetector(MachineIdProvider::CreateInstance()));
-
-  detector->SaveMachineId(&prefs, kTestRawId);
+  ClonedInstallDetector detector;
+  detector.SaveMachineId(&prefs, kTestRawId);
 
   EXPECT_EQ(kTestHashedId, prefs.GetInteger(prefs::kMetricsMachineId));
 }
@@ -42,10 +40,8 @@ TEST(ClonedInstallDetectorTest, DetectClone) {
   // Save a machine id that will cause a clone to be detected.
   prefs.SetInteger(prefs::kMetricsMachineId, kTestHashedId + 1);
 
-  std::unique_ptr<ClonedInstallDetector> detector(
-      new ClonedInstallDetector(MachineIdProvider::CreateInstance()));
-
-  detector->SaveMachineId(&prefs, kTestRawId);
+  ClonedInstallDetector detector;
+  detector.SaveMachineId(&prefs, kTestRawId);
 
   EXPECT_TRUE(prefs.GetBoolean(prefs::kMetricsResetIds));
 }
