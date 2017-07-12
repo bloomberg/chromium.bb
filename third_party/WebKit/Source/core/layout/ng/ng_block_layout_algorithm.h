@@ -120,6 +120,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // token if we're out of space.
   void FinalizeForFragmentation();
 
+  void PropagateBaselinesFromChildren();
+  bool AddBaseline(const NGBaselineRequest&, unsigned);
+
   // Calculates logical offset for the current fragment using either
   // {@code content_size_} when the fragment doesn't know it's offset
   // or {@code known_fragment_offset} if the fragment knows it's offset

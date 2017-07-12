@@ -19,4 +19,11 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
   children_.swap(children);
 }
 
+LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
+  // TODO(kojii): Computing other baseline types than the used one is not
+  // implemented yet.
+  // TODO(kojii): We might need locale/script to look up OpenType BASE table.
+  return metrics_.ascent;
+}
+
 }  // namespace blink

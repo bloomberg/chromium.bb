@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/geometry/ng_margin_strut.h"
+#include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
 #include "platform/wtf/Optional.h"
@@ -22,6 +23,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         NGPhysicalSize overflow,
                         Vector<RefPtr<NGPhysicalFragment>>& children,
                         Vector<NGPositionedFloat>& positioned_floats,
+                        Vector<NGBaseline>& baselines,
                         unsigned,  // NGBorderEdges::Physical
                         RefPtr<NGBreakToken> break_token = nullptr);
 
@@ -39,10 +41,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return positioned_floats_;
   }
 
+  const NGBaseline* Baseline(const NGBaselineRequest&) const;
+
  private:
   NGPhysicalSize overflow_;
   Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<NGPositionedFloat> positioned_floats_;
+  Vector<NGBaseline> baselines_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,

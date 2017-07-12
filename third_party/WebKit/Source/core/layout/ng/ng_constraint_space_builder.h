@@ -60,6 +60,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetClearanceOffset(
       const WTF::Optional<LayoutUnit>& clearance_offset);
 
+  void AddBaselineRequests(const Vector<NGBaselineRequest>&);
+  NGConstraintSpaceBuilder& AddBaselineRequest(NGBaselineAlgorithmType,
+                                               FontBaseline);
+
   // Creates a new constraint space. This may be called multiple times, for
   // example the constraint space will be different for a child which:
   //  - Establishes a new formatting context.
@@ -95,6 +99,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
+  Vector<NGBaselineRequest> baseline_requests_;
 };
 
 }  // namespace blink

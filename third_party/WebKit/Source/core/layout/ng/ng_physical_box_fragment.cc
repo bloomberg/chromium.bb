@@ -14,6 +14,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGPhysicalSize overflow,
     Vector<RefPtr<NGPhysicalFragment>>& children,
     Vector<NGPositionedFloat>& positioned_floats,
+    Vector<NGBaseline>& baselines,
     unsigned border_edges,  // NGBorderEdges::Physical
     RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
@@ -23,7 +24,18 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       overflow_(overflow),
       positioned_floats_(positioned_floats) {
   children_.swap(children);
+  baselines_.swap(baselines);
   border_edge_ = border_edges;
+}
+
+const NGBaseline* NGPhysicalBoxFragment::Baseline(
+    const NGBaselineRequest& request) const {
+  for (const auto& baseline : baselines_) {
+    if (baseline.algorithm_type == request.algorithm_type &&
+        baseline.baseline_type == request.baseline_type)
+      return &baseline;
+  }
+  return nullptr;
 }
 
 }  // namespace blink

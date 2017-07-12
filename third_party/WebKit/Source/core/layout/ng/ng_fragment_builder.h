@@ -6,6 +6,7 @@
 #define NGFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_static_position.h"
+#include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -31,6 +32,7 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
+  NGWritingMode WritingMode() const { return writing_mode_; }
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
   NGFragmentBuilder& SetDirection(TextDirection);
 
@@ -128,12 +130,16 @@ class CORE_EXPORT NGFragmentBuilder final {
     return children_;
   }
 
+  const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
+
   bool DidBreak() const { return did_break_; }
 
   NGFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
     border_edges_ = border_edges;
     return *this;
   }
+
+  void AddBaseline(NGBaselineAlgorithmType, FontBaseline, LayoutUnit);
 
  private:
   // An out-of-flow positioned-candidate is a temporary data structure used
@@ -186,6 +192,8 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
+
+  Vector<NGBaseline> baselines_;
 
   NGBorderEdges border_edges_;
 };

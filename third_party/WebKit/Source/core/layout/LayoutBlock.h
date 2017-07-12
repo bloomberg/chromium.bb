@@ -133,6 +133,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
+  bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
   LayoutUnit MinLineHeightForReplacedObject(bool is_first_line,
                                             LayoutUnit replaced_height) const;

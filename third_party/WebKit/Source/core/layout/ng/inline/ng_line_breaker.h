@@ -72,7 +72,9 @@ class CORE_EXPORT NGLineBreaker {
                  LayoutUnit available_width);
 
   LineBreakState HandleControlItem(const NGInlineItem&, NGInlineItemResult*);
-  LineBreakState HandleAtomicInline(const NGInlineItem&, NGInlineItemResult*);
+  LineBreakState HandleAtomicInline(const NGInlineItem&,
+                                    NGInlineItemResult*,
+                                    const NGLineInfo&);
   void HandleFloat(const NGInlineItem&,
                    NGInlineItemResults*);
 
