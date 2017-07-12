@@ -10,9 +10,6 @@ interface TestDisplayController {
 
   // Toggles adding or removing a fake display. If there is only one display
   // a second display is added. If there is more than one display then the last
-  // display is removed. 
+  // display is removed.
   ToggleAddRemoveDisplay();
-
-  // Toggles the primary display resolution size.
-  ToggleDisplayResolution();
 };
