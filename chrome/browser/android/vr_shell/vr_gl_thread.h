@@ -83,6 +83,7 @@ class VrGLThread : public base::Thread,
   void SetScreenCapturingIndicator(bool enabled) override;
   void SetAudioCapturingIndicator(bool enabled) override;
   void SetBluetoothConnectedIndicator(bool enabled) override;
+  void SetLocationAccessIndicator(bool enabled) override;
   void SetIsExiting() override;
   void SetSplashScreenIcon(const SkBitmap& bitmap) override;
 

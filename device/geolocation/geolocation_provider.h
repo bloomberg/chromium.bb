@@ -50,6 +50,8 @@ class GeolocationProvider {
   // go/chrome-privacy-doc.
   virtual void UserDidOptIntoLocationServices() = 0;
 
+  virtual bool HighAccuracyLocationInUse() = 0;
+
   // Overrides the current location for testing.
   //
   // Overrides the location for automation/testing. Suppresses any further

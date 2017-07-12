@@ -15,6 +15,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_manager_connection.h"
+#include "device/geolocation/geolocation_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -35,6 +36,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl()
       : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    RegisterMainThreadInterface(base::Bind(&device::GeolocationConfig::Create));
     RegisterMainThreadInterface(base::Bind(&BindMemoryCoordinatorRequest));
 
     auto* browser_main_loop = BrowserMainLoop::GetInstance();
