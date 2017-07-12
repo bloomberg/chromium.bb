@@ -152,6 +152,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
   scoped_refptr<MainThreadTaskQueue> TimerTaskQueue();
 
+  // Returns a new task queue created with given params.
+  scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
+      const MainThreadTaskQueue::QueueCreationParams& params);
+
   // Returns a new loading task queue. This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
   scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue(
@@ -159,10 +163,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // Returns a new timer task queue. This queue is intended for DOM Timers.
   scoped_refptr<MainThreadTaskQueue> NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType queue_type);
-
-  // Returns a task queue for tasks which should never get throttled.
-  scoped_refptr<MainThreadTaskQueue> NewUnthrottledTaskQueue(
       MainThreadTaskQueue::QueueType queue_type);
 
   // Returns a task queue where tasks run at the highest possible priority.
@@ -268,41 +268,111 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
   struct TaskQueuePolicy {
+    // Default constructor of TaskQueuePolicy should match behaviour of a
+    // newly-created task queue.
     TaskQueuePolicy()
         : is_enabled(true),
-          priority(TaskQueue::NORMAL_PRIORITY),
-          time_domain_type(TimeDomainType::REAL) {}
+          is_suspended(false),
+          is_throttled(false),
+          is_blocked(false),
+          use_virtual_time(false),
+          priority(TaskQueue::NORMAL_PRIORITY) {}
 
     bool is_enabled;
+    bool is_suspended;
+    bool is_throttled;
+    bool is_blocked;
+    bool use_virtual_time;
     TaskQueue::QueuePriority priority;
-    TimeDomainType time_domain_type;
+
+    bool IsQueueEnabled(MainThreadTaskQueue* task_queue) const;
+
+    TaskQueue::QueuePriority GetPriority(MainThreadTaskQueue* task_queue) const;
+
+    TimeDomainType GetTimeDomainType(MainThreadTaskQueue* task_queue) const;
 
     bool operator==(const TaskQueuePolicy& other) const {
-      return is_enabled == other.is_enabled && priority == other.priority &&
-             time_domain_type == other.time_domain_type;
+      return is_enabled == other.is_enabled &&
+             is_suspended == other.is_suspended &&
+             is_throttled == other.is_throttled &&
+             is_blocked == other.is_blocked &&
+             use_virtual_time == other.use_virtual_time &&
+             priority == other.priority;
     }
 
     void AsValueInto(base::trace_event::TracedValue* state) const;
   };
 
-  struct Policy {
-    TaskQueuePolicy compositor_queue_policy;
-    TaskQueuePolicy loading_queue_policy;
-    TaskQueuePolicy timer_queue_policy;
-    TaskQueuePolicy default_queue_policy;
-    v8::RAILMode rail_mode = v8::PERFORMANCE_ANIMATION;
-    bool should_disable_throttling = false;
+  class Policy {
+   public:
+    Policy()
+        : rail_mode_(v8::PERFORMANCE_ANIMATION),
+          should_disable_throttling_(false) {}
+    ~Policy() {}
+
+    TaskQueuePolicy& compositor_queue_policy() {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::COMPOSITOR)];
+    }
+    const TaskQueuePolicy& compositor_queue_policy() const {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::COMPOSITOR)];
+    }
+
+    TaskQueuePolicy& loading_queue_policy() {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::LOADING)];
+    }
+    const TaskQueuePolicy& loading_queue_policy() const {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::LOADING)];
+    }
+
+    TaskQueuePolicy& timer_queue_policy() {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::TIMER)];
+    }
+    const TaskQueuePolicy& timer_queue_policy() const {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::TIMER)];
+    }
+
+    TaskQueuePolicy& default_queue_policy() {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::NONE)];
+    }
+    const TaskQueuePolicy& default_queue_policy() const {
+      return policies_[static_cast<size_t>(
+          MainThreadTaskQueue::QueueClass::NONE)];
+    }
+
+    const TaskQueuePolicy& GetQueuePolicy(
+        MainThreadTaskQueue::QueueClass queue_class) const {
+      return policies_[static_cast<size_t>(queue_class)];
+    }
+
+    v8::RAILMode& rail_mode() { return rail_mode_; }
+    v8::RAILMode rail_mode() const { return rail_mode_; }
+
+    bool& should_disable_throttling() { return should_disable_throttling_; }
+    bool should_disable_throttling() const {
+      return should_disable_throttling_;
+    }
 
     bool operator==(const Policy& other) const {
-      return compositor_queue_policy == other.compositor_queue_policy &&
-             loading_queue_policy == other.loading_queue_policy &&
-             timer_queue_policy == other.timer_queue_policy &&
-             default_queue_policy == other.default_queue_policy &&
-             rail_mode == other.rail_mode &&
-             should_disable_throttling == other.should_disable_throttling;
+      return policies_ == other.policies_ && rail_mode_ == other.rail_mode_ &&
+             should_disable_throttling_ == other.should_disable_throttling_;
     }
 
     void AsValueInto(base::trace_event::TracedValue* state) const;
+
+   private:
+    v8::RAILMode rail_mode_;
+    bool should_disable_throttling_;
+
+    std::array<TaskQueuePolicy,
+               static_cast<size_t>(MainThreadTaskQueue::QueueClass::COUNT)>
+        policies_;
   };
 
   class PollableNeedsUpdateFlag {
@@ -453,9 +523,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       std::map<scoped_refptr<MainThreadTaskQueue>,
                std::unique_ptr<TaskQueue::QueueEnabledVoter>>;
 
-  TaskQueueVoterMap loading_task_runners_;
-  TaskQueueVoterMap timer_task_runners_;
-  std::set<scoped_refptr<MainThreadTaskQueue>> unthrottled_task_runners_;
+  TaskQueueVoterMap task_runners_;
+
   scoped_refptr<MainThreadTaskQueue> default_loading_task_queue_;
   scoped_refptr<MainThreadTaskQueue> default_timer_task_queue_;
 

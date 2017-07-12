@@ -528,7 +528,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
   }
 
   v8::RAILMode GetRAILMode() {
-    return scheduler_->GetMainThreadOnly().current_policy.rail_mode;
+    return scheduler_->GetMainThreadOnly().current_policy.rail_mode();
   }
 
   bool BeginFrameNotExpectedSoon() {
@@ -3702,8 +3702,8 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   // task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
   scoped_refptr<TaskQueue> unthrottled_task_runner =
-      scheduler_->NewUnthrottledTaskQueue(
-          MainThreadTaskQueue::QueueType::UNTHROTTLED);
+      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::UNTHROTTLED));
 
   size_t timer_count = 0;
   size_t unthrottled_count = 0;
@@ -3746,12 +3746,14 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
 TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   scheduler_->EnableVirtualTime();
 
-  scoped_refptr<TaskQueue> loading_tq =
-      scheduler_->NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::TEST);
-  scoped_refptr<TaskQueue> timer_tq =
-      scheduler_->NewTimerTaskQueue(MainThreadTaskQueue::QueueType::TEST);
-  scoped_refptr<TaskQueue> unthrottled_tq =
-      scheduler_->NewUnthrottledTaskQueue(MainThreadTaskQueue::QueueType::TEST);
+  scoped_refptr<MainThreadTaskQueue> loading_tq =
+      scheduler_->NewLoadingTaskQueue(
+          MainThreadTaskQueue::QueueType::FRAME_LOADING);
+  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
+      MainThreadTaskQueue::QueueType::FRAME_TIMER);
+  scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
+      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::UNTHROTTLED));
 
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
@@ -3774,25 +3776,34 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
 
   EXPECT_EQ(
-      scheduler_->NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::TEST)
+      scheduler_
+          ->NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::FRAME_LOADING)
           ->GetTimeDomain(),
       scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->NewTimerTaskQueue(MainThreadTaskQueue::QueueType::TEST)
+  EXPECT_EQ(
+      scheduler_->NewTimerTaskQueue(MainThreadTaskQueue::QueueType::FRAME_TIMER)
+          ->GetTimeDomain(),
+      scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_
+                ->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+                    MainThreadTaskQueue::QueueType::UNTHROTTLED))
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(
-      scheduler_->NewUnthrottledTaskQueue(MainThreadTaskQueue::QueueType::TEST)
-          ->GetTimeDomain(),
-      scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_
+                ->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+                    MainThreadTaskQueue::QueueType::TEST))
+                ->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
 }
 
 TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime();
 
-  scoped_refptr<TaskQueue> timer_tq =
-      scheduler_->NewTimerTaskQueue(MainThreadTaskQueue::QueueType::TEST);
-  scoped_refptr<TaskQueue> unthrottled_tq =
-      scheduler_->NewUnthrottledTaskQueue(MainThreadTaskQueue::QueueType::TEST);
+  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
+      MainThreadTaskQueue::QueueType::FRAME_TIMER);
+  scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
+      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::UNTHROTTLED));
 
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),

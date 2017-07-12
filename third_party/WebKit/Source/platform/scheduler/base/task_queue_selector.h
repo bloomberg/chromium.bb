@@ -66,8 +66,9 @@ class PLATFORM_EXPORT TaskQueueSelector {
     virtual void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) = 0;
 
     // Called when the selector tried to select a task from a disabled work
-    // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked. A single
-    // call to SelectWorkQueueToService will only result in up to one
+    // queue. See
+    // TaskQueue::QueueCreationParams::SetShouldReportWhenExecutionBlocked. A
+    // single call to SelectWorkQueueToService will only result in up to one
     // blocking notification even if multiple disabled queues could have been
     // selected.
     virtual void OnTriedToSelectBlockedWorkQueue(

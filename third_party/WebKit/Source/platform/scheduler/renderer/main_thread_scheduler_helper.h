@@ -22,8 +22,7 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
   ~MainThreadSchedulerHelper() override;
 
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
-      MainThreadTaskQueue::QueueType type,
-      const TaskQueue::Spec& spec);
+      const MainThreadTaskQueue::QueueCreationParams& params);
 
   scoped_refptr<MainThreadTaskQueue> DefaultMainThreadTaskQueue();
   scoped_refptr<MainThreadTaskQueue> ControlMainThreadTaskQueue();

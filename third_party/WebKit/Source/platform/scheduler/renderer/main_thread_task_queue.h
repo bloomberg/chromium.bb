@@ -36,12 +36,82 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   // lifetime.
   static const char* NameForQueueType(QueueType queue_type);
 
-  // Create spec with correct name for given type.
-  static TaskQueue::Spec CreateSpecForType(QueueType queue_type);
+  // High-level category used by RendererScheduler to make scheduling decisions.
+  enum class QueueClass {
+    NONE = 0,
+    LOADING = 1,
+    TIMER = 2,
+    COMPOSITOR = 4,
+
+    COUNT = 5
+  };
+
+  static QueueClass QueueClassForQueueType(QueueType type);
+
+  struct QueueCreationParams {
+    explicit QueueCreationParams(QueueType queue_type)
+        : queue_type(queue_type),
+          spec(NameForQueueType(queue_type)),
+          can_be_blocked(false),
+          can_be_throttled(false),
+          can_be_suspended(false) {}
+
+    QueueCreationParams SetCanBeBlocked(bool value) {
+      can_be_blocked = value;
+      return *this;
+    }
+
+    QueueCreationParams SetCanBeThrottled(bool value) {
+      can_be_throttled = value;
+      return *this;
+    }
+
+    QueueCreationParams SetCanBeSuspended(bool value) {
+      can_be_suspended = value;
+      return *this;
+    }
+
+    // Forwarded calls to |spec|.
+
+    QueueCreationParams SetShouldMonitorQuiescence(bool should_monitor) {
+      spec = spec.SetShouldMonitorQuiescence(should_monitor);
+      return *this;
+    }
+
+    QueueCreationParams SetShouldNotifyObservers(bool run_observers) {
+      spec = spec.SetShouldNotifyObservers(run_observers);
+      return *this;
+    }
+
+    QueueCreationParams SetTimeDomain(TimeDomain* domain) {
+      spec = spec.SetTimeDomain(domain);
+      return *this;
+    }
+
+    QueueCreationParams SetShouldReportWhenExecutionBlocked(
+        bool should_report) {
+      spec = spec.SetShouldReportWhenExecutionBlocked(should_report);
+      return *this;
+    }
+
+    QueueType queue_type;
+    TaskQueue::Spec spec;
+    bool can_be_blocked;
+    bool can_be_throttled;
+    bool can_be_suspended;
+  };
 
   ~MainThreadTaskQueue() override;
 
   QueueType queue_type() const { return queue_type_; }
+
+  QueueClass queue_class() const { return queue_class_; }
+
+  bool CanBeBlocked() const { return can_be_blocked_; }
+
+  bool CanBeThrottled() const { return can_be_throttled_; }
+
+  bool CanBeSuspended() const { return can_be_suspended_; }
 
   void OnTaskCompleted(base::TimeTicks start, base::TimeTicks end);
 
@@ -50,12 +120,16 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
  private:
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-                      QueueType queue_type,
+                      const QueueCreationParams& params,
                       RendererSchedulerImpl* renderer_scheduler);
 
   friend class TaskQueueManager;
 
   QueueType queue_type_;
+  QueueClass queue_class_;
+  const bool can_be_blocked_;
+  const bool can_be_throttled_;
+  const bool can_be_suspended_;
 
   // Needed to notify renderer scheduler about completed tasks.
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED

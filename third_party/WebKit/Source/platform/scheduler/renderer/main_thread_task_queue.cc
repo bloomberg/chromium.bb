@@ -44,18 +44,44 @@ const char* MainThreadTaskQueue::NameForQueueType(
   return nullptr;
 }
 
-// static
-TaskQueue::Spec MainThreadTaskQueue::CreateSpecForType(
-    MainThreadTaskQueue::QueueType queue_type) {
-  return TaskQueue::Spec(NameForQueueType(queue_type));
+MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
+    QueueType type) {
+  switch (type) {
+    case QueueType::CONTROL:
+    case QueueType::DEFAULT:
+    case QueueType::IDLE:
+    case QueueType::TEST:
+      return QueueClass::NONE;
+    case QueueType::DEFAULT_LOADING:
+    case QueueType::FRAME_LOADING:
+      return QueueClass::LOADING;
+    case QueueType::DEFAULT_TIMER:
+    case QueueType::FRAME_TIMER:
+    // Unthrottled tasks are considered timers which can't be throttled and
+    // fall into TIMER class.
+    case QueueType::FRAME_UNTHROTTLED:
+    case QueueType::UNTHROTTLED:
+      return QueueClass::TIMER;
+    case QueueType::COMPOSITOR:
+      return QueueClass::COMPOSITOR;
+    case QueueType::COUNT:
+      DCHECK(false);
+      return QueueClass::COUNT;
+  }
+  NOTREACHED();
+  return QueueClass::NONE;
 }
 
 MainThreadTaskQueue::MainThreadTaskQueue(
     std::unique_ptr<internal::TaskQueueImpl> impl,
-    MainThreadTaskQueue::QueueType queue_type,
+    const QueueCreationParams& params,
     RendererSchedulerImpl* renderer_scheduler)
     : TaskQueue(std::move(impl)),
-      queue_type_(queue_type),
+      queue_type_(params.queue_type),
+      queue_class_(QueueClassForQueueType(params.queue_type)),
+      can_be_blocked_(params.can_be_blocked),
+      can_be_throttled_(params.can_be_throttled),
+      can_be_suspended_(params.can_be_suspended),
       renderer_scheduler_(renderer_scheduler) {
   GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
       &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
