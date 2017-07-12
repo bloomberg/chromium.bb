@@ -29,6 +29,8 @@
          broken_egl_image_ref_counting)                      \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
          clear_alpha_in_readpixels)                          \
+  GPU_OP(CLEAR_TO_ZERO_OR_ONE_BROKEN,                        \
+         clear_to_zero_or_one_broken)                        \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE,            \
          clear_uniforms_before_first_program_use)            \
   GPU_OP(COUNT_ALL_IN_VARYINGS_PACKING,                      \

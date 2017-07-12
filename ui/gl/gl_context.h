@@ -16,6 +16,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
+#include "ui/gl/gl_workarounds.h"
 #include "ui/gl/gpu_preference.h"
 
 namespace gl {
@@ -95,6 +96,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   // Creates a GPUTimingClient class which abstracts various GPU Timing exts.
   virtual scoped_refptr<GPUTimingClient> CreateGPUTimingClient() = 0;
+
+  // Set the GL workarounds.
+  void SetGLWorkarounds(const GLWorkarounds& workarounds);
 
   // Gets the GLStateRestorer for the context.
   GLStateRestorer* GetGLStateRestorer();
@@ -221,6 +225,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   friend class gpu::GLContextVirtual;
 
   std::unique_ptr<GLVersionInfo> GenerateGLVersionInfo();
+
+  GLWorkarounds gl_workarounds_;
 
   bool static_bindings_initialized_ = false;
   bool dynamic_bindings_initialized_ = false;

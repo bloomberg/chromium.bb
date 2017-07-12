@@ -423,6 +423,21 @@ void RealGLApi::glClearFn(GLbitfield mask) {
     GLApiBase::glClearFn(mask);
 }
 
+void RealGLApi::glClearColorFn(GLclampf red,
+                               GLclampf green,
+                               GLclampf blue,
+                               GLclampf alpha) {
+  if (gl_workarounds_.clear_to_zero_or_one_broken && (1 == red || 0 == red) &&
+      (1 == green || 0 == green) && (1 == blue || 0 == blue) &&
+      (1 == alpha || 0 == alpha)) {
+    if (1 == alpha)
+      alpha = 2;
+    else
+      alpha = -1;
+  }
+  GLApiBase::glClearColorFn(red, green, blue, alpha);
+}
+
 void RealGLApi::glDrawArraysFn(GLenum mode, GLint first, GLsizei count) {
   if (!g_null_draw_bindings_enabled)
     GLApiBase::glDrawArraysFn(mode, first, count);
@@ -489,6 +504,10 @@ void RealGLApi::InitializeFilteredExtensions() {
     filtered_exts_initialized_ = true;
 #endif
   }
+}
+
+void RealGLApi::set_gl_workarounds(const GLWorkarounds& workarounds) {
+  gl_workarounds_ = workarounds;
 }
 
 void RealGLApi::set_version(std::unique_ptr<GLVersionInfo> version) {
