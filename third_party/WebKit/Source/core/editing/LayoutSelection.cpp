@@ -114,34 +114,52 @@ enum class SelectionMode {
   kRange,
   kBlockCursor,
 };
+
 static SelectionMode ComputeSelectionMode(
-    const FrameSelection& frame_selection,
-    const VisibleSelectionInFlatTree& selection) {
-  if (selection.IsRange())
+    const FrameSelection& frame_selection) {
+  const SelectionInDOMTree& selection_in_dom =
+      frame_selection.GetSelectionInDOMTree();
+  if (selection_in_dom.IsRange())
     return SelectionMode::kRange;
+  DCHECK(selection_in_dom.IsCaret());
   if (!frame_selection.ShouldShowBlockCursor())
     return SelectionMode::kNone;
-  if (IsLogicalEndOfLine(selection.VisibleStart()))
+  if (IsLogicalEndOfLine(CreateVisiblePosition(selection_in_dom.Base())))
     return SelectionMode::kNone;
   return SelectionMode::kBlockCursor;
 }
 
 static EphemeralRangeInFlatTree CalcSelection(
     const FrameSelection& frame_selection) {
-  const VisibleSelectionInFlatTree& original_selection =
-      frame_selection.ComputeVisibleSelectionInFlatTree();
-  switch (ComputeSelectionMode(frame_selection, original_selection)) {
+  const SelectionInDOMTree& selection_in_dom =
+      frame_selection.GetSelectionInDOMTree();
+  switch (ComputeSelectionMode(frame_selection)) {
     case SelectionMode::kNone:
       return {};
-    case SelectionMode::kRange:
-      return {original_selection.Start(), original_selection.End()};
+    case SelectionMode::kRange: {
+      const PositionInFlatTree& base =
+          CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Base()))
+              .DeepEquivalent();
+      const PositionInFlatTree& extent =
+          CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Extent()))
+              .DeepEquivalent();
+      if (base.IsNull() || extent.IsNull() || base == extent)
+        return {};
+      const bool base_is_first = base.CompareTo(extent) <= 0;
+      const PositionInFlatTree& start = base_is_first ? base : extent;
+      const PositionInFlatTree& end = base_is_first ? extent : base;
+      return {MostForwardCaretPosition(start), MostBackwardCaretPosition(end)};
+    }
     case SelectionMode::kBlockCursor: {
-      const PositionInFlatTree end_position = NextPositionOf(
-          original_selection.Start(), PositionMoveType::kGraphemeCluster);
-      const VisibleSelectionInFlatTree& block_cursor = CreateVisibleSelection(
-          SelectionInFlatTree::Builder()
-              .SetBaseAndExtent(original_selection.Start(), end_position)
-              .Build());
+      const PositionInFlatTree& base =
+          CreateVisiblePosition(ToPositionInFlatTree(selection_in_dom.Base()))
+              .DeepEquivalent();
+      const PositionInFlatTree end_position =
+          NextPositionOf(base, PositionMoveType::kGraphemeCluster);
+      const VisibleSelectionInFlatTree& block_cursor =
+          CreateVisibleSelection(SelectionInFlatTree::Builder()
+                                     .SetBaseAndExtent(base, end_position)
+                                     .Build());
       return {block_cursor.Start(), block_cursor.End()};
     }
   }
