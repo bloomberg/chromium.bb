@@ -373,9 +373,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     // Animation::InEffect and we want the old InEffect value for updating
     // property tree scrolling and animation.
     // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
-    bool is_impl_side_update = false;
-    sync_tree->UpdatePropertyTreeScrollingAndAnimationFromMainThread(
-        is_impl_side_update);
+    sync_tree->UpdatePropertyTreeAnimationFromMainThread();
 
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::AnimationHost::PushProperties");
     DCHECK(host_impl->mutator_host());

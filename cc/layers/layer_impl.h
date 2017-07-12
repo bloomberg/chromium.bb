@@ -410,7 +410,7 @@ class CC_EXPORT LayerImpl {
 
   bool has_copy_requests_in_target_subtree();
 
-  void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
+  void UpdatePropertyTreeForAnimationIfNeeded();
 
   float GetIdealContentsScale() const;
 
