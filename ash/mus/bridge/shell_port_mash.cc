@@ -175,6 +175,9 @@ void ShellPortMash::SetGlobalOverrideCursor(
 }
 
 bool ShellPortMash::IsMouseEventsEnabled() {
+  if (GetAshConfig() == Config::MUS)
+    return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
+
   // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
   return true;
