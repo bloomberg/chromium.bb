@@ -50,7 +50,8 @@ class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>,
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->TraceWrappers(contextElement());
+    SVGAnimatedProperty<SVGNumberList>::TraceWrappers(visitor);
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
  protected:

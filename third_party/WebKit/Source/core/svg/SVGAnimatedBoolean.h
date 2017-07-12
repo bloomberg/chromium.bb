@@ -48,7 +48,8 @@ class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>,
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->TraceWrappers(contextElement());
+    SVGAnimatedProperty<SVGBoolean>::TraceWrappers(visitor);
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
  protected:

@@ -47,6 +47,11 @@ class SVGAnimatedEnumerationBase
 
   void setBaseVal(unsigned short, ExceptionState&);
 
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    SVGAnimatedProperty<SVGEnumerationBase>::TraceWrappers(visitor);
+    ScriptWrappable::TraceWrappers(visitor);
+  }
+
  protected:
   SVGAnimatedEnumerationBase(SVGElement* context_element,
                              const QualifiedName& attribute_name,

@@ -51,7 +51,9 @@ class SVGPointListTearOff final
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->TraceWrappers(contextElement());
+    SVGListPropertyTearOffHelper<SVGPointListTearOff,
+                                 SVGPointList>::TraceWrappers(visitor);
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
  private:

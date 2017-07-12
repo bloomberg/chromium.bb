@@ -66,10 +66,17 @@ class SVGPropertyTearOffBase
     DCHECK(context_element);
     DCHECK(attribute_name != QualifiedName::Null());
     context_element_ = context_element;
+    // Requires SVGPropertyTearOffBase to be the left-most class in the
+    // inheritance hierarchy.
+    ScriptWrappableVisitor::WriteBarrier(this, context_element_.Get());
     attribute_name_ = attribute_name;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
+  }
 
   static void ThrowReadOnly(ExceptionState&);
 
@@ -106,6 +113,10 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(target_);
     SVGPropertyTearOffBase::Trace(visitor);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    SVGPropertyTearOffBase::TraceWrappers(visitor);
   }
 
  protected:

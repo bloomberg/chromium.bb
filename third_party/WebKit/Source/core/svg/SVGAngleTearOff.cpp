@@ -135,7 +135,8 @@ SVGAngleTearOff* SVGAngleTearOff::CreateDetached() {
 }
 
 DEFINE_TRACE_WRAPPERS(SVGAngleTearOff) {
-  visitor->TraceWrappers(contextElement());
+  SVGPropertyTearOff<SVGAngle>::TraceWrappers(visitor);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink

@@ -62,7 +62,9 @@ SVGTransformTearOff* SVGTransformListTearOff::consolidate(
 }
 
 DEFINE_TRACE_WRAPPERS(SVGTransformListTearOff) {
-  visitor->TraceWrappers(contextElement());
+  SVGListPropertyTearOffHelper<SVGTransformListTearOff,
+                               SVGTransformList>::TraceWrappers(visitor);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 
 }  // namespace blink

@@ -45,6 +45,7 @@ SVGStringListTearOff::SVGStringListTearOff(
                                         attribute_name) {}
 
 DEFINE_TRACE_WRAPPERS(SVGStringListTearOff) {
-  visitor->TraceWrappers(contextElement());
+  SVGPropertyTearOff<SVGStringList>::TraceWrappers(visitor);
+  ScriptWrappable::TraceWrappers(visitor);
 }
 }

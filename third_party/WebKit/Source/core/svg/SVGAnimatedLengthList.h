@@ -52,7 +52,8 @@ class SVGAnimatedLengthList final : public SVGAnimatedProperty<SVGLengthList>,
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->TraceWrappers(contextElement());
+    SVGAnimatedProperty<SVGLengthList>::TraceWrappers(visitor);
+    ScriptWrappable::TraceWrappers(visitor);
   }
 
  protected:

@@ -52,6 +52,11 @@ DEFINE_TRACE(SVGTransformTearOff) {
   SVGPropertyTearOff<SVGTransform>::Trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGTransformTearOff) {
+  SVGPropertyTearOff<SVGTransform>::TraceWrappers(visitor);
+  ScriptWrappable::TraceWrappers(visitor);
+}
+
 SVGTransformTearOff* SVGTransformTearOff::CreateDetached() {
   return Create(SVGTransform::Create(blink::kSvgTransformMatrix), nullptr,
                 kPropertyIsNotAnimVal, QualifiedName::Null());
@@ -128,10 +133,6 @@ void SVGTransformTearOff::setSkewY(float y, ExceptionState& exception_state) {
   }
   Target()->SetSkewY(y);
   CommitChange();
-}
-
-DEFINE_TRACE_WRAPPERS(SVGTransformTearOff) {
-  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink
