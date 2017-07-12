@@ -25,7 +25,13 @@ class CORE_EXPORT NGLayoutInputNode {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  NGLayoutInputNode(std::nullptr_t) : box_(nullptr) {}
+  enum NGLayoutInputNodeType {
+    kBlock,
+    kInline
+    // When adding new values, ensure type_ below has enough bits.
+  };
+
+  NGLayoutInputNode(std::nullptr_t) : box_(nullptr), type_(kBlock) {}
 
   bool IsInline() const;
   bool IsBlock() const;
@@ -64,9 +70,12 @@ class CORE_EXPORT NGLayoutInputNode {
 #endif
 
  protected:
-  explicit NGLayoutInputNode(LayoutBox* box) : box_(box) {}
+  NGLayoutInputNode(LayoutBox* box, NGLayoutInputNodeType type)
+      : box_(box), type_(type) {}
 
   LayoutBox* box_;
+
+  unsigned type_ : 1;  // NGLayoutInputNodeType
 };
 
 }  // namespace blink

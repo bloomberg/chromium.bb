@@ -245,9 +245,8 @@ LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
 }  // namespace
 
 NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
-    : NGLayoutInputNode(block) {
+    : NGLayoutInputNode(block, kInline) {
   DCHECK(block);
-  block->SetLayoutNGInline(true);
   if (!block->HasNGInlineNodeData())
     block->ResetNGInlineNodeData();
 }

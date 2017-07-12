@@ -57,11 +57,11 @@ void AppendNodeToString(NGLayoutInputNode node,
 }  // namespace
 
 bool NGLayoutInputNode::IsInline() const {
-  return box_->LayoutNGInline();
+  return type_ == kInline;
 }
 
 bool NGLayoutInputNode::IsBlock() const {
-  return !IsInline();
+  return type_ == kBlock;
 }
 
 bool NGLayoutInputNode::IsFloating() const {
