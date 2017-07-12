@@ -107,8 +107,10 @@ HeadlessPrintManager::PageRangeTextToPages(base::StringPiece page_range_text,
 
     if (range.from < 1 || range.from > range.to)
       return SYNTAX_ERROR;
-    if (range.to > pages_count)
+    if (range.from > pages_count)
       return LIMIT_ERROR;
+    if (range.to > pages_count)
+      range.to = pages_count;
 
     // Page numbers are 1-based in the dictionary.
     // Page numbers are 0-based for the print settings.
