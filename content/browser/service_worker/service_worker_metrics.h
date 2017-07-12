@@ -204,7 +204,7 @@ class ServiceWorkerMetrics {
 
   class ScopedEventRecorder {
    public:
-    explicit ScopedEventRecorder();
+    explicit ScopedEventRecorder(EventType start_worker_purpose);
     ~ScopedEventRecorder();
 
     void RecordEventHandledStatus(EventType event, bool handled);
@@ -221,6 +221,7 @@ class ServiceWorkerMetrics {
                                         size_t fired_events);
 
     std::map<EventType, EventStat> event_stats_;
+    const EventType start_worker_purpose_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedEventRecorder);
   };

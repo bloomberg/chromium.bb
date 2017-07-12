@@ -1447,4 +1447,107 @@ TEST_F(ServiceWorkerFailToStartTest, RestartStalledWorker) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
+class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerNavigationHintUMATest() : ServiceWorkerVersionTest() {}
+
+  void StartWorker(ServiceWorkerMetrics::EventType purpose) {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    version_->StartWorker(purpose, CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+  }
+
+  void StopWorker() {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+  }
+
+  static const char kStartHintPrecision[];
+
+  base::HistogramTester histogram_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHintUMATest);
+};
+
+const char ServiceWorkerNavigationHintUMATest::kStartHintPrecision[] =
+    "ServiceWorker.StartHintPrecision";
+
+TEST_F(ServiceWorkerNavigationHintUMATest, Precision) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  StopWorker();
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 0);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 1);
+
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::MESSAGE);
+  StopWorker();
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 0);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
+
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
+  StopWorker();
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 1);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
+
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_SUB_FRAME);
+  StopWorker();
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 2);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                        CreateReceiverOnCurrentThread(&status1));
+  version_->StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
+                        CreateReceiverOnCurrentThread(&status2));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status2);
+  StopWorker();
+  // The first purpose of starting worker was not a navigation hint.
+  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 0);
+
+  status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
+                        CreateReceiverOnCurrentThread(&status2));
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                        CreateReceiverOnCurrentThread(&status1));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status2);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
+  StopWorker();
+  // The first purpose of starting worker was a navigation hint.
+  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 1);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 1);
+  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 0);
+}
+
+TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
+  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 0);
+
+  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
+  // The UMA must be recorded while restarting.
+  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 1);
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  StopWorker();
+  // The UMA must be recorded when the worker stopped.
+  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 2);
+}
+
 }  // namespace content

@@ -69611,6 +69611,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.StartHintPrecision" enum="BooleanEnabled">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The precision of the speculative launch of Service Workers for navigation
+    hints. Recorded when the worker is stopped. True if a fetch event for a
+    main/sub frame navigation was fired on the worker before it stopped;
+    otherwise, false. False means the speculative launch wasn't helpful.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.StartNewWorker.Status"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
