@@ -1897,12 +1897,6 @@ crbug.com/736050 external/wpt/IndexedDB/transaction-create_in_versionchange.htm 
 crbug.com/736050 external/wpt/IndexedDB/upgrade-transaction-lifecycle-backend-aborted.html [ Pass Failure ]
 crbug.com/736050 external/wpt/IndexedDB/value_recursive.htm [ Pass Failure ]
 
-# rebaseline-cl does not handle ref-tests yet...
-crbug.com/736811 fast/css/text-overflow-ellipsis-multiple-shadows.html [ Pass Failure ]
-crbug.com/736811 external/wpt/css/selectors4/focus-within-004.html [ Pass Failure ]
-crbug.com/736811 fast/canvas/canvas-fillPath-gradient-shadow.html [ Pass Failure ]
-crbug.com/736811 virtual/display_list_2d_canvas/fast/canvas/canvas-fillPath-gradient-shadow.html [ Pass Failure ]
-
 # Failures in non-wpt tests from:
 # https://chromium-review.googlesource.com/c/543695/
 # Possibly became flaky after a change in testharness.js.
@@ -2439,6 +2433,7 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
 
 # [selectors-4]
+crbug.com/706118 external/wpt/css/selectors4/focus-within-004.html [ Failure ]
 crbug.com/706118 external/wpt/css/selectors4/hover-001-manual.html [ Skip ]
 crbug.com/576815 external/wpt/css/selectors4/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors4/selectors-dir-selector-rtl-001.html [ Failure ]
