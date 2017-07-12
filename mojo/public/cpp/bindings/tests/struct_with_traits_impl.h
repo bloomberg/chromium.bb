@@ -98,6 +98,14 @@ class StructWithTraitsImpl {
   std::map<std::string, NestedStructWithTraitsImpl> struct_map_;
 };
 
+// A type which corresponds nominally to the
+// mojo::test::StructWithUnreachableTraits mojom type. Used to test that said
+// type is never serialized, i.e. objects of this type are simply copied into
+// a message as-is when written to an intra-process interface.
+struct StructWithUnreachableTraitsImpl {
+  int32_t magic_number = 0;
+};
+
 // A type which knows how to look like a mojo::test::TrivialStructWithTraits
 // mojom type by way of mojo::StructTraits.
 struct TrivialStructWithTraitsImpl {

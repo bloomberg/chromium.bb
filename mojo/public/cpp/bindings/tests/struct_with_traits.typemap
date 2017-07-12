@@ -18,6 +18,7 @@ deps = [
 type_mappings = [
   "mojo.test.EnumWithTraits=mojo::test::EnumWithTraitsImpl",
   "mojo.test.StructWithTraits=mojo::test::StructWithTraitsImpl",
+  "mojo.test.StructWithUnreachableTraits=mojo::test::StructWithUnreachableTraitsImpl",
   "mojo.test.NestedStructWithTraits=mojo::test::NestedStructWithTraitsImpl",
   "mojo.test.TrivialStructWithTraits=mojo::test::TrivialStructWithTraitsImpl[copyable_pass_by_value]",
   "mojo.test.MoveOnlyStructWithTraits=mojo::test::MoveOnlyStructWithTraitsImpl[move_only]",

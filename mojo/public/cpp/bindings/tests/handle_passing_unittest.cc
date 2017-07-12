@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/sample_factory.mojom.h"
@@ -150,7 +151,7 @@ class SampleFactoryImpl : public sample::Factory {
   Binding<sample::Factory> binding_;
 };
 
-class HandlePassingTest : public testing::Test {
+class HandlePassingTest : public BindingsTestBase {
  public:
   HandlePassingTest() {}
 
@@ -158,8 +159,6 @@ class HandlePassingTest : public testing::Test {
 
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
- private:
-  base::MessageLoop loop_;
 };
 
 void DoStuff(bool* got_response,
@@ -197,7 +196,7 @@ void DoStuff2(bool* got_response,
   closure.Run();
 }
 
-TEST_F(HandlePassingTest, Basic) {
+TEST_P(HandlePassingTest, Basic) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
@@ -232,7 +231,7 @@ TEST_F(HandlePassingTest, Basic) {
   EXPECT_EQ(1, ImportedInterfaceImpl::do_something_count() - count_before);
 }
 
-TEST_F(HandlePassingTest, PassInvalid) {
+TEST_P(HandlePassingTest, PassInvalid) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
@@ -254,7 +253,7 @@ TEST_F(HandlePassingTest, PassInvalid) {
 }
 
 // Verifies DataPipeConsumer can be passed and read from.
-TEST_F(HandlePassingTest, DataPipe) {
+TEST_P(HandlePassingTest, DataPipe) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
@@ -292,7 +291,7 @@ TEST_F(HandlePassingTest, DataPipe) {
   EXPECT_EQ(expected_text_reply, got_text_reply);
 }
 
-TEST_F(HandlePassingTest, PipesAreClosed) {
+TEST_P(HandlePassingTest, PipesAreClosed) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
@@ -318,7 +317,7 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handle1_value));
 }
 
-TEST_F(HandlePassingTest, CreateNamedObject) {
+TEST_P(HandlePassingTest, CreateNamedObject) {
   sample::FactoryPtr factory;
   SampleFactoryImpl factory_impl(MakeRequest(&factory));
 
@@ -350,6 +349,8 @@ TEST_F(HandlePassingTest, CreateNamedObject) {
   EXPECT_EQ(std::string("object1"), name1);
   EXPECT_EQ(std::string("object2"), name2);
 }
+
+INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(HandlePassingTest);
 
 }  // namespace
 }  // namespace test

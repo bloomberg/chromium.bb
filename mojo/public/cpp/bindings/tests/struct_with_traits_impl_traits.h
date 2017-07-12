@@ -99,6 +99,22 @@ struct StructTraits<test::StructWithTraitsDataView,
 };
 
 template <>
+struct StructTraits<test::StructWithUnreachableTraitsDataView,
+                    test::StructWithUnreachableTraitsImpl> {
+ public:
+  static bool ignore_me(const test::StructWithUnreachableTraitsImpl& input) {
+    NOTREACHED();
+    return false;
+  }
+
+  static bool Read(test::StructWithUnreachableTraitsDataView data,
+                   test::StructWithUnreachableTraitsImpl* out) {
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
 struct StructTraits<test::TrivialStructWithTraitsDataView,
                     test::TrivialStructWithTraitsImpl> {
   // Deserialization to test::TrivialStructTraitsImpl.

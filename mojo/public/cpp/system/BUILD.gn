@@ -29,6 +29,8 @@ component("system") {
     "data_pipe.h",
     "functions.h",
     "handle.h",
+    "handle_signal_tracker.cc",
+    "handle_signal_tracker.h",
     "handle_signals_state.h",
     "message.h",
     "message_pipe.cc",

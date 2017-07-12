@@ -167,6 +167,13 @@ if (enable_mojom_typemapping) {
 #       TODO(yzshen): Convert all users to use new JS bindings and remove the
 #       old mode.
 #
+#   support_lazy_serialization (optional)
+#       If set to |true|, generated C++ bindings will effectively prefer to
+#       transmit messages in an unserialized form when going between endpoints
+#       in the same process. This avoids the runtime cost of serialization,
+#       deserialization, and validation logic at the expensive of increased
+#       code size. Defaults to |false|.
+#
 #   component_output_prefix (optional)
 #       The prefix to use for the output_name of any component library emitted
 #       for generated C++ bindings. If this is omitted, C++ bindings targets are
@@ -650,6 +657,11 @@ template("mojom") {
 
         if (!defined(invoker.use_once_callback) || invoker.use_once_callback) {
           args += [ "--use_once_callback" ]
+        }
+
+        if (defined(invoker.support_lazy_serialization) &&
+            invoker.support_lazy_serialization) {
+          args += [ "--support_lazy_serialization" ]
         }
       }
     }

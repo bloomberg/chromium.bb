@@ -351,9 +351,8 @@ MultiplexRouter::MultiplexRouter(
     connector_.AllowWokenUpBySyncWatchOnSameThread();
   }
   connector_.set_incoming_receiver(&filters_);
-  connector_.set_connection_error_handler(
-      base::Bind(&MultiplexRouter::OnPipeConnectionError,
-                 base::Unretained(this)));
+  connector_.set_connection_error_handler(base::Bind(
+      &MultiplexRouter::OnPipeConnectionError, base::Unretained(this)));
 
   std::unique_ptr<MessageHeaderValidator> header_validator =
       base::MakeUnique<MessageHeaderValidator>();
@@ -389,8 +388,8 @@ MultiplexRouter::~MultiplexRouter() {
 
 void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  header_validator_->SetDescription(
-      std::string(name) + " [master] MessageHeaderValidator");
+  header_validator_->SetDescription(std::string(name) +
+                                    " [master] MessageHeaderValidator");
   control_message_handler_.SetDescription(
       std::string(name) + " [master] PipeControlMessageHandler");
   connector_.SetWatcherHeapProfilerTag(name);
@@ -527,6 +526,11 @@ void MultiplexRouter::RaiseError() {
   }
 }
 
+bool MultiplexRouter::PrefersSerializedMessages() {
+  MayAutoLock locker(&lock_);
+  return connector_.PrefersSerializedMessages();
+}
+
 void MultiplexRouter::CloseMessagePipe() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connector_.CloseMessagePipe();
@@ -589,7 +593,8 @@ void MultiplexRouter::EnableTestingMode() {
 bool MultiplexRouter::Accept(Message* message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!message->DeserializeAssociatedEndpointHandles(this))
+  if (message->is_serialized() &&
+      !message->DeserializeAssociatedEndpointHandles(this))
     return false;
 
   scoped_refptr<MultiplexRouter> protector(this);
