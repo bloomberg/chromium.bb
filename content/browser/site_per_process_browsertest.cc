@@ -5445,11 +5445,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
   // window gets or loses focus.
   const char kSetupFocusEvents[] =
       "window.addEventListener('focus', function() {"
-      "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send('%s-got-focus');"
       "});"
       "window.addEventListener('blur', function() {"
-      "  domAutomationController.setAutomationId(0);"
       "  domAutomationController.send('%s-lost-focus');"
       "});";
   std::string script = base::StringPrintf(kSetupFocusEvents, "main", "main");
@@ -5634,11 +5632,9 @@ class SitePerProcessMouseWheelBrowserTest : public SitePerProcessBrowserTest {
         "  wheel_count++;"
         "  if (wheel_count % 2 == 0)"
         "    e.preventDefault();\n"
-        "  domAutomationController.setAutomationId(0);"
         "  domAutomationController.send('wheel: ' + wheel_count);"
         "}"
         "function scroll_handler(e) {"
-        "  domAutomationController.setAutomationId(0);"
         "  domAutomationController.send('scroll: ' + wheel_count);"
         "}"
         "scroll_div = document.getElementById('scrollable_div');"
