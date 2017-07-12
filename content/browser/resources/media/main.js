@@ -27,14 +27,6 @@ var media = (function() {
     manager.updateVideoCaptureCapabilities(videoCaptureCapabilities)
   }
 
-  media.onRendererTerminated = function(renderId) {
-    util.object.forEach(manager.players_, function(playerInfo, id) {
-      if (playerInfo.properties['render_id'] == renderId) {
-        manager.removePlayer(id);
-      }
-    });
-  };
-
   media.updateAudioComponent = function(component) {
     var uniqueComponentId = component.owner_id + ':' + component.component_id;
     switch (component.status) {

@@ -5,19 +5,12 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_PROXY_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_PROXY_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "base/strings/string16.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace content {
 class MediaInternalsMessageHandler;
@@ -28,15 +21,9 @@ class MediaInternalsMessageHandler;
 // threads before destruction.
 class MediaInternalsProxy
     : public base::RefCountedThreadSafe<MediaInternalsProxy,
-                                        BrowserThread::DeleteOnUIThread>,
-      public NotificationObserver {
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   MediaInternalsProxy();
-
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
 
   // Register a Handler and start receiving callbacks from MediaInternals.
   void Attach(MediaInternalsMessageHandler* handler);
@@ -50,19 +37,14 @@ class MediaInternalsProxy
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<MediaInternalsProxy>;
-  ~MediaInternalsProxy() override;
+  virtual ~MediaInternalsProxy();
 
   void GetEverythingOnIOThread();
 
   // Callback for MediaInternals to update. Must be called on UI thread.
   void UpdateUIOnUIThread(const base::string16& update);
 
-  // Call a JavaScript function on the page.
-  void CallJavaScriptFunctionOnUIThread(const std::string& function,
-                                        std::unique_ptr<base::Value> args);
-
   MediaInternalsMessageHandler* handler_;
-  NotificationRegistrar registrar_;
   MediaInternals::UpdateCallback update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsProxy);

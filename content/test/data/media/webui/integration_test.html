@@ -50,14 +50,6 @@ found in the LICENSE file.
         assertEquals(event.params.fps, info.properties.fps);
       };
 
-      // Remove a player.
-      window.testOnRenderTerminated = function() {
-        window.testOnMediaEvent();
-
-        window.media.onRendererTerminated(TEST_RENDERER);
-        assertEquals(undefined, window.manager.players_[TEST_NAME]);
-      };
-
       window.testAudioComponents = function() {
         var event = {
           component_id: 1,
