@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -26,6 +27,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
@@ -83,6 +85,44 @@ class ServiceManagerTestClient : public test::ServiceTestClient,
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerTestClient);
+};
+
+class SimpleService {
+ public:
+  explicit SimpleService(mojom::ServiceRequest request)
+      : context_(base::MakeUnique<ServiceImpl>(this), std::move(request)) {}
+  ~SimpleService() {}
+
+  Connector* connector() { return context_.connector(); }
+
+  void WaitForDisconnect() {
+    base::RunLoop loop;
+    connection_lost_closure_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+ private:
+  class ServiceImpl : public Service {
+   public:
+    explicit ServiceImpl(SimpleService* service) : service_(service) {}
+    ~ServiceImpl() override {}
+
+    bool OnServiceManagerConnectionLost() override {
+      if (service_->connection_lost_closure_)
+        std::move(service_->connection_lost_closure_).Run();
+      return true;
+    }
+
+   private:
+    SimpleService* service_;
+
+    DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+  };
+
+  ServiceContext context_;
+  base::OnceClosure connection_lost_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleService);
 };
 
 }  // namespace
@@ -159,6 +199,21 @@ class ServiceManagerTest : public test::ServiceTest,
   void set_service_pid_received_callback(
       const ServicePIDReceivedCallback& callback) {
     service_pid_received_callback_ = callback;
+  }
+
+  void WaitForInstanceToStart(const Identity& identity) {
+    base::RunLoop loop;
+    set_service_started_callback(base::Bind(
+        [](base::RunLoop* loop, const Identity* expected_identity,
+           const Identity& identity) {
+          EXPECT_EQ(expected_identity->name(), identity.name());
+          EXPECT_EQ(expected_identity->user_id(), identity.user_id());
+          EXPECT_EQ(expected_identity->instance(), identity.instance());
+          loop->Quit();
+        },
+        &loop, &identity));
+    loop.Run();
+    set_service_started_callback(ServiceStartedCallback());
   }
 
   void StartTarget() {
@@ -406,6 +461,42 @@ TEST_F(ServiceManagerTest, PIDReceivedCallback) {
     EXPECT_EQ("service_manager_unittest_embedder", service_name);
     EXPECT_NE(pid, 0u);
   }
+}
+
+TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
+  AddListenerAndWaitForApplications();
+
+  const std::string kTestService = "service_manager_unittest_target";
+  const Identity kInstance1Id(kTestService, mojom::kRootUserID, "1");
+  const Identity kInstance2Id(kTestService, mojom::kRootUserID);
+
+  // Introduce a new service instance for service_manager_unittest_target,
+  // using the client_process capability.
+  mojom::ServicePtr test_service_proxy1;
+  SimpleService test_service1(mojo::MakeRequest(&test_service_proxy1));
+  mojom::PIDReceiverPtr pid_receiver1;
+  connector()->StartService(kInstance1Id, std::move(test_service_proxy1),
+                            mojo::MakeRequest(&pid_receiver1));
+  pid_receiver1->SetPID(42);
+  WaitForInstanceToStart(kInstance1Id);
+  EXPECT_EQ(1u, instances().size());
+  EXPECT_TRUE(ContainsInstanceWithName("service_manager_unittest_target"));
+
+  // Now use the new instance (which does not have client_process capability)
+  // to attempt introduction of yet another instance. This should fail.
+  mojom::ServicePtr test_service_proxy2;
+  SimpleService test_service2(mojo::MakeRequest(&test_service_proxy2));
+  mojom::PIDReceiverPtr pid_receiver2;
+  test_service1.connector()->StartService(kInstance2Id,
+                                          std::move(test_service_proxy2),
+                                          mojo::MakeRequest(&pid_receiver2));
+  pid_receiver2->SetPID(43);
+
+  // The new service should be disconnected immediately.
+  test_service2.WaitForDisconnect();
+
+  // And still only one service instance around.
+  EXPECT_EQ(1u, instances().size());
 }
 
 }  // namespace service_manager
