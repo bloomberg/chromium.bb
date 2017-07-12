@@ -102,14 +102,16 @@
         <div class="menu-label">[[item_.title]]</div>
       </div>
     </div>
-    <div id="descendants" hidden$="[[isClosed_]]" role="group">
-      <template is="dom-repeat"
-          items="[[item_.children]]"
-          as="child"
-          filter="isFolder_">
-        <bookmarks-folder-node item-id="[[child]]"
-            depth="[[getChildDepth_(depth)]]">
-        </bookmarks-folder-node>
+    <div id="descendants" role="group">
+      <template is="dom-if" if="[[!isClosed_]]">
+        <template is="dom-repeat"
+            items="[[item_.children]]"
+            as="child"
+            filter="isFolder_">
+          <bookmarks-folder-node item-id="[[child]]"
+              depth="[[getChildDepth_(depth)]]">
+          </bookmarks-folder-node>
+        </template>
       </template>
     </div>
   </template>
