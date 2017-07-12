@@ -22,12 +22,12 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task_scheduler/task_scheduler.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
+#include "ios/web/public/global_state/ios_global_state.h"
 #include "ios/web/public/user_agent.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
@@ -118,7 +118,8 @@ void CronetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("CronetIos");
+  ios_global_state::Create();
+  ios_global_state::StartTaskScheduler(/*init_params=*/nullptr);
 
   url::Initialize();
   base::CommandLine::Init(0, nullptr);

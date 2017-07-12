@@ -44,8 +44,6 @@ class ChromeWebClient : public web::WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback) override;
-  std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
-      override;
   bool IsSlimNavigationManagerEnabled() const override;
 
  private:

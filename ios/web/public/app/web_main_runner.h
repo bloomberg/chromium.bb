@@ -18,7 +18,7 @@ class WebMainRunner {
   static WebMainRunner* Create();
 
   // Initialize all necessary web state.
-  virtual int Initialize(const WebMainParams& params) = 0;
+  virtual int Initialize(WebMainParams params) = 0;
 
   // Shut down the web state.
   virtual void ShutDown() = 0;

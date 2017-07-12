@@ -6,6 +6,7 @@ import("//services/service_manager/public/service_manifest.gni")
 
 source_set("app") {
   sources = [
+    "task_scheduler_init_params_callback.h",
     "web_main.h",
     "web_main_delegate.h",
     "web_main_parts.h",

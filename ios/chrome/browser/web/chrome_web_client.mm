@@ -15,7 +15,6 @@
 #include "components/payments/core/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/task_scheduler_util/browser/initialization.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_about_rewriter.h"
@@ -185,11 +184,6 @@ void ChromeWebClient::AllowCertificateError(
     const base::Callback<void(bool)>& callback) {
   IOSSSLErrorHandler::HandleSSLError(web_state, cert_error, info, request_url,
                                      overridable, callback);
-}
-
-std::unique_ptr<base::TaskScheduler::InitParams>
-ChromeWebClient::GetTaskSchedulerInitParams() {
-  return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
 }
 
 bool ChromeWebClient::IsSlimNavigationManagerEnabled() const {
