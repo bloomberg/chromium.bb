@@ -306,42 +306,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
-       MultipleQuicVersionFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  std::string quic_versions =
-      net::QuicVersionToString(net::AllSupportedVersions().front()) + "," +
-      net::QuicVersionToString(net::AllSupportedVersions().back());
-
-  field_trial_params["quic_version"] = quic_versions;
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::AllSupportedVersions().front());
-  supported_versions.push_back(net::AllSupportedVersions().back());
-  EXPECT_EQ(supported_versions, params_.quic_supported_versions);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  std::string quic_versions =
-      net::QuicVersionToString(net::AllSupportedVersions().front()) + "," +
-      net::QuicVersionToString(net::AllSupportedVersions().front());
-
-  field_trial_params["quic_version"] = quic_versions;
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  net::QuicVersionVector supported_versions;
-  supported_versions.push_back(net::AllSupportedVersions().front());
-  EXPECT_EQ(supported_versions, params_.quic_supported_versions);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
        QuicConnectionOptionsFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["connection_options"] = "TIME,TBBR,REJ";

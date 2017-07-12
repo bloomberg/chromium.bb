@@ -18,8 +18,9 @@ namespace network_session_configurator {
 // Helper functions to configure HttpNetworkSession::Params based on field
 // trials and command line.
 
-// Parse serialized QUIC versions string.
-net::QuicVersionVector ParseQuicVersions(const std::string& quic_versions);
+// Parse serialized QUIC version string.
+// Return QUIC_VERSION_UNSUPPORTED on failure.
+net::QuicVersion ParseQuicVersion(const std::string& quic_version);
 
 // Configure |params| based on field trials and command line,
 // and forcing (policy or other command line) arguments.
