@@ -164,6 +164,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/autofill/cells:unit_tests",
     "//ios/chrome/browser/ui/bookmarks:unit_tests",
     "//ios/chrome/browser/ui/bookmarks/cells:unit_tests",
+    "//ios/chrome/browser/ui/bubble:unit_tests",
     "//ios/chrome/browser/ui/collection_view:unit_tests",
     "//ios/chrome/browser/ui/collection_view/cells:unit_tests",
     "//ios/chrome/browser/ui/commands:unit_tests",
