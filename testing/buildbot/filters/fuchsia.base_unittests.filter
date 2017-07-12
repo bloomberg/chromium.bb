@@ -128,3 +128,6 @@
 
 # TaskScheduler is racy, causing bot instability: https://crbug.com/735701.
 -*TaskScheduler*
+
+# CancelableSyncSocket tests fail: http://crbug.com/741783
+-CancelableSyncSocket*
