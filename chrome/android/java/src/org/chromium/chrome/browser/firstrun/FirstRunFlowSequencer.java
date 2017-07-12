@@ -45,11 +45,6 @@ import java.util.List;
  * }.start();
  */
 public abstract class FirstRunFlowSequencer  {
-    /**
-     * Sending an intent with this extra will skip the First Run Experience.
-     */
-    public static final String SKIP_FIRST_RUN_EXPERIENCE = "skip_first_run_experience";
-
     private static final int FIRST_RUN_EXPERIENCE_REQUEST_CODE = 101;
     private static final String TAG = "firstrun";
 
@@ -271,10 +266,6 @@ public abstract class FirstRunFlowSequencer  {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
                 || ApiCompatibilityUtils.isDemoUser(context)) {
-            return null;
-        }
-
-        if (fromIntent != null && fromIntent.getBooleanExtra(SKIP_FIRST_RUN_EXPERIENCE, false)) {
             return null;
         }
 
