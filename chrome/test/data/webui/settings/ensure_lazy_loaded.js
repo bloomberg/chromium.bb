@@ -5,6 +5,8 @@
 cr.define('settings', function() {
   function ensureLazyLoaded() {
     // Only trigger lazy loading, if we are in top-level Settings page.
+    // IMPORTANT: This is used when running tests that use the Polymer Bundler
+    // (aka vulcanize).
     if (location.href == location.origin + '/') {
       suiteSetup(function() {
         return new Promise(function(resolve, reject) {
