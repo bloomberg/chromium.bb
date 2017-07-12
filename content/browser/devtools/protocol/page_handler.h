@@ -82,6 +82,7 @@ class PageHandler : public DevToolsDomainHandler,
   void CaptureScreenshot(
       Maybe<std::string> format,
       Maybe<int> quality,
+      Maybe<Page::Viewport> clip,
       Maybe<bool> from_surface,
       std::unique_ptr<CaptureScreenshotCallback> callback) override;
   void PrintToPDF(Maybe<bool> landscape,

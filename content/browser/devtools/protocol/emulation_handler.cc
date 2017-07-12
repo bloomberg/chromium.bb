@@ -226,17 +226,28 @@ Response EmulationHandler::SetDeviceMetricsOverride(
 
   device_emulation_enabled_ = true;
   device_emulation_params_ = params;
-  // if (width > 0 && height > 0)
-  //   widget_host->GetView()->SetSize(gfx::Size(width, height));
+  if (width > 0 && height > 0) {
+    original_view_size_ = widget_host->GetView()->GetViewBounds().size();
+    widget_host->GetView()->SetSize(gfx::Size(width, height));
+  } else {
+    original_view_size_ = gfx::Size();
+  }
   UpdateDeviceEmulationState();
   return Response::OK();
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host)
+    return Response::Error("Target does not support metrics override");
   if (!device_emulation_enabled_)
     return Response::OK();
 
   device_emulation_enabled_ = false;
+  if (original_view_size_.width())
+    widget_host->GetView()->SetSize(original_view_size_);
+  original_view_size_ = gfx::Size();
   UpdateDeviceEmulationState();
   return Response::OK();
 }

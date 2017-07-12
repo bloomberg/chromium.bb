@@ -44,6 +44,13 @@ struct WebDeviceEmulationParams {
   // Scale of emulated view inside available space, not in fit to view mode.
   float scale;
 
+  // Forced viewport offset for screenshots during emulation, (-1, -1) for
+  // disabled.
+  WebFloatPoint viewport_offset;
+
+  // Viewport scale for screenshots during emulation, 0 for current.
+  float viewport_scale;
+
   // Optional screen orientation type, with WebScreenOrientationUndefined
   // value meaning no emulation necessary.
   WebScreenOrientationType screen_orientation_type;
@@ -56,6 +63,8 @@ struct WebDeviceEmulationParams {
         device_scale_factor(0),
         fit_to_view(false),
         scale(1),
+        viewport_offset(-1, -1),
+        viewport_scale(0),
         screen_orientation_type(kWebScreenOrientationUndefined),
         screen_orientation_angle(0) {}
 };
@@ -68,7 +77,9 @@ inline bool operator==(const WebDeviceEmulationParams& a,
          a.view_size == b.view_size && a.fit_to_view == b.fit_to_view &&
          a.offset == b.offset && a.scale == b.scale &&
          a.screen_orientation_type == b.screen_orientation_type &&
-         a.screen_orientation_angle == b.screen_orientation_angle;
+         a.screen_orientation_angle == b.screen_orientation_angle &&
+         a.viewport_offset == b.viewport_offset &&
+         a.viewport_scale == b.viewport_scale;
 }
 
 inline bool operator!=(const WebDeviceEmulationParams& a,
