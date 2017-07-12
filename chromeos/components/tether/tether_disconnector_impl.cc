@@ -2,24 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/tether_disconnector.h"
+#include "chromeos/components/tether/tether_disconnector_impl.h"
 
 #include "base/values.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/pref_names.h"
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
 namespace tether {
 
-TetherDisconnector::TetherDisconnector(
+namespace {
+
+void OnDisconnectError(const std::string& error_name) {
+  PA_LOG(WARNING) << "Error disconnecting from Tether network during shutdown; "
+                  << "Error name: " << error_name;
+}
+
+}  // namespace
+
+// static
+void TetherDisconnectorImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kDisconnectingWifiNetworkGuid, "");
+}
+
+TetherDisconnectorImpl::TetherDisconnectorImpl(
     NetworkConnectionHandler* network_connection_handler,
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
@@ -27,7 +44,8 @@ TetherDisconnector::TetherDisconnector(
     NetworkConfigurationRemover* network_configuration_remover,
     TetherConnector* tether_connector,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
-    TetherHostFetcher* tether_host_fetcher)
+    TetherHostFetcher* tether_host_fetcher,
+    PrefService* pref_service)
     : network_connection_handler_(network_connection_handler),
       network_state_handler_(network_state_handler),
       active_host_(active_host),
@@ -36,14 +54,34 @@ TetherDisconnector::TetherDisconnector(
       tether_connector_(tether_connector),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       tether_host_fetcher_(tether_host_fetcher),
-      weak_ptr_factory_(this) {}
-
-TetherDisconnector::~TetherDisconnector() {
-  if (disconnect_tethering_operation_)
-    disconnect_tethering_operation_->RemoveObserver(this);
+      pref_service_(pref_service),
+      weak_ptr_factory_(this) {
+  std::string disconnecting_wifi_guid_from_previous_session =
+      pref_service_->GetString(prefs::kDisconnectingWifiNetworkGuid);
+  if (!disconnecting_wifi_guid_from_previous_session.empty()) {
+    // If a previous disconnection attempt was aborted before it could be fully
+    // completed, clean up the leftover network configuration.
+    network_configuration_remover_->RemoveNetworkConfiguration(
+        disconnecting_wifi_guid_from_previous_session);
+    pref_service_->ClearPref(prefs::kDisconnectingWifiNetworkGuid);
+  }
 }
 
-void TetherDisconnector::DisconnectFromNetwork(
+TetherDisconnectorImpl::~TetherDisconnectorImpl() {
+  if (disconnect_tethering_operation_)
+    disconnect_tethering_operation_->RemoveObserver(this);
+
+  std::string active_tether_guid = active_host_->GetTetherNetworkGuid();
+  if (!active_tether_guid.empty()) {
+    PA_LOG(INFO) << "There was an active Tether connection during Tether "
+                 << "shutdown. Initiating disconnection from network with GUID "
+                 << "\"" << active_tether_guid << "\"";
+    DisconnectFromNetwork(active_tether_guid, base::Bind(&base::DoNothing),
+                          base::Bind(&OnDisconnectError));
+  }
+}
+
+void TetherDisconnectorImpl::DisconnectFromNetwork(
     const std::string& tether_network_guid,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback) {
@@ -92,7 +130,7 @@ void TetherDisconnector::DisconnectFromNetwork(
                                  success_callback, error_callback);
 }
 
-void TetherDisconnector::DisconnectActiveWifiConnection(
+void TetherDisconnectorImpl::DisconnectActiveWifiConnection(
     const std::string& tether_network_guid,
     const std::string& wifi_network_guid,
     const base::Closure& success_callback,
@@ -105,15 +143,25 @@ void TetherDisconnector::DisconnectActiveWifiConnection(
   // transition which needs to be fixed.
   active_host_->SetActiveHostDisconnected();
 
+  // Before starting disconnection, log the disconnecting Wi-Fi GUID to prefs.
+  // Under normal circumstances, the GUID will be cleared as part of
+  // CleanUpAfterWifiDisconnection(). However, when the user logs out,
+  // this TetherDisconnectorImpl instance will be deleted before one of the
+  // callbacks passed below to DisconnectNetwork() can be called, and the
+  // GUID will remain in prefs until the next time the user logs in, at which
+  // time the associated network configuration can be removed.
+  pref_service_->Set(prefs::kDisconnectingWifiNetworkGuid,
+                     base::Value(wifi_network_guid));
+
   const NetworkState* wifi_network_state =
       network_state_handler_->GetNetworkStateFromGuid(wifi_network_guid);
   if (wifi_network_state) {
     network_connection_handler_->DisconnectNetwork(
         wifi_network_state->path(),
-        base::Bind(&TetherDisconnector::OnSuccessfulWifiDisconnect,
+        base::Bind(&TetherDisconnectorImpl::OnSuccessfulWifiDisconnect,
                    weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
                    success_callback, error_callback),
-        base::Bind(&TetherDisconnector::OnFailedWifiDisconnect,
+        base::Bind(&TetherDisconnectorImpl::OnFailedWifiDisconnect,
                    weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
                    success_callback, error_callback));
   } else {
@@ -129,12 +177,12 @@ void TetherDisconnector::DisconnectActiveWifiConnection(
       device_id_tether_network_guid_map_->GetDeviceIdForTetherNetworkGuid(
           tether_network_guid);
   tether_host_fetcher_->FetchTetherHost(
-      device_id, base::Bind(&TetherDisconnector::OnTetherHostFetched,
+      device_id, base::Bind(&TetherDisconnectorImpl::OnTetherHostFetched,
                             weak_ptr_factory_.GetWeakPtr(), device_id));
 }
 
-void TetherDisconnector::OnOperationFinished(const std::string& device_id,
-                                             bool success) {
+void TetherDisconnectorImpl::OnOperationFinished(const std::string& device_id,
+                                                 bool success) {
   if (success) {
     PA_LOG(INFO) << "Successfully sent DisconnectTetheringRequest to device "
                  << "with ID "
@@ -152,7 +200,7 @@ void TetherDisconnector::OnOperationFinished(const std::string& device_id,
   disconnect_tethering_operation_.reset();
 }
 
-void TetherDisconnector::OnSuccessfulWifiDisconnect(
+void TetherDisconnectorImpl::OnSuccessfulWifiDisconnect(
     const std::string& wifi_network_guid,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback) {
@@ -162,7 +210,7 @@ void TetherDisconnector::OnSuccessfulWifiDisconnect(
                                 success_callback, error_callback);
 }
 
-void TetherDisconnector::OnFailedWifiDisconnect(
+void TetherDisconnectorImpl::OnFailedWifiDisconnect(
     const std::string& wifi_network_guid,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback,
@@ -174,20 +222,21 @@ void TetherDisconnector::OnFailedWifiDisconnect(
                                 success_callback, error_callback);
 }
 
-void TetherDisconnector::CleanUpAfterWifiDisconnection(
+void TetherDisconnectorImpl::CleanUpAfterWifiDisconnection(
     bool success,
     const std::string& wifi_network_guid,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback) {
+  network_configuration_remover_->RemoveNetworkConfiguration(wifi_network_guid);
+  pref_service_->ClearPref(prefs::kDisconnectingWifiNetworkGuid);
+
   if (success)
     success_callback.Run();
   else
     error_callback.Run(NetworkConnectionHandler::kErrorDisconnectFailed);
-
-  network_configuration_remover_->RemoveNetworkConfiguration(wifi_network_guid);
 }
 
-void TetherDisconnector::OnTetherHostFetched(
+void TetherDisconnectorImpl::OnTetherHostFetched(
     const std::string& device_id,
     std::unique_ptr<cryptauth::RemoteDevice> tether_host) {
   if (!tether_host) {

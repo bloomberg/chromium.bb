@@ -135,6 +135,8 @@ void TetherService::Shutdown() {
 
   shut_down_ = true;
 
+  // Remove all observers. This ensures that once Shutdown() is called, no more
+  // calls to UpdateTetherTechnologyState() will be triggered.
   power_manager_client_->RemoveObserver(this);
   session_manager_client_->RemoveObserver(this);
   cryptauth_service_->GetCryptAuthDeviceManager()->RemoveObserver(this);
@@ -143,7 +145,10 @@ void TetherService::Shutdown() {
     adapter_->RemoveObserver(this);
   registrar_.RemoveAll();
 
-  UpdateTetherTechnologyState();
+  // Shut down the feature. Note that this does not change Tether's technology
+  // state in NetworkStateHandler because doing so could cause visual jank just
+  // as the user logs out.
+  StopTether();
 }
 
 void TetherService::SuspendImminent() {
