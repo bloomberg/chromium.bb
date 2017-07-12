@@ -51,7 +51,7 @@ class CustomTabObserver extends EmptyTabObserver {
         if (openedByChrome) {
             mCustomTabsConnection = null;
         } else {
-            mCustomTabsConnection = CustomTabsConnection.getInstance();
+            mCustomTabsConnection = CustomTabsConnection.getInstance(application);
         }
         mSession = session;
         if (!openedByChrome && mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) {

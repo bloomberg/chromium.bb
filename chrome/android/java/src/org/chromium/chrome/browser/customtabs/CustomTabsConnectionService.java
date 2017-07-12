@@ -36,7 +36,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     public IBinder onBind(Intent intent) {
         mBindIntent = intent;
-        mConnection = CustomTabsConnection.getInstance();
+        mConnection = CustomTabsConnection.getInstance(getApplication());
         mConnection.logCall("Service#onBind()", true);
         return super.onBind(intent);
     }

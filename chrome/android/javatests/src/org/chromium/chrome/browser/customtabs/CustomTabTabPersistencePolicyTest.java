@@ -66,9 +66,6 @@ public class CustomTabTabPersistencePolicyTest {
 
     @Before
     public void setUp() throws Exception {
-        // CustomTabsConnection needs a true context, not the mock context set below.
-        CustomTabsConnection.getInstance();
-
         mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                       .getTargetContext()
                                                       .getApplicationContext());
