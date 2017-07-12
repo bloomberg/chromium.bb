@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL onshippingoptionchange attribute is a generic handler for "shippingoptionchange" Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
+FAIL onshippingoptionchange attribute is a handler for PaymentRequestUpdateEvent Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
+FAIL onshippingoptionchange attribute and listeners both work Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
+Harness: the test ran to completion.
+
