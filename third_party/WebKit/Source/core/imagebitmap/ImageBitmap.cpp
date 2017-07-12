@@ -723,7 +723,8 @@ ImageBitmap::ImageBitmap(ImageData* data,
       info = info.makeWH(parsed_options.resize_width,
                          parsed_options.resize_height);
     } else if (crop_rect) {
-      info = info.makeWH(crop_rect->Width(), crop_rect->Height());
+      info = info.makeWH(parsed_options.crop_rect.Width(),
+                         parsed_options.crop_rect.Height());
     } else {
       info = info.makeWH(data->Size().Width(), data->Size().Height());
     }
