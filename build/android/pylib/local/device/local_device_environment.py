@@ -131,7 +131,7 @@ class LocalDeviceEnvironment(environment.Environment):
         self._blacklist, enable_device_files_cache=self._enable_device_cache,
         default_retries=self._max_tries - 1, device_arg=device_arg)
     if not self._devices:
-      raise device_errors.NoDevicesError
+      raise device_errors.NoDevicesError('No devices were available')
 
     if self._logcat_output_file:
       self._logcat_output_dir = tempfile.mkdtemp()
@@ -184,8 +184,6 @@ class LocalDeviceEnvironment(environment.Environment):
     # attached.
     if self._devices is None:
       self._InitDevices()
-    if not self._devices:
-      raise device_errors.NoDevicesError()
     return self._devices
 
   @property
@@ -213,8 +211,9 @@ class LocalDeviceEnvironment(environment.Environment):
     if self.trace_output:
       self.DisableTracing()
 
-    if self._devices is None:
+    if not self._devices:
       return
+
     @handle_shard_failures_with(on_failure=self.BlacklistDevice)
     def tear_down_device(d):
       # Write the cache even when not using it so that it will be ready the
@@ -263,6 +262,10 @@ class LocalDeviceEnvironment(environment.Environment):
       self._blacklist.Extend([device_serial], reason=reason)
     with self._devices_lock:
       self._devices = [d for d in self._devices if str(d) != device_serial]
+    logging.error('Device %s blacklisted: %s', device_serial, reason)
+    if not self._devices:
+      raise device_errors.NoDevicesError(
+          'All devices were blacklisted due to errors')
 
   def DisableTracing(self):
     if not trace_event.trace_is_enabled():
