@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -18,7 +20,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.blink.mojom.document_metadata.Entity;
@@ -33,6 +34,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.url.mojom.Url;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -43,11 +45,13 @@ import java.util.concurrent.TimeoutException;
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=CopylessPaste"})
 @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 public class CopylessPasteTest {
-    // NODATA_PAGE doesn't contain desired metadata.
-
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    // The default timeout (in seconds) for a callback to wait.
+    public static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(10);
+
+    // NODATA_PAGE doesn't contain desired metadata.
     private static final String NODATA_PAGE = "/chrome/test/data/android/about.html";
 
     // DATA_PAGE contains desired metadata.
@@ -140,10 +144,9 @@ public class CopylessPasteTest {
     @Test
     @LargeTest
     @Feature({"CopylessPaste"})
-    @DisabledTest(message = "crbug.com/713895")
     public void testNoMeta() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
-        mCallbackHelper.waitForCallback(0);
+        mCallbackHelper.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         Assert.assertNull(mCallbackHelper.getWebPage());
     }
 
@@ -153,10 +156,9 @@ public class CopylessPasteTest {
     @Test
     @LargeTest
     @Feature({"CopylessPaste"})
-    @DisabledTest(message = "Flaky: crbug.com/713172")
     public void testValid() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
-        mCallbackHelper.waitForCallback(0);
+        mCallbackHelper.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         WebPage extracted = mCallbackHelper.getWebPage();
 
         WebPage expected = new WebPage();
@@ -185,21 +187,16 @@ public class CopylessPasteTest {
     @Test
     @LargeTest
     @Feature({"CopylessPaste"})
-    @DisabledTest(message = "Flaky: crbug.com/713172")
     public void testCache() throws InterruptedException, TimeoutException {
-        // The URLs used here should be unique in CopylessPasteTest.
-        String uniqueTag = "#123";
-        // NODATA_PAGE doesn't contain desired metadata.
-        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
-        mCallbackHelper.waitForCallback(0);
-        // DATA_PAGE contains desired metadata.
-        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
-        mCallbackHelper.waitForCallback(1);
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
+        mCallbackHelper.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
+        mCallbackHelper.waitForCallback(1, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         // Cache hit without entities. Shouldn't parse again.
-        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE + uniqueTag));
+        mActivityTestRule.loadUrl(mTestServer.getURL(NODATA_PAGE));
         // Cache hit with entities. Shouldn't parse again.
-        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE + uniqueTag));
+        mActivityTestRule.loadUrl(mTestServer.getURL(DATA_PAGE));
         Assert.assertEquals(2, mCallbackHelper.getCallCount());
     }
 }
