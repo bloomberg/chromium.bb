@@ -63,7 +63,6 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -4084,6 +4083,10 @@ IN_PROC_BROWSER_TEST_F(ComponentUpdaterPolicyTest, EnabledComponentUpdates) {
 // started.
 class PolicyVariationsServiceTest : public PolicyTest {
  public:
+  PolicyVariationsServiceTest() {
+    variations::VariationsService::EnableForTesting();
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
@@ -4098,15 +4101,9 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
   const std::string default_variations_url =
       variations::VariationsService::GetDefaultVariationsServerURLForTesting();
 
-  // g_browser_process->variations_service() is null by default in Chromium
-  // builds, so construct a VariationsService locally instead.
-  std::unique_ptr<variations::VariationsService> service =
-      variations::VariationsService::CreateForTesting(
-          base::MakeUnique<ChromeVariationsServiceClient>(),
-          g_browser_process->local_state());
-
-  const GURL url = service->GetVariationsServerURL(
-      g_browser_process->local_state(), std::string());
+  const GURL url =
+      g_browser_process->variations_service()->GetVariationsServerURL(
+          g_browser_process->local_state(), std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   std::string value;
