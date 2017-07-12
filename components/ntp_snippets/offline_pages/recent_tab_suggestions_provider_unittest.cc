@@ -116,7 +116,9 @@ class RecentTabSuggestionsProviderTestNoLoad : public testing::Test {
     int tab_id = offline_pages::RecentTabsUIAdapterDelegate::TabIdFromClientId(
         item.client_id);
     RemoveTab(tab_id);
-    ui_adapter_->OfflinePageDeleted(item.offline_id, item.client_id);
+    ui_adapter_->OfflinePageDeleted(
+        offline_pages::OfflinePageModel::DeletedPageInfo(
+            item.offline_id, item.client_id, "" /* request_origin */));
   }
 
   std::set<std::string> ReadDismissedIDsFromPrefs() {

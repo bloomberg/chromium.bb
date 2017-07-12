@@ -25,6 +25,14 @@ OfflinePageModel::SavePageParams::SavePageParams(const SavePageParams& other) {
 
 OfflinePageModel::SavePageParams::~SavePageParams() {}
 
+OfflinePageModel::DeletedPageInfo::DeletedPageInfo(
+    int64_t offline_id,
+    const ClientId& client_id,
+    const std::string& request_origin)
+    : offline_id(offline_id),
+      client_id(client_id),
+      request_origin(request_origin) {}
+
 // static
 bool OfflinePageModel::CanSaveURL(const GURL& url) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
