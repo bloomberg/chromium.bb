@@ -4547,7 +4547,9 @@ test("net_unittests") {
     "base/network_change_notifier_unittest.cc",
     "base/network_change_notifier_win_unittest.cc",
     "base/network_interfaces_getifaddrs_unittest.cc",
+    "base/network_interfaces_linux_unittest.cc",
     "base/network_interfaces_unittest.cc",
+    "base/network_interfaces_win_unittest.cc",
     "base/network_throttle_manager_impl_unittest.cc",
     "base/parse_number_unittest.cc",
     "base/percentile_estimator_unittest.cc",
@@ -5472,7 +5474,10 @@ test("net_unittests") {
     ]
     android_manifest = "//net/android/unittest_support/AndroidManifest.xml"
     set_sources_assignment_filter([])
-    sources += [ "base/address_tracker_linux_unittest.cc" ]
+    sources += [
+      "base/address_tracker_linux_unittest.cc",
+      "base/network_interfaces_linux_unittest.cc",
+    ]
     set_sources_assignment_filter(sources_assignment_filter)
     shard_timeout = 300
   }
