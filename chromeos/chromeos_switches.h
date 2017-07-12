@@ -126,6 +126,7 @@ CHROMEOS_EXPORT extern const char kNeedArcMigrationPolicyCheck[];
 CHROMEOS_EXPORT extern const char kNetworkSettingsConfig[];
 CHROMEOS_EXPORT extern const char kNoteTakingAppIds[];
 CHROMEOS_EXPORT extern const char kOobeBootstrappingMaster[];
+CHROMEOS_EXPORT extern const char kOobeForceShowScreen[];
 CHROMEOS_EXPORT extern const char kOobeGuestSession[];
 CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];
 CHROMEOS_EXPORT extern const char kOobeTimerInterval[];

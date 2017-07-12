@@ -426,6 +426,11 @@ const char kNoteTakingAppIds[] = "note-taking-app-ids";
 // Indicates that if we should start bootstrapping Master OOBE.
 const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
 
+// Forces OOBE/login to force show a comma-separated list of screens from
+// chromeos::kScreenNames in oobe_screen.cc. Supported screens are:
+//   user-image
+const char kOobeForceShowScreen[] = "oobe-force-show-screen";
+
 // Indicates that a guest session has been started before OOBE completion.
 const char kOobeGuestSession[] = "oobe-guest-session";
 

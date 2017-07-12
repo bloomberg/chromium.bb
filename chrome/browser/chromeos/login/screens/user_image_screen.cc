@@ -189,7 +189,10 @@ void UserImageScreen::Show() {
     NOTREACHED();
   }
 
-  if (GetUser()->CanSyncImage()) {
+  // If we have a synced image then we will exit this screen, so do not check
+  // for a synced image if we are force showing the screen for testing.
+  if (!ForceShowOobeScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER) &&
+      GetUser()->CanSyncImage()) {
     if (UserImageSyncObserver* sync_observer = GetSyncObserver()) {
       sync_waiting_start_time_ = base::Time::Now();
       // We have synced image already.
