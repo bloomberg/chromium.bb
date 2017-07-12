@@ -103,7 +103,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter message
 [Worker]     getter name
 [Worker]     method constructor
-[Worker]     method toString
 [Worker] interface DOMMatrix : DOMMatrixReadOnly
 [Worker]     attribute @@toStringTag
 [Worker]     getter a

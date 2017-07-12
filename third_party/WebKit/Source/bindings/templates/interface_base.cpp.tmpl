@@ -602,6 +602,30 @@ static void install{{v8_class}}Template(
   interfaceTemplate->Inherit(intrinsicIteratorPrototypeInterfaceTemplate);
   {% endif %}
 
+  {% if interface_name == 'DOMException' %}
+  // The WebIDL spec states that DOMException objects have a few peculiarities.
+  // One of them is similar to what it mandates for Iterator objects when it
+  // comes to the inheritance chain. Instead of
+  //     DOMException -> prototype -> %ObjectPrototype%
+  // we have
+  //     DOMException -> prototype -> %ErrorPrototype% -> %ObjectPrototype%
+  // so that DOMException objects "inherit" toString() and a few properties
+  // from %ErrorPrototype%.
+  // See https://heycam.github.io/webidl/#es-DOMException-specialness.
+  //
+  // We achieve this with the same hack we use for Iterators: create a new
+  // function template with no prototype, set its "prototype" property to
+  // %ErrorPrototype% and make |interfaceTemplate| inherit from it. When
+  // |interfaceTemplate| is instantiated, its prototype.__proto__ will point to
+  // |intrinsicErrorPrototypeInterfaceTemplate|'s "prototype" property.
+  v8::Local<v8::FunctionTemplate> intrinsicErrorPrototypeInterfaceTemplate =
+      v8::FunctionTemplate::New(isolate);
+  intrinsicErrorPrototypeInterfaceTemplate->RemovePrototype();
+  intrinsicErrorPrototypeInterfaceTemplate->SetIntrinsicDataProperty(
+      V8AtomicString(isolate, "prototype"), v8::kErrorPrototype);
+  interfaceTemplate->Inherit(intrinsicErrorPrototypeInterfaceTemplate);
+  {% endif %}
+
   {% if interface_name == 'Location' %}
   // Symbol.toPrimitive
   // Prevent author scripts to inject Symbol.toPrimitive property into location

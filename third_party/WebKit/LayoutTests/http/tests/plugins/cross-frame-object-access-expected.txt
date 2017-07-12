@@ -8,7 +8,7 @@ Frame: 'childFrame'
 
 This tests that plugins can access objects in other frames as allowed by the security model enforced in WebCore.
 Error: Error: Failed conversion between PP_Var and V8 value
-Error: Uncaught [object DOMException]
+Error: Uncaught
 Error: Error: Failed conversion between PP_Var and V8 value
-Error: Uncaught [object DOMException]
+Error: Uncaught
 SUCCESS

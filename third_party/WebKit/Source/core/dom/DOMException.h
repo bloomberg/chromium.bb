@@ -57,7 +57,6 @@ class CORE_EXPORT DOMException final
   // This is the message that's exposed to JavaScript: never return unsanitized
   // data.
   String message() const { return sanitized_message_; }
-  String toString() const;
 
   // This is the message that's exposed to the console: if an unsanitized
   // message is present, we prefer it.
