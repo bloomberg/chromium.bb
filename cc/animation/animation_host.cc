@@ -345,11 +345,6 @@ void AnimationHost::SetAnimationEvents(
           (*iter).second->NotifyAnimationAborted(events->events_[event_index]);
           break;
 
-        case AnimationEvent::PROPERTY_UPDATE:
-          (*iter).second->NotifyAnimationPropertyUpdate(
-              events->events_[event_index]);
-          break;
-
         case AnimationEvent::TAKEOVER:
           (*iter).second->NotifyAnimationTakeover(events->events_[event_index]);
           break;

@@ -687,16 +687,6 @@ static std::unique_ptr<Animation> CreateAnimation(
   return Animation::Create(std::move(curve), 0, group_id, property);
 }
 
-static const AnimationEvent* GetMostRecentPropertyUpdateEvent(
-    const AnimationEvents* events) {
-  const AnimationEvent* event = 0;
-  for (size_t i = 0; i < events->events_.size(); ++i)
-    if (events->events_[i].type == AnimationEvent::PROPERTY_UPDATE)
-      event = &events->events_[i];
-
-  return event;
-}
-
 TEST_F(ElementAnimationsTest, TrivialTransition) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();
@@ -715,15 +705,11 @@ TEST_F(ElementAnimationsTest, TrivialTransition) {
   player_->UpdateState(true, events.get());
   EXPECT_TRUE(player_->HasTickingAnimation());
   EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
-  // A non-impl-only animation should not generate property updates.
-  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
+
   player_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   player_->UpdateState(true, events.get());
   EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(player_->HasTickingAnimation());
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 }
 
 TEST_F(ElementAnimationsTest, FilterTransition) {
@@ -753,9 +739,6 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
   EXPECT_TRUE(player_->HasTickingAnimation());
   EXPECT_EQ(start_filters,
             client_.GetFilters(element_id_, ElementListType::ACTIVE));
-  // A non-impl-only animation should not generate property updates.
-  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   player_->UpdateState(true, events.get());
@@ -763,16 +746,12 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
             client_.GetFilters(element_id_, ElementListType::ACTIVE).size());
   EXPECT_EQ(FilterOperation::CreateBrightnessFilter(1.5f),
             client_.GetFilters(element_id_, ElementListType::ACTIVE).at(0));
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   player_->UpdateState(true, events.get());
   EXPECT_EQ(end_filters,
             client_.GetFilters(element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(player_->HasTickingAnimation());
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 }
 
 TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
@@ -816,9 +795,6 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   EXPECT_TRUE(player_impl_->HasTickingAnimation());
   EXPECT_EQ(initial_value,
             client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
-  // Scroll offset animations should not generate property updates.
-  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_->NotifyAnimationStarted(events->events_[0]);
   player_->Tick(kInitialTickTime + duration / 2);
@@ -833,16 +809,12 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(200.f, 250.f),
       client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_impl_->Tick(kInitialTickTime + duration);
   player_impl_->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
                                         element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(player_impl_->HasTickingAnimation());
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_->Tick(kInitialTickTime + duration);
   player_->UpdateState(true, nullptr);
@@ -877,9 +849,6 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   EXPECT_TRUE(player_impl_->HasTickingAnimation());
   EXPECT_EQ(initial_value,
             client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
-  // Scroll offset animations should not generate property updates.
-  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   TimeDelta duration = TimeDelta::FromMicroseconds(
       duration_in_seconds * base::Time::kMicrosecondsPerSecond);
@@ -889,16 +858,12 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(200.f, 250.f),
       client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_impl_->Tick(kInitialTickTime + duration);
   player_impl_->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
                                         element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(player_impl_->HasTickingAnimation());
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 }
 
 // This test verifies that if an animation is added after a layer is animated,
@@ -1009,10 +974,6 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   player_impl_->UpdateState(true, events.get());
   DCHECK_EQ(1UL, events->events_.size());
 
-  // Scroll offset animations should not generate property updates.
-  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
-
   player_->NotifyAnimationStarted(events->events_[0]);
   player_->Tick(kInitialTickTime + duration / 2);
   player_->UpdateState(true, nullptr);
@@ -1026,16 +987,12 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(400.f, 150.f),
       client_impl_.GetScrollOffset(element_id_, ElementListType::PENDING));
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_impl_->Tick(kInitialTickTime + duration);
   player_impl_->UpdateState(true, events.get());
   EXPECT_VECTOR2DF_EQ(target_value, client_impl_.GetScrollOffset(
                                         element_id_, ElementListType::PENDING));
   EXPECT_FALSE(player_impl_->HasTickingAnimation());
-  event = GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_FALSE(event);
 
   player_->Tick(kInitialTickTime + duration);
   player_->UpdateState(true, nullptr);
