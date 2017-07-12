@@ -19,6 +19,10 @@
 
 namespace extensions {
 
+namespace {
+bool g_log_for_testing = false;
+}
+
 APIActivityLogger::APIActivityLogger(ScriptContext* context,
                                      Dispatcher* dispatcher)
     : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
@@ -37,8 +41,9 @@ void APIActivityLogger::LogAPICall(
     const std::vector<v8::Local<v8::Value>>& arguments) {
   const Dispatcher* dispatcher =
       ExtensionsRendererClient::Get()->GetDispatcher();
-  if (!dispatcher ||  // dispatcher can be null in unittests.
-      !dispatcher->activity_logging_enabled()) {
+  if ((!dispatcher ||  // dispatcher can be null in unittests.
+       !dispatcher->activity_logging_enabled()) &&
+      !g_log_for_testing) {
     return;
   }
 
@@ -53,11 +58,19 @@ void APIActivityLogger::LogAPICall(
   value_args->Reserve(arguments.size());
   // TODO(devlin): This doesn't protect against custom properties, so it might
   // not perfectly reflect the passed arguments.
-  for (const auto& arg : arguments)
-    value_args->Append(converter->FromV8Value(arg, context));
+  for (const auto& arg : arguments) {
+    std::unique_ptr<base::Value> converted_arg =
+        converter->FromV8Value(arg, context);
+    value_args->Append(converted_arg ? std::move(converted_arg)
+                                     : base::MakeUnique<base::Value>());
+  }
 
   LogInternal(APICALL, script_context->GetExtensionID(), call_name,
               std::move(value_args), std::string());
+}
+
+void APIActivityLogger::set_log_for_testing(bool log) {
+  g_log_for_testing = log;
 }
 
 void APIActivityLogger::LogForJS(
@@ -93,8 +106,12 @@ void APIActivityLogger::LogForJS(
     ActivityLogConverterStrategy strategy;
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);
-    for (size_t i = 0; i < arg_array->Length(); ++i)
-      arguments->Append(converter->FromV8Value(arg_array->Get(i), context));
+    for (size_t i = 0; i < arg_array->Length(); ++i) {
+      std::unique_ptr<base::Value> converted_arg =
+          converter->FromV8Value(arg_array->Get(i), context);
+      arguments->Append(converted_arg ? std::move(converted_arg)
+                                      : base::MakeUnique<base::Value>());
+    }
   }
 
   LogInternal(call_type, extension_id, call_name, std::move(arguments), extra);
