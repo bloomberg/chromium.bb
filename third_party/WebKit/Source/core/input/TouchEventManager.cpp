@@ -361,15 +361,8 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
       for (unsigned i = 0; i < last_coalesced_touch_event_.touches_length;
            ++i) {
         if (last_coalesced_touch_event_.touches[i].id == web_pointer_event.id) {
-          last_coalesced_touch_event_.touches[i].movement_x =
-              web_pointer_event.movement_x;
-          last_coalesced_touch_event_.touches[i].movement_y =
-              web_pointer_event.movement_y;
-          last_coalesced_touch_event_.SetTimeStampSeconds(
-              web_pointer_event.TimeStampSeconds());
-          last_coalesced_touch_event_.touches[i].state =
-              TouchPointStateFromPointerEventType(web_pointer_event.GetType(),
-                                                  false);
+          last_coalesced_touch_event_.touches[i] =
+              CreateWebTouchPointFromWebPointerEvent(web_pointer_event, false);
           result.AddCoalescedEvent(last_coalesced_touch_event_);
 
           // Remove up and canceled points.
