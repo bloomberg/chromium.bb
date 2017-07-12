@@ -166,9 +166,11 @@ Polymer({
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
       this.setIconDone_();
+    } else if (idleReason == settings.ChromeCleanupIdleReason.INITIAL) {
+      this.dismiss_();
     } else {
       // Scanning-related idle reasons are unexpected. Show an error message for
-      // all reasons other than |CLEANING_SUCCEEDED|.
+      // all reasons other than |CLEANING_SUCCEEDED| and |INITIAL|.
       this.title_ = this.i18n('chromeCleanupTitleErrorCantRemove');
       this.enableActionButton_(
           this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
