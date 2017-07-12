@@ -640,7 +640,6 @@ interface DOMException
     getter message
     getter name
     method constructor
-    method toString
 interface DOMImplementation
     attribute @@toStringTag
     method constructor

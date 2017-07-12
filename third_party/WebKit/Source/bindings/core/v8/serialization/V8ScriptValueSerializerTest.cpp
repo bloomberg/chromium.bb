@@ -168,7 +168,7 @@ TEST(V8ScriptValueSerializerTest, ThrowsDataCloneError) {
   ASSERT_TRUE(HadDOMException("DataCloneError", script_state, exception_state));
   DOMException* dom_exception =
       V8DOMException::toImpl(exception_state.GetException().As<v8::Object>());
-  EXPECT_TRUE(dom_exception->toString().Contains("postMessage"));
+  EXPECT_TRUE(dom_exception->message().Contains("postMessage"));
 }
 
 TEST(V8ScriptValueSerializerTest, RethrowsScriptError) {

@@ -40,9 +40,6 @@
     readonly attribute DOMString        name;
     readonly attribute DOMString        message;
 
-    // Override in a Mozilla compatible format
-    [NotEnumerable] DOMString toString();
-
     // ExceptionCode
     const unsigned short      INDEX_SIZE_ERR                 = 1;
     const unsigned short      DOMSTRING_SIZE_ERR             = 2;

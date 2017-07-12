@@ -150,7 +150,6 @@ class PLATFORM_EXPORT V8PerContextData final {
   std::unique_ptr<gin::ContextHolder> context_holder_;
 
   ScopedPersistent<v8::Context> context_;
-  ScopedPersistent<v8::Value> error_prototype_;
 
   ScopedPersistent<v8::Private> private_custom_element_definition_id_;
 
