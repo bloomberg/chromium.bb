@@ -132,7 +132,7 @@ void ExtensionMessageBubbleViewBrowserTest::ClickLearnMoreButton(
   // platform events may happen before the close completes and the dialog needs
   // to report a valid state.
   ui::AXNodeData node_data;
-  bubble->GetAccessibleNodeData(&node_data);
+  bubble->GetWidget()->GetRootView()->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(ui::AX_ROLE_DIALOG, node_data.role);
 }
 

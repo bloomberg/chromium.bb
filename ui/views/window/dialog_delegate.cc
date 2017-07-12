@@ -257,11 +257,6 @@ View* DialogDelegateView::GetContentsView() {
   return this;
 }
 
-void DialogDelegateView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(GetWindowTitle());
-  node_data->role = ui::AX_ROLE_DIALOG;
-}
-
 void DialogDelegateView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this && GetWidget())
