@@ -139,8 +139,8 @@ int GetPropertyByName(const std::string& name,
   return -1;
 }
 
-ui::Layer* GetHighlightingLayer(aura::Window* highlight_window) {
-  for (auto* layer : highlight_window->layer()->children()) {
+ui::Layer* GetHighlightingLayer(aura::Window* root_window) {
+  for (auto* layer : root_window->layer()->children()) {
     if (layer->name() == "HighlightingLayer")
       return layer;
   }
@@ -166,9 +166,8 @@ std::unique_ptr<DOM::HighlightConfig> CreateHighlightConfig(
       .build();
 }
 
-void ExpectHighlighted(const gfx::Rect& bounds,
-                       aura::Window* highlight_window) {
-  ui::Layer* highlighting_layer = GetHighlightingLayer(highlight_window);
+void ExpectHighlighted(const gfx::Rect& bounds, aura::Window* root_window) {
+  ui::Layer* highlighting_layer = GetHighlightingLayer(root_window);
   EXPECT_TRUE(highlighting_layer->visible());
   EXPECT_EQ(bounds, highlighting_layer->bounds());
   EXPECT_EQ(kBackgroundColor, highlighting_layer->GetTargetColor());
