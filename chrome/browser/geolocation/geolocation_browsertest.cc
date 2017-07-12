@@ -96,7 +96,6 @@ IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
   registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
   std::string script(base::StringPrintf(
-      "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
       iframe_id, url.spec().c_str()));
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
