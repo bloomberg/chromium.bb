@@ -2278,7 +2278,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # shown to be green. All new paladins should start in this group and get
   # promoted to _paladin_important_boards.
   # A paladin is generally considered good enough for important if it can
-  # pass the last ~20 build attempts, e.g. the builder page shows all green.
+  # pass the last ~20 build attempts, e.g. the builder page shows mostly green.
+  # Note that paladins are expected to fail occasionally as they block bad CLs
+  # from landing, a red paladin from a bad CL in the CQ is a working paladin.
   _paladin_new_boards = frozenset([
       'auron_paine',
       'auron_yuna',
