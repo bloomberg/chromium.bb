@@ -23,6 +23,9 @@
 // Sort flags in each section alphabetically by the k...Name constant. Follow
 // that by the k...Description constant and any special values associated with
 // that.
+//
+// Put #ifdefed flags in the appropriate section toward the bottom, don't
+// intersperse the file with ifdefs.
 
 namespace flag_descriptions {
 
@@ -782,12 +785,6 @@ extern const char kV8CacheStrategiesForCacheStorageDescription[];
 extern const char kV8CacheStrategiesForCacheStorageNormal[];
 extern const char kV8CacheStrategiesForCacheStorageAggressive[];
 
-extern const char kV8DisableIgnitionTurboName[];
-extern const char kV8DisableIgnitionTurboDescription[];
-
-extern const char kV8FutureName[];
-extern const char kV8FutureDescription[];
-
 extern const char kVibrateRequiresUserGestureName[];
 extern const char kVibrateRequiresUserGestureDescription[];
 
@@ -832,11 +829,6 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
-
-#if BUILDFLAG(ENABLE_VR)
-extern const char kWebvrExperimentalRenderingName[];
-extern const char kWebvrExperimentalRenderingDescription[];
-#endif  // ENABLE_VR
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
@@ -990,19 +982,6 @@ extern const char kEnableOskOverscrollDescription[];
 
 extern const char kEnableSpecialLocaleName[];
 extern const char kEnableSpecialLocaleDescription[];
-
-#if BUILDFLAG(ENABLE_VR)
-
-extern const char kEnableVrShellName[];
-extern const char kEnableVrShellDescription[];
-
-extern const char kVrCustomTabBrowsingName[];
-extern const char kVrCustomTabBrowsingDescription[];
-
-extern const char kWebVrAutopresentName[];
-extern const char kWebVrAutopresentDescription[];
-
-#endif  // BUILDFLAG(ENABLE_VR)
 
 extern const char kEnableWebapk[];
 extern const char kEnableWebapkDescription[];
@@ -1491,6 +1470,26 @@ extern const char kAutomaticTabDiscardingDescription[];
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 // Feature flags --------------------------------------------------------------
+
+#if BUILDFLAG(ENABLE_VR)
+
+#if defined(OS_ANDROID)
+
+extern const char kEnableVrShellName[];
+extern const char kEnableVrShellDescription[];
+
+extern const char kVrCustomTabBrowsingName[];
+extern const char kVrCustomTabBrowsingDescription[];
+
+extern const char kWebVrAutopresentName[];
+extern const char kWebVrAutopresentDescription[];
+
+#endif  // OS_ANDROID
+
+extern const char kWebvrExperimentalRenderingName[];
+extern const char kWebvrExperimentalRenderingDescription[];
+
+#endif  // ENABLE_VR
 
 #if !defined(DISABLE_NACL)
 
