@@ -28,6 +28,9 @@ class CORE_EXPORT NGFragment {
     return static_cast<NGWritingMode>(writing_mode_);
   }
 
+  // TODO(ikilpatrick): Remove once block layout algorithm refactoring complete.
+  explicit operator bool() { return physical_fragment_ != nullptr; }
+
   // Returns the border-box size.
   LayoutUnit InlineSize() const;
   LayoutUnit BlockSize() const;

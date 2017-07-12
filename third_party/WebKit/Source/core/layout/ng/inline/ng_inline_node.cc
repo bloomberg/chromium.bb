@@ -354,7 +354,11 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
                                     ToNGInlineBreakToken(break_token));
   RefPtr<NGLayoutResult> result = algorithm.Layout();
-  CopyFragmentDataToLayoutBox(*constraint_space, result.Get());
+
+  if (result->Status() == NGLayoutResult::kSuccess &&
+      result->UnpositionedFloats().IsEmpty())
+    CopyFragmentDataToLayoutBox(*constraint_space, result.Get());
+
   return result;
 }
 
@@ -373,7 +377,10 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
       NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
   container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
-  NGLineBreaker line_breaker(node, space.Get(), &container_builder);
+  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
+  NGLineBreaker line_breaker(node, space.Get(), &container_builder,
+                             &unpositioned_floats);
+
   NGLineInfo line_info;
   LayoutUnit result;
   while (line_breaker.NextLine(&line_info, NGLogicalOffset())) {

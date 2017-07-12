@@ -57,7 +57,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       space_builder_(space) {
-  container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
+  unpositioned_floats_ = ConstraintSpace().UnpositionedFloats();
 
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
@@ -78,7 +78,7 @@ bool NGInlineLayoutAlgorithm::CreateLine(
     NGLogicalOffset origin_point =
         GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
     PositionPendingFloats(origin_point.block_offset, &container_builder_,
-                          MutableConstraintSpace());
+                          &unpositioned_floats_, MutableConstraintSpace());
   }
 
   return true;
@@ -447,22 +447,41 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // border and padding of the container block.
   content_size_ = LayoutUnit();
 
-  // Check if we can resolve the BFC offset.
+  // We can resolve our BFC offset if we aren't an empty inline.
   if (!Node().IsEmptyInline()) {
     DCHECK(!container_builder_.BfcOffset());
     LayoutUnit bfc_block_offset = constraint_space_->BfcOffset().block_offset +
                                   constraint_space_->MarginStrut().Sum();
     MaybeUpdateFragmentBfcOffset(*constraint_space_, bfc_block_offset,
                                  &container_builder_);
-    PositionPendingFloats(bfc_block_offset, &container_builder_,
-                          constraint_space_);
+
+    // If we have unpositioned floats from a previous sibling, we need to abort
+    // our layout, and tell our parent that we now know our BFC offset.
+    if (!unpositioned_floats_.IsEmpty()) {
+      // TODO(ikilpatrick): This should be swapping in its unpositioned floats
+      // before aborting, but as because NGLayoutInputNode::IsInline isn't
+      // stable, we can't do this yet.
+      // container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
+      return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
+    }
   }
 
   NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
-                             BreakToken());
+                             &unpositioned_floats_, BreakToken());
   NGLineInfo line_info;
   while (line_breaker.NextLine(&line_info, {LayoutUnit(), content_size_}))
     CreateLine(&line_info, line_breaker.CreateBreakToken());
+
+  // Place any remaining floats which couldn't fit on the previous line.
+  // TODO(ikilpatrick): This is duplicated from CreateLine, but flushes any
+  // floats if we didn't create a line-box. Refactor this such that this isn't
+  // needed.
+  if (container_builder_.BfcOffset()) {
+    NGLogicalOffset origin_point =
+        GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
+    PositionPendingFloats(origin_point.block_offset, &container_builder_,
+                          &unpositioned_floats_, MutableConstraintSpace());
+  }
 
   // TODO(kojii): Check if the line box width should be content or available.
   NGLogicalSize size(max_inline_size_, content_size_);
@@ -473,6 +492,15 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // removed LayoutInline splitting.
   if (!container_builder_.BfcOffset()) {
     container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
+  }
+
+  // If we've got any unpositioned floats here, we must be an empty inline
+  // without a BFC offset. We need to pass our unpositioned floats to our next
+  // sibling.
+  if (!unpositioned_floats_.IsEmpty()) {
+    DCHECK(Node().IsEmptyInline());
+    DCHECK(!container_builder_.BfcOffset());
+    container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
   }
 
   PropagateBaselinesFromChildren();

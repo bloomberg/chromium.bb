@@ -26,9 +26,17 @@ namespace blink {
 // NGFragment et al.
 class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
  public:
+  enum NGLayoutResultStatus {
+    kSuccess = 0,
+    kBfcOffsetResolved = 1,
+    // When adding new values, make sure the bit size of |status_| is large
+    // enough to store.
+  };
+
   RefPtr<NGPhysicalFragment> PhysicalFragment() const {
     return physical_fragment_;
   }
+
   RefPtr<NGPhysicalFragment>& MutablePhysicalFragment() {
     return physical_fragment_;
   }
@@ -50,6 +58,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return unpositioned_floats_;
   }
 
+  NGLayoutResultStatus Status() const {
+    return static_cast<NGLayoutResultStatus>(status_);
+  }
+
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
     return bfc_offset_;
   }
@@ -64,7 +76,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                      out_of_flow_positioned_descendants,
                  Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
                  const WTF::Optional<NGLogicalOffset> bfc_offset,
-                 const NGMarginStrut end_margin_strut);
+                 const NGMarginStrut end_margin_strut,
+                 NGLayoutResultStatus status);
 
   RefPtr<NGPhysicalFragment> physical_fragment_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
@@ -72,6 +85,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
   const WTF::Optional<NGLogicalOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
+
+  unsigned status_ : 1;
 };
 
 }  // namespace blink

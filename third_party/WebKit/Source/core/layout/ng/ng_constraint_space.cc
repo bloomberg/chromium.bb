@@ -102,8 +102,15 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     fixed_block = true;
   }
 
-  bool is_new_fc =
-      box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext();
+  bool is_new_fc = true;
+  // TODO(ikilpatrick): This DCHECK needs to be enabled once we've switched
+  // LayoutTableCell, etc over to LayoutNG.
+  //
+  // We currently need to "force" LayoutNG roots to be formatting contexts so
+  // that floats have layout performed on them.
+  //
+  // DCHECK(is_new_fc,
+  //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
 
   FloatSize icb_float_size = box.View()->ViewportSizeForViewportUnits();
   NGPhysicalSize initial_containing_block_size{
