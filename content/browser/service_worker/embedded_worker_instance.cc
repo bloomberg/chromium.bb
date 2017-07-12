@@ -244,12 +244,10 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
  public:
   WorkerProcessHandle(const base::WeakPtr<ServiceWorkerContextCore>& context,
                       int embedded_worker_id,
-                      int process_id,
-                      bool is_new_process)
+                      int process_id)
       : context_(context),
         embedded_worker_id_(embedded_worker_id),
-        process_id_(process_id),
-        is_new_process_(is_new_process) {
+        process_id_(process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id_);
   }
@@ -266,14 +264,12 @@ class EmbeddedWorkerInstance::WorkerProcessHandle {
   }
 
   int process_id() const { return process_id_; }
-  bool is_new_process() const { return is_new_process_; }
 
  private:
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   const int embedded_worker_id_;
   const int process_id_;
-  const bool is_new_process_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHandle);
 };
@@ -406,33 +402,30 @@ class EmbeddedWorkerInstance::StartTask {
       return;
     }
 
-    const bool is_new_process = process_info->is_new_process;
-    TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
-                                    instance_, "Is New Process",
-                                    is_new_process);
-    if (is_installed_)
-      ServiceWorkerMetrics::RecordProcessCreated(is_new_process);
-
     ServiceWorkerMetrics::StartSituation start_situation =
-        ServiceWorkerMetrics::StartSituation::UNKNOWN;
+        process_info->start_situation;
+    TRACE_EVENT_NESTABLE_ASYNC_END1(
+        "ServiceWorker", "ALLOCATING_PROCESS", instance_, "StartSituation",
+        ServiceWorkerMetrics::StartSituationToString(start_situation));
+    if (is_installed_) {
+      ServiceWorkerMetrics::RecordProcessCreated(
+          start_situation == ServiceWorkerMetrics::StartSituation::NEW_PROCESS);
+    }
+
     if (started_during_browser_startup_)
       start_situation = ServiceWorkerMetrics::StartSituation::DURING_STARTUP;
-    else if (is_new_process)
-      start_situation = ServiceWorkerMetrics::StartSituation::NEW_PROCESS;
-    else
-      start_situation = ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS;
 
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
     instance_->OnProcessAllocated(
-        base::MakeUnique<WorkerProcessHandle>(
-            instance_->context_, instance_->embedded_worker_id(),
-            process_info->process_id, is_new_process),
+        base::MakeUnique<WorkerProcessHandle>(instance_->context_,
+                                              instance_->embedded_worker_id(),
+                                              process_info->process_id),
         start_situation);
 
     // Notify the instance that it is registered to the DevTools manager.
-    instance_->OnRegisteredToDevToolsManager(
-        is_new_process, std::move(devtools_proxy), params->wait_for_debugger);
+    instance_->OnRegisteredToDevToolsManager(std::move(devtools_proxy),
+                                             params->wait_for_debugger);
 
     status = instance_->SendStartWorker(std::move(params));
     if (status != SERVICE_WORKER_OK) {
@@ -613,7 +606,6 @@ void EmbeddedWorkerInstance::OnProcessAllocated(
 }
 
 void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
-    bool is_new_process,
     std::unique_ptr<DevToolsProxy> devtools_proxy,
     bool wait_for_debugger) {
   if (devtools_proxy) {
@@ -929,11 +921,6 @@ int EmbeddedWorkerInstance::process_id() const {
   if (process_handle_)
     return process_handle_->process_id();
   return ChildProcessHost::kInvalidUniqueID;
-}
-
-bool EmbeddedWorkerInstance::is_new_process() const {
-  DCHECK(process_handle_);
-  return process_handle_->is_new_process();
 }
 
 int EmbeddedWorkerInstance::worker_devtools_agent_route_id() const {

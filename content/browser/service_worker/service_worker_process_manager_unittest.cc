@@ -136,7 +136,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // An existing process should be allocated to the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(host1->GetID(), process_info.process_id);
-  EXPECT_FALSE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS,
+            process_info.start_situation);
   EXPECT_EQ(1u, host1->GetWorkerRefCount());
   EXPECT_EQ(0u, host2->GetWorkerRefCount());
   EXPECT_EQ(1u, instance_info.size());
@@ -154,7 +155,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // The same process should be allocated to the second worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(host1->GetID(), process_info.process_id);
-  EXPECT_FALSE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS,
+            process_info.start_situation);
   EXPECT_EQ(2u, host1->GetWorkerRefCount());
   EXPECT_EQ(0u, host2->GetWorkerRefCount());
   EXPECT_EQ(2u, instance_info.size());
@@ -171,7 +173,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // A different existing process should be allocated to the third worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(host2->GetID(), process_info.process_id);
-  EXPECT_FALSE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS,
+            process_info.start_situation);
   EXPECT_EQ(2u, host1->GetWorkerRefCount());
   EXPECT_EQ(1u, host2->GetWorkerRefCount());
   EXPECT_EQ(3u, instance_info.size());
@@ -206,6 +209,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
 
   // Create a process that is hosting a frame with URL |pattern_|.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
+  host->Init();
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
                                           kSiteUrl);
 
@@ -222,7 +226,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // An existing process should be allocated to the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_EQ(host->GetID(), process_info.process_id);
-  EXPECT_TRUE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::EXISTING_UNREADY_PROCESS,
+            process_info.start_situation);
   EXPECT_EQ(1u, host->GetWorkerRefCount());
   EXPECT_EQ(1u, instance_info.size());
   std::map<int, ServiceWorkerProcessManager::ProcessInfo>::iterator found =
@@ -262,7 +267,8 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // A new process should be allocated to the worker.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_NE(host->GetID(), process_info.process_id);
-  EXPECT_TRUE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::NEW_PROCESS,
+            process_info.start_situation);
   EXPECT_EQ(0u, host->GetWorkerRefCount());
   EXPECT_EQ(1u, instance_info.size());
   std::map<int, ServiceWorkerProcessManager::ProcessInfo>::iterator found =
@@ -290,7 +296,8 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
   // Allocating a process in shutdown should abort.
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
   EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, process_info.process_id);
-  EXPECT_FALSE(process_info.is_new_process);
+  EXPECT_EQ(ServiceWorkerMetrics::StartSituation::UNKNOWN,
+            process_info.start_situation);
   EXPECT_TRUE(process_manager_->instance_info_.empty());
 }
 

@@ -33388,8 +33388,14 @@ from previous Chrome versions.
   <int value="3"
       label="The worker was stopping. Once stopped, the browser started it up"/>
   <int value="4" label="The worker started up in a new process."/>
-  <int value="5" label="The worker started up in an existing process."/>
+  <int value="5" label="The worker started up in an existing process.">
+    <obsolete>
+      Deprecated as of 07/2017. Replaced by 7 and 8.
+    </obsolete>
+  </int>
   <int value="6" label="The worker started up during browser startup."/>
+  <int value="7" label="The worker started up in an existing unready process."/>
+  <int value="8" label="The worker started up in an existing ready process."/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult">

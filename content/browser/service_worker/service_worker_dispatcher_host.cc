@@ -1027,12 +1027,6 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     base::debug::ScopedCrashKey scope_provider_host_pid(
         "swdh_set_hosted_version_host_pid",
         base::IntToString(provider_host->process_id()));
-    if (version->embedded_worker()->process_id() !=
-        ChildProcessHost::kInvalidUniqueID) {
-      base::debug::ScopedCrashKey scope_is_new_process(
-          "swdh_set_hosted_version_is_new_process",
-          version->embedded_worker()->is_new_process() ? "true" : "false");
-    }
     base::debug::ScopedCrashKey scope_worker_restart_count(
         "swdh_set_hosted_version_restart_count",
         base::IntToString(version->embedded_worker()->restart_count()));
