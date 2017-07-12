@@ -141,7 +141,28 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
   return nullptr;
 }
 
+// Walk the AXTree and ensure that all wrappers are created
+void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
+  for (int i = 0; i < node->child_count(); i++) {
+    auto* child = node->children()[i];
+    TestAXNodeWrapper::GetOrCreate(tree, child);
+
+    BuildAllWrappers(tree, child);
+  }
+}
+
 AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
+  // Force creating all of the wrappers for this tree.
+  BuildAllWrappers(tree_, node_);
+
+  for (auto it = g_node_to_wrapper_map.begin();
+       it != g_node_to_wrapper_map.end(); ++it) {
+    AXNode* node = it->first;
+    if (node->id() == id) {
+      TestAXNodeWrapper* wrapper = it->second;
+      return wrapper->ax_platform_node();
+    }
+  }
   return nullptr;
 }
 
