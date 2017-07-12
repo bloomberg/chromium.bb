@@ -15,15 +15,15 @@ namespace cc {
 
 namespace {
 
-constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 }
 
 class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
  public:
-  explicit FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id)
+  explicit FakeFrameSinkManagerClient(const viz::FrameSinkId& frame_sink_id)
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {}
 
-  FakeFrameSinkManagerClient(const FrameSinkId& frame_sink_id,
+  FakeFrameSinkManagerClient(const viz::FrameSinkId& frame_sink_id,
                              FrameSinkManager* manager)
       : source_(nullptr), manager_(nullptr), frame_sink_id_(frame_sink_id) {
     DCHECK(manager);
@@ -38,7 +38,7 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
   }
 
   BeginFrameSource* source() { return source_; }
-  const FrameSinkId& frame_sink_id() { return frame_sink_id_; }
+  const viz::FrameSinkId& frame_sink_id() { return frame_sink_id_; }
 
   void Register(FrameSinkManager* manager) {
     EXPECT_EQ(nullptr, manager_);
@@ -61,7 +61,7 @@ class FakeFrameSinkManagerClient : public FrameSinkManagerClient {
  private:
   BeginFrameSource* source_;
   FrameSinkManager* manager_;
-  FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
 };
 
 class FrameSinkManagerTest : public testing::Test {
@@ -73,12 +73,12 @@ class FrameSinkManagerTest : public testing::Test {
 
   FrameSinkManagerTest() {
     for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
-      manager_.RegisterFrameSinkId(FrameSinkId(i, i));
+      manager_.RegisterFrameSinkId(viz::FrameSinkId(i, i));
   }
 
   ~FrameSinkManagerTest() override {
     for (size_t i = 0; i < MAX_FRAME_SINK; ++i)
-      manager_.InvalidateFrameSinkId(FrameSinkId(i, i));
+      manager_.InvalidateFrameSinkId(viz::FrameSinkId(i, i));
   }
 
  protected:
@@ -86,8 +86,8 @@ class FrameSinkManagerTest : public testing::Test {
 };
 
 TEST_F(FrameSinkManagerTest, SingleClients) {
-  FakeFrameSinkManagerClient client(FrameSinkId(1, 1));
-  FakeFrameSinkManagerClient other_client(FrameSinkId(2, 2));
+  FakeFrameSinkManagerClient client(viz::FrameSinkId(1, 1));
+  FakeFrameSinkManagerClient other_client(viz::FrameSinkId(2, 2));
   StubBeginFrameSource source;
 
   EXPECT_EQ(nullptr, client.source());
@@ -152,13 +152,13 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   BeginFrameSource* begin_frame_source = manager_.GetPrimaryBeginFrameSource();
   begin_frame_source->AddObserver(&obs);
 
-  FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
+  FakeFrameSinkManagerClient root1(viz::FrameSinkId(1, 1), &manager_);
   std::unique_ptr<FakeExternalBeginFrameSource> external_source1 =
       base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source1.get(),
                                     root1.frame_sink_id());
 
-  FakeFrameSinkManagerClient root2(FrameSinkId(2, 2), &manager_);
+  FakeFrameSinkManagerClient root2(viz::FrameSinkId(2, 2), &manager_);
   std::unique_ptr<FakeExternalBeginFrameSource> external_source2 =
       base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source2.get(),
@@ -207,11 +207,11 @@ TEST_F(FrameSinkManagerTest, MultipleDisplays) {
 
   // root1 -> A -> B
   // root2 -> C
-  FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
-  FakeFrameSinkManagerClient root2(FrameSinkId(2, 2), &manager_);
-  FakeFrameSinkManagerClient client_a(FrameSinkId(3, 3), &manager_);
-  FakeFrameSinkManagerClient client_b(FrameSinkId(4, 4), &manager_);
-  FakeFrameSinkManagerClient client_c(FrameSinkId(5, 5), &manager_);
+  FakeFrameSinkManagerClient root1(viz::FrameSinkId(1, 1), &manager_);
+  FakeFrameSinkManagerClient root2(viz::FrameSinkId(2, 2), &manager_);
+  FakeFrameSinkManagerClient client_a(viz::FrameSinkId(3, 3), &manager_);
+  FakeFrameSinkManagerClient client_b(viz::FrameSinkId(4, 4), &manager_);
+  FakeFrameSinkManagerClient client_c(viz::FrameSinkId(5, 5), &manager_);
 
   manager_.RegisterBeginFrameSource(&root1_source, root1.frame_sink_id());
   manager_.RegisterBeginFrameSource(&root2_source, root2.frame_sink_id());
@@ -269,15 +269,15 @@ TEST_F(FrameSinkManagerTest, MultipleDisplays) {
 }
 
 // This test verifies that a BeginFrameSource path to the root from a
-// FrameSinkId is preserved even if that FrameSinkId has no children
+// viz::FrameSinkId is preserved even if that viz::FrameSinkId has no children
 // and does not have a corresponding FrameSinkManagerClient.
 TEST_F(FrameSinkManagerTest, ParentWithoutClientRetained) {
   StubBeginFrameSource root_source;
 
-  constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
-  constexpr FrameSinkId kFrameSinkIdA(2, 2);
-  constexpr FrameSinkId kFrameSinkIdB(3, 3);
-  constexpr FrameSinkId kFrameSinkIdC(4, 4);
+  constexpr viz::FrameSinkId kFrameSinkIdRoot(1, 1);
+  constexpr viz::FrameSinkId kFrameSinkIdA(2, 2);
+  constexpr viz::FrameSinkId kFrameSinkIdB(3, 3);
+  constexpr viz::FrameSinkId kFrameSinkIdC(4, 4);
 
   FakeFrameSinkManagerClient root(kFrameSinkIdRoot, &manager_);
   FakeFrameSinkManagerClient client_b(kFrameSinkIdB, &manager_);
@@ -313,10 +313,10 @@ TEST_F(FrameSinkManagerTest,
        ParentWithoutClientRetained_LateBeginFrameRegistration) {
   StubBeginFrameSource root_source;
 
-  constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
-  constexpr FrameSinkId kFrameSinkIdA(2, 2);
-  constexpr FrameSinkId kFrameSinkIdB(3, 3);
-  constexpr FrameSinkId kFrameSinkIdC(4, 4);
+  constexpr viz::FrameSinkId kFrameSinkIdRoot(1, 1);
+  constexpr viz::FrameSinkId kFrameSinkIdA(2, 2);
+  constexpr viz::FrameSinkId kFrameSinkIdB(3, 3);
+  constexpr viz::FrameSinkId kFrameSinkIdC(4, 4);
 
   FakeFrameSinkManagerClient root(kFrameSinkIdRoot, &manager_);
   FakeFrameSinkManagerClient client_b(kFrameSinkIdB, &manager_);
@@ -354,9 +354,9 @@ TEST_F(FrameSinkManagerTest,
 class SurfaceManagerOrderingTest : public FrameSinkManagerTest {
  public:
   SurfaceManagerOrderingTest()
-      : client_a_(FrameSinkId(1, 1)),
-        client_b_(FrameSinkId(2, 2)),
-        client_c_(FrameSinkId(3, 3)),
+      : client_a_(viz::FrameSinkId(1, 1)),
+        client_b_(viz::FrameSinkId(2, 2)),
+        client_c_(viz::FrameSinkId(3, 3)),
         hierarchy_registered_(false),
         clients_registered_(false),
         bfs_registered_(false) {

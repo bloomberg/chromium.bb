@@ -484,7 +484,7 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
     WindowMusType window_mus_type,
     const ui::mojom::WindowData& window_data,
     int64_t display_id,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   std::unique_ptr<WindowPortMus> window_port =
       CreateWindowPortMus(window_data, window_mus_type);
   roots_.insert(window_port.get());
@@ -584,7 +584,7 @@ void WindowTreeClient::OnEmbedImpl(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   // WARNING: this is only called if WindowTreeClient was created as the
   // result of an embedding.
   client_id_ = client_id;
@@ -602,7 +602,7 @@ void WindowTreeClient::OnEmbedImpl(
 
 void WindowTreeClient::OnSetDisplayRootDone(
     Id window_id,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   // The only way SetDisplayRoot() should fail is if we've done something wrong.
   CHECK(local_surface_id.has_value());
   WindowMus* window = GetWindowByServerId(window_id);
@@ -617,7 +617,7 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   DCHECK(window_manager_delegate_);
 
   got_initial_displays_ = true;
@@ -650,7 +650,7 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
 void WindowTreeClient::SetWindowBoundsFromServer(
     WindowMus* window,
     const gfx::Rect& revert_bounds_in_pixels,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   if (IsRoot(window)) {
     // WindowTreeHost expects bounds to be in pixels.
     GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds_in_pixels);
@@ -696,7 +696,7 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
   const uint32_t change_id =
       ScheduleInFlightChange(base::MakeUnique<InFlightBoundsChange>(
           this, window, old_bounds, window->GetLocalSurfaceId()));
-  base::Optional<cc::LocalSurfaceId> local_surface_id;
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
   if (window->window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
       window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
       window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED ||
@@ -1013,7 +1013,7 @@ void WindowTreeClient::OnEmbed(
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
 
@@ -1061,7 +1061,7 @@ void WindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
 
 void WindowTreeClient::OnFrameSinkIdAllocated(
     Id window_id,
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
@@ -1074,7 +1074,7 @@ void WindowTreeClient::OnTopLevelCreated(
     ui::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   // The server ack'd the top level window we created and supplied the state
   // of the window at the time the server created it. For properties we do not
   // have changes in flight for we can update them immediately. For properties
@@ -1145,7 +1145,7 @@ void WindowTreeClient::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
@@ -1547,7 +1547,7 @@ void WindowTreeClient::WmNewDisplayAdded(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   WmNewDisplayAddedImpl(display, std::move(root_data), parent_drawn,
                         local_surface_id);
 }

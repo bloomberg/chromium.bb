@@ -10,7 +10,7 @@ namespace cc {
 
 base::Closure StubSurfaceReferenceFactory::CreateReference(
     SurfaceReferenceOwner* owner,
-    const SurfaceId& surface_id) const {
+    const viz::SurfaceId& surface_id) const {
   return base::Closure();
 }
 

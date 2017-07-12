@@ -8,8 +8,8 @@
 #include <set>
 
 #include "cc/quads/render_pass.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/surface_id.h"
 
 namespace gfx {
 class Point;
@@ -32,43 +32,44 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   // Returns the target surface that falls underneath the provided |point|.
   // Also returns the |transform| to convert the |point| to the target surface's
   // space.
-  SurfaceId GetTargetSurfaceAtPoint(const SurfaceId& root_surface_id,
-                                    const gfx::Point& point,
-                                    gfx::Transform* transform);
+  viz::SurfaceId GetTargetSurfaceAtPoint(const viz::SurfaceId& root_surface_id,
+                                         const gfx::Point& point,
+                                         gfx::Transform* transform);
 
   // Returns whether the target surface falls inside the provide root surface.
   // Returns the |transform| to convert points from the root surface coordinate
   // space to the target surface coordinate space.
-  bool GetTransformToTargetSurface(const SurfaceId& root_surface_id,
-                                   const SurfaceId& target_surface_id,
+  bool GetTransformToTargetSurface(const viz::SurfaceId& root_surface_id,
+                                   const viz::SurfaceId& target_surface_id,
                                    gfx::Transform* transform);
 
   // Attempts to transform a point from the coordinate space of one surface to
   // that of another, where one is surface is embedded within the other.
   // Returns true if the transform is successfully applied, and false if
   // neither surface is contained with the other.
-  bool TransformPointToTargetSurface(const SurfaceId& original_surface_id,
-                                     const SurfaceId& target_surface_id,
+  bool TransformPointToTargetSurface(const viz::SurfaceId& original_surface_id,
+                                     const viz::SurfaceId& target_surface_id,
                                      gfx::Point* point);
 
  private:
   bool GetTargetSurfaceAtPointInternal(
-      const SurfaceId& surface_id,
+      const viz::SurfaceId& surface_id,
       RenderPassId render_pass_id,
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
-      SurfaceId* out_surface_id,
+      viz::SurfaceId* out_surface_id,
       gfx::Transform* out_transform);
 
   bool GetTransformToTargetSurfaceInternal(
-      const SurfaceId& root_surface_id,
-      const SurfaceId& target_surface_id,
+      const viz::SurfaceId& root_surface_id,
+      const viz::SurfaceId& target_surface_id,
       RenderPassId render_pass_id,
       std::set<const RenderPass*>* referenced_passes,
       gfx::Transform* out_transform);
 
-  const RenderPass* GetRenderPassForSurfaceById(const SurfaceId& surface_id,
-                                                RenderPassId render_pass_id);
+  const RenderPass* GetRenderPassForSurfaceById(
+      const viz::SurfaceId& surface_id,
+      RenderPassId render_pass_id);
 
   bool PointInQuad(const DrawQuad* quad,
                    const gfx::Point& point_in_render_pass_space,

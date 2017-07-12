@@ -173,7 +173,7 @@ BrowserCompositorMac::BrowserCompositorMac(
     BrowserCompositorMacClient* client,
     bool render_widget_host_is_hidden,
     bool ns_view_attached_to_window,
-    const cc::FrameSinkId& frame_sink_id)
+    const viz::FrameSinkId& frame_sink_id)
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
       weak_factory_(this) {
@@ -279,7 +279,7 @@ void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
 }
 
 void BrowserCompositorMac::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   // Compute the frame size based on the root render pass rect size.
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();

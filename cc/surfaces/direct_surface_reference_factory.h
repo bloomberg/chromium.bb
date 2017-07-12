@@ -6,9 +6,9 @@
 #define CC_SURFACES_DIRECT_SURFACE_REFERENCE_FACTORY_H_
 
 #include "cc/surfaces/sequence_surface_reference_factory.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -27,7 +27,7 @@ class CC_SURFACES_EXPORT DirectSurfaceReferenceFactory final
 
   // SequenceSurfaceReferenceFactory implementation:
   void SatisfySequence(const SurfaceSequence& sequence) const override;
-  void RequireSequence(const SurfaceId& surface_id,
+  void RequireSequence(const viz::SurfaceId& surface_id,
                        const SurfaceSequence& sequence) const override;
 
   base::WeakPtr<SurfaceManager> manager_;

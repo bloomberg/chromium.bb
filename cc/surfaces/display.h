@@ -13,11 +13,11 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_aggregator.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surface_id.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 #include "ui/latency/latency_info.h"
@@ -55,7 +55,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   Display(viz::SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
-          const FrameSinkId& frame_sink_id,
+          const viz::FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
           std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter);
@@ -66,21 +66,22 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
-  void SetLocalSurfaceId(const LocalSurfaceId& id, float device_scale_factor);
+  void SetLocalSurfaceId(const viz::LocalSurfaceId& id,
+                         float device_scale_factor);
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
   void SetColorSpace(const gfx::ColorSpace& blending_color_space,
                      const gfx::ColorSpace& device_color_space);
   void SetOutputIsSecure(bool secure);
 
-  const SurfaceId& CurrentSurfaceId();
+  const viz::SurfaceId& CurrentSurfaceId();
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;
-  bool SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const override;
-  bool SurfaceDamaged(const SurfaceId& surface_id,
+  bool SurfaceHasUndrawnFrame(const viz::SurfaceId& surface_id) const override;
+  bool SurfaceDamaged(const viz::SurfaceId& surface_id,
                       const BeginFrameAck& ack) override;
-  void SurfaceDiscarded(const SurfaceId& surface_id) override;
+  void SurfaceDiscarded(const viz::SurfaceId& surface_id) override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
@@ -107,8 +108,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   DisplayClient* client_ = nullptr;
   SurfaceManager* surface_manager_ = nullptr;
-  const FrameSinkId frame_sink_id_;
-  SurfaceId current_surface_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
   gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();

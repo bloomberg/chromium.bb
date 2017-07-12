@@ -11,10 +11,10 @@
 
 #include "base/stl_util.h"
 #include "cc/output/copy_output_request.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 
 namespace cc {
 
@@ -71,13 +71,13 @@ void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
 }
 
 void Surface::RejectCompositorFramesToFallbackSurfaces() {
-  std::vector<FrameSinkId> frame_sink_ids_for_dependencies;
-  for (const SurfaceId& surface_id :
+  std::vector<viz::FrameSinkId> frame_sink_ids_for_dependencies;
+  for (const viz::SurfaceId& surface_id :
        GetPendingFrame().metadata.activation_dependencies) {
     frame_sink_ids_for_dependencies.push_back(surface_id.frame_sink_id());
   }
 
-  for (const SurfaceId& surface_id :
+  for (const viz::SurfaceId& surface_id :
        GetPendingFrame().metadata.referenced_surfaces) {
     // A surface ID in |referenced_surfaces| that has a corresponding surface
     // ID in |activation_dependencies| with the same frame sink ID is said to
@@ -180,7 +180,7 @@ void Surface::RequestCopyOfOutput(
   copy_requests.push_back(std::move(copy_request));
 }
 
-void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
+void Surface::NotifySurfaceIdAvailable(const viz::SurfaceId& surface_id) {
   auto it = activation_dependencies_.find(surface_id);
   // This surface may no longer have blockers if the deadline has passed.
   if (it == activation_dependencies_.end())
@@ -264,9 +264,9 @@ void Surface::ActivateFrame(FrameData frame_data) {
 
 void Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
-  base::flat_set<SurfaceId> new_activation_dependencies;
+  base::flat_set<viz::SurfaceId> new_activation_dependencies;
 
-  for (const SurfaceId& surface_id :
+  for (const viz::SurfaceId& surface_id :
        current_frame.metadata.activation_dependencies) {
     Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
     // If a activation dependency does not have a corresponding active frame in
@@ -278,8 +278,8 @@ void Surface::UpdateActivationDependencies(
   // If this Surface has a previous pending frame, then we must determine the
   // changes in dependencies so that we can update the SurfaceDependencyTracker
   // map.
-  base::flat_set<SurfaceId> added_dependencies;
-  base::flat_set<SurfaceId> removed_dependencies;
+  base::flat_set<viz::SurfaceId> added_dependencies;
+  base::flat_set<viz::SurfaceId> removed_dependencies;
   ComputeChangeInDependencies(activation_dependencies_,
                               new_activation_dependencies, &added_dependencies,
                               &removed_dependencies);
@@ -294,16 +294,16 @@ void Surface::UpdateActivationDependencies(
 }
 
 void Surface::ComputeChangeInDependencies(
-    const base::flat_set<SurfaceId>& existing_dependencies,
-    const base::flat_set<SurfaceId>& new_dependencies,
-    base::flat_set<SurfaceId>* added_dependencies,
-    base::flat_set<SurfaceId>* removed_dependencies) {
-  for (const SurfaceId& surface_id : existing_dependencies) {
+    const base::flat_set<viz::SurfaceId>& existing_dependencies,
+    const base::flat_set<viz::SurfaceId>& new_dependencies,
+    base::flat_set<viz::SurfaceId>* added_dependencies,
+    base::flat_set<viz::SurfaceId>* removed_dependencies) {
+  for (const viz::SurfaceId& surface_id : existing_dependencies) {
     if (!new_dependencies.count(surface_id))
       removed_dependencies->insert(surface_id);
   }
 
-  for (const SurfaceId& surface_id : new_dependencies) {
+  for (const viz::SurfaceId& surface_id : new_dependencies) {
     if (!existing_dependencies.count(surface_id))
       added_dependencies->insert(surface_id);
   }
@@ -361,7 +361,7 @@ void Surface::AddDestructionDependency(SurfaceSequence sequence) {
 
 void Surface::SatisfyDestructionDependencies(
     base::flat_set<SurfaceSequence>* sequences,
-    base::flat_set<FrameSinkId>* valid_frame_sink_ids) {
+    base::flat_set<viz::FrameSinkId>* valid_frame_sink_ids) {
   base::EraseIf(destruction_dependencies_,
                 [sequences, valid_frame_sink_ids](SurfaceSequence seq) {
                   return (!!sequences->erase(seq) ||

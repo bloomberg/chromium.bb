@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
@@ -228,7 +228,7 @@ class Display : public PlatformDisplayDelegate,
 
   ServerWindowTracker activation_parents_;
 
-  cc::LocalSurfaceIdAllocator allocator_;
+  viz::LocalSurfaceIdAllocator allocator_;
 
   WindowManagerDisplayRootMap window_manager_display_root_map_;
 

@@ -41,7 +41,7 @@ namespace content {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost
 
-DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
+DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        DelegatedFrameHostClient* client)
     : frame_sink_id_(frame_sink_id),
       client_(client),
@@ -166,21 +166,21 @@ void DelegatedFrameHost::EndFrameSubscription() {
   frame_subscriber_.reset();
 }
 
-cc::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
+viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
+viz::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
-  cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (!surface_id.is_valid())
     return surface_id;
   cc::SurfaceHittest hittest(delegate,
                              GetFrameSinkManager()->surface_manager());
   gfx::Transform target_transform;
-  cc::SurfaceId target_local_surface_id =
+  viz::SurfaceId target_local_surface_id =
       hittest.GetTargetSurfaceAtPoint(surface_id, point, &target_transform);
   *transformed_point = point;
   if (target_local_surface_id.is_valid())
@@ -190,9 +190,9 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
 
 bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
+    const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
-  cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
   if (!surface_id.is_valid())
     return false;
   *transformed_point = point;
@@ -212,7 +212,7 @@ bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
     return false;
 
   return target_view->TransformPointToLocalCoordSpace(
-      point, cc::SurfaceId(frame_sink_id_, local_surface_id_),
+      point, viz::SurfaceId(frame_sink_id_, local_surface_id_),
       transformed_point);
 }
 
@@ -391,7 +391,7 @@ void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
 }
 
 void DelegatedFrameHost::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
 #if defined(OS_CHROMEOS)
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
@@ -464,7 +464,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
 
     if (local_surface_id != local_surface_id_ || !has_frame_) {
       // manager must outlive compositors using it.
-      cc::SurfaceId surface_id(frame_sink_id_, local_surface_id);
+      viz::SurfaceId surface_id(frame_sink_id_, local_surface_id);
       cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
                                    frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
@@ -511,7 +511,7 @@ void DelegatedFrameHost::ReclaimResources(
   renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 
-void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,
+void DelegatedFrameHost::WillDrawSurface(const viz::LocalSurfaceId& id,
                                          const gfx::Rect& damage_rect) {
   if (id != local_surface_id_)
     return;

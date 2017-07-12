@@ -52,7 +52,7 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // seems them at the time the window is created.
   for (auto& pair : init_params.properties)
     window_mus->SetPropertyFromServer(pair.first, &pair.second);
-  CreateCompositor(cc::FrameSinkId());
+  CreateCompositor(viz::FrameSinkId());
   gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each
 // window and fit in the smallest sizeof(AcceleratedWidget) uint32_t

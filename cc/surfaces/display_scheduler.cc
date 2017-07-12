@@ -84,7 +84,8 @@ void DisplayScheduler::DisplayResized() {
 
 // Notification that there was a resize or the root surface changed and
 // that we should just draw immediately.
-void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
+void DisplayScheduler::SetNewRootSurface(
+    const viz::SurfaceId& root_surface_id) {
   TRACE_EVENT0("cc", "DisplayScheduler::SetNewRootSurface");
   root_surface_id_ = root_surface_id;
   BeginFrameAck ack;
@@ -95,7 +96,7 @@ void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
 // Indicates that there was damage to one of the surfaces.
 // Has some logic to wait for multiple active surfaces before
 // triggering the deadline.
-void DisplayScheduler::ProcessSurfaceDamage(const SurfaceId& surface_id,
+void DisplayScheduler::ProcessSurfaceDamage(const viz::SurfaceId& surface_id,
                                             const BeginFrameAck& ack,
                                             bool display_damaged) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
@@ -141,9 +142,9 @@ bool DisplayScheduler::UpdateHasPendingSurfaces() {
 
   bool old_value = has_pending_surfaces_;
 
-  for (const std::pair<SurfaceId, SurfaceBeginFrameState>& entry :
+  for (const std::pair<viz::SurfaceId, SurfaceBeginFrameState>& entry :
        surface_states_) {
-    const SurfaceId& surface_id = entry.first;
+    const viz::SurfaceId& surface_id = entry.first;
     const SurfaceBeginFrameState& state = entry.second;
 
     // Surface is ready if it hasn't received the current BeginFrame or receives
@@ -279,7 +280,7 @@ void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
 
 void DisplayScheduler::OnSurfaceCreated(const SurfaceInfo& surface_info) {}
 
-void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
+void DisplayScheduler::OnSurfaceDestroyed(const viz::SurfaceId& surface_id) {
   auto it = surface_states_.find(surface_id);
   if (it == surface_states_.end())
     return;
@@ -288,7 +289,7 @@ void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
     ScheduleBeginFrameDeadline();
 }
 
-bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
+bool DisplayScheduler::OnSurfaceDamaged(const viz::SurfaceId& surface_id,
                                         const BeginFrameAck& ack) {
   bool damaged = client_->SurfaceDamaged(surface_id, ack);
   ProcessSurfaceDamage(surface_id, ack, damaged);
@@ -296,11 +297,11 @@ bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
   return damaged;
 }
 
-void DisplayScheduler::OnSurfaceDiscarded(const SurfaceId& surface_id) {
+void DisplayScheduler::OnSurfaceDiscarded(const viz::SurfaceId& surface_id) {
   client_->SurfaceDiscarded(surface_id);
 }
 
-void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
+void DisplayScheduler::OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
                                                const BeginFrameArgs& args) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamageExpected", "surface_id",
                surface_id.ToString());
@@ -314,7 +315,7 @@ void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
     ScheduleBeginFrameDeadline();
 }
 
-void DisplayScheduler::OnSurfaceWillDraw(const SurfaceId& surface_id) {}
+void DisplayScheduler::OnSurfaceWillDraw(const viz::SurfaceId& surface_id) {}
 
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() const {
   switch (AdjustedBeginFrameDeadlineMode()) {

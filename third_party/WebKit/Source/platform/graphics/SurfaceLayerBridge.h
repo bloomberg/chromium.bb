@@ -8,8 +8,8 @@
 #include <memory>
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference_factory.h"
+#include "components/viz/common/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/PlatformExport.h"
 #include "public/platform/WebSurfaceLayerBridge.h"
@@ -46,12 +46,12 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   // Implementation of blink::mojom::blink::OffscreenCanvasSurfaceClient
   void OnSurfaceCreated(const cc::SurfaceInfo&) override;
   void SatisfyCallback(const cc::SurfaceSequence&);
-  void RequireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);
+  void RequireCallback(const viz::SurfaceId&, const cc::SurfaceSequence&);
 
   // Implementation of WebSurfaceLayerBridge.
   WebLayer* GetWebLayer() const override { return web_layer_.get(); }
 
-  const cc::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
+  const viz::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
 
  private:
   mojom::blink::OffscreenCanvasSurfacePtr service_;
@@ -66,9 +66,9 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   mojo::Binding<blink::mojom::blink::OffscreenCanvasSurfaceClient> binding_;
 
-  const cc::FrameSinkId frame_sink_id_;
-  cc::SurfaceId current_surface_id_;
-  const cc::FrameSinkId parent_frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::SurfaceId current_surface_id_;
+  const viz::FrameSinkId parent_frame_sink_id_;
 };
 
 }  // namespace blink

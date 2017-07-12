@@ -9,7 +9,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -22,7 +22,7 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              const SurfaceId& surface_id,
+              const viz::SurfaceId& surface_id,
               SurfaceDrawQuadType surface_draw_quad_type,
               SurfaceDrawQuad* fallback_quad);
 
@@ -31,11 +31,11 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              const SurfaceId& surface_id,
+              const viz::SurfaceId& surface_id,
               SurfaceDrawQuadType surface_draw_quad_type,
               SurfaceDrawQuad* fallback_quad);
 
-  SurfaceId surface_id;
+  viz::SurfaceId surface_id;
   SurfaceDrawQuadType surface_draw_quad_type;
   const SurfaceDrawQuad* fallback_quad = nullptr;
 

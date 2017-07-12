@@ -68,7 +68,7 @@ class IframeSurfaceReferenceFactory
   }
 
   // cc::SequenceSurfaceReferenceFactory implementation:
-  void RequireSequence(const cc::SurfaceId& surface_id,
+  void RequireSequence(const viz::SurfaceId& surface_id,
                        const cc::SurfaceSequence& sequence) const override {
     sender_->Send(
         new FrameHostMsg_RequireSequence(routing_id_, surface_id, sequence));
@@ -122,7 +122,7 @@ class BrowserPluginSurfaceReferenceFactory
         routing_id_, browser_plugin_instance_id_, seq));
   }
 
-  void RequireSequence(const cc::SurfaceId& surface_id,
+  void RequireSequence(const viz::SurfaceId& surface_id,
                        const cc::SurfaceSequence& sequence) const override {
     sender_->Send(new BrowserPluginHostMsg_RequireSequence(
         routing_id_, browser_plugin_instance_id_, surface_id, sequence));

@@ -14,7 +14,7 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -35,7 +35,7 @@ class TestLayerTreeFrameSinkClient {
       scoped_refptr<ContextProvider> compositor_context_provider) = 0;
 
   virtual void DisplayReceivedLocalSurfaceId(
-      const LocalSurfaceId& local_surface_id) = 0;
+      const viz::LocalSurfaceId& local_surface_id) = 0;
   virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                                       const RenderPassList& render_passes) = 0;
@@ -78,7 +78,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   // LayerTreeFrameSink implementation.
   bool BindToClient(LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
+  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
 
@@ -88,7 +88,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   void OnBeginFrame(const BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<ReturnedResource>& resources) override;
-  void WillDrawSurface(const LocalSurfaceId& local_surface_id,
+  void WillDrawSurface(const viz::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   // DisplayClient implementation.
@@ -110,12 +110,12 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // LayerTreeFrameSink is owned/destroyed on the compositor thread.
   std::unique_ptr<FrameSinkManager> frame_sink_manager_;
-  std::unique_ptr<LocalSurfaceIdAllocator> local_surface_id_allocator_;
-  LocalSurfaceId local_surface_id_;
+  std::unique_ptr<viz::LocalSurfaceIdAllocator> local_surface_id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
 

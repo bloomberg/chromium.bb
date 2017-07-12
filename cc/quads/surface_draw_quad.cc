@@ -16,7 +16,7 @@ SurfaceDrawQuad::SurfaceDrawQuad() {
 void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& visible_rect,
-                             const SurfaceId& surface_id,
+                             const viz::SurfaceId& surface_id,
                              SurfaceDrawQuadType surface_draw_quad_type,
                              SurfaceDrawQuad* fallback_quad) {
   gfx::Rect opaque_rect;
@@ -33,7 +33,7 @@ void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,
                              bool needs_blending,
-                             const SurfaceId& surface_id,
+                             const viz::SurfaceId& surface_id,
                              SurfaceDrawQuadType surface_draw_quad_type,
                              SurfaceDrawQuad* fallback_quad) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,

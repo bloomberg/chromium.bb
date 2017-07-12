@@ -101,7 +101,7 @@ void CrossProcessFrameConnector::OnSatisfySequence(
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(
-    const cc::SurfaceId& id,
+    const viz::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }
@@ -118,7 +118,7 @@ void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
 
 gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id) {
   gfx::Point transformed_point;
   TransformPointToCoordSpaceForView(point, GetRootRenderWidgetHostView(),
                                     surface_id, &transformed_point);
@@ -127,8 +127,8 @@ gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
 
 bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
-    const cc::SurfaceId& local_surface_id,
+    const viz::SurfaceId& original_surface,
+    const viz::SurfaceId& local_surface_id,
     gfx::Point* transformed_point) {
   if (original_surface == local_surface_id) {
     *transformed_point = point;
@@ -152,7 +152,7 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
 bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
-    const cc::SurfaceId& local_surface_id,
+    const viz::SurfaceId& local_surface_id,
     gfx::Point* transformed_point) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (!root_view)

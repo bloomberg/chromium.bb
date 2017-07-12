@@ -59,7 +59,7 @@
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -322,7 +322,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual uint32_t GetUniqueIdForProcess() { return 0; }
 
   // Returns a unique FrameSinkID for the current renderer process
-  virtual cc::FrameSinkId GenerateFrameSinkId() { return cc::FrameSinkId(); }
+  virtual viz::FrameSinkId GenerateFrameSinkId() { return viz::FrameSinkId(); }
 
   // Message Ports -------------------------------------------------------
 

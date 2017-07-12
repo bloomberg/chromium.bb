@@ -11,7 +11,7 @@
 #include <tuple>
 
 #include "base/hash.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 
 namespace cc {
 
@@ -20,11 +20,11 @@ namespace cc {
 // may be depended on once.
 struct SurfaceSequence {
   SurfaceSequence() : sequence(0u) {}
-  SurfaceSequence(const FrameSinkId& frame_sink_id, uint32_t sequence)
+  SurfaceSequence(const viz::FrameSinkId& frame_sink_id, uint32_t sequence)
       : frame_sink_id(frame_sink_id), sequence(sequence) {}
   bool is_valid() const { return frame_sink_id.is_valid() && sequence > 0u; }
 
-  FrameSinkId frame_sink_id;
+  viz::FrameSinkId frame_sink_id;
   uint32_t sequence;
 };
 

@@ -163,7 +163,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SatisfySequence,
 
 IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_RequireSequence,
                     int /* browser_plugin_instance_id */,
-                    cc::SurfaceId /* surface_id */,
+                    viz::SurfaceId /* surface_id */,
                     cc::SurfaceSequence /* sequence */)
 
 // -----------------------------------------------------------------------------

@@ -8,23 +8,23 @@
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/surface_id.mojom-shared.h"
-#include "cc/surfaces/frame_sink_id.h"
-#include "cc/surfaces/local_surface_id.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surface_id.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::SurfaceIdDataView, cc::SurfaceId> {
-  static const cc::FrameSinkId& frame_sink_id(const cc::SurfaceId& id) {
+struct StructTraits<cc::mojom::SurfaceIdDataView, viz::SurfaceId> {
+  static const viz::FrameSinkId& frame_sink_id(const viz::SurfaceId& id) {
     return id.frame_sink_id();
   }
 
-  static const cc::LocalSurfaceId& local_surface_id(const cc::SurfaceId& id) {
+  static const viz::LocalSurfaceId& local_surface_id(const viz::SurfaceId& id) {
     return id.local_surface_id();
   }
 
-  static bool Read(cc::mojom::SurfaceIdDataView data, cc::SurfaceId* out) {
+  static bool Read(cc::mojom::SurfaceIdDataView data, viz::SurfaceId* out) {
     return data.ReadFrameSinkId(&out->frame_sink_id_) &&
            data.ReadLocalSurfaceId(&out->local_surface_id_);
   }

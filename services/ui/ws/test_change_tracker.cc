@@ -265,7 +265,7 @@ void TestChangeTracker::OnWindowBoundsChanged(
     Id window_id,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
@@ -318,7 +318,7 @@ void TestChangeTracker::OnCaptureChanged(Id new_capture_window_id,
 
 void TestChangeTracker::OnFrameSinkIdAllocated(
     Id window_id,
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   Change change;
   change.type = CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED;
   change.window_id = window_id;

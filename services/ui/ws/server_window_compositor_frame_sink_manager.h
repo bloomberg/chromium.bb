@@ -9,7 +9,7 @@
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/output/context_provider.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
@@ -39,7 +39,7 @@ class ServerWindowCompositorFrameSinkManager {
 
   // Claims this FrameSinkId will embed |surface_id| so it should own the
   // temporary reference to |surface_id|.
-  void ClaimTemporaryReference(const cc::SurfaceId& surface_id);
+  void ClaimTemporaryReference(const viz::SurfaceId& surface_id);
 
  private:
   ServerWindow* const window_;

@@ -36,8 +36,6 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
-#include "cc/surfaces/local_surface_id.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
@@ -45,6 +43,8 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
@@ -234,7 +234,7 @@ class CC_EXPORT LayerTreeHostImpl
     ~FrameData();
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
-    std::vector<SurfaceId> activation_dependencies;
+    std::vector<viz::SurfaceId> activation_dependencies;
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
     RenderPassList render_passes;
@@ -746,7 +746,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerTreeFrameSink* layer_tree_frame_sink_;
 
-  LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_;
 
   // The following scoped variables must not outlive the
   // |layer_tree_frame_sink_|.

@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_info.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/common/content_export.h"
@@ -27,20 +27,20 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
 
   OffscreenCanvasSurfaceImpl(
       viz::HostFrameSinkManager* host_frame_sink_manager,
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& parent_frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       blink::mojom::OffscreenCanvasSurfaceClientPtr client,
       blink::mojom::OffscreenCanvasSurfaceRequest request,
       DestroyCallback destroy_callback);
   ~OffscreenCanvasSurfaceImpl() override;
 
-  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  const cc::FrameSinkId& parent_frame_sink_id() const {
+  const viz::FrameSinkId& parent_frame_sink_id() const {
     return parent_frame_sink_id_;
   }
 
-  const cc::LocalSurfaceId& local_surface_id() const {
+  const viz::LocalSurfaceId& local_surface_id() const {
     return local_surface_id_;
   }
 
@@ -55,7 +55,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
 
   // blink::mojom::OffscreenCanvasSurface implementation.
-  void Require(const cc::SurfaceId& surface_id,
+  void Require(const viz::SurfaceId& surface_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
@@ -73,9 +73,9 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   DestroyCallback destroy_callback_;
 
   // Surface-related state
-  const cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId local_surface_id_;
-  const cc::FrameSinkId parent_frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId local_surface_id_;
+  const viz::FrameSinkId parent_frame_sink_id_;
 
   bool has_created_compositor_frame_sink_ = false;
 

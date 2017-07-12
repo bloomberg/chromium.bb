@@ -12,9 +12,9 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
+#include "components/viz/common/surface_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,9 +26,9 @@ using testing::UnorderedElementsAre;
 namespace cc {
 namespace {
 
-constexpr FrameSinkId kFrameSink1(1, 0);
-constexpr FrameSinkId kFrameSink2(2, 0);
-constexpr FrameSinkId kFrameSink3(3, 0);
+constexpr viz::FrameSinkId kFrameSink1(1, 0);
+constexpr viz::FrameSinkId kFrameSink2(2, 0);
+constexpr viz::FrameSinkId kFrameSink3(3, 0);
 
 }  // namespace
 
@@ -39,22 +39,23 @@ class SurfaceManagerRefTest : public testing::Test {
 
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
   // Will first create a Surfacesupport for |frame_sink_id| if necessary.
-  SurfaceId CreateSurface(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-    LocalSurfaceId local_surface_id(local_id,
-                                    base::UnguessableToken::Deserialize(0, 1u));
+  viz::SurfaceId CreateSurface(const viz::FrameSinkId& frame_sink_id,
+                               uint32_t local_id) {
+    viz::LocalSurfaceId local_surface_id(
+        local_id, base::UnguessableToken::Deserialize(0, 1u));
     GetCompositorFrameSinkSupport(frame_sink_id)
         .SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
-    return SurfaceId(frame_sink_id, local_surface_id);
+    return viz::SurfaceId(frame_sink_id, local_surface_id);
   }
 
   // Destroy Surface with |surface_id|.
-  void DestroySurface(const SurfaceId& surface_id) {
+  void DestroySurface(const viz::SurfaceId& surface_id) {
     GetCompositorFrameSinkSupport(surface_id.frame_sink_id())
         .EvictCurrentSurface();
   }
 
   CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(
-      const FrameSinkId& frame_sink_id) {
+      const viz::FrameSinkId& frame_sink_id) {
     auto& support_ptr = supports_[frame_sink_id];
     if (!support_ptr) {
       constexpr bool is_root = false;
@@ -67,40 +68,41 @@ class SurfaceManagerRefTest : public testing::Test {
     return *support_ptr;
   }
 
-  void DestroyCompositorFrameSinkSupport(const FrameSinkId& frame_sink_id) {
+  void DestroyCompositorFrameSinkSupport(
+      const viz::FrameSinkId& frame_sink_id) {
     auto support_ptr = supports_.find(frame_sink_id);
     ASSERT_NE(support_ptr, supports_.end());
     supports_.erase(support_ptr);
   }
 
-  void RemoveSurfaceReference(const SurfaceId& parent_id,
-                              const SurfaceId& child_id) {
+  void RemoveSurfaceReference(const viz::SurfaceId& parent_id,
+                              const viz::SurfaceId& child_id) {
     manager_->surface_manager()->RemoveSurfaceReferences(
         {SurfaceReference(parent_id, child_id)});
   }
 
-  void AddSurfaceReference(const SurfaceId& parent_id,
-                           const SurfaceId& child_id) {
+  void AddSurfaceReference(const viz::SurfaceId& parent_id,
+                           const viz::SurfaceId& child_id) {
     manager_->surface_manager()->AddSurfaceReferences(
         {SurfaceReference(parent_id, child_id)});
   }
 
   // Returns all the references where |surface_id| is the parent.
-  const base::flat_set<SurfaceId>& GetReferencesFrom(
-      const SurfaceId& surface_id) {
+  const base::flat_set<viz::SurfaceId>& GetReferencesFrom(
+      const viz::SurfaceId& surface_id) {
     return GetSurfaceManager().GetSurfacesReferencedByParent(surface_id);
   }
 
   // Returns all the references where |surface_id| is the child.
-  const base::flat_set<SurfaceId>& GetReferencesFor(
-      const SurfaceId& surface_id) {
+  const base::flat_set<viz::SurfaceId>& GetReferencesFor(
+      const viz::SurfaceId& surface_id) {
     return GetSurfaceManager().GetSurfacesThatReferenceChild(surface_id);
   }
 
   // Temporary references are stored as a map in SurfaceManager. This method
   // converts the map to a vector.
-  std::vector<SurfaceId> GetAllTempReferences() {
-    std::vector<SurfaceId> temp_references;
+  std::vector<viz::SurfaceId> GetAllTempReferences() {
+    std::vector<viz::SurfaceId> temp_references;
     for (auto& map_entry : GetSurfaceManager().temporary_references_)
       temp_references.push_back(map_entry.first);
     return temp_references;
@@ -120,15 +122,15 @@ class SurfaceManagerRefTest : public testing::Test {
     manager_.reset();
   }
 
-  std::unordered_map<FrameSinkId,
+  std::unordered_map<viz::FrameSinkId,
                      std::unique_ptr<CompositorFrameSinkSupport>,
-                     FrameSinkIdHash>
+                     viz::FrameSinkIdHash>
       supports_;
   std::unique_ptr<FrameSinkManager> manager_;
 };
 
 TEST_F(SurfaceManagerRefTest, AddReference) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
 
   EXPECT_THAT(GetReferencesFor(id1),
@@ -137,8 +139,8 @@ TEST_F(SurfaceManagerRefTest, AddReference) {
 }
 
 TEST_F(SurfaceManagerRefTest, AddRemoveReference) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
 
@@ -156,9 +158,9 @@ TEST_F(SurfaceManagerRefTest, AddRemoveReference) {
 }
 
 TEST_F(SurfaceManagerRefTest, NewSurfaceFromFrameSink) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
-  SurfaceId id3 = CreateSurface(kFrameSink3, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id3 = CreateSurface(kFrameSink3, 1);
 
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
@@ -166,7 +168,7 @@ TEST_F(SurfaceManagerRefTest, NewSurfaceFromFrameSink) {
 
   // |kFramesink2| received a CompositorFrame with a new size, so it destroys
   // |id2| and creates |id2_next|. No reference have been removed yet.
-  SurfaceId id2_next = CreateSurface(kFrameSink2, 2);
+  viz::SurfaceId id2_next = CreateSurface(kFrameSink2, 2);
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2_next));
 
@@ -189,9 +191,9 @@ TEST_F(SurfaceManagerRefTest, NewSurfaceFromFrameSink) {
 }
 
 TEST_F(SurfaceManagerRefTest, ReferenceCycleGetsDeleted) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
-  SurfaceId id3 = CreateSurface(kFrameSink3, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id3 = CreateSurface(kFrameSink3, 1);
 
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
@@ -214,8 +216,8 @@ TEST_F(SurfaceManagerRefTest, ReferenceCycleGetsDeleted) {
 }
 
 TEST_F(SurfaceManagerRefTest, SurfacesAreDeletedDuringGarbageCollection) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
 
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
@@ -240,9 +242,9 @@ TEST_F(SurfaceManagerRefTest, SurfacesAreDeletedDuringGarbageCollection) {
 }
 
 TEST_F(SurfaceManagerRefTest, GarbageCollectionWorksRecusively) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
-  SurfaceId id3 = CreateSurface(kFrameSink3, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id3 = CreateSurface(kFrameSink3, 1);
 
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
@@ -268,8 +270,8 @@ TEST_F(SurfaceManagerRefTest, GarbageCollectionWorksRecusively) {
 }
 
 TEST_F(SurfaceManagerRefTest, TryAddReferenceSameReferenceTwice) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
 
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
   AddSurfaceReference(id1, id2);
@@ -283,7 +285,7 @@ TEST_F(SurfaceManagerRefTest, TryAddReferenceSameReferenceTwice) {
 }
 
 TEST_F(SurfaceManagerRefTest, AddingSelfReferenceFails) {
-  SurfaceId id1 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink2, 1);
 
   // A temporary reference must exist to |id1|.
   EXPECT_THAT(GetAllTempReferences(), ElementsAre(id1));
@@ -301,8 +303,8 @@ TEST_F(SurfaceManagerRefTest, AddingSelfReferenceFails) {
 }
 
 TEST_F(SurfaceManagerRefTest, RemovingNonexistantReferenceFails) {
-  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
-  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
 
   // Removing non-existent reference should be ignored.
   AddSurfaceReference(id1, id2);
@@ -313,13 +315,13 @@ TEST_F(SurfaceManagerRefTest, RemovingNonexistantReferenceFails) {
 
 TEST_F(SurfaceManagerRefTest, AddSurfaceThenReference) {
   // Create a new surface.
-  const SurfaceId surface_id = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId surface_id = CreateSurface(kFrameSink2, 1);
 
   // A temporary reference must be added to |surface_id|.
   EXPECT_THAT(GetAllTempReferences(), ElementsAre(surface_id));
 
   // Create |parent_id| and add a real reference from it to |surface_id|.
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(parent_id, surface_id);
 
   // The temporary reference to |surface_id| should be gone.
@@ -331,7 +333,7 @@ TEST_F(SurfaceManagerRefTest, AddSurfaceThenReference) {
 
 TEST_F(SurfaceManagerRefTest, AddSurfaceThenRootReference) {
   // Create a new surface.
-  const SurfaceId surface_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId surface_id = CreateSurface(kFrameSink1, 1);
 
   // Temporary reference should be added to |surface_id|.
   EXPECT_THAT(GetAllTempReferences(), ElementsAre(surface_id));
@@ -348,15 +350,15 @@ TEST_F(SurfaceManagerRefTest, AddSurfaceThenRootReference) {
 
 TEST_F(SurfaceManagerRefTest, AddTwoSurfacesThenOneReference) {
   // Create two surfaces with different FrameSinkIds.
-  const SurfaceId surface_id1 = CreateSurface(kFrameSink2, 1);
-  const SurfaceId surface_id2 = CreateSurface(kFrameSink3, 1);
+  const viz::SurfaceId surface_id1 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId surface_id2 = CreateSurface(kFrameSink3, 1);
 
   // Temporary reference should be added for both surfaces.
   EXPECT_THAT(GetAllTempReferences(),
               UnorderedElementsAre(surface_id1, surface_id2));
 
   // Create |parent_id| and add a real reference from it to |surface_id1|.
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(parent_id, surface_id1);
 
   // Real reference must be added to |surface_id1| and the temporary reference
@@ -369,11 +371,11 @@ TEST_F(SurfaceManagerRefTest, AddTwoSurfacesThenOneReference) {
 }
 
 TEST_F(SurfaceManagerRefTest, AddSurfacesSkipReference) {
-  // Add two surfaces that have the same FrameSinkId. This would happen when a
-  // client submits two CompositorFrames before parent submits a new
+  // Add two surfaces that have the same viz::FrameSinkId. This would happen
+  // when a client submits two CompositorFrames before parent submits a new
   // CompositorFrame.
-  const SurfaceId surface_id1 = CreateSurface(kFrameSink2, 2);
-  const SurfaceId surface_id2 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId surface_id1 = CreateSurface(kFrameSink2, 2);
+  const viz::SurfaceId surface_id2 = CreateSurface(kFrameSink2, 1);
 
   // Temporary references should be added for both surfaces and they should be
   // stored in the order of creation.
@@ -382,7 +384,7 @@ TEST_F(SurfaceManagerRefTest, AddSurfacesSkipReference) {
 
   // Create |parent_id| and add a reference from it to |surface_id2| which was
   // created later.
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(parent_id, surface_id2);
 
   // The real reference should be added for |surface_id2| and the temporary
@@ -393,10 +395,10 @@ TEST_F(SurfaceManagerRefTest, AddSurfacesSkipReference) {
 }
 
 TEST_F(SurfaceManagerRefTest, RemoveFirstTempReferenceOnly) {
-  // Add two surfaces that have the same FrameSinkId. This would happen when a
-  // client submits two CFs before parent submits a new CF.
-  const SurfaceId surface_id1 = CreateSurface(kFrameSink2, 1);
-  const SurfaceId surface_id2 = CreateSurface(kFrameSink2, 2);
+  // Add two surfaces that have the same viz::FrameSinkId. This would happen
+  // when a client submits two CFs before parent submits a new CF.
+  const viz::SurfaceId surface_id1 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId surface_id2 = CreateSurface(kFrameSink2, 2);
 
   // Temporary references should be added for both surfaces and they should be
   // stored in the order of creation.
@@ -405,7 +407,7 @@ TEST_F(SurfaceManagerRefTest, RemoveFirstTempReferenceOnly) {
 
   // Create |parent_id| and add a reference from it to |surface_id1| which was
   // created earlier.
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(parent_id, surface_id1);
 
   // The real reference should be added for |surface_id1| and its temporary
@@ -417,12 +419,12 @@ TEST_F(SurfaceManagerRefTest, RemoveFirstTempReferenceOnly) {
 }
 
 TEST_F(SurfaceManagerRefTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
-  const SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
 
   // We create |id2| and never add a real reference to it. This leaves the
   // temporary reference.
-  const SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId id2 = CreateSurface(kFrameSink2, 1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id2));
   EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
 
@@ -443,7 +445,7 @@ TEST_F(SurfaceManagerRefTest, SurfaceWithTemporaryReferenceIsNotDeleted) {
 // invalidated then the temporary reference is also removed.
 TEST_F(SurfaceManagerRefTest, InvalidateTempReferenceOwnerRemovesReference) {
   // Surface |id1| should have a temporary reference on creation.
-  const SurfaceId id1 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId id1 = CreateSurface(kFrameSink2, 1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
 
   // |id1| should have a temporary reference after an owner is assigned.
@@ -458,10 +460,10 @@ TEST_F(SurfaceManagerRefTest, InvalidateTempReferenceOwnerRemovesReference) {
 // Checks that adding a surface reference clears the temporary reference and
 // ownership. Invalidating the old owner shouldn't do anything.
 TEST_F(SurfaceManagerRefTest, InvalidateHasNoEffectOnSurfaceReferences) {
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), parent_id);
 
-  const SurfaceId id1 = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId id1 = CreateSurface(kFrameSink2, 1);
   GetSurfaceManager().AssignTemporaryReference(id1, kFrameSink1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
 
@@ -477,7 +479,7 @@ TEST_F(SurfaceManagerRefTest, InvalidateHasNoEffectOnSurfaceReferences) {
 }
 
 TEST_F(SurfaceManagerRefTest, CheckDropTemporaryReferenceWorks) {
-  const SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1));
 
   // An example of why this could happen is the window server doesn't know the
@@ -491,11 +493,11 @@ TEST_F(SurfaceManagerRefTest, CheckDropTemporaryReferenceWorks) {
 // are multiple temporary references. This tests something like the parent
 // client crashing, so it's
 TEST_F(SurfaceManagerRefTest, TempReferencesWithClientCrash) {
-  const SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
+  const viz::SurfaceId parent_id = CreateSurface(kFrameSink1, 1);
   AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), parent_id);
 
-  const SurfaceId id1a = CreateSurface(kFrameSink2, 1);
-  const SurfaceId id1b = CreateSurface(kFrameSink2, 2);
+  const viz::SurfaceId id1a = CreateSurface(kFrameSink2, 1);
+  const viz::SurfaceId id1b = CreateSurface(kFrameSink2, 2);
 
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1a, id1b));
 
@@ -505,8 +507,8 @@ TEST_F(SurfaceManagerRefTest, TempReferencesWithClientCrash) {
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1a, id1b));
 
   // If the parent client crashes then the FrameSink connection will be closed
-  // and the FrameSinkId invalidated. The temporary reference |kFrameSink1| owns
-  // to |id2a| will be removed.
+  // and the viz::FrameSinkId invalidated. The temporary reference |kFrameSink1|
+  // owns to |id2a| will be removed.
   DestroyCompositorFrameSinkSupport(kFrameSink1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1b));
 

@@ -43,9 +43,9 @@
 #include "cc/surfaces/direct_layer_tree_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/frame_sink_id_allocator.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
@@ -110,7 +110,7 @@ struct CompositorDependencies {
 
   SingleThreadTaskGraphRunner task_graph_runner;
   viz::HostFrameSinkManager host_frame_sink_manager;
-  cc::FrameSinkIdAllocator frame_sink_id_allocator;
+  viz::FrameSinkIdAllocator frame_sink_id_allocator;
   // This is owned here so that SurfaceManager will be accessible in process
   // when display is in the same process. Other than using SurfaceManager,
   // access to |in_process_frame_sink_manager_| should happen via
@@ -442,7 +442,7 @@ viz::HostFrameSinkManager* CompositorImpl::GetHostFrameSinkManager() {
 }
 
 // static
-cc::FrameSinkId CompositorImpl::AllocateFrameSinkId() {
+viz::FrameSinkId CompositorImpl::AllocateFrameSinkId() {
   return g_compositor_dependencies.Get()
       .frame_sink_id_allocator.NextFrameSinkId();
 }
@@ -911,11 +911,11 @@ void CompositorImpl::SetNeedsAnimate() {
   host_->SetNeedsAnimate();
 }
 
-cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
+viz::FrameSinkId CompositorImpl::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void CompositorImpl::AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) {
+void CompositorImpl::AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) {
   if (has_layer_tree_frame_sink_) {
     GetFrameSinkManager()->RegisterFrameSinkHierarchy(frame_sink_id_,
                                                       frame_sink_id);
@@ -925,7 +925,7 @@ void CompositorImpl::AddChildFrameSink(const cc::FrameSinkId& frame_sink_id) {
 }
 
 void CompositorImpl::RemoveChildFrameSink(
-    const cc::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id) {
   auto it = pending_child_frame_sink_ids_.find(frame_sink_id);
   if (it != pending_child_frame_sink_ids_.end()) {
     pending_child_frame_sink_ids_.erase(it);

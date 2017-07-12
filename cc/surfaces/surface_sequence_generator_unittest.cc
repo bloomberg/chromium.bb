@@ -10,7 +10,7 @@
 namespace cc {
 namespace {
 
-static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(SurfaceSequenceGeneratorTest, Basic) {
   SurfaceSequenceGenerator generator;

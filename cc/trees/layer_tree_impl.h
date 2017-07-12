@@ -292,10 +292,12 @@ class CC_EXPORT LayerTreeImpl {
   void set_content_source_id(uint32_t id) { content_source_id_ = id; }
   uint32_t content_source_id() { return content_source_id_; }
 
-  void set_local_surface_id(const LocalSurfaceId& id) {
+  void set_local_surface_id(const viz::LocalSurfaceId& id) {
     local_surface_id_ = id;
   }
-  const LocalSurfaceId& local_surface_id() const { return local_surface_id_; }
+  const viz::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
 
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
@@ -374,8 +376,9 @@ class CC_EXPORT LayerTreeImpl {
   void AddToElementMap(LayerImpl* layer);
   void RemoveFromElementMap(LayerImpl* layer);
 
-  void SetSurfaceLayerIds(const base::flat_set<SurfaceId>& surface_layer_ids);
-  const base::flat_set<SurfaceId>& SurfaceLayerIds() const;
+  void SetSurfaceLayerIds(
+      const base::flat_set<viz::SurfaceId>& surface_layer_ids);
+  const base::flat_set<viz::SurfaceId>& SurfaceLayerIds() const;
   void ClearSurfaceLayerIds();
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
@@ -580,7 +583,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
-  LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId local_surface_id_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
@@ -610,7 +613,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::vector<PictureLayerImpl*> picture_layers_;
 
-  base::flat_set<SurfaceId> surface_layer_ids_;
+  base::flat_set<viz::SurfaceId> surface_layer_ids_;
 
   // List of render surfaces for the most recently prepared frame.
   RenderSurfaceList render_surface_list_;

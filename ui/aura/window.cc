@@ -986,7 +986,7 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   return port_->CreateLayerTreeFrameSink();
 }
 
-cc::SurfaceId Window::GetSurfaceId() const {
+viz::SurfaceId Window::GetSurfaceId() const {
   return port_->GetSurfaceId();
 }
 

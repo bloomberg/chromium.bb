@@ -12,7 +12,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -83,7 +83,7 @@ class CC_EXPORT CompositorFrameMetadata {
   // determine which surfaces to retain and which to evict. It will likely
   // be unnecessary for the embedder to explicitly specify which surfaces to
   // retain. Thus, this field will likely go away.
-  std::vector<SurfaceId> referenced_surfaces;
+  std::vector<viz::SurfaceId> referenced_surfaces;
 
   // This is the set of dependent SurfaceIds that should be active in the
   // display compositor before this CompositorFrame can be activated. Note
@@ -96,7 +96,7 @@ class CC_EXPORT CompositorFrameMetadata {
   //       |referenced_surfaces|. |activation_dependencies| is the set of
   //       surface IDs that this frame would like to block on until they
   //       become available or a deadline hits.
-  std::vector<SurfaceId> activation_dependencies;
+  std::vector<viz::SurfaceId> activation_dependencies;
 
   // This indicates whether this CompositorFrame can be activated before
   // dependencies have been resolved.

@@ -45,7 +45,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
       BrowserCompositorMacClient* client,
       bool render_widget_host_is_hidden,
       bool ns_view_attached_to_window,
-      const cc::FrameSinkId& frame_sink_id);
+      const viz::FrameSinkId& frame_sink_id);
   ~BrowserCompositorMac() override;
 
   // These will not return nullptr until Destroy is called.
@@ -57,7 +57,7 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
 
   void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink);
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack);
   void SetHasTransparentBackground(bool transparent);

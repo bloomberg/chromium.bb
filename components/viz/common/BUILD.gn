@@ -6,12 +6,19 @@ import("//testing/test.gni")
 
 source_set("common") {
   sources = [
+    "frame_sink_id.cc",
+    "frame_sink_id.h",
+    "frame_sink_id_allocator.h",
     "gl_helper.cc",
     "gl_helper.h",
     "gl_helper_readback_support.cc",
     "gl_helper_readback_support.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "local_surface_id.cc",
+    "local_surface_id.h",
+    "local_surface_id_allocator.cc",
+    "local_surface_id_allocator.h",
     "quads/resource_format.h",
     "quads/shared_bitmap.cc",
     "quads/shared_bitmap.h",
@@ -25,11 +32,14 @@ source_set("common") {
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
     "resources/shared_bitmap_manager.h",
+    "surface_id.cc",
+    "surface_id.h",
   ]
 
   deps = [
     "//base",
     "//gpu/command_buffer/client:gles2_interface",
+    "//mojo/public/cpp/bindings",
     "//skia",
     "//ui/gfx:color_space",
     "//ui/gfx/geometry",

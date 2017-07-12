@@ -26,7 +26,7 @@ class DisplayProvider {
   // Creates a new cc::Display for |surface_handle| with |frame_sink_id|. Will
   // also create cc::BeginFrameSource and return it in |begin_frame_source|.
   virtual std::unique_ptr<cc::Display> CreateDisplay(
-      const cc::FrameSinkId& frame_sink_id,
+      const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) = 0;
 };

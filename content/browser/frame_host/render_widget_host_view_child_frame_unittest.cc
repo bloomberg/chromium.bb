@@ -38,7 +38,7 @@
 namespace content {
 namespace {
 
-const cc::LocalSurfaceId kArbitraryLocalSurfaceId(
+const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
     base::UnguessableToken::Deserialize(2, 3));
 
@@ -133,11 +133,11 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 #endif
   }
 
-  cc::SurfaceId GetSurfaceId() const {
-    return cc::SurfaceId(view_->frame_sink_id_, view_->local_surface_id_);
+  viz::SurfaceId GetSurfaceId() const {
+    return viz::SurfaceId(view_->frame_sink_id_, view_->local_surface_id_);
   }
 
-  cc::LocalSurfaceId GetLocalSurfaceId() const {
+  viz::LocalSurfaceId GetLocalSurfaceId() const {
     return view_->local_surface_id_;
   }
 
@@ -192,7 +192,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
-  cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
+  viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
 
   view_->SetSize(view_size);
   view_->Show();
@@ -201,7 +201,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
       local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
-  cc::SurfaceId id = GetSurfaceId();
+  viz::SurfaceId id = GetSurfaceId();
   if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();

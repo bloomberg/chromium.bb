@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -241,7 +241,7 @@ class AURA_EXPORT WindowTreeClient
       WindowMusType window_mus_type,
       const ui::mojom::WindowData& window_data,
       int64_t display_id,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id =
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id =
           base::nullopt);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
@@ -269,19 +269,19 @@ class AURA_EXPORT WindowTreeClient
                    int64_t display_id,
                    Id focused_window_id,
                    bool drawn,
-                   const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+                   const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
   // Called once mus acks the call to SetDisplayRoot().
   void OnSetDisplayRootDone(
       Id window_id,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
   // Called by WmNewDisplayAdded().
   WindowTreeHostMus* WmNewDisplayAddedImpl(
       const display::Display& display,
       ui::mojom::WindowDataPtr root_data,
       bool parent_drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
   std::unique_ptr<EventResultCallback> CreateEventResultCallback(
       int32_t event_id);
@@ -293,7 +293,7 @@ class AURA_EXPORT WindowTreeClient
   void SetWindowBoundsFromServer(
       WindowMus* window,
       const gfx::Rect& revert_bounds_in_pixels,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void SetWindowTransformFromServer(WindowMus* window,
                                     const gfx::Transform& transform);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
@@ -337,24 +337,24 @@ class AURA_EXPORT WindowTreeClient
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
                         Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(Id window_id,
-                              const cc::FrameSinkId& frame_sink_id) override;
+                              const viz::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(
       uint32_t change_id,
       ui::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnWindowTransformChanged(Id window_id,
                                 const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
@@ -430,7 +430,7 @@ class AURA_EXPORT WindowTreeClient
       const display::Display& display,
       ui::mojom::WindowDataPtr root_data,
       bool parent_drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override;
   void WmSetBounds(uint32_t change_id,

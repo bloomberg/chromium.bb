@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 
 #include <stdint.h>
 
 #include "base/rand_util.h"
 #include "base/unguessable_token.h"
 
-namespace cc {
+namespace viz {
 
 LocalSurfaceIdAllocator::LocalSurfaceIdAllocator() : next_id_(1u) {}
 
@@ -21,4 +21,4 @@ LocalSurfaceId LocalSurfaceIdAllocator::GenerateId() {
   return id;
 }
 
-}  // namespace cc
+}  // namespace viz

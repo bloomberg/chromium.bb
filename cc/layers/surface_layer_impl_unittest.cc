@@ -17,7 +17,7 @@ using testing::UnorderedElementsAre;
 namespace cc {
 namespace {
 
-static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
   float device_scale_factor = 1.33f;
@@ -27,7 +27,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
       gfx::ScaleToCeiledSize(layer_size, device_scale_factor));
   gfx::Size viewport_size(681, 750);
 
-  const LocalSurfaceId kArbitraryLocalSurfaceId(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
 
   LayerTestCommon::LayerImplTest impl;
@@ -36,7 +36,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
+  viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
 
@@ -93,7 +93,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
 TEST(SurfaceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
-  const LocalSurfaceId kArbitraryLocalSurfaceId(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
 
   LayerTestCommon::LayerImplTest impl;
@@ -102,7 +102,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
+  viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, 1.f, layer_size));
 
@@ -145,9 +145,9 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
-  const LocalSurfaceId kArbitraryLocalSurfaceId(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
-  const LocalSurfaceId kArbitraryLocalSurfaceId2(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
       10, base::UnguessableToken::Create());
 
   // Given condition: layer and surface have different size and different
@@ -163,8 +163,8 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   // active tree.
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
-  SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
+  viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
+  viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   surface_layer_impl->SetPrimarySurfaceInfo(
       SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetFallbackSurfaceInfo(
@@ -215,17 +215,17 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
 
   // Populate the primary SurfaceInfo.
-  const LocalSurfaceId kArbitraryLocalSurfaceId1(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
-  SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
+  viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
   float surface_scale1 = 1.f;
   gfx::Size surface_size1(300, 300);
   SurfaceInfo primary_surface_info(surface_id1, surface_scale1, surface_size1);
 
   // Populate the fallback SurfaceInfo.
-  const LocalSurfaceId kArbitraryLocalSurfaceId2(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
       7, base::UnguessableToken::Create());
-  SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
+  viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   float surface_scale2 = 2.f;
   gfx::Size surface_size2(400, 400);
   SurfaceInfo fallback_surface_info(surface_id2, surface_scale2, surface_size2);
@@ -332,9 +332,9 @@ TEST(SurfaceLayerImplTest,
       impl.AddChildToRoot<SurfaceLayerImpl>();
 
   // Populate the primary SurfaceInfo.
-  const LocalSurfaceId kArbitraryLocalSurfaceId1(
+  const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
-  SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
+  viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
   float surface_scale1 = 1.f;
   gfx::Size surface_size1(300, 300);
   SurfaceInfo primary_surface_info(surface_id1, surface_scale1, surface_size1);

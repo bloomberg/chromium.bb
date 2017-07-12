@@ -1,3 +1,4 @@
 include_rules = [
+  "+components/viz/common",
   "+mojo/public/cpp/bindings/struct_traits.h",
 ]

@@ -111,8 +111,8 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   return std::move(frame_sink);
 }
 
-cc::SurfaceId WindowPortLocal::GetSurfaceId() const {
-  return cc::SurfaceId(frame_sink_id_, local_surface_id_);
+viz::SurfaceId WindowPortLocal::GetSurfaceId() const {
+  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
 }
 
 void WindowPortLocal::OnWindowAddedToRootWindow() {
@@ -125,7 +125,7 @@ void WindowPortLocal::OnWillRemoveWindowFromRootWindow() {
     window_->layer()->GetCompositor()->RemoveFrameSink(frame_sink_id_);
 }
 
-void WindowPortLocal::OnSurfaceChanged(const cc::SurfaceId& surface_id,
+void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceId& surface_id,
                                        const gfx::Size& surface_size) {
   DCHECK_EQ(surface_id.frame_sink_id(), frame_sink_id_);
   local_surface_id_ = surface_id.local_surface_id();

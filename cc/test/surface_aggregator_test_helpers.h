@@ -11,7 +11,7 @@
 
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -32,8 +32,8 @@ struct Quad {
     return quad;
   }
 
-  static Quad SurfaceQuad(const SurfaceId& primary_surface_id,
-                          const SurfaceId& fallback_surface_id,
+  static Quad SurfaceQuad(const viz::SurfaceId& primary_surface_id,
+                          const viz::SurfaceId& fallback_surface_id,
                           float opacity) {
     Quad quad;
     quad.material = DrawQuad::SURFACE_CONTENT;
@@ -52,8 +52,8 @@ struct Quad {
 
   DrawQuad::Material material;
   // Set when material==DrawQuad::SURFACE_CONTENT.
-  SurfaceId primary_surface_id;
-  SurfaceId fallback_surface_id;
+  viz::SurfaceId primary_surface_id;
+  viz::SurfaceId fallback_surface_id;
   float opacity;
   // Set when material==DrawQuad::SOLID_COLOR.
   SkColor color;

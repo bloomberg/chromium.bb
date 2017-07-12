@@ -104,7 +104,7 @@ class CC_EXPORT LayerTreeSettings {
   LayerTreeDebugState initial_debug_state;
 
   // Indicates that the LayerTreeHost should defer commits unless it has a valid
-  // LocalSurfaceId set.
+  // viz::LocalSurfaceId set.
   bool enable_surface_synchronization = false;
 
   // Indicates the case when a sub-frame gets its own LayerTree because it's

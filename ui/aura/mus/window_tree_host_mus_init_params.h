@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 
@@ -57,7 +57,7 @@ struct AURA_EXPORT WindowTreeHostMusInitParams {
   // Properties to send to the server as well as to set on the Window.
   std::map<std::string, std::vector<uint8_t>> properties;
 
-  cc::FrameSinkId frame_sink_id;
+  viz::FrameSinkId frame_sink_id;
 
   // Id of the display the window should be created on.
   int64_t display_id = 0;

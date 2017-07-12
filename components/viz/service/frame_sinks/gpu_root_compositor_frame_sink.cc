@@ -15,7 +15,7 @@ namespace viz {
 GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     GpuCompositorFrameSinkDelegate* delegate,
     cc::FrameSinkManager* frame_sink_manager,
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     std::unique_ptr<cc::Display> display,
     std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
@@ -78,7 +78,7 @@ void GpuRootCompositorFrameSink::SetOutputIsSecure(bool secure) {
 }
 
 void GpuRootCompositorFrameSink::SetLocalSurfaceId(
-    const cc::LocalSurfaceId& local_surface_id,
+    const LocalSurfaceId& local_surface_id,
     float scale_factor) {
   display_->SetLocalSurfaceId(local_surface_id, scale_factor);
 }
@@ -88,7 +88,7 @@ void GpuRootCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 void GpuRootCompositorFrameSink::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
     compositor_frame_sink_binding_.Close();
@@ -102,7 +102,7 @@ void GpuRootCompositorFrameSink::DidNotProduceFrame(
 }
 
 void GpuRootCompositorFrameSink::ClaimTemporaryReference(
-    const cc::SurfaceId& surface_id) {
+    const SurfaceId& surface_id) {
   support_->ClaimTemporaryReference(surface_id);
 }
 
@@ -140,7 +140,7 @@ void GpuRootCompositorFrameSink::ReclaimResources(
 }
 
 void GpuRootCompositorFrameSink::WillDrawSurface(
-    const cc::LocalSurfaceId& local_surface_id,
+    const LocalSurfaceId& local_surface_id,
     const gfx::Rect& damage_rect) {}
 
 void GpuRootCompositorFrameSink::OnClientConnectionLost() {

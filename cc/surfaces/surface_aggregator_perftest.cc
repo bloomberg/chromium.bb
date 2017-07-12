@@ -50,13 +50,13 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         num_surfaces);
     for (int i = 0; i < num_surfaces; i++) {
       child_supports[i] = CompositorFrameSinkSupport::Create(
-          nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
+          nullptr, &manager_, viz::FrameSinkId(1, i + 1), kIsChildRoot,
           kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
     }
     aggregator_.reset(new SurfaceAggregator(
         manager_.surface_manager(), resource_provider_.get(), optimize_damage));
     for (int i = 0; i < num_surfaces; i++) {
-      LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
+      viz::LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);
 
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
@@ -97,7 +97,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-            SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)),
+            viz::SurfaceId(viz::FrameSinkId(1, i),
+                           viz::LocalSurfaceId(i, kArbitraryToken)),
             SurfaceDrawQuadType::PRIMARY, nullptr);
       }
 
@@ -108,7 +109,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
     std::unique_ptr<CompositorFrameSinkSupport> root_support =
         CompositorFrameSinkSupport::Create(
-            nullptr, &manager_, FrameSinkId(1, num_surfaces + 1), kIsRoot,
+            nullptr, &manager_, viz::FrameSinkId(1, num_surfaces + 1), kIsRoot,
             kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
     timer_.Reset();
     do {
@@ -120,8 +121,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
       surface_quad->SetNew(
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
-          SurfaceId(FrameSinkId(1, num_surfaces),
-                    LocalSurfaceId(num_surfaces, kArbitraryToken)),
+          viz::SurfaceId(viz::FrameSinkId(1, num_surfaces),
+                         viz::LocalSurfaceId(num_surfaces, kArbitraryToken)),
           SurfaceDrawQuadType::PRIMARY, nullptr);
 
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
@@ -134,11 +135,12 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame.render_pass_list.push_back(std::move(pass));
 
       root_support->SubmitCompositorFrame(
-          LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame));
+          viz::LocalSurfaceId(num_surfaces + 1, kArbitraryToken),
+          std::move(frame));
 
-      CompositorFrame aggregated = aggregator_->Aggregate(
-          SurfaceId(FrameSinkId(1, num_surfaces + 1),
-                    LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
+      CompositorFrame aggregated = aggregator_->Aggregate(viz::SurfaceId(
+          viz::FrameSinkId(1, num_surfaces + 1),
+          viz::LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

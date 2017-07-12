@@ -13,7 +13,7 @@ namespace cc {
 
 base::Closure SequenceSurfaceReferenceFactory::CreateReference(
     SurfaceReferenceOwner* owner,
-    const SurfaceId& surface_id) const {
+    const viz::SurfaceId& surface_id) const {
   auto seq = owner->GetSurfaceSequenceGenerator()->CreateSurfaceSequence();
   RequireSequence(surface_id, seq);
   return base::Bind(&SequenceSurfaceReferenceFactory::SatisfySequence, this,

@@ -12,8 +12,8 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 

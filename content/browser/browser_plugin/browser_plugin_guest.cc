@@ -445,7 +445,7 @@ void BrowserPluginGuest::OnSatisfySequence(
 
 void BrowserPluginGuest::OnRequireSequence(
     int instance_id,
-    const cc::SurfaceId& id,
+    const viz::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
   GetFrameSinkManager()->surface_manager()->RequireSequence(id, sequence);
 }

@@ -186,7 +186,7 @@ class WindowServer : public ServerWindowDelegate,
       const ServerWindow* window,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void ProcessWindowTransformChanged(const ServerWindow* window,
                                      const gfx::Transform& old_transform,
                                      const gfx::Transform& new_transform);
@@ -307,7 +307,7 @@ class WindowServer : public ServerWindowDelegate,
   // of the temporary reference. If no parent client is found then tell GPU to
   // immediately drop the temporary reference. |window| is the ServerWindow
   // that corresponds to |surface_id|.
-  void HandleTemporaryReferenceForNewSurface(const cc::SurfaceId& surface_id,
+  void HandleTemporaryReferenceForNewSurface(const viz::SurfaceId& surface_id,
                                              ServerWindow* window);
 
   // Overridden from ServerWindowDelegate:
@@ -359,7 +359,7 @@ class WindowServer : public ServerWindowDelegate,
 
   // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
-  void OnClientConnectionClosed(const cc::FrameSinkId& frame_sink_id) override;
+  void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
@@ -403,7 +403,7 @@ class WindowServer : public ServerWindowDelegate,
 
   WindowManagerWindowTreeFactorySet window_manager_window_tree_factory_set_;
 
-  cc::SurfaceId root_surface_id_;
+  viz::SurfaceId root_surface_id_;
 
   // Provides interfaces to create and manage FrameSinks.
   std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager_;

@@ -382,20 +382,20 @@ ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
-cc::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
-  return cc::FrameSinkId();
+viz::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
+  return viz::FrameSinkId();
 }
 
-cc::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
-  return cc::LocalSurfaceId();
+viz::LocalSurfaceId RenderWidgetHostViewBase::GetLocalSurfaceId() const {
+  return viz::LocalSurfaceId();
 }
 
-cc::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
+viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   NOTREACHED();
-  return cc::FrameSinkId();
+  return viz::FrameSinkId();
 }
 
 gfx::Point RenderWidgetHostViewBase::TransformPointToRootCoordSpace(
@@ -411,7 +411,7 @@ gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
 
 bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    const cc::SurfaceId& original_surface,
+    const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
   return true;
@@ -490,8 +490,8 @@ bool RenderWidgetHostViewBase::IsChildFrameForTesting() const {
   return false;
 }
 
-cc::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {
-  return cc::SurfaceId();
+viz::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {
+  return viz::SurfaceId();
 }
 
 }  // namespace content

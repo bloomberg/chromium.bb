@@ -12,7 +12,7 @@ namespace mojo {
 
 template <>
 struct StructTraits<cc::mojom::SurfaceInfoDataView, cc::SurfaceInfo> {
-  static const cc::SurfaceId& surface_id(const cc::SurfaceInfo& surface_info) {
+  static const viz::SurfaceId& surface_id(const cc::SurfaceInfo& surface_info) {
     return surface_info.id();
   }
 

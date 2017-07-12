@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -75,11 +75,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                          const blink::WebGestureEvent& event);
   void CancelScrollBubbling(RenderWidgetHostViewBase* target_view);
 
-  void AddFrameSinkIdOwner(const cc::FrameSinkId& id,
+  void AddFrameSinkIdOwner(const viz::FrameSinkId& id,
                            RenderWidgetHostViewBase* owner);
-  void RemoveFrameSinkIdOwner(const cc::FrameSinkId& id);
+  void RemoveFrameSinkIdOwner(const viz::FrameSinkId& id);
 
-  bool is_registered(const cc::FrameSinkId& id) {
+  bool is_registered(const viz::FrameSinkId& id) {
     return owner_map_.find(id) != owner_map_.end();
   }
 
@@ -104,21 +104,21 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   class HittestDelegate : public cc::SurfaceHittestDelegate {
    public:
-    HittestDelegate(
-        const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
-            hittest_data);
+    HittestDelegate(const std::unordered_map<viz::SurfaceId,
+                                             HittestData,
+                                             viz::SurfaceIdHash>& hittest_data);
     bool RejectHitTarget(const cc::SurfaceDrawQuad* surface_quad,
                          const gfx::Point& point_in_quad_space) override;
     bool AcceptHitTarget(const cc::SurfaceDrawQuad* surface_quad,
                          const gfx::Point& point_in_quad_space) override;
 
-    const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
+    const std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>&
         hittest_data_;
   };
 
-  using FrameSinkIdOwnerMap = std::unordered_map<cc::FrameSinkId,
+  using FrameSinkIdOwnerMap = std::unordered_map<viz::FrameSinkId,
                                                  RenderWidgetHostViewBase*,
-                                                 cc::FrameSinkIdHash>;
+                                                 viz::FrameSinkIdHash>;
   struct TargetData {
     RenderWidgetHostViewBase* target;
     gfx::Vector2d delta;
@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // the main frame.
   bool in_touchscreen_gesture_pinch_;
   bool gesture_pinch_did_send_scroll_begin_;
-  std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
+  std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>
       hittest_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);

@@ -35,7 +35,7 @@
 #include "WebImageLayer.h"
 #include "WebSize.h"
 #include "base/callback.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -170,7 +170,7 @@ class WebLayerTreeView {
   virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.
-  virtual cc::FrameSinkId GetFrameSinkId() { return cc::FrameSinkId(); }
+  virtual viz::FrameSinkId GetFrameSinkId() { return viz::FrameSinkId(); }
 
   // Debugging / dangerous ---------------------------------------------
 

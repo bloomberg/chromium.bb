@@ -20,7 +20,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -615,20 +615,21 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("])");
 }
 
-void ParamTraits<cc::FrameSinkId>::GetSize(base::PickleSizer* s,
-                                           const param_type& p) {
+void ParamTraits<viz::FrameSinkId>::GetSize(base::PickleSizer* s,
+                                            const param_type& p) {
   GetParamSize(s, p.client_id());
   GetParamSize(s, p.sink_id());
 }
 
-void ParamTraits<cc::FrameSinkId>::Write(base::Pickle* m, const param_type& p) {
+void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
+                                          const param_type& p) {
   WriteParam(m, p.client_id());
   WriteParam(m, p.sink_id());
 }
 
-bool ParamTraits<cc::FrameSinkId>::Read(const base::Pickle* m,
-                                        base::PickleIterator* iter,
-                                        param_type* p) {
+bool ParamTraits<viz::FrameSinkId>::Read(const base::Pickle* m,
+                                         base::PickleIterator* iter,
+                                         param_type* p) {
   uint32_t client_id;
   if (!ReadParam(m, iter, &client_id))
     return false;
@@ -637,33 +638,33 @@ bool ParamTraits<cc::FrameSinkId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &sink_id))
     return false;
 
-  *p = cc::FrameSinkId(client_id, sink_id);
+  *p = viz::FrameSinkId(client_id, sink_id);
   return true;
 }
 
-void ParamTraits<cc::FrameSinkId>::Log(const param_type& p, std::string* l) {
-  l->append("FrameSinkId(");
+void ParamTraits<viz::FrameSinkId>::Log(const param_type& p, std::string* l) {
+  l->append("viz::FrameSinkId(");
   LogParam(p.client_id(), l);
   l->append(", ");
   LogParam(p.sink_id(), l);
   l->append(")");
 }
 
-void ParamTraits<cc::LocalSurfaceId>::GetSize(base::PickleSizer* s,
-                                              const param_type& p) {
+void ParamTraits<viz::LocalSurfaceId>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
   GetParamSize(s, p.local_id());
   GetParamSize(s, p.nonce());
 }
 
-void ParamTraits<cc::LocalSurfaceId>::Write(base::Pickle* m,
-                                            const param_type& p) {
+void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
+                                             const param_type& p) {
   WriteParam(m, p.local_id());
   WriteParam(m, p.nonce());
 }
 
-bool ParamTraits<cc::LocalSurfaceId>::Read(const base::Pickle* m,
-                                           base::PickleIterator* iter,
-                                           param_type* p) {
+bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
+                                            base::PickleIterator* iter,
+                                            param_type* p) {
   uint32_t local_id;
   if (!ReadParam(m, iter, &local_id))
     return false;
@@ -672,46 +673,47 @@ bool ParamTraits<cc::LocalSurfaceId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &nonce))
     return false;
 
-  *p = cc::LocalSurfaceId(local_id, nonce);
+  *p = viz::LocalSurfaceId(local_id, nonce);
   return true;
 }
 
-void ParamTraits<cc::LocalSurfaceId>::Log(const param_type& p, std::string* l) {
-  l->append("LocalSurfaceId(");
+void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
+                                           std::string* l) {
+  l->append("viz::LocalSurfaceId(");
   LogParam(p.local_id(), l);
   l->append(", ");
   LogParam(p.nonce(), l);
   l->append(")");
 }
 
-void ParamTraits<cc::SurfaceId>::GetSize(base::PickleSizer* s,
-                                         const param_type& p) {
+void ParamTraits<viz::SurfaceId>::GetSize(base::PickleSizer* s,
+                                          const param_type& p) {
   GetParamSize(s, p.frame_sink_id());
   GetParamSize(s, p.local_surface_id());
 }
 
-void ParamTraits<cc::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
+void ParamTraits<viz::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.frame_sink_id());
   WriteParam(m, p.local_surface_id());
 }
 
-bool ParamTraits<cc::SurfaceId>::Read(const base::Pickle* m,
-                                      base::PickleIterator* iter,
-                                      param_type* p) {
-  cc::FrameSinkId frame_sink_id;
+bool ParamTraits<viz::SurfaceId>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
+  viz::FrameSinkId frame_sink_id;
   if (!ReadParam(m, iter, &frame_sink_id))
     return false;
 
-  cc::LocalSurfaceId local_surface_id;
+  viz::LocalSurfaceId local_surface_id;
   if (!ReadParam(m, iter, &local_surface_id))
     return false;
 
-  *p = cc::SurfaceId(frame_sink_id, local_surface_id);
+  *p = viz::SurfaceId(frame_sink_id, local_surface_id);
   return true;
 }
 
-void ParamTraits<cc::SurfaceId>::Log(const param_type& p, std::string* l) {
-  l->append("SurfaceId(");
+void ParamTraits<viz::SurfaceId>::Log(const param_type& p, std::string* l) {
+  l->append("viz::SurfaceId(");
   LogParam(p.frame_sink_id(), l);
   l->append(", ");
   LogParam(p.local_surface_id(), l);
@@ -734,7 +736,7 @@ void ParamTraits<cc::SurfaceInfo>::Write(base::Pickle* m, const param_type& p) {
 bool ParamTraits<cc::SurfaceInfo>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         param_type* p) {
-  cc::SurfaceId surface_id;
+  viz::SurfaceId surface_id;
   if (!ReadParam(m, iter, &surface_id))
     return false;
 

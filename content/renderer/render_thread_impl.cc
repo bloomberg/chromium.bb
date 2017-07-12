@@ -425,7 +425,7 @@ void CreateSingleSampleMetricsProvider(
 
 class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
  public:
-  const cc::LocalSurfaceId& GetLocalSurfaceIdForFrame(
+  const viz::LocalSurfaceId& GetLocalSurfaceIdForFrame(
       const cc::CompositorFrame& frame) override {
     auto new_surface_properties =
         RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
@@ -438,8 +438,8 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
   }
 
  private:
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
-  cc::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
   RenderWidgetSurfaceProperties surface_properties_;
 };
 

@@ -102,7 +102,7 @@ void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
 }
 
 RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
-    const std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>&
+    const std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>&
         hittest_data)
     : hittest_data_(hittest_data) {}
 
@@ -156,7 +156,7 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // hit testing, and reflect transformations that would normally be applied in
   // the renderer process if the event was being routed between frames within a
   // single process with only one RenderWidgetHost.
-  cc::FrameSinkId frame_sink_id =
+  viz::FrameSinkId frame_sink_id =
       root_view->FrameSinkIdAtPoint(&delegate, point, transformed_point);
   const FrameSinkIdOwnerMap::iterator iter = owner_map_.find(frame_sink_id);
   // If the point hit a Surface whose namspace is no longer in the map, then
@@ -740,7 +740,7 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
 }
 
 void RenderWidgetHostInputEventRouter::AddFrameSinkIdOwner(
-    const cc::FrameSinkId& id,
+    const viz::FrameSinkId& id,
     RenderWidgetHostViewBase* owner) {
   DCHECK(owner_map_.find(id) == owner_map_.end());
   // We want to be notified if the owner is destroyed so we can remove it from
@@ -750,7 +750,7 @@ void RenderWidgetHostInputEventRouter::AddFrameSinkIdOwner(
 }
 
 void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
-    const cc::FrameSinkId& id) {
+    const viz::FrameSinkId& id) {
   auto it_to_remove = owner_map_.find(id);
   if (it_to_remove != owner_map_.end()) {
     it_to_remove->second->RemoveObserver(this);

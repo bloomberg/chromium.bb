@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_LOCAL_SURFACE_ID_H_
-#define CC_SURFACES_LOCAL_SURFACE_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_H_
+#define COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_H_
 
 #include <inttypes.h>
 
@@ -19,6 +19,9 @@ namespace cc {
 namespace mojom {
 class LocalSurfaceIdDataView;
 }
+}  // namespace cc
+
+namespace viz {
 
 class LocalSurfaceId {
  public:
@@ -61,7 +64,7 @@ class LocalSurfaceId {
   std::string ToString() const;
 
  private:
-  friend struct mojo::StructTraits<mojom::LocalSurfaceIdDataView,
+  friend struct mojo::StructTraits<cc::mojom::LocalSurfaceIdDataView,
                                    LocalSurfaceId>;
 
   uint32_t local_id_;
@@ -75,6 +78,6 @@ struct LocalSurfaceIdHash {
   size_t operator()(const LocalSurfaceId& key) const { return key.hash(); }
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_LOCAL_SURFACE_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_H_

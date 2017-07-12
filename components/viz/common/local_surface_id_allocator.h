@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
-#define CC_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#ifndef COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#define COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/surface_id.h"
 
-namespace cc {
+namespace viz {
 
 // This is a helper class for generating local surface IDs for a single
 // FrameSink. This is not threadsafe, to use from multiple threads wrap this
 // class in a mutex.
-class CC_SURFACES_EXPORT LocalSurfaceIdAllocator {
+class LocalSurfaceIdAllocator {
  public:
   LocalSurfaceIdAllocator();
   ~LocalSurfaceIdAllocator();
@@ -29,6 +28,6 @@ class CC_SURFACES_EXPORT LocalSurfaceIdAllocator {
   DISALLOW_COPY_AND_ASSIGN(LocalSurfaceIdAllocator);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#endif  // COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_

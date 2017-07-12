@@ -123,7 +123,7 @@ SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
 }
 
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
-                                            const SurfaceId& surface_id) {
+                                            const viz::SurfaceId& surface_id) {
   auto key = std::make_pair(surface_id, surface_local_pass_id);
   auto it = render_pass_allocator_map_.find(key);
   if (it != render_pass_allocator_map_.end()) {
@@ -160,7 +160,8 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
     if (previous_index == surface->frame_index())
       return gfx::Rect();
   }
-  const SurfaceId& previous_surface_id = surface->previous_frame_surface_id();
+  const viz::SurfaceId& previous_surface_id =
+      surface->previous_frame_surface_id();
 
   if (surface->surface_id() != previous_surface_id) {
     it = previous_contained_surfaces_.find(previous_surface_id);
@@ -191,7 +192,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     bool ignore_undamaged,
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid) {
-  SurfaceId surface_id = surface_quad->surface_id;
+  viz::SurfaceId surface_id = surface_quad->surface_id;
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   if (referenced_surfaces_.count(surface_id))
@@ -406,7 +407,7 @@ void SurfaceAggregator::CopyQuadsToPass(
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass,
-    const SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id) {
   const SharedQuadState* last_copied_source_shared_quad_state = nullptr;
   const SharedQuadState* dest_shared_quad_state = nullptr;
   // If the current frame has copy requests then aggregate the entire
@@ -587,7 +588,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 // Walk the Surface tree from surface_id. Validate the resources of the current
 // surface and its descendants, check if there are any copy requests, and
 // return the combined damage rect.
-gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
+gfx::Rect SurfaceAggregator::PrewalkTree(const viz::SurfaceId& surface_id,
                                          bool in_moved_pixel_surface,
                                          int parent_pass_id,
                                          PrewalkResult* result) {
@@ -634,7 +635,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
     render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
 
   struct SurfaceInfo {
-    SurfaceInfo(const SurfaceId& id,
+    SurfaceInfo(const viz::SurfaceId& id,
                 bool has_moved_pixels,
                 RenderPassId parent_pass_id,
                 const gfx::Transform& target_to_surface_transform)
@@ -643,7 +644,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
           parent_pass_id(parent_pass_id),
           target_to_surface_transform(target_to_surface_transform) {}
 
-    SurfaceId id;
+    viz::SurfaceId id;
     bool has_moved_pixels;
     RenderPassId parent_pass_id;
     gfx::Transform target_to_surface_transform;
@@ -781,13 +782,13 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
   // referenced by a drawn Surface, but aren't contained in a SurfaceDrawQuad.
   // They need to be iterated over to ensure that any copy requests on them
   // (or on Surfaces they reference) are executed.
-  std::vector<SurfaceId> surfaces_to_copy(
+  std::vector<viz::SurfaceId> surfaces_to_copy(
       prewalk_result->undrawn_surfaces.begin(),
       prewalk_result->undrawn_surfaces.end());
   DCHECK(referenced_surfaces_.empty());
 
   for (size_t i = 0; i < surfaces_to_copy.size(); i++) {
-    SurfaceId surface_id = surfaces_to_copy[i];
+    viz::SurfaceId surface_id = surfaces_to_copy[i];
     Surface* surface = manager_->GetSurfaceForId(surface_id);
     if (!surface)
       continue;
@@ -837,7 +838,7 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
   }
 }
 
-CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
+CompositorFrame SurfaceAggregator::Aggregate(const viz::SurfaceId& surface_id) {
   uma_stats_.Reset();
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -914,7 +915,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   return frame;
 }
 
-void SurfaceAggregator::ReleaseResources(const SurfaceId& surface_id) {
+void SurfaceAggregator::ReleaseResources(const viz::SurfaceId& surface_id) {
   auto it = surface_id_to_resource_child_id_.find(surface_id);
   if (it != surface_id_to_resource_child_id_.end()) {
     provider_->DestroyChild(it->second);
@@ -922,7 +923,8 @@ void SurfaceAggregator::ReleaseResources(const SurfaceId& surface_id) {
   }
 }
 
-void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
+void SurfaceAggregator::SetFullDamageForSurface(
+    const viz::SurfaceId& surface_id) {
   auto it = previous_contained_surfaces_.find(surface_id);
   if (it == previous_contained_surfaces_.end())
     return;

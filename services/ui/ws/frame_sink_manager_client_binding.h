@@ -29,7 +29,7 @@ class FrameSinkManagerClientBinding : public cc::mojom::FrameSinkManager {
  private:
   // cc::mojom::FrameSinkManager:
   void CreateRootCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::mojom::CompositorFrameSinkAssociatedRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -37,17 +37,17 @@ class FrameSinkManagerClientBinding : public cc::mojom::FrameSinkManager {
       cc::mojom::DisplayPrivateAssociatedRequest display_private_request)
       override;
   void CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+      const viz::FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,
       cc::mojom::CompositorFrameSinkClientPtr client) override;
   void RegisterFrameSinkHierarchy(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& child_frame_sink_id) override;
+      const viz::FrameSinkId& parent_frame_sink_id,
+      const viz::FrameSinkId& child_frame_sink_id) override;
   void UnregisterFrameSinkHierarchy(
-      const cc::FrameSinkId& parent_frame_sink_id,
-      const cc::FrameSinkId& child_frame_sink_id) override;
-  void DropTemporaryReference(const cc::SurfaceId& surface_id) override;
+      const viz::FrameSinkId& parent_frame_sink_id,
+      const viz::FrameSinkId& child_frame_sink_id) override;
+  void DropTemporaryReference(const viz::SurfaceId& surface_id) override;
 
   mojo::Binding<cc::mojom::FrameSinkManagerClient>
       frame_sink_manager_client_binding_;

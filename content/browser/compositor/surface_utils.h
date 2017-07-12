@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -25,7 +25,7 @@ class FrameSinkManagerImpl;
 
 namespace content {
 
-CONTENT_EXPORT cc::FrameSinkId AllocateFrameSinkId();
+CONTENT_EXPORT viz::FrameSinkId AllocateFrameSinkId();
 
 CONTENT_EXPORT cc::FrameSinkManager* GetFrameSinkManager();
 

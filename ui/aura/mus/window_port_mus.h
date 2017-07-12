@@ -225,7 +225,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          ui::mojom::OrderDirection) override;
   void SetBoundsFromServer(
       const gfx::Rect& bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
@@ -233,8 +233,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetPropertyFromServer(
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
-  void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
-  const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
+  void SetFrameSinkIdFromServer(const viz::FrameSinkId& frame_sink_id) override;
+  const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
   void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
@@ -242,7 +242,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
-  const cc::LocalSurfaceId& GetLocalSurfaceId() override;
+  const viz::LocalSurfaceId& GetLocalSurfaceId() override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
@@ -270,7 +270,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
-  cc::SurfaceId GetSurfaceId() const override;
+  viz::SurfaceId GetSurfaceId() const override;
   void OnWindowAddedToRootWindow() override {}
   void OnWillRemoveWindowFromRootWindow() override {}
 
@@ -287,13 +287,13 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  cc::FrameSinkId frame_sink_id_;
+  viz::FrameSinkId frame_sink_id_;
 
   cc::SurfaceInfo primary_surface_info_;
   cc::SurfaceInfo fallback_surface_info_;
 
-  cc::LocalSurfaceId local_surface_id_;
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
   gfx::Size last_surface_size_in_pixels_;
 
   ui::CursorData cursor_;

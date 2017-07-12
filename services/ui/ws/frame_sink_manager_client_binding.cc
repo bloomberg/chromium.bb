@@ -22,7 +22,7 @@ FrameSinkManagerClientBinding::FrameSinkManagerClientBinding(
 FrameSinkManagerClientBinding::~FrameSinkManagerClientBinding() = default;
 
 void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::CompositorFrameSinkAssociatedRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest private_request,
@@ -35,7 +35,7 @@ void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
 }
 
 void FrameSinkManagerClientBinding::CreateCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
+    const viz::FrameSinkId& frame_sink_id,
     cc::mojom::CompositorFrameSinkRequest request,
     cc::mojom::CompositorFrameSinkPrivateRequest private_request,
     cc::mojom::CompositorFrameSinkClientPtr client) {
@@ -45,21 +45,21 @@ void FrameSinkManagerClientBinding::CreateCompositorFrameSink(
 }
 
 void FrameSinkManagerClientBinding::RegisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const viz::FrameSinkId& parent_frame_sink_id,
+    const viz::FrameSinkId& child_frame_sink_id) {
   frame_sink_manager_->RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                                   child_frame_sink_id);
 }
 
 void FrameSinkManagerClientBinding::UnregisterFrameSinkHierarchy(
-    const cc::FrameSinkId& parent_frame_sink_id,
-    const cc::FrameSinkId& child_frame_sink_id) {
+    const viz::FrameSinkId& parent_frame_sink_id,
+    const viz::FrameSinkId& child_frame_sink_id) {
   frame_sink_manager_->UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                                     child_frame_sink_id);
 }
 
 void FrameSinkManagerClientBinding::DropTemporaryReference(
-    const cc::SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id) {
   frame_sink_manager_->DropTemporaryReference(surface_id);
 }
 

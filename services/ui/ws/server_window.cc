@@ -175,7 +175,7 @@ void ServerWindow::StackChildAtTop(ServerWindow* child) {
 
 void ServerWindow::SetBounds(
     const gfx::Rect& bounds,
-    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   if (bounds_ == bounds && current_local_surface_id_ == local_surface_id)
     return;
 

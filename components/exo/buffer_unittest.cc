@@ -32,7 +32,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
+  const viz::FrameSinkId arbitrary_frame_sink_id(1, 1);
   LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder =
       surface->layer_tree_frame_sink_holder();
 
@@ -69,7 +69,7 @@ TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
+  const viz::FrameSinkId arbitrary_frame_sink_id(1, 1);
   std::unique_ptr<Surface> surface(new Surface);
   LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder =
       surface->layer_tree_frame_sink_holder();

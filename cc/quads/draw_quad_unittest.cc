@@ -32,7 +32,7 @@
 namespace cc {
 namespace {
 
-static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
@@ -262,8 +262,9 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
 
 TEST(DrawQuadTest, CopySurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(kArbitraryFrameSinkId,
-                       LocalSurfaceId(1234, base::UnguessableToken::Create()));
+  viz::SurfaceId surface_id(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(1234, base::UnguessableToken::Create()));
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id,
@@ -544,8 +545,9 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(kArbitraryFrameSinkId,
-                       LocalSurfaceId(4321, base::UnguessableToken::Create()));
+  viz::SurfaceId surface_id(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(4321, base::UnguessableToken::Create()));
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id,

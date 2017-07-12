@@ -1202,13 +1202,13 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
 }
 
 void LayerTreeImpl::SetSurfaceLayerIds(
-    const base::flat_set<SurfaceId>& surface_layer_ids) {
+    const base::flat_set<viz::SurfaceId>& surface_layer_ids) {
   DCHECK(surface_layer_ids_.empty());
   surface_layer_ids_ = surface_layer_ids;
   needs_surface_ids_sync_ = true;
 }
 
-const base::flat_set<SurfaceId>& LayerTreeImpl::SurfaceLayerIds() const {
+const base::flat_set<viz::SurfaceId>& LayerTreeImpl::SurfaceLayerIds() const {
   return surface_layer_ids_;
 }
 

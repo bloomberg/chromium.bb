@@ -22,7 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
@@ -325,7 +325,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
@@ -345,10 +345,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
 
-  cc::FrameSinkId GetFrameSinkId() override;
-  cc::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
-                                     const gfx::Point& point,
-                                     gfx::Point* transformed_point) override;
+  viz::FrameSinkId GetFrameSinkId() override;
+  viz::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                      const gfx::Point& point,
+                                      gfx::Point* transformed_point) override;
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
@@ -360,7 +360,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ProcessGestureEvent(const blink::WebGestureEvent& event,
                            const ui::LatencyInfo& latency) override;
   bool TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
+                                       const viz::SurfaceId& original_surface,
                                        gfx::Point* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::Point& point,
@@ -483,7 +483,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void AcceleratedWidgetSwapCompleted() override;
 
   // Exposed for testing.
-  cc::SurfaceId SurfaceIdForTesting() const override;
+  viz::SurfaceId SurfaceIdForTesting() const override;
 
   void SetShowingContextMenu(bool showing) override;
 

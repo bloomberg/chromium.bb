@@ -26,7 +26,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
-#include "cc/surfaces/frame_sink_id.h"
+#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
@@ -149,7 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostOwnerDelegate* owner_delegate() { return owner_delegate_; }
 
-  cc::FrameSinkId AllocateFrameSinkId(bool is_guest_view_hack);
+  viz::FrameSinkId AllocateFrameSinkId(bool is_guest_view_hack);
 
   // RenderWidgetHost implementation.
   void UpdateTextDirection(blink::WebTextDirection direction) override;
@@ -578,7 +578,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // cc::mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void DidNotProduceFrame(const cc::BeginFrameAck& ack) override;
 
@@ -965,7 +965,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // These information are used to verify that the renderer does not misbehave
   // when it comes to allocating LocalSurfaceIds. If surface properties change,
   // a new LocalSurfaceId must be created.
-  cc::LocalSurfaceId last_local_surface_id_;
+  viz::LocalSurfaceId last_local_surface_id_;
   RenderWidgetSurfaceProperties last_surface_properties_;
 
   mojo::Binding<cc::mojom::CompositorFrameSink> compositor_frame_sink_binding_;

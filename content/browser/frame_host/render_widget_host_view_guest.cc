@@ -289,7 +289,7 @@ void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
 }
 
 void RenderWidgetHostViewGuest::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
+    const viz::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
 

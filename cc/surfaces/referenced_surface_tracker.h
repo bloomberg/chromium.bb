@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "components/viz/common/surface_id.h"
 
 namespace cc {
 
@@ -19,9 +19,9 @@ namespace cc {
 // |references_to_remove| based on the difference using |parent_surface_id| as
 // the parent for references.
 CC_SURFACES_EXPORT void GetSurfaceReferenceDifference(
-    const SurfaceId& parent_surface_id,
-    const base::flat_set<SurfaceId>& old_referenced_surfaces,
-    const base::flat_set<SurfaceId>& new_referenced_surfaces,
+    const viz::SurfaceId& parent_surface_id,
+    const base::flat_set<viz::SurfaceId>& old_referenced_surfaces,
+    const base::flat_set<viz::SurfaceId>& new_referenced_surfaces,
     std::vector<SurfaceReference>* references_to_add,
     std::vector<SurfaceReference>* references_to_remove);
 

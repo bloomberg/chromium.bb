@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/surface_id.h"
+#include "components/viz/common/surface_id.h"
 
 #include "base/strings/stringprintf.h"
 
-namespace cc {
+namespace viz {
 
 std::string SurfaceId::ToString() const {
   return base::StringPrintf("SurfaceId(%s, %s)",
@@ -18,4 +18,4 @@ std::ostream& operator<<(std::ostream& out, const SurfaceId& surface_id) {
   return out << surface_id.ToString();
 }
 
-}  // namespace cc
+}  // namespace viz

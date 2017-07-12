@@ -23,7 +23,7 @@ void DirectSurfaceReferenceFactory::SatisfySequence(
 }
 
 void DirectSurfaceReferenceFactory::RequireSequence(
-    const SurfaceId& surface_id,
+    const viz::SurfaceId& surface_id,
     const SurfaceSequence& sequence) const {
   manager_->RequireSequence(surface_id, sequence);
 }

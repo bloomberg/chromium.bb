@@ -241,7 +241,7 @@ const LayerTreeSettings& LayerTreeHost::GetSettings() const {
   return settings_;
 }
 
-void LayerTreeHost::SetFrameSinkId(const FrameSinkId& frame_sink_id) {
+void LayerTreeHost::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   surface_sequence_generator_.set_frame_sink_id(frame_sink_id);
 }
 
@@ -1110,7 +1110,8 @@ void LayerTreeHost::SetContentSourceId(uint32_t id) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) {
+void LayerTreeHost::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
   if (local_surface_id_ == local_surface_id)
     return;
   local_surface_id_ = local_surface_id;
@@ -1161,12 +1162,12 @@ bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
   return did_paint_content;
 }
 
-void LayerTreeHost::AddSurfaceLayerId(const SurfaceId& surface_id) {
+void LayerTreeHost::AddSurfaceLayerId(const viz::SurfaceId& surface_id) {
   if (++surface_layer_ids_[surface_id] == 1)
     needs_surface_ids_sync_ = true;
 }
 
-void LayerTreeHost::RemoveSurfaceLayerId(const SurfaceId& surface_id) {
+void LayerTreeHost::RemoveSurfaceLayerId(const viz::SurfaceId& surface_id) {
   auto iter = surface_layer_ids_.find(surface_id);
   if (iter == surface_layer_ids_.end())
     return;
@@ -1177,8 +1178,8 @@ void LayerTreeHost::RemoveSurfaceLayerId(const SurfaceId& surface_id) {
   }
 }
 
-base::flat_set<SurfaceId> LayerTreeHost::SurfaceLayerIds() const {
-  base::flat_set<SurfaceId> ids;
+base::flat_set<viz::SurfaceId> LayerTreeHost::SurfaceLayerIds() const {
+  base::flat_set<viz::SurfaceId> ids;
   for (auto& map_entry : surface_layer_ids_)
     ids.insert(map_entry.first);
   return ids;

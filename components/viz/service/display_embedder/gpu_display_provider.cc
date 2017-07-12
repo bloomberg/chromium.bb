@@ -52,7 +52,7 @@ GpuDisplayProvider::GpuDisplayProvider(
 GpuDisplayProvider::~GpuDisplayProvider() = default;
 
 std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
-    const cc::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     std::unique_ptr<cc::BeginFrameSource>* begin_frame_source) {
   auto synthetic_begin_frame_source =

@@ -28,12 +28,12 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/browser_thread_impl.h"
@@ -131,7 +131,7 @@ void InstallDelegatedFrameHostClient(
 
 namespace {
 
-const cc::LocalSurfaceId kArbitraryLocalSurfaceId(
+const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
     base::UnguessableToken::Deserialize(2, 3));
 
@@ -478,7 +478,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     }
   }
 
-  cc::SurfaceId surface_id() const {
+  viz::SurfaceId surface_id() const {
     return GetDelegatedFrameHost()->SurfaceIdForTesting();
   }
 
@@ -869,7 +869,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   IPC::TestSink* sink_;
   base::test::ScopedFeatureList feature_list_;
 
-  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
@@ -2598,7 +2598,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   std::unique_ptr<ui::LayerTreeOwner> mirror(wm::MirrorLayers(
       view_->GetNativeView(), false /* sync_bounds */));
 
-  cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
+  viz::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetContextFactoryPrivate()
@@ -2623,8 +2623,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   gfx::Size large_size(100, 100);
   gfx::Size small_size(40, 45);
   gfx::Size medium_size(40, 95);
-  cc::LocalSurfaceId small_id = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId medium_id = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId small_id = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId medium_id = local_surface_id_allocator_.GenerateId();
 
   // Prevent the DelegatedFrameHost from skipping frames.
   // XXX
@@ -2676,9 +2676,9 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   gfx::Size size1(100, 100);
   gfx::Size size2(200, 200);
   gfx::Size size3(300, 300);
-  cc::LocalSurfaceId id1 = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
-  cc::LocalSurfaceId id3 = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id1 = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id3 = local_surface_id_allocator_.GenerateId();
 
   aura::Window* root_window = parent_view_->GetNativeView()->GetRootWindow();
   view_->InitAsChild(nullptr);
@@ -2738,7 +2738,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   view_->SubmitCompositorFrame(
       id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
   view_->renderer_compositor_frame_sink_->Flush();
-  cc::SurfaceId surface_id = view_->surface_id();
+  viz::SurfaceId surface_id = view_->surface_id();
   if (!surface_id.is_valid()) {
     // No frame ack yet.
     EXPECT_FALSE(view_->renderer_compositor_frame_sink_->did_receive_ack());
@@ -2793,7 +2793,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
 TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -2911,7 +2911,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3222,7 +3222,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   views[1]->Hide();
   EXPECT_TRUE(views[1]->HasFrameData());
   gfx::Size size2(200, 200);
-  cc::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
+  viz::LocalSurfaceId id2 = local_surface_id_allocator_.GenerateId();
   views[1]->SetSize(size2);
   EXPECT_FALSE(views[1]->HasFrameData());
   // Show it, it should block until we give it a frame.
@@ -3438,7 +3438,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  cc::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
+  viz::LocalSurfaceId local_surface_id = kArbitraryLocalSurfaceId;
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3603,7 +3603,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
     view_->SubmitCompositorFrame(
         kArbitraryLocalSurfaceId,
         MakeDelegatedFrame(1.f, view_rect_.size(), view_rect_));
-    cc::SurfaceId surface_id =
+    viz::SurfaceId surface_id =
         view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
     if (surface_id.is_valid())
       view_->GetDelegatedFrameHost()->WillDrawSurface(

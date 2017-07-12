@@ -647,9 +647,9 @@ WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
       storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin)));
 }
 
-cc::FrameSinkId RendererBlinkPlatformImpl::GenerateFrameSinkId() {
-  return cc::FrameSinkId(RenderThread::Get()->GetClientId(),
-                         RenderThread::Get()->GenerateRoutingID());
+viz::FrameSinkId RendererBlinkPlatformImpl::GenerateFrameSinkId() {
+  return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                          RenderThread::Get()->GenerateRoutingID());
 }
 
 bool RendererBlinkPlatformImpl::IsThreadedCompositingEnabled() {

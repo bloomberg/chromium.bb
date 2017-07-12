@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_RESIZE_PARAMS_H_
 
 #include "base/optional.h"
-#include "cc/surfaces/local_surface_id.h"
+#include "components/viz/common/local_surface_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
@@ -40,7 +40,7 @@ struct CONTENT_EXPORT ResizeParams {
   float bottom_controls_height;
 
   // The local surface ID to use (if valid).
-  base::Optional<cc::LocalSurfaceId> local_surface_id;
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
 
   // The size of the visible viewport, which may be smaller than the view if the
   // view is partially occluded (e.g. by a virtual keyboard).  The size is in

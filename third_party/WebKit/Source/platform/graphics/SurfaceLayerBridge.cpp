@@ -8,9 +8,9 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surface_id.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -35,7 +35,7 @@ class SequenceSurfaceReferenceFactoryImpl
   ~SequenceSurfaceReferenceFactoryImpl() override = default;
 
   // cc::SequenceSurfaceReferenceFactory implementation:
-  void RequireSequence(const cc::SurfaceId& id,
+  void RequireSequence(const viz::SurfaceId& id,
                        const cc::SurfaceSequence& sequence) const override {
     DCHECK(bridge_);
     bridge_->RequireCallback(id, sequence);
@@ -60,7 +60,7 @@ SurfaceLayerBridge::SurfaceLayerBridge(SurfaceLayerBridgeObserver* observer,
       binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
-                                            : cc::FrameSinkId()) {
+                                            : viz::FrameSinkId()) {
   ref_factory_ =
       new SequenceSurfaceReferenceFactoryImpl(weak_factory_.GetWeakPtr());
 
@@ -89,7 +89,7 @@ void SurfaceLayerBridge::SatisfyCallback(const cc::SurfaceSequence& sequence) {
   service_->Satisfy(sequence);
 }
 
-void SurfaceLayerBridge::RequireCallback(const cc::SurfaceId& surface_id,
+void SurfaceLayerBridge::RequireCallback(const viz::SurfaceId& surface_id,
                                          const cc::SurfaceSequence& sequence) {
   service_->Require(surface_id, sequence);
 }

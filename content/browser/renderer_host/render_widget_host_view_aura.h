@@ -168,17 +168,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void DidCreateNewRendererCompositorFrameSink(
       cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
-  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+  void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
   void DidStopFlinging() override;
   void OnDidNavigateMainFrameToNewPage() override;
-  cc::FrameSinkId GetFrameSinkId() override;
-  cc::LocalSurfaceId GetLocalSurfaceId() const override;
-  cc::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
-                                     const gfx::Point& point,
-                                     gfx::Point* transformed_point) override;
+  viz::FrameSinkId GetFrameSinkId() override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
+  viz::FrameSinkId FrameSinkIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                      const gfx::Point& point,
+                                      gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
                          const ui::LatencyInfo& latency) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
@@ -188,7 +188,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void ProcessGestureEvent(const blink::WebGestureEvent& event,
                            const ui::LatencyInfo& latency) override;
   bool TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       const cc::SurfaceId& original_surface,
+                                       const viz::SurfaceId& original_surface,
                                        gfx::Point* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
       const gfx::Point& point,
@@ -315,7 +315,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       std::unique_ptr<TouchSelectionControllerClientAura> client);
 
   // Exposed for tests.
-  cc::SurfaceId SurfaceIdForTesting() const override;
+  viz::SurfaceId SurfaceIdForTesting() const override;
 
   // RenderWidgetHostViewEventHandler::Delegate:
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
@@ -604,8 +604,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // provides an implementation, and directs events to |host_|.
   std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
-  cc::FrameSinkId frame_sink_id_;
-  cc::LocalSurfaceId local_surface_id_;
+  viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId local_surface_id_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

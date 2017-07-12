@@ -37,7 +37,7 @@ using testing::Eq;
 using testing::ElementsAre;
 using testing::SizeIs;
 
-static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class SurfaceLayerTest : public testing::Test {
  public:
@@ -82,7 +82,7 @@ class MockSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
   // SequenceSurfaceReferenceFactory implementation.
   MOCK_CONST_METHOD1(SatisfySequence, void(const SurfaceSequence&));
   MOCK_CONST_METHOD2(RequireSequence,
-                     void(const SurfaceId&, const SurfaceSequence&));
+                     void(const viz::SurfaceId&, const SurfaceSequence&));
 
  protected:
   ~MockSurfaceReferenceFactory() override = default;
@@ -97,12 +97,13 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   const base::UnguessableToken kArbitraryToken =
       base::UnguessableToken::Create();
   const SurfaceInfo info(
-      SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)), 1.f,
-      gfx::Size(1, 1));
-  const SurfaceSequence expected_seq1(FrameSinkId(1, 1), 1u);
-  const SurfaceSequence expected_seq2(FrameSinkId(2, 2), 1u);
-  const SurfaceId expected_id(kArbitraryFrameSinkId,
-                              LocalSurfaceId(1, kArbitraryToken));
+      viz::SurfaceId(kArbitraryFrameSinkId,
+                     viz::LocalSurfaceId(1, kArbitraryToken)),
+      1.f, gfx::Size(1, 1));
+  const SurfaceSequence expected_seq1(viz::FrameSinkId(1, 1), 1u);
+  const SurfaceSequence expected_seq2(viz::FrameSinkId(2, 2), 1u);
+  const viz::SurfaceId expected_id(kArbitraryFrameSinkId,
+                                   viz::LocalSurfaceId(1, kArbitraryToken));
 
   scoped_refptr<MockSurfaceReferenceFactory> ref_factory =
       new testing::StrictMock<MockSurfaceReferenceFactory>();
@@ -119,7 +120,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer->SetPrimarySurfaceInfo(info);
   layer->SetFallbackSurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
-      FrameSinkId(1, 1));
+      viz::FrameSinkId(1, 1));
   layer_tree_host_->SetRootLayer(layer);
 
   auto animation_host2 = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
@@ -130,7 +131,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer2->SetPrimarySurfaceInfo(info);
   layer2->SetFallbackSurfaceInfo(info);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
-      FrameSinkId(2, 2));
+      viz::FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
 
   testing::Mock::VerifyAndClearExpectations(ref_factory.get());
@@ -165,8 +166,8 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create(ref_factory);
   layer_tree_host_->SetRootLayer(layer);
   SurfaceInfo primary_info(
-      SurfaceId(kArbitraryFrameSinkId,
-                LocalSurfaceId(1, base::UnguessableToken::Create())),
+      viz::SurfaceId(kArbitraryFrameSinkId,
+                     viz::LocalSurfaceId(1, base::UnguessableToken::Create())),
       1.f, gfx::Size(1, 1));
   layer->SetPrimarySurfaceInfo(primary_info);
   layer->SetFallbackSurfaceInfo(primary_info);
@@ -195,8 +196,8 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   EXPECT_EQ(primary_info, layer_impl->fallback_surface_info());
 
   SurfaceInfo fallback_info(
-      SurfaceId(kArbitraryFrameSinkId,
-                LocalSurfaceId(2, base::UnguessableToken::Create())),
+      viz::SurfaceId(kArbitraryFrameSinkId,
+                     viz::LocalSurfaceId(2, base::UnguessableToken::Create())),
       2.f, gfx::Size(10, 10));
   layer->SetFallbackSurfaceInfo(fallback_info);
 
@@ -224,9 +225,9 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   scoped_refptr<SurfaceReferenceFactory> ref_factory =
       new testing::NiceMock<MockSurfaceReferenceFactory>();
 
-  const SurfaceId old_surface_id(
+  const viz::SurfaceId old_surface_id(
       kArbitraryFrameSinkId,
-      LocalSurfaceId(1, base::UnguessableToken::Create()));
+      viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
   const SurfaceInfo old_surface_info(old_surface_id, 1.f, gfx::Size(1, 1));
 
   // This layer will always contain the old surface id and will be deleted when
@@ -255,9 +256,9 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
               ElementsAre(old_surface_id));
 
-  const SurfaceId new_surface_id(
+  const viz::SurfaceId new_surface_id(
       kArbitraryFrameSinkId,
-      LocalSurfaceId(2, base::UnguessableToken::Create()));
+      viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
   const SurfaceInfo new_surface_info(new_surface_id, 1.f, gfx::Size(2, 2));
 
   // Switch the new layer to use |new_surface_id|.
@@ -295,8 +296,8 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
       new testing::NiceMock<MockSurfaceReferenceFactory>();
 
   const SurfaceInfo surface_info(
-      SurfaceId(kArbitraryFrameSinkId,
-                LocalSurfaceId(1, base::UnguessableToken::Create())),
+      viz::SurfaceId(kArbitraryFrameSinkId,
+                     viz::LocalSurfaceId(1, base::UnguessableToken::Create())),
       1.f, gfx::Size(1, 1));
 
   scoped_refptr<SurfaceLayer> layer1 = SurfaceLayer::Create(ref_factory);
@@ -356,7 +357,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
 
   void BeginTest() override {
     layer_tree_host()->GetSurfaceSequenceGenerator()->set_frame_sink_id(
-        FrameSinkId(1, 1));
+        viz::FrameSinkId(1, 1));
     ref_factory_ = new testing::StrictMock<MockSurfaceReferenceFactory>();
 
     // Create a SurfaceLayer but don't add it to the tree yet. No sequence
@@ -364,17 +365,17 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     EXPECT_CALL(*ref_factory_, SatisfySequence(_)).Times(0);
     EXPECT_CALL(*ref_factory_, RequireSequence(_, _)).Times(0);
     layer_ = SurfaceLayer::Create(ref_factory_);
-    SurfaceInfo info(
-        SurfaceId(kArbitraryFrameSinkId, LocalSurfaceId(1, kArbitraryToken)),
-        1.f, gfx::Size(1, 1));
+    SurfaceInfo info(viz::SurfaceId(kArbitraryFrameSinkId,
+                                    viz::LocalSurfaceId(1, kArbitraryToken)),
+                     1.f, gfx::Size(1, 1));
     layer_->SetPrimarySurfaceInfo(info);
     layer_->SetFallbackSurfaceInfo(info);
     testing::Mock::VerifyAndClearExpectations(ref_factory_.get());
 
     // Add the layer to the tree. A sequence must be required.
     SurfaceSequence expected_seq(kArbitraryFrameSinkId, 1u);
-    SurfaceId expected_id(kArbitraryFrameSinkId,
-                          LocalSurfaceId(1, kArbitraryToken));
+    viz::SurfaceId expected_id(kArbitraryFrameSinkId,
+                               viz::LocalSurfaceId(1, kArbitraryToken));
     EXPECT_CALL(*ref_factory_, SatisfySequence(_)).Times(0);
     EXPECT_CALL(*ref_factory_,
                 RequireSequence(Eq(expected_id), Eq(expected_seq)))

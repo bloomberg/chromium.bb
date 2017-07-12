@@ -95,10 +95,11 @@ using media::VideoFrame;
 namespace cc {
 namespace {
 
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
-  return SurfaceId(
-      frame_sink_id,
-      LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
+viz::SurfaceId MakeSurfaceId(const viz::FrameSinkId& frame_sink_id,
+                             uint32_t local_id) {
+  return viz::SurfaceId(
+      frame_sink_id, viz::LocalSurfaceId(
+                         local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 struct TestFrameData : public LayerTreeHostImpl::FrameData {
@@ -3535,13 +3536,15 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
-  std::vector<SurfaceId> primary_surfaces = {
-      MakeSurfaceId(FrameSinkId(1, 1), 1), MakeSurfaceId(FrameSinkId(2, 2), 2),
-      MakeSurfaceId(FrameSinkId(3, 3), 3)};
+  std::vector<viz::SurfaceId> primary_surfaces = {
+      MakeSurfaceId(viz::FrameSinkId(1, 1), 1),
+      MakeSurfaceId(viz::FrameSinkId(2, 2), 2),
+      MakeSurfaceId(viz::FrameSinkId(3, 3), 3)};
 
-  std::vector<SurfaceId> fallback_surfaces = {
-      MakeSurfaceId(FrameSinkId(4, 4), 1), MakeSurfaceId(FrameSinkId(4, 4), 2),
-      MakeSurfaceId(FrameSinkId(4, 4), 3)};
+  std::vector<viz::SurfaceId> fallback_surfaces = {
+      MakeSurfaceId(viz::FrameSinkId(4, 4), 1),
+      MakeSurfaceId(viz::FrameSinkId(4, 4), 2),
+      MakeSurfaceId(viz::FrameSinkId(4, 4), 3)};
 
   for (size_t i = 0; i < primary_surfaces.size(); ++i) {
     std::unique_ptr<SurfaceLayerImpl> child =
@@ -3558,7 +3561,7 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     root->test_properties()->AddChild(std::move(child));
   }
 
-  base::flat_set<SurfaceId> fallback_surfaces_set;
+  base::flat_set<viz::SurfaceId> fallback_surfaces_set;
   for (size_t i = 0; i < fallback_surfaces.size(); ++i) {
     fallback_surfaces_set.insert(fallback_surfaces[i]);
   }
@@ -8792,7 +8795,7 @@ class FrameSinkClient : public TestLayerTreeFrameSinkClient {
   }
 
   void DisplayReceivedLocalSurfaceId(
-      const LocalSurfaceId& local_surface_id) override {}
+      const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const RenderPassList& render_passes) override {}

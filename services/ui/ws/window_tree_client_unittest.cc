@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -280,7 +280,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
     // TODO(sky): add coverage of |focused_window_id|.
     ASSERT_TRUE(root);
     root_window_id_ = root->window_id;
@@ -299,20 +299,20 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     tracker()->OnCaptureChanged(new_capture_window_id, old_capture_window_id);
   }
   void OnFrameSinkIdAllocated(Id window_id,
-                              const cc::FrameSinkId& frame_sink_id) override {}
+                              const viz::FrameSinkId& frame_sink_id) override {}
   void OnTopLevelCreated(
       uint32_t change_id,
       mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
     tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
@@ -455,7 +455,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       const display::Display& display,
       mojom::WindowDataPtr root_data,
       bool drawn,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override {
     NOTIMPLEMENTED();
   }
   void WmDisplayRemoved(int64_t display_id) override { NOTIMPLEMENTED(); }
@@ -1354,8 +1354,8 @@ TEST_F(WindowTreeClientTest, SetWindowBounds) {
 
   wt_client2_->set_track_root_bounds_changes(true);
 
-  cc::LocalSurfaceIdAllocator allocator;
-  cc::LocalSurfaceId local_surface_id = allocator.GenerateId();
+  viz::LocalSurfaceIdAllocator allocator;
+  viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
   wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100),
                          local_surface_id);
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(10));
@@ -2212,7 +2212,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
     compositor_frame.metadata.device_scale_factor = 1.f;
     compositor_frame.metadata.begin_frame_ack =
         cc::BeginFrameAck(0, 1, 1, true);
-    cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
+    viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
     surface_ptr->SubmitCompositorFrame(local_surface_id,
                                        std::move(compositor_frame));
   }
@@ -2250,7 +2250,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
     compositor_frame.metadata.device_scale_factor = 1.f;
     compositor_frame.metadata.begin_frame_ack =
         cc::BeginFrameAck(0, 1, 1, true);
-    cc::LocalSurfaceId local_surface_id(2, base::UnguessableToken::Create());
+    viz::LocalSurfaceId local_surface_id(2, base::UnguessableToken::Create());
     surface_ptr->SubmitCompositorFrame(local_surface_id,
                                        std::move(compositor_frame));
   }

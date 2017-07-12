@@ -250,7 +250,7 @@ void WindowTreeHost::DestroyDispatcher() {
   //window()->RemoveOrDestroyChildren();
 }
 
-void WindowTreeHost::CreateCompositor(const cc::FrameSinkId& frame_sink_id) {
+void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id) {
   DCHECK(Env::GetInstance());
   ui::ContextFactory* context_factory = Env::GetInstance()->context_factory();
   DCHECK(context_factory);

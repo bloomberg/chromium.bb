@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "cc/surfaces/local_surface_id.h"
+#include "components/viz/common/local_surface_id.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"
@@ -148,7 +148,7 @@ class InFlightBoundsChange : public InFlightChange {
       WindowTreeClient* window_tree_client,
       WindowMus* window,
       const gfx::Rect& revert_bounds,
-      const base::Optional<cc::LocalSurfaceId>& local_surface_id);
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   ~InFlightBoundsChange() override;
 
   // InFlightChange:
@@ -158,7 +158,7 @@ class InFlightBoundsChange : public InFlightChange {
  private:
   WindowTreeClient* window_tree_client_;
   gfx::Rect revert_bounds_;
-  base::Optional<cc::LocalSurfaceId> revert_local_surface_id_;
+  base::Optional<viz::LocalSurfaceId> revert_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBoundsChange);
 };
