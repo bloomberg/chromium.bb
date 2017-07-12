@@ -36,7 +36,7 @@ define the following:
 
   <histogram name="FileLoadLatency"/>
 
-  <histogram_suffixes name="SuperHttpExperiment">
+  <histogram_suffixes name="SuperHttpExperiment" separator=".">
     <suffix name="SuperHttpEnabled"/>
     <suffix name="SuperHttpDisabled"/>
     <affected-histogram name="FileLoadLatency"/>
@@ -45,14 +45,14 @@ define the following:
 The complete list of histograms will be:
 
   FileLoadLatency
-  FileLoadLatency_SuperHttpEnabled
-  FileLoadLatency_SuperHttpDisabled
+  FileLoadLatency.SuperHttpEnabled
+  FileLoadLatency.SuperHttpDisabled
 
 histogram_suffixes can also be used to insert affix in the middle. Example:
 
   <histogram name="Prerender.Events"/>
 
-  <histogram_suffixes name="SuperHttpExperiment" ordering="prefix">
+  <histogram_suffixes name="HoverStatsTypes" separator="_" ordering="prefix">
     <suffix name="HoverStats50"/>
     <affected-histogram name="Prerender.Events"/>
   </histogram_suffixes>
@@ -67,6 +67,11 @@ will be inserted after the first dot separator of the affected-histogram name.
 Optionally, ordering can be specified as "prefix,N" where N indicates after
 how many dots the suffix should be inserted (default=1). The affected-histogram
 name has to have at least N dots in it.
+
+If a <histogram> or a <suffix> element is only provided so that its name can be
+extended by <histogram_suffixes>, the element should be annotated with the
+attribute base="true". This instructs tools not to treat the base name as a
+distinct histogram.
 
 Googlers: There are also a small number of private internal histograms found at
 http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
