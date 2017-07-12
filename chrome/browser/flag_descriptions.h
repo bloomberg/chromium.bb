@@ -124,6 +124,9 @@ extern const char kDefaultTileWidthVenti[];
 extern const char kDebugShortcutsName[];
 extern const char kDebugShortcutsDescription[];
 
+extern const char kDelayReloadStopButtonChangeName[];
+extern const char kDelayReloadStopButtonChangeDescription[];
+
 extern const char kDeviceDiscoveryNotificationsName[];
 extern const char kDeviceDiscoveryNotificationsDescription[];
 

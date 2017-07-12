@@ -3155,6 +3155,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
 
+#if defined(TOOLKIT_VIEWS)
+    {"delay-reload-stop-button-change",
+     flag_descriptions::kDelayReloadStopButtonChangeName,
+     flag_descriptions::kDelayReloadStopButtonChangeDescription,
+     kOsCrOS | kOsWin | kOsLinux,
+     SINGLE_DISABLE_VALUE_TYPE(switches::kDelayReloadStopButtonChange)},
+#endif  // TOOLKIT_VIEWS
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

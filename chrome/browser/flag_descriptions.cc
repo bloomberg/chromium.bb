@@ -745,6 +745,13 @@ const char kUiPartialSwapName[] = "Partial swap";
 
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
+const char kDelayReloadStopButtonChangeName[] =
+    "Reduce stop/reload button flicker";
+
+const char kDelayReloadStopButtonChangeDescription[] =
+    "Delays display of stop button when page is loading such that short "
+    "loads won't show the stop button at all.";
+
 const char kIgnoreGpuBlacklistName[] = "Override software rendering list";
 
 const char kIgnoreGpuBlacklistDescription[] =
