@@ -19,6 +19,12 @@ bool TextfieldController::HandleMouseEvent(Textfield* sender,
   return false;
 }
 
+bool TextfieldController::HandleGestureEvent(
+    Textfield* sender,
+    const ui::GestureEvent& gesture_event) {
+  return false;
+}
+
 int TextfieldController::OnDrop(const ui::OSExchangeData& data) {
   return ui::DragDropTypes::DRAG_NONE;
 }

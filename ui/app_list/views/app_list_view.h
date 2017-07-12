@@ -96,6 +96,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   views::Widget* search_box_widget() const { return search_box_widget_; }
 
+  SearchBoxView* search_box_view() { return search_box_view_; }
+
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -146,6 +148,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // Initializes the widget as a bubble.
   void InitializeBubble(gfx::NativeView parent, int initial_apps_page);
+
+  // Closes the AppListView when a click or tap event propogates to the
+  // AppListView.
+  void HandleClickOrTap();
 
   // Initializes |initial_drag_point_|.
   void StartDrag(const gfx::Point& location);
@@ -207,14 +213,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   float last_fling_velocity_ = 0;
   // Whether the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
+  // Whether a series of scroll events are being processed.
+  bool processing_scroll_event_series_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_;
 
   // An observer that notifies AppListView when the display has changed.
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
 
-  // A semi-transparent white overlay that covers the app list while dialogs are
-  // open.
+  // A semi-transparent white overlay that covers the app list while dialogs
+  // are open.
   views::View* overlay_view_;
 
   std::unique_ptr<HideViewAnimationObserver> animation_observer_;

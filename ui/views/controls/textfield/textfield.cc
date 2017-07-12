@@ -689,6 +689,10 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:
+      if (controller_ && controller_->HandleGestureEvent(this, *event)) {
+        event->SetHandled();
+        return;
+      }
       if (event->details().tap_count() == 1) {
         // If tap is on the selection and touch handles are not present, handles
         // should be shown without changing selection. Otherwise, cursor should

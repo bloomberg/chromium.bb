@@ -72,6 +72,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
     contents_view_ = contents_view;
   }
 
+  // Whether the search box is active.
+  bool is_search_box_active() const { return is_search_box_active_; }
+
   // Moves focus forward/backwards in response to TAB.
   bool MoveTabFocus(bool move_backwards);
 
@@ -84,10 +87,25 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Swaps the google icon with the back button.
   void ShowBackOrGoogleIcon(bool show_back_button);
 
+  // Setting the search box active left aligns the placeholder text, changes
+  // the color of the placeholder text, and enables cursor blink. Setting the
+  // search box inactive center aligns the placeholder text, sets the color, and
+  // disables cursor blink.
+  void SetSearchBoxActive(bool active);
+
+  // Detects |ET_MOUSE_PRESSED| and |ET_GESTURE_TAP| events on the white
+  // background of the search box.
+  void HandleSearchBoxEvent(ui::LocatedEvent* located_event);
+
+  // Handles Gesture and Mouse Events sent from |search_box_|.
+  bool OnTextfieldEvent();
+
   // Overridden from views::View:
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   // Updates model text and selection model with current Textfield info.
@@ -101,6 +119,10 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
                        const base::string16& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
+  bool HandleMouseEvent(views::Textfield* sender,
+                        const ui::MouseEvent& mouse_event) override;
+  bool HandleGestureEvent(views::Textfield* sender,
+                          const ui::GestureEvent& gesture_event) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -116,22 +138,24 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
 
-  SearchBoxViewDelegate* delegate_;  // Not owned.
+  SearchBoxViewDelegate* delegate_;     // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
-  AppListModel* model_;  // Owned by the profile-keyed service.
+  AppListModel* model_;                 // Owned by the profile-keyed service.
 
-  views::View* content_container_;       // Owned by views hierarchy.
-  views::ImageView* google_icon_;        // Owned by views hierarchy.
-  SearchBoxImageButton* back_button_;    // Owned by views hierarchy.
-  SearchBoxImageButton* speech_button_;  // Owned by views hierarchy.
-  views::Textfield* search_box_;  // Owned by views hierarchy.
-  views::View* contents_view_;  // Owned by views hierarchy.
+  views::View* content_container_;        // Owned by views hierarchy.
+  views::ImageView* google_icon_;         // Owned by views hierarchy.
+  SearchBoxImageButton* back_button_;     // Owned by views hierarchy.
+  SearchBoxImageButton* speech_button_;   // Owned by views hierarchy.
+  views::Textfield* search_box_;          // Owned by views hierarchy.
+  views::View* contents_view_;            // Owned by views hierarchy.
   app_list::AppListView* app_list_view_;  // Owned by views hierarchy.
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 
   // Whether the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
+  // Whether the search box is active.
+  bool is_search_box_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

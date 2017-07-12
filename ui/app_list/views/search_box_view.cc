@@ -68,6 +68,10 @@ constexpr SkColor kDefaultSearchboxColor =
 
 constexpr int kLightVibrantBlendAlpha = 0xB3;
 
+// Color of placeholder text in zero query state.
+constexpr SkColor kZeroQuerySearchboxColor =
+    SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
  public:
@@ -201,6 +205,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
         gfx::Canvas::TEXT_ALIGN_CENTER);
     search_box_->SetFontList(search_box_->GetFontList().DeriveWithSizeDelta(2));
     back_button_->SetVisible(false);
+    search_box_->SetCursorEnabled(is_search_box_active_);
   } else {
     search_box_->set_placeholder_text_color(kHintTextColor);
   }
@@ -239,6 +244,8 @@ void SearchBoxView::ClearSearch() {
   // does not generate ContentsChanged() notification.
   UpdateModel();
   NotifyQueryChanged();
+  if (is_fullscreen_app_list_enabled_)
+    SetSearchBoxActive(false);
 }
 
 void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
@@ -276,20 +283,23 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
     case FOCUS_SEARCH_BOX:
       if (move_backwards) {
         focused_view_ = back_button_ && back_button_->visible()
-            ? FOCUS_BACK_BUTTON : FOCUS_SEARCH_BOX;
+                            ? FOCUS_BACK_BUTTON
+                            : FOCUS_SEARCH_BOX;
       } else {
         focused_view_ = speech_button_ && speech_button_->visible()
-            ? FOCUS_MIC_BUTTON : FOCUS_CONTENTS_VIEW;
+                            ? FOCUS_MIC_BUTTON
+                            : FOCUS_CONTENTS_VIEW;
       }
       break;
     case FOCUS_MIC_BUTTON:
       focused_view_ = move_backwards ? FOCUS_SEARCH_BOX : FOCUS_CONTENTS_VIEW;
       break;
     case FOCUS_CONTENTS_VIEW:
-      focused_view_ = move_backwards
-          ? (speech_button_ && speech_button_->visible() ?
-              FOCUS_MIC_BUTTON : FOCUS_SEARCH_BOX)
-          : FOCUS_CONTENTS_VIEW;
+      focused_view_ =
+          move_backwards
+              ? (speech_button_ && speech_button_->visible() ? FOCUS_MIC_BUTTON
+                                                             : FOCUS_SEARCH_BOX)
+              : FOCUS_CONTENTS_VIEW;
       break;
     default:
       DCHECK(false);
@@ -351,6 +361,54 @@ void SearchBoxView::ShowBackOrGoogleIcon(bool show_back_button) {
   content_container_->Layout();
 }
 
+void SearchBoxView::SetSearchBoxActive(bool active) {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+
+  if (active == is_search_box_active_)
+    return;
+
+  is_search_box_active_ = active;
+  search_box_->set_placeholder_text_draw_flags(
+      active ? gfx::Canvas::TEXT_ALIGN_LEFT : gfx::Canvas::TEXT_ALIGN_CENTER);
+  search_box_->set_placeholder_text_color(active ? kZeroQuerySearchboxColor
+                                                 : kDefaultSearchboxColor);
+  search_box_->SetCursorEnabled(active);
+  search_box_->SchedulePaint();
+}
+
+void SearchBoxView::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+
+  if (located_event->type() != ui::ET_MOUSE_PRESSED &&
+      located_event->type() != ui::ET_GESTURE_TAP)
+    return;
+
+  bool event_is_in_searchbox_bounds =
+      GetWidget()->GetWindowBoundsInScreen().Contains(
+          located_event->root_location());
+
+  if (!is_search_box_active_ && event_is_in_searchbox_bounds &&
+      search_box_->text().empty()) {
+    // If the event was within the searchbox bounds and in an inactive empty
+    // search box, enable the search box.
+    SetSearchBoxActive(true);
+    located_event->SetHandled();
+  }
+}
+
+bool SearchBoxView::OnTextfieldEvent() {
+  if (!is_fullscreen_app_list_enabled_)
+    return false;
+
+  if (is_search_box_active_)
+    return false;
+
+  SetSearchBoxActive(true);
+  return true;
+}
+
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (contents_view_)
     return contents_view_->OnMouseWheel(event);
@@ -366,6 +424,14 @@ void SearchBoxView::OnEnabledChanged() {
 
 const char* SearchBoxView::GetClassName() const {
   return "SearchBoxView";
+}
+
+void SearchBoxView::OnGestureEvent(ui::GestureEvent* event) {
+  HandleSearchBoxEvent(event);
+}
+
+void SearchBoxView::OnMouseEvent(ui::MouseEvent* event) {
+  HandleSearchBoxEvent(event);
 }
 
 void SearchBoxView::UpdateModel() {
@@ -386,8 +452,11 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   UpdateModel();
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
-  if (is_fullscreen_app_list_enabled_)
+  if (is_fullscreen_app_list_enabled_) {
+    if (is_search_box_active_ == search_box_->text().empty())
+      SetSearchBoxActive(!search_box_->text().empty());
     app_list_view_->SetStateFromSearchBoxView(search_box_->text().empty());
+  }
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
@@ -439,6 +508,16 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   }
 
   return false;
+}
+
+bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
+                                     const ui::MouseEvent& mouse_event) {
+  return OnTextfieldEvent();
+}
+
+bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
+                                       const ui::GestureEvent& gesture_event) {
+  return OnTextfieldEvent();
 }
 
 void SearchBoxView::ButtonPressed(views::Button* sender,
