@@ -26,6 +26,9 @@
 // This delegate will handle interactions on the cells in the collection.
 @property(weak, nonatomic) id<PinEntryDelegate> delegate;
 
+// |supportsPairing| false will hide the remember pin checkbox.
+@property(nonatomic) BOOL supportsPairing;
+
 @end
 
 #endif  // REMOTING_IOS_APP_PIN_ENTRY_VIEW_H_

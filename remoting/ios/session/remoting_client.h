@@ -30,7 +30,11 @@ extern NSString* const kHostSessionPinProvided;
 
 // List of keys in user info from events.
 extern NSString* const kSessionDetails;
+extern NSString* const kSessionSupportsPairing;
 extern NSString* const kSessonStateErrorCode;
+
+extern NSString* const kHostSessionCreatePairing;
+extern NSString* const kHostSessionHostName;
 extern NSString* const kHostSessionPin;
 
 // Remoting Client is the entry point for starting a session with a remote

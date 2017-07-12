@@ -536,8 +536,12 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kHostSessionPinProvided
                     object:self
-                  userInfo:[NSDictionary dictionaryWithObject:pin
-                                                       forKey:kHostSessionPin]];
+                  userInfo:@{
+                    kHostSessionHostName : _remoteHostName,
+                    kHostSessionPin : pin,
+                    kHostSessionCreatePairing :
+                        [NSNumber numberWithBool:createPairing]
+                  }];
 }
 
 - (void)didTapCancel:(id)sender {
@@ -559,6 +563,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       state = ClientViewConnecting;
       break;
     case SessionPinPrompt:
+      _pinEntryView.supportsPairing = [[[notification userInfo]
+          objectForKey:kSessionSupportsPairing] boolValue];
       state = ClientViewPinPrompt;
       break;
     case SessionConnected:
