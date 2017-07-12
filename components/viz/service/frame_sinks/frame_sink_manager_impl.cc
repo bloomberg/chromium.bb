@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/sequenced_task_runner.h"
 #include "cc/base/switches.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
@@ -33,12 +32,11 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   manager_.surface_manager()->RemoveObserver(this);
 }
 
-void FrameSinkManagerImpl::BindAndSetClient(
+void FrameSinkManagerImpl::BindPtrAndSetClient(
     cc::mojom::FrameSinkManagerRequest request,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
     cc::mojom::FrameSinkManagerClientPtr client) {
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request), std::move(task_runner));
+  binding_.Bind(std::move(request));
   client_ = std::move(client);
 }
 
