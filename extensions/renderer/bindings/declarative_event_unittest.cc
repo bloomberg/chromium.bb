@@ -94,8 +94,8 @@ class DeclarativeEventTest : public APIBindingTest {
     request_handler_ = base::MakeUnique<APIRequestHandler>(
         base::Bind(&DeclarativeEventTest::OnRequest, base::Unretained(this)),
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-        APILastError(APILastError::GetParent(),
-                     APILastError::AddConsoleError()));
+        APILastError(APILastError::GetParent(), binding::AddConsoleError()),
+        nullptr);
   }
 
   void TearDown() override {

@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
@@ -43,10 +44,12 @@ APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
 
 APIRequestHandler::APIRequestHandler(const SendRequestMethod& send_request,
                                      const CallJSFunction& call_js,
-                                     APILastError last_error)
+                                     APILastError last_error,
+                                     ExceptionHandler* exception_handler)
     : send_request_(send_request),
       call_js_(call_js),
-      last_error_(std::move(last_error)) {}
+      last_error_(std::move(last_error)),
+      exception_handler_(exception_handler) {}
 
 APIRequestHandler::~APIRequestHandler() {}
 
@@ -141,10 +144,19 @@ void APIRequestHandler::CompleteRequest(int request_id,
   if (!error.empty())
     last_error_.SetError(context, error);
 
+  v8::TryCatch try_catch(isolate);
   // args.size() is converted to int, but args is controlled by chrome and is
   // never close to std::numeric_limits<int>::max.
   call_js_.Run(pending_request.callback.Get(isolate), context, args.size(),
                args.data());
+  if (try_catch.HasCaught()) {
+    v8::Local<v8::Message> v8_message = try_catch.Message();
+    base::Optional<std::string> message;
+    if (!v8_message.IsEmpty())
+      message = gin::V8ToString(v8_message->Get());
+    exception_handler_->HandleException(context, "Error handling response",
+                                        &try_catch);
+  }
 
   if (!error.empty())
     last_error_.ClearError(context, true);
