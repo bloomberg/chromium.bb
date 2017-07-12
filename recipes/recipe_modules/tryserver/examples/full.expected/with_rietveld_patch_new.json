@@ -1,26 +1,6 @@
 [
   {
     "cmd": [
-      "python",
-      "-u",
-      "RECIPE_PACKAGE_REPO[depot_tools]/apply_issue.py",
-      "-r",
-      "[START_DIR]",
-      "-i",
-      "12853011",
-      "-p",
-      "1",
-      "-s",
-      "https://codereview.chromium.org",
-      "--no-auth"
-    ],
-    "name": "apply_issue",
-    "~followup_annotations": [
-      "@@@STEP_LINK@Applied issue 12853011@https://codereview.chromium.org/12853011@@@"
-    ]
-  },
-  {
-    "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
       "description",
       "-d",
