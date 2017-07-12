@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/push_messaging.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -28,7 +29,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/push_messaging_status.h"
+#include "content/public/common/push_messaging_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace content {
@@ -51,26 +52,62 @@ const char kIncognitoPushUnsupportedMessage[] =
 
 // These UMA methods are called from the IO and/or UI threads. Racey but ok, see
 // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/FNzZRJtN2aw/Aw0CWAXJJ1kJ
-void RecordRegistrationStatus(PushRegistrationStatus status) {
+void RecordRegistrationStatus(mojom::PushRegistrationStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus", status,
-                            PUSH_REGISTRATION_STATUS_LAST + 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PushMessaging.RegistrationStatus", status,
+      static_cast<int>(mojom::PushRegistrationStatus::LAST) + 1);
 }
-void RecordUnregistrationStatus(PushUnregistrationStatus status) {
+void RecordUnregistrationStatus(mojom::PushUnregistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationStatus", status,
-                            PUSH_UNREGISTRATION_STATUS_LAST + 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PushMessaging.UnregistrationStatus", status,
+      static_cast<int>(mojom::PushUnregistrationStatus::LAST) + 1);
 }
-void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
+void RecordGetRegistrationStatus(mojom::PushGetRegistrationStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("PushMessaging.GetRegistrationStatus", status,
-                            PUSH_GETREGISTRATION_STATUS_LAST + 1);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PushMessaging.GetRegistrationStatus", status,
+      static_cast<int>(mojom::PushGetRegistrationStatus::LAST) + 1);
+}
+
+const char* PushUnregistrationStatusToString(
+    mojom::PushUnregistrationStatus status) {
+  switch (status) {
+    case mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED:
+      return "Unregistration successful - from push service";
+
+    case mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED:
+      return "Unregistration successful - was not registered";
+
+    case mojom::PushUnregistrationStatus::PENDING_NETWORK_ERROR:
+      return "Unregistration pending - a network error occurred, but it will "
+             "be retried until it succeeds";
+
+    case mojom::PushUnregistrationStatus::NO_SERVICE_WORKER:
+      return "Unregistration failed - no Service Worker";
+
+    case mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE:
+      return "Unregistration failed - push service not available";
+
+    case mojom::PushUnregistrationStatus::PENDING_SERVICE_ERROR:
+      return "Unregistration pending - a push service error occurred, but it "
+             "will be retried until it succeeds";
+
+    case mojom::PushUnregistrationStatus::STORAGE_ERROR:
+      return "Unregistration failed - storage error";
+
+    case mojom::PushUnregistrationStatus::NETWORK_ERROR:
+      return "Unregistration failed - could not connect to push server";
+  }
+  NOTREACHED();
+  return "";
 }
 
 void UnregisterCallbackToClosure(const base::Closure& closure,
-                                 PushUnregistrationStatus status) {
+                                 mojom::PushUnregistrationStatus status) {
   DCHECK(!closure.is_null());
   closure.Run();
 }
@@ -158,8 +195,8 @@ class PushMessagingManager::Core {
   // Callback called on UI thread.
   void GetSubscriptionDidUnsubscribe(
       GetSubscriptionCallback callback,
-      PushGetRegistrationStatus get_status,
-      PushUnregistrationStatus unsubscribe_status);
+      mojom::PushGetRegistrationStatus get_status,
+      mojom::PushUnregistrationStatus unsubscribe_status);
 
   // Public GetPermission methods on UI thread ---------------------------------
 
@@ -203,13 +240,14 @@ class PushMessagingManager::Core {
                    const std::string& push_registration_id,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
-                   PushRegistrationStatus status);
+                   mojom::PushRegistrationStatus status);
 
   // Private Unregister methods on UI thread -----------------------------------
 
-  void DidUnregisterFromService(UnsubscribeCallback callback,
-                                int64_t service_worker_registration_id,
-                                PushUnregistrationStatus unregistration_status);
+  void DidUnregisterFromService(
+      UnsubscribeCallback callback,
+      int64_t service_worker_registration_id,
+      mojom::PushUnregistrationStatus unregistration_status);
 
   // Outer part of the PushMessagingManager which lives on the IO thread.
   base::WeakPtr<PushMessagingManager> io_parent_;
@@ -304,7 +342,7 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
   if (!service_worker_registration ||
       !service_worker_registration->active_version()) {
     SendSubscriptionError(std::move(data),
-                          PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
+                          mojom::PushRegistrationStatus::NO_SERVICE_WORKER);
     return;
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
@@ -332,12 +370,12 @@ void PushMessagingManager::DidCheckForExistingRegistration(
         FixSenderInfo(data.options.sender_info, stored_sender_id);
     if (fixed_sender_id.empty()) {
       SendSubscriptionError(std::move(data),
-                            PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+                            mojom::PushRegistrationStatus::NO_SENDER_ID);
       return;
     }
     if (fixed_sender_id != stored_sender_id) {
       SendSubscriptionError(std::move(data),
-                            PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH);
+                            mojom::PushRegistrationStatus::SENDER_ID_MISMATCH);
       return;
     }
 
@@ -387,7 +425,7 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingManager::SendSubscriptionSuccess, io_parent_,
                    base::Passed(&data),
-                   PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
+                   mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE,
                    push_subscription_id, p256dh, auth));
   } else {
     PushMessagingService* push_service = service();
@@ -399,7 +437,7 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
                      base::Passed(&data),
-                     PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN));
+                     mojom::PushRegistrationStatus::RENDERER_SHUTDOWN));
       return;
     }
 
@@ -410,7 +448,7 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
 
     // Consider this subscription attempt to have failed. The re-subscribe will
     // be logged to UMA as a separate subscription attempt.
-    RecordRegistrationStatus(PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT);
+    RecordRegistrationStatus(mojom::PushRegistrationStatus::STORAGE_CORRUPT);
 
     int64_t registration_id = data.service_worker_registration_id;
     GURL requesting_origin = data.requesting_origin;
@@ -420,8 +458,8 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
         std::vector<std::string>() /* push_registration_id_and_sender_id */,
         SERVICE_WORKER_ERROR_NOT_FOUND);
     push_service->Unsubscribe(
-        PUSH_UNREGISTRATION_REASON_SUBSCRIBE_STORAGE_CORRUPT, requesting_origin,
-        registration_id, sender_id,
+        mojom::PushUnregistrationReason::SUBSCRIBE_STORAGE_CORRUPT,
+        requesting_origin, registration_id, sender_id,
         base::Bind(&UnregisterCallbackToClosure,
                    base::Bind(IgnoreResult(&BrowserThread::PostTask),
                               BrowserThread::IO, FROM_HERE, try_again_on_io)));
@@ -435,7 +473,7 @@ void PushMessagingManager::DidGetSenderIdFromStorage(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
     SendSubscriptionError(std::move(data),
-                          PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+                          mojom::PushRegistrationStatus::NO_SENDER_ID);
     return;
   }
   DCHECK_EQ(1u, stored_sender_id.size());
@@ -445,7 +483,7 @@ void PushMessagingManager::DidGetSenderIdFromStorage(
       FixSenderInfo(data.options.sender_info, stored_sender_id[0]);
   if (fixed_sender_id.empty()) {
     SendSubscriptionError(std::move(data),
-                          PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+                          mojom::PushRegistrationStatus::NO_SENDER_ID);
     return;
   }
   data.options.sender_info = fixed_sender_id;
@@ -468,7 +506,7 @@ void PushMessagingManager::Core::RegisterOnUI(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
                      base::Passed(&data),
-                     PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
+                     mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE));
     } else {
       // Prevent websites from detecting incognito mode, by emulating what would
       // have happened if we had a PushMessagingService available.
@@ -476,9 +514,10 @@ void PushMessagingManager::Core::RegisterOnUI(
         // Throw a permission denied error under the same circumstances.
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                       base::Passed(&data),
-                       PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
+            base::Bind(
+                &PushMessagingManager::SendSubscriptionError, io_parent_,
+                base::Passed(&data),
+                mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
       } else {
         RenderFrameHost* render_frame_host =
             RenderFrameHost::FromID(render_process_id_, data.render_frame_id);
@@ -495,10 +534,10 @@ void PushMessagingManager::Core::RegisterOnUI(
           if (!browser_context->GetPermissionManager()) {
             BrowserThread::PostTask(
                 BrowserThread::IO, FROM_HERE,
-                base::Bind(
-                    &PushMessagingManager::SendSubscriptionError, io_parent_,
-                    base::Passed(&data),
-                    PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
+                base::Bind(&PushMessagingManager::SendSubscriptionError,
+                           io_parent_, base::Passed(&data),
+                           mojom::PushRegistrationStatus::
+                               INCOGNITO_PERMISSION_DENIED));
 
             return;
           }
@@ -547,7 +586,7 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
                  base::Passed(&data),
-                 PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
+                 mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
 }
 
 void PushMessagingManager::Core::DidRegister(
@@ -555,9 +594,9 @@ void PushMessagingManager::Core::DidRegister(
     const std::string& push_registration_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
-    PushRegistrationStatus status) {
+    mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE) {
+  if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingManager::PersistRegistrationOnIO, io_parent_,
@@ -596,19 +635,20 @@ void PushMessagingManager::DidPersistRegistrationOnIO(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
-    SendSubscriptionSuccess(std::move(data),
-                            PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
-                            push_registration_id, p256dh, auth);
+    SendSubscriptionSuccess(
+        std::move(data),
+        mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
+        push_registration_id, p256dh, auth);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendSubscriptionError(std::move(data),
-                          PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+                          mojom::PushRegistrationStatus::STORAGE_ERROR);
   }
 }
 
 void PushMessagingManager::SendSubscriptionError(
     RegisterData data,
-    PushRegistrationStatus status) {
+    mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(data.callback)
       .Run(status, base::nullopt /* endpoint */, base::nullopt /* options */,
@@ -618,7 +658,7 @@ void PushMessagingManager::SendSubscriptionError(
 
 void PushMessagingManager::SendSubscriptionSuccess(
     RegisterData data,
-    PushRegistrationStatus status,
+    mojom::PushRegistrationStatus status,
     const std::string& push_subscription_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
@@ -628,7 +668,7 @@ void PushMessagingManager::SendSubscriptionSuccess(
     // that we have an existing registration. Hence it's ok to throw an error.
     DCHECK(!ui_core_->is_incognito());
     SendSubscriptionError(std::move(data),
-                          PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
+                          mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE);
     return;
   }
 
@@ -652,7 +692,7 @@ void PushMessagingManager::Unsubscribe(int64_t service_worker_registration_id,
           service_worker_registration_id);
   if (!service_worker_registration) {
     DidUnregister(std::move(callback),
-                  PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER);
+                  mojom::PushUnregistrationStatus::NO_SERVICE_WORKER);
     return;
   }
 
@@ -699,12 +739,12 @@ void PushMessagingManager::Core::UnregisterFromService(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingManager::DidUnregister, io_parent_,
                    base::Passed(&callback),
-                   PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE));
+                   mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE));
     return;
   }
 
   push_service->Unsubscribe(
-      PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, requesting_origin,
+      mojom::PushUnregistrationReason::JAVASCRIPT_API, requesting_origin,
       service_worker_registration_id, sender_id,
       base::Bind(&Core::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(), base::Passed(&callback),
@@ -714,7 +754,7 @@ void PushMessagingManager::Core::UnregisterFromService(
 void PushMessagingManager::Core::DidUnregisterFromService(
     UnsubscribeCallback callback,
     int64_t service_worker_registration_id,
-    PushUnregistrationStatus unregistration_status) {
+    mojom::PushUnregistrationStatus unregistration_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
@@ -725,30 +765,30 @@ void PushMessagingManager::Core::DidUnregisterFromService(
 
 void PushMessagingManager::DidUnregister(
     UnsubscribeCallback callback,
-    PushUnregistrationStatus unregistration_status) {
+    mojom::PushUnregistrationStatus unregistration_status) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (unregistration_status) {
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
-    case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
-    case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
+    case mojom::PushUnregistrationStatus::SUCCESS_UNREGISTERED:
+    case mojom::PushUnregistrationStatus::PENDING_NETWORK_ERROR:
+    case mojom::PushUnregistrationStatus::PENDING_SERVICE_ERROR:
       std::move(callback).Run(blink::WebPushError::kErrorTypeNone,
                               true /* did_unsubscribe */,
                               base::nullopt /* error_message */);
       break;
-    case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
+    case mojom::PushUnregistrationStatus::SUCCESS_WAS_NOT_REGISTERED:
       std::move(callback).Run(blink::WebPushError::kErrorTypeNone,
                               false /* did_unsubscribe */,
                               base::nullopt /* error_message */);
       break;
-    case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
-    case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
-    case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
+    case mojom::PushUnregistrationStatus::NO_SERVICE_WORKER:
+    case mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE:
+    case mojom::PushUnregistrationStatus::STORAGE_ERROR:
       std::move(callback).Run(blink::WebPushError::kErrorTypeAbort, false,
                               std::string(PushUnregistrationStatusToString(
                                   unregistration_status)) /* error_message */);
       break;
-    case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
+    case mojom::PushUnregistrationStatus::NETWORK_ERROR:
       NOTREACHED();
       break;
   }
@@ -778,8 +818,8 @@ void PushMessagingManager::DidGetSubscription(
     const std::vector<std::string>& push_subscription_id_and_sender_info,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PushGetRegistrationStatus get_status =
-      PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
+  mojom::PushGetRegistrationStatus get_status =
+      mojom::PushGetRegistrationStatus::STORAGE_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK: {
       DCHECK_EQ(2u, push_subscription_id_and_sender_info.size());
@@ -791,8 +831,9 @@ void PushMessagingManager::DidGetSubscription(
         // Return not found in incognito mode, so websites can't detect it.
         get_status =
             ui_core_->is_incognito()
-                ? PUSH_GETREGISTRATION_STATUS_INCOGNITO_REGISTRATION_NOT_FOUND
-                : PUSH_GETREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
+                ? mojom::PushGetRegistrationStatus::
+                      INCOGNITO_REGISTRATION_NOT_FOUND
+                : mojom::PushGetRegistrationStatus::SERVICE_NOT_AVAILABLE;
         break;
       }
 
@@ -800,7 +841,7 @@ void PushMessagingManager::DidGetSubscription(
           service_worker_context_->GetLiveRegistration(
               service_worker_registration_id);
       if (!registration) {
-        get_status = PUSH_GETREGISTRATION_STATUS_NO_LIVE_SERVICE_WORKER;
+        get_status = mojom::PushGetRegistrationStatus::NO_LIVE_SERVICE_WORKER;
         break;
       }
 
@@ -824,11 +865,11 @@ void PushMessagingManager::DidGetSubscription(
       return;
     }
     case SERVICE_WORKER_ERROR_NOT_FOUND: {
-      get_status = PUSH_GETREGISTRATION_STATUS_REGISTRATION_NOT_FOUND;
+      get_status = mojom::PushGetRegistrationStatus::REGISTRATION_NOT_FOUND;
       break;
     }
     case SERVICE_WORKER_ERROR_FAILED: {
-      get_status = PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
+      get_status = mojom::PushGetRegistrationStatus::STORAGE_ERROR;
       break;
     }
     case SERVICE_WORKER_ERROR_ABORT:
@@ -850,7 +891,7 @@ void PushMessagingManager::DidGetSubscription(
     case SERVICE_WORKER_ERROR_MAX_VALUE: {
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
-      get_status = PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
+      get_status = mojom::PushGetRegistrationStatus::STORAGE_ERROR;
       break;
     }
   }
@@ -879,7 +920,8 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     options.user_visible_only = true;
     options.sender_info = sender_info;
 
-    PushGetRegistrationStatus status = PUSH_GETREGISTRATION_STATUS_SUCCESS;
+    mojom::PushGetRegistrationStatus status =
+        mojom::PushGetRegistrationStatus::SUCCESS;
 
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::BindOnce(std::move(callback), status,
@@ -895,7 +937,7 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(std::move(callback),
-                         PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN,
+                         mojom::PushGetRegistrationStatus::RENDERER_SHUTDOWN,
                          base::nullopt /* endpoint */,
                          base::nullopt /* options */,
                          base::nullopt /* p256dh */, base::nullopt /* auth */));
@@ -906,12 +948,12 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     // database, it did not have matching counterparts in the
     // PushMessagingAppIdentifier map and/or GCM Store. Unsubscribe to fix this
     // inconsistency.
-    PushGetRegistrationStatus status =
-        PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT;
+    mojom::PushGetRegistrationStatus status =
+        mojom::PushGetRegistrationStatus::STORAGE_CORRUPT;
 
     push_service->Unsubscribe(
-        PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT, origin,
-        service_worker_registration_id, sender_info,
+        mojom::PushUnregistrationReason::GET_SUBSCRIPTION_STORAGE_CORRUPT,
+        origin, service_worker_registration_id, sender_info,
         base::Bind(&Core::GetSubscriptionDidUnsubscribe,
                    weak_factory_ui_to_ui_.GetWeakPtr(), base::Passed(&callback),
                    status));
@@ -922,8 +964,8 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
 
 void PushMessagingManager::Core::GetSubscriptionDidUnsubscribe(
     GetSubscriptionCallback callback,
-    PushGetRegistrationStatus get_status,
-    PushUnregistrationStatus unsubscribe_status) {
+    mojom::PushGetRegistrationStatus get_status,
+    mojom::PushUnregistrationStatus unsubscribe_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

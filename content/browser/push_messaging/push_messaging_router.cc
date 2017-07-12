@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/push_event_payload.h"
+#include "content/public/common/push_messaging_status.mojom.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ const int kPushMessageTimeoutSeconds = 90;
 
 void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
-    PushDeliveryStatus delivery_status) {
+    mojom::PushDeliveryStatus delivery_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -85,12 +86,12 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
                             SERVICE_WORKER_ERROR_MAX_VALUE);
   if (service_worker_status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     RunDeliverCallback(deliver_message_callback,
-                       PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
+                       mojom::PushDeliveryStatus::NO_SERVICE_WORKER);
     return;
   }
   if (service_worker_status != SERVICE_WORKER_OK) {
     RunDeliverCallback(deliver_message_callback,
-                       PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR);
+                       mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR);
     return;
   }
 
@@ -137,17 +138,17 @@ void PushMessagingRouter::DeliverMessageEnd(
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
                             service_worker_status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
-  PushDeliveryStatus delivery_status =
-      PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
+  mojom::PushDeliveryStatus delivery_status =
+      mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
-      delivery_status = PUSH_DELIVERY_STATUS_SUCCESS;
+      delivery_status = mojom::PushDeliveryStatus::SUCCESS;
       break;
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
-      delivery_status = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED;
+      delivery_status = mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
       break;
     case SERVICE_WORKER_ERROR_TIMEOUT:
-      delivery_status = PUSH_DELIVERY_STATUS_TIMEOUT;
+      delivery_status = mojom::PushDeliveryStatus::TIMEOUT;
       break;
     case SERVICE_WORKER_ERROR_FAILED:
     case SERVICE_WORKER_ERROR_ABORT:
@@ -159,7 +160,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_DISK_CACHE:
     case SERVICE_WORKER_ERROR_REDUNDANT:
     case SERVICE_WORKER_ERROR_DISALLOWED:
-      delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
+      delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
     case SERVICE_WORKER_ERROR_EXISTS:
     case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
@@ -170,7 +171,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
-      delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
+      delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
   }
   RunDeliverCallback(deliver_message_callback, delivery_status);

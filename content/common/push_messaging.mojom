@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/public/common/push_messaging_status.mojom";
 import "url/mojo/url.mojom";
 
 // TODO(heke): The type-mapping struct and enums are duplicately defined. Need
@@ -12,75 +13,6 @@ import "url/mojo/url.mojom";
 struct PushSubscriptionOptions {
   bool user_visible_only;
   string sender_info;
-};
-
-// Push registration success/error codes for internal use & reporting in UMA.
-// Enum values can be added, but must never be renumbered or deleted and reused.
-enum PushRegistrationStatus {
-  // New successful registration (there was not yet a registration cached in
-  // Service Worker storage, so the browser successfully registered with the
-  // push service. This is likely to be a new push registration, though it's
-  // possible that the push service had its own cache (for example if Chrome's
-  // app data was cleared, we might have forgotten about a registration that the
-  // push service still stores).
-  SUCCESS_FROM_PUSH_SERVICE = 0,
-
-  // Registration failed because there is no Service Worker.
-  NO_SERVICE_WORKER = 1,
-
-  // Registration failed because the push service is not available.
-  SERVICE_NOT_AVAILABLE = 2,
-
-  // Registration failed because the maximum number of registratons has been
-  // reached.
-  LIMIT_REACHED = 3,
-
-  // Registration failed because permission was denied.
-  PERMISSION_DENIED = 4,
-
-  // Registration failed in the push service implemented by the embedder.
-  SERVICE_ERROR = 5,
-
-  // Registration failed because no sender id was provided by the page.
-  NO_SENDER_ID = 6,
-
-  // Registration succeeded, but we failed to persist it.
-  STORAGE_ERROR = 7,
-
-  // A successful registration was already cached in Service Worker storage.
-  SUCCESS_FROM_CACHE = 8,
-
-  // Registration failed due to a network error.
-  NETWORK_ERROR = 9,
-
-  // Registration failed because the push service is not available in incognito,
-  // but we tell JS that permission was denied to not reveal incognito.
-  INCOGNITO_PERMISSION_DENIED = 10,
-
-  // Registration failed because the public key could not be retrieved.
-  PUBLIC_KEY_UNAVAILABLE = 11,
-
-  // Registration failed because the manifest could not be retrieved or was
-  // empty.
-  MANIFEST_EMPTY_OR_MISSING = 12,
-
-  // Registration failed because a subscription with a different sender id
-  // already exists.
-  SENDER_ID_MISMATCH = 13,
-
-  // Registration failed because storage was corrupt. It will be retried
-  // automatically after unsubscribing to fix the corruption.
-  STORAGE_CORRUPT = 14,
-
-  // Registration failed because the renderer was shut down.
-  RENDERER_SHUTDOWN = 15,
-
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = RENDERER_SHUTDOWN
 };
 
 enum PushErrorType {
@@ -92,45 +24,6 @@ enum PushErrorType {
   NOT_SUPPORTED = 5,
   INVALID_STATE = 6,
   LAST = INVALID_STATE
-};
-
-// Push getregistration success/error codes for internal use & reporting in UMA.
-// Enum values can be added, but must never be renumbered or deleted and reused.
-enum PushGetRegistrationStatus {
-  // Getting the registration was successful.
-  SUCCESS = 0,
-
-  // Getting the registration failed because the push service is not available.
-  SERVICE_NOT_AVAILABLE = 1,
-
-  // Getting the registration failed because we failed to read from storage.
-  STORAGE_ERROR = 2,
-
-  // Getting the registration failed because there is no push registration.
-  REGISTRATION_NOT_FOUND = 3,
-
-  // Getting the registration failed because the push service isn't available in
-  // incognito, but we tell JS registration not found to not reveal incognito.
-  INCOGNITO_REGISTRATION_NOT_FOUND = 4,
-
-  // Getting the registration failed because public key could not be retrieved.
-  // PUBLIC_KEY_UNAVAILABLE = 5,
-
-  // Getting the registration failed because storage was corrupt.
-  STORAGE_CORRUPT = 6,
-
-  // Getting the registration failed because the renderer was shut down.
-  RENDERER_SHUTDOWN = 7,
-
-  // Getting the registration failed because there was no live service worker.
-  NO_LIVE_SERVICE_WORKER = 8,
-
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = NO_LIVE_SERVICE_WORKER
 };
 
 enum PushPermissionStatus {
