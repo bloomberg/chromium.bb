@@ -243,6 +243,34 @@ if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
    set(CONFIG_VAR_TX_NO_TX_MODE 0)
 endif()
 
+if (CONFIG_DAALA_DCT8)
+  if (HAVE_MMX)
+     message(WARNING
+       "--- Disabled HAVE_MMX, required for CONFIG_DAALA_DCT8.")
+     set(HAVE_MMX 0)
+  endif()
+  if (CONFIG_RECT_TX)
+     message(WARNING
+       "--- Disabled CONFIG_RECT_TX, required for CONFIG_DAALA_DCT8.")
+     set(CONFIG_RECT_TX 0)
+  endif()
+  if (CONFIG_VAR_TX)
+     message(WARNING
+       "--- Disabled CONFIG_VAR_TX, required for CONFIG_DAALA_DCT8.")
+     set(CONFIG_VAR_TX 0)
+  endif()
+  if (CONFIG_LGT)
+     message(WARNING
+       "--- Disabled CONFIG_LGT, required for CONFIG_DAALA_DCT8.")
+     set(CONFIG_LGT 0)
+   endif()
+  if (NOT CONFIG_LOWBITDEPTH)
+     message(WARNING
+       "--- Enabled CONFIG_LOWBITDEPTH, required for CONFIG_DAALA_DCT8.")
+     set(CONFIG_LOWBITDEPTH 1)
+   endif()
+endif()
+
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"

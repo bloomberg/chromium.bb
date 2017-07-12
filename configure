@@ -294,6 +294,7 @@ EXPERIMENT_LIST="
     xiphrc
     dct_only
     daala_dct4
+    daala_dct8
     cb4x4
     chroma_2x2
     chroma_sub8x8
@@ -567,6 +568,13 @@ post_process_cmdline() {
     fi
     if enabled daala_dct4; then
       enable_feature dct_only
+      disable_feature mmx
+      disable_feature rect_tx
+      disable_feature var_tx
+      disable_feature lgt
+      enable_feature lowbitdepth
+    fi
+    if enabled daala_dct8; then
       disable_feature mmx
       disable_feature rect_tx
       disable_feature var_tx

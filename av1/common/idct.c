@@ -47,7 +47,13 @@ static void iidtx4_c(const tran_low_t *input, tran_low_t *output) {
 
 static void iidtx8_c(const tran_low_t *input, tran_low_t *output) {
   int i;
-  for (i = 0; i < 8; ++i) output[i] = input[i] * 2;
+  for (i = 0; i < 8; ++i) {
+#if CONFIG_DAALA_DCT8
+    output[i] = input[i];
+#else
+    output[i] = input[i] * 2;
+#endif
+  }
 }
 
 static void iidtx16_c(const tran_low_t *input, tran_low_t *output) {
@@ -1142,12 +1148,18 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform row vectors
   for (i = 0; i < 8; ++i) {
+#if CONFIG_DAALA_DCT8
+    tran_low_t temp_in[8];
+    for (j = 0; j < 8; j++) temp_in[j] = input[j] * 2;
+    IHT_8[tx_type].rows(temp_in, out[i]);
+#else
 #if CONFIG_LGT
     if (use_lgt_row)
       ilgt8(input, out[i], lgtmtx_row[i]);
     else
 #endif
       IHT_8[tx_type].rows(input, out[i]);
+#endif
     input += 8;
   }
 
@@ -1177,7 +1189,11 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     for (j = 0; j < 8; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
+#if CONFIG_DAALA_DCT8
+      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 4));
+#else
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 5));
+#endif
     }
   }
 }
@@ -1397,6 +1413,7 @@ void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_iwht4x4_1_add(input, dest, stride);
 }
 
+#if !CONFIG_DAALA_DCT8
 static void idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
                         const TxfmParam *txfm_param) {
 // If dc is 1, then input[0] is the reconstructed value, do not need
@@ -1421,6 +1438,7 @@ static void idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
   else
     aom_idct8x8_64_add(input, dest, stride);
 }
+#endif
 
 static void idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
                           const TxfmParam *txfm_param) {
@@ -1664,7 +1682,11 @@ static void inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest, int stride,
                              const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
   switch (tx_type) {
+#if !CONFIG_DAALA_DCT8
     case DCT_DCT: idct8x8_add(input, dest, stride, txfm_param); break;
+#else
+    case DCT_DCT:
+#endif
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
