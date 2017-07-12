@@ -92,9 +92,6 @@ crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.
 
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
 
-# Can be broken into smaller tests, probably.
-crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout Pass ]
-
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
