@@ -70,6 +70,13 @@ int Accelerator::MaskOutKeyEventFlags(int flags) {
   return flags & kModifierMask;
 }
 
+KeyEvent Accelerator::ToKeyEvent() const {
+  return KeyEvent(key_state() == Accelerator::KeyState::PRESSED
+                      ? ET_KEY_PRESSED
+                      : ET_KEY_RELEASED,
+                  key_code(), modifiers());
+}
+
 Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
   if (this != &accelerator) {
     key_code_ = accelerator.key_code_;

@@ -53,6 +53,8 @@ class UI_BASE_EXPORT Accelerator {
   // available modifier ones. This does not include EF_IS_REPEAT.
   static int MaskOutKeyEventFlags(int flags);
 
+  KeyEvent ToKeyEvent() const;
+
   Accelerator& operator=(const Accelerator& accelerator);
 
   // Define the < operator so that the KeyboardShortcut can be used as a key in
