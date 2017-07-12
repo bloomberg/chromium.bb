@@ -93,6 +93,9 @@ configurations. To create a build directory, run:
 $ gn gen out/fuchsia --args="is_debug=false dcheck_always_on=true is_component_build=false target_os=\"fuchsia\""
 ```
 
+You can also build for Debug, with `is_debug=true`, but since we don't currently
+have any Debug build-bots, it may be more broken than Release.
+
 `use_goma=true` is fine to use also if you're a Googler.
 
 ## Build
@@ -109,7 +112,7 @@ $ ninja -C out/fuchsia base_unittests
 Once it is built, you can run by:
 
 ```shell
-$ out/fuch/bin/run_base_unittests
+$ out/fuchsia/bin/run_base_unittests
 ```
 
 This packages the built binary and test data into a disk image, and runs a QEMU
@@ -122,6 +125,6 @@ The run script also symbolizes backtraces.
 
 A useful alias (for "Build And Run Filtered") is:
 ```shell
-alias barf='ninja -C out/fuchsia base_unittests -j1000 && out/fuch/bin/run_base_unittests --test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter'
+alias barf='ninja -C out/fuchsia base_unittests -j1000 && out/fuchsia/bin/run_base_unittests --test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter'
 ```
 to build and run only the tests that are not excluded/known-failing on the bot.
