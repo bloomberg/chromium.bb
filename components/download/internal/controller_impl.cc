@@ -57,6 +57,18 @@ Client::FailureReason FailureReasonFromCompletionType(CompletionType type) {
   return Client::FailureReason::UNKNOWN;
 }
 
+// Helper function to determine if more downloads can be activated based on
+// configuration.
+bool CanActivateMoreDownloads(Configuration* config,
+                              uint32_t active_count,
+                              uint32_t paused_count) {
+  if (config->max_concurrent_downloads <= paused_count + active_count ||
+      config->max_running_downloads <= active_count) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 ControllerImpl::ControllerImpl(
@@ -802,28 +814,35 @@ void ControllerImpl::ActivateMoreDownloads() {
   if (initializing_internals_)
     return;
 
-  // Check the configuration to throttle number of downloads.
+  // Check all the entries and the configuration to throttle number of
+  // downloads.
   std::map<Entry::State, uint32_t> entries_states;
-  for (const auto* const entry : model_->PeekEntries())
+  Model::EntryList scheduling_candidates;
+  for (auto* const entry : model_->PeekEntries()) {
     entries_states[entry->state]++;
+    // Only schedule background tasks based on available and active entries.
+    if (entry->state == Entry::State::AVAILABLE ||
+        entry->state == Entry::State::ACTIVE) {
+      scheduling_candidates.emplace_back(entry);
+    }
+  }
+
   uint32_t paused_count = entries_states[Entry::State::PAUSED];
   uint32_t active_count = entries_states[Entry::State::ACTIVE];
-  if (config_->max_concurrent_downloads <= paused_count + active_count ||
-      config_->max_running_downloads <= active_count) {
-    return;
-  }
 
-  Entry* next = scheduler_->Next(
-      model_->PeekEntries(), device_status_listener_->CurrentDeviceStatus());
+  while (CanActivateMoreDownloads(config_, active_count, paused_count)) {
+    Entry* next = scheduler_->Next(
+        model_->PeekEntries(), device_status_listener_->CurrentDeviceStatus());
+    if (!next)
+      break;
 
-  while (next) {
     DCHECK_EQ(Entry::State::AVAILABLE, next->state);
     TransitTo(next, Entry::State::ACTIVE, model_.get());
+    active_count++;
     UpdateDriverState(next);
-    next = scheduler_->Next(model_->PeekEntries(),
-                            device_status_listener_->CurrentDeviceStatus());
   }
-  scheduler_->Reschedule(model_->PeekEntries());
+
+  scheduler_->Reschedule(scheduling_candidates);
 }
 
 void ControllerImpl::HandleExternalDownload(const std::string& guid,

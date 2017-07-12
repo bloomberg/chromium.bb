@@ -17,8 +17,9 @@ struct DeviceStatus;
 // download tasks.
 class Scheduler {
  public:
-  // Reschedule another background platform task. Called when downloads are
-  // added or removed or the criteria has changed.
+  // Reschedule another background platform task based on the scheduling
+  // parameters of |entries|. Should only pass in entries in active or available
+  // state.
   virtual void Reschedule(const Model::EntryList& entries) = 0;
 
   // Returns the next download that should be processed based on scheduling
