@@ -176,7 +176,7 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          CdmKeysInfo keys_info) {
   DVLOG(2) << __func__
-           << " has_additional_usable_key=" << has_additional_usable_key;
+           << " has_additional_usable_key = " << has_additional_usable_key;
 
   std::vector<mojom::CdmKeyInformationPtr> keys_data;
   for (auto& key : keys_info)
@@ -187,7 +187,7 @@ void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
 
 void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
                                                base::Time new_expiry_time_sec) {
-  DVLOG(2) << __func__ << " expiry=" << new_expiry_time_sec;
+  DVLOG(2) << __func__ << " expiry = " << new_expiry_time_sec;
   client_->OnSessionExpirationUpdate(session_id,
                                      new_expiry_time_sec.ToDoubleT());
 }

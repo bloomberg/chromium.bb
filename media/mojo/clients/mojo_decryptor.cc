@@ -224,7 +224,7 @@ void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                                    Status status,
                                    const scoped_refptr<VideoFrame>& video_frame,
                                    mojom::FrameResourceReleaserPtr releaser) {
-  DVLOG_IF(1, status != kSuccess) << __func__ << "(" << status << ")";
+  DVLOG_IF(1, status != kSuccess) << __func__ << ": status = " << status;
   DVLOG_IF(3, status == kSuccess) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
