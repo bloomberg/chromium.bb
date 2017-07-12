@@ -148,7 +148,7 @@ class CORE_EXPORT NGConstraintSpace final
     return floats_bfc_offset_;
   }
 
-  Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() {
+  const Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() const {
     return unpositioned_floats_;
   }
 

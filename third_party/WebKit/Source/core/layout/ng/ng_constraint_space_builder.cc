@@ -145,7 +145,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsAnonymous(
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats) {
-  unpositioned_floats_.swap(unpositioned_floats);
+  unpositioned_floats_ = unpositioned_floats;
   return *this;
 }
 
@@ -210,10 +210,10 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   WTF::Optional<NGLogicalOffset> floats_bfc_offset =
       is_new_fc_ ? WTF::nullopt : floats_bfc_offset_;
 
-  // The inline_offsets of the bfc_offset and floats_bfc_offset should match.
-  if (floats_bfc_offset)
-    DCHECK_EQ(bfc_offset.inline_offset,
-              floats_bfc_offset.value().inline_offset);
+  if (floats_bfc_offset) {
+    floats_bfc_offset = NGLogicalOffset(
+        {bfc_offset.inline_offset, floats_bfc_offset.value().block_offset});
+  }
 
   if (is_in_parallel_flow) {
     return AdoptRef(new NGConstraintSpace(

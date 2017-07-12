@@ -10,6 +10,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
@@ -17,8 +18,6 @@
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
-
-class NGLayoutResult;
 
 class CORE_EXPORT NGFragmentBuilder final {
   DISALLOW_NEW();
@@ -50,9 +49,6 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& AddPositionedFloat(NGPositionedFloat);
 
   NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
-
-  NGFragmentBuilder& AddUnpositionedFloat(
-      RefPtr<NGUnpositionedFloat> unpositioned_float);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -108,18 +104,13 @@ class CORE_EXPORT NGFragmentBuilder final {
   // Creates the fragment. Can only be called once.
   RefPtr<NGLayoutResult> ToBoxFragment();
 
-  Vector<RefPtr<NGPhysicalFragment>>& MutableChildren() { return children_; }
+  RefPtr<NGLayoutResult> Abort(NGLayoutResult::NGLayoutResultStatus);
 
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
-  // Mutable list of floats that need to be positioned.
-  Vector<RefPtr<NGUnpositionedFloat>>& MutableUnpositionedFloats() {
-    return unpositioned_floats_;
-  }
-
-  // List of floats that need to be positioned.
-  const Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() const {
-    return unpositioned_floats_;
+  void SwapUnpositionedFloats(
+      Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats) {
+    unpositioned_floats_.swap(*unpositioned_floats);
   }
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {

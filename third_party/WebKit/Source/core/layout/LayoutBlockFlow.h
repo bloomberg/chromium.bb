@@ -408,6 +408,10 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
   }
 
+  // This function is only public so we can call it from NGBlockNode while we're
+  // still working on LayoutNG.
+  void AddOverflowFromFloats();
+
 #ifndef NDEBUG
   void ShowLineTreeAndMark(const InlineBox* = nullptr,
                            const char* = nullptr,
@@ -430,8 +434,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);
-
-  void AddOverflowFromFloats();
 
   void ComputeSelfHitTestRects(Vector<LayoutRect>&,
                                const LayoutPoint& layer_offset) const override;

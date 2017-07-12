@@ -132,7 +132,10 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
   RefPtr<NGLayoutResult> layout_result =
       LayoutWithAlgorithm(Style(), *this, constraint_space, break_token);
 
-  CopyFragmentDataToLayoutBox(*constraint_space, layout_result.Get());
+  if (layout_result->Status() == NGLayoutResult::kSuccess &&
+      layout_result->UnpositionedFloats().IsEmpty())
+    CopyFragmentDataToLayoutBox(*constraint_space, layout_result.Get());
+
   return layout_result;
 }
 
@@ -280,10 +283,16 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     if (child_fragment->IsPlaced())
       FragmentPositionUpdated(ToNGPhysicalBoxFragment(*child_fragment));
 
-    for (const NGPositionedFloat& positioned_float :
-         ToNGPhysicalBoxFragment(child_fragment.Get())->PositionedFloats()) {
-      FloatingObjectPositionedUpdated(
-          positioned_float, ToLayoutBox(child_fragment->GetLayoutObject()));
+    if (child_fragment->GetLayoutObject()->IsLayoutBlockFlow())
+      ToLayoutBlockFlow(child_fragment->GetLayoutObject())
+          ->AddOverflowFromFloats();
+
+    if (child_fragment->GetLayoutObject() == box_) {
+      for (const NGPositionedFloat& positioned_float :
+           ToNGPhysicalBoxFragment(child_fragment.Get())->PositionedFloats()) {
+        FloatingObjectPositionedUpdated(
+            positioned_float, ToLayoutBox(child_fragment->GetLayoutObject()));
+      }
     }
   }
 
@@ -300,7 +309,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->ClearNeedsLayout();
 
   if (box_->IsLayoutBlockFlow()) {
-    ToLayoutBlockFlow(box_)->UpdateIsSelfCollapsing();
+    LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
+    block_flow->UpdateIsSelfCollapsing();
+
+    if (block_flow->CreatesNewFormattingContext())
+      block_flow->AddOverflowFromFloats();
   }
 }
 

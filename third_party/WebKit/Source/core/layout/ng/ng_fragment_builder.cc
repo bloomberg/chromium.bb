@@ -148,12 +148,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
-    RefPtr<NGUnpositionedFloat> unpositioned_float) {
-  unpositioned_floats_.push_back(std::move(unpositioned_float));
-  return *this;
-}
-
 void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates) {
   DCHECK(descendant_candidates->IsEmpty());
@@ -239,9 +233,16 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       children_, positioned_floats_, baselines_,
       border_edges_.ToPhysical(writing_mode_), std::move(break_token)));
 
-  return AdoptRef(
-      new NGLayoutResult(std::move(fragment), oof_positioned_descendants_,
-                         unpositioned_floats_, bfc_offset_, end_margin_strut_));
+  return AdoptRef(new NGLayoutResult(
+      std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,
+      bfc_offset_, end_margin_strut_, NGLayoutResult::kSuccess));
+}
+
+RefPtr<NGLayoutResult> NGFragmentBuilder::Abort(
+    NGLayoutResult::NGLayoutResultStatus status) {
+  return AdoptRef(new NGLayoutResult(
+      nullptr, Vector<NGOutOfFlowPositionedDescendant>(), unpositioned_floats_,
+      bfc_offset_, end_margin_strut_, status));
 }
 
 }  // namespace blink

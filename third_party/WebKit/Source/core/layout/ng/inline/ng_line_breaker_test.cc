@@ -40,7 +40,10 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
         NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
     container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
-    NGLineBreaker line_breaker(node, space.Get(), &container_builder);
+    Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
+    NGLineBreaker line_breaker(node, space.Get(), &container_builder,
+                               &unpositioned_floats);
+
     Vector<NGInlineItemResults> lines;
     NGLineInfo line_info;
     while (line_breaker.NextLine(&line_info, NGLogicalOffset()))
