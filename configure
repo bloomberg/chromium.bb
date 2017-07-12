@@ -302,7 +302,6 @@ EXPERIMENT_LIST="
     adapt_scan
     filter_7bit
     parallel_deblocking
-    parallel_deblocking_15tap
     loopfiltering_across_tiles
     tile_groups
     tempmv_signaling
@@ -515,6 +514,7 @@ post_process_cmdline() {
     soft_enable interintra
     soft_enable one_sided_compound
     soft_enable smooth_hv
+    soft_enable parallel_deblocking
 
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth
@@ -595,11 +595,6 @@ post_process_cmdline() {
     if enabled analyzer; then
       soft_enable accounting
       soft_enable inspection
-    fi
-    if enabled parallel_deblocking_15tap && ! enabled parallel_deblocking; then
-      log_echo "parallel_deblocking_15tap dependes on parallel_deblocking, so"
-      log_echo "enabling parallel_deblocking"
-      soft_enable parallel_deblocking
     fi
 }
 
