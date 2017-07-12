@@ -183,7 +183,8 @@ class HomePrefNotificationBridge {
 - (NSView*)backOrForwardTouchBarView;
 
 // Creates and returns the search button.
-- (NSView*)searchTouchBarView;
+- (NSView*)searchTouchBarView
+    __attribute__((availability(macos, introduced = 10.12)));
 @end
 
 @implementation BrowserWindowTouchBar
@@ -298,9 +299,13 @@ class HomePrefNotificationBridge {
         setCustomizationLabel:l10n_util::GetNSString(
                                   IDS_TOUCH_BAR_BOOKMARK_CUSTOMIZATION_LABEL)];
   } else if ([identifier hasSuffix:kSearchTouchId]) {
-    [touchBarItem setView:[self searchTouchBarView]];
-    [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
-                                            IDS_TOUCH_BAR_GOOGLE_SEARCH)];
+    if (@available(macOS 10.12, *)) {
+      [touchBarItem setView:[self searchTouchBarView]];
+      [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
+                                              IDS_TOUCH_BAR_GOOGLE_SEARCH)];
+    } else {
+      NOTREACHED();
+    }
   } else if ([identifier hasSuffix:kFullscreenOriginLabelTouchId]) {
     content::WebContents* contents =
         browser_->tab_strip_model()->GetActiveWebContents();
@@ -391,7 +396,8 @@ class HomePrefNotificationBridge {
                     trackingMode:NSSegmentSwitchTrackingMomentary
                           target:self
                           action:@selector(backOrForward:)];
-  control.segmentStyle = NSSegmentStyleSeparated;
+  if (@available(macOS 10.10, *))
+    control.segmentStyle = NSSegmentStyleSeparated;
   [control setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
            forSegment:kBackSegmentIndex];
   [control setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
