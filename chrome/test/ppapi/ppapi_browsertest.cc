@@ -1238,11 +1238,15 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_FlashFullscreen)
 
 TEST_PPAPI_OUT_OF_PROCESS(PDF)
 
-// TODO(dalecurtis): Renable once the platform verification infobar has been
-// implemented; see http://crbug.com/270908
-// #if defined(OS_CHROMEOS)
-// TEST_PPAPI_OUT_OF_PROCESS(PlatformVerificationPrivate)
-// #endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, PlatformVerificationPrivate) {
+  RunTest(
+#if defined(OS_CHROMEOS)
+// TODO(dalecurtis): Renable once the platform verification infobar has
+// been implemented; see http://crbug.com/270908
+// LIST_TEST(PlatformVerificationPrivate_ChallengePlatform)
+#endif
+      LIST_TEST(PlatformVerificationPrivate_StorageId));
+}
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
   RunTest(

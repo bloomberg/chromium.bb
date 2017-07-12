@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_platform_verification_private.idl modified Wed Jan 27
-// 17:10:16 2016.
+// From private/ppb_platform_verification_private.idl modified Fri Jun  9
+// 14:13:47 2017.
 
 #include <stdint.h>
 
@@ -50,15 +50,26 @@ int32_t ChallengePlatform(PP_Resource instance,
       platform_key_certificate, enter.callback()));
 }
 
-const PPB_PlatformVerification_Private_0_2
-    g_ppb_platformverification_private_thunk_0_2 = {
-        &Create, &IsPlatformVerification, &ChallengePlatform};
+int32_t GetStorageId(PP_Resource instance,
+                     struct PP_Var* storage_id,
+                     struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_PlatformVerification_Private::GetStorageId()";
+  EnterResource<PPB_PlatformVerification_API> enter(instance, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(
+      enter.object()->GetStorageId(storage_id, enter.callback()));
+}
+
+const PPB_PlatformVerification_Private_0_3
+    g_ppb_platformverification_private_thunk_0_3 = {
+        &Create, &IsPlatformVerification, &ChallengePlatform, &GetStorageId};
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_PlatformVerification_Private_0_2*
-GetPPB_PlatformVerification_Private_0_2_Thunk() {
-  return &g_ppb_platformverification_private_thunk_0_2;
+PPAPI_THUNK_EXPORT const PPB_PlatformVerification_Private_0_3*
+GetPPB_PlatformVerification_Private_0_3_Thunk() {
+  return &g_ppb_platformverification_private_thunk_0_3;
 }
 
 }  // namespace thunk

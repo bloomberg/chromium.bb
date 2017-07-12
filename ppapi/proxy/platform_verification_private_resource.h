@@ -29,6 +29,10 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
     PP_Var* platform_key_certificate;
     scoped_refptr<TrackedCallback> callback;
   };
+  struct GetStorageIdParams {
+    PP_Var* storage_id;
+    scoped_refptr<TrackedCallback> callback;
+  };
 
   ~PlatformVerificationPrivateResource() override;
 
@@ -50,6 +54,11 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
       const std::vector<uint8_t>& raw_signed_data,
       const std::vector<uint8_t>& raw_signed_data_signature,
       const std::string& raw_platform_key_certificate);
+  int32_t GetStorageId(PP_Var* storage_id,
+                       const scoped_refptr<TrackedCallback>& callback) override;
+  void OnGetStorageIdReply(GetStorageIdParams output_params,
+                           const ResourceMessageReplyParams& params,
+                           const std::string& storage_id);
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVerificationPrivateResource);
 };

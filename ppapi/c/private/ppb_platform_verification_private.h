@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_platform_verification_private.idl,
- *   modified Fri Oct 18 15:02:09 2013.
+ *   modified Tue Jun 13 15:47:24 2017.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_PLATFORM_VERIFICATION_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2 \
-    "PPB_PlatformVerification_Private;0.2"
+#define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_3 \
+    "PPB_PlatformVerification_Private;0.3"
 #define PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE \
-    PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_2
+    PPB_PLATFORMVERIFICATION_PRIVATE_INTERFACE_0_3
 
 /**
  * @file
@@ -39,7 +39,7 @@
  * services to verify that the underlying platform is trusted. An example of a
  * trusted platform is a Chrome OS device in verified boot mode.
  */
-struct PPB_PlatformVerification_Private_0_2 {
+struct PPB_PlatformVerification_Private_0_3 {
   /**
    * Create() creates a <code>PPB_PlatformVerification_Private</code> object.
    *
@@ -98,9 +98,24 @@ struct PPB_PlatformVerification_Private_0_2 {
                                struct PP_Var* signed_data_signature,
                                struct PP_Var* platform_key_certificate,
                                struct PP_CompletionCallback callback);
+  /**
+   * Requests the device's storage ID.
+   *
+   * @param[out] storage_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> that contains the storage ID.
+   *
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
+   * the storage ID has been obtained. This callback will only run if
+   * the return code is <code>PP_OK_COMPLETIONPENDING</code>.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*GetStorageId)(PP_Resource instance,
+                          struct PP_Var* storage_id,
+                          struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_PlatformVerification_Private_0_2
+typedef struct PPB_PlatformVerification_Private_0_3
     PPB_PlatformVerification_Private;
 /**
  * @}

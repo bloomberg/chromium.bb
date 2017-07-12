@@ -29248,6 +29248,7 @@ from previous Chrome versions.
   <int value="1099975614" label="PPB_Flash;12.5"/>
   <int value="1111997633" label="PPB_AudioInput(Dev);0.4"/>
   <int value="1155638369" label="PPB_WheelInputEvent;1.0"/>
+  <int value="1158760765" label="PPB_PlatformVerification_Private;0.3"/>
   <int value="1161845861" label="PPB_NetAddress_Private;1.0"/>
   <int value="1173327824" label="PPB_OpenGLES2ChromiumEnableFeature;1.0"/>
   <int value="1188712923" label="PPB_Talk_Private;2.0"/>

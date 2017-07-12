@@ -27,6 +27,10 @@ class PPAPI_THUNK_EXPORT PPB_PlatformVerification_API {
       PP_Var* signed_data_signature,
       PP_Var* platform_key_certificate,
       const scoped_refptr<TrackedCallback>& callback) = 0;
+
+  virtual int32_t GetStorageId(
+      PP_Var* storage_id,
+      const scoped_refptr<TrackedCallback>& callback) = 0;
 };
 
 }  // namespace thunk

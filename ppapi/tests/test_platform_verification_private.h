@@ -18,6 +18,7 @@ class TestPlatformVerificationPrivate : public TestCase {
 
  private:
   std::string TestChallengePlatform();
+  std::string TestStorageId();
 };
 
 #endif  // PAPPI_TESTS_TEST_PLATFORM_VERIFICATION_PRIVATE_H_

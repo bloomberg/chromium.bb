@@ -22,6 +22,7 @@ TestPlatformVerificationPrivate::TestPlatformVerificationPrivate(
 
 void TestPlatformVerificationPrivate::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestPlatformVerificationPrivate, ChallengePlatform, filter);
+  RUN_CALLBACK_TEST(TestPlatformVerificationPrivate, StorageId, filter);
 }
 
 std::string TestPlatformVerificationPrivate::TestChallengePlatform() {
@@ -41,5 +42,16 @@ std::string TestPlatformVerificationPrivate::TestChallengePlatform() {
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  PASS();
+}
+
+std::string TestPlatformVerificationPrivate::TestStorageId() {
+  pp::PlatformVerification platform_verification_api(instance_);
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  pp::Var storage_id;
+  callback.WaitForResult(platform_verification_api.GetStorageId(
+      &storage_id, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
   PASS();
 }

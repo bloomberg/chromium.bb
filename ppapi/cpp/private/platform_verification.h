@@ -26,6 +26,7 @@ class PlatformVerification : public Resource {
                             Var* signed_data_signature,
                             Var* platform_key_certificate,
                             const CompletionCallback& callback);
+  int32_t GetStorageId(Var* storage_id, const CompletionCallback& callback);
 };
 
 }  // namespace pp
