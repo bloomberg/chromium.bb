@@ -161,6 +161,26 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
             navigation.extended_info_map().at(kExtendedInfoKey2));
 }
 
+// Test effect of the navigation serialization options.
+TEST_F(ContentSerializedNavigationBuilderTest,
+       FromNavigationEntrySerializationOptions) {
+  const std::unique_ptr<content::NavigationEntry> navigation_entry(
+      MakeNavigationEntryForTest());
+
+  const SerializedNavigationEntry& default_navigation =
+      ContentSerializedNavigationBuilder::FromNavigationEntry(
+          test_data::kIndex, *navigation_entry,
+          ContentSerializedNavigationBuilder::DEFAULT);
+  EXPECT_EQ(test_data::kEncodedPageState,
+            default_navigation.encoded_page_state());
+
+  const SerializedNavigationEntry& excluded_page_state_navigation =
+      ContentSerializedNavigationBuilder::FromNavigationEntry(
+          test_data::kIndex, *navigation_entry,
+          ContentSerializedNavigationBuilder::EXCLUDE_PAGE_STATE);
+  EXPECT_TRUE(excluded_page_state_navigation.encoded_page_state().empty());
+}
+
 // Create a NavigationEntry, then create another one by converting to
 // a SerializedNavigationEntry and back.  The new one should match the old one
 // except for fields that aren't preserved, which should be set to
