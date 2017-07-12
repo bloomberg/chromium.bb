@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
@@ -142,16 +143,14 @@ void MetricsStateManager::ForceClientIdCreation() {
   BackUpCurrentClientInfo();
 }
 
-void MetricsStateManager::CheckForClonedInstall(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+void MetricsStateManager::CheckForClonedInstall() {
   DCHECK(!cloned_install_detector_);
 
-  MachineIdProvider* provider = MachineIdProvider::CreateInstance();
-  if (!provider)
+  if (!MachineIdProvider::HasId())
     return;
 
-  cloned_install_detector_.reset(new ClonedInstallDetector(provider));
-  cloned_install_detector_->CheckForClonedInstall(local_state_, task_runner);
+  cloned_install_detector_ = base::MakeUnique<ClonedInstallDetector>();
+  cloned_install_detector_->CheckForClonedInstall(local_state_);
 }
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>

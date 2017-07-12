@@ -914,9 +914,8 @@ void MetricsService::RegisterMetricsProvider(
   metrics_providers_.push_back(std::move(provider));
 }
 
-void MetricsService::CheckForClonedInstall(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  state_manager_->CheckForClonedInstall(task_runner);
+void MetricsService::CheckForClonedInstall() {
+  state_manager_->CheckForClonedInstall();
 }
 
 void MetricsService::NotifySyntheticTrialObservers() {

@@ -802,8 +802,7 @@ void ChromeBrowserMainParts::SetupMetrics() {
 void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
 
-  g_browser_process->metrics_service()->CheckForClonedInstall(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+  g_browser_process->metrics_service()->CheckForClonedInstall();
 
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.

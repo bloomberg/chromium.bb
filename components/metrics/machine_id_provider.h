@@ -8,37 +8,28 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 
 namespace metrics {
 
 // Provides machine characteristics used as a machine id. The implementation is
-// platform specific with a default implementation that gives an empty id. The
-// class is ref-counted thread safe so it can be used to post to the FILE thread
-// and communicate back to the UI thread.
-// This raw machine id should not be stored or transmitted over the network.
-// TODO(jwd): Simplify implementation to get rid of the need for
-// RefCountedThreadSafe (crbug.com/354882).
-class MachineIdProvider : public base::RefCountedThreadSafe<MachineIdProvider> {
+// platform specific. GetMachineId() must be called on a thread which allows
+// I/O. GetMachineId() must not be called if HasId() returns false on this
+// platform.
+class MachineIdProvider {
  public:
+  // Returns true if this platform provides a non-empty GetMachineId(). This is
+  // useful to avoid an async call to GetMachineId() on platforms with no
+  // implementation.
+  static bool HasId();
+
   // Get a string containing machine characteristics, to be used as a machine
   // id. The implementation is platform specific, with a default implementation
   // returning an empty string.
   // The return value should not be stored to disk or transmitted.
-  std::string GetMachineId();
-
-  // Returns a pointer to a new MachineIdProvider or NULL if there is no
-  // provider implemented on a given platform. This is done to avoid posting a
-  // task to the FILE thread on platforms with no implementation.
-  static MachineIdProvider* CreateInstance();
+  static std::string GetMachineId();
 
  private:
-  friend class base::RefCountedThreadSafe<MachineIdProvider>;
-
-  MachineIdProvider();
-  virtual ~MachineIdProvider();
-
-  DISALLOW_COPY_AND_ASSIGN(MachineIdProvider);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MachineIdProvider);
 };
 
 }  //  namespace metrics
