@@ -30,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::NiceMock;
 using testing::Return;
 
 namespace download {
@@ -136,7 +137,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
     auto model = base::MakeUnique<ModelImpl>(std::move(store));
     auto device_status_listener =
         base::MakeUnique<test::TestDeviceStatusListener>();
-    auto scheduler = base::MakeUnique<MockScheduler>();
+    auto scheduler = base::MakeUnique<NiceMock<MockScheduler>>();
     auto task_scheduler = base::MakeUnique<MockTaskScheduler>();
 
     auto download_file_dir = base::FilePath(kDownloadDirPath);
@@ -1179,7 +1180,7 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxRunning) {
 
   // Hit the max running configuration threshold, nothing should be called.
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(0);
-  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(0);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
 
@@ -1190,8 +1191,9 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxRunning) {
 // paused downloads.
 TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxConcurrent) {
   Entry entry1 = test::BuildBasicEntry(Entry::State::AVAILABLE);
-  Entry entry2 = test::BuildBasicEntry(Entry::State::PAUSED);
-  std::vector<Entry> entries = {entry1, entry2};
+  Entry entry2 = test::BuildBasicEntry(Entry::State::AVAILABLE);
+  Entry entry3 = test::BuildBasicEntry(Entry::State::PAUSED);
+  std::vector<Entry> entries = {entry1, entry2, entry3};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
 
@@ -1206,16 +1208,23 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxConcurrent) {
 
   // Can have one more download due to max concurrent configuration.
   testing::InSequence seq;
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entry1.guid)->state);
   EXPECT_CALL(*scheduler_, Next(_, _))
       .Times(1)
       .WillOnce(Return(model_->Get(entry1.guid)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1).RetiresOnSaturation();
+  // |scheduler_| will poll entry2 on next time, but it should not change the
+  // state of entry2 due to max running download configuration.
+  ON_CALL(*scheduler_, Next(_, _))
+      .WillByDefault(Return(model_->Get(entry2.guid)));
+
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
 
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry1.guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entry2.guid)->state);
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entry3.guid)->state);
 }
 
 }  // namespace download
