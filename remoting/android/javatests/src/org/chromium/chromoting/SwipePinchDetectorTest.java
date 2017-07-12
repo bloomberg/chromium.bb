@@ -6,16 +6,23 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 /** Tests for {@link SwipePinchDetector}. */
-public class SwipePinchDetectorTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class SwipePinchDetectorTest {
     private SwipePinchDetector mDetector;
     private float mTouchSlop;
     private MotionEvent.PointerProperties[] mPointers;
@@ -24,9 +31,9 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
     // initialized during setUp().
     private MotionEvent.PointerCoords[] mCurrentPositions;
 
-    @Override
+    @Before
     public void setUp() {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDetector = new SwipePinchDetector(context);
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         MotionEvent.PointerProperties pointer0 = new MotionEvent.PointerProperties();
@@ -59,38 +66,41 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that a simple swipe gesture is recognized as a swipe. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testSwipeRecognition() throws Exception {
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
-        assertFalse(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
 
         // Any distance greater than the touch-slop threshold should work.
         mCurrentPositions[0].y += mTouchSlop * 2;
         mCurrentPositions[1].y += mTouchSlop * 2;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertTrue(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertTrue(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
     }
 
     /** Verifies that a simple pinch gesture is recognized. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testPinchRecognition() throws Exception {
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
-        assertFalse(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
 
         // Any distance greater than the touch-slop threshold should work.
         mCurrentPositions[0].x -= mTouchSlop * 2;
         mCurrentPositions[1].x += mTouchSlop * 2;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertFalse(mDetector.isSwiping());
-        assertTrue(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertTrue(mDetector.isPinching());
     }
 
     /** Verifies that motion less than touch-slop does not trigger anything. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testNoMotion() throws Exception {
@@ -100,11 +110,12 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
         mCurrentPositions[1].x -= mTouchSlop / 2;
         mCurrentPositions[1].y -= mTouchSlop / 2;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertFalse(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
     }
 
     /** Verifies that a pinch with one finger stationary is detected. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerStationary() throws Exception {
@@ -113,21 +124,22 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
         // The triggering threshold in this case (one finger stationary) is mTouchSlop * 2;
         mCurrentPositions[1].x += mTouchSlop * 3;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertFalse(mDetector.isSwiping());
-        assertTrue(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertTrue(mDetector.isPinching());
 
         // Do the same test for the other finger.
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
         mCurrentPositions[0].x += mTouchSlop * 3;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertFalse(mDetector.isSwiping());
-        assertTrue(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertTrue(mDetector.isPinching());
     }
 
     /**
      * Verifies that a pinch is recognized, when the fingers cross the motion threshold at
      * different times.
      */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testUnevenPinch() throws Exception {
@@ -138,11 +150,12 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
             injectEvent(MotionEvent.ACTION_MOVE);
         }
 
-        assertFalse(mDetector.isSwiping());
-        assertTrue(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertTrue(mDetector.isPinching());
     }
 
     /** Same test as testUnevenPinch() except the slow/fast fingers are reversed. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testUnevenPinch2() throws Exception {
@@ -153,11 +166,12 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
             injectEvent(MotionEvent.ACTION_MOVE);
         }
 
-        assertFalse(mDetector.isSwiping());
-        assertTrue(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isSwiping());
+        Assert.assertTrue(mDetector.isPinching());
     }
 
     /** Verifies that a swipe is recognized, even if the fingers move at different rates. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testUnevenSwipe() throws Exception {
@@ -171,11 +185,12 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
             injectEvent(MotionEvent.ACTION_MOVE);
         }
 
-        assertTrue(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertTrue(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
     }
 
     /** Same test as testUnevenSwipe() except the slow/fast fingers are reversed. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testUnevenSwipe2() throws Exception {
@@ -189,30 +204,31 @@ public class SwipePinchDetectorTest extends InstrumentationTestCase {
             injectEvent(MotionEvent.ACTION_MOVE);
         }
 
-        assertTrue(mDetector.isSwiping());
-        assertFalse(mDetector.isPinching());
+        Assert.assertTrue(mDetector.isSwiping());
+        Assert.assertFalse(mDetector.isPinching());
     }
 
     /** Verifies that the detector is reset when a gesture terminates or a new gesture begins. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testDetectorReset() throws Exception {
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
         mCurrentPositions[0].x += mTouchSlop * 3;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertTrue(mDetector.isPinching());
+        Assert.assertTrue(mDetector.isPinching());
 
         // ACTION_POINTER_UP should terminate the gesture.
         injectEvent(MotionEvent.ACTION_POINTER_UP);
-        assertFalse(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isPinching());
 
         // Repeat the same test, but use ACTION_POINTER_DOWN to start a new gesture, which should
         // terminate the current one.
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
         mCurrentPositions[0].x += mTouchSlop * 3;
         injectEvent(MotionEvent.ACTION_MOVE);
-        assertTrue(mDetector.isPinching());
+        Assert.assertTrue(mDetector.isPinching());
         injectEvent(MotionEvent.ACTION_POINTER_DOWN);
-        assertFalse(mDetector.isPinching());
+        Assert.assertFalse(mDetector.isPinching());
     }
 }

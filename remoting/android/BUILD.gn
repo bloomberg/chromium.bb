@@ -101,5 +101,6 @@ instrumentation_test_apk("remoting_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit:junit",
   ]
 }

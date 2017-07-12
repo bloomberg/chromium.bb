@@ -4,16 +4,23 @@
 
 package org.chromium.chromoting;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
 /** Tests for {@link TapGestureDetector}. */
-public class TapGestureDetectorTest extends InstrumentationTestCase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class TapGestureDetectorTest {
     private static class MockListener implements TapGestureDetector.OnTapListener {
         private static final float COMPARISON_DELTA = 0.01f;
         int mTapCount = -1;
@@ -23,9 +30,9 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
 
         @Override
         public boolean onTap(int pointerCount, float x, float y) {
-            assertEquals(-1, mTapCount);
-            assertEquals(-1, mTapX, COMPARISON_DELTA);
-            assertEquals(-1, mTapY, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapCount);
+            Assert.assertEquals(-1, mTapX, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapY, COMPARISON_DELTA);
             mTapCount = pointerCount;
             mTapX = x;
             mTapY = y;
@@ -34,33 +41,33 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
 
         @Override
         public void onLongPress(int pointerCount, float x, float y) {
-            assertEquals(-1, mLongPressCount);
-            assertEquals(-1, mTapX, COMPARISON_DELTA);
-            assertEquals(-1, mTapY, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mLongPressCount);
+            Assert.assertEquals(-1, mTapX, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapY, COMPARISON_DELTA);
             mLongPressCount = pointerCount;
             mTapX = x;
             mTapY = y;
         }
 
         public void assertTapDetected(int expectedCount, float expectedX, float expectedY) {
-            assertEquals(expectedCount, mTapCount);
-            assertEquals(expectedX, mTapX, COMPARISON_DELTA);
-            assertEquals(expectedY, mTapY, COMPARISON_DELTA);
-            assertEquals(-1, mLongPressCount);
+            Assert.assertEquals(expectedCount, mTapCount);
+            Assert.assertEquals(expectedX, mTapX, COMPARISON_DELTA);
+            Assert.assertEquals(expectedY, mTapY, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mLongPressCount);
         }
 
         public void assertLongPressDetected(int expectedCount, float expectedX, float expectedY) {
-            assertEquals(expectedCount, mLongPressCount);
-            assertEquals(expectedX, mTapX, COMPARISON_DELTA);
-            assertEquals(expectedY, mTapY, COMPARISON_DELTA);
-            assertEquals(-1, mTapCount);
+            Assert.assertEquals(expectedCount, mLongPressCount);
+            Assert.assertEquals(expectedX, mTapX, COMPARISON_DELTA);
+            Assert.assertEquals(expectedY, mTapY, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapCount);
         }
 
         public void assertNothingDetected() {
-            assertEquals(-1, mTapCount);
-            assertEquals(-1, mLongPressCount);
-            assertEquals(-1, mTapX, COMPARISON_DELTA);
-            assertEquals(-1, mTapY, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapCount);
+            Assert.assertEquals(-1, mLongPressCount);
+            Assert.assertEquals(-1, mTapX, COMPARISON_DELTA);
+            Assert.assertEquals(-1, mTapY, COMPARISON_DELTA);
         }
     }
 
@@ -89,14 +96,21 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
         event.recycle();
     }
 
-    @Override
+    @Before
     public void setUp() {
         mListener = new MockListener();
-        mDetector = new TapGestureDetector(getInstrumentation().getTargetContext(), mListener);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mDetector = new TapGestureDetector(
+                        InstrumentationRegistry.getInstrumentation().getTargetContext(), mListener);
+            }
+        });
         mEventGenerator = new TouchEventGenerator();
     }
 
     /** Verifies that a simple down/up is detected as a tap. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testOneFingerDownUp() throws Exception {
@@ -106,6 +120,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that a simple multi-finger down/up is detected as a tap. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testMultipleFingerDownUp() throws Exception {
@@ -119,6 +134,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that a multi-finger tap is detected when lifting the fingers in reverse order. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testMultipleFingerDownUpReversed() throws Exception {
@@ -132,6 +148,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that small movement of multiple fingers is still detected as a tap. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testMultipleFingerSmallMovements() throws Exception {
@@ -148,6 +165,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that large motion of a finger prevents a tap being detected. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testLargeMotion() throws Exception {
@@ -162,6 +180,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
     }
 
     /** Verifies that a long-press is detected. */
+    @Test
     @SmallTest
     @Feature({"Chromoting"})
     public void testLongPress() throws Exception {
@@ -171,7 +190,7 @@ public class TapGestureDetectorTest extends InstrumentationTestCase {
                 // Ensure the gesture-detector is created on the UI thread, so that it uses the
                 // Handler for the UI thread for LongPress notifications.
                 mDetector = new TapGestureDetector(
-                        getInstrumentation().getTargetContext(), mListener);
+                        InstrumentationRegistry.getInstrumentation().getTargetContext(), mListener);
 
                 injectDownEvent(0, 0, 0);
             }
