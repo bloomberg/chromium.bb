@@ -29,6 +29,7 @@
 #include <libxml/tree.h>
 #include <memory>
 #include "core/dom/ParserContentPolicy.h"
+#include "core/dom/PendingScript.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/xml/parser/XMLErrors.h"
@@ -67,7 +68,7 @@ class XMLParserContext : public RefCounted<XMLParserContext> {
 };
 
 class XMLDocumentParser final : public ScriptableDocumentParser,
-                                public ScriptResourceClient {
+                                public PendingScriptClient {
   USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
 
  public:
@@ -129,9 +130,8 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   OrdinalNumber LineNumber() const override;
   OrdinalNumber ColumnNumber() const;
 
-  // from ResourceClient
-  void NotifyFinished(Resource*) override;
-  String DebugName() const override { return "XMLDocumentParser"; }
+  // from PendingScriptClient
+  void PendingScriptFinished(PendingScript*) override;
 
   void end();
 
@@ -208,10 +208,9 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
 
   XMLErrors xml_errors_;
 
-  Member<ScriptResource> pending_script_;
+  Member<PendingScript> pending_script_;
   Member<Element> script_element_;
   TextPosition script_start_position_;
-  double parser_blocking_pending_script_load_start_time_;
 
   bool parsing_fragment_;
   AtomicString default_namespace_uri_;

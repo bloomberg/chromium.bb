@@ -376,9 +376,8 @@ bool XMLDocumentParser::UpdateLeafTextNode() {
 
 void XMLDocumentParser::Detach() {
   if (pending_script_) {
-    pending_script_->RemoveClient(this);
+    pending_script_->StopWatchingForLoad();
     pending_script_ = nullptr;
-    parser_blocking_pending_script_load_start_time_ = 0.0;
   }
   ClearCurrentNodeStack();
   ScriptableDocumentParser::Detach();
@@ -433,20 +432,13 @@ void XMLDocumentParser::InsertErrorMessageBlock() {
   xml_errors_.InsertErrorMessageBlock();
 }
 
-void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
-  DCHECK_EQ(unused_resource, pending_script_);
-
-  pending_script_->CheckResourceIntegrity(*GetDocument());
-
-  ScriptSourceCode source_code(pending_script_.Get());
-  bool error_occurred = pending_script_->ErrorOccurred();
-  bool was_canceled = pending_script_->WasCanceled();
-  double script_parser_blocking_time =
-      parser_blocking_pending_script_load_start_time_;
-  parser_blocking_pending_script_load_start_time_ = 0.0;
-
-  pending_script_->RemoveClient(this);
+void XMLDocumentParser::PendingScriptFinished(
+    PendingScript* unused_pending_script) {
+  DCHECK_EQ(unused_pending_script, pending_script_);
+  PendingScript* pending_script = pending_script_;
   pending_script_ = nullptr;
+
+  pending_script->StopWatchingForLoad();
 
   Element* e = script_element_;
   script_element_ = nullptr;
@@ -456,27 +448,17 @@ void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
   DCHECK(script_loader);
   CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 
-  if (error_occurred) {
-    script_loader->DispatchErrorEvent();
-  } else if (!was_canceled) {
+  if (!pending_script->ErrorOccurred()) {
+    const double script_parser_blocking_time =
+        pending_script->ParserBlockingLoadStartTime();
     if (script_parser_blocking_time > 0.0) {
       DocumentParserTiming::From(*GetDocument())
           .RecordParserBlockedOnScriptLoadDuration(
               MonotonicallyIncreasingTime() - script_parser_blocking_time,
               script_loader->WasCreatedDuringDocumentWrite());
     }
-
-    switch (script_loader->ExecuteScript(ClassicScript::Create(source_code))) {
-      case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
-        script_loader->DispatchErrorEvent();
-        break;
-      case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
-        script_loader->DispatchLoadEvent();
-        break;
-      case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
-        break;
-    }
   }
+  script_loader->ExecuteScriptBlock(pending_script, NullURL());
 
   script_element_ = nullptr;
 
@@ -784,7 +766,6 @@ XMLDocumentParser::XMLDocumentParser(Document& document,
       finish_called_(false),
       xml_errors_(&document),
       script_start_position_(TextPosition::BelowRangePosition()),
-      parser_blocking_pending_script_load_start_time_(0.0),
       parsing_fragment_(false) {
   // This is XML being used as a document resource.
   if (frame_view && document.IsXMLDocument())
@@ -859,7 +840,7 @@ DEFINE_TRACE(XMLDocumentParser) {
   visitor->Trace(pending_script_);
   visitor->Trace(script_element_);
   ScriptableDocumentParser::Trace(visitor);
-  ScriptResourceClient::Trace(visitor);
+  PendingScriptClient::Trace(visitor);
 }
 
 void XMLDocumentParser::DoWrite(const String& parse_string) {
@@ -1143,14 +1124,11 @@ void XMLDocumentParser::EndElementNs() {
     } else if (script_loader->WillBeParserExecuted()) {
       // 1st/2nd Clauses, Step 23 of
       // https://html.spec.whatwg.org/#prepare-a-script
-      pending_script_ = script_loader->GetResource();
-      DCHECK_EQ(parser_blocking_pending_script_load_start_time_, 0.0);
-      parser_blocking_pending_script_load_start_time_ =
-          MonotonicallyIncreasingTime();
+      pending_script_ = script_loader->CreatePendingScript();
+      pending_script_->MarkParserBlockingLoadStartTime();
       script_element_ = element;
-      pending_script_->AddClient(this);
-      // m_pendingScript will be 0 if script was already loaded and
-      // addClient() executed it.
+      pending_script_->WatchForLoad(this);
+      // pending_script_ will be null if script was already ready.
       if (pending_script_)
         PauseParsing();
     } else {
