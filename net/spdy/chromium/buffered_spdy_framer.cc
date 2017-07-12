@@ -216,6 +216,11 @@ void BufferedSpdyFramer::UpdateHeaderDecoderTableSize(uint32_t value) {
   spdy_framer_.UpdateHeaderDecoderTableSize(value);
 }
 
+void BufferedSpdyFramer::set_max_decode_buffer_size_bytes(
+    size_t max_decode_buffer_size_bytes) {
+  spdy_framer_.set_max_decode_buffer_size_bytes(max_decode_buffer_size_bytes);
+}
+
 void BufferedSpdyFramer::Reset() {
   spdy_framer_.Reset();
 }

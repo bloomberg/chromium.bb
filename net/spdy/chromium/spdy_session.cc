@@ -45,6 +45,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/chromium/header_coalescer.h"
 #include "net/spdy/chromium/spdy_buffer_producer.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
 #include "net/spdy/chromium/spdy_log_util.h"
@@ -894,6 +895,9 @@ void SpdySession::InitializeWithSocket(
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);
+  // Do not bother decoding response headers more than a factor over the limit.
+  buffered_spdy_framer_->set_max_decode_buffer_size_bytes(2 *
+                                                          kMaxHeaderListSize);
 
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_INITIALIZED,
                     base::Bind(&NetLogSpdyInitializedCallback,

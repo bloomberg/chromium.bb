@@ -179,6 +179,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);
   void UpdateHeaderDecoderTableSize(uint32_t value);
+  void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes);
   void Reset();
   SpdyFramer::SpdyFramerError spdy_framer_error() const;
   SpdyFramer::SpdyState state() const;

@@ -31,8 +31,6 @@ std::unique_ptr<base::Value> ElideNetLogHeaderCallback(
 
 }  // namespace
 
-const size_t kMaxHeaderListSize = 256 * 1024;
-
 HeaderCoalescer::HeaderCoalescer(const NetLogWithSource& net_log)
     : net_log_(net_log) {}
 
