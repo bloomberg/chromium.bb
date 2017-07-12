@@ -290,6 +290,7 @@ modules_idl_files =
                     "webaudio/AudioListener.idl",
                     "webaudio/AudioNode.idl",
                     "webaudio/AudioParam.idl",
+                    "webaudio/AudioParamMap.idl",
                     "webaudio/AudioProcessingEvent.idl",
                     "webaudio/AudioScheduledSourceNode.idl",
                     "webaudio/AudioWorkletGlobalScope.idl",
