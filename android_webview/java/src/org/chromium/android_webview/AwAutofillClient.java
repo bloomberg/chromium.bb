@@ -56,21 +56,28 @@ public class AwAutofillClient {
                 nativeDismissed(mNativeAwAutofillClient);
                 return;
             }
-            mAutofillPopup = new AutofillPopup(context, anchorView, new AutofillDelegate() {
-                @Override
-                public void dismissed() {
-                    nativeDismissed(mNativeAwAutofillClient);
-                }
-                @Override
-                public void suggestionSelected(int listIndex) {
-                    nativeSuggestionSelected(mNativeAwAutofillClient, listIndex);
-                }
-                @Override
-                public void deleteSuggestion(int listIndex) {}
+            try {
+                mAutofillPopup = new AutofillPopup(context, anchorView, new AutofillDelegate() {
+                    @Override
+                    public void dismissed() {
+                        nativeDismissed(mNativeAwAutofillClient);
+                    }
+                    @Override
+                    public void suggestionSelected(int listIndex) {
+                        nativeSuggestionSelected(mNativeAwAutofillClient, listIndex);
+                    }
+                    @Override
+                    public void deleteSuggestion(int listIndex) {}
 
-                @Override
-                public void accessibilityFocusCleared() {}
-            });
+                    @Override
+                    public void accessibilityFocusCleared() {}
+                });
+            } catch (RuntimeException e) {
+                // Deliberately swallowing exception because bad fraemwork implementation can
+                // throw exceptions in ListPopupWindow constructor.
+                nativeDismissed(mNativeAwAutofillClient);
+                return;
+            }
         }
         mAutofillPopup.filterAndShow(suggestions, isRtl, Color.TRANSPARENT /* backgroundColor */,
                 Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */, 0 /* margin */);
