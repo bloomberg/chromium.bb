@@ -2848,7 +2848,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
+                    "name": "V4Only2",
+                    "enable_features": [
+                        "SafeBrowsingV4LocalDatabaseManagerEnabled",
+                        "SafeBrowsingV4OnlyEnabled"
+                    ]
                 }
             ]
         }
