@@ -80,6 +80,7 @@ class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class ResourceMessageFilter;
+class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
 class StoragePartitionImpl;
@@ -114,9 +115,29 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public NON_EXPORTED_BASE(mojom::AssociatedInterfaceProvider),
       public NON_EXPORTED_BASE(mojom::RendererHost) {
  public:
-  RenderProcessHostImpl(BrowserContext* browser_context,
-                        StoragePartitionImpl* storage_partition_impl,
-                        bool is_for_guests_only);
+  // Use the spare RenderProcessHost if it exists, or create a new one. This
+  // should be the usual way to get a new RenderProcessHost.
+  // If |storage_partition_impl| is null, the default partition from the
+  // browser_context is used, using |site_instance| (for which a null value is
+  // legal).
+  static RenderProcessHost* CreateOrUseSpareRenderProcessHost(
+      BrowserContext* browser_context,
+      StoragePartitionImpl* storage_partition_impl,
+      SiteInstance* site_instance,
+      bool is_for_guests_only);
+
+  // Create a new RenderProcessHost. In most cases
+  // CreateOrUseSpareRenderProcessHost, above, should be used instead.
+  // If |storage_partition_impl| is null, the default partition from the
+  // browser_context is used, using |site_instance| (for which a null value is
+  // legal). |site_instance| is not used if |storage_partition_impl| is not
+  // null.
+  static RenderProcessHost* CreateRenderProcessHost(
+      BrowserContext* browser_context,
+      StoragePartitionImpl* storage_partition_impl,
+      SiteInstance* site_instance,
+      bool is_for_guests_only);
+
   ~RenderProcessHostImpl() override;
 
   // RenderProcessHost implementation (public portion).
@@ -196,6 +217,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool IsUnused() override;
   void SetIsUsed() override;
 
+  bool HostHasNotBeenUsed() override;
+
   mojom::RouteProvider* GetRemoteRouteProvider();
 
   // IPC::Sender via RenderProcessHost.
@@ -269,6 +292,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       SiteInstanceImpl* site_instance);
 
+  // Cleanup and remove any spare renderer. This should be used when a
+  // navigation has occurred or will be occurring that will not use the spare
+  // renderer and resources should be cleaned up.
+  static void CleanupSpareRenderProcessHost();
+
   static base::MessageLoop* GetInProcessRendererThreadForTesting();
 
   // This forces a renderer that is running "in process" to shut down.
@@ -337,6 +365,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost* render_process_host,
       const GURL& site_url);
 
+  // Return the spare RenderProcessHost, if it exists. There is at most one
+  // globally-used spare RenderProcessHost at any time.
+  static RenderProcessHost* GetSpareRenderProcessHostForTesting();
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -362,6 +394,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class VisitRelayingRenderProcessHost;
   class ConnectionFilterController;
   class ConnectionFilterImpl;
+
+  // Use CreateRenderProcessHost() instead of calling this constructor
+  // directly.
+  RenderProcessHostImpl(BrowserContext* browser_context,
+                        StoragePartitionImpl* storage_partition_impl,
+                        bool is_for_guests_only);
 
   // Initializes a new IPC::ChannelProxy in |channel_|, which will be connected
   // to the next child process launched for this host, if any.
