@@ -2209,6 +2209,7 @@ test("browser_tests") {
         "../browser/chromeos/first_run/goodies_displayer_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
         "../browser/chromeos/input_method/mode_indicator_browsertest.cc",
+        "../browser/chromeos/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
         "../browser/chromeos/login/bluetooth_host_pairing_browsertest.cc",
         "../browser/chromeos/login/crash_restore_browsertest.cc",
