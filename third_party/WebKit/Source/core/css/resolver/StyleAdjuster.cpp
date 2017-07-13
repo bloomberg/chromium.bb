@@ -35,6 +35,8 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeComputedStyle.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -44,6 +46,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -368,6 +371,69 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   }
 }
 
+static void AdjustEffectiveTouchAction(ComputedStyle& style,
+                                       const ComputedStyle& parent_style,
+                                       Element* element) {
+  TouchAction action = parent_style.GetEffectiveTouchAction();
+
+  bool is_svg_root = element && element->IsSVGElement() &&
+                     isSVGSVGElement(*element) && element->parentNode() &&
+                     !element->parentNode()->IsSVGElement();
+  bool is_non_replaced_inline_elements =
+      style.IsDisplayInlineType() &&
+      !(style.IsDisplayReplacedType() || is_svg_root ||
+        isHTMLImageElement(element));
+  bool is_table_row_or_column = style.IsDisplayTableRowOrColumnType();
+  bool is_layout_object_needed =
+      element && element->LayoutObjectIsNeeded(style);
+
+  // According to W3C specs, touch actions are only supported by elements that
+  // support both the CSS width and height properties.
+  // See https://www.w3.org/TR/pointerevents/#the-touch-action-css-property.
+  if (is_non_replaced_inline_elements || is_table_row_or_column ||
+      !is_layout_object_needed) {
+    style.SetEffectiveTouchAction(action);
+    return;
+  }
+
+  bool is_child_document =
+      element && element == element->GetDocument().documentElement() &&
+      element->GetDocument().LocalOwner();
+
+  if (is_child_document) {
+    const ComputedStyle* frame_style =
+        element->GetDocument().LocalOwner()->GetComputedStyle();
+    if (frame_style)
+      action = frame_style->GetEffectiveTouchAction();
+  }
+
+  // The effective touch action is the intersection of the touch-action values
+  // of the current element and all of its ancestors up to the one that
+  // implements the gesture. Since panning is implemented by the scroller it is
+  // re-enabled for scrolling elements.
+  // The panning-restricted cancellation should also apply to iframes, so we
+  // allow (panning & local touch action) on the first descendant element of a
+  // iframe element.
+  if (style.ScrollsOverflow() || is_child_document)
+    action |= TouchAction::kTouchActionPan;
+
+  // Apply the adjusted parent effective touch actions.
+  style.SetEffectiveTouchAction(style.GetTouchAction() & action);
+
+  // Touch action is inherited across frames.
+  if (element && element->IsFrameOwnerElement() &&
+      ToHTMLFrameOwnerElement(element)->contentDocument()) {
+    Element* content_document_element =
+        ToHTMLFrameOwnerElement(element)->contentDocument()->documentElement();
+    if (content_document_element) {
+      content_document_element->SetNeedsStyleRecalc(
+          kSubtreeStyleChange,
+          StyleChangeReasonForTracing::Create(
+              StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+    }
+  }
+}
+
 void StyleAdjuster::AdjustComputedStyle(
     ComputedStyle& style,
     const ComputedStyle& parent_style,
@@ -495,6 +561,7 @@ void StyleAdjuster::AdjustComputedStyle(
     if (parent_style.JustifyItemsPositionType() == kLegacyPosition)
       style.SetJustifyItems(parent_style.JustifyItems());
   }
-}
 
+  AdjustEffectiveTouchAction(style, parent_style, element);
+}
 }  // namespace blink
