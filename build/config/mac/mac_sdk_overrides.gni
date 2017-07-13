@@ -5,18 +5,18 @@
 # This file contains arguments that subprojects may choose to override. It
 # asserts that those overrides are used, to prevent unused args warnings.
 
-# See https://bugs.chromium.org/p/webrtc/issues/detail?id=5453.
-# We can drop the rtc_require_mac_10_7_deployment flag when Chromium
-# also requires a 10.7 deployment target.
-import("//build_overrides/build.gni")
-
+_sdk_min_from_env = getenv("FORCE_MAC_SDK_MIN")
 declare_args() {
   # Minimum supported version of the Mac SDK.
-  mac_sdk_min = mac_sdk_min_build_override
+  if (_sdk_min_from_env == "") {
+    mac_sdk_min = "10.10"
+  } else {
+    mac_sdk_min = _sdk_min_from_env
+  }
 }
 
 # Always assert that mac_sdk_min is used on non-macOS platforms to prevent
 # unused args warnings.
 if (!is_mac) {
-  assert(mac_sdk_min == mac_sdk_min_build_override || true)
+  assert(mac_sdk_min == "10.10" || true)
 }
