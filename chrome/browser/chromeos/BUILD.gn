@@ -1579,7 +1579,6 @@ source_set("chromeos") {
   if (use_cups) {
     sources += [
       "printing/cups_print_job_manager_impl.cc",
-      "printing/cups_print_job_manager_impl.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
