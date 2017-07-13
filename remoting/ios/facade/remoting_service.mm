@@ -12,6 +12,7 @@
 #import <Security/Security.h>
 
 #import "base/mac/bind_objc_block.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/domain/user_info.h"
 #import "remoting/ios/facade/host_info.h"
@@ -23,6 +24,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
@@ -85,7 +87,15 @@ NSString* const kUserInfo = @"kUserInfo";
   }
   _hostListFetcher->RetrieveHostlist(
       base::SysNSStringToUTF8(accessToken),
-      base::BindBlockArc(^(const std::vector<remoting::HostInfo>& hostlist) {
+      base::BindBlockArc(^(int responseCode,
+                           const std::vector<remoting::HostInfo>& hostlist) {
+
+        if (responseCode == net::HTTP_UNAUTHORIZED) {
+          [[RemotingService instance].authentication logout];
+        }
+        // TODO(nicholss): There are more |responseCode|s that we might want to
+        // trigger on, look into that later.
+
         NSMutableArray<HostInfo*>* hosts =
             [NSMutableArray arrayWithCapacity:hostlist.size()];
         std::string status;
@@ -173,14 +183,17 @@ NSString* const kUserInfo = @"kUserInfo";
             [self startHostListFetchWith:accessToken];
             break;
           case RemotingAuthenticationStatusNetworkError:
-            NSLog(
-                @"TODO(nicholss): implement this, "
-                @"RemotingAuthenticationStatusNetworkError.");
+            [MDCSnackbarManager
+                showMessage:
+                    [MDCSnackbarMessage
+                        messageWithText:@"[Network Error] Please try again."]];
             break;
           case RemotingAuthenticationStatusAuthError:
-            NSLog(
-                @"TODO(nicholss): implement this, "
-                @"RemotingAuthenticationStatusAuthError.");
+            [MDCSnackbarManager
+                showMessage:
+                    [MDCSnackbarMessage
+                        messageWithText:
+                            @"[Authentication Failed] Please login again."]];
             break;
         }
       }];

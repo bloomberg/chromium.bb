@@ -128,7 +128,8 @@ void HostListFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     hostlist.clear();
   }
   std::sort(hostlist.begin(), hostlist.end(), &compareHost);
-  base::ResetAndReturn(&hostlist_callback_).Run(hostlist);
+  base::ResetAndReturn(&hostlist_callback_)
+      .Run(request_->GetResponseCode(), hostlist);
 }
 
 }  // namespace remoting

@@ -38,6 +38,7 @@ typedef NS_ENUM(NSInteger, SessionErrorCode) {
   SessionErrorMaxSessionLength,
   SessionErrorHostConfigurationError,
   SessionErrorUnknownError,
+  SessionErrorOAuthTokenInvalid,  // Custom for app.
 };
 
 // The current state of a session and data needed for session context.

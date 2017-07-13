@@ -59,11 +59,15 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   SessionErrorCode _lastError;
   HostInfo* _hostInfo;
 }
+
+@property(nonatomic, assign) SessionErrorCode lastError;
+
 @end
 
 @implementation ClientConnectionViewController
 
 @synthesize state = _state;
+@synthesize lastError = _lastError;
 
 - (instancetype)initWithHostInfo:(HostInfo*)hostInfo {
   self = [super init];
@@ -374,16 +378,24 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)attemptConnectionToHost {
   _client = [[RemotingClient alloc] init];
+  __weak ClientConnectionViewController* weakSelf = self;
   __weak RemotingClient* weakClient = _client;
   __weak HostInfo* weakHostInfo = _hostInfo;
   [RemotingService.instance.authentication
       callbackWithAccessToken:^(RemotingAuthenticationStatus status,
                                 NSString* userEmail, NSString* accessToken) {
-        [weakClient connectToHost:weakHostInfo
-                         username:userEmail
-                      accessToken:accessToken];
+        if (status == RemotingAuthenticationStatusSuccess) {
+          [weakClient connectToHost:weakHostInfo
+                           username:userEmail
+                        accessToken:accessToken];
+        } else {
+          LOG(ERROR) << "Failed to fetch access token for connectToHost. ("
+                     << status << ")";
+          weakSelf.lastError = SessionErrorOAuthTokenInvalid;
+          weakSelf.state = ClientViewError;
+        }
       }];
-  [self setState:ClientViewConnecting];
+  self.state = ClientViewConnecting;
 }
 
 - (void)showConnectingState {
@@ -524,6 +536,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       message = [MDCSnackbarMessage
           messageWithText:@"Error: SessionErrorUnknownError."];
       break;
+    case SessionErrorOAuthTokenInvalid:
+      message = [MDCSnackbarMessage
+          messageWithText:
+              @"Error: SessionErrorOAuthTokenInvalid. Please login again."];
+      break;
   }
   if (message.text) {
     [MDCSnackbarManager showMessage:message];
@@ -586,7 +603,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   }
   _lastError = sessionDetails.error;
   [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-    [self setState:state];
+    self.state = state;
   }];
 }
 
