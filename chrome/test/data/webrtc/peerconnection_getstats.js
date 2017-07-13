@@ -136,6 +136,8 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   audioLevel: 'number',
   echoReturnLoss: 'number',
   echoReturnLossEnhancement: 'number',
+  totalAudioEnergy: 'number',
+  totalSamplesDuration: 'number'
 });
 gStatsWhitelist.set('track', kRTCMediaStreamTrackStats);
 
