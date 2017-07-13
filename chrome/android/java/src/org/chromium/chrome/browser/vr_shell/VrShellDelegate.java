@@ -21,7 +21,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
-import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 import android.view.Choreographer;
@@ -157,7 +156,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private long mNativeVrShellDelegate;
     private boolean mRequestedWebVr;
     private boolean mRequestedWebVrBeforePause;
-    private long mLastVrExit;
     private boolean mListeningForWebVrActivate;
     private boolean mListeningForWebVrActivateBeforePause;
     // Whether or not we should autopresent WebVr. If this is set, it means that a first
@@ -946,13 +944,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             });
         }
 
-        // This handles the case where we're already in VR, and an NFC scan is received that pauses
-        // and resumes Chrome without going through the DON flow or firing the DON success intent.
-        if (isDaydreamCurrentViewer()
-                && mLastVrExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
-            mDonSucceeded = true;
-        }
-
         if (mInVr) {
             mVrShell.resume();
             mVSyncEstimator.resume();
@@ -961,11 +952,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mDonSucceeded) {
             mCancellingEntryAnimation = false;
             handleDonFlowSuccess();
-        } else if (mRestoreOrientation != null) {
+        } else if (mProbablyInDon) {
             // This means the user backed out of the DON flow, and we won't be entering VR.
             maybeSetPresentResult(false, mDonSucceeded);
             shutdownVr(true, false, false);
         }
+        mProbablyInDon = false;
     }
 
     private void handleDonFlowSuccess() {
@@ -1146,7 +1138,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         mInVr = false;
         mAutopresentWebVr = false;
-        mLastVrExit = canReenter ? SystemClock.uptimeMillis() : 0;
 
         // The user has exited VR.
         RecordUserAction.record("VR.DOFF");
