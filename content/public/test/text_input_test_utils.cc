@@ -201,22 +201,11 @@ class InputMethodObserverAura : public TestInputMethodObserver,
     return ui::TEXT_INPUT_TYPE_NONE;
   }
 
-  void SetOnTextInputTypeChangedCallback(
-      const base::Closure& callback) override {
-    on_text_input_type_changed_callback_ = callback;
-  }
-
   void SetOnShowImeIfNeededCallback(const base::Closure& callback) override {
     on_show_ime_if_needed_callback_ = callback;
   }
 
  private:
-  // ui::InputMethodObserver implementations.
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {
-    text_input_client_ = client;
-    on_text_input_type_changed_callback_.Run();
-  }
-
   void OnFocus() override {}
   void OnBlur() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
@@ -227,7 +216,6 @@ class InputMethodObserverAura : public TestInputMethodObserver,
 
   ui::InputMethod* input_method_;
   const ui::TextInputClient* text_input_client_;
-  base::Closure on_text_input_type_changed_callback_;
   base::Closure on_show_ime_if_needed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodObserverAura);

@@ -959,16 +959,6 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   return result;
 }
 
-void HWNDMessageHandler::OnTextInputTypeChanged(
-    const ui::TextInputClient* client) {
-  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
-    DestroyAXSystemCaret();
-    return;
-  }
-
-  OnCaretBoundsChanged(client);
-}
-
 void HWNDMessageHandler::OnFocus() {}
 
 void HWNDMessageHandler::OnBlur() {}

@@ -73,14 +73,6 @@ ui::TextInputClient* TextInputTestHelper::GetTextInputClient() const {
   return GetInputMethod()->GetTextInputClient();
 }
 
-void TextInputTestHelper::OnTextInputTypeChanged(
-    const ui::TextInputClient* client) {
-  latest_text_input_type_ =
-      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
-  if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
-    base::MessageLoop::current()->QuitWhenIdle();
-}
-
 void TextInputTestHelper::OnShowImeIfNeeded() {
 }
 
@@ -116,6 +108,10 @@ void TextInputTestHelper::OnCaretBoundsChanged(
 
 void TextInputTestHelper::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
+  latest_text_input_type_ =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+  if (waiting_type_ == WAIT_ON_TEXT_INPUT_TYPE_CHANGED)
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void TextInputTestHelper::WaitForTextInputStateChanged(

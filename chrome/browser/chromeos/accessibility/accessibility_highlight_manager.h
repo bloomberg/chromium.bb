@@ -59,7 +59,6 @@ class AccessibilityHighlightManager
                const content::NotificationDetails& details) override;
 
   // ui::InputMethodObserver overrides:
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
   void OnFocus() override {}
   void OnBlur() override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
