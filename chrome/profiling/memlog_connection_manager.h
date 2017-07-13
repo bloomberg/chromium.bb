@@ -37,7 +37,8 @@ class MemlogConnectionManager : public MemlogControlReceiver {
   void OnStartMojoControl() override;
 
   // Called by the pipe server when a new pipe is created.
-  void OnNewConnection(scoped_refptr<MemlogReceiverPipe> new_pipe);
+  void OnNewConnection(scoped_refptr<MemlogReceiverPipe> new_pipe,
+                       int sender_pid);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker

@@ -29,7 +29,7 @@ class MemlogReceiverPipeServer
     : public base::RefCountedThreadSafe<MemlogReceiverPipeServer> {
  public:
   using NewConnectionCallback =
-      base::RepeatingCallback<void(scoped_refptr<MemlogReceiverPipe>)>;
+      base::RepeatingCallback<void(scoped_refptr<MemlogReceiverPipe>, int)>;
 
   // |io_runner| is the task runner for the I/O thread. When a new connection is
   // established, the |on_new_conn| callback is called with the pipe.
@@ -44,12 +44,20 @@ class MemlogReceiverPipeServer
   // Starts the server which opens the pipe and begins accepting connections.
   void Start();
 
+  // Runs on IO Thread.
+  // TODO(ajwong): Make private once the correct separation of responsibilities
+  // is worked out between MemlogReceiverPipeServer and ProfilingProcess.
+  void OnNewPipe(base::ScopedFD pipe, int sender_pid);
+
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipeServer>;
   ~MemlogReceiverPipeServer();
 
-  void StartOnIO();
-
+  // TODO(ajwong): Remove this class.  Initially it was created under the
+  // mistaken understanding that one FileDescriptorWatcher could watch
+  // multiple file descriptors. That's incorrect meaning each
+  // MemlogReceiverPipe can own its own watcher and polling logic which
+  // makes this class useless.
   class PipePoller : public base::MessageLoopForIO::Watcher {
    public:
     PipePoller();
@@ -61,8 +69,6 @@ class MemlogReceiverPipeServer
     void OnFileCanWriteWithoutBlocking(int fd) override;
 
    private:
-    base::MessageLoopForIO::FileDescriptorWatcher controller_;
-
     base::flat_map<int, scoped_refptr<MemlogReceiverPipe>> pipes_;
   };
 
