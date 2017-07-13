@@ -221,13 +221,6 @@ const char kEasyUnlockBluetoothLowEnergyDiscoveryDescription[] =
     "over Bluetooth Low Energy in order to unlock the Chromebook when the "
     "phone is in its proximity.";
 
-const char kEasyUnlockProximityDetectionName[] =
-    "Smart Lock proximity detection";
-const char kEasyUnlockProximityDetectionDescription[] =
-    "Enables a Smart Lock setting that restricts unlocking to only work when "
-    "your phone is very close to (roughly, within an arm's length of) the "
-    "Chrome device.";
-
 const char kEmbeddedExtensionOptionsName[] = "Embedded extension options";
 const char kEmbeddedExtensionOptionsDescription[] =
     "Display extension options as an embedded element in chrome://extensions "

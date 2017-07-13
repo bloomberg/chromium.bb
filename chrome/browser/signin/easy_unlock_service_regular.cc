@@ -447,9 +447,6 @@ void EasyUnlockServiceRegular::InitializeInternal() {
       prefs::kEasyUnlockAllowed,
       base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
                  base::Unretained(this)));
-  registrar_.Add(prefs::kEasyUnlockProximityRequired,
-                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
-                            base::Unretained(this)));
 
   OnPrefsChanged();
 
@@ -611,9 +608,6 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
   // items in the dictionary are the same profile prefs used for Easy Unlock.
   std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
-  user_prefs_dict->SetBooleanWithoutPathExpansion(
-      prefs::kEasyUnlockProximityRequired,
-      profile_prefs->GetBoolean(prefs::kEasyUnlockProximityRequired));
 
   DictionaryPrefUpdate update(local_state,
                               prefs::kEasyUnlockLocalStateUserPrefs);

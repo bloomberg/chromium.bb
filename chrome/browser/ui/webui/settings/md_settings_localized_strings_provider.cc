@@ -921,10 +921,6 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
       "easyUnlockTurnOffDescription",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_DESCRIPTION,
                                  device_name));
-  html_source->AddString(
-      "easyUnlockRequireProximityLabel",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL, device_name));
 
   html_source->AddString("easyUnlockLearnMoreURL",
                          chrome::kEasyUnlockLearnMoreUrl);

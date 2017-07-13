@@ -106,18 +106,6 @@ Polymer({
       },
     },
 
-    /**
-     * True if Easy Unlock's proximity detection feature is allowed.
-     */
-    easyUnlockProximityDetectionAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('easyUnlockAllowed') &&
-            loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
-      },
-      readOnly: true,
-    },
-
     /** @private */
     showEasyUnlockTurnOffDialog_: {
       type: Boolean,

@@ -11,7 +11,6 @@ namespace switches {
 extern const char kEnableBluetoothLowEnergyDiscovery[];
 extern const char kEnableChromeOSLogin[];
 extern const char kEnableForcePasswordReauth[];
-extern const char kEnableProximityDetection[];
 extern const char kForceLoadEasyUnlockAppInTests[];
 
 }  // namespace switches

@@ -75,13 +75,6 @@ PrefService* GetLocalState() {
 
 }  // namespace
 
-EasyUnlockService::UserSettings::UserSettings()
-    : require_close_proximity(false) {
-}
-
-EasyUnlockService::UserSettings::~UserSettings() {
-}
-
 // static
 EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
   return EasyUnlockServiceFactory::GetForBrowserContext(profile);
@@ -259,10 +252,6 @@ void EasyUnlockService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
   registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
                                    base::MakeUnique<base::DictionaryValue>());
-  registry->RegisterBooleanPref(
-      prefs::kEasyUnlockProximityRequired,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
@@ -293,33 +282,6 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
 #if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 #endif
-}
-
-// static
-EasyUnlockService::UserSettings EasyUnlockService::GetUserSettings(
-    const AccountId& account_id) {
-  DCHECK(account_id.is_valid());
-  UserSettings user_settings;
-
-  PrefService* local_state = GetLocalState();
-  if (!local_state)
-    return user_settings;
-
-  const base::DictionaryValue* all_user_prefs_dict =
-      local_state->GetDictionary(prefs::kEasyUnlockLocalStateUserPrefs);
-  if (!all_user_prefs_dict)
-    return user_settings;
-
-  const base::DictionaryValue* user_prefs_dict;
-  if (!all_user_prefs_dict->GetDictionaryWithoutPathExpansion(
-          account_id.GetUserEmail(), &user_prefs_dict))
-    return user_settings;
-
-  user_prefs_dict->GetBooleanWithoutPathExpansion(
-      prefs::kEasyUnlockProximityRequired,
-      &user_settings.require_close_proximity);
-
-  return user_settings;
 }
 
 // static
