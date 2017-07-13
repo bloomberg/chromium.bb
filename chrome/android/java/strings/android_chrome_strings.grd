@@ -2236,23 +2236,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Waiting for Google Play Services to finish updating
       </message>
 
-      <!-- External Navigation Strings -->
-      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning the user (who is currently in incognito mode) that the site they are currently using is going to share data with an external application.">
-        This site is about to share information with an app outside of incognito mode.
-      </message>
-      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING_TITLE" desc="Title for dialog asking if the user wants to leave incognito mode. [CHAR-LIMIT=32]">
-        Leave incognito mode?
-      </message>
-      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_STAY" desc="Label for the dialog button to stay in incognito mode. [CHAR-LIMIT=20]">
-        Stay
-      </message>
-      <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_LEAVE" desc="Label for the dialog button to leave incognito mode. [CHAR-LIMIT=20]">
-        Leave
-      </message>
-      <message name="IDS_EXTERNAL_APP_RESTRICTED_ACCESS_ERROR" desc="A message shown to the user if Chrome receives a file view request to something Chrome does not have access to view.">
-        Chrome does not have access to the requested resource.
-      </message>
-
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">
         Casting to <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>
