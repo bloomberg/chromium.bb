@@ -96,6 +96,55 @@ TEST(PaymentRequestTest, PaymentItemFromDictionaryValueFailure) {
   EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
 }
 
+// Tests the success case when populating a PaymentDetails from a dictionary.
+TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
+  PaymentDetails expected;
+  expected.error = base::ASCIIToUTF16("Error in details");
+
+  base::DictionaryValue details_dict;
+  details_dict.SetString("error", "Error in details");
+  PaymentDetails actual;
+  EXPECT_TRUE(
+      actual.FromDictionaryValue(details_dict, /*requires_total=*/false));
+  EXPECT_EQ(expected, actual);
+
+  expected.total.label = base::ASCIIToUTF16("TOTAL");
+  expected.total.amount.currency = base::ASCIIToUTF16("GBP");
+  expected.total.amount.value = base::ASCIIToUTF16("6.66");
+
+  std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
+  total_dict->SetString("label", "TOTAL");
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "GBP");
+  amount_dict->SetString("value", "6.66");
+  total_dict->Set("amount", std::move(amount_dict));
+  details_dict.Set("total", std::move(total_dict));
+
+  EXPECT_TRUE(
+      actual.FromDictionaryValue(details_dict, /*requires_total=*/false));
+  EXPECT_EQ(expected, actual);
+
+  EXPECT_TRUE(
+      actual.FromDictionaryValue(details_dict, /*requires_total=*/true));
+  EXPECT_EQ(expected, actual);
+}
+
+// Tests the failure case when populating a PaymentDetails from a dictionary.
+TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueFailure) {
+  PaymentDetails expected;
+  expected.total.label = base::ASCIIToUTF16("TOTAL");
+  expected.total.amount.currency = base::ASCIIToUTF16("GBP");
+  expected.total.amount.value = base::ASCIIToUTF16("6.66");
+  expected.error = base::ASCIIToUTF16("Error in details");
+
+  base::DictionaryValue details_dict;
+  details_dict.SetString("error", "Error in details");
+
+  PaymentDetails actual;
+  EXPECT_FALSE(
+      actual.FromDictionaryValue(details_dict, /*requires_total=*/true));
+}
+
 // Tests the success case when populating a PaymentShippingOption from a
 // dictionary.
 TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueSuccess) {
