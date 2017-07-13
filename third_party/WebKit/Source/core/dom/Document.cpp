@@ -6936,7 +6936,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->TraceWrappers(style_engine_);
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.
-  visitor->TraceWrappers(
+  visitor->TraceWrappersWithManualWriteBarrier(
       static_cast<FontFaceSet*>(Supplementable<Document>::supplements_.at(
           FontFaceSet::SupplementName())));
   ContainerNode::TraceWrappers(visitor);

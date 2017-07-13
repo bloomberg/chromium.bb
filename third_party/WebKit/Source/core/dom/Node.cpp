@@ -2646,7 +2646,7 @@ DEFINE_TRACE_WRAPPERS(Node) {
   visitor->TraceWrappersWithManualWriteBarrier(previous_);
   visitor->TraceWrappersWithManualWriteBarrier(next_);
   if (HasRareData())
-    visitor->TraceWrappers(RareData());
+    visitor->TraceWrappersWithManualWriteBarrier(RareData());
   EventTarget::TraceWrappers(visitor);
 }
 

@@ -158,7 +158,8 @@ DEFINE_TRACE_WRAPPERS(EventTarget) {
   while (EventListener* listener = iterator.NextListener()) {
     if (listener->GetType() != EventListener::kJSEventListenerType)
       continue;
-    visitor->TraceWrappers(static_cast<V8AbstractEventListener*>(listener));
+    visitor->TraceWrappersWithManualWriteBarrier(
+        static_cast<V8AbstractEventListener*>(listener));
   }
 }
 

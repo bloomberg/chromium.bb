@@ -43,7 +43,7 @@ class V8TestInterface5 {
     visitor->Trace(scriptWrappable->ToImpl<TestInterface5Implementation>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterface5Implementation>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterface5Implementation>());
   }
   static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;

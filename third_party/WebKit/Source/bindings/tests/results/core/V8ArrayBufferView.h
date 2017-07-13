@@ -35,7 +35,7 @@ class V8ArrayBufferView {
     visitor->Trace(scriptWrappable->ToImpl<TestArrayBufferView>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestArrayBufferView>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestArrayBufferView>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

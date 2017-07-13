@@ -41,7 +41,7 @@ class V8TestSpecialOperations {
     visitor->Trace(scriptWrappable->ToImpl<TestSpecialOperations>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestSpecialOperations>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestSpecialOperations>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

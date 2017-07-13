@@ -41,7 +41,7 @@ class V8TestIntegerIndexedPrimaryGlobal {
     visitor->Trace(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
   }
   static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);

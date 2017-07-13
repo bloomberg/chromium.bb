@@ -86,22 +86,6 @@ class PLATFORM_EXPORT WrapperVisitor {
     NOTREACHED();
   }
 
-  template <typename T>
-  void TraceWrappers(const T* traceable) const {
-    static_assert(sizeof(T), "T must be fully defined");
-
-    if (!traceable) {
-      return;
-    }
-
-    if (TraceTrait<T>::GetHeapObjectHeader(traceable)
-            ->IsWrapperHeaderMarked()) {
-      return;
-    }
-
-    MarkAndPushToMarkingDeque(traceable);
-  }
-
   // Trace all wrappers of |t|.
   //
   // If you cannot use TraceWrapperMember & the corresponding TraceWrappers()
@@ -156,6 +140,22 @@ class PLATFORM_EXPORT WrapperVisitor {
   }
 
  protected:
+  template <typename T>
+  void TraceWrappers(const T* traceable) const {
+    static_assert(sizeof(T), "T must be fully defined");
+
+    if (!traceable) {
+      return;
+    }
+
+    if (TraceTrait<T>::GetHeapObjectHeader(traceable)
+            ->IsWrapperHeaderMarked()) {
+      return;
+    }
+
+    MarkAndPushToMarkingDeque(traceable);
+  }
+
   // Returns true if pushing to the marking deque was successful.
   virtual bool PushToMarkingDeque(
       void (*trace_wrappers_callback)(const WrapperVisitor*, const void*),

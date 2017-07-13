@@ -41,7 +41,7 @@ class V8TestInterfaceNode {
     visitor->Trace(scriptWrappable->ToImpl<TestInterfaceNode>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceNode>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceNode>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

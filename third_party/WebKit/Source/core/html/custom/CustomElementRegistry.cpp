@@ -94,7 +94,9 @@ DEFINE_TRACE(CustomElementRegistry) {
 }
 
 DEFINE_TRACE_WRAPPERS(CustomElementRegistry) {
-  visitor->TraceWrappers(&CustomElementReactionStack::Current());
+  // TODO(mlippautz): This is not safe for incremental marking.
+  visitor->TraceWrappersWithManualWriteBarrier(
+      &CustomElementReactionStack::Current());
   for (auto definition : definitions_)
     visitor->TraceWrappers(definition);
 }
