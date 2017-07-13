@@ -16,8 +16,8 @@ class CommandLine;
 namespace profiling {
 
 // Starts the memlog sender pipe if the command line has requested it. The pipe
-// ID will be extracted from the command line argument.
-void InitMemlogSenderIfNecessary(const base::CommandLine& cmdline);
+// ID will be extracted from the CommandLine for the process.
+void InitMemlogSenderIfNecessary();
 
 // Starts the memlog sender pipe with the given ID.
 void StartMemlogSender(const std::string& pipe_id);

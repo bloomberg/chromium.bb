@@ -12,6 +12,8 @@
 
 namespace profiling {
 
+class MemlogReceiverPipeServer;
+
 // Represents the profiling process side of the profiling <-> browser
 // connection. This class is not thread safe and must onle be called on the IO
 // thread (which is the main thread in the profiling process).
@@ -21,6 +23,7 @@ class ProfilingProcess : public mojom::ProfilingControl {
   ~ProfilingProcess() override;
 
   void EnsureMojoStarted();
+  void AttachPipeServer(scoped_refptr<MemlogReceiverPipeServer> server);
 
   // ProfilingControl implementation.
   void AddNewSender(mojo::ScopedHandle sender_pipe,
@@ -32,6 +35,7 @@ class ProfilingProcess : public mojom::ProfilingControl {
   std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
       control_invitation_;
 
+  scoped_refptr<MemlogReceiverPipeServer> server_;
   mojo::Binding<mojom::ProfilingControl> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcess);

@@ -5,8 +5,10 @@
 #include "chrome/profiling/profiling_process.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_platform_handle.h"
 #include "chrome/common/profiling/profiling_constants.h"
 #include "chrome/profiling/profiling_globals.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace profiling {
 
@@ -27,7 +29,18 @@ void ProfilingProcess::EnsureMojoStarted() {
       control_invitation_->ExtractMessagePipe(kProfilingControlPipeName)));
 }
 
+void ProfilingProcess::AttachPipeServer(
+    scoped_refptr<MemlogReceiverPipeServer> server) {
+  server_ = server;
+}
+
 void ProfilingProcess::AddNewSender(mojo::ScopedHandle sender_pipe,
-                                    int32_t sender_pid) {}
+                                    int32_t sender_pid) {
+  base::PlatformFile sender_file;
+  MojoResult result =
+      mojo::UnwrapPlatformFile(std::move(sender_pipe), &sender_file);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+  server_->OnNewPipe(base::ScopedFD(sender_file), sender_pid);
+}
 
 }  // namespace profiling

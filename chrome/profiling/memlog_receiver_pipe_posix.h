@@ -28,15 +28,21 @@ class MemlogReceiverPipe
 
   void ReadUntilBlocking();
 
-  int GetRemoteProcessID();
   void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
                    scoped_refptr<MemlogStreamReceiver> receiver);
+
+  // TODO(ajwong): Remove when file watching is moved from the PipeServer to
+  // the MemlogReceiverPipe.
+  base::MessageLoopForIO::FileDescriptorWatcher* controller() {
+    return &controller_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe();
 
   base::ScopedFD fd_;
+  base::MessageLoopForIO::FileDescriptorWatcher controller_;
   std::unique_ptr<char[]> read_buffer_;
 
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
