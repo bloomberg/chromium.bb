@@ -1108,7 +1108,10 @@ void XMLDocumentParser::EndElementNs() {
   if (script_loader->GetScriptType() != ScriptType::kClassic) {
     // XMLDocumentParser does not support a module script, and thus ignores it.
     success = false;
-    VLOG(0) << "Module scripts in XML documents are not supported.";
+    GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
+                               "Module scripts in XML documents are currently "
+                               "not supported. See crbug.com/717643"));
   }
 
   if (success) {
