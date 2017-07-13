@@ -1445,7 +1445,7 @@ def CreatePayloads(build, work_dir, site_config,
                       skip_duts_check=skip_duts_check).CreatePayloads()
 
 def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
-                          debug):
+                          debug, job_keyvals=None):
   """Run the appropriate command to schedule the Autotests we have prepped.
 
   Args:
@@ -1454,6 +1454,7 @@ def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
   build: A string representing the name of the archive build.
   skip_duts_check: A boolean indicating to not check minimum available DUTs.
   debug: A boolean indicating whether or not we are in debug mode.
+  job_keyvals: A dict of job keyvals to be injected to suite control file.
   """
   timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
   cmd_result = commands.RunHWTestSuite(
@@ -1468,7 +1469,8 @@ def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
       timeout_mins=timeout_mins,
       suite_min_duts=2,
       debug=debug,
-      skip_duts_check=skip_duts_check)
+      skip_duts_check=skip_duts_check,
+      job_keyvals=job_keyvals)
 
   if cmd_result.to_raise:
     if isinstance(cmd_result.to_raise, failures_lib.TestWarning):

@@ -1449,7 +1449,8 @@ DOC = "Faux doc"
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True,
-        suite_min_duts=2, debug=False, skip_duts_check=False).AndReturn(
+        suite_min_duts=2, debug=False, skip_duts_check=False,
+        job_keyvals=None).AndReturn(
             commands.HWTestSuiteResult(None, None))
 
     self.mox.ReplayAll()
@@ -1478,7 +1479,7 @@ DOC = "Faux doc"
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, suite_min_duts=2,
-        debug=False, skip_duts_check=False).AndReturn(
+        debug=False, skip_duts_check=False, job_keyvals=None).AndReturn(
             commands.HWTestSuiteResult(to_raise, None))
 
     self.mox.ReplayAll()
