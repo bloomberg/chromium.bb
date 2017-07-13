@@ -33,7 +33,7 @@ UkmRecorder* UkmRecorder::Get() {
 
 // static
 ukm::SourceId UkmRecorder::GetNewSourceID() {
-  static base::StaticAtomicSequenceNumber seq;
+  static base::AtomicSequenceNumber seq;
   return static_cast<ukm::SourceId>(seq.GetNext());
 }
 

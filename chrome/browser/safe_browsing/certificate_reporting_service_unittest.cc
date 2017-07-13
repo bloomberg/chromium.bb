@@ -52,7 +52,7 @@ const char* kFailedReportHistogram = "SSL.CertificateErrorReportFailure";
 // as all fake certificates will contain the same issuer name, it's
 // necessary to ensure the serial number is unique, as otherwise
 // NSS will fail to parse.
-base::StaticAtomicSequenceNumber g_serial_number;
+base::AtomicSequenceNumber g_serial_number;
 
 scoped_refptr<net::X509Certificate> CreateFakeCert() {
   std::unique_ptr<crypto::RSAPrivateKey> unused_key;

@@ -10,7 +10,7 @@ namespace media_router {
 
 namespace {
 // ID generator for Issue.
-base::StaticAtomicSequenceNumber g_next_issue_id;
+base::AtomicSequenceNumber g_next_issue_id;
 }
 
 IssueInfo::IssueInfo()
