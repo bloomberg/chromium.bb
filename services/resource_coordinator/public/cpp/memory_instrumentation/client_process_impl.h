@@ -18,6 +18,8 @@
 
 namespace memory_instrumentation {
 
+class TracingObserver;
+
 // This is the bridge between MemoryDumpManager and the Coordinator service.
 // This indirection is needed to avoid a dependency from //base, where
 // MemoryDumpManager lives, to //services, where the Coordinator service lives.
@@ -65,9 +67,10 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   // Callback passed to base::MemoryDumpManager::CreateProcessDump().
   void OnProcessMemoryDumpDone(
       const RequestProcessMemoryDumpCallback&,
+      const base::trace_event::MemoryDumpRequestArgs& req_args,
       bool success,
       uint64_t dump_guid,
-      const base::Optional<base::trace_event::MemoryDumpCallbackResult>&);
+      const base::trace_event::ProcessMemoryDumpsMap&);
 
   // mojom::ClientProcess implementation. The Coordinator calls this.
   void RequestOSMemoryDump(
@@ -78,6 +81,10 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   mojo::Binding<mojom::ClientProcess> binding_;
   const mojom::ProcessType process_type_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // TODO(ssid): This should be moved to coordinator instead of clients once we
+  // have the whole chrome dumps sent via mojo, crbug.com/728199.
+  std::unique_ptr<TracingObserver> tracing_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientProcessImpl);
 };
