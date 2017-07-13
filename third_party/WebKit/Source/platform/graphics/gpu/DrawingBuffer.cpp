@@ -76,7 +76,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
     bool want_stencil_buffer,
     bool want_antialiasing,
     PreserveDrawingBuffer preserve,
-    WebGLVersion web_gl_version,
+    WebGLVersion webgl_version,
     ChromiumImageUsage chromium_image_usage,
     const CanvasColorParams& color_params) {
   DCHECK(context_provider);
@@ -119,7 +119,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
   RefPtr<DrawingBuffer> drawing_buffer = AdoptRef(new DrawingBuffer(
       std::move(context_provider), std::move(extensions_util), client,
       discard_framebuffer_supported, want_alpha_channel, premultiplied_alpha,
-      preserve, web_gl_version, want_depth_buffer, want_stencil_buffer,
+      preserve, webgl_version, want_depth_buffer, want_stencil_buffer,
       chromium_image_usage, color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
@@ -140,14 +140,14 @@ DrawingBuffer::DrawingBuffer(
     bool want_alpha_channel,
     bool premultiplied_alpha,
     PreserveDrawingBuffer preserve,
-    WebGLVersion web_gl_version,
+    WebGLVersion webgl_version,
     bool want_depth,
     bool want_stencil,
     ChromiumImageUsage chromium_image_usage,
     const CanvasColorParams& color_params)
     : client_(client),
       preserve_drawing_buffer_(preserve),
-      web_gl_version_(web_gl_version),
+      webgl_version_(webgl_version),
       context_provider_(WTF::WrapUnique(new WebGraphicsContext3DProviderWrapper(
           std::move(context_provider)))),
       gl_(this->ContextProvider()->ContextGL()),
@@ -340,7 +340,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
     viz::TextureMailbox* out_mailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
-  if (web_gl_version_ > kWebGL1) {
+  if (webgl_version_ > kWebGL1) {
     state_restorer_->SetPixelUnpackBufferBindingDirty();
     gl_->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   }
@@ -671,7 +671,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   // textures only if ScreenSpaceAntialiasing is enabled, because
   // ScreenSpaceAntialiasing is much faster with storage textures.
   storage_texture_supported_ =
-      (web_gl_version_ > kWebGL1 ||
+      (webgl_version_ > kWebGL1 ||
        extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
   sample_count_ = std::min(4, max_sample_count);
@@ -1038,11 +1038,12 @@ void DrawingBuffer::RestoreFramebufferBindings() {
 void DrawingBuffer::RestoreAllState() {
   client_->DrawingBufferClientRestoreScissorTest();
   client_->DrawingBufferClientRestoreMaskAndClearValues();
-  client_->DrawingBufferClientRestorePixelPackAlignment();
+  client_->DrawingBufferClientRestorePixelPackParameters();
   client_->DrawingBufferClientRestoreTexture2DBinding();
   client_->DrawingBufferClientRestoreRenderbufferBinding();
   client_->DrawingBufferClientRestoreFramebufferBinding();
   client_->DrawingBufferClientRestorePixelUnpackBufferBinding();
+  client_->DrawingBufferClientRestorePixelPackBufferBinding();
 }
 
 bool DrawingBuffer::Multisample() const {
@@ -1106,8 +1107,16 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
                                         ReadbackOrder readback_order,
                                         WebGLImageConversion::AlphaOp op) {
   DCHECK(state_restorer_);
-  state_restorer_->SetPixelPackAlignmentDirty();
+  state_restorer_->SetPixelPackParametersDirty();
   gl_->PixelStorei(GL_PACK_ALIGNMENT, 1);
+  if (webgl_version_ > kWebGL1) {
+    gl_->PixelStorei(GL_PACK_SKIP_ROWS, 0);
+    gl_->PixelStorei(GL_PACK_SKIP_PIXELS, 0);
+    gl_->PixelStorei(GL_PACK_ROW_LENGTH, 0);
+
+    state_restorer_->SetPixelPackBufferBindingDirty();
+    gl_->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+  }
   gl_->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   size_t buffer_size = 4 * width * height;
@@ -1371,8 +1380,8 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
     client->DrawingBufferClientRestoreScissorTest();
     client->DrawingBufferClientRestoreMaskAndClearValues();
   }
-  if (pixel_pack_alignment_dirty_)
-    client->DrawingBufferClientRestorePixelPackAlignment();
+  if (pixel_pack_parameters_dirty_)
+    client->DrawingBufferClientRestorePixelPackParameters();
   if (texture_binding_dirty_)
     client->DrawingBufferClientRestoreTexture2DBinding();
   if (renderbuffer_binding_dirty_)
@@ -1381,6 +1390,8 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
     client->DrawingBufferClientRestoreFramebufferBinding();
   if (pixel_unpack_buffer_binding_dirty_)
     client->DrawingBufferClientRestorePixelUnpackBufferBinding();
+  if (pixel_pack_buffer_binding_dirty_)
+    client->DrawingBufferClientRestorePixelPackBufferBinding();
 }
 
 bool DrawingBuffer::ShouldUseChromiumImage() {

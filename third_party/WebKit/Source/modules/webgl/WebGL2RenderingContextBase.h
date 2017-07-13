@@ -989,6 +989,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   // DrawingBuffer::Client implementation.
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
+  void DrawingBufferClientRestorePixelPackBufferBinding() override;
+  void DrawingBufferClientRestorePixelPackParameters() override;
 
   // Helper function to validate target and the attachment combination for
   // getFramebufferAttachmentParameters.  Generate GL error and return false if

@@ -89,12 +89,15 @@ class PLATFORM_EXPORT DrawingBuffer
     virtual void DrawingBufferClientRestoreScissorTest() = 0;
     // Restores the mask and clear value for color, depth, and stencil buffers.
     virtual void DrawingBufferClientRestoreMaskAndClearValues() = 0;
-    virtual void DrawingBufferClientRestorePixelPackAlignment() = 0;
+    // Assume client knows the GL/WebGL version and restore necessary params
+    // accordingly.
+    virtual void DrawingBufferClientRestorePixelPackParameters() = 0;
     // Restores the GL_TEXTURE_2D binding for the active texture unit only.
     virtual void DrawingBufferClientRestoreTexture2DBinding() = 0;
     virtual void DrawingBufferClientRestoreRenderbufferBinding() = 0;
     virtual void DrawingBufferClientRestoreFramebufferBinding() = 0;
     virtual void DrawingBufferClientRestorePixelUnpackBufferBinding() = 0;
+    virtual void DrawingBufferClientRestorePixelPackBufferBinding() = 0;
   };
 
   enum PreserveDrawingBuffer {
@@ -279,12 +282,15 @@ class PLATFORM_EXPORT DrawingBuffer
 
     // Mark parts of the state that are dirty and need to be restored.
     void SetClearStateDirty() { clear_state_dirty_ = true; }
-    void SetPixelPackAlignmentDirty() { pixel_pack_alignment_dirty_ = true; }
+    void SetPixelPackParametersDirty() { pixel_pack_parameters_dirty_ = true; }
     void SetTextureBindingDirty() { texture_binding_dirty_ = true; }
     void SetRenderbufferBindingDirty() { renderbuffer_binding_dirty_ = true; }
     void SetFramebufferBindingDirty() { framebuffer_binding_dirty_ = true; }
     void SetPixelUnpackBufferBindingDirty() {
       pixel_unpack_buffer_binding_dirty_ = true;
+    }
+    void SetPixelPackBufferBindingDirty() {
+      pixel_pack_buffer_binding_dirty_ = true;
     }
 
    private:
@@ -292,11 +298,12 @@ class PLATFORM_EXPORT DrawingBuffer
     // The previous state restorer, in case restorers are nested.
     ScopedStateRestorer* previous_state_restorer_ = nullptr;
     bool clear_state_dirty_ = false;
-    bool pixel_pack_alignment_dirty_ = false;
+    bool pixel_pack_parameters_dirty_ = false;
     bool texture_binding_dirty_ = false;
     bool renderbuffer_binding_dirty_ = false;
     bool framebuffer_binding_dirty_ = false;
     bool pixel_unpack_buffer_binding_dirty_ = false;
+    bool pixel_pack_buffer_binding_dirty_ = false;
   };
 
   // All parameters necessary to generate the texture for the ColorBuffer.
@@ -457,7 +464,7 @@ class PLATFORM_EXPORT DrawingBuffer
   Client* client_ = nullptr;
 
   const PreserveDrawingBuffer preserve_drawing_buffer_;
-  const WebGLVersion web_gl_version_;
+  const WebGLVersion webgl_version_;
 
   std::unique_ptr<WebGraphicsContext3DProviderWrapper> context_provider_;
   // Lifetime is tied to the m_contextProvider.
