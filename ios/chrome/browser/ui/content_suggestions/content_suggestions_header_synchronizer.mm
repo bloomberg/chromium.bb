@@ -120,7 +120,7 @@ initWithCollectionController:
   }
 
   self.collectionController.scrolledToTop = YES;
-  self.shouldAnimateHeader = !IsIPadIdiom();
+  self.shouldAnimateHeader = YES;
 
   [UIView animateWithDuration:kShiftTilesUpAnimationDuration
       animations:^{
