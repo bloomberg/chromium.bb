@@ -11,9 +11,7 @@
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
-#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 class AudioManager;
@@ -58,15 +56,10 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
   // the IO thread.
   int GetRenderProcessId() const override;
 
-  std::string GetHMACForDeviceId(
-      const url::Origin& origin,
-      const std::string& raw_device_id) const override;
-
   void RequestDeviceAuthorization(
       int render_frame_id,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       AuthorizationCompletedCallback cb) const override;
 
   std::unique_ptr<media::AudioOutputDelegate> CreateDelegate(

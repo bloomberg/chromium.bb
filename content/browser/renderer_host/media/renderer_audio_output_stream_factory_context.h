@@ -16,10 +16,6 @@ namespace media {
 class AudioParameters;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 // RendererAudioOutputStreamFactoryContext provides functions common to all
@@ -33,16 +29,11 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContext {
 
   virtual int GetRenderProcessId() const = 0;
 
-  virtual std::string GetHMACForDeviceId(
-      const url::Origin& origin,
-      const std::string& raw_device_id) const = 0;
-
   // Called to request access to a device on behalf of the renderer.
   virtual void RequestDeviceAuthorization(
       int render_frame_id,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       AuthorizationCompletedCallback cb) const = 0;
 
   virtual std::unique_ptr<media::AudioOutputDelegate> CreateDelegate(

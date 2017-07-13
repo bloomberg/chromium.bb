@@ -135,12 +135,11 @@ class CONTENT_EXPORT AudioRendererHost
                                     const url::Origin& security_origin);
 
   void AuthorizationCompleted(int stream_id,
-                              const url::Origin& security_origin,
                               base::TimeTicks auth_start_time,
                               media::OutputDeviceStatus status,
-                              bool should_send_id,
                               const media::AudioParameters& params,
-                              const std::string& raw_device_id);
+                              const std::string& raw_device_id,
+                              const std::string& device_id_for_renderer);
 
   // Creates an audio output stream with the specified format.
   // Upon success/failure, the peer is notified via the NotifyStreamCreated
@@ -184,13 +183,6 @@ class CONTENT_EXPORT AudioRendererHost
   // |stream_id| has started.
   bool IsAuthorizationStarted(int stream_id);
 
-  // Called from AudioRendererHostTest to override the function that checks for
-  // the existence of the RenderFrameHost at stream creation time.
-  void set_render_frame_id_validate_function_for_testing(
-      ValidateRenderFrameIdFunction function) {
-    validate_render_frame_id_function_ = function;
-  }
-
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
 
@@ -211,11 +203,6 @@ class CONTENT_EXPORT AudioRendererHost
   // is a bool that is true if the authorization process completes successfully.
   // The second element contains the unique ID of the authorized device.
   std::map<int, std::pair<bool, std::string>> authorizations_;
-
-  // At stream creation time, AudioRendererHost will call this function on the
-  // UI thread to validate render frame IDs. A default is set by the
-  // constructor, but this can be overridden by unit tests.
-  ValidateRenderFrameIdFunction validate_render_frame_id_function_;
 
   AudioOutputAuthorizationHandler authorization_handler_;
 

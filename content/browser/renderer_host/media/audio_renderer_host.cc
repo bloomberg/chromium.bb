@@ -71,7 +71,6 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       mirroring_manager_(mirroring_manager),
       media_stream_manager_(media_stream_manager),
       salt_(salt),
-      validate_render_frame_id_function_(&ValidateRenderFrameId),
       authorization_handler_(audio_system,
                              media_stream_manager,
                              render_process_id_,
@@ -190,20 +189,18 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
   // Unretained is ok here since |this| owns |authorization_handler_| and
   // |authorization_handler_| owns the callback.
   authorization_handler_.RequestDeviceAuthorization(
-      render_frame_id, session_id, device_id, security_origin,
+      render_frame_id, session_id, device_id,
       base::BindOnce(&AudioRendererHost::AuthorizationCompleted,
-                     base::Unretained(this), stream_id, security_origin,
-                     auth_start_time));
+                     base::Unretained(this), stream_id, auth_start_time));
 }
 
 void AudioRendererHost::AuthorizationCompleted(
     int stream_id,
-    const url::Origin& security_origin,
     base::TimeTicks auth_start_time,
     media::OutputDeviceStatus status,
-    bool should_send_id,
     const media::AudioParameters& params,
-    const std::string& raw_device_id) {
+    const std::string& raw_device_id,
+    const std::string& device_id_for_renderer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto auth_data = authorizations_.find(stream_id);
   if (auth_data == authorizations_.end())
@@ -213,15 +210,8 @@ void AudioRendererHost::AuthorizationCompleted(
   if (status == media::OUTPUT_DEVICE_STATUS_OK) {
     auth_data->second.first = true;
     auth_data->second.second = raw_device_id;
-    if (should_send_id) {
-      std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
-          salt_, security_origin, raw_device_id);
-      Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, status, params,
-                                               hashed_id));
-    } else {
-      Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, status, params,
-                                               std::string()));
-    }
+    Send(new AudioMsg_NotifyDeviceAuthorized(stream_id, status, params,
+                                             device_id_for_renderer));
   } else {
     authorizations_.erase(auth_data);
     Send(new AudioMsg_NotifyDeviceAuthorized(
@@ -279,7 +269,7 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   // force-close the stream later if validation fails.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(validate_render_frame_id_function_, render_process_id_,
+      base::BindOnce(&ValidateRenderFrameId, render_process_id_,
                      render_frame_id,
                      base::BindOnce(&AudioRendererHost::DidValidateRenderFrame,
                                     this, stream_id)));

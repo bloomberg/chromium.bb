@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
-#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_system.h"
@@ -46,23 +45,14 @@ int RendererAudioOutputStreamFactoryContextImpl::GetRenderProcessId() const {
   return render_process_id_;
 }
 
-std::string RendererAudioOutputStreamFactoryContextImpl::GetHMACForDeviceId(
-    const url::Origin& origin,
-    const std::string& raw_device_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return MediaStreamManager::GetHMACForMediaDeviceID(salt_, origin,
-                                                     raw_device_id);
-}
-
 void RendererAudioOutputStreamFactoryContextImpl::RequestDeviceAuthorization(
     int render_frame_id,
     int session_id,
     const std::string& device_id,
-    const url::Origin& security_origin,
     AuthorizationCompletedCallback cb) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  authorization_handler_.RequestDeviceAuthorization(
-      render_frame_id, session_id, device_id, security_origin, std::move(cb));
+  authorization_handler_.RequestDeviceAuthorization(render_frame_id, session_id,
+                                                    device_id, std::move(cb));
 }
 
 std::unique_ptr<media::AudioOutputDelegate>
