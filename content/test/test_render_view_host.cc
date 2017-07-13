@@ -8,8 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -89,7 +89,7 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
-  cc::FrameSinkManager* manager = GetFrameSinkManager();
+  viz::FrameSinkManager* manager = GetFrameSinkManager();
   if (manager) {
     manager->InvalidateFrameSinkId(frame_sink_id_);
   }

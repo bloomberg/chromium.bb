@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/containers/flat_set.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
@@ -11,6 +10,7 @@
 #include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,7 +102,7 @@ class SurfaceSynchronizationTest : public testing::Test {
     return support(index).GetCurrentSurfaceForTesting();
   }
 
-  FrameSinkManager& frame_sink_manager() { return frame_sink_manager_; }
+  viz::FrameSinkManager& frame_sink_manager() { return frame_sink_manager_; }
 
   // Returns all the references where |surface_id| is the parent.
   const base::flat_set<viz::SurfaceId>& GetChildReferences(
@@ -188,7 +188,7 @@ class SurfaceSynchronizationTest : public testing::Test {
   testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
 
  private:
-  FrameSinkManager frame_sink_manager_;
+  viz::FrameSinkManager frame_sink_manager_;
   FakeSurfaceObserver surface_observer_;
   FakeExternalBeginFrameSourceClient begin_frame_source_client_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;

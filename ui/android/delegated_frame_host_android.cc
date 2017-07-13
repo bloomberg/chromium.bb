@@ -11,9 +11,9 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/display/display.h"
@@ -51,7 +51,7 @@ void CopyOutputRequestCallback(
 
 DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
-    cc::FrameSinkManager* frame_sink_manager,
+    viz::FrameSinkManager* frame_sink_manager,
     Client* client,
     const viz::FrameSinkId& frame_sink_id)
     : frame_sink_id_(frame_sink_id),

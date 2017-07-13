@@ -5,7 +5,6 @@
 #include "cc/surfaces/surface.h"
 #include "base/memory/ptr_util.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
@@ -13,6 +12,7 @@
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -25,7 +25,7 @@ constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, SurfaceLifetime) {
-  FrameSinkManager frame_sink_manager;
+  viz::FrameSinkManager frame_sink_manager;
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = viz::CompositorFrameSinkSupport::Create(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
@@ -57,7 +57,7 @@ void TestCopyResultCallback(bool* called,
 // Test that CopyOutputRequests can outlive the current frame and be
 // aggregated on the next frame.
 TEST(SurfaceTest, CopyRequestLifetime) {
-  FrameSinkManager frame_sink_manager;
+  viz::FrameSinkManager frame_sink_manager;
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = viz::CompositorFrameSinkSupport::Create(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,

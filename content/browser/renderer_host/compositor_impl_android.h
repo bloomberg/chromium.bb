@@ -33,8 +33,6 @@ struct ANativeWindow;
 
 namespace cc {
 class AnimationHost;
-class FrameSinkId;
-class FrameSinkManager;
 class Layer;
 class LayerTreeHost;
 class OutputSurface;
@@ -43,6 +41,8 @@ class VulkanContextProvider;
 
 namespace viz {
 class Display;
+class FrameSinkId;
+class FrameSinkManager;
 class HostFrameSinkManager;
 }
 
@@ -64,7 +64,7 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  static cc::FrameSinkManager* GetFrameSinkManager();
+  static viz::FrameSinkManager* GetFrameSinkManager();
   static viz::HostFrameSinkManager* GetHostFrameSinkManager();
   static viz::FrameSinkId AllocateFrameSinkId();
 

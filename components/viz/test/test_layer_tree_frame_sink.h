@@ -10,11 +10,11 @@
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -118,7 +118,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   FrameSinkId frame_sink_id_;
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // LayerTreeFrameSink is owned/destroyed on the compositor thread.
-  std::unique_ptr<cc::FrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<FrameSinkManager> frame_sink_manager_;
   std::unique_ptr<LocalSurfaceIdAllocator> local_surface_id_allocator_;
   LocalSurfaceId local_surface_id_;
   gfx::Size display_size_;

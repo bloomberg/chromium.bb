@@ -432,7 +432,7 @@ void Compositor::CreateContextProvider(
 }
 
 // static
-cc::FrameSinkManager* CompositorImpl::GetFrameSinkManager() {
+viz::FrameSinkManager* CompositorImpl::GetFrameSinkManager() {
   return g_compositor_dependencies.Get()
       .frame_sink_manager_impl->frame_sink_manager();
 }
@@ -814,7 +814,7 @@ void CompositorImpl::InitializeDisplay(
     // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
   }
 
-  cc::FrameSinkManager* manager = GetFrameSinkManager();
+  viz::FrameSinkManager* manager = GetFrameSinkManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       root_window_->GetBeginFrameSource(), task_runner,

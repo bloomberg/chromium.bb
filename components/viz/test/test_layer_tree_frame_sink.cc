@@ -41,7 +41,7 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
       refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kLayerTreeFrameSinkId),
-      frame_sink_manager_(new cc::FrameSinkManager),
+      frame_sink_manager_(new FrameSinkManager),
       local_surface_id_allocator_(new LocalSurfaceIdAllocator),
       external_begin_frame_source_(this),
       weak_ptr_factory_(this) {

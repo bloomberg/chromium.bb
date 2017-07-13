@@ -17,12 +17,12 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/single_release_callback.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
@@ -440,7 +440,7 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     EvictDelegatedFrame();
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::FrameSinkManager* manager =
+    viz::FrameSinkManager* manager =
         factory->GetContextFactoryPrivate()->GetFrameSinkManager();
 
     frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),

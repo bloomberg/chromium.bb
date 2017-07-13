@@ -140,6 +140,7 @@ source_set("unit_tests") {
     "//cc:test_support",
     "//cc/surfaces:surfaces",
     "//components/user_manager",
+    "//components/viz/service",
     "//device/gamepad:test_helpers",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",

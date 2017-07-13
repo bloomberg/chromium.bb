@@ -7,15 +7,17 @@
 
 #include "base/containers/flat_set.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
 
 // PrimaryBeginFrameSource echos the first BeginFrameSource in the system.
 // If the first source goes away then it will echo the new first
 // BeginFrameSource.
-class PrimaryBeginFrameSource : public BeginFrameSource,
-                                public BeginFrameObserver,
-                                public ExternalBeginFrameSourceClient {
+class CC_SURFACES_EXPORT PrimaryBeginFrameSource
+    : public BeginFrameSource,
+      public BeginFrameObserver,
+      public ExternalBeginFrameSourceClient {
  public:
   PrimaryBeginFrameSource();
   ~PrimaryBeginFrameSource() override;

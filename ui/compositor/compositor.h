@@ -41,7 +41,6 @@ namespace cc {
 class AnimationHost;
 class AnimationTimeline;
 class ContextProvider;
-class FrameSinkManager;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeFrameSink;
@@ -60,6 +59,7 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
+class FrameSinkManager;
 class HostFrameSinkManager;
 class LocalSurfaceId;
 class ResourceSettings;
@@ -108,7 +108,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   // Gets the frame sink manager.
   // TODO(staraz): Remove GetFrameSinkManager once FrameSinkManager is merged
   // into FrameSinkManagerImpl.
-  virtual cc::FrameSinkManager* GetFrameSinkManager() = 0;
+  virtual viz::FrameSinkManager* GetFrameSinkManager() = 0;
 
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;

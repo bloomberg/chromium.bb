@@ -13,32 +13,33 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
 #include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_resource_holder.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace cc {
-class FrameSinkManager;
 class Surface;
 class SurfaceManager;
 }  // namespace cc
 
 namespace viz {
+
+class FrameSinkManager;
 class CompositorFrameSinkSupportClient;
 
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public cc::BeginFrameObserver,
       public cc::SurfaceResourceHolderClient,
-      public cc::FrameSinkManagerClient,
+      public FrameSinkManagerClient,
       public cc::SurfaceClient {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
-      cc::FrameSinkManager* frame_sink_manager,
+      FrameSinkManager* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       bool is_root,
       bool handles_frame_sink_id_invalidation,
@@ -48,7 +49,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  cc::FrameSinkManager* frame_sink_manager() { return frame_sink_manager_; }
+  FrameSinkManager* frame_sink_manager() { return frame_sink_manager_; }
   cc::SurfaceManager* surface_manager() { return surface_manager_; }
 
   // SurfaceClient implementation.
@@ -82,7 +83,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                              bool handles_frame_sink_id_invalidation,
                              bool needs_sync_tokens);
 
-  void Init(cc::FrameSinkManager* frame_sink_manager);
+  void Init(FrameSinkManager* frame_sink_manager);
 
  private:
   // Updates surface references using |active_referenced_surfaces| from the most
@@ -110,7 +111,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   CompositorFrameSinkSupportClient* const client_;
 
-  cc::FrameSinkManager* frame_sink_manager_ = nullptr;
+  FrameSinkManager* frame_sink_manager_ = nullptr;
   cc::SurfaceManager* surface_manager_ = nullptr;
 
   const FrameSinkId frame_sink_id_;

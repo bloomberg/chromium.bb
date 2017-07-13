@@ -40,7 +40,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
-                            cc::FrameSinkManager* frame_sink_manager,
+                            viz::FrameSinkManager* frame_sink_manager,
                             Client* client,
                             const viz::FrameSinkId& frame_sink_id);
 
@@ -91,7 +91,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   ViewAndroid* view_;
 
-  cc::FrameSinkManager* const frame_sink_manager_;
+  viz::FrameSinkManager* const frame_sink_manager_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 

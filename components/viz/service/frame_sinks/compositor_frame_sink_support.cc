@@ -9,19 +9,19 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_reference.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 
 namespace viz {
 
 // static
 std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     CompositorFrameSinkSupportClient* client,
-    cc::FrameSinkManager* frame_sink_manager,
+    FrameSinkManager* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
@@ -306,8 +306,7 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {}
 
-void CompositorFrameSinkSupport::Init(
-    cc::FrameSinkManager* frame_sink_manager) {
+void CompositorFrameSinkSupport::Init(FrameSinkManager* frame_sink_manager) {
   frame_sink_manager_ = frame_sink_manager;
   surface_manager_ = frame_sink_manager->surface_manager();
   if (handles_frame_sink_id_invalidation_)

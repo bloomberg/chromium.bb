@@ -17,7 +17,7 @@ namespace aura {
 
 LayerTreeFrameSinkLocal::LayerTreeFrameSinkLocal(
     const viz::FrameSinkId& frame_sink_id,
-    cc::FrameSinkManager* frame_sink_manager)
+    viz::FrameSinkManager* frame_sink_manager)
     : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr),
       frame_sink_id_(frame_sink_id),
       frame_sink_manager_(frame_sink_manager) {}

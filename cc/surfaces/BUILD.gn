@@ -28,9 +28,6 @@ cc_component("surfaces") {
   sources = [
     "direct_surface_reference_factory.cc",
     "direct_surface_reference_factory.h",
-    "frame_sink_manager.cc",
-    "frame_sink_manager.h",
-    "frame_sink_manager_client.h",
     "primary_begin_frame_source.cc",
     "primary_begin_frame_source.h",
     "referenced_surface_tracker.cc",

@@ -26,7 +26,6 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -34,6 +33,7 @@
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
@@ -824,7 +824,7 @@ void GpuProcessTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-cc::FrameSinkManager* GpuProcessTransportFactory::GetFrameSinkManager() {
+viz::FrameSinkManager* GpuProcessTransportFactory::GetFrameSinkManager() {
   return BrowserMainLoop::GetInstance()->GetFrameSinkManager();
 }
 

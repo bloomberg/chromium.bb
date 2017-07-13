@@ -250,6 +250,7 @@ static_library("test_support") {
     "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//components/leveldb/public/interfaces",
+    "//components/viz/service",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/speech/proto",

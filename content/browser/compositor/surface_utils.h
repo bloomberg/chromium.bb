@@ -20,10 +20,10 @@ class SequencedTaskRunner;
 
 namespace cc {
 class CopyOutputResult;
-class FrameSinkManager;
 }  // namespace cc
 
 namespace viz {
+class FrameSinkManager;
 class HostFrameSinkManager;
 class FrameSinkManagerImpl;
 }
@@ -32,7 +32,7 @@ namespace content {
 
 CONTENT_EXPORT viz::FrameSinkId AllocateFrameSinkId();
 
-CONTENT_EXPORT cc::FrameSinkManager* GetFrameSinkManager();
+CONTENT_EXPORT viz::FrameSinkManager* GetFrameSinkManager();
 
 CONTENT_EXPORT viz::HostFrameSinkManager* GetHostFrameSinkManager();
 

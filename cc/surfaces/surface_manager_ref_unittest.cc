@@ -9,12 +9,12 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,7 +112,7 @@ class SurfaceManagerRefTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     // Start each test with a fresh SurfaceManager instance.
-    manager_ = base::MakeUnique<FrameSinkManager>(
+    manager_ = base::MakeUnique<viz::FrameSinkManager>(
         SurfaceManager::LifetimeType::REFERENCES);
   }
   void TearDown() override {
@@ -126,7 +126,7 @@ class SurfaceManagerRefTest : public testing::Test {
                      std::unique_ptr<viz::CompositorFrameSinkSupport>,
                      viz::FrameSinkIdHash>
       supports_;
-  std::unique_ptr<FrameSinkManager> manager_;
+  std::unique_ptr<viz::FrameSinkManager> manager_;
 };
 
 TEST_F(SurfaceManagerRefTest, AddReference) {
