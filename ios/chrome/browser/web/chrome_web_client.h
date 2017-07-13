@@ -6,6 +6,8 @@
 #define IOS_CHROME_BROWSER_WEB_CHROME_WEB_CLIENT_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ios/web/public/web_client.h"
@@ -19,8 +21,7 @@ class ChromeWebClient : public web::WebClient {
   // WebClient implementation.
   std::unique_ptr<web::WebMainParts> CreateWebMainParts() override;
   void PreWebViewCreation() const override;
-  void AddAdditionalSchemes(std::vector<url::SchemeWithType>*
-                                additional_standard_schemes) const override;
+  void AddAdditionalSchemes(Schemes* schemes) const override;
   std::string GetAcceptLangs(web::BrowserState* state) const override;
   std::string GetApplicationLocale() const override;
   bool IsAppSpecificURL(const GURL& url) const override;

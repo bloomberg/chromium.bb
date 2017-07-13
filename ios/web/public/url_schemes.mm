@@ -16,17 +16,14 @@
 
 namespace web {
 
-namespace {
-void AddStandardSchemeHelper(const url::SchemeWithType& scheme) {
-  url::AddStandardScheme(scheme.scheme, scheme.type);
-}
-}  // namespace
-
 void RegisterWebSchemes(bool lock_schemes) {
-  std::vector<url::SchemeWithType> additional_standard_schemes;
-  GetWebClient()->AddAdditionalSchemes(&additional_standard_schemes);
-  std::for_each(additional_standard_schemes.begin(),
-                additional_standard_schemes.end(), AddStandardSchemeHelper);
+  web::WebClient::Schemes schemes;
+  GetWebClient()->AddAdditionalSchemes(&schemes);
+  for (const auto& scheme : schemes.standard_schemes)
+    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
+
+  for (const auto& scheme : schemes.secure_schemes)
+    url::AddSecureScheme(scheme.c_str());
 
   // Prevent future modification of the schemes lists. This is to prevent
   // accidental creation of data races in the program. Add*Scheme aren't

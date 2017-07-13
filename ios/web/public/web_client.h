@@ -59,13 +59,25 @@ class WebClient {
   // Gives the embedder a chance to perform tasks before a web view is created.
   virtual void PreWebViewCreation() const {}
 
-  // Gives the embedder a chance to register its own standard and saveable url
+  // An embedder may support schemes that are otherwise unknown to lower-level
+  // components. To control how /net/url and other components interpret urls of
+  // such schemes, the embedder overrides |AddAdditionalSchemes| and adds to the
+  // vectors inside the |Schemes| structure.
+  struct Schemes {
+    Schemes();
+    ~Schemes();
+    // "Standard" (RFC3986 syntax) schemes.
+    std::vector<std::string> standard_schemes;
+    // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+    std::vector<std::string> secure_schemes;
+  };
+
+  // Gives the embedder a chance to register its own standard and secure url
   // schemes early on in the startup sequence.
-  virtual void AddAdditionalSchemes(
-      std::vector<url::SchemeWithType>* additional_standard_schemes) const {}
+  virtual void AddAdditionalSchemes(Schemes* schemes) const {}
 
   // Returns the languages used in the Accept-Languages HTTP header.
-  // Used to decide URL formating.
+  // Used to decide URL formatting.
   virtual std::string GetAcceptLangs(BrowserState* state) const;
 
   // Returns the embedding application locale string.

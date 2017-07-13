@@ -24,6 +24,9 @@ WebClient* GetWebClient() {
   return g_client;
 }
 
+WebClient::Schemes::Schemes() = default;
+WebClient::Schemes::~Schemes() = default;
+
 WebClient::WebClient() {
 }
 

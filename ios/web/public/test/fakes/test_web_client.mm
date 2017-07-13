@@ -22,15 +22,9 @@ TestWebClient::TestWebClient()
 
 TestWebClient::~TestWebClient() {}
 
-void TestWebClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* additional_standard_schemes) const {
-  url::SchemeWithType web_ui_scheme = {kTestWebUIScheme,
-                                       url::SCHEME_WITHOUT_PORT};
-  additional_standard_schemes->push_back(web_ui_scheme);
-
-  url::SchemeWithType native_scheme = {kTestNativeContentScheme,
-                                       url::SCHEME_WITHOUT_PORT};
-  additional_standard_schemes->push_back(native_scheme);
+void TestWebClient::AddAdditionalSchemes(Schemes* schemes) const {
+  schemes->standard_schemes.push_back(kTestWebUIScheme);
+  schemes->standard_schemes.push_back(kTestNativeContentScheme);
 }
 
 bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
