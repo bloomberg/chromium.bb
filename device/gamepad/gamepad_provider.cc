@@ -274,8 +274,10 @@ void GamepadProvider::DoPoll() {
       PadState& state = pad_states_.get()[i];
 
       if (state.active_state) {
-        if (state.active_state == GAMEPAD_NEWLY_ACTIVE)
+        if (state.active_state == GAMEPAD_NEWLY_ACTIVE &&
+            buffer->items[i].connected) {
           OnGamepadConnectionChange(true, i, buffer->items[i]);
+        }
         state.active_state = GAMEPAD_INACTIVE;
       }
     }
