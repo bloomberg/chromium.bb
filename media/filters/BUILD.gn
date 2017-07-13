@@ -84,12 +84,6 @@ source_set("filters") {
   # See http://crbug.com/171009
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  # TODO(a.suchit): Needs to create separate BUILD.gn file for muxers.
-  sources += [
-    "//media/muxers/webm_muxer.cc",
-    "//media/muxers/webm_muxer.h",
-  ]
-
   # TODO(a.suchit): Needs to create separate BUILD.gn file for video.
   sources += [
     "//media/video/fake_video_encode_accelerator.cc",
@@ -123,13 +117,11 @@ source_set("filters") {
 
   libs = []
 
-  # //media/muxers dependencies
-  deps += [ "//third_party/libwebm" ]
-
   public_deps = [
     "//media:media_features",
     "//media/audio",
     "//media/cdm",
+    "//media/muxers",
   ]
 
   if (proprietary_codecs) {
