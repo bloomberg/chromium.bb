@@ -14,6 +14,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -92,7 +93,14 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
     post_data_ = post_data;
   }
 
+  const scoped_refptr<base::SequencedTaskRunner>& background_task_runner()
+      const {
+    return background_task_runner_;
+  }
+
  private:
+  // Allow the test class to call AddLocallyStoredLogInfoToUploadListFile.
+  friend class WebRtcLogUploaderTest;
   FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
                            AddLocallyStoredLogInfoToUploadListFile);
   FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
@@ -160,7 +168,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   void AddLocallyStoredLogInfoToUploadListFile(
       const base::FilePath& upload_list_path,
       const std::string& local_log_id);
-  void AddUploadedLogInfoToUploadListFile(
+  static void AddUploadedLogInfoToUploadListFile(
       const base::FilePath& upload_list_path,
       const std::string& local_log_id,
       const std::string& report_id);
@@ -170,10 +178,11 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                         const WebRtcLogUploadDoneData& upload_done_data);
 
   // This is the UI thread for Chromium. Some other thread for tests.
-  base::ThreadChecker create_thread_checker_;
+  THREAD_CHECKER(create_thread_checker_);
 
-  // This is the FILE thread for Chromium. Some other thread for tests.
-  base::ThreadChecker file_thread_checker_;
+  // Background sequence where we run background, potentially blocking,
+  // operations.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // Keeps track of number of currently open logs. Must be accessed on the IO
   // thread.

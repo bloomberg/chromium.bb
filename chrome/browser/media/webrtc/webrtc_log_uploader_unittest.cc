@@ -174,6 +174,20 @@ class WebRtcLogUploaderTest : public testing::Test {
     EXPECT_EQ(dump_content, lines[i + 3]);
   }
 
+  static void AddLocallyStoredLogInfoToUploadListFile(
+      WebRtcLogUploader* log_uploader,
+      const base::FilePath& upload_list_path,
+      const std::string& local_log_id) {
+    base::RunLoop run_loop;
+    log_uploader->background_task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(
+            &WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile,
+            base::Unretained(log_uploader), upload_list_path, local_log_id),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   void FlushIOThread() {
     base::RunLoop run_loop;
     content::BrowserThread::PostTask(
@@ -193,10 +207,10 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
       new WebRtcLogUploader());
 
-  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                               kTestLocalId);
-  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                               kTestLocalId);
+  AddLocallyStoredLogInfoToUploadListFile(webrtc_log_uploader.get(),
+                                          test_list_path_, kTestLocalId);
+  AddLocallyStoredLogInfoToUploadListFile(webrtc_log_uploader.get(),
+                                          test_list_path_, kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
@@ -205,8 +219,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                               kTestLocalId);
+  AddLocallyStoredLogInfoToUploadListFile(webrtc_log_uploader.get(),
+                                          test_list_path_, kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
@@ -214,8 +228,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(60));
   ASSERT_TRUE(VerifyLastLineHasAllInfo());
 
-  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                               kTestLocalId);
+  AddLocallyStoredLogInfoToUploadListFile(webrtc_log_uploader.get(),
+                                          test_list_path_, kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
@@ -231,8 +245,8 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
       new WebRtcLogUploader());
 
-  webrtc_log_uploader->AddLocallyStoredLogInfoToUploadListFile(test_list_path_,
-                                                               kTestLocalId);
+  AddLocallyStoredLogInfoToUploadListFile(webrtc_log_uploader.get(),
+                                          test_list_path_, kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(1));
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
@@ -287,8 +301,16 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
 
   std::unique_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
-  webrtc_log_uploader->LoggingStoppedDoUpload(
-      std::move(log), base::MakeUnique<MetaDataMap>(), upload_done_data);
+
+  base::RunLoop run_loop;
+  webrtc_log_uploader->background_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
+                     base::Unretained(webrtc_log_uploader.get()),
+                     std::move(log), base::MakeUnique<MetaDataMap>(),
+                     upload_done_data),
+      run_loop.QuitClosure());
+  run_loop.Run();
 
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);
