@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
@@ -26,28 +27,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
-#include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 
 namespace predictors {
 
 namespace {
-
-// Sorted by decreasing likelihood according to HTTP archive.
-const char* kFontMimeTypes[] = {"font/woff2",
-                                "application/x-font-woff",
-                                "application/font-woff",
-                                "application/font-woff2",
-                                "font/x-woff",
-                                "application/x-font-ttf",
-                                "font/woff",
-                                "font/ttf",
-                                "application/x-font-otf",
-                                "x-font/woff",
-                                "application/font-sfnt",
-                                "application/font-ttf"};
 
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
@@ -66,31 +51,9 @@ float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
          (redirect.number_of_hits() + redirect.number_of_misses());
 }
 
-void UpdateOrAddToOrigins(
-    std::map<GURL, ResourcePrefetchPredictor::OriginRequestSummary>* summaries,
-    const ResourcePrefetchPredictor::URLRequestSummary& request_summary) {
-  const GURL& request_url = request_summary.request_url;
-  DCHECK(request_url.is_valid());
-  if (!request_url.is_valid())
-    return;
-
-  GURL origin = request_url.GetOrigin();
-  auto it = summaries->find(origin);
-  if (it == summaries->end()) {
-    ResourcePrefetchPredictor::OriginRequestSummary summary;
-    summary.origin = origin;
-    summary.first_occurrence = summaries->size();
-    it = summaries->insert({origin, summary}).first;
-  }
-
-  it->second.always_access_network |=
-      request_summary.always_revalidate || request_summary.is_no_store;
-  it->second.accessed_network |= request_summary.network_accessed;
-}
-
 void InitializeOriginStatFromOriginRequestSummary(
     OriginStat* origin,
-    const ResourcePrefetchPredictor::OriginRequestSummary& summary) {
+    const OriginRequestSummary& summary) {
   origin->set_origin(summary.origin.spec());
   origin->set_number_of_hits(1);
   origin->set_average_position(summary.first_occurrence + 1);
@@ -101,8 +64,6 @@ void InitializeOriginStatFromOriginRequestSummary(
 // Used to fetch the visit count for a URL from the History database.
 class GetUrlVisitCountTask : public history::HistoryDBTask {
  public:
-  using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
-  using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
   typedef base::OnceCallback<void(size_t,  // URL visit count.
                                   const PageRequestSummary&)>
       VisitInfoCallback;
@@ -171,57 +132,6 @@ PreconnectPrediction::~PreconnectPrediction() = default;
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor static functions.
 
-// static
-content::ResourceType ResourcePrefetchPredictor::GetResourceType(
-    content::ResourceType resource_type,
-    const std::string& mime_type) {
-  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
-  // of mime types, because these resource types don't communicate how the
-  // resources will be used.
-  if (resource_type == content::RESOURCE_TYPE_PREFETCH ||
-      resource_type == content::RESOURCE_TYPE_SUB_RESOURCE ||
-      resource_type == content::RESOURCE_TYPE_XHR) {
-    return GetResourceTypeFromMimeType(mime_type,
-                                       content::RESOURCE_TYPE_LAST_TYPE);
-  }
-  return resource_type;
-}
-
-// static
-bool ResourcePrefetchPredictor::IsNoStore(const net::URLRequest& response) {
-  if (response.was_cached())
-    return false;
-
-  const net::HttpResponseInfo& response_info = response.response_info();
-  if (!response_info.headers.get())
-    return false;
-  return response_info.headers->HasHeaderValue("cache-control", "no-store");
-}
-
-// static
-content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
-    const std::string& mime_type,
-    content::ResourceType fallback) {
-  if (mime_type.empty()) {
-    return fallback;
-  } else if (mime_util::IsSupportedImageMimeType(mime_type)) {
-    return content::RESOURCE_TYPE_IMAGE;
-  } else if (mime_util::IsSupportedJavascriptMimeType(mime_type)) {
-    return content::RESOURCE_TYPE_SCRIPT;
-  } else if (net::MatchesMimeType("text/css", mime_type)) {
-    return content::RESOURCE_TYPE_STYLESHEET;
-  } else {
-    bool found =
-        std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
-                    [&mime_type](const std::string& mime) {
-                      return net::MatchesMimeType(mime, mime_type);
-                    });
-    if (found)
-      return content::RESOURCE_TYPE_FONT_RESOURCE;
-  }
-  return fallback;
-}
-
 bool ResourcePrefetchPredictor::GetRedirectEndpoint(
     const std::string& entry_point,
     const RedirectDataMap& redirect_data,
@@ -267,86 +177,6 @@ bool ResourcePrefetchPredictor::GetRedirectEndpoint(
 
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor nested types.
-
-ResourcePrefetchPredictor::OriginRequestSummary::OriginRequestSummary()
-    : origin(),
-      always_access_network(false),
-      accessed_network(false),
-      first_occurrence(0) {}
-
-ResourcePrefetchPredictor::OriginRequestSummary::OriginRequestSummary(
-    const OriginRequestSummary& other) = default;
-
-ResourcePrefetchPredictor::OriginRequestSummary::~OriginRequestSummary() {}
-
-ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
-    : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
-      priority(net::IDLE),
-      before_first_contentful_paint(false),
-      was_cached(false),
-      has_validators(false),
-      always_revalidate(false),
-      is_no_store(false),
-      network_accessed(false) {}
-
-ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
-    const URLRequestSummary& other) = default;
-
-ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
-}
-
-// static
-bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
-    const net::URLRequest& request,
-    URLRequestSummary* summary) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(&request);
-  if (!request_info)
-    return false;
-
-  // This method is called when the response is started, so this field reflects
-  // the time at which the response began, not when it finished, as would
-  // arguably be ideal. This means if firstContentfulPaint happens after the
-  // response has started, but before it's finished, we will erroneously mark
-  // the resource as having been loaded before firstContentfulPaint. This is
-  // a rare and insignificant enough occurrence that we opt to record the time
-  // here for the sake of simplicity.
-  summary->response_time = base::TimeTicks::Now();
-  summary->resource_url = request.original_url();
-  summary->request_url = request.url();
-  content::ResourceType resource_type_from_request =
-      request_info->GetResourceType();
-  summary->priority = request.priority();
-  request.GetMimeType(&summary->mime_type);
-  summary->was_cached = request.was_cached();
-  summary->resource_type =
-      GetResourceType(resource_type_from_request, summary->mime_type);
-
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      request.response_info().headers;
-  if (headers.get()) {
-    summary->has_validators = headers->HasValidators();
-    // RFC 2616, section 14.9.
-    summary->always_revalidate =
-        headers->HasHeaderValue("cache-control", "no-cache") ||
-        headers->HasHeaderValue("pragma", "no-cache") ||
-        headers->HasHeaderValue("vary", "*");
-    summary->is_no_store = IsNoStore(request);
-  }
-  summary->network_accessed = request.response_info().network_accessed;
-  return true;
-}
-
-ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
-    const GURL& i_main_frame_url)
-    : main_frame_url(i_main_frame_url),
-      initial_url(i_main_frame_url),
-      first_contentful_paint(base::TimeTicks::Max()) {}
-
-ResourcePrefetchPredictor::PageRequestSummary::PageRequestSummary(
-    const PageRequestSummary& other) = default;
-
-ResourcePrefetchPredictor::PageRequestSummary::~PageRequestSummary() {}
 
 ResourcePrefetchPredictor::Prediction::Prediction() = default;
 
@@ -412,70 +242,6 @@ void ResourcePrefetchPredictor::StartInitialization() {
                                   std::move(reply));
 }
 
-void ResourcePrefetchPredictor::RecordURLRequest(
-    const URLRequestSummary& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
-
-  CHECK_EQ(request.resource_type, content::RESOURCE_TYPE_MAIN_FRAME);
-  OnMainFrameRequest(request);
-}
-
-void ResourcePrefetchPredictor::RecordURLResponse(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
-
-  if (response.resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    OnSubresourceResponse(response);
-}
-
-void ResourcePrefetchPredictor::RecordURLRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
-
-  if (response.resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-    OnMainFrameRedirect(response);
-  else
-    OnSubresourceRedirect(response);
-}
-
-void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
-    const NavigationID& navigation_id) {
-  switch (initialization_state_) {
-    case NOT_INITIALIZED:
-      StartInitialization();
-      break;
-    case INITIALIZING:
-      break;
-    case INITIALIZED:
-      // WebContents can return an empty URL if the navigation entry
-      // corresponding to the navigation has not been created yet.
-      if (!navigation_id.main_frame_url.is_empty())
-        OnNavigationComplete(navigation_id);
-      break;
-    default:
-      NOTREACHED() << "Unexpected initialization_state_: "
-                   << initialization_state_;
-  }
-}
-
-void ResourcePrefetchPredictor::RecordFirstContentfulPaint(
-    const NavigationID& navigation_id,
-    const base::TimeTicks& first_contentful_paint) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (initialization_state_ != INITIALIZED)
-    return;
-
-  NavigationMap::iterator nav_it = inflight_navigations_.find(navigation_id);
-  if (nav_it != inflight_navigations_.end())
-    nav_it->second->first_contentful_paint = first_contentful_paint;
-}
-
 bool ResourcePrefetchPredictor::IsUrlPrefetchable(
     const GURL& main_frame_url) const {
   return GetPrefetchData(main_frame_url, nullptr);
@@ -503,107 +269,19 @@ void ResourcePrefetchPredictor::Shutdown() {
   history_service_observer_.RemoveAll();
 }
 
-void ResourcePrefetchPredictor::OnMainFrameRequest(
-    const URLRequestSummary& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  CleanupAbandonedNavigations(request.navigation_id);
-
-  // New empty navigation entry.
-  const GURL& main_frame_url = request.navigation_id.main_frame_url;
-  inflight_navigations_.emplace(
-      request.navigation_id,
-      base::MakeUnique<PageRequestSummary>(main_frame_url));
-}
-
-void ResourcePrefetchPredictor::OnMainFrameRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  const GURL& main_frame_url = response.navigation_id.main_frame_url;
-  std::unique_ptr<PageRequestSummary> summary;
-  NavigationMap::iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it != inflight_navigations_.end()) {
-    summary = std::move(nav_it->second);
-    inflight_navigations_.erase(nav_it);
+void ResourcePrefetchPredictor::RecordPageRequestSummary(
+    std::unique_ptr<PageRequestSummary> summary) {
+  // Make sure initialization is done or start initialization if necessary.
+  if (initialization_state_ == NOT_INITIALIZED) {
+    StartInitialization();
+    return;
+  } else if (initialization_state_ == INITIALIZING) {
+    return;
+  } else if (initialization_state_ != INITIALIZED) {
+    NOTREACHED() << "Unexpected initialization_state_: "
+                 << initialization_state_;
+    return;
   }
-
-  // The redirect url may be empty if the URL was invalid.
-  if (response.redirect_url.is_empty())
-    return;
-
-  // If we lost the information about the first hop for some reason.
-  if (!summary) {
-    summary = base::MakeUnique<PageRequestSummary>(main_frame_url);
-  }
-
-  // A redirect will not lead to another OnMainFrameRequest call, so record the
-  // redirect url as a new navigation id and save the initial url.
-  NavigationID navigation_id(response.navigation_id);
-  navigation_id.main_frame_url = response.redirect_url;
-  summary->main_frame_url = response.redirect_url;
-  inflight_navigations_.emplace(navigation_id, std::move(summary));
-}
-
-void ResourcePrefetchPredictor::OnSubresourceResponse(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  NavigationMap::const_iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it == inflight_navigations_.end())
-    return;
-  auto& page_request_summary = *nav_it->second;
-
-  if (!response.is_no_store)
-    page_request_summary.subresource_requests.push_back(response);
-
-  if (config_.is_origin_learning_enabled)
-    UpdateOrAddToOrigins(&page_request_summary.origins, response);
-}
-
-void ResourcePrefetchPredictor::OnSubresourceRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  if (!config_.is_origin_learning_enabled)
-    return;
-
-  NavigationMap::const_iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it == inflight_navigations_.end())
-    return;
-  auto& page_request_summary = *nav_it->second;
-  UpdateOrAddToOrigins(&page_request_summary.origins, response);
-}
-
-void ResourcePrefetchPredictor::OnNavigationComplete(
-    const NavigationID& nav_id_without_timing_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(INITIALIZED, initialization_state_);
-
-  NavigationMap::iterator nav_it =
-      inflight_navigations_.find(nav_id_without_timing_info);
-  if (nav_it == inflight_navigations_.end())
-    return;
-
-  // Remove the navigation from the inflight navigations.
-  std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
-  inflight_navigations_.erase(nav_it);
-
-  // Set before_first_contentful paint for each resource.
-  for (auto& request_summary : summary->subresource_requests) {
-    request_summary.before_first_contentful_paint =
-        request_summary.response_time < summary->first_contentful_paint;
-  }
-
-  if (stats_collector_)
-    stats_collector_->RecordPageRequestSummary(*summary);
 
   // Kick off history lookup to determine if we should record the URL.
   history::HistoryService* history_service =
@@ -758,29 +436,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
     observer_->OnPredictorInitialized();
 }
 
-void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
-    const NavigationID& navigation_id) {
-  if (stats_collector_)
-    stats_collector_->CleanupAbandonedStats();
-
-  static const base::TimeDelta max_navigation_age =
-      base::TimeDelta::FromSeconds(config_.max_navigation_lifetime_seconds);
-
-  base::TimeTicks time_now = base::TimeTicks::Now();
-  for (NavigationMap::iterator it = inflight_navigations_.begin();
-       it != inflight_navigations_.end();) {
-    if ((it->first.tab_id == navigation_id.tab_id) ||
-        (time_now - it->first.creation_time > max_navigation_age)) {
-      inflight_navigations_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-}
-
 void ResourcePrefetchPredictor::DeleteAllUrls() {
-  inflight_navigations_.clear();
-
   url_resource_data_->DeleteAllData();
   host_resource_data_->DeleteAllData();
   url_redirect_data_->DeleteAllData();
@@ -1181,7 +837,6 @@ void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
 void ResourcePrefetchPredictor::ConnectToHistoryService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZING, initialization_state_);
-  DCHECK(inflight_navigations_.empty());
 
   // Register for HistoryServiceLoading if it is not ready.
   history::HistoryService* history_service =

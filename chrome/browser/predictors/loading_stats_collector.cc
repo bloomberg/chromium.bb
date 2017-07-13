@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/predictors/loading_data_collector.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 
 namespace predictors {
 
@@ -15,7 +17,7 @@ namespace {
 
 void ReportPredictionAccuracy(
     const ResourcePrefetchPredictor::Prediction& prediction,
-    const ResourcePrefetchPredictor::PageRequestSummary& summary) {
+    const PageRequestSummary& summary) {
   const std::vector<GURL>& predicted_urls = prediction.subresource_urls;
   if (predicted_urls.empty() || summary.subresource_requests.empty())
     return;
@@ -69,9 +71,8 @@ void ReportPredictionAccuracy(
       static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
 }
 
-void ReportPrefetchAccuracy(
-    const ResourcePrefetcher::PrefetcherStats& stats,
-    const std::vector<ResourcePrefetchPredictor::URLRequestSummary>& requests) {
+void ReportPrefetchAccuracy(const ResourcePrefetcher::PrefetcherStats& stats,
+                            const std::vector<URLRequestSummary>& requests) {
   if (stats.requests_stats.empty())
     return;
 
@@ -135,9 +136,7 @@ void LoadingStatsCollector::RecordPrefetcherStats(
   auto it = prefetcher_stats_.find(main_frame_url);
   if (it != prefetcher_stats_.end()) {
     // No requests -> everything is a miss.
-    ReportPrefetchAccuracy(
-        *it->second,
-        std::vector<ResourcePrefetchPredictor::URLRequestSummary>());
+    ReportPrefetchAccuracy(*it->second, std::vector<URLRequestSummary>());
     prefetcher_stats_.erase(it);
   }
 
@@ -145,7 +144,7 @@ void LoadingStatsCollector::RecordPrefetcherStats(
 }
 
 void LoadingStatsCollector::RecordPageRequestSummary(
-    const ResourcePrefetchPredictor::PageRequestSummary& summary) {
+    const PageRequestSummary& summary) {
   const GURL& initial_url = summary.initial_url;
 
   ResourcePrefetchPredictor::Prediction prediction;
@@ -164,9 +163,7 @@ void LoadingStatsCollector::CleanupAbandonedStats() {
   for (auto it = prefetcher_stats_.begin(); it != prefetcher_stats_.end();) {
     if (time_now - it->second->start_time > max_stats_age_) {
       // No requests -> everything is a miss.
-      ReportPrefetchAccuracy(
-          *it->second,
-          std::vector<ResourcePrefetchPredictor::URLRequestSummary>());
+      ReportPrefetchAccuracy(*it->second, std::vector<URLRequestSummary>());
       it = prefetcher_stats_.erase(it);
     } else {
       ++it;

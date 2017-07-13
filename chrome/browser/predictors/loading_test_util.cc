@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <memory>
+#include <utility>
 
 #include "content/public/browser/resource_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -28,8 +29,6 @@ bool AlmostEqual(const double x, const double y) {
 
 namespace predictors {
 
-using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
-using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
 using Prediction = ResourcePrefetchPredictor::Prediction;
 
 MockResourcePrefetchPredictor::MockResourcePrefetchPredictor(
@@ -130,6 +129,8 @@ PageRequestSummary CreatePageRequestSummary(
   PageRequestSummary summary(main_frame_gurl);
   summary.initial_url = GURL(initial_url);
   summary.subresource_requests = subresource_requests;
+  for (auto& request_summary : subresource_requests)
+    summary.UpdateOrAddToOrigins(request_summary);
   return summary;
 }
 
@@ -159,6 +160,16 @@ URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
   summary.always_revalidate = always_revalidate;
   summary.is_no_store = false;
   summary.network_accessed = true;
+  return summary;
+}
+
+URLRequestSummary CreateRedirectRequestSummary(
+    SessionID::id_type session_id,
+    const std::string& main_frame_url,
+    const std::string& redirect_url) {
+  URLRequestSummary summary =
+      CreateURLRequestSummary(session_id, main_frame_url);
+  summary.redirect_url = GURL(redirect_url);
   return summary;
 }
 
@@ -330,11 +341,20 @@ std::ostream& operator<<(std::ostream& os, const OriginStat& origin) {
             << origin.accessed_network() << "]";
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const OriginRequestSummary& summary) {
+  return os << "[" << summary.origin << "," << summary.always_access_network
+            << "," << summary.accessed_network << ","
+            << summary.first_occurrence << "]";
+}
+
 std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
   os << "[" << summary.main_frame_url << "," << summary.initial_url << "]"
      << std::endl;
   for (const auto& request : summary.subresource_requests)
     os << "\t\t" << request << std::endl;
+  for (const auto& pair : summary.origins)
+    os << "\t\t" << pair.first << ":" << pair.second << std::endl;
   return os;
 }
 
@@ -416,7 +436,8 @@ bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
 bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
   return lhs.main_frame_url == rhs.main_frame_url &&
          lhs.initial_url == rhs.initial_url &&
-         lhs.subresource_requests == rhs.subresource_requests;
+         lhs.subresource_requests == rhs.subresource_requests &&
+         lhs.origins == rhs.origins;
 }
 
 bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
@@ -430,6 +451,14 @@ bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
          lhs.redirect_url == rhs.redirect_url &&
          lhs.has_validators == rhs.has_validators &&
          lhs.always_revalidate == rhs.always_revalidate;
+}
+
+bool operator==(const OriginRequestSummary& lhs,
+                const OriginRequestSummary& rhs) {
+  return lhs.origin == rhs.origin &&
+         lhs.always_access_network == rhs.always_access_network &&
+         lhs.accessed_network == rhs.accessed_network &&
+         lhs.first_occurrence == rhs.first_occurrence;
 }
 
 bool operator==(const OriginData& lhs, const OriginData& rhs) {

@@ -50,22 +50,19 @@ class LoadingPredictorObserver {
 
  private:
   void OnRequestStartedOnUIThread(
-      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
-          summary,
+      std::unique_ptr<predictors::URLRequestSummary> summary,
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const GURL& main_frame_url,
       const base::TimeTicks& creation_time) const;
   void OnRequestRedirectedOnUIThread(
-      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
-          summary,
+      std::unique_ptr<predictors::URLRequestSummary> summary,
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const GURL& main_frame_url,
       const base::TimeTicks& creation_time) const;
   void OnResponseStartedOnUIThread(
-      std::unique_ptr<predictors::ResourcePrefetchPredictor::URLRequestSummary>
-          summary,
+      std::unique_ptr<predictors::URLRequestSummary> summary,
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const GURL& main_frame_url,

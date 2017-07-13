@@ -12,11 +12,14 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
 #include "url/gurl.h"
 
 namespace predictors {
+
+class ResourcePrefetchPredictor;
+struct LoadingPredictorConfig;
+struct PageRequestSummary;
 
 namespace internal {
 constexpr char kResourcePrefetchPredictorPrecisionHistogram[] =
@@ -56,8 +59,7 @@ class LoadingStatsCollector {
   // actions taken for a given page load if any. The summary is compared with a
   // prediction by ResourcePrefetchPredictor as well.
   // All results are reported to UMA.
-  void RecordPageRequestSummary(
-      const ResourcePrefetchPredictor::PageRequestSummary& summary);
+  void RecordPageRequestSummary(const PageRequestSummary& summary);
   // Evicts all stale stats that are kept in memory. All speculative actions are
   // reported and considered as waste.
   void CleanupAbandonedStats();

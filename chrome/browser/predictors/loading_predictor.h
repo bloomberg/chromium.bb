@@ -66,12 +66,9 @@ class LoadingPredictor : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  void OnMainFrameRequest(
-      const ResourcePrefetchPredictor::URLRequestSummary& summary);
-  void OnMainFrameRedirect(
-      const ResourcePrefetchPredictor::URLRequestSummary& summary);
-  void OnMainFrameResponse(
-      const ResourcePrefetchPredictor::URLRequestSummary& summary);
+  void OnMainFrameRequest(const URLRequestSummary& summary);
+  void OnMainFrameRedirect(const URLRequestSummary& summary);
+  void OnMainFrameResponse(const URLRequestSummary& summary);
 
   base::WeakPtr<LoadingPredictor> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();

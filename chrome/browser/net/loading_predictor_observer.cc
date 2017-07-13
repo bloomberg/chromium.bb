@@ -22,8 +22,7 @@ class WebContents;
 using content::BrowserThread;
 using predictors::LoadingPredictor;
 using predictors::LoadingDataCollector;
-using URLRequestSummary =
-    predictors::ResourcePrefetchPredictor::URLRequestSummary;
+using predictors::URLRequestSummary;
 
 namespace {
 

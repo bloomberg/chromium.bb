@@ -4,11 +4,13 @@
 #ifndef CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_
 #define CHROME_BROWSER_PREDICTORS_LOADING_TEST_UTIL_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "components/sessions/core/session_id.h"
@@ -27,6 +29,11 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
                                 Profile* profile);
   ~MockResourcePrefetchPredictor();
 
+  virtual void RecordPageRequestSummary(
+      std::unique_ptr<PageRequestSummary> summary) {
+    RecordPageRequestSummaryProxy(summary.get());
+  }
+
   MOCK_CONST_METHOD2(GetPrefetchData,
                      bool(const GURL&, ResourcePrefetchPredictor::Prediction*));
   MOCK_METHOD0(StartInitialization, void());
@@ -34,6 +41,7 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
   MOCK_METHOD2(StartPrefetching,
                void(const GURL&, const ResourcePrefetchPredictor::Prediction&));
   MOCK_METHOD1(StopPrefeching, void(const GURL&));
+  MOCK_METHOD1(RecordPageRequestSummaryProxy, void(PageRequestSummary*));
 };
 
 void InitializeResourceData(ResourceData* resource,
@@ -72,13 +80,12 @@ OriginData CreateOriginData(const std::string& host,
 NavigationID CreateNavigationID(SessionID::id_type tab_id,
                                 const std::string& main_frame_url);
 
-ResourcePrefetchPredictor::PageRequestSummary CreatePageRequestSummary(
+PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<ResourcePrefetchPredictor::URLRequestSummary>&
-        subresource_requests);
+    const std::vector<URLRequestSummary>& subresource_requests);
 
-ResourcePrefetchPredictor::URLRequestSummary CreateURLRequestSummary(
+URLRequestSummary CreateURLRequestSummary(
     SessionID::id_type tab_id,
     const std::string& main_frame_url,
     const std::string& resource_url = std::string(),
@@ -89,6 +96,11 @@ ResourcePrefetchPredictor::URLRequestSummary CreateURLRequestSummary(
     const std::string& redirect_url = std::string(),
     bool has_validators = false,
     bool always_revalidate = false);
+
+URLRequestSummary CreateRedirectRequestSummary(
+    SessionID::id_type session_id,
+    const std::string& main_frame_url,
+    const std::string& redirect_url);
 
 ResourcePrefetchPredictor::Prediction CreatePrediction(
     const std::string& main_frame_key,
@@ -170,12 +182,10 @@ std::ostream& operator<<(std::ostream& stream, const PrefetchData& data);
 std::ostream& operator<<(std::ostream& stream, const ResourceData& resource);
 std::ostream& operator<<(std::ostream& stream, const RedirectData& data);
 std::ostream& operator<<(std::ostream& stream, const RedirectStat& redirect);
-std::ostream& operator<<(
-    std::ostream& stream,
-    const ResourcePrefetchPredictor::PageRequestSummary& summary);
-std::ostream& operator<<(
-    std::ostream& stream,
-    const ResourcePrefetchPredictor::URLRequestSummary& summary);
+std::ostream& operator<<(std::ostream& stream,
+                         const PageRequestSummary& summary);
+std::ostream& operator<<(std::ostream& stream,
+                         const URLRequestSummary& summary);
 std::ostream& operator<<(std::ostream& stream, const NavigationID& id);
 
 std::ostream& operator<<(std::ostream& os, const OriginData& data);
@@ -187,10 +197,10 @@ bool operator==(const PrefetchData& lhs, const PrefetchData& rhs);
 bool operator==(const ResourceData& lhs, const ResourceData& rhs);
 bool operator==(const RedirectData& lhs, const RedirectData& rhs);
 bool operator==(const RedirectStat& lhs, const RedirectStat& rhs);
-bool operator==(const ResourcePrefetchPredictor::PageRequestSummary& lhs,
-                const ResourcePrefetchPredictor::PageRequestSummary& rhs);
-bool operator==(const ResourcePrefetchPredictor::URLRequestSummary& lhs,
-                const ResourcePrefetchPredictor::URLRequestSummary& rhs);
+bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs);
+bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs);
+bool operator==(const OriginRequestSummary& lhs,
+                const OriginRequestSummary& rhs);
 bool operator==(const OriginData& lhs, const OriginData& rhs);
 bool operator==(const OriginStat& lhs, const OriginStat& rhs);
 bool operator==(const PreconnectPrediction& lhs,
