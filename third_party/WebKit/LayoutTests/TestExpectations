@@ -241,6 +241,12 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ 
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 
+#### third_party/WebKit/LayoutTests/external/wpt/css-paint-api
+#### Passed: 50
+#### Skipped: 2
+crbug.com/578252 external/wpt/css-paint-api/background-image-tiled.html [ Skip ]
+crbug.com/578252 external/wpt/css-paint-api/geometry-background-image-tiled-001.html [ Skip ]
+
 #### third_party/WebKit/LayoutTests/overflow
 crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
@@ -2777,14 +2783,6 @@ crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ F
 crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]
-
-# SK_SUPPORT_LEGACY_BILERP_IGNORING_HACK
-crbug.com/740350 external/wpt/css-paint-api/background-image-tiled.html [ Pass Failure ]
-crbug.com/740350 external/wpt/css-paint-api/geometry-background-image-tiled-001.html [ Pass Failure ]
-crbug.com/740350 virtual/android/fast/rootscroller/browser-controls-gradient-background.html [ Pass Failure ]
-crbug.com/740350 virtual/android/fast/rootscroller/browser-controls-gradient-background-iframe-scroller.html [ Pass Failure ]
-crbug.com/740350 fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ NeedsManualRebaseline ]
-crbug.com/740350 fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ NeedsManualRebaseline ]
 
 # Sheriff failures 2017-06-23
 crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
