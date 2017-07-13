@@ -187,4 +187,8 @@ test("keyboard_unittests") {
     "//ui/resources:ui_test_pak",
     "//ui/wm",
   ]
+
+  data_deps = [
+    "//ui/resources:ui_test_pak",
+  ]
 }

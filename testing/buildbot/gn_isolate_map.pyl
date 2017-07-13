@@ -616,7 +616,7 @@
   },
   "keyboard_unittests": {
     "label": "//ui/keyboard:keyboard_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "latency_unittests": {
     "label": "//ui/latency:latency_unittests",
