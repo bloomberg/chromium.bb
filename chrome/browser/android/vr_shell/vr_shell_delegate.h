@@ -96,6 +96,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };
 
+bool RegisterVrShellDelegate(JNIEnv* env);
+
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_DELEGATE_H_
