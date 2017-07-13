@@ -5,8 +5,9 @@
 #include "services/ui/ws/platform_display_default.h"
 
 #include "base/time/time.h"
+#include "services/ui/common/image_cursors_set.h"
+#include "services/ui/ws/threaded_image_cursors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/cursor/image_cursors.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -104,6 +105,8 @@ class TestOzonePlatform : public OzonePlatform {
 // locally and on the trybots on 06/13/2017, while passing when run on the CQ
 // and the builders. crbug.com/732987
 TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
+  // ThreadTaskRunnerHandle needed required by ThreadedImageCursors.
+  base::MessageLoop loop;
   // Setup ozone so the display can be initialized.
   TestOzonePlatform platform;
 
@@ -112,8 +115,14 @@ TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
   metrics.bounds_in_pixels = gfx::Rect(1024, 768);
   metrics.device_scale_factor = 1.f;
   metrics.ui_scale_factor = 1.f;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  ImageCursorsSet image_cursors_set;
+  std::unique_ptr<ThreadedImageCursors> threaded_image_cursors =
+      base::MakeUnique<ThreadedImageCursors>(task_runner,
+                                             image_cursors_set.GetWeakPtr());
   PlatformDisplayDefault display(nullptr, metrics,
-                                 std::unique_ptr<ImageCursors>());
+                                 std::move(threaded_image_cursors));
 
   // Initialize the display with a test EventSink so we can sense events.
   TestEventSink event_sink;

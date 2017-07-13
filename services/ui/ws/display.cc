@@ -71,7 +71,8 @@ void Display::Init(const display::ViewportMetrics& metrics,
 
   CreateRootWindow(metrics.bounds_in_pixels.size());
 
-  platform_display_ = PlatformDisplay::Create(root_.get(), metrics);
+  platform_display_ = PlatformDisplay::Create(
+      root_.get(), metrics, window_server_->GetThreadedImageCursorsFactory());
   platform_display_->Init(this);
 }
 

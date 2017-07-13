@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
@@ -23,6 +22,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/clipboard/clipboard_impl.h"
+#include "services/ui/common/image_cursors_set.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ime/ime_driver_bridge.h"
@@ -33,6 +33,8 @@
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_sink_manager_client_binding.h"
 #include "services/ui/ws/gpu_host.h"
+#include "services/ui/ws/threaded_image_cursors.h"
+#include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_server.h"
@@ -41,6 +43,7 @@
 #include "services/ui/ws/window_tree_binding.h"
 #include "services/ui/ws/window_tree_factory.h"
 #include "services/ui/ws/window_tree_host_factory.h"
+#include "ui/base/cursor/image_cursors.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -76,6 +79,48 @@ const char kResourceFileStrings[] = "mus_app_resources_strings.pak";
 const char kResourceFile100[] = "mus_app_resources_100.pak";
 const char kResourceFile200[] = "mus_app_resources_200.pak";
 
+class ThreadedImageCursorsFactoryImpl : public ws::ThreadedImageCursorsFactory {
+ public:
+  // Uses the same InProcessConfig as the UI Service. |config| will be null when
+  // the UI Service runs in it's own separate process as opposed to the WM's
+  // process.
+  explicit ThreadedImageCursorsFactoryImpl(
+      const Service::InProcessConfig* config) {
+    if (config) {
+      resource_runner_ = config->resource_runner;
+      image_cursors_set_weak_ptr_ = config->image_cursors_set_weak_ptr;
+      DCHECK(resource_runner_);
+    }
+  }
+
+  ~ThreadedImageCursorsFactoryImpl() override {}
+
+  // ws::ThreadedImageCursorsFactory:
+  std::unique_ptr<ws::ThreadedImageCursors> CreateCursors() override {
+    // |resource_runner_| will not be initialized if and only if UI Service runs
+    // in it's own separate process. In this case we can (lazily) initialize it
+    // to the current thread (i.e. the UI Services's thread). We also initialize
+    // the local |image_cursors_set_| and make |image_cursors_set_weak_ptr_|
+    // point to it.
+    if (!resource_runner_) {
+      resource_runner_ = base::ThreadTaskRunnerHandle::Get();
+      image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
+      image_cursors_set_weak_ptr_ = image_cursors_set_->GetWeakPtr();
+    }
+    return base::MakeUnique<ws::ThreadedImageCursors>(
+        resource_runner_, image_cursors_set_weak_ptr_);
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> resource_runner_;
+  base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr_;
+
+  // Used when UI Service doesn't run inside WM's process.
+  std::unique_ptr<ui::ImageCursorsSet> image_cursors_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadedImageCursorsFactoryImpl);
+};
+
 }  // namespace
 
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
@@ -91,7 +136,16 @@ struct Service::UserState {
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-Service::Service() : test_config_(false), ime_registrar_(&ime_driver_) {}
+Service::InProcessConfig::InProcessConfig() = default;
+
+Service::InProcessConfig::~InProcessConfig() = default;
+
+Service::Service(const InProcessConfig* config)
+    : is_in_process_(config != nullptr),
+      threaded_image_cursors_factory_(
+          base::MakeUnique<ThreadedImageCursorsFactoryImpl>(config)),
+      test_config_(false),
+      ime_registrar_(&ime_driver_) {}
 
 Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -110,7 +164,7 @@ Service::~Service() {
 }
 
 bool Service::InitializeResources(service_manager::Connector* connector) {
-  if (ui::ResourceBundle::HasSharedInstance())
+  if (is_in_process() || ui::ResourceBundle::HasSharedInstance())
     return true;
 
   std::set<std::string> resource_paths;
@@ -188,9 +242,12 @@ void Service::OnStart() {
   // Assume a client will change the layout to an appropriate configuration.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
-  client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
-  gfx::ClientNativePixmapFactory::SetInstance(
-      client_native_pixmap_factory_.get());
+
+  if (!is_in_process()) {
+    client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
+    gfx::ClientNativePixmapFactory::SetInstance(
+        client_native_pixmap_factory_.get());
+  }
 
   DCHECK(gfx::ClientNativePixmapFactory::GetInstance());
 
@@ -323,7 +380,10 @@ void Service::OnWillCreateTreeForWindowManager(
   if (window_server_->display_creation_config() ==
       ws::DisplayCreationConfig::MANUAL) {
 #if defined(USE_OZONE) && defined(OS_CHROMEOS)
-    screen_manager_ = base::MakeUnique<display::ScreenManagerForwarding>();
+    display::ScreenManagerForwarding::Mode mode =
+        is_in_process() ? display::ScreenManagerForwarding::Mode::IN_WM_PROCESS
+                        : display::ScreenManagerForwarding::Mode::OWN_PROCESS;
+    screen_manager_ = base::MakeUnique<display::ScreenManagerForwarding>(mode);
 #else
     CHECK(false);
 #endif
@@ -333,6 +393,10 @@ void Service::OnWillCreateTreeForWindowManager(
   screen_manager_->AddInterfaces(&registry_);
   if (is_gpu_ready_)
     screen_manager_->Init(window_server_->display_manager());
+}
+
+ws::ThreadedImageCursorsFactory* Service::GetThreadedImageCursorsFactory() {
+  return threaded_image_cursors_factory_.get();
 }
 
 void Service::BindAccessibilityManagerRequest(

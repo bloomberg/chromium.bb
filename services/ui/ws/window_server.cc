@@ -111,6 +111,10 @@ void WindowServer::SetGpuHost(std::unique_ptr<GpuHost> gpu_host) {
   gpu_host_ = std::move(gpu_host);
 }
 
+ThreadedImageCursorsFactory* WindowServer::GetThreadedImageCursorsFactory() {
+  return delegate()->GetThreadedImageCursorsFactory();
+}
+
 ServerWindow* WindowServer::CreateServerWindow(
     const WindowId& id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {

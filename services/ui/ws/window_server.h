@@ -36,6 +36,7 @@ class Display;
 class DisplayManager;
 class GpuHost;
 class ServerWindow;
+class ThreadedImageCursorsFactory;
 class UserActivityMonitor;
 class WindowManagerState;
 class WindowServerDelegate;
@@ -80,6 +81,8 @@ class WindowServer : public ServerWindowDelegate,
       std::unique_ptr<cc::mojom::FrameSinkManager> frame_sink_manager);
 
   void SetGpuHost(std::unique_ptr<GpuHost> gpu_host);
+
+  ThreadedImageCursorsFactory* GetThreadedImageCursorsFactory();
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
