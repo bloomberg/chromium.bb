@@ -34,9 +34,6 @@ typedef void (^MoreSuggestionsFetched)(
 - (nonnull NSArray<CollectionViewItem<SuggestedContent>*>*)itemsForSectionInfo:
     (nonnull ContentSuggestionsSectionInformation*)sectionInfo;
 
-// Returns an image updater for the suggestions provided by this data source.
-- (nullable id<ContentSuggestionsImageFetcher>)imageFetcher;
-
 // Fetches additional content. All the |knownSuggestions| must come from the
 // same |sectionInfo|. If the fetch was completed, the given |callback| is
 // called with the new content.

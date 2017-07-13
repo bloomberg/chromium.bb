@@ -12,6 +12,8 @@
 // Item to display what is new in the ContentSuggestions.
 @interface ContentSuggestionsWhatsNewItem : CollectionViewItem<SuggestedContent>
 
+// Icon for the promo.
+@property(nonatomic, strong, nullable) UIImage* icon;
 // Text describing what is new.
 @property(nonatomic, copy, nullable) NSString* text;
 

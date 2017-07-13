@@ -18,8 +18,6 @@
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
-@synthesize delegate = _delegate;
-@synthesize image = _image;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

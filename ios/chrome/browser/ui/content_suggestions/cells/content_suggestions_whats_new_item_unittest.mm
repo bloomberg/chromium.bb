@@ -32,7 +32,7 @@ TEST(ContentSuggestionsWhatsNewItemTest, Configure) {
   NSString* text = @"What's new test!";
   ContentSuggestionsWhatsNewItem* item =
       [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
-  item.image = image;
+  item.icon = image;
   item.text = text;
   id cell = OCMClassMock([ContentSuggestionsWhatsNewCell class]);
   OCMExpect([cell setIcon:image]);

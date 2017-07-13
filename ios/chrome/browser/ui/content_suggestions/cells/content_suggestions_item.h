@@ -12,8 +12,17 @@ namespace base {
 class Time;
 }
 
+@class ContentSuggestionsItem;
 @class FaviconAttributes;
 class GURL;
+
+// Delegate for SuggestedContent.
+@protocol ContentSuggestionsItemDelegate
+
+// Loads the image associated with the |suggestedItem|.
+- (void)loadImageForSuggestedItem:(ContentSuggestionsItem*)suggestedItem;
+
+@end
 
 // Item for an article in the suggestions.
 @interface ContentSuggestionsItem : CollectionViewItem<SuggestedContent>
@@ -26,10 +35,13 @@ class GURL;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
+@property(nonatomic, weak) id<ContentSuggestionsItemDelegate> delegate;
 @property(nonatomic, copy, readonly) NSString* title;
 @property(nonatomic, readonly, assign) GURL URL;
 @property(nonatomic, copy) NSString* publisher;
 @property(nonatomic, assign) base::Time publishDate;
+// Image associated with this content.
+@property(nonatomic, strong) UIImage* image;
 // Whether the suggestion has an image associated.
 @property(nonatomic, assign) BOOL hasImage;
 // Whether the suggestion is available offline. If YES, an icon is displayed.

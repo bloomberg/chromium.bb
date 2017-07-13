@@ -11,21 +11,9 @@
 @class ContentSuggestionIdentifier;
 @protocol SuggestedContent;
 
-// Delegate for SuggestedContent.
-@protocol SuggestedContentDelegate
-
-// Loads the image associated with the |suggestedItem|.
-- (void)loadImageForSuggestedItem:
-    (CollectionViewItem<SuggestedContent>*)suggestedItem;
-
-@end
-
 // Behavior shared by the items in ContentSuggestions.
 @protocol SuggestedContent
 
-@property(nonatomic, weak) id<SuggestedContentDelegate> delegate;
-// Image associated with this content.
-@property(nonatomic, strong) UIImage* image;
 // Identifier for this content.
 @property(nonatomic, strong) ContentSuggestionIdentifier* suggestionIdentifier;
 

@@ -13,7 +13,6 @@
 
 @implementation SCContentSuggestionsItem
 
-@synthesize delegate;
 @synthesize attributes;
 @synthesize suggestionIdentifier;
 @synthesize image;
