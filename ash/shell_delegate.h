@@ -126,6 +126,8 @@ class ASH_EXPORT ShellDelegate {
 
   virtual PrefService* GetActiveUserPrefService() const = 0;
 
+  virtual PrefService* GetLocalStatePrefService() const = 0;
+
   // If |use_local_state| is true, returns the touchscreen status from local
   // state, otherwise from user prefs.
   virtual bool IsTouchscreenEnabledInPrefs(bool use_local_state) const = 0;

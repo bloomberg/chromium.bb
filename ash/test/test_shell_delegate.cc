@@ -140,6 +140,10 @@ PrefService* TestShellDelegate::GetActiveUserPrefService() const {
   return active_user_pref_service_;
 }
 
+PrefService* TestShellDelegate::GetLocalStatePrefService() const {
+  return nullptr;
+}
+
 bool TestShellDelegate::IsTouchscreenEnabledInPrefs(
     bool use_local_state) const {
   return use_local_state ? touchscreen_enabled_in_local_pref_ : true;
