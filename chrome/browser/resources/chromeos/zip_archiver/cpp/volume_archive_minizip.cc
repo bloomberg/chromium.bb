@@ -329,12 +329,8 @@ bool VolumeArchiveMinizip::SeekHeader(const std::string& path_name) {
   // If the archive is encrypted, the lowest bit of raw_file_info.flag is set.
   // Directories cannot be encrypted with the basic zip encrytion algorithm.
   if (((raw_file_info.flag & 1) != 0) && !is_directory) {
-    // Currently minizip in third_party doesn't support decryption, so we just
-    // take encrypted zip files as unsupported.
-    set_error_message(volume_archive_constants::kArchiveNextHeaderError);
-    return false;
-    // const char* password = volume_archive_functions::GetPassphrase(this);
-    // open_result = unzOpenCurrentFilePassword(zip_file_, password);
+    const char* password = volume_archive_functions::GetPassphrase(this);
+    open_result = unzOpenCurrentFilePassword(zip_file_, password);
   } else {
     open_result = unzOpenCurrentFile(zip_file_);
   }
