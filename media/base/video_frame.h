@@ -371,7 +371,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // VideoFrame is permitted while the callback executes (including
   // VideoFrameMetadata), clients should not assume the data pointers are
   // valid.
-  void AddDestructionObserver(const base::Closure& callback);
+  void AddDestructionObserver(base::OnceClosure callback);
 
   // Returns a dictionary of optional metadata.  This contains information
   // associated with the frame that downstream clients might use for frame-level
@@ -542,7 +542,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
-  std::vector<base::Closure> done_callbacks_;
+  std::vector<base::OnceClosure> done_callbacks_;
 
   base::TimeDelta timestamp_;
 

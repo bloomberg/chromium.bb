@@ -785,9 +785,9 @@ void VideoFrame::SetReleaseMailboxCB(
   mailbox_holders_release_cb_ = release_mailbox_cb;
 }
 
-void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
+void VideoFrame::AddDestructionObserver(base::OnceClosure callback) {
   DCHECK(!callback.is_null());
-  done_callbacks_.push_back(callback);
+  done_callbacks_.push_back(std::move(callback));
 }
 
 gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
