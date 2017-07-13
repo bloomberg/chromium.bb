@@ -38,7 +38,7 @@ class V8Uint8ClampedArray {
     visitor->Trace(scriptWrappable->ToImpl<TestUint8ClampedArray>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestUint8ClampedArray>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestUint8ClampedArray>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

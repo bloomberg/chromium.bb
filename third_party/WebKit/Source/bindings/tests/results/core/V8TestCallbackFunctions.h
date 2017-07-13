@@ -40,7 +40,7 @@ class V8TestCallbackFunctions {
     visitor->Trace(scriptWrappable->ToImpl<TestCallbackFunctions>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestCallbackFunctions>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestCallbackFunctions>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

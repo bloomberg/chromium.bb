@@ -4413,7 +4413,7 @@ DEFINE_TRACE(Element) {
 
 DEFINE_TRACE_WRAPPERS(Element) {
   if (HasRareData()) {
-    visitor->TraceWrappers(GetElementRareData());
+    visitor->TraceWrappersWithManualWriteBarrier(GetElementRareData());
   }
   ContainerNode::TraceWrappers(visitor);
 }

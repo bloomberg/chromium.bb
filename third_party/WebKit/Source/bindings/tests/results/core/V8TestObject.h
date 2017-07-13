@@ -55,7 +55,7 @@ class V8TestObject {
     visitor->Trace(scriptWrappable->ToImpl<TestObject>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestObject>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestObject>());
   }
   static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void customCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);

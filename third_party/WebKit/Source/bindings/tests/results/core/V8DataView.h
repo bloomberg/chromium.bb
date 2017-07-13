@@ -38,7 +38,7 @@ class V8DataView {
     visitor->Trace(scriptWrappable->ToImpl<TestDataView>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestDataView>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestDataView>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

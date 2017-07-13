@@ -40,7 +40,7 @@ class V8TestSpecialOperationsNotEnumerable {
     visitor->Trace(scriptWrappable->ToImpl<TestSpecialOperationsNotEnumerable>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestSpecialOperationsNotEnumerable>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestSpecialOperationsNotEnumerable>());
   }
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
 

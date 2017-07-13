@@ -40,7 +40,7 @@ class V8TestIntegerIndexed {
     visitor->Trace(scriptWrappable->ToImpl<TestIntegerIndexed>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestIntegerIndexed>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestIntegerIndexed>());
   }
   static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);

@@ -49,7 +49,7 @@ class V8TestInterfaceEventTarget {
     visitor->Trace(scriptWrappable->ToImpl<TestInterfaceEventTarget>());
   }
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->TraceWrappers(scriptWrappable->ToImpl<TestInterfaceEventTarget>());
+    visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceEventTarget>());
   }
   static const int eventListenerCacheIndex = kV8DefaultWrapperInternalFieldCount + 0;
   static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 1;
