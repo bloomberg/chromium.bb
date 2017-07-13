@@ -368,9 +368,21 @@ GraphicsLayer* PaintLayerCompositor::ParentForContentLayers() const {
     return root_content_layer_.get();
 
   DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled());
+
   // Iframe content layers will be connected by the parent frame using
   // attachFrameContentLayersToIframeLayer.
-  return IsMainFrame() ? GetVisualViewport().ScrollLayer() : nullptr;
+  if (!IsMainFrame())
+    return nullptr;
+
+  // If this is a popup, don't hook into the VisualViewport layers.
+  if (!layout_view_.GetDocument()
+           .GetPage()
+           ->GetChromeClient()
+           .IsChromeClientImpl()) {
+    return nullptr;
+  }
+
+  return GetVisualViewport().ScrollLayer();
 }
 
 void PaintLayerCompositor::UpdateIfNeeded(
