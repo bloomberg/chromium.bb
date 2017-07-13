@@ -156,31 +156,37 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
   SetScrollbarGeometriesNeedUpdate();
 
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
+  TransformTree& transform_tree = property_trees()->transform_tree;
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
-  const auto* scroll_node = scroll_tree.FindNodeFromElementId(id);
+  int transform_id = TransformTree::kInvalidNodeId;
 
-  // TODO(pdr): There shouldn't be any cases where scroll offset is updated
-  // without a scroll node and we should remove this check entirely.
-  if (!scroll_node) {
+  // If pending tree topology changed and we still want to notify the pending
+  // tree about scroll offset in the active tree, we may not find the
+  // corresponding pending layer.
+  // TODO(pdr): Remove this use of LayerByElementId and instead look up the
+  // scroll node via ElementId and then set transform_id to the scroll node's
+  // transform node index.
+  if (auto* layer = LayerByElementId(id)) {
+    // TODO(sunxd): when we have a layer_id to property_tree index map in
+    // property trees, use the transform_id parameter instead of looking for
+    // indices from LayerImpls.
+    transform_id = layer->transform_tree_index();
+  } else {
     DCHECK(!IsActiveTree());
-
-    // If a scroll node does not yet exist, ensure the property trees are marked
-    // for rebuilding which will update the TransformNode scroll offset.
-    DCHECK(property_trees()->needs_rebuild);
     return;
   }
 
-  DCHECK(scroll_node->transform_id != TransformTree::kInvalidNodeId);
-  TransformTree& transform_tree = property_trees()->transform_tree;
-  auto* transform_node = transform_tree.Node(scroll_node->transform_id);
-  if (transform_node->scroll_offset != scroll_tree.current_scroll_offset(id)) {
-    transform_node->scroll_offset = scroll_tree.current_scroll_offset(id);
-    transform_node->needs_local_transform_update = true;
-    transform_tree.set_needs_update(true);
+  if (transform_id != TransformTree::kInvalidNodeId) {
+    TransformNode* node = transform_tree.Node(transform_id);
+    if (node->scroll_offset != scroll_tree.current_scroll_offset(id)) {
+      node->scroll_offset = scroll_tree.current_scroll_offset(id);
+      node->needs_local_transform_update = true;
+      transform_tree.set_needs_update(true);
+    }
+    node->transform_changed = true;
+    property_trees()->changed = true;
+    set_needs_update_draw_properties();
   }
-  transform_node->transform_changed = true;
-  property_trees()->changed = true;
-  set_needs_update_draw_properties();
 
   if (IsActiveTree()) {
     // Ensure the other trees are kept in sync.
