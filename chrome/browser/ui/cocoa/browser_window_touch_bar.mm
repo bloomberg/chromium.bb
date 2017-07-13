@@ -183,8 +183,7 @@ class HomePrefNotificationBridge {
 - (NSView*)backOrForwardTouchBarView;
 
 // Creates and returns the search button.
-- (NSView*)searchTouchBarView
-    __attribute__((availability(macos, introduced = 10.12)));
+- (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
 @end
 
 @implementation BrowserWindowTouchBar

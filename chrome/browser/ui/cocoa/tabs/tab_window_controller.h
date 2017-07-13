@@ -14,6 +14,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/availability.h"
 #include "base/mac/scoped_nsobject.h"
 
 @class FastResizeView;
@@ -29,9 +30,8 @@
   base::scoped_nsobject<NSView> tabStripBackgroundView_;
 
   // Used to blur the titlebar. nil if window does not have titlebar.
-  __attribute__((availability(macos, introduced = 10.10)))
-  base::scoped_nsobject<NSVisualEffectView>
-      visualEffectView_;
+  API_AVAILABLE(macos(10.10))
+  base::scoped_nsobject<NSVisualEffectView> visualEffectView_;
 
   // The tab strip overlaps the titlebar of the window.
   base::scoped_nsobject<TabStripView> tabStripView_;
@@ -54,8 +54,7 @@
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
 
-@property(readonly, nonatomic)
-    __attribute__((availability(macos, introduced=10.10)))
+@property(readonly, nonatomic) API_AVAILABLE(macos(10.10))
     NSVisualEffectView* visualEffectView;
 @property(readonly, nonatomic) NSView* tabStripBackgroundView;
 @property(readonly, nonatomic) TabStripView* tabStripView;

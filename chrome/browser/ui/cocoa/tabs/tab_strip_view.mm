@@ -355,8 +355,7 @@
   newTabButton_.reset([button retain]);
 }
 
-- (NSVisualEffectView*)visualEffectView
-    __attribute__((availability(macos, introduced = 10.10))) {
+- (NSVisualEffectView*)visualEffectView API_AVAILABLE(macos(10.10)) {
   return [[BrowserWindowController
       browserWindowControllerForWindow:[self window]] visualEffectView];
 }
