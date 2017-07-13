@@ -872,6 +872,21 @@ void TypingCommand::DeleteKeyPressedInternal(
   TypingAddedToOpenCommand(kDeleteKey);
 }
 
+static Position ComputeExtentForForwardDeleteUndo(
+    const VisibleSelection& selection,
+    const Position& extent) {
+  if (extent.ComputeContainerNode() != selection.End().ComputeContainerNode())
+    return selection.Extent();
+  const int extra_characters =
+      selection.Start().ComputeContainerNode() ==
+              selection.End().ComputeContainerNode()
+          ? selection.End().ComputeOffsetInContainerNode() -
+                selection.Start().ComputeOffsetInContainerNode()
+          : selection.End().ComputeOffsetInContainerNode();
+  return Position(extent.ComputeContainerNode(),
+                  extent.ComputeOffsetInContainerNode() + extra_characters);
+}
+
 void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
                                             bool kill_ring,
                                             EditingState* editing_state) {
@@ -881,14 +896,11 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  VisibleSelection selection_to_delete;
-  VisibleSelection selection_after_undo;
-
   switch (EndingSelection().GetSelectionType()) {
     case kRangeSelection:
-      selection_to_delete = EndingSelection();
-      selection_after_undo = selection_to_delete;
-      break;
+      ForwardDeleteKeyPressedInternal(EndingSelection(), EndingSelection(),
+                                      kill_ring, editing_state);
+      return;
     case kCaretSelection: {
       smart_delete_ = false;
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -946,51 +958,48 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
                                   TextGranularity::kCharacter);
       }
 
-      selection_to_delete = selection_modifier.Selection();
+      const VisibleSelection& selection_to_delete =
+          selection_modifier.Selection();
       if (!StartingSelection().IsRange() ||
           selection_to_delete.Base() != StartingSelection().Start()) {
-        selection_after_undo = selection_to_delete;
-      } else {
-        // It's a little tricky to compute what the starting selection would
-        // have been in the original document. We can't let the VisibleSelection
-        // class's validation kick in or it'll adjust for us based on the
-        // current state of the document and we'll get the wrong result.
-        Position extent = StartingSelection().End();
-        if (extent.ComputeContainerNode() !=
-            selection_to_delete.End().ComputeContainerNode()) {
-          extent = selection_to_delete.Extent();
-        } else {
-          int extra_characters;
-          if (selection_to_delete.Start().ComputeContainerNode() ==
-              selection_to_delete.End().ComputeContainerNode())
-            extra_characters =
-                selection_to_delete.End().ComputeOffsetInContainerNode() -
-                selection_to_delete.Start().ComputeOffsetInContainerNode();
-          else
-            extra_characters =
-                selection_to_delete.End().ComputeOffsetInContainerNode();
-          extent = Position(
-              extent.ComputeContainerNode(),
-              extent.ComputeOffsetInContainerNode() + extra_characters);
-        }
-        selection_after_undo =
-            VisibleSelection::CreateWithoutValidationDeprecated(
-                StartingSelection().Start(), extent,
-                selection_after_undo.Affinity());
+        ForwardDeleteKeyPressedInternal(
+            selection_to_delete, selection_to_delete, kill_ring, editing_state);
+        return;
       }
-      break;
+      // It's a little tricky to compute what the starting selection would
+      // have been in the original document. We can't let the VisibleSelection
+      // class's validation kick in or it'll adjust for us based on the
+      // current state of the document and we'll get the wrong result.
+      const VisibleSelection& selection_after_undo =
+          VisibleSelection::CreateWithoutValidationDeprecated(
+              StartingSelection().Start(),
+              ComputeExtentForForwardDeleteUndo(selection_to_delete,
+                                                StartingSelection().End()),
+              TextAffinity::kDownstream);
+      ForwardDeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
+                                      kill_ring, editing_state);
+      return;
     }
     case kNoSelection:
       NOTREACHED();
       break;
   }
+}
 
+void TypingCommand::ForwardDeleteKeyPressedInternal(
+    const VisibleSelection& selection_to_delete,
+    const VisibleSelection& selection_after_undo,
+    bool kill_ring,
+    EditingState* editing_state) {
   DCHECK(!selection_to_delete.IsNone());
   if (selection_to_delete.IsNone())
     return;
 
   if (selection_to_delete.IsCaret())
     return;
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  DCHECK(frame);
 
   if (kill_ring)
     frame->GetEditor().AddToKillRing(
