@@ -91,7 +91,6 @@
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
@@ -199,10 +198,12 @@ struct GpuProcessTransportFactory::PerCompositorData {
   bool output_is_secure = false;
 };
 
-GpuProcessTransportFactory::GpuProcessTransportFactory()
+GpuProcessTransportFactory::GpuProcessTransportFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
       renderer_settings_(
           ui::CreateRendererSettings(CreateBufferToTextureTargetMap())),
+      resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
@@ -457,12 +458,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 "125248"
                 " GpuProcessTransportFactory::EstablishedGpuChannel"
                 "::Compositor"));
-#if defined(OS_MACOSX)
         // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
         // a nested run loop during resize.
-        context_provider->SetDefaultTaskRunner(
-            ui::WindowResizeHelperMac::Get()->task_runner());
-#endif
+        context_provider->SetDefaultTaskRunner(resize_task_runner_);
         if (!context_provider->BindToCurrentThread())
           context_provider = nullptr;
       }

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -116,8 +117,9 @@ class HostFrameSinkManagerTest : public testing::Test {
         mojo::MakeRequest(&manager_mojo);
     manager_impl_->BindAndSetClient(std::move(manager_impl_request),
                                     std::move(host_mojo));
-    host_manager_->BindManagerClientAndSetManagerPtr(
-        std::move(host_mojo_request), std::move(manager_mojo));
+    host_manager_->BindAndSetManager(std::move(host_mojo_request),
+                                     base::SequencedTaskRunnerHandle::Get(),
+                                     std::move(manager_mojo));
   }
 
  private:

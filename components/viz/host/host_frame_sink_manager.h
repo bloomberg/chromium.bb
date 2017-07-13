@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
@@ -15,6 +16,10 @@
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace cc {
 class SurfaceInfo;
@@ -31,11 +36,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   HostFrameSinkManager();
   ~HostFrameSinkManager() override;
 
-  // Binds |this| as a FrameSinkManagerClient to the |request|. May only be
-  // called once.
-  void BindManagerClientAndSetManagerPtr(
-      cc::mojom::FrameSinkManagerClientRequest request,
-      cc::mojom::FrameSinkManagerPtr ptr);
+  // Binds |this| as a FrameSinkManagerClient for |request| on |task_runner|. On
+  // Mac |task_runner| will be the resize helper task runner. May only be called
+  // once.
+  void BindAndSetManager(cc::mojom::FrameSinkManagerClientRequest request,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         cc::mojom::FrameSinkManagerPtr ptr);
 
   void AddObserver(FrameSinkObserver* observer);
   void RemoveObserver(FrameSinkObserver* observer);
