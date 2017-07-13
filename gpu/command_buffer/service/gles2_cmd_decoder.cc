@@ -16660,6 +16660,11 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
           feature_info_->ext_color_buffer_float_available() ||
           feature_info_->feature_flags().chromium_color_buffer_float_rgba;
       break;
+    case GL_ALPHA:
+    case GL_LUMINANCE:
+    case GL_LUMINANCE_ALPHA:
+      valid_dest_format = true;
+      break;
     default:
       valid_dest_format = false;
       break;
@@ -16997,7 +17002,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
           source_internal_format, dest_target, dest_texture->service_id(),
           dest_level, internal_format, source_width, source_height,
           unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-          unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
+          unpack_unmultiply_alpha == GL_TRUE, transform_matrix,
+          copy_tex_image_blit_.get());
       return;
     }
   }
@@ -17012,7 +17018,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, internal_format, source_width, source_height,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, method);
+      unpack_unmultiply_alpha == GL_TRUE, method, copy_tex_image_blit_.get());
 }
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
@@ -17210,7 +17216,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
           dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
           height, dest_width, dest_height, source_width, source_height,
           unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-          unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
+          unpack_unmultiply_alpha == GL_TRUE, transform_matrix,
+          copy_tex_image_blit_.get());
       return;
     }
   }
@@ -17238,7 +17245,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
       dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
       dest_width, dest_height, source_width, source_height,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, method);
+      unpack_unmultiply_alpha == GL_TRUE, method, copy_tex_image_blit_.get());
 }
 
 bool GLES2DecoderImpl::InitializeCopyTexImageBlitter(
@@ -17264,6 +17271,15 @@ bool GLES2DecoderImpl::InitializeCopyTextureCHROMIUM(
     copy_texture_CHROMIUM_->Initialize(this, features());
     if (LOCAL_PEEK_GL_ERROR(function_name) != GL_NO_ERROR)
       return false;
+
+    // On the desktop core profile this also needs emulation of
+    // CopyTex{Sub}Image2D for luminance, alpha, and luminance_alpha
+    // textures.
+    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+            feature_info_.get(), GL_LUMINANCE)) {
+      if (!InitializeCopyTexImageBlitter(function_name))
+        return false;
+    }
   }
   return true;
 }
@@ -17415,7 +17431,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       this, source_texture->target(), source_texture->service_id(), 0,
       source_internal_format, dest_texture->target(),
       dest_texture->service_id(), 0, GL_RGBA, source_width, source_height,
-      false, false, false, DIRECT_DRAW);
+      false, false, false, DIRECT_DRAW, copy_tex_image_blit_.get());
 }
 
 void GLES2DecoderImpl::TexStorageImpl(GLenum target,

@@ -17,6 +17,7 @@ namespace gpu {
 namespace gles2 {
 
 class GLES2Decoder;
+class CopyTexImageResourceManager;
 
 enum CopyTextureMethod {
   // Use CopyTex{Sub}Image2D to copy from the source to the destination.
@@ -66,7 +67,8 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                      bool flip_y,
                      bool premultiply_alpha,
                      bool unpremultiply_alpha,
-                     CopyTextureMethod method);
+                     CopyTextureMethod method,
+                     CopyTexImageResourceManager* luma_emulation_blitter);
 
   void DoCopySubTexture(const gles2::GLES2Decoder* decoder,
                         GLenum source_target,
@@ -90,51 +92,56 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                         bool flip_y,
                         bool premultiply_alpha,
                         bool unpremultiply_alpha,
-                        CopyTextureMethod method);
+                        CopyTextureMethod method,
+                        CopyTexImageResourceManager* luma_emulation_blitter);
 
-  void DoCopySubTextureWithTransform(const gles2::GLES2Decoder* decoder,
-                                     GLenum source_target,
-                                     GLuint source_id,
-                                     GLint source_level,
-                                     GLenum source_internal_format,
-                                     GLenum dest_target,
-                                     GLuint dest_id,
-                                     GLint dest_level,
-                                     GLenum dest_internal_format,
-                                     GLint xoffset,
-                                     GLint yoffset,
-                                     GLint x,
-                                     GLint y,
-                                     GLsizei width,
-                                     GLsizei height,
-                                     GLsizei dest_width,
-                                     GLsizei dest_height,
-                                     GLsizei source_width,
-                                     GLsizei source_height,
-                                     bool flip_y,
-                                     bool premultiply_alpha,
-                                     bool unpremultiply_alpha,
-                                     const GLfloat transform_matrix[16]);
+  void DoCopySubTextureWithTransform(
+      const gles2::GLES2Decoder* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLint source_level,
+      GLenum source_internal_format,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLint dest_level,
+      GLenum dest_internal_format,
+      GLint xoffset,
+      GLint yoffset,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height,
+      GLsizei dest_width,
+      GLsizei dest_height,
+      GLsizei source_width,
+      GLsizei source_height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      const GLfloat transform_matrix[16],
+      CopyTexImageResourceManager* luma_emulation_blitter);
 
   // This will apply a transform on the texture coordinates before sampling
   // the source texture and copying to the destination texture. The transform
   // matrix should be given in column-major form, so it can be passed
   // directly to GL.
-  void DoCopyTextureWithTransform(const gles2::GLES2Decoder* decoder,
-                                  GLenum source_target,
-                                  GLuint source_id,
-                                  GLint source_level,
-                                  GLenum source_format,
-                                  GLenum dest_target,
-                                  GLuint dest_id,
-                                  GLint dest_level,
-                                  GLenum dest_format,
-                                  GLsizei width,
-                                  GLsizei height,
-                                  bool flip_y,
-                                  bool premultiply_alpha,
-                                  bool unpremultiply_alpha,
-                                  const GLfloat transform_matrix[16]);
+  void DoCopyTextureWithTransform(
+      const gles2::GLES2Decoder* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLint source_level,
+      GLenum source_format,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLint dest_level,
+      GLenum dest_format,
+      GLsizei width,
+      GLsizei height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      const GLfloat transform_matrix[16],
+      CopyTexImageResourceManager* luma_emulation_blitter);
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
@@ -166,29 +173,31 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
     GLuint sampler_handle;
   };
 
-  void DoCopyTextureInternal(const gles2::GLES2Decoder* decoder,
-                             GLenum source_target,
-                             GLuint source_id,
-                             GLint source_level,
-                             GLenum source_format,
-                             GLenum dest_target,
-                             GLuint dest_id,
-                             GLint dest_level,
-                             GLenum dest_format,
-                             GLint xoffset,
-                             GLint yoffset,
-                             GLint x,
-                             GLint y,
-                             GLsizei width,
-                             GLsizei height,
-                             GLsizei dest_width,
-                             GLsizei dest_height,
-                             GLsizei source_width,
-                             GLsizei source_height,
-                             bool flip_y,
-                             bool premultiply_alpha,
-                             bool unpremultiply_alpha,
-                             const GLfloat transform_matrix[16]);
+  void DoCopyTextureInternal(
+      const gles2::GLES2Decoder* decoder,
+      GLenum source_target,
+      GLuint source_id,
+      GLint source_level,
+      GLenum source_format,
+      GLenum dest_target,
+      GLuint dest_id,
+      GLint dest_level,
+      GLenum dest_format,
+      GLint xoffset,
+      GLint yoffset,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height,
+      GLsizei dest_width,
+      GLsizei dest_height,
+      GLsizei source_width,
+      GLsizei source_height,
+      bool flip_y,
+      bool premultiply_alpha,
+      bool unpremultiply_alpha,
+      const GLfloat transform_matrix[16],
+      CopyTexImageResourceManager* luma_emulation_blitter);
 
   bool initialized_;
   bool nv_egl_stream_consumer_external_;
