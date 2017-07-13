@@ -127,6 +127,16 @@ void av1_highbd_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
 #endif
                          const int subpel_x, int xstep, const int subpel_y,
                          int ystep, int avg, int bd);
+
+void av1_highbd_convolve_scale(const uint8_t *src, int src_stride, uint8_t *dst,
+                               int dst_stride, int w, int h,
+#if CONFIG_DUAL_FILTER
+                               const InterpFilter *interp_filter,
+#else
+                               const InterpFilter interp_filter,
+#endif  // CONFIG_DUAL_FILTER
+                               const int subpel_x, int xstep,
+                               const int subpel_y, int ystep, int avg, int bd);
 #endif  // CONFIG_HIGHBITDEPTH
 
 #ifdef __cplusplus

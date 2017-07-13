@@ -138,12 +138,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 #endif
 
   if (has_scale(xs, ys)) {
-    // TODO(afergs, debargha): Use a different scale convolve function
-    // that uses higher precision for subpel_x, subpel_y, xs, ys
-    av1_highbd_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                        subpel_x >> SCALE_EXTRA_BITS, xs >> SCALE_EXTRA_BITS,
-                        subpel_y >> SCALE_EXTRA_BITS, ys >> SCALE_EXTRA_BITS,
-                        avg, bd);
+    av1_highbd_convolve_scale(
+        src, src_stride, dst, dst_stride, w, h, interp_filter,
+        subpel_x >> SCALE_EXTRA_BITS, xs >> SCALE_EXTRA_BITS,
+        subpel_y >> SCALE_EXTRA_BITS, ys >> SCALE_EXTRA_BITS, avg, bd);
   } else {
     subpel_x >>= SCALE_EXTRA_BITS;
     subpel_y >>= SCALE_EXTRA_BITS;
