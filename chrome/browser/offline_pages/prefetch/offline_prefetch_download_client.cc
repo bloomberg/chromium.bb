@@ -26,6 +26,11 @@ void OfflinePrefetchDownloadClient::OnServiceInitialized(
     downloader->OnDownloadServiceReady();
 }
 
+void OfflinePrefetchDownloadClient::OnServiceUnavailable() {
+  // TODO(dtrainor, jianli): Handle service initialization failures.  This could
+  // potentially just drop all pending start requests.
+}
+
 download::Client::ShouldDownload
 OfflinePrefetchDownloadClient::OnDownloadStarted(
     const std::string& guid,

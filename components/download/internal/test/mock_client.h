@@ -19,6 +19,7 @@ class MockClient : public Client {
 
   // Client implementation.
   MOCK_METHOD1(OnServiceInitialized, void(const std::vector<std::string>&));
+  MOCK_METHOD0(OnServiceUnavailable, void());
   MOCK_METHOD3(
       OnDownloadStarted,
       ShouldDownload(const std::string&,

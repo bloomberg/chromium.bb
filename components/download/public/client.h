@@ -59,6 +59,9 @@ class Client {
   virtual void OnServiceInitialized(
       const std::vector<std::string>& outstanding_download_guids) = 0;
 
+  // Called when the DownloadService fails to initialize and should not be used.
+  virtual void OnServiceUnavailable() = 0;
+
   // Return whether or not the download should be aborted (potentially in
   // response to |headers|).  The download will be downloading at the time this
   // call is made.

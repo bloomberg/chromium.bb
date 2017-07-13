@@ -156,6 +156,7 @@ class ControllerImpl : public Controller,
   // meant to help prevent reentrancy.
   void SendOnServiceInitialized(DownloadClient client_id,
                                 const std::vector<std::string>& guids);
+  void SendOnServiceUnavailable();
   void SendOnDownloadUpdated(DownloadClient client_id,
                              const std::string& guid,
                              uint64_t bytes_downloaded);
