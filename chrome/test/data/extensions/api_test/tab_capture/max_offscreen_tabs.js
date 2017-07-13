@@ -20,8 +20,8 @@ chrome.test.runTests([
          helloWorldPageUri,
          {video: true},
          function(stream) {
-           if (streamsSoFar.length == 3) {
-             // 4th off-screen tab capture should fail.
+           if (streamsSoFar.length == 4) {
+             // 5th off-screen tab capture should fail.
              chrome.test.assertLastError(
                  'Extension has already started too many off-screen tabs.');
              chrome.test.assertFalse(!!stream);
