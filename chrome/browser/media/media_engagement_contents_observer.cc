@@ -18,7 +18,8 @@ constexpr base::TimeDelta kSignificantMediaPlaybackTime =
 
 // This is the minimum size (in px) of each dimension that a media
 // element has to be in order to be determined significant.
-const int MediaEngagementContentsObserver::kSignificantSize = 200;
+const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
+    gfx::Size(200, 140);
 
 MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     content::WebContents* web_contents,
@@ -114,7 +115,8 @@ void MediaEngagementContentsObserver::MediaMutedStatusChanged(
 
 void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
                                                    const MediaPlayerId& id) {
-  if (size.width() >= kSignificantSize && size.height() >= kSignificantSize) {
+  if (size.width() >= kSignificantSize.width() &&
+      size.height() >= kSignificantSize.height()) {
     GetPlayerState(id)->significant_size = true;
     MaybeInsertSignificantPlayer(id);
   } else {
