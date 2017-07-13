@@ -93,9 +93,9 @@ void KeepAliveScheduler::OnOperationFinished(
   // assumed that setup is no longer required for an active connection attempt.
   host_scan_cache_->SetHostScanResult(
       *HostScanCacheEntry::Builder()
-           .SetTetherNetworkGuid(device_id_tether_network_guid_map_
-                                     ->GetTetherNetworkGuidForDeviceId(
-                                         remote_device.GetDeviceId()))
+           .SetTetherNetworkGuid(
+               device_id_tether_network_guid_map_
+                   ->GetTetherNetworkGuidForDeviceId(device_copy.GetDeviceId()))
            .SetDeviceName(device_copy.name)
            .SetCarrier(carrier)
            .SetBatteryPercentage(battery_percentage)
