@@ -300,6 +300,13 @@ MATCHER_P3(TrimmedSpliceOverlap,
                base::IntToString(trim_duration_us));
 }
 
+MATCHER_P2(NoSpliceForBadMux, overlapped_buffer_count, splice_time_us, "") {
+  return CONTAINS_STRING(arg, "Media is badly muxed. Detected " +
+                                  base::IntToString(overlapped_buffer_count) +
+                                  " overlapping audio buffers at time " +
+                                  base::IntToString(splice_time_us));
+}
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_TEST_HELPERS_H_

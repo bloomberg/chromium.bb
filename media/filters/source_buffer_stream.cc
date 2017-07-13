@@ -1064,10 +1064,21 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   }
 
   // At most one buffer should exist containing the time of the newly appended
-  // buffer's start. GetBuffersInRange does not currently return buffers with
-  // zero duration.
-  CHECK_EQ(overlapped_buffers.size(), 1U)
-      << __func__ << " Found more than one overlapped buffer";
+  // buffer's start. It may happen that bad content appends buffers with
+  // durations that cause nonsensical overlap. Trimming should not be performed
+  // in these cases, as the content is already in a bad state.
+  if (overlapped_buffers.size() != 1U) {
+    DVLOG(3) << __func__
+             << " No splice trimming. Found more than one overlapped buffer"
+                " (bad content) at time "
+             << splice_timestamp.InMicroseconds();
+
+    MEDIA_LOG(ERROR, media_log_)
+        << "Media is badly muxed. Detected " << overlapped_buffers.size()
+        << " overlapping audio buffers at time "
+        << splice_timestamp.InMicroseconds();
+    return;
+  }
   StreamParserBuffer* overlapped_buffer = overlapped_buffers.front().get();
 
   if (overlapped_buffer->timestamp() == splice_timestamp) {
