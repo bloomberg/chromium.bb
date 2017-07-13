@@ -424,6 +424,8 @@ class Internals final : public GarbageCollected<Internals>,
 
   bool cursorUpdatePending() const;
 
+  bool fakeMouseMovePending() const;
+
   String markerTextForListItem(Element*);
 
   void forceReload(bool bypass_cache);

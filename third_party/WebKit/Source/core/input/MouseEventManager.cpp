@@ -57,7 +57,11 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
 
 // The amount of time to wait before sending a fake mouse event triggered
 // during a scroll.
-const double kFakeMouseMoveInterval = 0.1;
+constexpr double kFakeMouseMoveIntervalDuringScroll = 0.1;
+
+// The amount of time to wait before sending a fake mouse event on style and
+// layout changes sets to 50Hz, same as common screen refresh rate.
+constexpr double kFakeMouseMoveIntervalPerFrame = 0.02;
 
 // TODO(crbug.com/653490): Read these values from the OS.
 #if defined(OS_MACOSX)
@@ -309,7 +313,6 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
 void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
   TRACE_EVENT0("input", "MouseEventManager::fakeMouseMoveEventTimerFired");
   DCHECK(timer == &fake_mouse_move_event_timer_);
-  DCHECK(!mouse_pressed_);
 
   if (is_mouse_position_unknown_)
     return;
@@ -326,16 +329,20 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
   if (!frame_->GetPage()->IsCursorVisible())
     return;
 
+  WebPointerEvent::Button button = WebPointerProperties::Button::kNoButton;
+  int modifiers = KeyboardEventManager::GetCurrentModifierState() |
+                  WebInputEvent::kRelativeMotionEvent;
+  if (mouse_pressed_) {
+    button = WebPointerProperties::Button::kLeft;
+    modifiers |= WebInputEvent::kLeftButtonDown;
+  }
   WebMouseEvent fake_mouse_move_event(
       WebInputEvent::kMouseMove,
       WebFloatPoint(last_known_mouse_position_.X(),
                     last_known_mouse_position_.Y()),
       WebFloatPoint(last_known_mouse_global_position_.X(),
                     last_known_mouse_global_position_.Y()),
-      WebPointerProperties::Button::kNoButton, 0,
-      KeyboardEventManager::GetCurrentModifierState() |
-          WebInputEvent::Modifiers::kRelativeMotionEvent,
-      TimeTicks::Now().InSeconds());
+      button, 0, modifiers, TimeTicks::Now().InSeconds());
   // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
   fake_mouse_move_event.SetFrameScale(1);
   Vector<WebMouseEvent> coalesced_events;
@@ -582,17 +589,30 @@ void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   last_known_mouse_global_position_ = event.PositionInScreen();
 }
 
-void MouseEventManager::DispatchFakeMouseMoveEventSoon() {
-  if (mouse_pressed_)
+void MouseEventManager::DispatchFakeMouseMoveEventSoon(
+    MouseEventManager::FakeMouseMoveReason fake_mouse_move_reason) {
+  if (fake_mouse_move_reason ==
+          MouseEventManager::FakeMouseMoveReason::kDuringScroll &&
+      mouse_pressed_)
     return;
 
+  // TODO(lanwei): When the mouse position is unknown, we do not send the fake
+  // mousemove event for now, so we cannot update the hover states and mouse
+  // cursor. We should keep the last mouse position somewhere in browser.
+  // Please see crbug.com/307375, crbug.com/714378.
   if (is_mouse_position_unknown_)
     return;
 
   // Reschedule the timer, to prevent dispatching mouse move events
   // during a scroll. This avoids a potential source of scroll jank.
-  fake_mouse_move_event_timer_.StartOneShot(kFakeMouseMoveInterval,
-                                            BLINK_FROM_HERE);
+  // Or dispatch a fake mouse move to update hover states when the layout
+  // changes.
+  double interval =
+      fake_mouse_move_reason ==
+              MouseEventManager::FakeMouseMoveReason::kDuringScroll
+          ? kFakeMouseMoveIntervalDuringScroll
+          : kFakeMouseMoveIntervalPerFrame;
+  fake_mouse_move_event_timer_.StartOneShot(interval, BLINK_FROM_HERE);
 }
 
 void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(
@@ -605,7 +625,8 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(
           view->RootFrameToContents(last_known_mouse_position_)))
     return;
 
-  DispatchFakeMouseMoveEventSoon();
+  DispatchFakeMouseMoveEventSoon(
+      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
 }
 
 WebInputEventResult MouseEventManager::HandleMousePressEvent(
@@ -754,8 +775,9 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   // 3. When pressing Esc key while dragging and the object is outside of the
   //    we get a mouse leave event here
   if (event.Event().button != WebPointerProperties::Button::kLeft ||
-      event.Event().GetType() == WebInputEvent::kMouseLeave)
+      event.Event().GetType() == WebInputEvent::kMouseLeave) {
     mouse_pressed_ = false;
+  }
 
   if (!mouse_pressed_)
     return WebInputEventResult::kNotHandled;
@@ -1096,6 +1118,10 @@ void MouseEventManager::SetClickCount(int click_count) {
 
 bool MouseEventManager::MouseDownMayStartDrag() {
   return mouse_down_may_start_drag_;
+}
+
+bool MouseEventManager::FakeMouseMovePending() const {
+  return fake_mouse_move_event_timer_.IsActive();
 }
 
 }  // namespace blink

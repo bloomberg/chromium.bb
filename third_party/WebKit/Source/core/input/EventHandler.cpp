@@ -735,7 +735,6 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
     const WebMouseEvent& event,
     const Vector<WebMouseEvent>& coalesced_events) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
-
   HitTestResult hovered_node = HitTestResult();
   WebInputEventResult result =
       HandleMouseMoveOrLeaveEvent(event, coalesced_events, &hovered_node);
@@ -1897,8 +1896,13 @@ bool EventHandler::CursorUpdatePending() {
   return cursor_update_timer_.IsActive();
 }
 
-void EventHandler::DispatchFakeMouseMoveEventSoon() {
-  mouse_event_manager_->DispatchFakeMouseMoveEventSoon();
+bool EventHandler::FakeMouseMovePending() const {
+  return mouse_event_manager_->FakeMouseMovePending();
+}
+
+void EventHandler::DispatchFakeMouseMoveEventSoon(
+    MouseEventManager::FakeMouseMoveReason fake_mouse_move_reason) {
+  mouse_event_manager_->DispatchFakeMouseMoveEventSoon(fake_mouse_move_reason);
 }
 
 void EventHandler::DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad) {
