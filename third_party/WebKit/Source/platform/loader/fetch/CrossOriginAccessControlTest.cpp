@@ -22,7 +22,8 @@ TEST(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
   request.AddHTTPHeaderField("Strawberry", "Red");
 
-  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
+  ResourceRequest preflight =
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
             preflight.HttpHeaderField("Access-Control-Request-Headers"));
@@ -35,7 +36,8 @@ TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
   request.AddHTTPHeaderField("Content-Language", "everything");
   request.AddHTTPHeaderField("Save-Data", "on");
 
-  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
+  ResourceRequest preflight =
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(request);
 
   // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
   // request headers should cause "Access-Control-Request-Headers:" to be
@@ -48,7 +50,8 @@ TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
   request.AddHTTPHeaderField("Content-Type", "text/plain");
 
-  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
+  ResourceRequest preflight =
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(request);
 
   // Empty list also; see comment in test above.
   EXPECT_EQ(g_null_atom,
@@ -59,7 +62,8 @@ TEST(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
   request.AddHTTPHeaderField("X-Custom-Header", "foobar");
 
-  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
+  ResourceRequest preflight =
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("x-custom-header",
             preflight.HttpHeaderField("Access-Control-Request-Headers"));
@@ -70,7 +74,8 @@ TEST(CreateAccessControlPreflightRequestTest,
   ResourceRequest request;
   request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
 
-  ResourceRequest preflight = CreateAccessControlPreflightRequest(request);
+  ResourceRequest preflight =
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(request);
 
   EXPECT_EQ("content-type",
             preflight.HttpHeaderField("Access-Control-Request-Headers"));
@@ -78,36 +83,42 @@ TEST(CreateAccessControlPreflightRequestTest,
 
 TEST(ParseAccessControlExposeHeadersAllowListTest, ValidInput) {
   HTTPHeaderSet set;
-  ParseAccessControlExposeHeadersAllowList("valid", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("valid",
+                                                                     set);
   EXPECT_EQ(1U, set.size());
   EXPECT_TRUE(set.Contains("valid"));
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("a,b", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("a,b",
+                                                                     set);
   EXPECT_EQ(2U, set.size());
   EXPECT_TRUE(set.Contains("a"));
   EXPECT_TRUE(set.Contains("b"));
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("   a ,  b ", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+      "   a ,  b ", set);
   EXPECT_EQ(2U, set.size());
   EXPECT_TRUE(set.Contains("a"));
   EXPECT_TRUE(set.Contains("b"));
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList(" \t   \t\t a", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+      " \t   \t\t a", set);
   EXPECT_EQ(1U, set.size());
   EXPECT_TRUE(set.Contains("a"));
 }
 
 TEST(ParseAccessControlExposeHeadersAllowListTest, DuplicatedEntries) {
   HTTPHeaderSet set;
-  ParseAccessControlExposeHeadersAllowList("a, a", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("a, a",
+                                                                     set);
   EXPECT_EQ(1U, set.size());
   EXPECT_TRUE(set.Contains("a"));
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("a, a, b", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("a, a, b",
+                                                                     set);
   EXPECT_EQ(2U, set.size());
   EXPECT_TRUE(set.Contains("a"));
   EXPECT_TRUE(set.Contains("b"));
@@ -115,44 +126,51 @@ TEST(ParseAccessControlExposeHeadersAllowListTest, DuplicatedEntries) {
 
 TEST(ParseAccessControlExposeHeadersAllowListTest, InvalidInput) {
   HTTPHeaderSet set;
-  ParseAccessControlExposeHeadersAllowList("not valid", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+      "not valid", set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("///", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("///",
+                                                                     set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("/a/", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("/a/",
+                                                                     set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList(",", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(",", set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList(" , ", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(" , ",
+                                                                     set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList(" , a", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(" , a",
+                                                                     set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("a , ", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("a , ",
+                                                                     set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList("", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList("", set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
-  ParseAccessControlExposeHeadersAllowList(" ", set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(" ", set);
   EXPECT_TRUE(set.IsEmpty());
 
   set.clear();
   // U+0141 which is 'A' (0x41) + 0x100.
-  ParseAccessControlExposeHeadersAllowList(String::FromUTF8("\xC5\x81"), set);
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+      String::FromUTF8("\xC5\x81"), set);
   EXPECT_TRUE(set.IsEmpty());
 }
 

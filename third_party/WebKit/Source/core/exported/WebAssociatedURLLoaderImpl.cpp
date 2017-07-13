@@ -224,11 +224,13 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
   }
 
   HTTPHeaderSet exposed_headers;
-  ExtractCorsExposedHeaderNamesList(response, exposed_headers);
+  CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(response,
+                                                              exposed_headers);
   HTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
-        (!IsOnAccessControlResponseHeaderWhitelist(header.key) &&
+        (!CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
+             header.key) &&
          !exposed_headers.Contains(header.key)))
       blocked_headers.insert(header.key);
   }
