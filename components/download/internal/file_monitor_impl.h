@@ -34,20 +34,18 @@ class FileMonitorImpl : public FileMonitor {
       base::TimeDelta file_keep_alive_time);
   ~FileMonitorImpl() override;
 
+  // FileMonitor implementation.
   void Initialize(const InitCallback& callback) override;
   void DeleteUnknownFiles(
       const Model::EntryList& known_entries,
       const std::vector<DriverEntry>& known_driver_entries) override;
   std::vector<Entry*> CleanupFilesForCompletedEntries(
       const Model::EntryList& entries) override;
-  void DeleteFiles(const std::vector<base::FilePath>& files_to_remove,
+  void DeleteFiles(const std::set<base::FilePath>& files_to_remove,
                    stats::FileCleanupReason reason) override;
+  void HardRecover(const InitCallback& callback) override;
 
  private:
-  void DeleteUnknownFilesOnFileThread(
-      const std::set<base::FilePath>& paths_in_db);
-  void DeleteFilesOnFileThread(const std::vector<base::FilePath>& paths,
-                               stats::FileCleanupReason reason);
   bool ReadyForCleanup(const Entry* entry);
 
   const base::FilePath download_file_dir_;

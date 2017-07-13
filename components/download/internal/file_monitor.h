@@ -6,6 +6,7 @@
 #define COMPONENTS_DOWNLOAD_INTERNAL_FILE_MONITOR_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -41,8 +42,12 @@ class FileMonitor {
       const Model::EntryList& entries) = 0;
 
   // Deletes a list of files and logs UMA.
-  virtual void DeleteFiles(const std::vector<base::FilePath>& files_to_remove,
+  virtual void DeleteFiles(const std::set<base::FilePath>& files_to_remove,
                            stats::FileCleanupReason reason) = 0;
+
+  // Deletes all files in the download service directory.  This is a hard reset
+  // on this directory.
+  virtual void HardRecover(const InitCallback& callback) = 0;
 
   virtual ~FileMonitor() = default;
 };

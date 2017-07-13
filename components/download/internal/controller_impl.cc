@@ -472,11 +472,11 @@ void ControllerImpl::CancelOrphanedRequests() {
   auto entries = model_->PeekEntries();
 
   std::vector<std::string> guids_to_remove;
-  std::vector<base::FilePath> files_to_remove;
+  std::set<base::FilePath> files_to_remove;
   for (auto* entry : entries) {
     if (!clients_->GetClient(entry->client)) {
       guids_to_remove.push_back(entry->guid);
-      files_to_remove.push_back(entry->target_file_path);
+      files_to_remove.insert(entry->target_file_path);
     }
   }
 

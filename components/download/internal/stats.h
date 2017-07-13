@@ -93,6 +93,8 @@ enum class FileCleanupReason {
   // it will be used only internally by the Stats class.
   EXTERNAL = 3,
 
+  // We're trying to remove all files as part of a hard recovery attempt.
+  HARD_RECOVERY = 4,
 };
 
 // Logs the results of starting up the Controller.  Will log each failure reason

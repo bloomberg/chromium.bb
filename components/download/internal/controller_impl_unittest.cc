@@ -88,8 +88,8 @@ class MockFileMonitor : public FileMonitor {
   MOCK_METHOD1(CleanupFilesForCompletedEntries,
                std::vector<Entry*>(const Model::EntryList&));
   MOCK_METHOD2(DeleteFiles,
-               void(const std::vector<base::FilePath>&,
-                    stats::FileCleanupReason));
+               void(const std::set<base::FilePath>&, stats::FileCleanupReason));
+  MOCK_METHOD1(HardRecover, void(const FileMonitor::InitCallback&));
 };
 
 void MockFileMonitor::Initialize(const FileMonitor::InitCallback& callback) {
