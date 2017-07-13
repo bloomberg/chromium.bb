@@ -72,7 +72,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   if (!anchor.GetLayoutBox())
     return;
   if (current_anchor_)
-    HideValidationMessage(*current_anchor_);
+    HideValidationMessageImmediately(*current_anchor_);
   current_anchor_ = &anchor;
   IntRect anchor_in_viewport =
       CurrentView()->ContentsToViewport(anchor.PixelSnappedBoundingBox());
@@ -107,10 +107,11 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       web_view_.MainFrameImpl()
           ? web_view_.MainFrameImpl()
           : WebLocalFrameBase::FromFrame(anchor.GetDocument().GetFrame());
-  overlay_ = PageOverlay::Create(
-      target_frame, ValidationMessageOverlayDelegate::Create(
-                        *web_view_.GetPage(), anchor, message_, message_dir,
-                        sub_message, sub_message_dir));
+  auto delegate = ValidationMessageOverlayDelegate::Create(
+      *web_view_.GetPage(), anchor, message_, message_dir, sub_message,
+      sub_message_dir);
+  overlay_delegate_ = delegate.get();
+  overlay_ = PageOverlay::Create(target_frame, std::move(delegate));
   target_frame->GetFrameView()
       ->UpdateLifecycleToCompositingCleanPlusScrolling();
   web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
@@ -118,8 +119,31 @@ void ValidationMessageClientImpl::ShowValidationMessage(
 }
 
 void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
+  if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled()) {
+    HideValidationMessageImmediately(anchor);
+    return;
+  }
   if (!current_anchor_ || !IsValidationMessageVisible(anchor))
     return;
+  DCHECK(overlay_);
+  overlay_delegate_->StartToHide();
+  timer_ = WTF::MakeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
+      TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &anchor.GetDocument()),
+      this, &ValidationMessageClientImpl::Reset);
+  // This should be equal to or larger than transition duration of
+  // #container.hiding in validation_bubble.css.
+  const double kHidingAnimationDuration = 0.6;
+  timer_->StartOneShot(kHidingAnimationDuration, BLINK_FROM_HERE);
+}
+
+void ValidationMessageClientImpl::HideValidationMessageImmediately(
+    const Element& anchor) {
+  if (!current_anchor_ || !IsValidationMessageVisible(anchor))
+    return;
+  Reset(nullptr);
+}
+
+void ValidationMessageClientImpl::Reset(TimerBase*) {
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
@@ -127,6 +151,7 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled())
     web_view_.Client()->HideValidationMessage();
   overlay_ = nullptr;
+  overlay_delegate_ = nullptr;
   web_view_.GetChromeClient().UnregisterPopupOpeningObserver(this);
 }
 
@@ -137,7 +162,7 @@ bool ValidationMessageClientImpl::IsValidationMessageVisible(
 
 void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
   if (current_anchor_ && current_anchor_->GetDocument() == document)
-    HideValidationMessage(*current_anchor_);
+    HideValidationMessageImmediately(*current_anchor_);
 }
 
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
@@ -171,7 +196,7 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
 
 void ValidationMessageClientImpl::WillBeDestroyed() {
   if (current_anchor_)
-    HideValidationMessage(*current_anchor_);
+    HideValidationMessageImmediately(*current_anchor_);
 }
 
 void ValidationMessageClientImpl::WillOpenPopup() {

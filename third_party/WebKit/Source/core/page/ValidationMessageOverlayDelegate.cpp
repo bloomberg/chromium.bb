@@ -4,6 +4,7 @@
 
 #include "core/page/ValidationMessageOverlayDelegate.h"
 
+#include "core/dom/DOMTokenList.h"
 #include "core/dom/Element.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -92,6 +93,8 @@ void ValidationMessageOverlayDelegate::PaintPageOverlay(
     const PageOverlay& overlay,
     GraphicsContext& context,
     const WebSize& view_size) const {
+  if (IsHiding() && !page_)
+    return;
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
   LocalFrameView& view = FrameView();
@@ -216,6 +219,8 @@ Element& ValidationMessageOverlayDelegate::GetElementById(
 
 void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     const IntSize& view_size) {
+  if (IsHiding())
+    return;
   float zoom_factor = ToLocalFrame(page_->MainFrame())->PageZoomFactor();
   IntRect anchor_rect = anchor_->VisibleBoundsInVisualViewport();
   bool show_bottom_arrow = false;
@@ -295,6 +300,19 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
   }
+}
+
+void ValidationMessageOverlayDelegate::StartToHide() {
+  anchor_ = nullptr;
+  if (!page_)
+    return;
+  GetElementById("container")
+      .classList()
+      .replace("shown-fully", "hiding", ASSERT_NO_EXCEPTION);
+}
+
+bool ValidationMessageOverlayDelegate::IsHiding() const {
+  return !anchor_;
 }
 
 }  // namespace blink

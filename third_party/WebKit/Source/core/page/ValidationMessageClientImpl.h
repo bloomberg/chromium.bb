@@ -38,6 +38,7 @@ namespace blink {
 
 class LocalFrameView;
 class PageOverlay;
+class ValidationMessageOverlayDelegate;
 class WebViewBase;
 
 class CORE_EXPORT ValidationMessageClientImpl final
@@ -56,6 +57,8 @@ class CORE_EXPORT ValidationMessageClientImpl final
   ValidationMessageClientImpl(WebViewBase&);
   void CheckAnchorStatus(TimerBase*);
   LocalFrameView* CurrentView();
+  void HideValidationMessageImmediately(const Element& anchor);
+  void Reset(TimerBase*);
 
   void ShowValidationMessage(const Element& anchor,
                              const String& message,
@@ -80,6 +83,8 @@ class CORE_EXPORT ValidationMessageClientImpl final
   double finish_time_;
   std::unique_ptr<TimerBase> timer_;
   std::unique_ptr<PageOverlay> overlay_;
+  // Raw pointer. This pointer is valid unless overlay_ is nullptr.
+  ValidationMessageOverlayDelegate* overlay_delegate_ = nullptr;
 };
 
 }  // namespace blink
