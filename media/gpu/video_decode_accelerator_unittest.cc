@@ -1851,7 +1851,9 @@ class VDATestSuite : public base::TestSuite {
                 new media::VideoDecodeAcceleratorTestEnvironment()));
 
 #if defined(USE_OZONE)
-    ui::OzonePlatform::InitializeForUI();
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForUI(params);
 #endif
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
