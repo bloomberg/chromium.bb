@@ -8,6 +8,8 @@
 
 namespace blink {
 
+void MediaControlDivElement::SetOverflowElementIsWanted(bool) {}
+
 MediaControlDivElement::MediaControlDivElement(
     MediaControlsImpl& media_controls,
     MediaControlElementType display_type)

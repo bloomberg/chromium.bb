@@ -25,6 +25,29 @@ MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(
   SetShadowPseudoId(AtomicString("-webkit-media-controls-volume-slider"));
 }
 
+void MediaControlVolumeSliderElement::SetVolume(double volume) {
+  if (value().ToDouble() == volume)
+    return;
+
+  setValue(String::Number(volume));
+  if (LayoutObject* layout_object = this->GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
+}
+
+bool MediaControlVolumeSliderElement::WillRespondToMouseMoveEvents() {
+  if (!isConnected() || !GetDocument().IsActive())
+    return false;
+
+  return MediaControlInputElement::WillRespondToMouseMoveEvents();
+}
+
+bool MediaControlVolumeSliderElement::WillRespondToMouseClickEvents() {
+  if (!isConnected() || !GetDocument().IsActive())
+    return false;
+
+  return MediaControlInputElement::WillRespondToMouseClickEvents();
+}
+
 void MediaControlVolumeSliderElement::DefaultEventHandler(Event* event) {
   if (!isConnected() || !GetDocument().IsActive())
     return;
@@ -48,29 +71,6 @@ void MediaControlVolumeSliderElement::DefaultEventHandler(Event* event) {
     if (LayoutObject* layout_object = this->GetLayoutObject())
       layout_object->SetShouldDoFullPaintInvalidation();
   }
-}
-
-void MediaControlVolumeSliderElement::SetVolume(double volume) {
-  if (value().ToDouble() == volume)
-    return;
-
-  setValue(String::Number(volume));
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    layout_object->SetShouldDoFullPaintInvalidation();
-}
-
-bool MediaControlVolumeSliderElement::WillRespondToMouseMoveEvents() {
-  if (!isConnected() || !GetDocument().IsActive())
-    return false;
-
-  return MediaControlInputElement::WillRespondToMouseMoveEvents();
-}
-
-bool MediaControlVolumeSliderElement::WillRespondToMouseClickEvents() {
-  if (!isConnected() || !GetDocument().IsActive())
-    return false;
-
-  return MediaControlInputElement::WillRespondToMouseClickEvents();
 }
 
 bool MediaControlVolumeSliderElement::KeepEventInNode(Event* event) {

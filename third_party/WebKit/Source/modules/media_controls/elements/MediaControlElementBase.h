@@ -31,6 +31,7 @@ class MediaControlElementBase : public GarbageCollectedMixin {
   // Tell us whether we fit or not.  This will hide / show the control as
   // needed, also.
   void SetDoesFit(bool);
+  bool DoesFit() const;
 
   // Returns the display type of the element that is set at creation.
   MediaControlElementType DisplayType() const;
@@ -40,15 +41,10 @@ class MediaControlElementBase : public GarbageCollectedMixin {
   // function and return true.
   virtual bool HasOverflowButton() const;
 
-  // If true, shows the overflow menu item if it exists. Hides it if false.
-  void ShouldShowButtonInOverflowMenu(bool);
-
-  // Returns a string representation of the media control element. Used for
-  // the overflow menu.
-  String GetOverflowMenuString() const;
-
-  // Updates the value of the Text string shown in the overflow menu.
-  void UpdateOverflowString();
+  // Similar to SetIsWanted() for the overflow element associated to the current
+  // element. Will be a no-op if the element does not have an associated
+  // overflow element.
+  virtual void SetOverflowElementIsWanted(bool) = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -57,31 +53,17 @@ class MediaControlElementBase : public GarbageCollectedMixin {
                           MediaControlElementType,
                           HTMLElement*);
 
+  // Hide or show based on our fits / wanted state.  We want to show
+  // if and only if we're wanted and we fit.
+  virtual void UpdateShownState();
+
   MediaControlsImpl& GetMediaControls() const;
 
   HTMLMediaElement& MediaElement() const;
 
   void SetDisplayType(MediaControlElementType);
 
-  // Represents the overflow menu element for this media control.
-  // The Element contains the button that the user can click on, but having
-  // the button within an Element enables us to style the overflow menu.
-  // Setting this pointer is optional so it may be null.
-  Member<Element> overflow_menu_element_;
-
-  // The text representation of the button within the overflow menu.
-  Member<Text> overflow_menu_text_;
-
  private:
-  // Hide or show based on our fits / wanted state.  We want to show
-  // if and only if we're wanted and we fit.
-  void UpdateShownState();
-
-  // Returns a string representation of the media control element.
-  // Subclasses should override this method to return the string representation
-  // of the overflow button.
-  virtual WebLocalizedString::Name GetOverflowStringName() const;
-
   Member<MediaControlsImpl> media_controls_;
   MediaControlElementType display_type_;
   Member<HTMLElement> element_;
