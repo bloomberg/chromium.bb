@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
-#define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -52,4 +52,4 @@ class OfflinePageBookmarkObserver
 };
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_BOOKMARK_OBSERVER_H_
