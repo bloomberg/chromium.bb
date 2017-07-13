@@ -671,6 +671,30 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
          !net::URLRequest::IsHandledURL(url);
 }
 
+bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {
+  if (!url.is_valid())
+    return false;  // Can't redirect to invalid URLs.
+
+  const std::string& scheme = url.scheme();
+
+  if (IsPseudoScheme(scheme)) {
+    // Redirects to a pseudo scheme (about, javascript, view-source, ...) are
+    // not allowed. An exception is made for <about:blank> and its variations.
+    return url.IsAboutBlank();
+  }
+
+  // Note about redirects and special URLs:
+  // * data-url: Blocked by net::DataProtocolHandler::IsSafeRedirectTarget().
+  // Depending on their inner origins and if the request is browser-initiated or
+  // renderer-initiated, blob-urls and filesystem-urls might get blocked by
+  // CanCommitURL or in DocumentLoader::RedirectReceived.
+  // * blob-url: If not blocked, a 'file not found' response will be
+  //             generated in net::BlobURLRequestJob::DidStart().
+  // * filesystem-url: If not blocked, the response is displayed.
+
+  return true;
+}
+
 bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
                                                   const GURL& url) {
   if (!url.is_valid())

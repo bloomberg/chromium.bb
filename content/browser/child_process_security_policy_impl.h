@@ -270,6 +270,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // as ensuring that there are no active SiteInstances in that origin.
   void RemoveIsolatedOriginForTesting(const url::Origin& origin);
 
+  // Returns false for redirects that must be blocked no matter which renderer
+  // process initiated the request (if any).
+  // Note: Checking CanRedirectToURL is not enough. CanRequestURL(child_id, url)
+  //       represents a stricter subset. It must also be used for
+  //       renderer-initiated navigations.
+  bool CanRedirectToURL(const GURL& url);
+
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
   friend class ChildProcessSecurityPolicyTest;
