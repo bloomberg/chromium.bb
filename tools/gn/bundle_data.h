@@ -5,6 +5,7 @@
 #ifndef TOOLS_GN_BUNDLE_DATA_H_
 #define TOOLS_GN_BUNDLE_DATA_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -96,6 +97,13 @@ class BundleData {
   SourceDir& plugins_dir() { return plugins_dir_; }
   const SourceDir& plugins_dir() const { return plugins_dir_; }
 
+  std::map<std::string, std::string>& xcode_extra_attributes() {
+    return xcode_extra_attributes_;
+  }
+  const std::map<std::string, std::string>& xcode_extra_attributes() const {
+    return xcode_extra_attributes_;
+  }
+
   std::string& product_type() { return product_type_; }
   const std::string& product_type() const { return product_type_; }
 
@@ -144,6 +152,10 @@ class BundleData {
   SourceDir resources_dir_;
   SourceDir executable_dir_;
   SourceDir plugins_dir_;
+
+  // The specified attributes will append to the build settings of the generated
+  // Xcode target.
+  std::map<std::string, std::string> xcode_extra_attributes_;
 
   // This is the target type as known to Xcode. This is only used to generate
   // the Xcode project file when using --ide=xcode.

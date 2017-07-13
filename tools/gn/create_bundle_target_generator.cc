@@ -4,6 +4,8 @@
 
 #include "tools/gn/create_bundle_target_generator.h"
 
+#include <map>
+
 #include "base/logging.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/label_pattern.h"
@@ -39,6 +41,9 @@ void CreateBundleTargetGenerator::DoRun() {
     return;
   if (!FillBundleDir(bundle_data.root_dir(), variables::kBundlePlugInsDir,
                      &bundle_data.plugins_dir()))
+    return;
+
+  if (!FillXcodeExtraAttributes())
     return;
 
   if (!FillProductType())
@@ -84,6 +89,36 @@ bool CreateBundleTargetGenerator::FillBundleDir(
     return false;
   }
   bundle_dir->SwapValue(&str);
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillXcodeExtraAttributes() {
+  // Need to get a mutable value to mark all values in the scope as used. This
+  // cannot be done on a const Scope.
+  Value* value = scope_->GetMutableValue(variables::kXcodeExtraAttributes,
+                                         Scope::SEARCH_CURRENT, true);
+  if (!value)
+    return true;
+
+  if (!value->VerifyTypeIs(Value::SCOPE, err_))
+    return false;
+
+  Scope* scope_value = value->scope_value();
+
+  Scope::KeyValueMap value_map;
+  scope_value->GetCurrentScopeValues(&value_map);
+  scope_value->MarkAllUsed();
+
+  std::map<std::string, std::string> xcode_extra_attributes;
+  for (const auto& iter : value_map) {
+    if (!iter.second.VerifyTypeIs(Value::STRING, err_))
+      return false;
+
+    xcode_extra_attributes.insert(
+        std::make_pair(iter.first.as_string(), iter.second.string_value()));
+  }
+
+  target_->bundle_data().xcode_extra_attributes().swap(xcode_extra_attributes);
   return true;
 }
 

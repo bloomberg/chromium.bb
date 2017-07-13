@@ -525,15 +525,19 @@ void XcodeWriter::CreateProductsProject(
               0, target_name.rfind(kXCTestModuleTargetNamePostfix));
         }
 
+        PBXAttributes xcode_extra_attributes =
+            target->bundle_data().xcode_extra_attributes();
+
+        // TODO(crbug.com/740800): Remove the following comment and code once
+        // the bug is fixed and gn has rolled past it.
         // Test files need to be known to Xcode for proper indexing and for
         // discovery of tests function for XCTest, but the compilation is done
         // via ninja and thus must prevent Xcode from linking object files via
         // this hack.
-        PBXAttributes extra_attributes;
         if (IsXCTestModuleTarget(target)) {
-          extra_attributes["OTHER_LDFLAGS"] = "-help";
-          extra_attributes["ONLY_ACTIVE_ARCH"] = "YES";
-          extra_attributes["DEBUG_INFORMATION_FORMAT"] = "dwarf";
+          xcode_extra_attributes["OTHER_LDFLAGS"] = "-help";
+          xcode_extra_attributes["ONLY_ACTIVE_ARCH"] = "YES";
+          xcode_extra_attributes["DEBUG_INFORMATION_FORMAT"] = "dwarf";
         }
 
         PBXNativeTarget* native_target = main_project->AddNativeTarget(
@@ -544,7 +548,7 @@ void XcodeWriter::CreateProductsProject(
                        build_settings->build_dir()),
             target->bundle_data().product_type(),
             GetBuildScript(pbxtarget_name, ninja_extra_args, env.get()),
-            extra_attributes);
+            xcode_extra_attributes);
         bundle_target_to_pbxtarget.insert(
             std::make_pair(target, native_target));
 

@@ -102,6 +102,7 @@
     *   [defines: [string list] C preprocessor defines.](#defines)
     *   [depfile: [string] File name for input dependencies for actions.](#depfile)
     *   [deps: [label list] Private linked dependencies.](#deps)
+    *   [xcode_extra_attributes: [scope] Extra attributes for Xcode projects.](#depfile)
     *   [include_dirs: [directory list] Additional include directories.](#include_dirs)
     *   [inputs: [file list] Additional compile-time dependencies.](#inputs)
     *   [ldflags: [string list] Flags passed to the linker.](#ldflags)
@@ -1347,6 +1348,11 @@
           bundle_resources_dir = bundle_root_dir
           bundle_executable_dir = bundle_root_dir
           bundle_plugins_dir = bundle_root_dir + "/Plugins"
+
+          xcode_extra_attributes = {
+            ONLY_ACTIVE_ARCH = "YES"
+            DEBUG_INFORMATION_FORMAT = "dwarf"
+          }
         } else {
           bundle_root_dir = "${root_build_dir}/target_name/Contents"
           bundle_resources_dir = bundle_root_dir + "/Resources"
@@ -1395,7 +1401,8 @@
   Deps: data_deps, deps, public_deps
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
-           output_extension, public, sources, testonly, visibility
+           output_extension, public, sources, testonly, visibility,
+           xcode_extra_attributes
 ```
 ### <a name="group"></a>**group**: Declare a named group of targets.
 
@@ -4486,6 +4493,26 @@
   "gn help runtime_deps".
 
   See also "public_deps".
+```
+### <a name="xcode_extra_attributes"></a>**xcode_extra_attributes**: Extra attributes for Xcode projects.
+
+```
+  The value defined in this scope will be copied to the EXTRA_ATTRIBUTES
+  property of the generated Xcode project. They are only meaningful when
+  generating with --ide=xcode.
+
+  See "gn help create_bundle" for more information.
+```
+
+#### **Example**
+
+```
+  create_bundle("chrome") {
+    xcode_extra_attributes = {
+      ONLY_ACTIVE_ARCH = "YES"
+    }
+    ...
+  }
 ```
 ### <a name="include_dirs"></a>**include_dirs**: Additional include directories.
 
