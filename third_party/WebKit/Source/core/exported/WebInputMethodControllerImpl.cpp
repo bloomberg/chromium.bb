@@ -13,7 +13,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/page/FocusController.h"
@@ -149,7 +149,7 @@ InputMethodController& WebInputMethodControllerImpl::GetInputMethodController()
 
 WebPlugin* WebInputMethodControllerImpl::FocusedPluginIfInputMethodSupported()
     const {
-  WebPluginContainerBase* container = GetFrame()->GetWebPluginContainerBase();
+  WebPluginContainerImpl* container = GetFrame()->GetWebPluginContainer();
   if (container && container->SupportsInputMethod()) {
     return container->Plugin();
   }

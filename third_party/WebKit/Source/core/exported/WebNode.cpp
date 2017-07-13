@@ -42,7 +42,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -192,7 +192,7 @@ bool WebNode::Focused() const {
 }
 
 WebPluginContainer* WebNode::PluginContainer() const {
-  return private_->GetWebPluginContainerBase();
+  return private_->GetWebPluginContainer();
 }
 
 WebNode::WebNode(Node* node) : private_(node) {}

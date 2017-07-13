@@ -1078,12 +1078,11 @@ std::unique_ptr<WebURLLoader> LocalFrame::CreateURLLoader(
   return Client()->CreateURLLoader(request, task_runner);
 }
 
-WebPluginContainerBase* LocalFrame::GetWebPluginContainerBase(
-    Node* node) const {
+WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
   if (GetDocument() && GetDocument()->IsPluginDocument()) {
     PluginDocument* plugin_document = ToPluginDocument(GetDocument());
     if (plugin_document->GetPluginView()) {
-      return plugin_document->GetPluginView()->GetWebPluginContainerBase();
+      return plugin_document->GetPluginView()->GetWebPluginContainer();
     }
   }
   if (!node) {
@@ -1092,7 +1091,7 @@ WebPluginContainerBase* LocalFrame::GetWebPluginContainerBase(
   }
 
   if (node) {
-    return node->GetWebPluginContainerBase();
+    return node->GetWebPluginContainer();
   }
   return nullptr;
 }

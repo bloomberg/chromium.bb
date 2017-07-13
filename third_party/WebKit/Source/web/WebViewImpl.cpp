@@ -54,7 +54,7 @@
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
 #include "core/exported/WebFactory.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
 #include "core/frame/BrowserControls.h"
@@ -1164,8 +1164,8 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
           PluginView* plugin_view =
               ToLayoutEmbeddedContent(element->GetLayoutObject())->Plugin();
           if (plugin_view && plugin_view->IsPluginContainer()) {
-            WebPluginContainerBase* plugin =
-                ToWebPluginContainerBase(plugin_view);
+            WebPluginContainerImpl* plugin =
+                ToWebPluginContainerImpl(plugin_view);
             if (plugin && plugin->SupportsKeyboardFocus())
               suppress_next_keypress_event_ = true;
           }
@@ -2879,7 +2879,7 @@ void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
                                                        float zoom_factor) {
   if (frame->IsLocalRoot()) {
     LocalFrame* local_frame = ToLocalFrame(frame);
-    if (!local_frame->GetWebPluginContainerBase())
+    if (!local_frame->GetWebPluginContainer())
       local_frame->SetPageZoomFactor(zoom_factor);
   }
 
@@ -2931,7 +2931,7 @@ float WebViewImpl::TextZoomFactor() {
 
 float WebViewImpl::SetTextZoomFactor(float text_zoom_factor) {
   LocalFrame* frame = MainFrameImpl()->GetFrame();
-  if (frame->GetWebPluginContainerBase())
+  if (frame->GetWebPluginContainer())
     return 1;
 
   frame->SetTextZoomFactor(text_zoom_factor);
@@ -3360,7 +3360,7 @@ void WebViewImpl::PerformPluginAction(const WebPluginAction& action,
   if (object && object->IsLayoutEmbeddedContent()) {
     PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
     if (plugin_view && plugin_view->IsPluginContainer()) {
-      WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
+      WebPluginContainerImpl* plugin = ToWebPluginContainerImpl(plugin_view);
       switch (action.type) {
         case WebPluginAction::kRotate90Clockwise:
           plugin->Plugin()->RotateView(WebPlugin::kRotationType90Clockwise);
