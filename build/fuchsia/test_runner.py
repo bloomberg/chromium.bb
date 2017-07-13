@@ -259,7 +259,15 @@ def main():
        '-machine', 'q35',
        '-kernel', os.path.join(SDK_ROOT, 'kernel', 'magenta.bin'),
        '-initrd', bootfs,
-       '-append', 'TERM=xterm-256color kernel.halt_on_panic=true']
+
+       # Use stdio for the guest OS only; don't attach the QEMU interactive
+       # monitor.
+       '-serial', 'stdio',
+       '-monitor', 'none',
+
+       # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
+       # noisy ANSI spew from the user's terminal emulator.
+       '-append', 'TERM=dumb kernel.halt_on_panic=true']
   if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
     qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
   else:
@@ -272,7 +280,15 @@ def main():
     bt_with_offset_re = re.compile(prefix +
         'bt#(\d+): pc 0x[0-9a-f]+ sp (0x[0-9a-f]+) \((\S+),(0x[0-9a-f]+)\)$')
     bt_end_re = re.compile(prefix + 'bt#(\d+): end')
-    qemu_popen = subprocess.Popen(qemu_command, stdout=subprocess.PIPE)
+
+    # We pass a separate stdin stream to qemu. Sharing stdin across processes
+    # leads to flakiness due to the OS prematurely killing the stream and the
+    # Python script panicking and aborting.
+    # The precise root cause is still nebulous, but this fix works.
+    # See crbug.com/741194 .
+    qemu_popen = subprocess.Popen(
+        qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
+
     processed_lines = []
     success = False
     while True:
@@ -301,6 +317,7 @@ def main():
               '(inlined', ' ' * len(prefix) + '(inlined')
           processed_lines.append('%s%s' % (prefix, addr2line_filtered))
     qemu_popen.wait()
+
     return 0 if success else 1
 
   return 0
