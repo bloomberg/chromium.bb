@@ -23,9 +23,9 @@
 
 namespace {
 
-const CGFloat kOmniboxImageBottomInset = 1;
 const CGFloat kHintLabelSidePadding = 12;
 const CGFloat kMaxConstraintConstantDiff = 5;
+const CGFloat kMaxTopMarginDiff = 4;
 
 }  // namespace
 
@@ -114,8 +114,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   UIImage* fullBleedShadow = NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
   _shadow = [[UIImageView alloc] initWithImage:fullBleedShadow];
   CGRect shadowFrame = [searchField bounds];
-  shadowFrame.origin.y =
-      searchField.bounds.size.height - kOmniboxImageBottomInset;
+  shadowFrame.origin.y = searchField.bounds.size.height;
   shadowFrame.size.height = fullBleedShadow.size.height;
   [_shadow setFrame:shadowFrame];
   [_shadow setUserInteractionEnabled:NO];
@@ -150,16 +149,14 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   // its frame covers the entire toolbar area.
   CGFloat maxXInset = ui::AlignValueToUpperPixel(
       (searchFieldNormalWidth - self.bounds.size.width) / 2 - 1);
-  CGFloat maxYOffset = ui::AlignValueToUpperPixel(
-      (ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight) /
-          2 +
-      kOmniboxImageBottomInset - 0.5);
+  CGFloat maxHeightDiff =
+      ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
 
   widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
   topMarginConstraint.constant =
-      content_suggestions::searchFieldTopMargin() + maxYOffset * percent;
+      content_suggestions::searchFieldTopMargin() + kMaxTopMarginDiff * percent;
   heightConstraint.constant =
-      content_suggestions::kSearchFieldHeight + 2 * maxYOffset * percent;
+      content_suggestions::kSearchFieldHeight + maxHeightDiff * percent;
 
   [_searchBoxBorder setAlpha:(1 - percent)];
   [_shadow setAlpha:percent];
