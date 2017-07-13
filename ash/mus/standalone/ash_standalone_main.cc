@@ -22,7 +22,6 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/screen.h"
 #include "ui/views/examples/examples_window.h"
 
 namespace ash {
@@ -54,10 +53,6 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
     Shell::Get()->AddShellObserver(this);
   }
 
-  void PreShutdown() override {
-    display::Screen::GetScreen()->RemoveObserver(window_watcher_.get());
-  }
-
   // ShellObserver:
   void OnShellInitialized() override {
     Shell::Get()->RemoveShellObserver(this);
@@ -70,7 +65,6 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
     example_session_controller_client_->Initialize();
 
     window_watcher_ = base::MakeUnique<shell::WindowWatcher>();
-    display::Screen::GetScreen()->AddObserver(window_watcher_.get());
     shell::InitWindowTypeLauncher(base::Bind(&ShowViewsExamples));
 
     // Initialize the example app list presenter.
