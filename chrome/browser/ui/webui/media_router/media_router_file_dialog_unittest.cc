@@ -68,7 +68,6 @@ class MediaRouterFileDialogTest : public Test {
  public:
   MediaRouterFileDialogTest() {
     fake_path = base::FilePath(FILE_PATH_LITERAL("im/a/fake_path.mp3"));
-    fake_path_name = fake_path.BaseName().LossyDisplayName();
 
     scoped_feature_list_.InitFromCommandLine(
         "EnableCastLocalMedia" /* enabled features */,
@@ -96,9 +95,13 @@ class MediaRouterFileDialogTest : public Test {
         .WillByDefault(Return(1));
   }
 
-  void FileSelectedExpectFailure(base::FilePath fake_path, std::string title) {
-    EXPECT_CALL(*mock_delegate_,
-                FileDialogSelectionFailed(Field(&IssueInfo::title, title)));
+  void FileSelectedExpectFailure(base::FilePath fake_path) {
+    fake_path_name = fake_path.BaseName().LossyDisplayName();
+    std::string error_title = l10n_util::GetStringFUTF8(
+        IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_ERROR, fake_path_name);
+
+    EXPECT_CALL(*mock_delegate_, FileDialogSelectionFailed(
+                                     Field(&IssueInfo::title, error_title)));
 
     dialog_as_listener_->FileSelected(fake_path, 0, 0);
 
@@ -156,50 +159,35 @@ TEST_F(MediaRouterFileDialogTest, SelectFailureFileDoesNotExist) {
   EXPECT_CALL(*mock_file_system_delegate, FileExists(fake_path))
       .WillOnce(Return(false));
 
-  FileSelectedExpectFailure(
-      fake_path,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_FILE_MISSING,
-                                fake_path_name));
+  FileSelectedExpectFailure(fake_path);
 }
 
 TEST_F(MediaRouterFileDialogTest, SelectFailureFileDoesNotContainContent) {
   EXPECT_CALL(*mock_file_system_delegate, GetFileSize(fake_path))
       .WillOnce(Return(0));
 
-  FileSelectedExpectFailure(
-      fake_path,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_MEDIA,
-                                fake_path_name));
+  FileSelectedExpectFailure(fake_path);
 }
 
 TEST_F(MediaRouterFileDialogTest, SelectFailureCannotReadGetFileSize) {
   EXPECT_CALL(*mock_file_system_delegate, GetFileSize(fake_path))
       .WillOnce(Return(-1));
 
-  FileSelectedExpectFailure(
-      fake_path,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_READ_ERROR,
-                                fake_path_name));
+  FileSelectedExpectFailure(fake_path);
 }
 
 TEST_F(MediaRouterFileDialogTest, SelectFailureCannotReadFile) {
   EXPECT_CALL(*mock_file_system_delegate, IsFileReadable(fake_path))
       .WillOnce(Return(false));
 
-  FileSelectedExpectFailure(
-      fake_path,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_READ_ERROR,
-                                fake_path_name));
+  FileSelectedExpectFailure(fake_path);
 }
 
 TEST_F(MediaRouterFileDialogTest, SelectFailureFileNotSupported) {
   EXPECT_CALL(*mock_file_system_delegate, IsFileTypeSupported(fake_path))
       .WillOnce(Return(false));
 
-  FileSelectedExpectFailure(
-      fake_path,
-      l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_SUPPORTED,
-                                fake_path_name));
+  FileSelectedExpectFailure(fake_path);
 }
 
 }  // namespace media_router
