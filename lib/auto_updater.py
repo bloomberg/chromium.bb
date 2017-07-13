@@ -831,18 +831,41 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   def _CollectDevServerHostLog(self, devserver):
     """Write the host_log events from the remote DUTs devserver to a file.
 
+    We retry several times as some DUTs are slow immediately after
+    starting up a devserver and return no hostlog on the first call(s).
+
     Args:
       devserver: The remote devserver wrapper for the running devserver.
     """
-    try:
-      host_log_url = devserver.GetDevServerHostLogURL(ip='127.0.0.1',
-                                                      port=devserver.port,
-                                                      host='127.0.0.1')
-      self.device.RunCommand(['curl', host_log_url, '-o',
-                              self.REMOTE_HOSTLOG_FILE_PATH],
-                             **self._cmd_kwargs)
-    except cros_build_lib.RunCommandError as e:
-      logging.debug('Exception raised while trying to write the hostlog: %s', e)
+
+    for _ in range(0, MAX_RETRY):
+      try:
+        host_log_url = devserver.GetDevServerHostLogURL(ip='127.0.0.1',
+                                                        port=devserver.port,
+                                                        host='127.0.0.1')
+
+        # Save the hostlog.
+        self.device.RunCommand(['curl', host_log_url, '-o',
+                                self.REMOTE_HOSTLOG_FILE_PATH],
+                               **self._cmd_kwargs)
+
+        # Copy it back.
+        tmphostlog = os.path.join(self.tempdir, 'hostlog')
+        self.device.CopyFromDevice(self.REMOTE_HOSTLOG_FILE_PATH, tmphostlog,
+                                   **self._cmd_kwargs_omit_error)
+
+        # Check that it is not empty.
+        with open(tmphostlog, 'r') as out_log:
+          hostlog_data = json.loads(out_log.read())
+
+        if not hostlog_data:
+          logging.info('Hostlog empty. Trying again...')
+        else:
+          break
+
+      except cros_build_lib.RunCommandError as e:
+        logging.debug('Exception raised while trying to write the hostlog: '
+                      '%s', e)
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
