@@ -39,6 +39,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
   const mojom::CoordinationUnitPtr& service() const { return service_; }
 
   void SendEvent(const mojom::EventType& event_type);
+  void SetProperty(mojom::PropertyType property_type,
+                   std::unique_ptr<base::Value> value);
   void AddChild(const ResourceCoordinatorInterface& child);
   void RemoveChild(const ResourceCoordinatorInterface& child);
 
