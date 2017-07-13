@@ -6,6 +6,16 @@
 
 namespace blink {
 
+// static
+std::unique_ptr<WebServiceWorkerInstalledScriptsManager::RawScriptData>
+WebServiceWorkerInstalledScriptsManager::RawScriptData::Create(
+    WebString encoding,
+    WebVector<BytesChunk> script_text,
+    WebVector<BytesChunk> meta_data) {
+  return WTF::WrapUnique(new RawScriptData(
+      std::move(encoding), std::move(script_text), std::move(meta_data)));
+}
+
 WebServiceWorkerInstalledScriptsManager::RawScriptData::RawScriptData(
     WebString encoding,
     WebVector<BytesChunk> script_text,
@@ -14,6 +24,9 @@ WebServiceWorkerInstalledScriptsManager::RawScriptData::RawScriptData(
       script_text_(std::move(script_text)),
       meta_data_(std::move(meta_data)),
       headers_(WTF::MakeUnique<CrossThreadHTTPHeaderMapData>()) {}
+
+WebServiceWorkerInstalledScriptsManager::RawScriptData::~RawScriptData() =
+    default;
 
 void WebServiceWorkerInstalledScriptsManager::RawScriptData::AddHeader(
     const WebString& key,

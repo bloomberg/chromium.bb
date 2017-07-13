@@ -6,13 +6,15 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_WEB_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_IMPL_H_
 
 #include <set>
+#include <vector>
 
 #include "content/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "content/renderer/service_worker/thread_safe_script_container.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 
 namespace content {
 
-class WebServiceWorkerInstalledScriptsManagerImpl final
+class CONTENT_EXPORT WebServiceWorkerInstalledScriptsManagerImpl final
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerInstalledScriptsManager) {
  public:
   // Called on the main thread.
@@ -28,10 +30,12 @@ class WebServiceWorkerInstalledScriptsManagerImpl final
       const blink::WebURL& script_url) override;
 
  private:
-  explicit WebServiceWorkerInstalledScriptsManagerImpl(
-      std::vector<GURL>&& installed_urls);
+  WebServiceWorkerInstalledScriptsManagerImpl(
+      std::vector<GURL>&& installed_urls,
+      scoped_refptr<ThreadSafeScriptContainer> script_container);
 
   const std::set<GURL> installed_urls_;
+  scoped_refptr<ThreadSafeScriptContainer> script_container_;
 };
 
 }  // namespace content
