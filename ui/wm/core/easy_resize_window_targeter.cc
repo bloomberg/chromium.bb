@@ -5,6 +5,7 @@
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -21,11 +22,11 @@ EasyResizeWindowTargeter::EasyResizeWindowTargeter(
     const gfx::Insets& mouse_extend,
     const gfx::Insets& touch_extend)
     : container_(container) {
+  DCHECK(container_);
   SetInsets(mouse_extend, touch_extend);
 }
 
-EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {
-}
+EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {}
 
 void EasyResizeWindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
                                          const gfx::Insets& touch_extend) {
@@ -69,11 +70,17 @@ bool EasyResizeWindowTargeter::ShouldUseExtendedBounds(
   if (window->parent() != container_)
     return false;
 
+  const bool can_resize =
+      window->GetProperty(aura::client::kResizeBehaviorKey) &
+      ui::mojom::kResizeBehaviorCanResize;
   aura::client::TransientWindowClient* transient_window_client =
       aura::client::GetTransientWindowClient();
-  return !transient_window_client ||
-      !transient_window_client->GetTransientParent(window) ||
-      transient_window_client->GetTransientParent(window) == container_;
+  const aura::Window* transient_parent =
+      transient_window_client
+          ? transient_window_client->GetTransientParent(window)
+          : nullptr;
+  return !transient_parent || transient_parent == container_ ||
+         (can_resize && transient_parent->parent() == container_);
 }
 
 }  // namespace wm
