@@ -856,6 +856,16 @@ bool ComputedStyle::RequireTransformOrigin(
   return Scale() || Rotate();
 }
 
+InterpolationQuality ComputedStyle::GetInterpolationQuality() const {
+  if (ImageRendering() == EImageRendering::kPixelated)
+    return kInterpolationNone;
+
+  if (ImageRendering() == EImageRendering::kWebkitOptimizeContrast)
+    return kInterpolationLow;
+
+  return kInterpolationDefault;
+}
+
 void ComputedStyle::ApplyTransform(
     TransformationMatrix& result,
     const LayoutSize& border_box_size,

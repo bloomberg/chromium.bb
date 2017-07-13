@@ -10,7 +10,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
@@ -257,9 +256,7 @@ class ImagePaintContext {
                     const FillLayer& layer,
                     const StyleImage& style_image,
                     SkBlendMode op,
-                    const LayoutSize& container_size,
-                    double frame_time,
-                    const Settings* settings)
+                    const LayoutSize& container_size)
       : context_(context),
         previous_interpolation_quality_(context.ImageInterpolationQuality()) {
     SkBlendMode bg_op =
@@ -269,12 +266,7 @@ class ImagePaintContext {
 
     image_ = style_image.GetImage(image_client, document, style,
                                   FlooredIntSize(container_size));
-    interpolation_quality_ =
-        ImageQualityController::GetImageQualityController()
-            ->ChooseInterpolationQuality(image_client, style, settings,
-                                         image_.Get(), &layer, container_size,
-                                         frame_time);
-
+    interpolation_quality_ = style.GetInterpolationQuality();
     if (interpolation_quality_ != previous_interpolation_quality_)
       context.SetImageInterpolationQuality(interpolation_quality_);
 
@@ -414,10 +406,6 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
       (box ? box->IncludeLogicalRightEdge() : true));
 
   bool has_line_box_sibling = box && (box->NextLineBox() || box->PrevLineBox());
-  const Page* page = obj.GetDocument().GetPage();
-  double frame_time = page->GetChromeClient().LastFrameTimeMonotonic();
-  const Settings* settings = obj.GetDocument().GetSettings();
-
   LayoutRectOutsets border(
       obj.BorderTop(),
       info.include_right_edge ? obj.BorderRight() : LayoutUnit(),
@@ -453,7 +441,7 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
                        scrolled_paint_rect);
     image_context.emplace(geometry.ImageClient(), geometry.ImageDocument(),
                           geometry.ImageStyle(), context, bg_layer, *info.image,
-                          op, geometry.TileSize(), frame_time, settings);
+                          op, geometry.TileSize());
   }
 
   // Fast path for drawing simple color backgrounds.

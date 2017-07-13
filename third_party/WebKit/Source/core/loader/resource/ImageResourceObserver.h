@@ -71,10 +71,6 @@ class CORE_EXPORT ImageResourceObserver {
     return ResourcePriority();
   }
 
-  // Requests a full repaint for the image, called by ImageQualityController
-  // to schedule a high-quality repaint after an animation.
-  virtual void RequestFullPaintInvalidationForImage() const {}
-
   // Name for debugging, e.g. shown in memory-infra.
   virtual String DebugName() const = 0;
 

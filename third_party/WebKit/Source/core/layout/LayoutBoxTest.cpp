@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
