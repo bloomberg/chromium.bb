@@ -657,6 +657,13 @@ be describing additional metrics about the same event.
     them. A separate event is generated for each password form discovered on a
     site.
   </summary>
+  <metric name="ManagerFill.Action">
+    <summary>
+      Records for each password form (and HTTP auth), whether the password
+      manager has filled/provided credentials. Recorded values correspond to the
+      enum ManagerAutofillEvent.
+    </summary>
+  </metric>
   <metric name="Submission.Observed">
     <summary>
       Records whether a submission of a password form has been observered. The

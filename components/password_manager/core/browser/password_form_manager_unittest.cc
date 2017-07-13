@@ -3709,4 +3709,59 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   EXPECT_EQ(pending, passed);
 }
 
+// Verifies that URL keyed metrics are recorded for the filling of passwords
+// into forms and HTTP Basic auth.
+TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
+  PasswordForm scheme_basic_form = *observed_form();
+  scheme_basic_form.scheme = PasswordForm::SCHEME_BASIC;
+
+  const struct {
+    // Whether the login is doing HTTP Basic Auth instead of form based login.
+    bool is_http_basic_auth;
+    // The matching stored credentials, or nullptr if none.
+    PasswordForm* fetched_form;
+    PasswordFormMetricsRecorder::ManagerAutofillEvent expected_event;
+  } kTestCases[] = {
+      {false, saved_match(),
+       PasswordFormMetricsRecorder::kManagerFillEventAutofilled},
+      {false, psl_saved_match(),
+       PasswordFormMetricsRecorder::kManagerFillEventBlockedOnInteraction},
+      {false, nullptr,
+       PasswordFormMetricsRecorder::kManagerFillEventNoCredential},
+      {true, &scheme_basic_form,
+       PasswordFormMetricsRecorder::kManagerFillEventAutofilled},
+      {true, nullptr,
+       PasswordFormMetricsRecorder::kManagerFillEventNoCredential},
+  };
+
+  for (const auto& test : kTestCases) {
+    const PasswordForm& form_to_fill =
+        test.is_http_basic_auth ? scheme_basic_form : *observed_form();
+
+    std::vector<const autofill::PasswordForm*> fetched_forms;
+    if (test.fetched_form)
+      fetched_forms.push_back(test.fetched_form);
+
+    ukm::TestUkmRecorder test_ukm_recorder;
+    client()->GetUkmRecorder()->UpdateSourceURL(client()->GetUkmSourceId(),
+                                                form_to_fill.origin);
+
+    {
+      FakeFormFetcher fetcher;
+      PasswordFormManager form_manager(
+          password_manager(), client(),
+          test.is_http_basic_auth ? nullptr : client()->driver(), form_to_fill,
+          base::MakeUnique<NiceMock<MockFormSaver>>(), &fetcher);
+      form_manager.Init(nullptr);
+      fetcher.SetNonFederated(fetched_forms, 0u);
+    }
+
+    const auto* source =
+        test_ukm_recorder.GetSourceForUrl(form_to_fill.origin.spec().c_str());
+    test_ukm_recorder.ExpectMetric(*source, "PasswordForm",
+                                   internal::kUkmManagerFillEvent,
+                                   test.expected_event);
+  }
+}
+
 }  // namespace password_manager
