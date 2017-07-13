@@ -4,7 +4,6 @@
 
 #include "content/app/android/library_loader_hooks.h"
 
-#include "base/android/base_jni_registrar.h"
 #include "base/android/command_line_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
@@ -47,9 +46,6 @@ bool EnsureJniRegistered(JNIEnv* env) {
   static bool g_jni_init_done = false;
 
   if (!g_jni_init_done) {
-    if (!base::android::RegisterJni(env))
-      return false;
-
     if (!gfx::android::RegisterJni(env))
       return false;
 

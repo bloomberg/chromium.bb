@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
@@ -15,8 +14,7 @@
 namespace {
 
 bool RegisterJNI(JNIEnv *env) {
-  return base::android::RegisterJni(env) &&
-      content::android::RegisterShellJni(env) &&
+  return content::android::RegisterShellJni(env) &&
       testing::android::RegisterNativeTestJNI(env);
 }
 

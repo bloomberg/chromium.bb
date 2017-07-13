@@ -5,7 +5,6 @@
 #include <jni.h>
 
 #include "base/android/base_jni_onload.h"
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/record_user_action.h"
-
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -53,11 +51,6 @@ static void RemoveActionCallbackForTesting(JNIEnv* env,
   auto* wrapper = reinterpret_cast<ActionCallbackWrapper*>(callback_id);
   base::RemoveActionCallback(wrapper->action_callback);
   delete wrapper;
-}
-
-// Register native methods
-bool RegisterRecordUserAction(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

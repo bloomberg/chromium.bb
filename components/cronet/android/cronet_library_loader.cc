@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/android/base_jni_onload.h"
-#include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
@@ -43,7 +42,6 @@ namespace cronet {
 namespace {
 
 const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
-    {"BaseAndroid", base::android::RegisterJni},
     {"CronetBidirectionalStreamAdapter",
      CronetBidirectionalStreamAdapter::RegisterJni},
     {"CronetLibraryLoader", RegisterNativesImpl},
