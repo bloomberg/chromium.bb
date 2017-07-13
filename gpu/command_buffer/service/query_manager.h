@@ -40,8 +40,8 @@ class GPU_EXPORT QueryManager {
    public:
     Query(QueryManager* manager,
           GLenum target,
-          int32_t shm_id,
-          uint32_t shm_offset);
+          scoped_refptr<gpu::Buffer> buffer,
+          QuerySync* sync);
 
     GLenum target() const {
       return target_;
@@ -71,21 +71,15 @@ class GPU_EXPORT QueryManager {
       return query_state_ == kQueryState_Finished;
     }
 
-    int32_t shm_id() const { return shm_id_; }
+    const QuerySync* sync() const { return sync_; }
 
-    uint32_t shm_offset() const { return shm_offset_; }
+    virtual void Begin() = 0;
 
-    // Returns false if shared memory for sync is invalid.
-    virtual bool Begin() = 0;
+    virtual void End(base::subtle::Atomic32 submit_count) = 0;
 
-    // Returns false if shared memory for sync is invalid.
-    virtual bool End(base::subtle::Atomic32 submit_count) = 0;
+    virtual void QueryCounter(base::subtle::Atomic32 submit_count) = 0;
 
-    // Returns false if shared memory for sync is invalid.
-    virtual bool QueryCounter(base::subtle::Atomic32 submit_count) = 0;
-
-    // Returns false if shared memory for sync is invalid.
-    virtual bool Process(bool did_finish) = 0;
+    virtual void Process(bool did_finish) = 0;
 
     // Pauses active query to be resumed later.
     virtual void Pause() = 0;
@@ -126,22 +120,15 @@ class GPU_EXPORT QueryManager {
       submit_count_ = submit_count;
     }
 
-    // Returns false if shared memory for sync is invalid.
-    bool MarkAsCompleted(uint64_t result);
+    void MarkAsCompleted(uint64_t result);
 
     void UnmarkAsPending() {
       DCHECK(query_state_ == kQueryState_Pending);
       query_state_ = kQueryState_Finished;
     }
 
-    // Returns false if shared memory for sync is invalid.
-    bool AddToPendingQueue(base::subtle::Atomic32 submit_count) {
-      return manager_->AddPendingQuery(this, submit_count);
-    }
-
-    // Returns false if shared memory for sync is invalid.
-    bool AddToPendingTransferQueue(base::subtle::Atomic32 submit_count) {
-      return manager_->AddPendingTransferQuery(this, submit_count);
+    void AddToPendingQueue(base::subtle::Atomic32 submit_count) {
+      manager_->AddPendingQuery(this, submit_count);
     }
 
     void BeginQueryHelper(GLenum target, GLuint id) {
@@ -179,9 +166,11 @@ class GPU_EXPORT QueryManager {
     // The type of query.
     GLenum target_;
 
-    // The shared memory used with this Query.
-    int32_t shm_id_;
-    uint32_t shm_offset_;
+    // The shared memory used with this Query. We keep a reference to the Buffer
+    // to ensure it doesn't get released until we wrote results. sync_ points to
+    // memory inside buffer_.
+    scoped_refptr<gpu::Buffer> buffer_;
+    QuerySync* sync_;
 
     // Count to set process count do when completed.
     base::subtle::Atomic32 submit_count_;
@@ -216,8 +205,8 @@ class GPU_EXPORT QueryManager {
   // Creates a Query for the given query.
   Query* CreateQuery(GLenum target,
                      GLuint client_id,
-                     int32_t shm_id,
-                     uint32_t shm_offset);
+                     scoped_refptr<gpu::Buffer> buffer,
+                     QuerySync* sync);
 
   // Gets the query info for the given query.
   Query* GetQuery(GLuint client_id);
@@ -229,13 +218,13 @@ class GPU_EXPORT QueryManager {
   void RemoveQuery(GLuint client_id);
 
   // Returns false if any query is pointing to invalid shared memory.
-  bool BeginQuery(Query* query);
+  void BeginQuery(Query* query);
 
   // Returns false if any query is pointing to invalid shared memory.
-  bool EndQuery(Query* query, base::subtle::Atomic32 submit_count);
+  void EndQuery(Query* query, base::subtle::Atomic32 submit_count);
 
   // Returns false if any query is pointing to invalid shared memory.
-  bool QueryCounter(Query* query, base::subtle::Atomic32 submit_count);
+  void QueryCounter(Query* query, base::subtle::Atomic32 submit_count);
 
   void PauseQueries();
   void ResumeQueries();
@@ -243,17 +232,10 @@ class GPU_EXPORT QueryManager {
   // Processes pending queries. Returns false if any queries are pointing
   // to invalid shared memory. |did_finish| is true if this is called as
   // a result of calling glFinish().
-  bool ProcessPendingQueries(bool did_finish);
+  void ProcessPendingQueries(bool did_finish);
 
   // True if there are pending queries.
   bool HavePendingQueries();
-
-  // Processes pending transfer queries. Returns false if any queries are
-  // pointing to invalid shared memory.
-  bool ProcessPendingTransferQueries();
-
-  // True if there are pending transfer queries.
-  bool HavePendingTransferQueries();
 
   // Do any updates we need to do when the frame has begun.
   void ProcessFrameBeginUpdates();
@@ -279,16 +261,11 @@ class GPU_EXPORT QueryManager {
 
   // Adds to queue of queries waiting for completion.
   // Returns false if any query is pointing to invalid shared memory.
-  bool AddPendingQuery(Query* query, base::subtle::Atomic32 submit_count);
-
-  // Adds to queue of transfer queries waiting for completion.
-  // Returns false if any query is pointing to invalid shared memory.
-  bool AddPendingTransferQuery(Query* query,
-                               base::subtle::Atomic32 submit_count);
+  void AddPendingQuery(Query* query, base::subtle::Atomic32 submit_count);
 
   // Removes a query from the queue of pending queries.
   // Returns false if any query is pointing to invalid shared memory.
-  bool RemovePendingQuery(Query* query);
+  void RemovePendingQuery(Query* query);
 
   // Returns a target used for the underlying GL extension
   // used to emulate a query.
@@ -334,9 +311,6 @@ class GPU_EXPORT QueryManager {
   // Queries waiting for completion.
   typedef std::deque<scoped_refptr<Query> > QueryQueue;
   QueryQueue pending_queries_;
-
-  // Async pixel transfer queries waiting for completion.
-  QueryQueue pending_transfer_queries_;
 
   scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;
 

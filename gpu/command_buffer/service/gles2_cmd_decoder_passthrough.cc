@@ -72,6 +72,29 @@ void PassthroughResources::Destroy(bool have_context) {
   texture_object_map.clear();
 }
 
+GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery() = default;
+GLES2DecoderPassthroughImpl::PendingQuery::~PendingQuery() = default;
+GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery(const PendingQuery&) =
+    default;
+GLES2DecoderPassthroughImpl::PendingQuery::PendingQuery(PendingQuery&&) =
+    default;
+GLES2DecoderPassthroughImpl::PendingQuery&
+GLES2DecoderPassthroughImpl::PendingQuery::operator=(const PendingQuery&) =
+    default;
+GLES2DecoderPassthroughImpl::PendingQuery&
+GLES2DecoderPassthroughImpl::PendingQuery::operator=(PendingQuery&&) = default;
+
+GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery() = default;
+GLES2DecoderPassthroughImpl::ActiveQuery::~ActiveQuery() = default;
+GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery(const ActiveQuery&) =
+    default;
+GLES2DecoderPassthroughImpl::ActiveQuery::ActiveQuery(ActiveQuery&&) = default;
+GLES2DecoderPassthroughImpl::ActiveQuery&
+GLES2DecoderPassthroughImpl::ActiveQuery::operator=(const ActiveQuery&) =
+    default;
+GLES2DecoderPassthroughImpl::ActiveQuery&
+GLES2DecoderPassthroughImpl::ActiveQuery::operator=(ActiveQuery&&) = default;
+
 GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
     GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
@@ -950,16 +973,9 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
       break;
     }
 
-    QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
-        query.shm_id, query.shm_offset, sizeof(QuerySync));
-    if (sync == nullptr) {
-      pending_queries_.pop_front();
-      return error::kOutOfBounds;
-    }
-
     // Mark the query as complete
-    sync->result = result;
-    base::subtle::Release_Store(&sync->process_count, query.submit_count);
+    query.sync->result = result;
+    base::subtle::Release_Store(&query.sync->process_count, query.submit_count);
     pending_queries_.pop_front();
   }
 
@@ -975,13 +991,10 @@ void GLES2DecoderPassthroughImpl::RemovePendingQuery(GLuint service_id) {
                      return pending_query.service_id == service_id;
                    });
   if (pending_iter != pending_queries_.end()) {
-    QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
-        pending_iter->shm_id, pending_iter->shm_offset, sizeof(QuerySync));
-    if (sync != nullptr) {
-      sync->result = 0;
-      base::subtle::Release_Store(&sync->process_count,
-                                  pending_iter->submit_count);
-    }
+    QuerySync* sync = pending_iter->sync;
+    sync->result = 0;
+    base::subtle::Release_Store(&sync->process_count,
+                                pending_iter->submit_count);
 
     pending_queries_.erase(pending_iter);
   }
