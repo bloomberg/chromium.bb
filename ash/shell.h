@@ -172,10 +172,6 @@ class WindowTreeHostManager;
 enum class Config;
 enum class LoginStatus;
 
-namespace shell {
-class WindowWatcher;
-}
-
 namespace test {
 class ShellTestApi;
 class SmsObserverTest;
@@ -629,7 +625,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   friend class ScopedRootWindowForNewWindows;
   friend class SmsObserverTest;
   friend class test::ShellTestApi;
-  friend class shell::WindowWatcher;
 
   Shell(std::unique_ptr<ShellDelegate> shell_delegate,
         std::unique_ptr<ShellPort> shell_port);

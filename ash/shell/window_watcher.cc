@@ -14,10 +14,9 @@
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/display/display.h"
 
 namespace ash {
 namespace shell {
@@ -68,7 +67,8 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
 };
 
 WindowWatcher::WindowWatcher() {
-  workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
+  Shell::Get()->AddShellObserver(this);
+  workspace_window_watcher_ = base::MakeUnique<WorkspaceWindowWatcher>(this);
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
@@ -82,6 +82,7 @@ WindowWatcher::~WindowWatcher() {
        iter != root_windows.end(); ++iter) {
     workspace_window_watcher_->RootWindowRemoved(*iter);
   }
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 aura::Window* WindowWatcher::GetWindowByID(const ShelfID& id) {
@@ -133,17 +134,8 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   }
 }
 
-void WindowWatcher::OnDisplayAdded(const display::Display& new_display) {
-  aura::Window* root = Shell::GetRootWindowForDisplayId(new_display.id());
-  workspace_window_watcher_->RootWindowAdded(root);
-}
-
-void WindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
-  // All windows in the display has already been removed, so no need to
-  // remove observers.
-}
-
-void WindowWatcher::OnDisplayMetricsChanged(const display::Display&, uint32_t) {
+void WindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
+  workspace_window_watcher_->RootWindowAdded(root_window);
 }
 
 }  // namespace shell
