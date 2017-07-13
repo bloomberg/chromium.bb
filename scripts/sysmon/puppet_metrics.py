@@ -45,51 +45,65 @@ _age_metric = metrics.FloatMetric(
 class _PuppetRunSummary(object):
   """Puppet run summary information."""
 
-  def __init__(self, summary_file):
-    self.filename = summary_file
-    with open(self.filename) as file_:
-      self._data = yaml.safe_load(file_)
+  def __init__(self, f):
+    """Instantiate instance.
+
+    Args:
+      f: file object to read summary from
+    """
+    self._data = yaml.safe_load(f)
 
   @property
-  def versions(self):
+  def _versions(self):
     """Return mapping of version information."""
     return self._data.get('version', {})
 
   @property
   def config_version(self):
     """Return config version as int."""
-    return self.versions.get('config', -1)
+    return self._versions.get('config', -1)
 
   @property
   def puppet_version(self):
     """Return Puppet version as string."""
-    return self.versions.get('puppet', '')
+    return self._versions.get('puppet', '')
 
   @property
   def events(self):
     """Return mapping of events information."""
-    return self._data.get('events', {})
+    events = self._data.get('events', {})
+    events.pop('total', None)
+    return events
 
   @property
   def resources(self):
     """Return mapping of resources information."""
-    return self._data.get('resources', {})
+    resources = self._data.get('resources', {})
+    total = resources.pop('total', 0)
+    resources['other'] = max(0, total - sum(resources.itervalues()))
+    return resources
 
   @property
   def times(self):
     """Return mapping of time information."""
-    return self._data.get(time, {})
+    times = self._data.get('time', {})
+    times.pop('last_run', None)
+    total = times.pop('total', None)
+    times['other'] = max(0, total - sum(times.itervalues()))
+    return times
 
   @property
   def last_run_time(self):
     """Return last run time as UNIX seconds or None."""
-    return self.times.get('last_run')
+    times = self._data.get('time', {})
+    return times.get('last_run')
 
 
 def collect_puppet_summary():
   """Send Puppet run summary metrics."""
   try:
-    summary = _PuppetRunSummary(LAST_RUN_FILE)
+    with open(LAST_RUN_FILE) as f:
+      summary = _PuppetRunSummary(f)
   except Exception as e:
     logger.warning(u'Error loading Puppet run summary: %s', e)
   else:
