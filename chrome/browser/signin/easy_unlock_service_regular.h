@@ -88,6 +88,9 @@ class EasyUnlockServiceRegular
   bool IsAllowedInternal() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
+#if defined(OS_CHROMEOS)
+  void HandleUserReauth(const chromeos::UserContext& user_context) override;
+#endif
 
   // CryptAuthDeviceManager::Observer:
   void OnSyncFinished(
@@ -117,7 +120,7 @@ class EasyUnlockServiceRegular
 #if defined(OS_CHROMEOS)
   // Called with the user's credentials (e.g. username and password) after the
   // user reauthenticates to begin setup.
-  void OnUserContextFromReauth(const chromeos::UserContext& user_context);
+  void OpenSetupAppAfterReauth(const chromeos::UserContext& user_context);
 
   // Called after a cryptohome RemoveKey or RefreshKey operation to set the
   // proper hardlock state if the operation is successful.

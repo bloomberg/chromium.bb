@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -384,6 +385,9 @@ void QuickUnlockPrivateSetModesFunction::OnAuthSuccess(
 
   if (!AreModesEqual(initial_modes, updated_modes))
     FireEvent(updated_modes);
+
+  EasyUnlockService::Get(chrome_details_.GetProfile())
+      ->HandleUserReauth(user_context);
 
   Respond(ArgumentList(SetModes::Results::Create(true)));
   Release();  // Balanced in Run().
