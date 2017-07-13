@@ -36420,14 +36420,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.CountOfBrokenAlternativeServices" units="services">
-  <owner>wangyix@chromium.org</owner>
-  <summary>
-    This counts the number of broken alternative services persisted to prefs
-    file.
-  </summary>
-</histogram>
-
 <histogram name="Net.CountOfPipelineCapableServers" units="servers">
   <obsolete>
     Deprecated 05/2014, related field trial already long expired.
@@ -36443,14 +36435,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zhongyi@chromium.org</owner>
   <summary>
     This counts the number of server configs persisted in prefs file.
-  </summary>
-</histogram>
-
-<histogram name="Net.CountOfRecentlyBrokenAlternativeServices" units="services">
-  <owner>wangyix@chromium.org</owner>
-  <summary>
-    This counts the number of recently broken alternative services persisted to
-    prefs file.
   </summary>
 </histogram>
 
