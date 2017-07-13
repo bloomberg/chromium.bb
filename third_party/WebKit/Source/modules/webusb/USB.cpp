@@ -16,10 +16,9 @@
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBDeviceFilter.h"
 #include "modules/webusb/USBDeviceRequestOptions.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 using device::mojom::blink::UsbDeviceFilterPtr;
@@ -83,7 +82,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
+  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kUsb)) {
     if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -112,7 +111,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
+  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kUsb)) {
     if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -258,7 +257,7 @@ void USB::AddedEventListener(const AtomicString& event_type,
   if (!frame)
     return;
 
-  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
+  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kUsb)) {
     if (frame->IsFeatureEnabled(WebFeaturePolicyFeature::kUsb))
       EnsureDeviceManagerConnection();
   } else if (frame->IsMainFrame()) {
