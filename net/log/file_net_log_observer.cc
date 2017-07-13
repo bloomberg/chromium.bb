@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -197,29 +196,45 @@ class FileNetLogObserver::BoundedFileWriter
   void DeleteAllFiles() override;
 
  private:
-  // Increments |current_file_idx_|, and handles the clearing and openining of
-  // the new current file. Also sets |event_files_[current_file_idx_]| to point
-  // to the new current file.
+  // Increments |current_file_idx_|, and handles the and opening of
+  // the new current file. Also sets |current_event_file_| to point to the new
+  // file.
   void IncrementCurrentFile();
 
-  // Each ScopedFILE points to a netlog event file with the file name
-  // "event_file_<index>.json". Consumers must verify that entries are non-null
-  // before using them.
-  std::vector<base::ScopedFILE> event_files_;
+  // Sets the current events file to |index| and opens the file for writing.
+  void SetCurrentFile(size_t index);
+
+  // Returns the path to the event file numbered |index|. This looks like
+  // "LOGDIR/event_file_<index>.json".
+  base::FilePath GetEventFilePath(size_t index) const;
+
+  // Gets the file path where constants are saved at the start of
+  // logging. This looks like "LOGDIR/constants.json".
+  base::FilePath GetConstantsFilePath() const;
+
+  // Gets the file path where the final data is written at the end of logging.
+  // This looks like "LOGDIR/end_netlog.json".
+  base::FilePath GetClosingFilePath() const;
+
+  // Holds the file handle for the numbered events file where data is currently
+  // being written to. The file path of this file is
+  // GetEventFilePath(current_file_idx_). The file handle may be null if an
+  // error previously occurred opening the file, or logging has been stopped.
+  base::ScopedFILE current_event_file_;
+  size_t current_event_file_size_;
 
   // The directory where the netlog files are created.
   const base::FilePath directory_;
 
-  // Indicates the total number of netlog event files, which does not include
-  // the constants file (constants.json), or closing file (end_netlog.json).
+  // Indicates the total number of netlog event files allowed.
+  // This does not count the constants file (GetConstantsFilePath()), or the
+  // closing file (GetClosingFilePath()) against the total.
   const size_t total_num_files_;
 
-  // Indicates the index of the file in |event_files_| currently being written
-  // into.
+  // Indicates the index of the events file currently being written into.
   size_t current_file_idx_;
 
-  // Indicates the maximum size of each individual netlogging file, excluding
-  // the constant file.
+  // Indicates the maximum size of each individual events file.
   const size_t max_file_size_;
 
   // Task runner for doing file operations.
@@ -429,7 +444,6 @@ FileNetLogObserver::BoundedFileWriter::BoundedFileWriter(
       current_file_idx_(0),
       max_file_size_(max_file_size),
       task_runner_(std::move(task_runner)) {
-  event_files_.resize(total_num_files_);
 }
 
 FileNetLogObserver::BoundedFileWriter::~BoundedFileWriter() {}
@@ -438,13 +452,10 @@ void FileNetLogObserver::BoundedFileWriter::Initialize(
     std::unique_ptr<base::Value> constants_value) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // Failure opening the file will result in null entries - consumers are
-  // responsible for checking.
-  event_files_[current_file_idx_] =
-      OpenFileForWrite(directory_.AppendASCII("event_file_0.json"));
+  // Open the initial events file.
+  SetCurrentFile(0);
 
-  base::ScopedFILE constants_file =
-      OpenFileForWrite(directory_.AppendASCII("constants.json"));
+  base::ScopedFILE constants_file = OpenFileForWrite(GetConstantsFilePath());
 
   // Print constants to file and open events array.
   std::string json;
@@ -459,8 +470,7 @@ void FileNetLogObserver::BoundedFileWriter::Stop(
     std::unique_ptr<base::Value> polled_data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::ScopedFILE closing_file =
-      OpenFileForWrite(directory_.AppendASCII("end_netlog.json"));
+  base::ScopedFILE closing_file = OpenFileForWrite(GetClosingFilePath());
 
   std::string json;
   if (polled_data)
@@ -471,18 +481,41 @@ void FileNetLogObserver::BoundedFileWriter::Stop(
     WriteToFile(closing_file, ",\n\"polledData\": ", json, "\n");
   WriteToFile(closing_file, "}\n");
 
-  // Flush all writes to disk so that files can be safely accessed on callback.
-  event_files_.clear();
+  // Close the current event file handle to ensure it flushes its writes. When
+  // the callback runs caller expects all the log files to be written and safe
+  // to read from. (Don't require the stronger guarantees of fsync() - may not
+  // be persisted to storage.).
+  current_event_file_.reset();
 }
 
 void FileNetLogObserver::BoundedFileWriter::IncrementCurrentFile() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  SetCurrentFile((current_file_idx_ + 1) % total_num_files_);
+}
 
-  current_file_idx_++;
-  current_file_idx_ %= total_num_files_;
-  event_files_[current_file_idx_].reset();
-  event_files_[current_file_idx_] = OpenFileForWrite(directory_.AppendASCII(
-      "event_file_" + base::SizeTToString(current_file_idx_) + ".json"));
+void FileNetLogObserver::BoundedFileWriter::SetCurrentFile(size_t index) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_LT(current_file_idx_, total_num_files_);
+
+  current_file_idx_ = index;
+  current_event_file_ = OpenFileForWrite(GetEventFilePath(current_file_idx_));
+  current_event_file_size_ = 0;
+}
+
+base::FilePath FileNetLogObserver::BoundedFileWriter::GetEventFilePath(
+    size_t index) const {
+  return directory_.AppendASCII("event_file_" + base::SizeTToString(index) +
+                                ".json");
+}
+
+base::FilePath FileNetLogObserver::BoundedFileWriter::GetConstantsFilePath()
+    const {
+  return directory_.AppendASCII("constants.json");
+}
+
+base::FilePath FileNetLogObserver::BoundedFileWriter::GetClosingFilePath()
+    const {
+  return directory_.AppendASCII("end_netlog.json");
 }
 
 void FileNetLogObserver::BoundedFileWriter::Flush(
@@ -492,20 +525,13 @@ void FileNetLogObserver::BoundedFileWriter::Flush(
   EventQueue local_file_queue;
   write_queue->SwapQueue(&local_file_queue);
 
-  std::string to_print;
-  CHECK(!event_files_.empty());
-  size_t file_size = event_files_[current_file_idx_]
-                         ? ftell(event_files_[current_file_idx_].get())
-                         : 0;
-
   while (!local_file_queue.empty()) {
-    if (file_size >= max_file_size_) {
+    if (current_event_file_size_ >= max_file_size_) {
       // The current file is full. Start a new current file.
       IncrementCurrentFile();
-      file_size = 0;
     }
-    file_size += WriteToFile(event_files_[current_file_idx_],
-                             *local_file_queue.front(), ",\n");
+    current_event_file_size_ +=
+        WriteToFile(current_event_file_, *local_file_queue.front(), ",\n");
     local_file_queue.pop();
   }
 }
@@ -513,17 +539,13 @@ void FileNetLogObserver::BoundedFileWriter::Flush(
 void FileNetLogObserver::BoundedFileWriter::DeleteAllFiles() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // Reset |event_files_| to release all file handles so base::DeleteFile can
-  // safely access files.
-  event_files_.clear();
+  // Reset |current_event_file_| so base::DeleteFile() can unlink it.
+  current_event_file_.reset();
 
-  base::DeleteFile(directory_.AppendASCII("constants.json"), false);
-  base::DeleteFile(directory_.AppendASCII("end_netlog.json"), false);
-  for (size_t i = 0; i < total_num_files_; i++) {
-    base::DeleteFile(directory_.AppendASCII("event_file_" +
-                                            base::SizeTToString(i) + ".json"),
-                     false);
-  }
+  base::DeleteFile(GetConstantsFilePath(), false);
+  base::DeleteFile(GetClosingFilePath(), false);
+  for (size_t i = 0; i < total_num_files_; i++)
+    base::DeleteFile(GetEventFilePath(i), false);
 }
 
 FileNetLogObserver::UnboundedFileWriter::UnboundedFileWriter(
