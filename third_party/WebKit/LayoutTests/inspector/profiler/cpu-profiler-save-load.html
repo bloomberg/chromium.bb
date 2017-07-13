@@ -42,10 +42,6 @@ function test()
     InspectorTest.runProfilerTestSuite([
         function testSave(next)
         {
-            function waitForTempFile(view)
-            {
-                InspectorTest.addSniffer(view._profileHeader, "_writeToTempFile", saveProfileToFile.bind(this, view._profileHeader));
-            }
             function saveProfileToFile(profile)
             {
                 Bindings.FileOutputStream = function() { }
@@ -86,7 +82,7 @@ function test()
                 profile.saveToFile();
             }
             InspectorTest.showProfileWhenAdded("manual");
-            InspectorTest.waitUntilProfileViewIsShown("manual", waitForTempFile.bind(this));
+            InspectorTest.waitUntilProfileViewIsShown("manual", view => saveProfileToFile(view._profileHeader));
             InspectorTest.evaluateInPage("pageFunction()", function done() {});
         },
 

@@ -19,7 +19,6 @@ function test()
 
         loadingProgress: function()
         {
-            InspectorTest.addResult("TimelineLoaderClient.loadingProgress()");
         },
 
         processingStarted: function()
@@ -48,9 +47,9 @@ function test()
             callback();
         }
 
-        Bindings.ChunkedFileReader = InspectorTest.FakeFileReader;
         var client = new InspectorTest.TestTimelineLoaderClient();
-        var loader = Timeline.TimelineLoader.loadFromFile(input, client);
+        var blob = new Blob([input], {type: 'text/pain'});
+        var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
         var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));
         var model = await client.modelPromise();
         var storage = model.backingStorage();
@@ -60,9 +59,9 @@ function test()
 
     async function runTestOnMalformedInput(input, callback)
     {
-        Bindings.ChunkedFileReader = InspectorTest.FakeFileReader;
         var client = new InspectorTest.TestTimelineLoaderClient();
-        var loader = Timeline.TimelineLoader.loadFromFile(input, client);
+        var blob = new Blob([input], {type: 'text/pain'});
+        var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
         var model = await client.modelPromise();
         InspectorTest.addResult("Model is empty: " + (!model || (!model.minimumRecordTime() && !model.maximumRecordTime())));
         callback();

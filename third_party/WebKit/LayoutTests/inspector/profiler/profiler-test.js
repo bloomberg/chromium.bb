@@ -1,7 +1,6 @@
 var initialize_ProfilerTest = function() {
 
 InspectorTest.preloadPanel("js_profiler");
-Bindings.TempFile = InspectorTest.TempFileMock;
 
 InspectorTest.startProfilerTest = function(callback)
 {

@@ -16896,7 +16896,6 @@ crbug.com/591099 inspector/profiler/heap-snapshot-summary-sorting-instances.html
 crbug.com/591099 inspector/profiler/heap-snapshot-summary-sorting.html [ Crash Failure ]
 crbug.com/591099 inspector/profiler/heap-snapshot-weak-dominator.html [ Crash Pass ]
 crbug.com/591099 inspector/profiler/heap-snapshot.html [ Crash Failure ]
-crbug.com/591099 inspector/profiler/temp-storage-cleaner.html [ Crash Failure ]
 crbug.com/591099 inspector/quick-open/command-menu.html [ Crash Failure ]
 crbug.com/591099 inspector/remote-object.html [ Failure ]
 crbug.com/591099 inspector/report-API-errors.html [ Failure ]

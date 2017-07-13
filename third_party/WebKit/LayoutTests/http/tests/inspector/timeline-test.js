@@ -8,7 +8,6 @@ function wrapCallFunctionForTimeline(f)
 var initialize_Timeline = function() {
 
 InspectorTest.preloadPanel("timeline");
-Bindings.TempFile = InspectorTest.TempFileMock;
 
 // Scrub values when printing out these properties in the record or data field.
 InspectorTest.timelinePropertyFormatters = {
@@ -299,59 +298,6 @@ InspectorTest.findChildEvent = function(events, parentIndex, name)
     return null;
 }
 
-InspectorTest.FakeFileReader = class {
-    constructor(input, chunkSize, chunkTransferredCallback)
-    {
-        this._input = input;
-        this._loadedSize = 0;
-        this._fileSize = input.length;
-        this._chunkTransferredCallback = chunkTransferredCallback;
-    }
-
-    read(output)
-    {
-        var length = this._input.length;
-        var half = (length + 1) >> 1;
-
-        var chunk = this._input.substring(0, half);
-        this._loadedSize += chunk.length;
-        output.write(chunk);
-        if (this._chunkTransferredCallback)
-            this._chunkTransferredCallback(this);
-
-        chunk = this._input.substring(half);
-        this._loadedSize += chunk.length;
-        output.write(chunk);
-        if (this._chunkTransferredCallback)
-            this._chunkTransferredCallback(this);
-
-        output.close();
-        return Promise.resolve(true);
-    }
-
-    cancel() { }
-
-    loadedSize()
-    {
-        return this._loadedSize;
-    }
-
-    fileSize()
-    {
-        return this._fileSize;
-    }
-
-    fileName()
-    {
-        return "fakeFile";
-    }
-
-    error()
-    {
-        return null;
-    }
-};
-
 InspectorTest.dumpFrame = function(frame)
 {
     var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "timeByCategory", "other", "scripting", "painting", "rendering", "committedFrom", "idle"];
@@ -415,9 +361,8 @@ InspectorTest.dumpTimelineFlameChart = function(includeGroups) {
 
 InspectorTest.loadTimeline = function(timelineData)
 {
-    Bindings.ChunkedFileReader = InspectorTest.FakeFileReader;
     var promise = new Promise(fulfill => InspectorTest.runWhenTimelineIsReady(fulfill));
-    UI.panels.timeline._loadFromFile(timelineData);
+    UI.panels.timeline._loadFromFile(new Blob([timelineData], {type: 'text/plain'}));
     return promise;
 }
 
