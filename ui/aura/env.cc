@@ -174,7 +174,11 @@ void Env::Init() {
   // The ozone platform can provide its own event source. So initialize the
   // platform before creating the default event source. If running inside mus
   // let the mus process initialize ozone instead.
-  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitParams params;
+  // TODO(kylechar): |params.single_process| should be set correctly here, but
+  // both tests and real code both use aura::Init::CreateInstance() identically.
+  params.single_process = false;
+  ui::OzonePlatform::InitializeForUI(params);
   gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
 #endif
   if (!ui::PlatformEventSource::GetInstance())

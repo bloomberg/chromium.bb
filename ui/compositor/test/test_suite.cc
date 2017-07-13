@@ -35,7 +35,9 @@ void CompositorTestSuite::Initialize() {
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForUI(params);
 #endif
 
   gfx::RegisterPathProvider();
