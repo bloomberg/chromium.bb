@@ -241,8 +241,6 @@ crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
 # wasm tests. Currently under virtual/enable_wasm or virtual/enable_wasm_streaming
 crbug.com/642912 http/tests/wasm/ [ WontFix ]
 crbug.com/642912 virtual/mojo-loading/http/tests/wasm/ [ WontFix ]
-crbug.com/712970 http/tests/wasm_streaming/ [ WontFix ]
-crbug.com/712970 virtual/mojo-loading/http/tests/wasm_streaming/ [ WontFix ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skiped=ignore.
