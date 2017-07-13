@@ -192,8 +192,8 @@ def main(args):
   parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
   )
-  parser.add_argument('ref', nargs='?', help="Git ref to retrieve footers from."
-                      " Omit to parse stdin.")
+  parser.add_argument('ref', nargs='?', help='Git ref to retrieve footers from.'
+                      ' Omit to parse stdin.')
 
   g = parser.add_mutually_exclusive_group()
   g.add_argument('--key', metavar='KEY',
@@ -202,14 +202,14 @@ def main(args):
   g.add_argument('--position', action='store_true')
   g.add_argument('--position-ref', action='store_true')
   g.add_argument('--position-num', action='store_true')
-  g.add_argument('--json', help="filename to dump JSON serialized headers to.")
+  g.add_argument('--json', help='filename to dump JSON serialized footers to.')
 
   opts = parser.parse_args(args)
 
   if opts.ref:
     message = git.run('log', '-1', '--format=%B', opts.ref)
   else:
-    message = '\n'.join(l for l in sys.stdin)
+    message = sys.stdin.read()
 
   footers = parse_footers(message)
 
