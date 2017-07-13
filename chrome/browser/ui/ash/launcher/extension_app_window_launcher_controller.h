@@ -54,10 +54,10 @@ class ExtensionAppWindowLauncherController
   void OnWindowDestroying(aura::Window* window) override;
 
  protected:
-  // Registers a app window with the shelf and this object.
+  // Registers an app window with the shelf and this object.
   void RegisterApp(extensions::AppWindow* app_window);
 
-  // Unregisters a app window with the shelf and this object.
+  // Unregisters an app window with the shelf and this object.
   void UnregisterApp(aura::Window* window);
 
   // Check if a given window is known to the launcher controller.

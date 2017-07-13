@@ -78,20 +78,7 @@ void ExtensionAppWindowLauncherController::AdditionalUserAddedToSession(
 
 void ExtensionAppWindowLauncherController::OnAppWindowAdded(
     extensions::AppWindow* app_window) {
-  // TODO(msw): Determine why this only seems to be called in Mash. Setting the
-  // ShelfItemType as early as possible is important on Mash, to prevent Ash's
-  // ShelfWindowWatcher from creating a conflicting ShelfItem. Set the item type
-  // here for the mash config, and later on in RegisterApp for classic ash.
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
-    return;
-
-  const ash::ShelfID shelf_id = GetShelfId(app_window);
-  DCHECK(!shelf_id.IsNull());
-  aura::Window* window = app_window->GetNativeWindow();
-  window->SetProperty<int>(
-      ash::kShelfItemTypeKey,
-      app_window->window_type_is_panel() ? ash::TYPE_APP_PANEL : ash::TYPE_APP);
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  RegisterApp(app_window);
 }
 
 void ExtensionAppWindowLauncherController::OnAppWindowShown(
@@ -122,15 +109,10 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   const ash::ShelfID shelf_id = GetShelfId(app_window);
   DCHECK(!shelf_id.IsNull());
 
-  // TODO(msw): Determine why OnAppWindowAdded only seems to be called in Mash.
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
-    window->SetProperty(ash::kShelfIDKey,
-                        new std::string(shelf_id.Serialize()));
-    window->SetProperty<int>(ash::kShelfItemTypeKey,
-                             app_window->window_type_is_panel()
-                                 ? ash::TYPE_APP_PANEL
-                                 : ash::TYPE_APP);
-  }
+  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty<int>(
+      ash::kShelfItemTypeKey,
+      app_window->window_type_is_panel() ? ash::TYPE_APP_PANEL : ash::TYPE_APP);
 
   // Windows created by IME extension should be treated the same way as the
   // virtual keyboard window, which does not register itself in launcher.
