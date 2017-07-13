@@ -4,21 +4,27 @@
 
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 
 namespace {
 
 const char kExampleAndroidFacetURI[] = "android://hash@com.example";
+const char kExampleAndroidPlayName[] = "Example Android App";
+const char kExampleAndroidIconURL[] = "https://example.com/icon.png";
 const char kExampleWebFacet1URI[] = "https://www.example.com";
 const char kExampleWebFacet2URI[] = "https://www.example.org";
 
@@ -71,6 +77,10 @@ class AffiliationFetcherTest : public testing::Test {
     EXPECT_EQ("application/x-protobuf", url_fetcher->upload_content_type());
     EXPECT_THAT(actual_uris,
                 testing::UnorderedElementsAreArray(expected_facet_uris));
+
+    // Verify that an affiliation mask is present that has branding_info set to
+    // true.
+    EXPECT_TRUE(request.mask().branding_info());
   }
 
   void ServiceURLRequest(const std::string& response) {
@@ -152,6 +162,41 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
       testing::UnorderedElementsAre(
           Facet{FacetURI::FromCanonicalSpec(kNotExampleWebFacetURI)},
           Facet{FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI)}));
+}
+
+TEST_F(AffiliationFetcherTest, AndroidBrandingInfoIsReturnedIfPresent) {
+  affiliation_pb::LookupAffiliationResponse test_response;
+  affiliation_pb::Affiliation* eq_class = test_response.add_affiliation();
+  eq_class->add_facet()->set_id(kExampleWebFacet1URI);
+  eq_class->add_facet()->set_id(kExampleWebFacet2URI);
+  auto android_branding_info = base::MakeUnique<affiliation_pb::BrandingInfo>();
+  android_branding_info->set_name(kExampleAndroidPlayName);
+  android_branding_info->set_icon_url(kExampleAndroidIconURL);
+  affiliation_pb::Facet* android_facet = eq_class->add_facet();
+  android_facet->set_id(kExampleAndroidFacetURI);
+  android_facet->set_allocated_branding_info(android_branding_info.release());
+
+  std::vector<FacetURI> requested_uris;
+  requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
+
+  MockAffiliationFetcherDelegate mock_delegate;
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      request_context_getter(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+
+  EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
+  ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
+  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
+
+  ASSERT_EQ(1u, mock_delegate.result().size());
+  EXPECT_THAT(mock_delegate.result()[0],
+              testing::UnorderedElementsAre(
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
+                  Facet{FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI),
+                        FacetBrandingInfo{kExampleAndroidPlayName,
+                                          GURL(kExampleAndroidIconURL)}}));
 }
 
 // The API contract of this class is to return an equivalence class for all

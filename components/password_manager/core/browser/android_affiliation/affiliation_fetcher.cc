@@ -5,8 +5,13 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
 
 #include <stddef.h>
+
+#include <map>
+#include <memory>
+#include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
@@ -147,6 +152,11 @@ std::string AffiliationFetcher::PreparePayload() const {
   for (const FacetURI& uri : requested_facet_uris_)
     lookup_request.add_facet(uri.canonical_spec());
 
+  // Enable request for branding information.
+  auto mask = base::MakeUnique<affiliation_pb::LookupAffiliationMask>();
+  mask->set_branding_info(true);
+  lookup_request.set_allocated_mask(mask.release());
+
   std::string serialized_request;
   bool success = lookup_request.SerializeToString(&serialized_request);
   DCHECK(success);
@@ -187,12 +197,15 @@ bool AffiliationFetcher::ParseResponse(
 
     AffiliatedFacets affiliated_facets;
     for (int j = 0; j < equivalence_class.facet_size(); ++j) {
-      const std::string& uri_spec(equivalence_class.facet(j).id());
+      const affiliation_pb::Facet& facet(equivalence_class.facet(j));
+      const std::string& uri_spec(facet.id());
       FacetURI uri = FacetURI::FromPotentiallyInvalidSpec(uri_spec);
       // Ignore potential future kinds of facet URIs (e.g. for new platforms).
       if (!uri.is_valid())
         continue;
-      affiliated_facets.push_back({uri});
+      affiliated_facets.push_back(
+          {uri, FacetBrandingInfo{facet.branding_info().name(),
+                                  GURL(facet.branding_info().icon_url())}});
     }
 
     // Be lenient and ignore empty (after filtering) equivalence classes.
