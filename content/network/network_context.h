@@ -19,17 +19,25 @@
 
 namespace net {
 class URLRequestContext;
+class URLRequestContextBuilder;
 }
 
 namespace content {
-class NetworkService;
+class NetworkServiceImpl;
 class URLLoaderImpl;
 
 class NetworkContext : public mojom::NetworkContext {
  public:
-  NetworkContext(NetworkService* network_service,
+  NetworkContext(NetworkServiceImpl* network_service,
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params);
+
+  // Temporary constructor that allows creating an in-process NetworkContext
+  // with a pre-populated URLRequestContextBuilder.
+  NetworkContext(mojom::NetworkContextRequest request,
+                 mojom::NetworkContextParamsPtr params,
+                 std::unique_ptr<net::URLRequestContextBuilder> builder);
+
   ~NetworkContext() override;
 
   CONTENT_EXPORT static std::unique_ptr<NetworkContext> CreateForTesting();
@@ -49,7 +57,7 @@ class NetworkContext : public mojom::NetworkContext {
   void HandleViewCacheRequest(const GURL& url,
                               mojom::URLLoaderClientPtr client) override;
 
-  // Called when the associated NetworkService is going away. Guaranteed to
+  // Called when the associated NetworkServiceImpl is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
   void Cleanup();
 
@@ -59,7 +67,7 @@ class NetworkContext : public mojom::NetworkContext {
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
 
-  NetworkService* const network_service_;
+  NetworkServiceImpl* const network_service_;
 
   std::unique_ptr<net::URLRequestContext> url_request_context_;
 

@@ -31,12 +31,11 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -532,20 +531,13 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       ChromeBlobStorageContext::GetFor(context);
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    static mojom::NetworkServicePtr* g_network_service =
-        new mojom::NetworkServicePtr;
-    if (!g_network_service->is_bound()) {
-      ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-          mojom::kNetworkServiceName, g_network_service);
-    }
     mojom::NetworkContextParamsPtr context_params =
         mojom::NetworkContextParams::New();
     // TODO: fill this
     // context_params->cache_dir =
     // context_params->cookie_path =
-    (*g_network_service)
-        ->CreateNetworkContext(MakeRequest(&partition->network_context_),
-                               std::move(context_params));
+    GetNetworkService()->CreateNetworkContext(
+        MakeRequest(&partition->network_context_), std::move(context_params));
 
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);

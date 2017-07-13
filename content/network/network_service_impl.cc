@@ -2,22 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/network_service.h"
+#include "content/network/network_service_impl.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 
-class NetworkService::MojoNetLog : public net::NetLog {
+std::unique_ptr<NetworkService> NetworkService::Create() {
+  return base::MakeUnique<NetworkServiceImpl>(nullptr);
+}
+
+class NetworkServiceImpl::MojoNetLog : public net::NetLog {
  public:
   MojoNetLog() {
     const base::CommandLine* command_line =
@@ -46,17 +52,20 @@ class NetworkService::MojoNetLog : public net::NetLog {
   DISALLOW_COPY_AND_ASSIGN(MojoNetLog);
 };
 
-NetworkService::NetworkService(
+NetworkServiceImpl::NetworkServiceImpl(
     std::unique_ptr<service_manager::BinderRegistry> registry)
     : net_log_(new MojoNetLog), registry_(std::move(registry)), binding_(this) {
-  // |registry_| may be nullptr in tests.
+  // |registry_| is nullptr in tests and when an in-process NetworkService is
+  // created directly. The latter is done in concert with using
+  // CreateNetworkContextWithBuilder to ease the transition to using the network
+  // service.
   if (registry_) {
     registry_->AddInterface<mojom::NetworkService>(
-        base::Bind(&NetworkService::Create, base::Unretained(this)));
+        base::Bind(&NetworkServiceImpl::Create, base::Unretained(this)));
   }
 }
 
-NetworkService::~NetworkService() {
+NetworkServiceImpl::~NetworkServiceImpl() {
   // Call each Network and ask it to release its net::URLRequestContext, as they
   // may have references to shared objects owned by the NetworkService. The
   // NetworkContexts deregister themselves in Cleanup(), so have to be careful.
@@ -64,21 +73,36 @@ NetworkService::~NetworkService() {
     (*network_contexts_.begin())->Cleanup();
 }
 
-std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  return base::WrapUnique(new NetworkService());
+std::unique_ptr<mojom::NetworkContext>
+NetworkServiceImpl::CreateNetworkContextWithBuilder(
+    content::mojom::NetworkContextRequest request,
+    content::mojom::NetworkContextParamsPtr params,
+    std::unique_ptr<net::URLRequestContextBuilder> builder,
+    net::URLRequestContext** url_request_context) {
+  std::unique_ptr<NetworkContext> network_context =
+      base::MakeUnique<NetworkContext>(std::move(request), std::move(params),
+                                       std::move(builder));
+  *url_request_context = network_context->url_request_context();
+  return network_context;
 }
 
-void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
+std::unique_ptr<NetworkService> NetworkServiceImpl::CreateForTesting() {
+  return base::WrapUnique(new NetworkServiceImpl(nullptr));
+}
+
+void NetworkServiceImpl::RegisterNetworkContext(
+    NetworkContext* network_context) {
   DCHECK_EQ(0u, network_contexts_.count(network_context));
   network_contexts_.insert(network_context);
 }
 
-void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
+void NetworkServiceImpl::DeregisterNetworkContext(
+    NetworkContext* network_context) {
   DCHECK_EQ(1u, network_contexts_.count(network_context));
   network_contexts_.erase(network_context);
 }
 
-void NetworkService::CreateNetworkContext(
+void NetworkServiceImpl::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {
   // The NetworkContext will destroy itself on connection error, or when the
@@ -86,9 +110,7 @@ void NetworkService::CreateNetworkContext(
   new NetworkContext(this, std::move(request), std::move(params));
 }
 
-NetworkService::NetworkService() : NetworkService(nullptr) {}
-
-void NetworkService::OnBindInterface(
+void NetworkServiceImpl::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -96,8 +118,9 @@ void NetworkService::OnBindInterface(
                            std::move(interface_pipe));
 }
 
-void NetworkService::Create(const service_manager::BindSourceInfo& source_info,
-                            mojom::NetworkServiceRequest request) {
+void NetworkServiceImpl::Create(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 }

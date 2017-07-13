@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
-#define CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
+#ifndef CONTENT_PUBLIC_TEST_TEST_URL_LOADER_CLIENT_H_
+#define CONTENT_PUBLIC_TEST_TEST_URL_LOADER_CLIENT_H_
 
 #include <stdint.h>
 #include <vector>
@@ -57,9 +57,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   const ResourceResponseHead& response_head() const { return response_head_; }
   const base::Optional<net::SSLInfo>& ssl_info() const { return ssl_info_; }
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
-  const std::string& cached_metadata() const {
-    return cached_metadata_;
-  }
+  const std::string& cached_metadata() const { return cached_metadata_; }
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
   mojo::ScopedDataPipeConsumerHandle response_body_release() {
     return std::move(response_body_);
@@ -131,4 +129,4 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
+#endif  // CONTENT_PUBLIC_TEST_TEST_URL_LOADER_CLIENT_H_
