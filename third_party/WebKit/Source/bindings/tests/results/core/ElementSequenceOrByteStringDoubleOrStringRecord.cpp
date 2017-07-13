@@ -18,9 +18,9 @@
 #include "bindings/core/v8/V8Element.h"
 #include "core/animation/ElementAnimation.h"
 #include "core/dom/ChildNode.h"
-#include "core/dom/ElementFullscreen.h"
 #include "core/dom/NonDocumentTypeChildNode.h"
 #include "core/dom/ParentNode.h"
+#include "core/fullscreen/ElementFullscreen.h"
 
 namespace blink {
 

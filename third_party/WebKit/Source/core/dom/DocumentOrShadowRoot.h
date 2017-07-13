@@ -6,9 +6,9 @@
 #define DocumentOrShadowRoot_h
 
 #include "core/dom/Document.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
+#include "core/fullscreen/Fullscreen.h"
 
 namespace blink {
 

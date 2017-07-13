@@ -4,9 +4,9 @@
 
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 
-#include "core/dom/Fullscreen.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/IntersectionGeometry.h"
 

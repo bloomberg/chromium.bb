@@ -6,10 +6,10 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/ScreenOrientationController.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLAudioElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/EmptyClients.h"

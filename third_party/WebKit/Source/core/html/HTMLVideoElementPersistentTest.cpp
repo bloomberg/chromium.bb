@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "core/dom/Fullscreen.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/loader/EmptyClients.h"

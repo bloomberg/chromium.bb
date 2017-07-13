@@ -182,6 +182,7 @@ component("core") {
     "//third_party/WebKit/Source/core/exported",
     "//third_party/WebKit/Source/core/fileapi",
     "//third_party/WebKit/Source/core/frame",
+    "//third_party/WebKit/Source/core/fullscreen",
     "//third_party/WebKit/Source/core/geometry",
     "//third_party/WebKit/Source/core/html",
     "//third_party/WebKit/Source/core/imagebitmap",
