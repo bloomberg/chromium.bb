@@ -374,20 +374,34 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // All queries that are waiting for their results to be ready
   struct PendingQuery {
+    PendingQuery();
+    ~PendingQuery();
+    PendingQuery(const PendingQuery&);
+    PendingQuery(PendingQuery&&);
+    PendingQuery& operator=(const PendingQuery&);
+    PendingQuery& operator=(PendingQuery&&);
+
     GLenum target = GL_NONE;
     GLuint service_id = 0;
 
-    int32_t shm_id = 0;
-    uint32_t shm_offset = 0;
+    scoped_refptr<gpu::Buffer> shm;
+    QuerySync* sync = nullptr;
     base::subtle::Atomic32 submit_count = 0;
   };
   std::deque<PendingQuery> pending_queries_;
 
   // Currently active queries
   struct ActiveQuery {
+    ActiveQuery();
+    ~ActiveQuery();
+    ActiveQuery(const ActiveQuery&);
+    ActiveQuery(ActiveQuery&&);
+    ActiveQuery& operator=(const ActiveQuery&);
+    ActiveQuery& operator=(ActiveQuery&&);
+
     GLuint service_id = 0;
-    int32_t shm_id = 0;
-    uint32_t shm_offset = 0;
+    scoped_refptr<gpu::Buffer> shm;
+    QuerySync* sync = nullptr;
   };
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 

@@ -2602,6 +2602,14 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
     return error::kUnknownCommand;
   }
 
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
+  if (!buffer)
+    return error::kInvalidArguments;
+  QuerySync* sync = static_cast<QuerySync*>(
+      buffer->GetDataAddress(sync_shm_offset, sizeof(QuerySync)));
+  if (!sync)
+    return error::kOutOfBounds;
+
   GLuint service_id = GetQueryServiceID(id, &query_id_map_);
 
   // Flush all previous errors
@@ -2624,8 +2632,8 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
   PendingQuery pending_query;
   pending_query.target = target;
   pending_query.service_id = service_id;
-  pending_query.shm_id = sync_shm_id;
-  pending_query.shm_offset = sync_shm_offset;
+  pending_query.shm = std::move(buffer);
+  pending_query.sync = sync;
   pending_query.submit_count = submit_count;
   pending_queries_.push_back(pending_query);
 
@@ -2639,6 +2647,14 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
     uint32_t sync_shm_offset) {
   GLuint service_id = GetQueryServiceID(id, &query_id_map_);
   QueryInfo* query_info = &query_info_map_[service_id];
+
+  scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_shm_id);
+  if (!buffer)
+    return error::kInvalidArguments;
+  QuerySync* sync = static_cast<QuerySync*>(
+      buffer->GetDataAddress(sync_shm_offset, sizeof(QuerySync)));
+  if (!sync)
+    return error::kOutOfBounds;
 
   if (IsEmulatedQueryTarget(target)) {
     if (active_queries_.find(target) != active_queries_.end()) {
@@ -2676,8 +2692,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
 
   ActiveQuery query;
   query.service_id = service_id;
-  query.shm_id = sync_shm_id;
-  query.shm_offset = sync_shm_offset;
+  query.shm = std::move(buffer);
+  query.sync = sync;
   active_queries_[target] = query;
 
   return error::kNoError;
@@ -2709,14 +2725,14 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
   }
 
   DCHECK(active_queries_.find(target) != active_queries_.end());
-  ActiveQuery active_query = active_queries_[target];
+  ActiveQuery active_query = std::move(active_queries_[target]);
   active_queries_.erase(target);
 
   PendingQuery pending_query;
   pending_query.target = target;
   pending_query.service_id = active_query.service_id;
-  pending_query.shm_id = active_query.shm_id;
-  pending_query.shm_offset = active_query.shm_offset;
+  pending_query.shm = std::move(active_query.shm);
+  pending_query.sync = active_query.sync;
   pending_query.submit_count = submit_count;
   pending_queries_.push_back(pending_query);
 
