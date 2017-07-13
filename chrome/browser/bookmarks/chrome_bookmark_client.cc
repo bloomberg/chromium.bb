@@ -18,9 +18,10 @@
 #include "components/favicon/core/favicon_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
+#include "components/offline_pages/features/features.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_bookmark_observer.h"
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_bookmark_observer.h"
 #endif
 
 ChromeBookmarkClient::ChromeBookmarkClient(
@@ -35,7 +36,7 @@ void ChromeBookmarkClient::Init(bookmarks::BookmarkModel* model) {
   if (managed_bookmark_service_)
     managed_bookmark_service_->BookmarkModelCreated(model);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_page_observer_ =
       base::MakeUnique<offline_pages::OfflinePageBookmarkObserver>(profile_);
   model->AddObserver(offline_page_observer_.get());
