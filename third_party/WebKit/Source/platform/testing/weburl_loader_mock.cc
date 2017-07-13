@@ -159,6 +159,9 @@ void WebURLLoaderMock::SetDefersLoading(bool deferred) {
   NOTIMPLEMENTED();
 }
 
+void WebURLLoaderMock::DidChangePriority(WebURLRequest::Priority new_priority,
+                                         int intra_priority_value) {}
+
 WeakPtr<WebURLLoaderMock> WebURLLoaderMock::GetWeakPtr() {
   return weak_factory_.CreateWeakPtr();
 }
