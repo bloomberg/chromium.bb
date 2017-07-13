@@ -58,7 +58,7 @@
     <div id="content">
       <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
         <paper-menu id="cast-mode-list" role="presentation"
-            selectable="paper-item">
+            selectable="paper-item" selected="{{selectedCastModeMenuItem_}}">
           <template is="dom-repeat" id="presentationCastModeList"
               items="[[computePresentationCastModeList_(castModeList)]]">
             <paper-item on-tap="onCastModeClick_">
