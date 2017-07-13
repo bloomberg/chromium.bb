@@ -107,6 +107,15 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     const ShareData& share_data) {
   Document* doc = ToDocument(ExecutionContext::From(script_state));
   DCHECK(doc);
+
+  if (!share_data.hasTitle() && !share_data.hasText() && !share_data.hasURL()) {
+    v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(),
+        "No known share data fields supplied. If using only new fields (other "
+        "than title, text and url), you must feature-detect them first.");
+    return ScriptPromise::Reject(script_state, error);
+  }
+
   KURL full_url = doc->CompleteURL(share_data.url());
   if (!full_url.IsNull() && !full_url.IsValid()) {
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
@@ -116,7 +125,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
   if (!UserGestureIndicator::ProcessingUserGesture()) {
     DOMException* error = DOMException::Create(
-        kSecurityError,
+        kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }

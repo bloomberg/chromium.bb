@@ -19,11 +19,6 @@ share_test((t, webshare, mock) => {
 }, 'successful share');
 
 share_test((t, webshare, mock) => {
-  mock.pushShareResult('', '', '', webshare.ShareError.OK);
-  return callWithKeyDown(() => navigator.share({}));
-}, 'successful share with empty ShareData');
-
-share_test((t, webshare, mock) => {
   const url = '//www.example.com/some/path?some_query#some_fragment';
   mock.pushShareResult('', '', getAbsoluteUrl(url), webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({url: url}));

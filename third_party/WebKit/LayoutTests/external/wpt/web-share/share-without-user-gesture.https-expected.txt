@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL share without a user gesture assert_throws: function "function () { throw e }" threw object "SecurityError: Must be handling a user gesture to perform a share request." that is not a DOMException NotAllowedError: property "code" is equal to 18, expected 0
-Harness: the test ran to completion.
-

@@ -110,8 +110,8 @@ public class WebShareTest {
     public void testWebShareNoUserGesture() throws Exception {
         mActivityTestRule.loadUrl(mUrl);
         mActivityTestRule.runJavaScriptCodeInCurrentTab("initiate_share()");
-        Assert.assertEquals(
-                "Fail: SecurityError: Must be handling a user gesture to perform a share request.",
+        Assert.assertEquals("Fail: NotAllowedError: "
+                        + "Must be handling a user gesture to perform a share request.",
                 mUpdateWaiter.waitForUpdate());
     }
 
