@@ -328,6 +328,27 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--shared-prefs-file=../../chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
+          "--replace-system-package=com.google.vr.vrcore,../../third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--annotation=Restriction=DON_Enabled",
+          "--don-enabled"
+        ],
+        "name": "chrome_public_test_vr_apk-marlin-ddview-nougat-donenabled",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "NMF26U",
+              "device_type": "marlin"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "chrome_public_test_vr_apk"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -347,6 +368,16 @@
           "--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk"
+        ],
+        "test": "chrome_public_test_vr_apk"
+      },
+      {
+        "args": [
+          "--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json",
+          "--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk",
+          "--annotation=Restriction=DON_Enabled",
+          "--don-enabled"
         ],
         "test": "chrome_public_test_vr_apk"
       }

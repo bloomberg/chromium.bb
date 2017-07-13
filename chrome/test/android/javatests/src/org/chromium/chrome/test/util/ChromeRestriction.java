@@ -25,4 +25,6 @@ public final class ChromeRestriction {
     public static final String RESTRICTION_TYPE_VIEWER_DAYDREAM = "Daydream_View";
     /** Specifies the test is only valid if the current VR viewer is not Daydream View */
     public static final String RESTRICTION_TYPE_VIEWER_NON_DAYDREAM = "Non_Daydream_View";
+    /** Specifies the test is only valid if the DON flow is not skipped */
+    public static final String RESTRICTION_TYPE_DON_ENABLED = "DON_Enabled";
 }
