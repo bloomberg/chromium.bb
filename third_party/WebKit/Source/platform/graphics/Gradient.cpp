@@ -242,15 +242,6 @@ class RadialGradient final : public Gradient {
                                                  p0_.Y());
     }
 
-    // Since the two-point radial gradient is slower than the plain radial,
-    // only use it if we have to.
-    if (p0_ == p1_ && r0_ <= 0.0f) {
-      return PaintShader::MakeRadialGradient(
-          p1_.Data(), r1_, colors.data(), pos.data(),
-          static_cast<int>(colors.size()), tile_mode, flags,
-          adjusted_local_matrix, fallback_color);
-    }
-
     // The radii we give to Skia must be positive. If we're given a
     // negative radius, ask for zero instead.
     const SkScalar radius0 = std::max(WebCoreFloatToSkScalar(r0_), 0.0f);
