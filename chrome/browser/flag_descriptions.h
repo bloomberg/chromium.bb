@@ -251,6 +251,9 @@ extern const char kEnableNetworkServiceDescription[];
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
 
+extern const char kEnableSuggestionsHomeModernLayoutName[];
+extern const char kEnableSuggestionsHomeModernLayoutDescription[];
+
 extern const char kEnableTokenBindingName[];
 extern const char kEnableTokenBindingDescription[];
 

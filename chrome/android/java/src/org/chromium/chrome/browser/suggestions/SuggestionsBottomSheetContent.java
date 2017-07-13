@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.annotation.SuppressLint;
+import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
@@ -61,7 +62,11 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.suggestions_bottom_sheet_content, null);
+        Resources resources = mView.getResources();
+        int backgroundColor = SuggestionsConfig.getBackgroundColor(resources);
+        mView.setBackgroundColor(backgroundColor);
         mRecyclerView = (SuggestionsRecyclerView) mView.findViewById(R.id.recycler_view);
+        mRecyclerView.setBackgroundColor(backgroundColor);
 
         TouchEnabledDelegate touchEnabledDelegate = new TouchEnabledDelegate() {
             @Override
@@ -132,8 +137,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         };
 
         mShadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
-        mShadowView.init(
-                ApiCompatibilityUtils.getColor(mView.getResources(), R.color.toolbar_shadow_color),
+        mShadowView.init(ApiCompatibilityUtils.getColor(resources, R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
 
         mRecyclerView.addOnScrollListener(new OnScrollListener() {

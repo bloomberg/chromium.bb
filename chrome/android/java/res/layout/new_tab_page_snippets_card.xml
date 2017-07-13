@@ -8,7 +8,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/snippets_card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:foreground="@drawable/button_borderless_compat"
