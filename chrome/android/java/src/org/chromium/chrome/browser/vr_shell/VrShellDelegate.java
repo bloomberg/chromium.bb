@@ -36,6 +36,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -119,6 +120,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     @VrSupportLevel
     private int mVrSupportLevel;
+    private int mCachedVrCorePackageVersion;
 
     // How often to prompt the user to enter VR feedback.
     private int mFeedbackFrequency;
@@ -565,7 +567,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mVrClassesWrapper = wrapper;
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
-        updateVrSupportLevel();
+        updateVrSupportLevel(null);
         mNativeVrShellDelegate = nativeInit();
         createNonPresentingNativeContext();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
@@ -623,17 +625,36 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         resetNonPresentingNativeContext();
     }
 
+    private void maybeUpdateVrSupportLevel() {
+        // If we're on Daydream support level, Chrome will get restarted by Android in response to
+        // VrCore being updated/downgraded, so we don't need to check.
+        if (mVrSupportLevel == VR_DAYDREAM) return;
+        if (mVrClassesWrapper == null) return;
+        int version = getVrCorePackageVersion();
+        // If VrCore package hasn't changed, no need to update.
+        if (version == mCachedVrCorePackageVersion) return;
+        updateVrSupportLevel(version);
+    }
+
+    private int getVrCorePackageVersion() {
+        return PackageUtils.getPackageVersion(
+                ContextUtils.getApplicationContext(), VrCoreVersionChecker.VR_CORE_PACKAGE_ID);
+    }
+
     /**
      * Updates mVrSupportLevel to the correct value. isVrCoreCompatible might return different value
      * at runtime.
      */
     // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
-    private void updateVrSupportLevel() {
+    private void updateVrSupportLevel(Integer vrCorePackageVersion) {
         if (mVrClassesWrapper == null) {
             mVrSupportLevel = VR_NOT_AVAILABLE;
             shutdownNonPresentingNativeContext();
             return;
         }
+        if (vrCorePackageVersion == null) vrCorePackageVersion = getVrCorePackageVersion();
+        mCachedVrCorePackageVersion = vrCorePackageVersion;
+
         if (mVrCoreVersionChecker == null) {
             mVrCoreVersionChecker = mVrClassesWrapper.createVrCoreVersionChecker();
         }
@@ -887,7 +908,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
 
         // Update VR support level as it can change at runtime
-        updateVrSupportLevel();
+        maybeUpdateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (!canEnterVr(mActivity.getActivityTab(), false)) return ENTER_VR_CANCELLED;
         enterVr(false);
@@ -921,7 +942,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         mPaused = false;
 
-        updateVrSupportLevel();
+        maybeUpdateVrSupportLevel();
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
@@ -1402,7 +1423,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @VisibleForTesting
     public void overrideVrCoreVersionCheckerForTesting(VrCoreVersionChecker versionChecker) {
         mVrCoreVersionChecker = versionChecker;
-        updateVrSupportLevel();
+        updateVrSupportLevel(null);
     }
 
     /**
