@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 48 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 54 tests; 43 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS RTCPeerConnection.length 
 PASS new RTCPeerConnection() 
 PASS new RTCPeerConnection(null) 
@@ -44,11 +44,6 @@ FAIL new RTCPeerConnection({ iceServers: [{ urls: [], credentialType: "invalid" 
 FAIL new RTCPeerConnection({ iceServers: [{ url: "stun:stun1.example.net" }] }) assert_throws: function "function () {
         eval(expr);
       }" did not throw
-PASS new RTCPeerConnection({ rtcpMuxPolicy: null }) 
-PASS new RTCPeerConnection({ rtcpMuxPolicy: undefined }) 
-PASS new RTCPeerConnection({ rtcpMuxPolicy: "negotiate" }) 
-PASS new RTCPeerConnection({ rtcpMuxPolicy: "require" }) 
-PASS new RTCPeerConnection({ rtcpMuxPolicy: "invalid" }) 
 FAIL new RTCPeerConnection({ peerIdentity: toStringThrows }) assert_throws: function "function () {
         eval(expr);
       }" did not throw
