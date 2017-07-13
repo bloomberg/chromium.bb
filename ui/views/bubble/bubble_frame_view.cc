@@ -133,6 +133,12 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
   }
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
+
+  // Remove the close button from tab traversal on all platforms. Note this does
+  // not affect screen readers' ability to focus the close button. Keyboard
+  // access to the close button when not using a screen reader is done via the
+  // ESC key handler in DialogClientView.
+  close_button->SetFocusBehavior(View::FocusBehavior::NEVER);
   return close_button;
 }
 
