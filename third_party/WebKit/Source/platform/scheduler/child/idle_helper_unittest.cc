@@ -153,6 +153,28 @@ void ShutdownIdleTask(IdleHelper* helper,
   helper->Shutdown();
 }
 
+// RAII helper class to enable auto advancing of time inside mock task runner.
+// Automatically disables auto-advancement when destroyed.
+class ScopedAutoAdvanceNowEnabler {
+ public:
+  ScopedAutoAdvanceNowEnabler(
+      scoped_refptr<cc::OrderedSimpleTaskRunner> task_runner)
+      : task_runner_(task_runner) {
+    if (task_runner_)
+      task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  }
+
+  ~ScopedAutoAdvanceNowEnabler() {
+    if (task_runner_)
+      task_runner_->SetAutoAdvanceNowToPendingTasks(false);
+  }
+
+ private:
+  scoped_refptr<cc::OrderedSimpleTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAutoAdvanceNowEnabler);
+};
+
 };  // namespace
 
 class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
@@ -233,10 +255,11 @@ class BaseIdleHelperTest : public ::testing::Test {
   void RunUntilIdle() {
     // Only one of mock_task_runner_ or message_loop_ should be set.
     DCHECK(!mock_task_runner_.get() || !message_loop_.get());
-    if (mock_task_runner_.get())
+    if (mock_task_runner_.get()) {
       mock_task_runner_->RunUntilIdle();
-    else
+    } else {
       base::RunLoop().RunUntilIdle();
+    }
   }
 
   template <typename E>
@@ -622,13 +645,11 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
-  EXPECT_THAT(
-      actual_deadlines,
-      ::testing::ElementsAre(
-          clock_before + maximum_idle_period_duration(),
-          clock_before + idle_task_runtime + maximum_idle_period_duration(),
-          clock_before + (2 * idle_task_runtime) +
-              maximum_idle_period_duration()));
+  EXPECT_THAT(actual_deadlines,
+              ::testing::ElementsAre(
+                  clock_before + maximum_idle_period_duration(),
+                  clock_before + 2 * maximum_idle_period_duration(),
+                  clock_before + 3 * maximum_idle_period_duration()));
 
   g_max_idle_task_reposts = 5;
   idle_task_runner_->PostIdleTask(
@@ -685,7 +706,10 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver,
   EXPECT_EQ(1, run_count);
 }
 
-TEST_F(IdleHelperTest, TestLongIdlePeriodImmediatelyRestartsIfMaxDeadline) {
+TEST_F(IdleHelperTest,
+       TestLongIdlePeriodDoesNotImmediatelyRestartIfMaxDeadline) {
+  ScopedAutoAdvanceNowEnabler advance_now(mock_task_runner_);
+
   std::vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
@@ -704,11 +728,10 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodImmediatelyRestartsIfMaxDeadline) {
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
-  EXPECT_THAT(
-      actual_deadlines,
-      ::testing::ElementsAre(
-          clock_before + maximum_idle_period_duration(),
-          clock_before + idle_task_runtime + maximum_idle_period_duration()));
+  EXPECT_THAT(actual_deadlines,
+              ::testing::ElementsAre(
+                  clock_before + maximum_idle_period_duration(),
+                  clock_before + 2 * maximum_idle_period_duration()));
 }
 
 TEST_F(IdleHelperTest, TestLongIdlePeriodRestartWaitsIfNotMaxDeadline) {
@@ -775,11 +798,10 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodPaused) {
                  idle_task_runtime, &actual_deadlines));
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
-  EXPECT_THAT(
-      actual_deadlines,
-      ::testing::ElementsAre(
-          clock_before + maximum_idle_period_duration(),
-          clock_before + idle_task_runtime + maximum_idle_period_duration()));
+  EXPECT_THAT(actual_deadlines,
+              ::testing::ElementsAre(
+                  clock_before + maximum_idle_period_duration(),
+                  clock_before + 2 * maximum_idle_period_duration()));
 
   // Once all task have been run we should go back to the paused state.
   CheckIdlePeriodStateIs("in_long_idle_period_paused");

@@ -2211,13 +2211,11 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
-  EXPECT_THAT(
-      actual_deadlines,
-      ::testing::ElementsAre(
-          clock_before + maximum_idle_period_duration(),
-          clock_before + idle_task_runtime + maximum_idle_period_duration(),
-          clock_before + (2 * idle_task_runtime) +
-              maximum_idle_period_duration()));
+  EXPECT_THAT(actual_deadlines,
+              ::testing::ElementsAre(
+                  clock_before + maximum_idle_period_duration(),
+                  clock_before + 2 * maximum_idle_period_duration(),
+                  clock_before + 3 * maximum_idle_period_duration()));
 
   // Check that idle tasks don't run after the idle period ends with a
   // new BeginMainFrame.
@@ -2316,6 +2314,8 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
+
   int run_count = 0;
 
   g_max_idle_task_reposts = 2;
