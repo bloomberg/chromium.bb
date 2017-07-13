@@ -42,7 +42,7 @@
 namespace blink {
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(HTMLImportTreeRoot::Create(&master)) {
+    : root_(this, HTMLImportTreeRoot::Create(&master)) {
   UseCounter::Count(master, WebFeature::kHTMLImports);
 }
 
@@ -153,7 +153,7 @@ DEFINE_TRACE(HTMLImportsController) {
 }
 
 DEFINE_TRACE_WRAPPERS(HTMLImportsController) {
-  visitor->TraceWrappers(Master());
+  visitor->TraceWrappers(root_);
 }
 
 }  // namespace blink
