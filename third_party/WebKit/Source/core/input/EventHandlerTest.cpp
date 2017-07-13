@@ -13,6 +13,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
@@ -316,6 +317,28 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
                                   .GetFrame()
                                   ->GetEventHandler()
                                   .DragDataTransferLocationForTesting());
+}
+
+TEST_F(EventHandlerTest, HitOnNothingDoesNotShowIBeam) {
+  SetHtmlInnerHTML("");
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          LayoutPoint(10, 10));
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(
+          GetDocument().body(), hit));
+}
+
+TEST_F(EventHandlerTest, HitOnTextShowsIBeam) {
+  SetHtmlInnerHTML("blabla");
+  Node* text = GetDocument().body()->firstChild();
+  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date

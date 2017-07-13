@@ -119,26 +119,6 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
          isHTMLInputElement(ToShadowRoot(target_node)->host());
 }
 
-bool ShouldShowIBeamForNode(const Node* node, const HitTestResult& result) {
-  if (!node)
-    return false;
-
-  bool layout_object_selectable = false;
-  if (LayoutObject* layout_object = node->GetLayoutObject()) {
-    PaintLayer* layer = layout_object->EnclosingLayer();
-    if (layer->GetScrollableArea() &&
-        layer->GetScrollableArea()->IsPointInResizeControl(
-            result.RoundedPointInMainFrame(), kResizerForPointer)) {
-      return false;
-    }
-
-    layout_object_selectable =
-        layout_object->IsText() && node->CanStartSelection();
-  }
-
-  return HasEditableStyle(*node) || layout_object_selectable;
-}
-
 }  // namespace
 
 using namespace HTMLNames;
@@ -391,6 +371,39 @@ void EventHandler::UpdateCursor() {
   }
 }
 
+bool EventHandler::ShouldShowIBeamForNode(const Node* node,
+                                          const HitTestResult& result) {
+  if (!node)
+    return false;
+
+  if (LayoutObject* layout_object = node->GetLayoutObject()) {
+    PaintLayer* layer = layout_object->EnclosingLayer();
+    if (layer->GetScrollableArea() &&
+        layer->GetScrollableArea()->IsPointInResizeControl(
+            result.RoundedPointInMainFrame(), kResizerForPointer)) {
+      return false;
+    }
+
+    if (layout_object->IsText() && node->CanStartSelection())
+      return true;
+  }
+
+  // If a drag may be starting or we're capturing mouse events for a particular
+  // node, don't treat this as a selection. Note calling
+  // ComputeVisibleSelectionInDOMTreeDeprecated may update layout.
+  const bool mouse_selection =
+      !capturing_mouse_events_node_ &&
+      mouse_event_manager_->MousePressed() &&
+      GetSelectionController().MouseDownMayStartSelect() &&
+      !mouse_event_manager_->MouseDownMayStartDrag() &&
+      !frame_->Selection()
+           .ComputeVisibleSelectionInDOMTreeDeprecated()
+           .IsNone();
+  const bool mouse_selects_link = mouse_selection && result.IsOverLink();
+
+  return mouse_selects_link || HasEditableStyle(*node);
+}
+
 OptionalCursor EventHandler::SelectCursor(const HitTestResult& result) {
   if (scroll_manager_->InResizeMode())
     return kNoCursorChange;
@@ -537,9 +550,8 @@ OptionalCursor EventHandler::SelectCursor(const HitTestResult& result) {
 OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
                                               Node* node,
                                               const Cursor& i_beam) {
-  if (result.GetScrollbar()) {
+  if (result.GetScrollbar())
     return PointerCursor();
-  }
 
   const bool is_over_link =
       !GetSelectionController().MouseDownMayStartSelect() &&
@@ -547,22 +559,9 @@ OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
   if (UseHandCursor(node, is_over_link))
     return HandCursor();
 
-  // During selection, use an I-beam no matter what we're over.
-  // If a drag may be starting or we're capturing mouse events for a particular
-  // node, don't treat this as a selection. Note calling
-  // ComputeVisibleSelectionInDOMTreeDeprecated may update layout.
-  if (mouse_event_manager_->MousePressed() &&
-      GetSelectionController().MouseDownMayStartSelect() &&
-      !mouse_event_manager_->MouseDownMayStartDrag() &&
-      !frame_->Selection()
-           .ComputeVisibleSelectionInDOMTreeDeprecated()
-           .IsNone() &&
-      !capturing_mouse_events_node_) {
-    return i_beam;
-  }
-
   if (ShouldShowIBeamForNode(node, result))
     return i_beam;
+
   return PointerCursor();
 }
 
