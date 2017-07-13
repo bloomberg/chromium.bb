@@ -104,6 +104,21 @@ ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
 }
 
 // static
+ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
+                                    ColorSpace::TransferID transfer_id) {
+  DCHECK_NE(transfer_id, ColorSpace::TransferID::CUSTOM);
+  DCHECK_NE(transfer_id, ColorSpace::TransferID::INVALID);
+  ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer_id,
+                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      result.custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
+    }
+  }
+  return result;
+}
+
+// static
 ColorSpace ColorSpace::CreateSCRGBLinear() {
   return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
                     RangeID::FULL);

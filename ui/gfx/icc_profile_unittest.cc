@@ -28,9 +28,11 @@ TEST(ICCProfile, SRGB) {
   sk_sp<SkColorSpace> sk_color_space = SkColorSpace::MakeSRGB();
 
   // The ICC profile parser should note that this is SRGB.
+  EXPECT_EQ(icc_profile.GetColorSpace(), ColorSpace::CreateSRGB());
   EXPECT_EQ(icc_profile.GetColorSpace().ToSkColorSpace().get(),
             sk_color_space.get());
   // The parametric generating code should recognize that this is SRGB.
+  EXPECT_EQ(icc_profile.GetParametricColorSpace(), ColorSpace::CreateSRGB());
   EXPECT_EQ(icc_profile.GetParametricColorSpace().ToSkColorSpace().get(),
             sk_color_space.get());
   // The generated color space should recognize that this is SRGB.
