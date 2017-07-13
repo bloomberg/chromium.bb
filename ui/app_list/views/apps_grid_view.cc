@@ -896,7 +896,10 @@ void AppsGridView::LayoutAllAppsIndicator(gfx::Rect* rect) {
   indicator_rect.Inset((indicator_rect.width() - indicator_size.width()) / 2,
                        0);
   const gfx::Vector2d page_zero_offset = CalculateTransitionOffset(0);
-  indicator_rect.Offset(page_zero_offset.x(), page_zero_offset.y());
+  const int y_offset_limit = -kSuggestionsAllAppsIndicatorPadding -
+                             kGridTileHeight - indicator_size.height();
+  indicator_rect.Offset(page_zero_offset.x(),
+                        std::max(y_offset_limit, page_zero_offset.y()));
   all_apps_indicator_->SetBoundsRect(indicator_rect);
 }
 
