@@ -40,7 +40,6 @@ class ListValue;
 
 namespace chromeos {
 
-class AuthPolicyLoginHelper;
 class BootstrapUserContextInitializer;
 class CrosSettings;
 class LoginDisplayHost;
@@ -285,6 +284,11 @@ class ExistingUserController
   // affect any future attempts.
   void ClearRecordedNames();
 
+  // Restart authpolicy daemon in case of Active Directory authentication.
+  // Used to prevent data from leaking from one user session into another.
+  // Should be called to cancel AuthPolicyLoginHelper::TryAuthenticateUser call.
+  void ClearActiveDirectoryState();
+
   // Public session auto-login timer.
   std::unique_ptr<base::OneShotTimer> auto_login_timer_;
 
@@ -299,10 +303,6 @@ class ExistingUserController
 
   // Used to execute login operations.
   std::unique_ptr<LoginPerformer> login_performer_;
-
-  // Used to execute login to AuthPolicy service. It provides authentication
-  // against Active Directory server.
-  std::unique_ptr<AuthPolicyLoginHelper> authpolicy_login_helper_;
 
   // Delegate to forward all authentication status events to.
   // Tests can use this to receive authentication status events.

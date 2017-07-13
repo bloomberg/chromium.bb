@@ -27,6 +27,16 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
   AuthPolicyLoginHelper();
   ~AuthPolicyLoginHelper();
 
+  // Try to get Kerberos TGT. To get an error code of this call one should use
+  // last_auth_error_ returned from AuthPolicyClient::GetUserStatus afterwards.
+  // (see https://crbug.com/710452).
+  static void TryAuthenticateUser(const std::string& username,
+                                  const std::string& object_guid,
+                                  const std::string& password);
+
+  // Restarts AuthPolicy service.
+  static void Restart();
+
   // See AuthPolicyClient::JoinAdDomain.
   void JoinAdDomain(const std::string& machine_name,
                     const std::string& username,
@@ -38,12 +48,6 @@ class CHROMEOS_EXPORT AuthPolicyLoginHelper {
                         const std::string& object_guid,
                         const std::string& password,
                         AuthCallback callback);
-
-  // Trying to get kerberos TGT. To get a result of this call one should use
-  // GetStatusCall afterwards. (see crbug.com/710452).
-  void TryAuthenticateUser(const std::string& username,
-                           const std::string& object_guid,
-                           const std::string& password);
 
   // Cancel pending requests and restarts AuthPolicy service.
   void CancelRequestsAndRestart();
