@@ -6,7 +6,6 @@
 """A low-level blob storage/retrieval interface to the Isolate server"""
 
 import base64
-import binascii
 import collections
 import logging
 import os
@@ -39,11 +38,15 @@ except ImportError as err:
 # actually used anywhere in this module, but if certifi is missing,
 # google.auth.transport will fail with
 # https://stackoverflow.com/questions/24973326
+certifi = None
 if grpc is not None:
   try:
     import certifi
-  except ImportError as err:
-    logging.warning('could not import certifi; gRPC HTTPS connections may fail')
+  except ImportError:
+    # Could not import certifi; gRPC HTTPS connections may fail. This will be
+    # logged in IsolateServerGrpc.__init__, since the logger is not configured
+    # during the import time.
+    pass
 
 # Chunk size to use when reading from network stream.
 NET_IO_FILE_CHUNK = 16 * 1024
@@ -530,6 +533,9 @@ class IsolateServerGrpc(StorageApi):
   def __init__(self, server, namespace, proxy):
     super(IsolateServerGrpc, self).__init__()
     logging.info('Using gRPC for Isolate')
+    if not certifi:
+      logging.warning(
+          'Could not import certifi; gRPC HTTPS connections may fail')
     self._server = server
     self._lock = threading.Lock()
     self._memory_use = 0
