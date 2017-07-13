@@ -164,7 +164,7 @@ viz::FrameSinkId AllocateFrameSinkId() {
 #endif
 }
 
-cc::FrameSinkManager* GetFrameSinkManager() {
+viz::FrameSinkManager* GetFrameSinkManager() {
 #if defined(OS_ANDROID)
   return CompositorImpl::GetFrameSinkManager();
 #else

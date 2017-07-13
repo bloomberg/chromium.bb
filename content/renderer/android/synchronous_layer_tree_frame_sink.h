@@ -28,7 +28,6 @@ class SkCanvas;
 namespace cc {
 class BeginFrameSource;
 class ContextProvider;
-class FrameSinkManager;
 }  // namespace cc
 
 namespace IPC {
@@ -39,6 +38,7 @@ class Sender;
 namespace viz {
 class CompositorFrameSinkSupport;
 class Display;
+class FrameSinkManager;
 class LocalSurfaceIdAllocator;
 }  // namespace viz
 
@@ -156,7 +156,7 @@ class SynchronousLayerTreeFrameSink
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
-  std::unique_ptr<cc::FrameSinkManager> frame_sink_manager_;
+  std::unique_ptr<viz::FrameSinkManager> frame_sink_manager_;
   std::unique_ptr<viz::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   viz::LocalSurfaceId child_local_surface_id_;
   viz::LocalSurfaceId root_local_surface_id_;

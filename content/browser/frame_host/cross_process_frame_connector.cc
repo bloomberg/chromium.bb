@@ -4,9 +4,9 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"

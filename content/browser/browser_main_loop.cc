@@ -1373,7 +1373,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 }
 
 #if !defined(OS_ANDROID)
-cc::FrameSinkManager* BrowserMainLoop::GetFrameSinkManager() const {
+viz::FrameSinkManager* BrowserMainLoop::GetFrameSinkManager() const {
   return frame_sink_manager_impl_->frame_sink_manager();
 }
 #endif

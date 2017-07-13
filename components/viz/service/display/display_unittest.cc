@@ -13,7 +13,6 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
@@ -26,6 +25,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,7 +154,7 @@ class DisplayTest : public testing::Test {
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
-  cc::FrameSinkManager manager_;
+  FrameSinkManager manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;

@@ -17,11 +17,11 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -54,7 +54,7 @@ SurfacesInstance::SurfacesInstance()
   // Webview does not own the surface so should not clear it.
   settings.should_clear_root_render_pass = false;
 
-  frame_sink_manager_.reset(new cc::FrameSinkManager);
+  frame_sink_manager_.reset(new viz::FrameSinkManager);
   local_surface_id_allocator_.reset(new viz::LocalSurfaceIdAllocator());
 
   constexpr bool is_root = true;
@@ -106,7 +106,7 @@ viz::FrameSinkId SurfacesInstance::AllocateFrameSinkId() {
   return frame_sink_id_allocator_.NextFrameSinkId();
 }
 
-cc::FrameSinkManager* SurfacesInstance::GetFrameSinkManager() {
+viz::FrameSinkManager* SurfacesInstance::GetFrameSinkManager() {
   return frame_sink_manager_.get();
 }
 

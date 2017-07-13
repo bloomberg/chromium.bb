@@ -11,7 +11,6 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
@@ -24,6 +23,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -106,7 +106,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;
-  cc::FrameSinkManager frame_sink_manager_;
+  FrameSinkManager frame_sink_manager_;
   cc::TestSharedBitmapManager bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 

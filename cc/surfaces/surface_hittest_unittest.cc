@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "cc/output/compositor_frame.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
@@ -13,6 +12,7 @@
 #include "cc/test/surface_hittest_test_helpers.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -66,7 +66,7 @@ using namespace test;
 // This test verifies that hit testing on a surface that does not exist does
 // not crash.
 TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
   viz::FrameSinkId root_frame_sink_id(kArbitraryFrameSinkId);
   auto root_support = viz::CompositorFrameSinkSupport::Create(
       nullptr, &manager, kArbitraryFrameSinkId, kIsRoot,
@@ -108,7 +108,7 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
 
   // Set up root FrameSink.
   viz::FrameSinkId root_frame_sink_id(1, 1);
@@ -142,7 +142,7 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
 }
 
 TEST(SurfaceHittestTest, Hittest_ChildSurface) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
 
   // Set up root FrameSink.
   viz::FrameSinkId root_frame_sink_id(1, 1);
@@ -283,7 +283,7 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
 // This test verifies that hit testing will progress to the next quad if it
 // encounters an invalid RenderPassDrawQuad for whatever reason.
 TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
 
   // Set up root FrameSink.
   viz::FrameSinkId root_frame_sink_id(1, 1);
@@ -392,7 +392,7 @@ TEST(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 }
 
 TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
   viz::FrameSinkId root_frame_sink_id(kArbitraryFrameSinkId);
   auto support = viz::CompositorFrameSinkSupport::Create(
       nullptr, &manager, root_frame_sink_id, kIsRoot,
@@ -494,7 +494,7 @@ TEST(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
 }
 
 TEST(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
-  FrameSinkManager manager;
+  viz::FrameSinkManager manager;
 
   // Set up root FrameSink.
   viz::FrameSinkId root_frame_sink_id(1, 1);

@@ -28,7 +28,7 @@ class GpuCompositorFrameSink
  public:
   GpuCompositorFrameSink(
       GpuCompositorFrameSinkDelegate* delegate,
-      cc::FrameSinkManager* frame_sink_manager,
+      FrameSinkManager* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       cc::mojom::CompositorFrameSinkRequest request,
       cc::mojom::CompositorFrameSinkPrivateRequest private_request,

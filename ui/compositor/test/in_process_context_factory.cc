@@ -18,13 +18,13 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -137,7 +137,7 @@ struct InProcessContextFactory::PerCompositorData {
 
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
-    cc::FrameSinkManager* frame_sink_manager)
+    viz::FrameSinkManager* frame_sink_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
       host_frame_sink_manager_(host_frame_sink_manager),
@@ -349,7 +349,7 @@ void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-cc::FrameSinkManager* InProcessContextFactory::GetFrameSinkManager() {
+viz::FrameSinkManager* InProcessContextFactory::GetFrameSinkManager() {
   return frame_sink_manager_;
 }
 

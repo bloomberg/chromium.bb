@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 
 namespace content {

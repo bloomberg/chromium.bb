@@ -9,7 +9,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/surfaces/frame_sink_manager.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_external_begin_frame_source.h"
@@ -19,6 +18,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,7 +170,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   }
 
  protected:
-  cc::FrameSinkManager manager_;
+  FrameSinkManager manager_;
   FakeCompositorFrameSinkSupportClient fake_support_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   cc::FakeExternalBeginFrameSource begin_frame_source_;

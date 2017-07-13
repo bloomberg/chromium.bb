@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/surfaces/frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/primary_begin_frame_source.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
 #endif
 
-namespace cc {
+namespace viz {
 
 FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping() = default;
 
@@ -24,7 +24,8 @@ FrameSinkManager::FrameSinkSourceMapping::FrameSinkSourceMapping(
 
 FrameSinkManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() = default;
 
-FrameSinkManager::FrameSinkManager(SurfaceManager::LifetimeType lifetime_type)
+FrameSinkManager::FrameSinkManager(
+    cc::SurfaceManager::LifetimeType lifetime_type)
     : surface_manager_(lifetime_type) {}
 
 FrameSinkManager::~FrameSinkManager() {
@@ -33,18 +34,16 @@ FrameSinkManager::~FrameSinkManager() {
   DCHECK_EQ(registered_sources_.size(), 0u);
 }
 
-void FrameSinkManager::RegisterFrameSinkId(
-    const viz::FrameSinkId& frame_sink_id) {
+void FrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
   surface_manager_.RegisterFrameSinkId(frame_sink_id);
 }
 
-void FrameSinkManager::InvalidateFrameSinkId(
-    const viz::FrameSinkId& frame_sink_id) {
+void FrameSinkManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   surface_manager_.InvalidateFrameSinkId(frame_sink_id);
 }
 
 void FrameSinkManager::RegisterFrameSinkManagerClient(
-    const viz::FrameSinkId& frame_sink_id,
+    const FrameSinkId& frame_sink_id,
     FrameSinkManagerClient* client) {
   DCHECK(client);
   DCHECK_EQ(surface_manager_.GetValidFrameSinkIds().count(frame_sink_id), 1u);
@@ -59,7 +58,7 @@ void FrameSinkManager::RegisterFrameSinkManagerClient(
 }
 
 void FrameSinkManager::UnregisterFrameSinkManagerClient(
-    const viz::FrameSinkId& frame_sink_id) {
+    const FrameSinkId& frame_sink_id) {
   DCHECK_EQ(surface_manager_.GetValidFrameSinkIds().count(frame_sink_id), 1u);
   auto client_iter = clients_.find(frame_sink_id);
   DCHECK(client_iter != clients_.end());
@@ -73,8 +72,8 @@ void FrameSinkManager::UnregisterFrameSinkManagerClient(
 }
 
 void FrameSinkManager::RegisterBeginFrameSource(
-    BeginFrameSource* source,
-    const viz::FrameSinkId& frame_sink_id) {
+    cc::BeginFrameSource* source,
+    const FrameSinkId& frame_sink_id) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 0u);
   DCHECK_EQ(surface_manager_.GetValidFrameSinkIds().count(frame_sink_id), 1u);
@@ -85,11 +84,12 @@ void FrameSinkManager::RegisterBeginFrameSource(
   primary_source_.OnBeginFrameSourceAdded(source);
 }
 
-void FrameSinkManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
+void FrameSinkManager::UnregisterBeginFrameSource(
+    cc::BeginFrameSource* source) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 1u);
 
-  viz::FrameSinkId frame_sink_id = registered_sources_[source];
+  FrameSinkId frame_sink_id = registered_sources_[source];
   registered_sources_.erase(source);
 
   primary_source_.OnBeginFrameSourceRemoved(source);
@@ -106,13 +106,13 @@ void FrameSinkManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
 }
 
-BeginFrameSource* FrameSinkManager::GetPrimaryBeginFrameSource() {
+cc::BeginFrameSource* FrameSinkManager::GetPrimaryBeginFrameSource() {
   return &primary_source_;
 }
 
 void FrameSinkManager::RecursivelyAttachBeginFrameSource(
-    const viz::FrameSinkId& frame_sink_id,
-    BeginFrameSource* source) {
+    const FrameSinkId& frame_sink_id,
+    cc::BeginFrameSource* source) {
   FrameSinkSourceMapping& mapping = frame_sink_source_map_[frame_sink_id];
   if (!mapping.source) {
     mapping.source = source;
@@ -122,17 +122,17 @@ void FrameSinkManager::RecursivelyAttachBeginFrameSource(
   }
   for (size_t i = 0; i < mapping.children.size(); ++i) {
     // |frame_sink_source_map_| is a container that can allocate new memory and
-    // move data between buffers. Copy child's viz::FrameSinkId before passing
+    // move data between buffers. Copy child's FrameSinkId before passing
     // it to RecursivelyAttachBeginFrameSource so that we don't reference data
     // inside |frame_sink_source_map_|.
-    viz::FrameSinkId child_copy = mapping.children[i];
+    FrameSinkId child_copy = mapping.children[i];
     RecursivelyAttachBeginFrameSource(child_copy, source);
   }
 }
 
 void FrameSinkManager::RecursivelyDetachBeginFrameSource(
-    const viz::FrameSinkId& frame_sink_id,
-    BeginFrameSource* source) {
+    const FrameSinkId& frame_sink_id,
+    cc::BeginFrameSource* source) {
   auto iter = frame_sink_source_map_.find(frame_sink_id);
   if (iter == frame_sink_source_map_.end())
     return;
@@ -148,20 +148,20 @@ void FrameSinkManager::RecursivelyDetachBeginFrameSource(
     return;
   }
 
-  std::vector<viz::FrameSinkId>& children = iter->second.children;
+  std::vector<FrameSinkId>& children = iter->second.children;
   for (size_t i = 0; i < children.size(); ++i) {
     RecursivelyDetachBeginFrameSource(children[i], source);
   }
 }
 
 bool FrameSinkManager::ChildContains(
-    const viz::FrameSinkId& child_frame_sink_id,
-    const viz::FrameSinkId& search_frame_sink_id) const {
+    const FrameSinkId& child_frame_sink_id,
+    const FrameSinkId& search_frame_sink_id) const {
   auto iter = frame_sink_source_map_.find(child_frame_sink_id);
   if (iter == frame_sink_source_map_.end())
     return false;
 
-  const std::vector<viz::FrameSinkId>& children = iter->second.children;
+  const std::vector<FrameSinkId>& children = iter->second.children;
   for (size_t i = 0; i < children.size(); ++i) {
     if (children[i] == search_frame_sink_id)
       return true;
@@ -172,13 +172,13 @@ bool FrameSinkManager::ChildContains(
 }
 
 void FrameSinkManager::RegisterFrameSinkHierarchy(
-    const viz::FrameSinkId& parent_frame_sink_id,
-    const viz::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   // If it's possible to reach the parent through the child's descendant chain,
   // then this will create an infinite loop.  Might as well just crash here.
   CHECK(!ChildContains(child_frame_sink_id, parent_frame_sink_id));
 
-  std::vector<viz::FrameSinkId>& children =
+  std::vector<FrameSinkId>& children =
       frame_sink_source_map_[parent_frame_sink_id].children;
   for (size_t i = 0; i < children.size(); ++i)
     DCHECK(children[i] != child_frame_sink_id);
@@ -186,7 +186,7 @@ void FrameSinkManager::RegisterFrameSinkHierarchy(
 
   // If the parent has no source, then attaching it to this child will
   // not change any downstream sources.
-  BeginFrameSource* parent_source =
+  cc::BeginFrameSource* parent_source =
       frame_sink_source_map_[parent_frame_sink_id].source;
   if (!parent_source)
     return;
@@ -196,10 +196,10 @@ void FrameSinkManager::RegisterFrameSinkHierarchy(
 }
 
 void FrameSinkManager::UnregisterFrameSinkHierarchy(
-    const viz::FrameSinkId& parent_frame_sink_id,
-    const viz::FrameSinkId& child_frame_sink_id) {
+    const FrameSinkId& parent_frame_sink_id,
+    const FrameSinkId& child_frame_sink_id) {
   // Deliberately do not check validity of either parent or child
-  // viz::FrameSinkId here.  They were valid during the registration, so were
+  // FrameSinkId here.  They were valid during the registration, so were
   // valid at some point in time.  This makes it possible to invalidate parent
   // and child FrameSinkIds independently of each other and not have an ordering
   // dependency  of unregistering the hierarchy first before either of them.
@@ -207,7 +207,7 @@ void FrameSinkManager::UnregisterFrameSinkHierarchy(
 
   auto iter = frame_sink_source_map_.find(parent_frame_sink_id);
 
-  std::vector<viz::FrameSinkId>& children = iter->second.children;
+  std::vector<FrameSinkId>& children = iter->second.children;
   bool found_child = false;
   for (size_t i = 0; i < children.size(); ++i) {
     if (children[i] == child_frame_sink_id) {
@@ -230,7 +230,7 @@ void FrameSinkManager::UnregisterFrameSinkHierarchy(
 
   // If the parent does not have a begin frame source, then disconnecting it
   // will not change any of its children.
-  BeginFrameSource* parent_source = iter->second.source;
+  cc::BeginFrameSource* parent_source = iter->second.source;
   if (!parent_source)
     return;
 
@@ -240,9 +240,8 @@ void FrameSinkManager::UnregisterFrameSinkHierarchy(
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
 }
 
-void FrameSinkManager::DropTemporaryReference(
-    const viz::SurfaceId& surface_id) {
+void FrameSinkManager::DropTemporaryReference(const SurfaceId& surface_id) {
   surface_manager_.DropTemporaryReference(surface_id);
 }
 
-}  // namespace cc
+}  // namespace viz
