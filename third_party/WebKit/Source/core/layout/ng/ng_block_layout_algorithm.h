@@ -75,17 +75,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const WTF::Optional<NGLogicalOffset> floats_bfc_offset = WTF::nullopt);
 
   // @return Estimated BFC offset for the "to be layout" child.
-  WTF::Optional<NGInflowChildData> PrepareChildLayout(
-      const NGPreviousInflowPosition&,
-      NGLayoutInputNode);
+  NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
+                                     NGLayoutInputNode);
 
-  WTF::Optional<NGPreviousInflowPosition> FinishChildLayout(
-      const NGConstraintSpace&,
-      const NGPreviousInflowPosition& prev_data,
+  NGPreviousInflowPosition ComputeInflowPosition(
+      const NGPreviousInflowPosition& previous_inflow_position,
       const NGInflowChildData& child_data,
-      NGLayoutInputNode child,
-      NGBreakToken* child_break_token,
-      RefPtr<NGLayoutResult>);
+      const WTF::Optional<NGLogicalOffset>& child_bfc_offset,
+      const NGLogicalOffset& logical_offset,
+      const NGLayoutResult& layout_result,
+      const NGFragment& fragment);
 
   // Positions the fragment that establishes a new formatting context.
   //
@@ -134,9 +133,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                  const NGInflowChildData& child_data);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
-  void HandleFloating(const NGPreviousInflowPosition&,
-                      NGBlockNode,
-                      NGBlockBreakToken*);
+  void HandleFloat(const NGPreviousInflowPosition&,
+                   NGBlockNode,
+                   NGBlockBreakToken*);
+  WTF::Optional<NGPreviousInflowPosition> HandleInflow(
+      const NGPreviousInflowPosition&,
+      NGLayoutInputNode child,
+      NGBreakToken* child_break_token);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
