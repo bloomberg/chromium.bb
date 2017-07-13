@@ -338,11 +338,13 @@ ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
 // NetworkMenuModel, private methods:
 
 void NetworkMenuModel::ShowOther(const std::string& type) const {
-  gfx::NativeWindow native_window = owner_->delegate()->GetNativeWindow();
-  if (type == shill::kTypeCellular)
-    ChooseMobileNetworkDialog::ShowDialog(native_window);
-  else
-    NetworkConfigView::ShowForType(shill::kTypeWifi, native_window);
+  if (type == shill::kTypeCellular) {
+    // TODO(jamescook): This should not need a parent.
+    ChooseMobileNetworkDialog::ShowDialog(
+        owner_->delegate()->GetNativeWindow());
+  } else {
+    NetworkConfigView::ShowForType(shill::kTypeWifi);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
