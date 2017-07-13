@@ -44,7 +44,7 @@
 namespace {
 
 // Global atomic to generate child process unique IDs.
-base::StaticAtomicSequenceNumber g_unique_id;
+base::AtomicSequenceNumber g_unique_id;
 
 }  // namespace
 
