@@ -9,8 +9,16 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
 
@@ -127,6 +135,43 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewTest);
 };
 
+class SearchBoxViewFullScreenTest : public views::test::WidgetTest {
+ public:
+  SearchBoxViewFullScreenTest() {}
+  ~SearchBoxViewFullScreenTest() override {}
+
+  // Overridden from testing::Test:
+  void SetUp() override {
+    views::test::WidgetTest::SetUp();
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableFullscreenAppList);
+    widget_ = CreateTopLevelPlatformWidget();
+    widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
+    view_ = new SearchBoxView(nullptr, &view_delegate_);
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    views::test::WidgetTest::TearDown();
+  }
+
+ protected:
+  SearchBoxView* view() { return view_; }
+
+  void SetSearchEngineIsGoogle(bool is_google) {
+    view_delegate_.SetSearchEngineIsGoogle(is_google);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  AppListTestViewDelegate view_delegate_;
+  views::Widget* widget_;
+  SearchBoxView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewFullScreenTest);
+};
+
 TEST_F(SearchBoxViewTest, Basic) {
   KeyPress(ui::VKEY_A);
   EXPECT_EQ("a", GetLastQueryAndReset());
@@ -162,6 +207,30 @@ TEST_F(SearchBoxViewTest, CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   view()->ClearSearch();
   EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
+}
+
+TEST_F(SearchBoxViewFullScreenTest, SearchEngineGoogle) {
+  SetSearchEngineIsGoogle(true);
+  gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
+      kIcGoogleBlackIcon, kSearchIconSize, kDefaultSearchboxColor);
+  view()->ModelChanged();
+
+  gfx::ImageSkia actual_icon = view()->get_search_icon_for_test()->GetImage();
+
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*expected_icon.bitmap(),
+                                         *actual_icon.bitmap()));
+}
+
+TEST_F(SearchBoxViewFullScreenTest, SearchEngineNotGoogle) {
+  SetSearchEngineIsGoogle(false);
+  gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
+      kIcSearchEngineNotGoogleIcon, kSearchIconSize, kDefaultSearchboxColor);
+  view()->ModelChanged();
+
+  gfx::ImageSkia actual_icon = view()->get_search_icon_for_test()->GetImage();
+
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(*expected_icon.bitmap(),
+                                         *actual_icon.bitmap()));
 }
 
 }  // namespace test

@@ -290,6 +290,7 @@ test("app_list_unittests") {
     ]
     deps += [
       "//ui/accessibility",
+      "//ui/app_list/vector_icons",
       "//ui/views",
       "//ui/views:test_support",
     ]

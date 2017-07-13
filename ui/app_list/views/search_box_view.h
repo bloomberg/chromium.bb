@@ -107,12 +107,18 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
+  // Used only in the tests to get the current search icon.
+  views::ImageView* get_search_icon_for_test() { return search_icon_; }
+
  private:
   // Updates model text and selection model with current Textfield info.
   void UpdateModel();
 
   // Fires query change notification.
   void NotifyQueryChanged();
+
+  // Updates the search icon.
+  void UpdateSearchIcon(bool is_google, const SkColor& search_box_color);
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -143,7 +149,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   AppListModel* model_;                 // Owned by the profile-keyed service.
 
   views::View* content_container_;        // Owned by views hierarchy.
-  views::ImageView* google_icon_;         // Owned by views hierarchy.
+  views::ImageView* search_icon_;         // Owned by views hierarchy.
   SearchBoxImageButton* back_button_;     // Owned by views hierarchy.
   SearchBoxImageButton* speech_button_;   // Owned by views hierarchy.
   views::Textfield* search_box_;          // Owned by views hierarchy.

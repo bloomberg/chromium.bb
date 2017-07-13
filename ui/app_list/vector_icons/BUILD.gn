@@ -20,6 +20,8 @@ aggregate_vector_icons("app_list_vector_icons") {
     "ic_google_black.icon",
     "ic_mic_black.1x.icon",
     "ic_mic_black.icon",
+    "ic_search_engine_not_google.1x.icon",
+    "ic_search_engine_not_google.icon",
   ]
 }
 
