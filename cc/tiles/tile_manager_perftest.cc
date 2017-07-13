@@ -247,8 +247,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     // Property trees need to be rebuilt because layers were added above.
     host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
     host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
-    bool update_lcd_text = false;
-    host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl()->pending_tree()->UpdateDrawProperties();
     for (FakePictureLayerImpl* layer : layers)
       layer->CreateAllTiles();
 

@@ -341,7 +341,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->set_needs_update_draw_properties();
-  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+  host_impl.active_tree()->UpdateDrawProperties();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -358,7 +358,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Unrelated functions, always set to new values, always set needs update.
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->set_needs_update_draw_properties();
-  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+  host_impl.active_tree()->UpdateDrawProperties();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true);
                                       layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true);

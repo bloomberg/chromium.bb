@@ -132,10 +132,8 @@ const DisplayItemList* RecordingSource::GetDisplayItemList() {
   return display_list_.get();
 }
 
-scoped_refptr<RasterSource> RecordingSource::CreateRasterSource(
-    bool can_use_lcd_text) const {
-  return scoped_refptr<RasterSource>(
-      RasterSource::CreateFromRecordingSource(this, can_use_lcd_text));
+scoped_refptr<RasterSource> RecordingSource::CreateRasterSource() const {
+  return scoped_refptr<RasterSource>(new RasterSource(this));
 }
 
 void RecordingSource::DetermineIfSolidColor() {

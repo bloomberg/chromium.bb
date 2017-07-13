@@ -166,7 +166,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info,
                                    int layer_id,
                                    int source_frame_number,
-                                   int flags);
+                                   int flags,
+                                   bool can_use_lcd_text);
 
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;

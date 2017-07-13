@@ -38,14 +38,17 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
     // If set to true, this indicates that the canvas has already been
     // rasterized into. This means that the canvas cannot be cleared safely.
-    bool playback_to_shared_canvas;
+    bool playback_to_shared_canvas : 1;
 
     // If set to true, none of the images will be rasterized.
-    bool skip_images;
+    bool skip_images : 1;
 
     // If set to true, we will use an image hijack canvas, which enables
     // compositor image caching.
-    bool use_image_hijack_canvas;
+    bool use_image_hijack_canvas : 1;
+
+    // If set to true, we should use LCD text.
+    bool use_lcd_text : 1;
 
     // If non-empty, an image hijack canvas will be used to skip these images
     // during raster.
@@ -53,10 +56,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     // crbug.com/691076.
     SkImageIdFlatSet images_to_skip;
   };
-
-  static scoped_refptr<RasterSource> CreateFromRecordingSource(
-      const RecordingSource* other,
-      bool can_use_lcd_text);
 
   // Helper function to apply a few common operations before passing the canvas
   // to the shorter version. This is useful for rastering into tiles.
@@ -127,11 +126,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual sk_sp<SkPicture> GetFlattenedPicture();
   virtual size_t GetMemoryUsage() const;
 
-  // Return true if LCD anti-aliasing may be used when rastering text.
-  virtual bool CanUseLCDText() const;
-
-  scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const;
-
   // Image decode controller should be set once. Its lifetime has to exceed that
   // of the raster source, since the raster source will access it during raster.
   void set_image_decode_cache(ImageDecodeCache* image_decode_cache) {
@@ -140,10 +134,11 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   }
 
  protected:
+  // RecordingSource is the only class that can create a raster source.
+  friend class RecordingSource;
   friend class base::RefCountedThreadSafe<RasterSource>;
 
-  RasterSource(const RecordingSource* other, bool can_use_lcd_text);
-  RasterSource(const RasterSource* other, bool can_use_lcd_text);
+  explicit RasterSource(const RecordingSource* other);
   virtual ~RasterSource();
 
   // These members are const as this raster source may be in use on another
@@ -152,7 +147,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const size_t painter_reported_memory_usage_;
   const SkColor background_color_;
   const bool requires_clear_;
-  const bool can_use_lcd_text_;
   const bool is_solid_color_;
   const SkColor solid_color_;
   const gfx::Rect recorded_viewport_;

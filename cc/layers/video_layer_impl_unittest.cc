@@ -114,7 +114,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
 
   active_tree->BuildLayerListAndPropertyTreesForTesting();
 
-  active_tree->UpdateDrawProperties(false);
+  active_tree->UpdateDrawProperties();
 
   // We don't have a frame yet, so the video doesn't occlude the layer below it.
   EXPECT_FALSE(draw_properties.occlusion_in_content_space.IsOccluded(visible));
@@ -124,7 +124,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
       gfx::Size(10, 10), base::TimeDelta());
   provider.set_frame(video_frame);
   active_tree->set_needs_update_draw_properties();
-  active_tree->UpdateDrawProperties(false);
+  active_tree->UpdateDrawProperties();
 
   // We have a frame now, so the video occludes the layer below it.
   EXPECT_TRUE(draw_properties.occlusion_in_content_space.IsOccluded(visible));

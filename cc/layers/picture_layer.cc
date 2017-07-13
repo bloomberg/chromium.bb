@@ -58,14 +58,9 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
   layer_impl->SetUseTransformedRasterization(
       ShouldUseTransformedRasterization());
-
-  // Preserve lcd text settings from the current raster source.
-  bool can_use_lcd_text = layer_impl->RasterSourceUsesLCDText();
-  scoped_refptr<RasterSource> raster_source =
-      recording_source_->CreateRasterSource(can_use_lcd_text);
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_size());
-  layer_impl->UpdateRasterSource(std::move(raster_source),
+  layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource(),
                                  &last_updated_invalidation_, nullptr);
   DCHECK(last_updated_invalidation_.IsEmpty());
 }
@@ -179,8 +174,7 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
                                          painter_reported_memory_usage);
 
   scoped_refptr<RasterSource> raster_source =
-      recording_source.CreateRasterSource(false);
-
+      recording_source.CreateRasterSource();
   return raster_source->GetFlattenedPicture();
 }
 

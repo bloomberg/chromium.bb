@@ -51,7 +51,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+  host_impl.active_tree()->UpdateDrawProperties();
 
   RenderSurfaceImpl* render_surface =
       GetRenderSurface(host_impl.active_tree()->root_layer_for_testing());
@@ -111,7 +111,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+  host_impl.active_tree()->UpdateDrawProperties();
 
   ASSERT_TRUE(
       GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id)));
@@ -170,7 +170,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   host_impl.SetVisible(true);
   host_impl.InitializeRenderer(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+  host_impl.active_tree()->UpdateDrawProperties();
 
   ASSERT_TRUE(
       GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id)));

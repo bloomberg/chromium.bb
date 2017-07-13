@@ -41,7 +41,7 @@ FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 
 std::unique_ptr<Tile> FakePictureLayerTilingClient::CreateTile(
     const Tile::CreateInfo& info) {
-  return tile_manager_->CreateTile(info, 0, 0, 0);
+  return tile_manager_->CreateTile(info, 0, 0, 0, false);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {

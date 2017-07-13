@@ -981,7 +981,7 @@ void LayerTreeImpl::SetElementIdsForTesting() {
   }
 }
 
-bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
+bool LayerTreeImpl::UpdateDrawProperties() {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -1095,24 +1095,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         occlusion_tracker.ComputeVisibleRegionInScreen(this);
   }
 
-  // It'd be ideal if this could be done earlier, but when the raster source
-  // is updated from the main thread during push properties, update draw
-  // properties has not occurred yet and so it's not clear whether or not the
-  // layer can or cannot use lcd text.  So, this is the cleanup pass to
-  // determine if the raster source needs to be replaced with a non-lcd
-  // raster source due to draw properties.
-  if (update_lcd_text) {
-    // TODO(enne): Make LTHI::sync_tree return this value.
-    LayerTreeImpl* sync_tree = layer_tree_host_impl_->CommitToActiveTree()
-                                   ? layer_tree_host_impl_->active_tree()
-                                   : layer_tree_host_impl_->pending_tree();
-    // If this is not the sync tree, then it is not safe to update lcd text
-    // as it causes invalidations and the tiles may be in use.
-    DCHECK_EQ(this, sync_tree);
-    for (auto* layer : picture_layers_)
-      layer->UpdateCanUseLCDTextAfterCommit();
-  }
-
   // Resourceless draw do not need tiles and should not affect existing tile
   // priorities.
   if (!is_in_resourceless_software_draw_mode()) {
@@ -1138,6 +1120,17 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   DCHECK(!needs_update_draw_properties_)
       << "CalcDrawProperties should not set_needs_update_draw_properties()";
   return true;
+}
+
+void LayerTreeImpl::UpdateCanUseLCDText() {
+  // If this is not the sync tree, then it is not safe to update lcd text
+  // as it causes invalidations and the tiles may be in use.
+  DCHECK(IsSyncTree());
+  bool tile_priorities_updated = false;
+  for (auto* layer : picture_layers_)
+    tile_priorities_updated |= layer->UpdateCanUseLCDTextAfterCommit();
+  if (tile_priorities_updated)
+    DidModifyTilePriorities();
 }
 
 void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
@@ -1924,8 +1917,7 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
     return NULL;
-  bool update_lcd_text = false;
-  if (!UpdateDrawProperties(update_lcd_text))
+  if (!UpdateDrawProperties())
     return NULL;
   FindClosestMatchingLayerState state;
   FindClosestMatchingLayer(screen_space_point, layer_list_[0],
@@ -1964,8 +1956,7 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
     const gfx::PointF& screen_space_point) {
   if (layer_list_.empty())
     return NULL;
-  bool update_lcd_text = false;
-  if (!UpdateDrawProperties(update_lcd_text))
+  if (!UpdateDrawProperties())
     return NULL;
   FindTouchEventLayerFunctor func = {screen_space_point};
   FindClosestMatchingLayerState state;

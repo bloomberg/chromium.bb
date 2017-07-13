@@ -207,9 +207,8 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   // By updating the draw proprties on the active tree, we will set the viewport
   // rect for tile priorities to something non-empty.
-  const bool can_use_lcd_text = false;
   host_impl.active_tree()->BuildPropertyTreesForTesting();
-  host_impl.active_tree()->UpdateDrawProperties(can_use_lcd_text);
+  host_impl.active_tree()->UpdateDrawProperties();
 
   layer->SetBounds(gfx::Size(11, 11));
 

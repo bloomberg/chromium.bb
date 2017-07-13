@@ -117,6 +117,7 @@ class CC_EXPORT Tile {
   bool is_solid_color_analysis_performed() const {
     return is_solid_color_analysis_performed_;
   }
+  bool can_use_lcd_text() const { return can_use_lcd_text_; }
 
   bool set_raster_task_scheduled_with_checker_images(bool has_checker_images) {
     bool previous_value = raster_task_scheduled_with_checker_images_;
@@ -140,7 +141,8 @@ class CC_EXPORT Tile {
        const CreateInfo& info,
        int layer_id,
        int source_frame_number,
-       int flags);
+       int flags,
+       bool can_use_lcd_text);
 
   TileManager* const tile_manager_;
   const PictureLayerTiling* tiling_;
@@ -158,6 +160,7 @@ class CC_EXPORT Tile {
   bool required_for_activation_ : 1;
   bool required_for_draw_ : 1;
   bool is_solid_color_analysis_performed_ : 1;
+  const bool can_use_lcd_text_ : 1;
 
   Id id_;
 

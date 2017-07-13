@@ -105,12 +105,13 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       raster_source_scale_(0.f),
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
+      mask_type_(mask_type),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
-      mask_type_(mask_type),
       nearest_neighbor_(false),
       use_transformed_rasterization_(false),
-      is_directly_composited_image_(false) {
+      is_directly_composited_image_(false),
+      can_use_lcd_text_(true) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
 
@@ -180,6 +181,10 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->raster_contents_scale_ = raster_contents_scale_;
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
   layer_impl->is_directly_composited_image_ = is_directly_composited_image_;
+  // Simply push the value to the active tree without any extra invalidations,
+  // since the pending tree tiles would have this handled. This is here to
+  // ensure the state is consistent for future raster.
+  layer_impl->can_use_lcd_text_ = can_use_lcd_text_;
 
   layer_impl->SanityCheckTilingState();
 
@@ -635,36 +640,23 @@ void PictureLayerImpl::UpdateRasterSource(
   }
 }
 
-void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
-  // This function is only allowed to be called after commit, due to it not
-  // being smart about sharing tiles and because otherwise it would cause
-  // flashes by switching out tiles in place that may be currently on screen.
+bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
   DCHECK(layer_tree_impl()->IsSyncTree());
 
-  // Don't allow the LCD text state to change once disabled.
-  if (!RasterSourceUsesLCDText())
-    return;
-  if (CanUseLCDText() == RasterSourceUsesLCDText())
-    return;
+  // Once we disable lcd text, we don't re-enable it.
+  if (!can_use_lcd_text_)
+    return false;
 
-  // Raster sources are considered const, so in order to update the state
-  // a new one must be created and all tiles recreated.
-  scoped_refptr<RasterSource> new_raster_source =
-      raster_source_->CreateCloneWithoutLCDText();
-  raster_source_.swap(new_raster_source);
+  if (can_use_lcd_text_ == CanUseLCDText())
+    return false;
 
+  can_use_lcd_text_ = CanUseLCDText();
   // Synthetically invalidate everything.
   gfx::Rect bounds_rect(bounds());
   invalidation_ = Region(bounds_rect);
-  tilings_->UpdateRasterSourceDueToLCDChange(raster_source_, invalidation_);
+  tilings_->Invalidate(invalidation_);
   SetUpdateRect(bounds_rect);
-
-  DCHECK(!RasterSourceUsesLCDText());
-}
-
-bool PictureLayerImpl::RasterSourceUsesLCDText() const {
-  return raster_source_ ? raster_source_->CanUseLCDText()
-                        : layer_tree_impl()->settings().can_use_lcd_text;
+  return true;
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -726,7 +718,8 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
     flags |= Tile::IS_OPAQUE;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      info, id(), layer_tree_impl()->source_frame_number(), flags);
+      info, id(), layer_tree_impl()->source_frame_number(), flags,
+      can_use_lcd_text_);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -1497,7 +1490,7 @@ void PictureLayerImpl::InvalidateRegionForImages(
   }
 
   invalidation_.Union(invalidation);
-  tilings_->UpdateTilingsForImplSideInvalidation(invalidation);
+  tilings_->Invalidate(invalidation);
   SetNeedsPushProperties();
   TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
                    "Invalidation", invalidation.ToString());

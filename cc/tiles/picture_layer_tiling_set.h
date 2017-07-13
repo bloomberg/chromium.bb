@@ -73,12 +73,8 @@ class CC_EXPORT PictureLayerTilingSet {
       float minimum_contents_scale,
       float maximum_contents_scale);
 
-  // This function is called on the sync tree right after commit.
-  void UpdateRasterSourceDueToLCDChange(
-      scoped_refptr<RasterSource> raster_source,
-      const Region& layer_invalidation);
-
-  void UpdateTilingsForImplSideInvalidation(const Region& layer_invalidation);
+  // Invalidates the region on all tilings and recreates the tiles as needed.
+  void Invalidate(const Region& layer_invalidation);
 
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& raster_transform,
                                 scoped_refptr<RasterSource> raster_source);

@@ -46,8 +46,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
                                              solid_flags);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
 
   // Ensure everything is solid.
   for (int y = 0; y <= 300; y += 100) {
@@ -63,8 +62,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   recording_source->add_draw_rect_with_flags(gfx::Rect(50, 50, 1, 1),
                                              non_solid_flags);
   recording_source->Rerecord();
-  raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  raster = recording_source->CreateRasterSource();
 
   color = SK_ColorTRANSPARENT;
   is_solid_color =
@@ -120,8 +118,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
                                    gfx::Point(260, 260));
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -185,8 +182,7 @@ TEST(RasterSourceTest, RasterFullContents) {
                                              white_flags);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -251,8 +247,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
                                              white_flags);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -292,8 +287,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
   recording_source->Rerecord();
 
   // Make a new RasterSource from the new recording.
-  raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  raster = recording_source->CreateRasterSource();
 
   // We're going to playback from "everything is black" into a smaller area,
   // that touches the edge pixels of the recording.
@@ -350,8 +344,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
                                              white_flags);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -397,8 +390,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
   recording_source_light->Rerecord();
 
   // Make a new RasterSource from the new recording.
-  raster = RasterSource::CreateFromRecordingSource(recording_source_light.get(),
-                                                   false);
+  raster = recording_source_light->CreateRasterSource();
 
   // We're going to playback from alpha(18) white rectangle into a smaller area
   // of the recording resulting in a smaller lighter white rectangle over a
@@ -435,8 +427,7 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   recording_source->SetClearCanvasWithDebugColor(false);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
@@ -467,8 +458,7 @@ TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   recording_source->set_reported_memory_usage(kReportedMemoryUsageInBytes);
   recording_source->Rerecord();
 
-  scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
+  scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
   size_t total_memory_usage = raster->GetMemoryUsage();
   EXPECT_GE(total_memory_usage, kReportedMemoryUsageInBytes);
   EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);
@@ -505,9 +495,8 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
 
   recording_source->Rerecord();
 
-  bool can_use_lcd = true;
   scoped_refptr<RasterSource> raster_source =
-      recording_source->CreateRasterSource(can_use_lcd);
+      recording_source->CreateRasterSource();
   SoftwareImageDecodeCache controller(
       viz::ResourceFormat::RGBA_8888,
       LayerTreeSettings().decoded_image_working_set_budget_bytes);
