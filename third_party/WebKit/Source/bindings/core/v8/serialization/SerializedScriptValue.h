@@ -79,6 +79,8 @@ class CORE_EXPORT SerializedScriptValue
   // [versions skipped]
   // Version 16: Separate versioning between V8 and Blink.
   // Version 17: Remove unnecessary byte swapping.
+  // Version 18: Add a list of key-value pairs for ImageBitmap and ImageData to
+  //             support color space information, compression, etc.
   //
   // The following versions cannot be used, in order to be able to
   // deserialize version 0 SSVs. The class implementation has details.
@@ -91,7 +93,7 @@ class CORE_EXPORT SerializedScriptValue
   //
   // Recent changes are routinely reverted in preparation for branch, and this
   // has been the cause of at least one bug in the past.
-  static constexpr uint32_t kWireFormatVersion = 17;
+  static constexpr uint32_t kWireFormatVersion = 18;
 
   // This enumeration specifies whether we're serializing a value for storage;
   // e.g. when writing to IndexedDB. This corresponds to the forStorage flag of

@@ -238,29 +238,39 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     }
 
     // Otherwise, it must be fully serialized.
-    // Warning: using N32ColorType here is not portable (across CPU
-    // architectures, across platforms, etc.).
-    RefPtr<Uint8Array> pixels = image_bitmap->CopyBitmapData(
-        image_bitmap->IsPremultiplied() ? kPremultiplyAlpha
-                                        : kDontPremultiplyAlpha,
-        kN32ColorType);
     WriteTag(kImageBitmapTag);
+    SerializedColorParams color_params(image_bitmap->GetCanvasColorParams());
+    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
+    WriteUint32Enum(color_params.GetSerializedColorSpace());
+    WriteUint32Enum(ImageSerializationTag::kCanvasPixelFormatTag);
+    WriteUint32Enum(color_params.GetSerializedPixelFormat());
+    WriteUint32Enum(ImageSerializationTag::kOriginClean);
     WriteUint32(image_bitmap->OriginClean());
+    WriteUint32Enum(ImageSerializationTag::kIsPremultiplied);
     WriteUint32(image_bitmap->IsPremultiplied());
+    WriteUint32Enum(ImageSerializationTag::kEndTag);
     WriteUint32(image_bitmap->width());
     WriteUint32(image_bitmap->height());
+    RefPtr<Uint8Array> pixels = image_bitmap->CopyBitmapData();
     WriteUint32(pixels->length());
     WriteRawBytes(pixels->Data(), pixels->length());
     return true;
   }
   if (wrapper_type_info == &V8ImageData::wrapperTypeInfo) {
     ImageData* image_data = wrappable->ToImpl<ImageData>();
-    DOMUint8ClampedArray* pixels = image_data->data();
     WriteTag(kImageDataTag);
+    SerializedColorParams color_params(image_data->GetCanvasColorParams(),
+                                       image_data->GetImageDataStorageFormat());
+    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
+    WriteUint32Enum(color_params.GetSerializedColorSpace());
+    WriteUint32Enum(ImageSerializationTag::kImageDataStorageFormatTag);
+    WriteUint32Enum(color_params.GetSerializedImageDataStorageFormat());
+    WriteUint32Enum(ImageSerializationTag::kEndTag);
     WriteUint32(image_data->width());
     WriteUint32(image_data->height());
-    WriteUint32(pixels->length());
-    WriteRawBytes(pixels->Data(), pixels->length());
+    DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
+    WriteUint32(pixel_buffer->ByteLength());
+    WriteRawBytes(pixel_buffer->Data(), pixel_buffer->ByteLength());
     return true;
   }
   if (wrapper_type_info == &V8DOMPoint::wrapperTypeInfo) {

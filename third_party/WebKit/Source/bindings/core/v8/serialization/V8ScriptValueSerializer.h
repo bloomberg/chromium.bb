@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializationTag.h"
+#include "bindings/core/v8/serialization/SerializedColorParams.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptState.h"
@@ -60,6 +61,16 @@ class CORE_EXPORT V8ScriptValueSerializer
     serializer_.WriteRawBytes(data, size);
   }
   void WriteUTF8String(const String&);
+
+  template <typename E>
+  void WriteUint32Enum(E value) {
+    static_assert(
+        std::is_enum<E>::value &&
+            std::is_same<uint32_t,
+                         typename std::underlying_type<E>::type>::value,
+        "Only enums backed by uint32_t are accepted.");
+    WriteUint32(static_cast<uint32_t>(value));
+  }
 
  private:
   // Transfer is split into two phases: scanning the transferables so that we

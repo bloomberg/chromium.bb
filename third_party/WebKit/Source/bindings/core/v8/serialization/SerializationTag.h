@@ -50,10 +50,16 @@ enum SerializationTag {
       'l',  // length:uint32_t, files:RawFile[length] -> FileList (ref)
   kFileListIndexTag =
       'L',  // length:uint32_t, files:int32_t[length] -> FileList (ref)
-  kImageDataTag = '#',  // width:uint32_t, height:uint32_t,
-                        // pixelDataLength:uint32_t, data:byte[pixelDataLength]
-                        // -> ImageData (ref)
-  kImageBitmapTag = 'g',  // size:uint32_t, data:byte[size] -> ImageBitmap (ref)
+  kImageDataTag = '#',    // tags terminated by ImageSerializationTag::kEnd (see
+                          // SerializedColorParams.h), width:uint32_t,
+                          // height:uint32_t, pixelDataLength:uint32_t,
+                          // data:byte[pixelDataLength]
+                          // -> ImageData (ref)
+  kImageBitmapTag = 'g',  // tags terminated by ImageSerializationTag::kEnd (see
+                          // SerializedColorParams.h), width:uint32_t,
+                          // height:uint32_t, pixelDataLength:uint32_t,
+                          // data:byte[pixelDataLength]
+                          // -> ImageBitmap (ref)
   kImageBitmapTransferTag =
       'G',  // index:uint32_t -> ImageBitmap. For ImageBitmap transfer
   kOffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->

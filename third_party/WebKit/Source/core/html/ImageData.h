@@ -79,6 +79,9 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   static ImageData* Create(const IntSize&,
                            const ImageDataColorSettings* = nullptr);
   static ImageData* Create(const IntSize&,
+                           CanvasColorSpace,
+                           ImageDataStorageFormat);
+  static ImageData* Create(const IntSize&,
                            NotShared<DOMArrayBufferView>,
                            const ImageDataColorSettings* = nullptr);
 
@@ -112,10 +115,12 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
 
   ImageData* CropRect(const IntRect&, bool = false);
 
+  ImageDataStorageFormat GetImageDataStorageFormat();
   static CanvasColorSpace GetCanvasColorSpace(const String&);
-  static String CanvasColorSpaceName(const CanvasColorSpace&);
+  static String CanvasColorSpaceName(CanvasColorSpace);
   static ImageDataStorageFormat GetImageDataStorageFormat(const String&);
   static unsigned StorageFormatDataSize(const String&);
+  static unsigned StorageFormatDataSize(ImageDataStorageFormat);
   static DOMArrayBufferView*
   ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       WTF::ArrayBufferContents&,
@@ -133,10 +138,9 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   void dataUnion(ImageDataArray& result) { result = data_union_; };
 
   DOMArrayBufferBase* BufferBase() const;
-
   CanvasColorParams GetCanvasColorParams();
-  bool ImageDataInCanvasColorSettings(const CanvasColorSpace&,
-                                      const CanvasPixelFormat&,
+  bool ImageDataInCanvasColorSettings(CanvasColorSpace,
+                                      CanvasPixelFormat,
                                       std::unique_ptr<uint8_t[]>&);
   bool ImageDataInCanvasColorSettings(const CanvasColorParams&,
                                       std::unique_ptr<uint8_t[]>&);

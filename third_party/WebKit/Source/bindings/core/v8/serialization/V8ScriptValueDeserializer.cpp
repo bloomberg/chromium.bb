@@ -263,22 +263,61 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return file_list;
     }
     case kImageBitmapTag: {
+      SerializedColorSpace canvas_color_space = SerializedColorSpace::kLegacy;
+      SerializedPixelFormat canvas_pixel_format = SerializedPixelFormat::kRGBA8;
       uint32_t origin_clean = 0, is_premultiplied = 0, width = 0, height = 0,
-               pixel_length = 0;
+               byte_length = 0;
       const void* pixels = nullptr;
-      if (!ReadUint32(&origin_clean) || origin_clean > 1 ||
-          !ReadUint32(&is_premultiplied) || is_premultiplied > 1 ||
-          !ReadUint32(&width) || !ReadUint32(&height) ||
-          !ReadUint32(&pixel_length) || !ReadRawBytes(pixel_length, &pixels))
+      if (Version() >= 18) {
+        // read the list of key pair values for color settings, etc.
+        bool is_done = false;
+        do {
+          ImageSerializationTag tag;
+          if (!ReadUint32Enum<ImageSerializationTag>(&tag))
+            return nullptr;
+          switch (tag) {
+            case ImageSerializationTag::kEndTag:
+              is_done = true;
+              break;
+            case ImageSerializationTag::kCanvasColorSpaceTag:
+              if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
+                return nullptr;
+              break;
+            case ImageSerializationTag::kCanvasPixelFormatTag:
+              if (!ReadUint32Enum<SerializedPixelFormat>(&canvas_pixel_format))
+                return nullptr;
+              break;
+            case ImageSerializationTag::kOriginClean:
+              if (!ReadUint32(&origin_clean) || origin_clean > 1)
+                return nullptr;
+              break;
+            case ImageSerializationTag::kIsPremultiplied:
+              if (!ReadUint32(&is_premultiplied) || is_premultiplied > 1)
+                return nullptr;
+              break;
+            default:
+              NOTREACHED();
+          }
+        } while (!is_done);
+      } else if (!ReadUint32(&origin_clean) || origin_clean > 1 ||
+                 !ReadUint32(&is_premultiplied) || is_premultiplied > 1) {
         return nullptr;
-      CheckedNumeric<uint32_t> computed_pixel_length = width;
-      computed_pixel_length *= height;
-      computed_pixel_length *= 4;
-      if (!computed_pixel_length.IsValid() ||
-          computed_pixel_length.ValueOrDie() != pixel_length)
+      }
+      if (!ReadUint32(&width) || !ReadUint32(&height) ||
+          !ReadUint32(&byte_length) || !ReadRawBytes(byte_length, &pixels))
+        return nullptr;
+      CanvasColorParams color_params =
+          SerializedColorParams(canvas_color_space, canvas_pixel_format,
+                                SerializedImageDataStorageFormat::kUint8Clamped)
+              .GetCanvasColorParams();
+      CheckedNumeric<uint32_t> computed_byte_length = width;
+      computed_byte_length *= height;
+      computed_byte_length *= color_params.BytesPerPixel();
+      if (!computed_byte_length.IsValid() ||
+          computed_byte_length.ValueOrDie() != byte_length)
         return nullptr;
       return ImageBitmap::Create(pixels, width, height, is_premultiplied,
-                                 origin_clean);
+                                 origin_clean, color_params);
     }
     case kImageBitmapTransferTag: {
       uint32_t index = 0;
@@ -290,23 +329,56 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       return transferred_image_bitmaps[index].Get();
     }
     case kImageDataTag: {
-      uint32_t width = 0, height = 0, pixel_length = 0;
+      SerializedColorSpace canvas_color_space = SerializedColorSpace::kLegacy;
+      SerializedImageDataStorageFormat image_data_storage_format =
+          SerializedImageDataStorageFormat::kUint8Clamped;
+      uint32_t width = 0, height = 0, byte_length = 0;
       const void* pixels = nullptr;
+      if (Version() >= 18) {
+        bool is_done = false;
+        do {
+          ImageSerializationTag tag;
+          if (!ReadUint32Enum<ImageSerializationTag>(&tag))
+            return nullptr;
+          switch (tag) {
+            case ImageSerializationTag::kEndTag:
+              is_done = true;
+              break;
+            case ImageSerializationTag::kCanvasColorSpaceTag:
+              if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
+                return nullptr;
+              break;
+            case ImageSerializationTag::kImageDataStorageFormatTag:
+              if (!ReadUint32Enum<SerializedImageDataStorageFormat>(
+                      &image_data_storage_format))
+                return nullptr;
+              break;
+            default:
+              NOTREACHED();
+          }
+        } while (!is_done);
+      }
       if (!ReadUint32(&width) || !ReadUint32(&height) ||
-          !ReadUint32(&pixel_length) || !ReadRawBytes(pixel_length, &pixels))
+          !ReadUint32(&byte_length) || !ReadRawBytes(byte_length, &pixels))
         return nullptr;
-      CheckedNumeric<uint32_t> computed_pixel_length = width;
-      computed_pixel_length *= height;
-      computed_pixel_length *= 4;
-      if (!computed_pixel_length.IsValid() ||
-          computed_pixel_length.ValueOrDie() != pixel_length)
+      SerializedColorParams color_params(canvas_color_space,
+                                         SerializedPixelFormat::kRGBA8,
+                                         image_data_storage_format);
+      ImageDataStorageFormat storage_format = color_params.GetStorageFormat();
+      CheckedNumeric<uint32_t> computed_byte_length = width;
+      computed_byte_length *= height;
+      computed_byte_length *= 4;
+      computed_byte_length *= ImageData::StorageFormatDataSize(storage_format);
+      if (!computed_byte_length.IsValid() ||
+          computed_byte_length.ValueOrDie() != byte_length)
         return nullptr;
-      ImageData* image_data = ImageData::Create(IntSize(width, height));
+      ImageData* image_data = ImageData::Create(
+          IntSize(width, height), color_params.GetColorSpace(), storage_format);
       if (!image_data)
         return nullptr;
-      DOMUint8ClampedArray* pixel_array = image_data->data();
-      DCHECK_EQ(pixel_array->length(), pixel_length);
-      memcpy(pixel_array->Data(), pixels, pixel_length);
+      DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
+      DCHECK_EQ(pixel_buffer->ByteLength(), byte_length);
+      memcpy(pixel_buffer->Data(), pixels, byte_length);
       return image_data;
     }
     case kDOMPointTag: {
