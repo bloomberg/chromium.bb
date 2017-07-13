@@ -91,17 +91,23 @@ class TestAtestSource(cros_test_lib.TestCase):
       got = list(source.get_servers())
     self.assertEqual(got,
                      [prod_metrics.Server(
-                         hostname=u'chromeos-server71',
-                         data_center=u'cbf',
-                         status=u'primary',
-                         roles=(u'shard',),
-                         created=u'2016-12-13 20:41:54',
-                         modified=u'2016-12-13 20:41:54',
+                         hostname='chromeos-server71',
+                         data_center='cbf',
+                         status='primary',
+                         roles=('shard',),
+                         created='2016-12-13 20:41:54',
+                         modified='2016-12-13 20:41:54',
                          note=None)])
 
 
 class TestTsMonSink(cros_test_lib.TestCase):
   """Tests for TsMonSink."""
+
+  def setUp(self):
+    patcher = mock.patch('infra_libs.ts_mon.common.interface.state.store',
+                         autospec=True)
+    self.store = patcher.start()
+    self.addCleanup(patcher.stop)
 
   def test_write_servers(self):
     """Test write_servers()."""
@@ -110,8 +116,7 @@ class TestTsMonSink(cros_test_lib.TestCase):
             hostname='harvestasha-xp',
             data_center='mtv',
             status='primary',
-            roles=frozenset(('scheduler', 'host_scheduler', 'suite_scheduler',
-                             'afe')),
+            roles=('scheduler', 'host_scheduler', 'suite_scheduler', 'afe'),
             created='2014-12-11 22:48:43',
             modified='2014-12-11 22:48:43',
             note=''),
@@ -119,33 +124,25 @@ class TestTsMonSink(cros_test_lib.TestCase):
             hostname='harvestasha-vista',
             data_center='mtv',
             status='primary',
-            roles=frozenset(('devserver',)),
+            roles=('devserver',),
             created='2015-01-05 13:32:49',
             modified='2015-01-05 13:32:49',
             note=''),
     ]
     sink = prod_metrics._TsMonSink('prod_hosts/')
+    sink.write_servers(servers)
 
-    presence_patch = mock.patch.object(type(sink), '_presence_metric',
-                                       autospec=True)
-    roles_patch = mock.patch.object(type(sink), '_roles_metric', autospec=True)
-    with presence_patch as presence_metric, roles_patch as roles_metric:
-      sink.write_servers(servers)
-
-    self.assertEqual(
-        presence_metric.set.call_args_list,
-        [
-            mock.call(True, {'target_hostname': 'harvestasha-xp',
-                             'target_data_center': 'mtv'}),
-            mock.call(True, {'target_hostname': 'harvestasha-vista',
-                             'target_data_center': 'mtv'}),
-        ])
-    self.assertEqual(
-        roles_metric.set.call_args_list,
-        [
-            mock.call('afe,host_scheduler,scheduler,suite_scheduler',
-                      {'target_hostname': 'harvestasha-xp',
-                       'target_data_center': 'mtv'}),
-            mock.call('devserver', {'target_hostname': 'harvestasha-vista',
-                                    'target_data_center': 'mtv'}),
-        ])
+    setter = self.store.set
+    calls = [
+        mock.call('prod_hosts/presence', ('mtv', 'harvestasha-xp'), None,
+                  True, enforce_ge=mock.ANY),
+        mock.call('prod_hosts/roles', ('mtv', 'harvestasha-xp'), None,
+                  'afe,host_scheduler,scheduler,suite_scheduler',
+                  enforce_ge=mock.ANY),
+        mock.call('prod_hosts/presence', ('mtv', 'harvestasha-vista'), None,
+                  True, enforce_ge=mock.ANY),
+        mock.call('prod_hosts/roles', ('mtv', 'harvestasha-vista'), None,
+                  'devserver', enforce_ge=mock.ANY),
+    ]
+    setter.assert_has_calls(calls)
+    self.assertEqual(len(setter.mock_calls), len(calls))
