@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake_display_delegate.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
@@ -96,6 +97,8 @@ class OzonePlatformX11 : public OzonePlatform {
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_ = base::MakeUnique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+
+    TouchFactory::SetTouchDeviceListFromCommandLine();
   }
 
   void InitializeGPU(const InitParams& params) override {

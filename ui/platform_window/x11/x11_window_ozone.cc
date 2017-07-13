@@ -70,13 +70,9 @@ bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& platform_event) {
   if (grabber != None)
     return grabber == xwindow();
 
-  // TODO(kylechar): We may need to do something special for TouchEvents similar
-  // to how DrmWindowHost handles them.
-  if (static_cast<Event*>(platform_event)->IsLocatedEvent()) {
-    const LocatedEvent* event =
-        static_cast<const LocatedEvent*>(platform_event);
-    return GetBounds().Contains(event->root_location());
-  }
+  const Event* event = static_cast<const Event*>(platform_event);
+  if (event->IsLocatedEvent())
+    return GetBounds().Contains(event->AsLocatedEvent()->root_location());
 
   return true;
 }

@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/x/x11_window_event_manager.h"
-#include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -45,7 +44,6 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds) {
   DCHECK(delegate_);
-  TouchFactory::SetTouchDeviceListFromCommandLine();
 }
 
 X11WindowBase::~X11WindowBase() {

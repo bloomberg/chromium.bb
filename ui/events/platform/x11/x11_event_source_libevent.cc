@@ -21,6 +21,23 @@ namespace ui {
 
 namespace {
 
+std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
+                                             const XEvent& xev) {
+  std::unique_ptr<TouchEvent> event = base::MakeUnique<TouchEvent>(
+      event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
+      ui::PointerDetails(
+          ui::EventPointerType::POINTER_TYPE_TOUCH, GetTouchIdFromXEvent(xev),
+          GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
+          GetTouchForceFromXEvent(xev)));
+
+  // Touch events don't usually have |root_location| set differently than
+  // |location|, since there is a touch device to display association, but this
+  // doesn't happen in Ozone X11.
+  event->set_root_location(EventSystemLocationFromXEvent(xev));
+
+  return event;
+}
+
 // Translates XI2 XEvent into a ui::Event.
 std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   EventType event_type = EventTypeFromXEvent(xev);
@@ -67,12 +84,7 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
     case ET_TOUCH_PRESSED:
     case ET_TOUCH_CANCELLED:
     case ET_TOUCH_RELEASED:
-      return base::MakeUnique<TouchEvent>(
-          event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          ui::PointerDetails(
-              ui::EventPointerType::POINTER_TYPE_TOUCH,
-              GetTouchIdFromXEvent(xev), GetTouchRadiusXFromXEvent(xev),
-              GetTouchRadiusYFromXEvent(xev), GetTouchForceFromXEvent(xev)));
+      return CreateTouchEvent(event_type, xev);
     case ET_UNKNOWN:
       return nullptr;
     default:
