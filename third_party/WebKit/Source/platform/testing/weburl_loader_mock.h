@@ -54,6 +54,8 @@ class WebURLLoaderMock : public WebURLLoader {
                           WebURLLoaderClient* client) override;
   void Cancel() override;
   void SetDefersLoading(bool defer) override;
+  void DidChangePriority(WebURLRequest::Priority new_priority,
+                         int intra_priority_value) override;
 
   bool is_deferred() { return is_deferred_; }
   bool is_cancelled() { return !client_; }
