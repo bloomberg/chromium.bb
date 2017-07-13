@@ -8,7 +8,7 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, CHROMIUM_WPT_DIR
+from webkitpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, WPT_MIRROR_URL, CHROMIUM_WPT_DIR
 
 _log = logging.getLogger(__name__)
 
@@ -29,16 +29,21 @@ class LocalWPT(object):
         self.gh_token = gh_token
 
     def fetch(self):
-        """Fetches a copy of the web-platform-tests repo into `self.path`."""
-        assert self.gh_token, 'LocalWPT.gh_token required for fetch'
+        """Fetches a copy of the web-platform-tests repo in `self.path`."""
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
             self.run(['git', 'fetch', 'origin'])
             self.run(['git', 'checkout', 'origin/master'])
-        else:
-            _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
+            return
+
+        _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
+        if self.gh_token:
             remote_url = WPT_GH_SSH_URL_TEMPLATE.format(self.gh_token)
-            self.host.executive.run_command(['git', 'clone', remote_url, self.path])
+        else:
+            remote_url = WPT_MIRROR_URL
+            _log.info('No credentials given, using wpt mirror URL.')
+            _log.info('It is possible for the mirror to be delayed; see https://crbug.com/698272.')
+        self.host.executive.run_command(['git', 'clone', remote_url, self.path])
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""

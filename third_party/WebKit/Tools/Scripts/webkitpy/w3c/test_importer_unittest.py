@@ -19,6 +19,8 @@ class TestImporterTest(LoggingTestCase):
 
     def test_main_abort_on_exportable_commit_if_open_pr_found(self):
         host = MockHost()
+        host.filesystem.write_text_file(
+            '/tmp/creds.json', '{"GH_USER": "x", "GH_TOKEN": "y"}')
         wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest('Title', 5, 'Commit body\nChange-Id: Iba5eba11', 'open', []),
         ])
@@ -27,11 +29,10 @@ class TestImporterTest(LoggingTestCase):
             MockChromiumCommit(host, change_id='Iba5eba11')
         ]
         importer.checkout_is_okay = lambda _: True
-        return_code = importer.main([])
+        return_code = importer.main(['--credentials-json=/tmp/creds.json'])
         self.assertEqual(return_code, 0)
         self.assertLog([
-            'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
-            'INFO: Local path: /mock-checkout/third_party/WebKit/LayoutTests/wpt\n',
+            'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
             'INFO: Commit: https://fake-chromium-commit-viewer.org/+/14fd77e88e\n',
             'INFO: Subject: Fake commit message\n',
@@ -40,22 +41,22 @@ class TestImporterTest(LoggingTestCase):
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/two.html\n',
             'INFO: Aborting import to prevent clobbering commits.\n',
-            'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/LayoutTests/wpt.\n',
         ])
 
     def test_main_abort_on_exportable_commit_if_no_pr_found(self):
         host = MockHost()
+        host.filesystem.write_text_file(
+            '/tmp/creds.json', '{"GH_USER": "x", "GH_TOKEN": "y"}')
         wpt_github = MockWPTGitHub(pull_requests=[])
         importer = TestImporter(host, wpt_github=wpt_github)
         importer.exportable_but_not_exported_commits = lambda _: [
             MockChromiumCommit(host, position='refs/heads/master@{#431}')
         ]
         importer.checkout_is_okay = lambda _: True
-        return_code = importer.main([])
+        return_code = importer.main(['--credentials-json=/tmp/creds.json'])
         self.assertEqual(return_code, 0)
         self.assertLog([
-            'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
-            'INFO: Local path: /mock-checkout/third_party/WebKit/LayoutTests/wpt\n',
+            'INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
             'INFO: Commit: https://fake-chromium-commit-viewer.org/+/fa2de685c0\n',
             'INFO: Subject: Fake commit message\n',
@@ -64,7 +65,6 @@ class TestImporterTest(LoggingTestCase):
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
             'INFO:   third_party/WebKit/LayoutTests/external/wpt/two.html\n',
             'INFO: Aborting import to prevent clobbering commits.\n',
-            'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/LayoutTests/wpt.\n',
         ])
 
     def test_do_auto_update_no_results(self):

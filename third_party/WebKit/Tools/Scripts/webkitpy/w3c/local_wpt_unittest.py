@@ -12,13 +12,6 @@ from webkitpy.w3c.local_wpt import LocalWPT
 
 class LocalWPTTest(unittest.TestCase):
 
-    def test_fetch_requires_gh_token(self):
-        host = MockHost()
-        local_wpt = LocalWPT(host)
-
-        with self.assertRaises(AssertionError):
-            local_wpt.fetch()
-
     def test_fetch_when_wpt_dir_exists(self):
         host = MockHost()
         host.filesystem = MockFileSystem(files={

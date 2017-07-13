@@ -11,23 +11,18 @@ from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 
 
-WPT_DEST_NAME = 'wpt'
 WPT_GH_ORG = 'w3c'
 WPT_GH_REPO_NAME = 'web-platform-tests'
 WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
+WPT_MIRROR_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
 DEFAULT_COMMIT_HISTORY_WINDOW = 5000
 EXPORT_PR_LABEL = 'chromium-export'
 PROVISIONAL_PR_LABEL = 'do not merge yet'
 
-# TODO(qyearsley): This directory should be able to be constructed with
-# PathFinder and WPT_DEST_NAME, plus the string "external".
+# TODO(qyearsley): Avoid hard-coding third_party/WebKit/LayoutTests.
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
-
-# Our mirrors of the official wpt repo, which we pull from.
-WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
-
 
 _log = logging.getLogger(__name__)
 
