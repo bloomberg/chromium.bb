@@ -147,8 +147,10 @@ class PaymentDetails {
   bool operator!=(const PaymentDetails& other) const;
 
   // Populates the properties of this PaymentDetails from |value|. Returns true
-  // if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
+  // if the required values are present. If |requires_total| is true, the total
+  // property has to be present.
+  bool FromDictionaryValue(const base::DictionaryValue& value,
+                           bool requires_total);
 
   // The total amount of the payment request.
   PaymentItem total;
