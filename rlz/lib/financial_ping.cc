@@ -327,7 +327,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
             "Used for measuring the effectiveness of a promotion. See the "
             "Chrome Privacy Whitepaper for complete details."
           trigger:
-            "1- At Chromium first run\.n"
+            "1- At Chromium first run.\n"
             "2- When Chromium is re-activated by a new promotion.\n"
             "3- Once a week thereafter as long as Chromium is used.\n"
           data:
