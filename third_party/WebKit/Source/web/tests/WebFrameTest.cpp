@@ -11045,7 +11045,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   document->GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_press_event);
 
-  EXPECT_TRUE(document->ActiveHoverElement());
+  EXPECT_TRUE(document->GetActiveElement());
   EXPECT_TRUE(document->HoverElement());
 
   WebMouseEvent mouse_release_event(
@@ -11080,7 +11080,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   document->GetFrame()->GetEventHandler().HandleMousePressEvent(
       mouse_press_event);
 
-  EXPECT_TRUE(document->ActiveHoverElement());
+  EXPECT_TRUE(document->GetActiveElement());
   EXPECT_TRUE(document->HoverElement());
 
   document->GetFrame()->GetEventHandler().HandleMouseReleaseEvent(

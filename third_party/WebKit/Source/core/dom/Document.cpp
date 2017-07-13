@@ -2646,7 +2646,7 @@ void Document::Shutdown() {
   MutationObserver::CleanSlotChangeList(*this);
 
   hover_element_ = nullptr;
-  active_hover_element_ = nullptr;
+  active_element_ = nullptr;
   autofocus_element_ = nullptr;
 
   if (focused_element_.Get()) {
@@ -4203,13 +4203,13 @@ void Document::SetHoverElement(Element* new_hover_element) {
   hover_element_ = new_hover_element;
 }
 
-void Document::SetActiveHoverElement(Element* new_active_element) {
+void Document::SetActiveElement(Element* new_active_element) {
   if (!new_active_element) {
-    active_hover_element_.Clear();
+    active_element_.Clear();
     return;
   }
 
-  active_hover_element_ = new_active_element;
+  active_element_ = new_active_element;
 }
 
 void Document::RemoveFocusedElementOfSubtree(Node* node,
@@ -4254,8 +4254,8 @@ void Document::HoveredElementDetached(Element& element) {
 }
 
 void Document::ActiveChainNodeDetached(Element& element) {
-  if (element == active_hover_element_)
-    active_hover_element_ = SkipDisplayNoneAncestors(&element);
+  if (element == active_element_)
+    active_element_ = SkipDisplayNoneAncestors(&element);
 }
 
 const Vector<AnnotatedRegionValue>& Document::AnnotatedRegions() const {
@@ -6487,7 +6487,14 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
   }
 
   UpdateDistribution();
-  Element* old_active_element = ActiveHoverElement();
+
+  UpdateActiveState(request, inner_element_in_document);
+  UpdateHoverState(request, inner_element_in_document);
+}
+
+void Document::UpdateActiveState(const HitTestRequest& request,
+                                 Element* inner_element_in_document) {
+  Element* old_active_element = GetActiveElement();
   if (old_active_element && !request.Active()) {
     // The oldActiveElement layoutObject is null, dropped on :active by setting
     // display: none, for instance. We still need to clear the ActiveChain as
@@ -6497,7 +6504,7 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
       element->SetActive(false);
       user_action_elements_.SetInActiveChain(element, false);
     }
-    SetActiveHoverElement(nullptr);
+    SetActiveElement(nullptr);
   } else {
     Element* new_active_element = inner_element_in_document;
     if (!old_active_element && new_active_element &&
@@ -6509,23 +6516,38 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
            element = FlatTreeTraversal::ParentElement(*element)) {
         user_action_elements_.SetInActiveChain(element, true);
       }
-      SetActiveHoverElement(new_active_element);
+      SetActiveElement(new_active_element);
     }
   }
 
+  // If the mouse has just been pressed, set :active on the chain. Those (and
+  // only those) nodes should remain :active until the mouse is released.
+  bool allow_active_changes = !old_active_element && GetActiveElement();
+  if (!allow_active_changes)
+    return;
+
+  // If the mouse is down and if this is a mouse move event, we want to restrict
+  // changes in :active to only apply to elements that are in the :active
+  // chain that we froze at the time the mouse went down.
+  bool must_be_in_active_chain = request.Active() && request.Move();
+
+  Element* new_element =
+      SkipDisplayNoneAncestors(inner_element_in_document);
+
+  // Now set the active state for our new object up to the root.
+  for (Element* curr = new_element; curr;
+       curr = FlatTreeTraversal::ParentElement(*curr)) {
+    if (!must_be_in_active_chain || curr->InActiveChain())
+      curr->SetActive(true);
+  }
+}
+
+void Document::UpdateHoverState(const HitTestRequest& request,
+                                Element* inner_element_in_document) {
   // Do not set hover state if event is from touch and on mobile.
   bool allow_hover_changes =
       !(request.TouchEvent() && GetPage() &&
         GetPage()->GetVisualViewport().ShouldDisableDesktopWorkarounds());
-
-  // If the mouse has just been pressed, set :active on the chain. Those (and
-  // only those) nodes should remain :active until the mouse is released.
-  bool allow_active_changes = !old_active_element && ActiveHoverElement();
-
-  // If the mouse is down and if this is a mouse move event, we want to restrict
-  // changes in :hover/:active to only apply to elements that are in the :active
-  // chain that we froze at the time the mouse went down.
-  bool must_be_in_active_chain = request.Active() && request.Move();
 
   Element* old_hover_element = HoverElement();
 
@@ -6540,6 +6562,9 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
   if (allow_hover_changes)
     SetHoverElement(new_hover_element);
 
+  if (old_hover_element == new_hover_element || !allow_hover_changes)
+    return;
+
   Node* ancestor_element = nullptr;
   if (old_hover_element && old_hover_element->isConnected() &&
       new_hover_element) {
@@ -6550,50 +6575,34 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
   }
 
   HeapVector<Member<Element>, 32> elements_to_remove_from_chain;
-  HeapVector<Member<Element>, 32> elements_to_add_to_chain;
+  HeapVector<Member<Element>, 32> elements_to_add_to_hover_chain;
 
-  if (old_hover_element != new_hover_element) {
-    // The old hover path only needs to be cleared up to (and not including) the
-    // common ancestor;
-    //
-    // FIXME(ecobos@igalia.com): oldHoverElement may be disconnected from the
-    // tree already. This is due to our handling of m_hoverElement in
-    // hoveredElementDetached (which assumes all the parents are hovered) and
-    // mustBeInActiveChain (which makes this not hold).
-    //
-    // In that case, none of the nodes in the chain have the flags, so there's
-    // no problem in skipping this step.
-    if (old_hover_element && old_hover_element->isConnected()) {
-      for (Element* curr = old_hover_element; curr && curr != ancestor_element;
-           curr = FlatTreeTraversal::ParentElement(*curr)) {
-        if (!must_be_in_active_chain || curr->InActiveChain())
-          elements_to_remove_from_chain.push_back(curr);
-      }
+  // The old hover path only needs to be cleared up to (and not including) the
+  // common ancestor;
+  //
+  // FIXME(ecobos@igalia.com): oldHoverElement may be disconnected from the
+  // tree already.
+  if (old_hover_element && old_hover_element->isConnected()) {
+    for (Element* curr = old_hover_element; curr && curr != ancestor_element;
+         curr = FlatTreeTraversal::ParentElement(*curr)) {
+      elements_to_remove_from_chain.push_back(curr);
     }
   }
 
   // Now set the hover state for our new object up to the root.
   for (Element* curr = new_hover_element; curr;
        curr = FlatTreeTraversal::ParentElement(*curr)) {
-    if (!must_be_in_active_chain || curr->InActiveChain())
-      elements_to_add_to_chain.push_back(curr);
+    elements_to_add_to_hover_chain.push_back(curr);
   }
 
-  if (allow_hover_changes) {
-    for (Element* element : elements_to_remove_from_chain)
-      element->SetHovered(false);
-  }
+  for (Element* element : elements_to_remove_from_chain)
+    element->SetHovered(false);
 
   bool saw_common_ancestor = false;
-  for (Element* element : elements_to_add_to_chain) {
-    // Elements past the common ancestor do not change hover state, but might
-    // change active state.
+  for (Element* element : elements_to_add_to_hover_chain) {
     if (element == ancestor_element)
       saw_common_ancestor = true;
-    if (allow_active_changes)
-      element->SetActive(true);
-    if (allow_hover_changes &&
-        (!saw_common_ancestor || element == hover_element_))
+    if (!saw_common_ancestor || element == hover_element_)
       element->SetHovered(true);
   }
 }
@@ -6855,7 +6864,7 @@ DEFINE_TRACE(Document) {
   visitor->Trace(focused_element_);
   visitor->Trace(sequential_focus_navigation_starting_point_);
   visitor->Trace(hover_element_);
-  visitor->Trace(active_hover_element_);
+  visitor->Trace(active_element_);
   visitor->Trace(document_element_);
   visitor->Trace(root_scroller_controller_);
   visitor->Trace(title_element_);
