@@ -4,11 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.base.ApplicationState.HAS_DESTROYED_ACTIVITIES;
-import static org.chromium.base.ApplicationState.HAS_PAUSED_ACTIVITIES;
-import static org.chromium.base.ApplicationState.HAS_STOPPED_ACTIVITIES;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
@@ -22,28 +17,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
-
-import java.util.concurrent.Callable;
 
 /**
  * Tests web navigations originating from a WebappActivity.
@@ -51,7 +37,6 @@ import java.util.concurrent.Callable;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class WebappNavigationTest {
-    private static final String YOUTUBE_URL = "https://www.youtube.com/watch?v=EYmjoW4vIX8";
     private static final String OFF_ORIGIN_URL = "https://www.google.com/";
     private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
     private static final String IN_SCOPE_PAGE_PATH =
@@ -59,6 +44,9 @@ public class WebappNavigationTest {
 
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
+
+    @Rule
+    public final TopActivityListener activityListener = new TopActivityListener();
 
     private EmbeddedTestServer mTestServer;
 
@@ -132,7 +120,7 @@ public class WebappNavigationTest {
         addAnchor("testId", mTestServer.getURL(IN_SCOPE_PAGE_PATH), "_blank");
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
-        CustomTabActivity customTab = waitFor(CustomTabActivity.class);
+        CustomTabActivity customTab = activityListener.waitFor(CustomTabActivity.class);
         mActivityTestRule.waitUntilIdle(customTab);
         Assert.assertTrue(
                 mActivityTestRule.runJavaScriptCodeInCurrentTab("document.body.textContent")
@@ -181,7 +169,7 @@ public class WebappNavigationTest {
                 otherPageUrl, mActivityTestRule.getActivity().getActivityTab().getUrl());
 
         Assert.assertSame(
-                mActivityTestRule.getActivity(), ApplicationStatus.getLastTrackedFocusedActivity());
+                mActivityTestRule.getActivity(), activityListener.getMostRecentActivity());
     }
 
     @Test
@@ -199,50 +187,11 @@ public class WebappNavigationTest {
                 mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
                 R.id.menu_id_open_in_chrome);
 
-        ChromeTabbedActivity tabbedChrome = waitFor(ChromeTabbedActivity.class);
+        ChromeTabbedActivity tabbedChrome = activityListener.waitFor(ChromeTabbedActivity.class);
 
         mActivityTestRule.waitUntilIdle(tabbedChrome);
         // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
         Assert.assertTrue(tabbedChrome.getActivityTab().getUrl().startsWith("https://www.google."));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testRegularLinkToExternalApp() throws Exception {
-        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
-
-        InterceptNavigationDelegateImpl navigationDelegate =
-                mActivityTestRule.getActivity().getActivityTab().getInterceptNavigationDelegate();
-
-        addAnchor("testLink", YOUTUBE_URL, "_self");
-        DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testLink");
-
-        waitForExternalAppOrIntentPicker();
-        Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                navigationDelegate.getLastOverrideUrlLoadingResultForTests());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testNewTabLinkToExternalApp() throws Exception {
-        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
-
-        addAnchor("testLink", YOUTUBE_URL, "_blank");
-        DOMUtils.clickNode(
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testLink");
-
-        // For _blank anchors, we open the CustomTab which does the redirecting if necessary.
-        CustomTabActivity customTab = waitFor(CustomTabActivity.class);
-
-        waitForExternalAppOrIntentPicker();
-
-        InterceptNavigationDelegateImpl navigationDelegate =
-                customTab.getActivityTab().getInterceptNavigationDelegate();
-        Assert.assertEquals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                navigationDelegate.getLastOverrideUrlLoadingResultForTests());
     }
 
     private void runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
@@ -254,7 +203,7 @@ public class WebappNavigationTest {
     }
 
     private CustomTabActivity assertCustomTabActivityLaunchedForOffOriginUrl() {
-        CustomTabActivity customTab = waitFor(CustomTabActivity.class);
+        CustomTabActivity customTab = activityListener.waitFor(CustomTabActivity.class);
 
         mActivityTestRule.waitUntilIdle(customTab);
         // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
@@ -272,47 +221,5 @@ public class WebappNavigationTest {
                                 + "aTag.innerHTML = 'Click Me!';"
                                 + "document.body.appendChild(aTag);",
                         id, url, target));
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Activity> T waitFor(final Class<T> expectedClass) {
-        final Activity[] holder = new Activity[1];
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                holder[0] = ApplicationStatus.getLastTrackedFocusedActivity();
-                return holder[0] != null && expectedClass.isAssignableFrom(holder[0].getClass());
-            }
-        });
-        return (T) holder[0];
-    }
-
-    private void waitForExternalAppOrIntentPicker() {
-        final Callable<Boolean> callable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return ApplicationStatus.getStateForApplication() == HAS_PAUSED_ACTIVITIES
-                        || ApplicationStatus.getStateForApplication() == HAS_STOPPED_ACTIVITIES
-                        || ApplicationStatus.getStateForApplication() == HAS_DESTROYED_ACTIVITIES;
-            }
-        };
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(callable);
-            }
-
-            @Override
-            public String getFailureReason() {
-                Activity lastFocusedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                return String.format(
-                        "Application state is: %d, most recent activity is %s and it is on URL %s",
-                        ApplicationStatus.getStateForApplication(),
-                        lastFocusedActivity.getClass().getSimpleName(),
-                        lastFocusedActivity instanceof ChromeActivity
-                                ? ((ChromeActivity) lastFocusedActivity).getActivityTab().getUrl()
-                                : "[not a ChromeActivity]");
-            }
-        }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL * 2, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }
