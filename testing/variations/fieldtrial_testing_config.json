@@ -1626,25 +1626,6 @@
             ]
         }
     ],
-    "NTPCaptureThumbnailOnLoadFinished": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CaptureThumbnailDependingOnTransitionType",
-                        "CaptureThumbnailOnLoadFinished"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPFaviconsFromNewServer": [
         {
             "platforms": [
