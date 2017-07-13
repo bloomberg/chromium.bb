@@ -20,9 +20,10 @@ String toString(const Vector<char>& data) {
   return String(data.data(), data.size());
 }
 
-class MockClient final : public GarbageCollectedFinalized<MockClient>,
-                         public MultipartParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
+class MockMultipartParserClient final
+    : public GarbageCollectedFinalized<MockMultipartParserClient>,
+      public MultipartParser::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(MockMultipartParserClient);
 
  public:
   struct Part {
@@ -70,7 +71,7 @@ TEST(MultipartParserTest, AppendDataInChunks) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (const size_t size : sizes) {
-    MockClient* client = new MockClient;
+    MockMultipartParserClient* client = new MockMultipartParserClient;
     MultipartParser* parser = new MultipartParser(boundary, client);
 
     for (size_t i = 0u, length = strlen(kBytes); i < length; i += size)
@@ -114,7 +115,7 @@ TEST(MultipartParserTest, Epilogue) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (size_t end : ends) {
-    MockClient* client = new MockClient;
+    MockMultipartParserClient* client = new MockMultipartParserClient;
     MultipartParser* parser = new MultipartParser(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes, strlen(kBytes) - end));
@@ -156,7 +157,7 @@ TEST(MultipartParserTest, NoEndBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockClient* client = new MockClient;
+  MockMultipartParserClient* client = new MockMultipartParserClient;
   MultipartParser* parser = new MultipartParser(boundary, client);
 
   EXPECT_TRUE(parser->AppendData(bytes, strlen(bytes)));
@@ -175,7 +176,7 @@ TEST(MultipartParserTest, NoStartBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockClient* client = new MockClient;
+  MockMultipartParserClient* client = new MockMultipartParserClient;
   MultipartParser* parser = new MultipartParser(boundary, client);
 
   EXPECT_FALSE(parser->AppendData(
@@ -188,7 +189,7 @@ TEST(MultipartParserTest, NoStartNorEndBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockClient* client = new MockClient;
+  MockMultipartParserClient* client = new MockMultipartParserClient;
   MultipartParser* parser = new MultipartParser(boundary, client);
 
   EXPECT_TRUE(parser->AppendData(bytes, strlen(bytes)));  // Valid preamble.
@@ -208,7 +209,7 @@ TEST(MultipartParserTest, Preamble) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (const size_t start : kStarts) {
-    MockClient* client = new MockClient;
+    MockMultipartParserClient* client = new MockMultipartParserClient;
     MultipartParser* parser = new MultipartParser(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes + start, strlen(kBytes + start)));
@@ -266,7 +267,7 @@ TEST(MultipartParserTest, PreambleWithMalformedBoundary) {
   Vector<char> boundary;
   boundary.Append("--boundary", 10u);
   for (const size_t start : kStarts) {
-    MockClient* client = new MockClient;
+    MockMultipartParserClient* client = new MockMultipartParserClient;
     MultipartParser* parser = new MultipartParser(boundary, client);
 
     EXPECT_TRUE(parser->AppendData(kBytes + start,
