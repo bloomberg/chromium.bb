@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/android_key_systems.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
@@ -29,8 +30,8 @@ namespace chromecast {
 namespace media {
 namespace {
 
-#if defined(PLAYREADY_CDM_AVAILABLE) || \
-    (defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_ANDROID))
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND) && \
+    (defined(WIDEVINE_CDM_AVAILABLE) || defined(PLAYREADY_CDM_AVAILABLE))
 SupportedCodecs GetCastEmeSupportedCodecs() {
   SupportedCodecs codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
@@ -54,7 +55,7 @@ SupportedCodecs GetCastEmeSupportedCodecs() {
 
   return codecs;
 }
-#endif
+#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND) && ...
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
 class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
@@ -131,7 +132,7 @@ void AddChromecastKeySystems(
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   cdm::AddAndroidWidevine(key_systems_properties);
 #else
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
@@ -149,7 +150,7 @@ void AddChromecastKeySystems(
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED));  // Distinctive identifier.
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
