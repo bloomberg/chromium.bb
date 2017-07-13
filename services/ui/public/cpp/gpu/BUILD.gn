@@ -47,7 +47,6 @@ source_set("internal") {
     "//gpu/skia_bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ui/common:mus_common",
     "//services/ui/public/interfaces",
   ]
 }
