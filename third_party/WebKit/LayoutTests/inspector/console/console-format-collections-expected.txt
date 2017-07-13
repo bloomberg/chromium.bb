@@ -64,8 +64,8 @@ console-format-collections.html:41 (2) [1, Array(2)]
 console-format-collections.html:44 NonArrayWithLength {keys: Array(0)}
 console-format-collections.html:51 (2) [1, "2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
 console-format-collections.html:55 (3) ["c1", "c2", "c3", value: "c1 c2 c3"]
-console-format-collections.html:58 (5) [undefined × 5]
-console-format-collections.html:59 (4294967295) [undefined × 4294967295]
+console-format-collections.html:58 (5) [empty × 5]
+console-format-collections.html:59 (4294967295) [empty × 4294967295]
 console-format-collections.html:61 ArrayLike {length: -5}
 console-format-collections.html:62 ArrayLike {length: 5.6}
 console-format-collections.html:63 ArrayLike {length: NaN}
