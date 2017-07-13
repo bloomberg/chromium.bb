@@ -86,8 +86,7 @@
           selected="items-list">
         <extensions-item-list id="items-list" items="[[extensions]]"
             delegate="[[itemDelegate]]" in-dev-mode="[[inDevMode]]"
-            filter="[[filter]]"
-            hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
+            filter="[[filter]]" hidden$="[[!didInitPage_]]">
         </extensions-item-list>
         <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
             in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"

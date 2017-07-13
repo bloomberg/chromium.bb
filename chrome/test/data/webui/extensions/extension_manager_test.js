@@ -78,7 +78,6 @@ cr.define('extension_manager_tests', function() {
       });
 
       test(assert(TestNames.ItemListVisibility), function() {
-        var testVisible = extension_test_util.testVisible.bind(null, manager);
         var extension = getDataByName(manager.extensions, 'My extension 1');
 
         var listHasItemWithName = function(name) {
@@ -88,17 +87,14 @@ cr.define('extension_manager_tests', function() {
         };
 
         expectEquals(manager.extensions, manager.$['items-list'].items);
-        testVisible('#items-list', true);
         expectTrue(listHasItemWithName('My extension 1'));
 
         manager.removeItem(extension);
         Polymer.dom.flush();
-        testVisible('#items-list', false);
         expectFalse(listHasItemWithName('My extension 1'));
 
         manager.addItem(extension);
         Polymer.dom.flush();
-        testVisible('#items-list', true);
         expectTrue(listHasItemWithName('My extension 1'));
       });
 

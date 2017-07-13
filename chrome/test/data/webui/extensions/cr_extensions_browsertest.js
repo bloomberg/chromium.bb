@@ -194,6 +194,21 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemList', function() {
       assert(extension_item_list_tests.TestNames.ItemListFiltering)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemListEmpty', function() {
+  extension_item_list_tests.registerTests();
+  mocha.grep(assert(extension_item_list_tests.TestNames.ItemListNoItemsMsg))
+      .run();
+});
+
+TEST_F(
+    'CrExtensionsBrowserTest', 'ExtensionItemListNoSearchResults', function() {
+      extension_item_list_tests.registerTests();
+      mocha
+          .grep(assert(
+              extension_item_list_tests.TestNames.ItemListNoSearchResultsMsg))
+          .run();
+    });
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Load Error Tests
 
