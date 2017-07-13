@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/driver_entry.h"
@@ -35,6 +36,8 @@ class FileMonitorTest : public testing::Test {
   }
   ~FileMonitorTest() override = default;
 
+  void HardRecoveryResponse(bool result);
+
  protected:
   base::FilePath CreateTemporaryFile(std::string file_name);
 
@@ -43,6 +46,8 @@ class FileMonitorTest : public testing::Test {
   base::ThreadTaskRunnerHandle handle_;
   base::FilePath download_dir_;
   std::unique_ptr<FileMonitor> monitor_;
+
+  base::Optional<bool> hard_recovery_result_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileMonitorTest);
@@ -55,6 +60,10 @@ base::FilePath FileMonitorTest::CreateTemporaryFile(std::string file_name) {
   file.Close();
 
   return file_path;
+}
+
+void FileMonitorTest::HardRecoveryResponse(bool result) {
+  hard_recovery_result_ = result;
 }
 
 TEST_F(FileMonitorTest, TestDeleteUnknownFiles) {
@@ -133,6 +142,25 @@ TEST_F(FileMonitorTest, TestCleanupFilesForCompletedEntries) {
   EXPECT_EQ(1u, entries_to_remove.size());
   EXPECT_FALSE(base::PathExists(entry1.target_file_path));
   EXPECT_TRUE(base::PathExists(entry2.target_file_path));
+}
+
+TEST_F(FileMonitorTest, TestHardRecovery) {
+  base::FilePath temp_file1 = CreateTemporaryFile("temp1");
+  base::FilePath temp_file2 = CreateTemporaryFile("temp2");
+
+  auto callback = base::Bind(&FileMonitorTest::HardRecoveryResponse,
+                             base::Unretained(this));
+
+  EXPECT_TRUE(base::PathExists(temp_file1));
+  EXPECT_TRUE(base::PathExists(temp_file2));
+
+  monitor_->HardRecover(callback);
+  task_runner_->RunUntilIdle();
+
+  EXPECT_TRUE(hard_recovery_result_.has_value());
+  EXPECT_TRUE(hard_recovery_result_.value());
+  EXPECT_FALSE(base::PathExists(temp_file1));
+  EXPECT_FALSE(base::PathExists(temp_file2));
 }
 
 }  // namespace download
