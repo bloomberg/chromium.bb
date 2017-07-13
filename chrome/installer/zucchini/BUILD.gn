@@ -7,10 +7,6 @@ import("//testing/test.gni")
 
 static_library("zucchini_lib") {
   sources = [
-    "buffer_sink.cc",
-    "buffer_sink.h",
-    "buffer_source.cc",
-    "buffer_source.h",
     "buffer_view.h",
     "crc32.cc",
     "crc32.h",
@@ -49,8 +45,6 @@ if (is_win) {
 
 test("zucchini_unittests") {
   sources = [
-    "buffer_sink_unittest.cc",
-    "buffer_source_unittest.cc",
     "buffer_view_unittest.cc",
     "crc32_unittest.cc",
     "io_utils_unittest.cc",
