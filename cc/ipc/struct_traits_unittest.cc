@@ -107,11 +107,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(s);
   }
 
-  void EchoSurfaceReference(const SurfaceReference& s,
-                            EchoSurfaceReferenceCallback callback) override {
-    std::move(callback).Run(s);
-  }
-
   void EchoSurfaceSequence(const SurfaceSequence& s,
                            EchoSurfaceSequenceCallback callback) override {
     std::move(callback).Run(s);
@@ -1031,24 +1026,6 @@ TEST_F(StructTraitsTest, SurfaceId) {
   proxy->EchoSurfaceId(input, &output);
   EXPECT_EQ(frame_sink_id, output.frame_sink_id());
   EXPECT_EQ(local_surface_id, output.local_surface_id());
-}
-
-TEST_F(StructTraitsTest, SurfaceReference) {
-  const viz::SurfaceId parent_id(
-      viz::FrameSinkId(2016, 1234),
-      viz::LocalSurfaceId(0xfbadbeef,
-                          base::UnguessableToken::Deserialize(123, 456)));
-  const viz::SurfaceId child_id(
-      viz::FrameSinkId(1111, 9999),
-      viz::LocalSurfaceId(0xabcdabcd,
-                          base::UnguessableToken::Deserialize(333, 333)));
-  const SurfaceReference input(parent_id, child_id);
-
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  SurfaceReference output;
-  proxy->EchoSurfaceReference(input, &output);
-  EXPECT_EQ(parent_id, output.parent_id());
-  EXPECT_EQ(child_id, output.child_id());
 }
 
 TEST_F(StructTraitsTest, SurfaceSequence) {
