@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
+#include "chrome/browser/search/local_ntp_js_integrity.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -336,6 +337,10 @@ void LocalNtpSource::StartDataRequest(
                         GetConfigData(default_search_provider_is_google_));
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{CONFIG_INTEGRITY}}",
                                            config_sha256);
+    std::string local_ntp_sha256 =
+        std::string("sha256-") + LOCAL_NTP_JS_INTEGRITY;
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
+                                           local_ntp_sha256);
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
   }
@@ -410,12 +415,12 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
   }
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
-  return "script-src 'strict-dynamic' "
-         "'sha256-" +
-         GetIntegritySha256Value(
-             GetConfigData(default_search_provider_is_google_io_thread_)) +
-         "' "
-         "'sha256-lulnU8hGXcddrvssXT2LbFuVh5e/8iE6ENokfXF7NRo=';";
+  return base::StringPrintf(
+      "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s';",
+      GetIntegritySha256Value(
+          GetConfigData(default_search_provider_is_google_io_thread_))
+          .c_str(),
+      LOCAL_NTP_JS_INTEGRITY);
 }
 
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {

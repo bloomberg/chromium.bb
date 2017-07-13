@@ -3,12 +3,6 @@
 // found in the LICENSE file.
 
 
-// NOTE: If you modify this file, you also have to change its hash in
-// local_ntp.html and in LocalNtpSource::GetContentSecurityPolicyScriptSrc.
-// To calculate the sum execute the following command
-// sha256sum local_ntp.js | cut -d " " -f 1 | xxd -r -p | base64
-
-
 /**
  * @fileoverview The local InstantExtended NTP.
  */
