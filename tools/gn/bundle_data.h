@@ -107,6 +107,13 @@ class BundleData {
   std::string& product_type() { return product_type_; }
   const std::string& product_type() const { return product_type_; }
 
+  std::string& xcode_test_application_name() {
+    return xcode_test_application_name_;
+  }
+  const std::string& xcode_test_application_name() const {
+    return xcode_test_application_name_;
+  }
+
   void set_code_signing_script(const SourceFile& script_file) {
     code_signing_script_ = script_file;
   }
@@ -160,6 +167,11 @@ class BundleData {
   // This is the target type as known to Xcode. This is only used to generate
   // the Xcode project file when using --ide=xcode.
   std::string product_type_;
+
+  // Each Xcode unit test or ui test target must have a test application target,
+  // and this value corresponds to the target name. This is only used to
+  // generate the Xcode project when using --ide=xcode.
+  std::string xcode_test_application_name_;
 
   // Holds the values (script name, sources, outputs, script arguments) for the
   // code signing step if defined.

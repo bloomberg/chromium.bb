@@ -30,6 +30,7 @@ class CreateBundleTargetGenerator : public TargetGenerator {
   bool FillXcodeExtraAttributes();
 
   bool FillProductType();
+  bool FillXcodeTestApplicationName();
 
   bool FillCodeSigningScript();
   bool FillCodeSigningSources();

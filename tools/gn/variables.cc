@@ -1746,6 +1746,27 @@ Sources for non-binary targets
     The source are the source files to copy.
 )";
 
+const char kXcodeTestApplicationName[] = "xcode_test_application_name";
+const char kXcodeTestApplicationName_HelpShort[] =
+    "test_application_name: [string] Test application name for unit or ui test "
+    "target.";
+const char kXcodeTestApplicationName_Help[] =
+    R"(test_application_name: Test application name for unit or ui test target.
+
+  Each unit and ui test target must have a test application target, and this
+  value is used to specify the relationship. Only meaningful to Xcode (used as
+  part of the Xcode project generation).
+
+  See "gn help create_bundle" for more information.
+
+Exmaple
+
+  create_bundle("chrome_xctest") {
+    test_application_name = "chrome"
+    ...
+  }
+)";
+
 const char kTestonly[] = "testonly";
 const char kTestonly_HelpShort[] =
     "testonly: [boolean] Declares a target must only be used for testing.";
@@ -1939,6 +1960,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(ResponseFileContents)
     INSERT_VARIABLE(Script)
     INSERT_VARIABLE(Sources)
+    INSERT_VARIABLE(XcodeTestApplicationName)
     INSERT_VARIABLE(Testonly)
     INSERT_VARIABLE(Visibility)
     INSERT_VARIABLE(WriteRuntimeDeps)
