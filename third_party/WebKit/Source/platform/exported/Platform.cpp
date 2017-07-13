@@ -34,6 +34,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
 #include "platform/Language.h"
 #include "platform/MemoryCoordinator.h"
@@ -123,6 +124,11 @@ void Platform::Initialize(Platform* platform) {
         base::ThreadTaskRunnerHandle::Get());
 
   ThreadState::AttachMainThread();
+
+  // FontFamilyNames are used by platform/fonts and are initialized by core.
+  // In case core is not available (like on PPAPI plugins), we need to init
+  // them here.
+  FontFamilyNames::init();
   InitializePlatformLanguage();
 
   // TODO(ssid): remove this check after fixing crbug.com/486782.

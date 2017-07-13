@@ -19,6 +19,10 @@ const AtomicString& {{entry|symbol}} = reinterpret_cast<AtomicString*>(&{{suffix
 {% endfor %}
 
 void init{{suffix}}() {
+  static bool isLoaded = false;
+  if (isLoaded) return;
+  isLoaded = true;
+
   struct NameEntry {
     const char* name;
     unsigned hash;
