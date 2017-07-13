@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/connect_tethering_operation.h"
+#include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/network/network_connection_handler.h"
 
 namespace chromeos {
@@ -41,7 +42,8 @@ class TetherConnector : public ConnectTetheringOperation::Observer {
       TetherHostResponseRecorder* tether_host_response_recorder,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
       HostScanCache* host_scan_cache,
-      NotificationPresenter* notification_presenter);
+      NotificationPresenter* notification_presenter,
+      HostConnectionMetricsLogger* host_connection_metrics_logger);
   virtual ~TetherConnector();
 
   virtual void ConnectToNetwork(
@@ -64,7 +66,9 @@ class TetherConnector : public ConnectTetheringOperation::Observer {
  private:
   friend class TetherConnectorTest;
 
-  void SetConnectionFailed(const std::string& error_name);
+  void SetConnectionFailed(const std::string& error_name,
+                           HostConnectionMetricsLogger::ConnectionToHostResult
+                               connection_to_host_result);
   void SetConnectionSucceeded(const std::string& device_id,
                               const std::string& wifi_network_guid);
 
@@ -73,6 +77,10 @@ class TetherConnector : public ConnectTetheringOperation::Observer {
       std::unique_ptr<cryptauth::RemoteDevice> tether_host_to_connect);
   void OnWifiConnection(const std::string& device_id,
                         const std::string& wifi_network_guid);
+  HostConnectionMetricsLogger::ConnectionToHostResult
+  GetConnectionToHostResultFromErrorCode(
+      const std::string& device_id,
+      ConnectTetheringResponse_ResponseCode error_code);
 
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;
@@ -84,6 +92,7 @@ class TetherConnector : public ConnectTetheringOperation::Observer {
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
   HostScanCache* host_scan_cache_;
   NotificationPresenter* notification_presenter_;
+  HostConnectionMetricsLogger* host_connection_metrics_logger_;
 
   std::string device_id_pending_connection_;
   base::Closure success_callback_;
