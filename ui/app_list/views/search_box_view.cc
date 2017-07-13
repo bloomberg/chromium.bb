@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -58,6 +59,7 @@ constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
 
 constexpr int kBackgroundBorderCornerRadius = 2;
 constexpr int kBackgroundBorderCornerRadiusFullscreen = 24;
+constexpr int kBackgroundBorderCornerRadiusSearchResult = 4;
 constexpr int kGoogleIconSize = 24;
 constexpr int kMicIconSize = 24;
 
@@ -75,27 +77,46 @@ constexpr SkColor kZeroQuerySearchboxColor =
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
  public:
-  explicit SearchBoxBackground(SkColor color)
-      : background_border_corner_radius_(
-            features::IsFullscreenAppListEnabled()
-                ? kBackgroundBorderCornerRadiusFullscreen
-                : kBackgroundBorderCornerRadius),
-        color_(color) {}
+  explicit SearchBoxBackground(SkColor color) : color_(color) {
+    const int corner_radius = features::IsFullscreenAppListEnabled()
+                                  ? kBackgroundBorderCornerRadiusFullscreen
+                                  : kBackgroundBorderCornerRadius;
+    SetCornerRadius(corner_radius, corner_radius, corner_radius, corner_radius);
+  }
   ~SearchBoxBackground() override {}
+
+  void SetCornerRadius(int top_left,
+                       int top_right,
+                       int bottom_right,
+                       int bottom_left) {
+    DCHECK(top_left >= 0 && top_right >= 0 && bottom_right >= 0 &&
+           bottom_left >= 0);
+    corner_radius_[0] = top_left;
+    corner_radius_[1] = top_right;
+    corner_radius_[2] = bottom_right;
+    corner_radius_[3] = bottom_left;
+  }
 
  private:
   // views::Background overrides:
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
     gfx::Rect bounds = view->GetContentsBounds();
 
+    const SkScalar kRadius[8] = {
+        SkIntToScalar(corner_radius_[0]), SkIntToScalar(corner_radius_[0]),
+        SkIntToScalar(corner_radius_[1]), SkIntToScalar(corner_radius_[1]),
+        SkIntToScalar(corner_radius_[2]), SkIntToScalar(corner_radius_[2]),
+        SkIntToScalar(corner_radius_[3]), SkIntToScalar(corner_radius_[3])};
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(color_);
-    canvas->DrawRoundRect(bounds, background_border_corner_radius_, flags);
+    canvas->DrawPath(path, flags);
   }
 
-  const int background_border_corner_radius_;
-  const SkColor color_;
+  int corner_radius_[4];
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
 };
@@ -432,6 +453,21 @@ void SearchBoxView::OnGestureEvent(ui::GestureEvent* event) {
 
 void SearchBoxView::OnMouseEvent(ui::MouseEvent* event) {
   HandleSearchBoxEvent(event);
+}
+
+void SearchBoxView::UpdateBackground(bool search_results_state) {
+  if (!search_results_state) {
+    WallpaperProminentColorsChanged();
+    return;
+  }
+
+  SearchBoxBackground* background =
+      new SearchBoxBackground(kSearchBoxBackgroundDefault);
+  background->SetCornerRadius(kBackgroundBorderCornerRadiusSearchResult,
+                              kBackgroundBorderCornerRadiusSearchResult, 0, 0);
+  content_container_->SetBackground(
+      base::WrapUnique<SearchBoxBackground>(background));
+  search_box_->SetBackgroundColor(kSearchBoxBackgroundDefault);
 }
 
 void SearchBoxView::UpdateModel() {

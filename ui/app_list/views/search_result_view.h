@@ -121,6 +121,8 @@ class APP_LIST_EXPORT SearchResultView
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
+  const bool is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };
 
