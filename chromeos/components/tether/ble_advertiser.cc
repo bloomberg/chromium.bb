@@ -20,7 +20,63 @@ namespace {
 
 uint8_t kInvertedConnectionFlag = 0x01;
 
+// Handles the unregistration of a BluetoothAdvertisement in the case that its
+// intended owner (an IndividualAdvertisement) was destroyed before successful
+// registration. See
+// BleAdvertiser::IndividualAdvertisement::OnAdvertisementRegistered().
+void OnAdvertisementUnregisteredAfterOwnerDestruction(
+    const std::string& associated_device_id) {
+  PA_LOG(ERROR) << "Unregistered advertisement for device ID: "
+                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                       associated_device_id);
+}
+
+// Handles the failed unregistration of a BluetoothAdvertisement in the case
+// that its intended owner (an IndividualAdvertisement) was destroyed before
+// successful registration. See
+// BleAdvertiser::IndividualAdvertisement::OnAdvertisementRegistered().
+//
+// It is not expected that this function ever be called; that would indicate an
+// error in Bluetooth.
+void OnAdvertisementUnregisteredAfterOwnerDestructionFailure(
+    const std::string& associated_device_id,
+    device::BluetoothAdvertisement::ErrorCode error_code) {
+  PA_LOG(ERROR) << "Error unregistering advertisement. "
+                << "Device ID: \""
+                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                       associated_device_id)
+                << "\", Error code: " << error_code;
+}
+
 }  // namespace
+
+// TODO (hansberry): Remove this workaround once crbug.com/741050 has been
+// resolved.
+// static
+void BleAdvertiser::IndividualAdvertisement::OnAdvertisementRegistered(
+    base::WeakPtr<BleAdvertiser::IndividualAdvertisement>
+        individual_advertisement,
+    const std::string& associated_device_id,
+    scoped_refptr<device::BluetoothAdvertisement> advertisement) {
+  // It's possible that the IndividualAdvertisement that registered this
+  // BluetoothAdvertisement has been destroyed before being able to own the
+  // BluetoothAdvertisement. If the IndividualAdvertisement still exists, simply
+  // give it the BluetoothAdvertisement it registered. If not, unregister the
+  // BluetoothAdvertisement, because otherwise it will remain registered
+  // forever.
+  if (individual_advertisement.get()) {
+    individual_advertisement->OnAdvertisementRegisteredCallback(advertisement);
+  } else {
+    PA_LOG(WARNING) << "BluetoothAdvertisement registered, but the "
+                    << "IndividualAdvertisement which registered it no longer "
+                    << "exists. Unregistering the BluetoothAdvertisement.";
+    advertisement->Unregister(
+        base::Bind(&OnAdvertisementUnregisteredAfterOwnerDestruction,
+                   associated_device_id),
+        base::Bind(&OnAdvertisementUnregisteredAfterOwnerDestructionFailure,
+                   associated_device_id));
+  }
+}
 
 BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
     const std::string& device_id,
@@ -103,8 +159,8 @@ void BleAdvertiser::IndividualAdvertisement::AdvertiseIfPossible() {
 
   adapter_->RegisterAdvertisement(
       std::move(advertisement_data),
-      base::Bind(&IndividualAdvertisement::OnAdvertisementRegisteredCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&OnAdvertisementRegistered, weak_ptr_factory_.GetWeakPtr(),
+                 device_id_),
       base::Bind(&IndividualAdvertisement::OnAdvertisementErrorCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
