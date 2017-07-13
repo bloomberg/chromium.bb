@@ -27,7 +27,6 @@ include_rules = [
   "+device/gamepad", # For gamepad API
   "+device/geolocation",
   "+device/nfc",
-  "+device/power_save_blocker",
   "+device/screen_orientation/public/interfaces",
   "+device/sensors",
   "+device/vr",  # For WebVR API

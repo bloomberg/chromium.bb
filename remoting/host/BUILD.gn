@@ -297,7 +297,6 @@ static_library("host") {
     "//base:i18n",
     "//components/policy/core/common",
     "//crypto",
-    "//device/power_save_blocker",
     "//google_apis",
     "//media",
     "//remoting/base",
@@ -305,6 +304,9 @@ static_library("host") {
     "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
+
+    # //remoting uses the power_save_blocker directly. See crbug.com/689423
+    "//services/device/wake_lock/power_save_blocker",
     "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events/platform",

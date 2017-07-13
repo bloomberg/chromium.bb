@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 source_set("wake_lock") {
+  visibility = [ "//services/device:*" ]
+
   sources = [
     "wake_lock.cc",
     "wake_lock.h",
@@ -22,6 +24,6 @@ source_set("wake_lock") {
   ]
 
   deps = [
-    "//device/power_save_blocker",
+    "//services/device/wake_lock/power_save_blocker",
   ]
 }
