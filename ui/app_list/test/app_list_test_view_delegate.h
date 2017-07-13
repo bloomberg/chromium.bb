@@ -47,9 +47,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   // value to 0.
   int GetStopSpeechRecognitionCountAndReset();
 
-  // Sets whether the search engine is Google or not.
-  void SetSearchEngineIsGoogle(bool is_google);
-
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
   SpeechUIModel* GetSpeechUI() override;
