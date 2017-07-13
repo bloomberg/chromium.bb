@@ -171,8 +171,11 @@ Font PlatformFontLinux::DeriveFont(int size_delta,
       (weight == weight_ && style == style_)
           ? typeface_
           : CreateSkTypeface(style, weight, &new_family, &success);
-  CHECK(success) << "Could not find any font: " << new_family << ", "
-                 << kFallbackFontFamilyName;
+  if (!success) {
+    LOG(ERROR) << "Could not find any font: " << new_family << ", "
+               << kFallbackFontFamilyName << ". Falling back to the default";
+    return Font(new PlatformFontLinux);
+  }
 
   FontRenderParamsQuery query;
   query.families.push_back(new_family);
@@ -269,8 +272,14 @@ void PlatformFontLinux::InitFromDetails(
   typeface_ = typeface ? std::move(typeface)
                        : CreateSkTypeface(style & Font::ITALIC, weight,
                                           &font_family_, &success);
-  CHECK(success) << "Could not find any font: " << font_family_ << ", "
-                 << kFallbackFontFamilyName;
+
+  if (!success) {
+    LOG(ERROR) << "Could not find any font: " << font_family << ", "
+               << kFallbackFontFamilyName << ". Falling back to the default";
+
+    InitFromPlatformFont(g_default_font.Get().get());
+    return;
+  }
 
   font_size_pixels_ = font_size_pixels;
   style_ = style;
