@@ -131,6 +131,8 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
   // TODO: handle floats & orthogonal children.
   for (NGLayoutInputNode node = Node().FirstChild(); node;
        node = node.NextSibling()) {
+    if (node.IsOutOfFlowPositioned())
+      continue;
     MinMaxContentSize child_sizes;
     if (node.IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
