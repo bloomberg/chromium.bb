@@ -82,7 +82,6 @@ struct WrapperTypeInfo {
 
   enum WrapperTypePrototype {
     kWrapperTypeObjectPrototype,
-    kWrapperTypeExceptionPrototype,
     kWrapperTypeNoPrototype,  // For legacy callback interface
   };
 
