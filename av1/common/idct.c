@@ -2102,7 +2102,7 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, block, tx_size);
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =

@@ -290,7 +290,7 @@ static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
       get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
 #endif
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const uint8_t txh_unit = tx_size_high_unit[tx_size];
   return row * max_blocks_wide + col * txh_unit;
 }
@@ -1841,7 +1841,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
     const struct macroblockd_plane *const pd_c = &xd->plane[1];
     const TX_SIZE tx_log2_y = mbmi->tx_size;
-    const TX_SIZE tx_log2_c = get_uv_tx_size(mbmi, pd_c);
+    const TX_SIZE tx_log2_c = av1_get_uv_tx_size(mbmi, pd_c);
     const int tx_sz_y = (1 << tx_log2_y);
     const int tx_sz_c = (1 << tx_log2_c);
     const int num_4x4_w_y = pd_y->n4_w;
@@ -1963,7 +1963,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif  // CONFIG_PALETTE
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
-      const TX_SIZE tx_size = get_tx_size(plane, xd);
+      const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
 #if CONFIG_CHROMA_SUB8X8
@@ -2078,7 +2078,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           }
         }
 #else
-        const TX_SIZE tx_size = get_tx_size(plane, xd);
+        const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];
         for (row = 0; row < max_blocks_high; row += stepr)
@@ -2595,7 +2595,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       for (i = 0; i < MAX_MB_PLANE; ++i) {
         const struct macroblockd_plane *const pd = &xd->plane[i];
         int row, col;
-        const TX_SIZE tx_size = get_tx_size(i, xd);
+        const TX_SIZE tx_size = av1_get_tx_size(i, xd);
         const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];

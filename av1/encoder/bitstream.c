@@ -2513,7 +2513,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
     const struct macroblockd_plane *const pd_c = &xd->plane[1];
     const TX_SIZE tx_log2_y = mbmi->tx_size;
-    const TX_SIZE tx_log2_c = get_uv_tx_size(mbmi, pd_c);
+    const TX_SIZE tx_log2_c = av1_get_uv_tx_size(mbmi, pd_c);
     const int tx_sz_y = (1 << tx_log2_y);
     const int tx_sz_c = (1 << tx_log2_c);
 
@@ -2651,7 +2651,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_LV_MAP
         av1_write_coeffs_mb(cm, x, w, plane);
 #else
-        TX_SIZE tx = get_tx_size(plane, xd);
+        const TX_SIZE tx = av1_get_tx_size(plane, xd);
         const int bkw = tx_size_wide_unit[tx];
         const int bkh = tx_size_high_unit[tx];
         for (row = 0; row < num_4x4_h; row += bkh) {
@@ -2666,7 +2666,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_LV_MAP
       }
 #else
-      TX_SIZE tx = get_tx_size(plane, xd);
+      const TX_SIZE tx = av1_get_tx_size(plane, xd);
       TOKEN_STATS token_stats;
 #if !CONFIG_PVQ
       init_token_stats(&token_stats);
@@ -3044,7 +3044,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
 
         int row, col;
-        TX_SIZE tx = get_tx_size(plane, xd);
+        const TX_SIZE tx = av1_get_tx_size(plane, xd);
         BLOCK_SIZE txb_size = txsize_to_bsize[tx];
 
         const int stepr = tx_size_high_unit[txb_size];

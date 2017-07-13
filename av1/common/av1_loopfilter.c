@@ -1431,7 +1431,7 @@ static void get_filter_level_and_masks_non420(
     const int skip_this_r = skip_this && !block_edge_above;
 
     TX_SIZE tx_size = (plane->plane_type == PLANE_TYPE_UV)
-                          ? get_uv_tx_size(mbmi, plane)
+                          ? av1_get_uv_tx_size(mbmi, plane)
                           : mbmi->tx_size;
 
     const int skip_border_4x4_c =

@@ -6135,8 +6135,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     }
 
     ++td->counts->tx_size_totals[txsize_sqr_map[tx_size]];
-    ++td->counts
-          ->tx_size_totals[txsize_sqr_map[get_uv_tx_size(mbmi, &xd->plane[1])]];
+    ++td->counts->tx_size_totals[txsize_sqr_map[av1_get_uv_tx_size(
+        mbmi, &xd->plane[1])]];
 #if !CONFIG_TXK_SEL
     av1_update_tx_type_count(cm, xd, bsize, tx_size, td->counts);
 #endif

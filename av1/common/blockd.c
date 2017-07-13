@@ -49,7 +49,7 @@ void av1_foreach_transformed_block_interleave(
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   const TX_SIZE tx_log2_y = mbmi->tx_size;
-  const TX_SIZE tx_log2_c = get_uv_tx_size(mbmi, pd_c);
+  const TX_SIZE tx_log2_c = av1_get_uv_tx_size(mbmi, pd_c);
   const int tx_sz_y = (1 << tx_log2_y);
   const int tx_sz_c = (1 << tx_log2_c);
 
@@ -127,7 +127,7 @@ void av1_foreach_transformed_block_in_plane(
   // block and transform sizes, in number of 4x4 blocks log 2 ("*_b")
   // 4x4=0, 8x8=2, 16x16=4, 32x32=6, 64x64=8
   // transform size varies per plane, look it up in a common way.
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));

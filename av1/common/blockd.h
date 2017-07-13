@@ -1203,12 +1203,11 @@ static INLINE TX_SIZE depth_to_tx_size(int depth) {
   return (TX_SIZE)(depth + TX_SIZE_LUMA_MIN);
 }
 
-static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
-                                     const struct macroblockd_plane *pd) {
-  TX_SIZE uv_txsize;
+static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi,
+                                         const struct macroblockd_plane *pd) {
 #if CONFIG_CHROMA_2X2
   assert(mbmi->tx_size > TX_2X2);
-#endif
+#endif  // CONFIG_CHROMA_2X2
 
 #if CONFIG_SUPERTX
   if (supertx_enabled(mbmi))
@@ -1216,17 +1215,18 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
                                 [pd->subsampling_x][pd->subsampling_y];
 #endif  // CONFIG_SUPERTX
 
-  uv_txsize = uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
-                              [pd->subsampling_y];
+  const TX_SIZE uv_txsize =
+      uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
+                      [pd->subsampling_y];
   assert(uv_txsize != TX_INVALID);
   return uv_txsize;
 }
 
-static INLINE TX_SIZE get_tx_size(int plane, const MACROBLOCKD *xd) {
+static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  if (plane == 0) return mbmi->tx_size;
   const MACROBLOCKD_PLANE *pd = &xd->plane[plane];
-  const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
-  return tx_size;
+  return av1_get_uv_tx_size(mbmi, pd);
 }
 
 static INLINE BLOCK_SIZE

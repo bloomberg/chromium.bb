@@ -932,7 +932,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
     av1_get_entropy_contexts(bsize, 0, pd, ctx.ta[plane], ctx.tl[plane]);
 #else
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const TX_SIZE tx_size = get_tx_size(plane, xd);
+    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
     av1_get_entropy_contexts(bsize, tx_size, pd, ctx.ta[plane], ctx.tl[plane]);
 #endif
 
@@ -973,7 +973,7 @@ void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 #if CONFIG_VAR_TX
     const TX_SIZE tx_size = TX_4X4;
 #else
-    const TX_SIZE tx_size = get_tx_size(plane, xd);
+    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
 #endif
     av1_subtract_plane(x, bsize, plane);
     av1_get_entropy_contexts(bsize, tx_size, pd, ctx.ta[plane], ctx.tl[plane]);
@@ -1432,7 +1432,7 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
 
   if (enable_optimize_b) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const TX_SIZE tx_size = get_tx_size(plane, xd);
+    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
     av1_get_entropy_contexts(bsize, tx_size, pd, ta, tl);
   }
   av1_foreach_transformed_block_in_plane(

@@ -197,7 +197,7 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
 #endif
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-  TX_SIZE tx_size = get_tx_size(plane, xd);
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const int bkw = tx_size_wide_unit[tx_size];
   const int bkh = tx_size_high_unit[tx_size];
   const int step = tx_size_wide_unit[tx_size] * tx_size_high_unit[tx_size];

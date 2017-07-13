@@ -1365,7 +1365,7 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
 #if !CONFIG_VAR_TX && !CONFIG_SUPERTX
   // Check for consistency of tx_size with mode info
-  assert(tx_size == get_tx_size(plane, xd));
+  assert(tx_size == av1_get_tx_size(plane, xd));
 #endif  // !CONFIG_VAR_TX && !CONFIG_SUPERTX
   (void)cm;
 
@@ -1807,7 +1807,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   RD_STATS this_rd_stats;
 
 #if !CONFIG_SUPERTX && !CONFIG_VAR_TX
-  assert(tx_size == get_tx_size(plane, xd));
+  assert(tx_size == av1_get_tx_size(plane, xd));
 #endif  // !CONFIG_SUPERTX
 
   av1_init_rd_stats(&this_rd_stats);
@@ -4170,7 +4170,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                             int64_t ref_best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const TX_SIZE uv_tx_size = get_uv_tx_size(mbmi, &xd->plane[1]);
+  const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
   int plane;
   int is_cost_valid = 1;
   av1_init_rd_stats(rd_stats);
@@ -5527,7 +5527,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_CFL
     int cfl_alpha_rate = 0;
     if (mode == DC_PRED) {
-      const TX_SIZE uv_tx_size = get_uv_tx_size(mbmi, &xd->plane[1]);
+      const TX_SIZE uv_tx_size = av1_get_uv_tx_size(mbmi, &xd->plane[1]);
       cfl_alpha_rate = cfl_rd_pick_alpha(x, uv_tx_size);
     }
 #endif
