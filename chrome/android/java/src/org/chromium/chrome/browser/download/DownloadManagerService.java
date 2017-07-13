@@ -731,12 +731,15 @@ public class DownloadManagerService
      * @param filePath   Path to the file.
      * @param downloadId ID of the download item in DownloadManager.
      * @param isSupportedMimeType Whether the MIME type is supported by browser.
+     * @param downloadId ID of the download item in DownloadManager.
+     * @param originalUrl The original url of the downloaded file
+     * @param referrer   Referrer of the downloaded file.
      * @return the intent to launch for the given download item.
      */
     @Nullable
     static Intent getLaunchIntentFromDownloadId(
             Context context, @Nullable String filePath, long downloadId,
-            boolean isSupportedMimeType) {
+            boolean isSupportedMimeType, String originalUrl, String referrer) {
         assert !ThreadUtils.runningOnUiThread();
         Uri contentUri = filePath == null
                 ? DownloadManagerDelegate.getContentUriFromDownloadManager(context, downloadId)
@@ -753,7 +756,8 @@ public class DownloadManagerService
             if (filePath != null) fileUri = Uri.fromFile(new File(filePath));
             return DownloadUtils.getMediaViewerIntentForDownloadItem(fileUri, contentUri, mimeType);
         }
-        return DownloadUtils.createViewIntentForDownloadItem(contentUri, mimeType);
+        return DownloadUtils.createViewIntentForDownloadItem(
+                contentUri, mimeType, originalUrl, referrer);
     }
 
     /**
@@ -769,7 +773,7 @@ public class DownloadManagerService
         assert !ThreadUtils.runningOnUiThread();
         Intent intent = getLaunchIntentFromDownloadId(
                 context, download.getDownloadInfo().getFilePath(),
-                download.getSystemDownloadId(), isSupportedMimeType);
+                download.getSystemDownloadId(), isSupportedMimeType, null, null);
         return (intent == null)
                 ? false : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
     }
@@ -778,7 +782,8 @@ public class DownloadManagerService
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
         openDownloadedContent(mContext, downloadInfo.getFilePath(),
                 isSupportedMimeType(downloadInfo.getMimeType()), downloadInfo.isOffTheRecord(),
-                downloadInfo.getDownloadGuid(), downloadId);
+                downloadInfo.getDownloadGuid(), downloadId, downloadInfo.getOriginalUrl(),
+                downloadInfo.getReferrer());
     }
 
     /**
@@ -791,15 +796,18 @@ public class DownloadManagerService
      * @param isOffTheRecord      Whether the download was for a off the record profile.
      * @param downloadGuid        GUID of the download item in DownloadManager.
      * @param downloadId          ID of the download item in DownloadManager.
+     * @param originalUrl         The original url of the downloaded file.
+     * @param referrer            Referrer of the downloaded file.
      */
     protected static void openDownloadedContent(final Context context, final String filePath,
             final boolean isSupportedMimeType, final boolean isOffTheRecord,
-            final String downloadGuid, final long downloadId) {
+            final String downloadGuid, final long downloadId, final String originalUrl,
+            final String referrer) {
         new AsyncTask<Void, Void, Intent>() {
             @Override
             public Intent doInBackground(Void... params) {
                 return getLaunchIntentFromDownloadId(
-                        context, filePath, downloadId, isSupportedMimeType);
+                        context, filePath, downloadId, isSupportedMimeType, originalUrl, referrer);
             }
 
             @Override
