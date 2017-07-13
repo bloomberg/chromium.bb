@@ -1,0 +1,50 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var instanceCount = 25;
+    function createHeapSnapshot()
+    {
+        return InspectorTest.createHeapSnapshot(instanceCount);
+    }
+
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testShowAll(next)
+        {
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step1()
+            {
+                InspectorTest.switchToView("Summary", step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.findAndExpandRow("A", step3);
+            }
+
+            function step3(row)
+            {
+                row.collapse();
+                row.expand();
+                for (var child of row.children)
+                    InspectorTest.addResult(child._name + " " + child._element.classList.value);
+                next();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+https://crbug.com/738932
+Tests the snapshot view is not empty on repeatitive expand-collapse.
+</p>
+</body>
+</html>
