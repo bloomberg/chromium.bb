@@ -124,6 +124,10 @@ few tiny heap allocations.
 ### So really, can I create like, thousands of them?
 Yes! Nobody will mind. Create millions if you like. (OK but maybe don't.)
 
+### What are the performance characteristics of Mojo?
+Compared to the old IPC in Chrome, making a Mojo call is about 1/3 faster and uses
+1/3 fewer context switches. The full data is [available here](https://docs.google.com/document/d/1n7qYjQ5iy8xAkQVMYGqjIy_AXu2_JJtMoAcOOupO_jQ/edit).
+
 ### Can I use in-process message pipes?
 Yes, and message pipe usage is identical regardless of whether the pipe actually
 crosses a process boundary -- in fact this detail is intentionally obscured.
