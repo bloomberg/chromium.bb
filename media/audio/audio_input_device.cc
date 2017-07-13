@@ -346,6 +346,7 @@ void AudioInputDevice::SetLastCallbackTimeToNow() {
 }
 
 void AudioInputDevice::SetLastCallbackTimeToNowOnIOThread() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
   last_callback_time_ = base::TimeTicks::Now();
 }
 
