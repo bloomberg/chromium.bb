@@ -9,10 +9,14 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_primary_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -27,17 +31,25 @@ namespace {
 const CGFloat kMenuWidth = 264;
 }
 
-@interface BookmarkHomeViewController ()<BookmarkPromoControllerDelegate>
+@interface BookmarkHomeViewController ()<
+    BookmarkEditViewControllerDelegate,
+    BookmarkFolderEditorViewControllerDelegate,
+    BookmarkFolderViewControllerDelegate,
+    BookmarkPromoControllerDelegate>
 // Read / write declaration of read only properties.
 @property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarks;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, strong) BookmarkEditViewController* editViewController;
+@property(nonatomic, strong) BookmarkFolderEditorViewController* folderEditor;
+@property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 @property(nonatomic, strong) BookmarkCollectionView* folderView;
 @property(nonatomic, weak) id<UrlLoader> loader;
 @property(nonatomic, strong) BookmarkMenuView* menuView;
 @property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
 @property(nonatomic, strong) BookmarkPanelView* panelView;
 @property(nonatomic, strong) BookmarkMenuItem* primaryMenuItem;
+
 @end
 
 @implementation BookmarkHomeViewController
@@ -45,6 +57,9 @@ const CGFloat kMenuWidth = 264;
 @synthesize bookmarkPromoController = _bookmarkPromoController;
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
+@synthesize editViewController = _editViewController;
+@synthesize folderEditor = _folderEditor;
+@synthesize folderSelector = _folderSelector;
 @synthesize folderView = _folderView;
 @synthesize loader = _loader;
 @synthesize menuView = _menuView;
@@ -163,6 +178,146 @@ const CGFloat kMenuWidth = 264;
 - (void)promoStateChanged:(BOOL)promoEnabled {
   [self.folderView
       promoStateChangedAnimated:self.folderView == [self primaryView]];
+}
+
+#pragma mark Action sheet callbacks
+
+- (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes {
+  DCHECK(!self.folderSelector);
+  DCHECK(nodes.size() > 0);
+  const BookmarkNode* editedNode = *(nodes.begin());
+  const BookmarkNode* selectedFolder = editedNode->parent();
+  self.folderSelector = [[BookmarkFolderViewController alloc]
+      initWithBookmarkModel:self.bookmarks
+           allowsNewFolders:YES
+                editedNodes:nodes
+               allowsCancel:YES
+             selectedFolder:selectedFolder];
+  self.folderSelector.delegate = self;
+  UINavigationController* navController = [[BookmarkNavigationController alloc]
+      initWithRootViewController:self.folderSelector];
+  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
+  [self presentViewController:navController animated:YES completion:NULL];
+}
+
+- (void)deleteNodes:(const std::set<const BookmarkNode*>&)nodes {
+  DCHECK_GE(nodes.size(), 1u);
+  bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarks,
+                                                   self.browserState);
+}
+
+- (void)editNode:(const BookmarkNode*)node {
+  DCHECK(!self.editViewController);
+  DCHECK(!self.folderEditor);
+  UIViewController* editorController = nil;
+  if (node->is_folder()) {
+    BookmarkFolderEditorViewController* folderEditor =
+        [BookmarkFolderEditorViewController
+            folderEditorWithBookmarkModel:self.bookmarks
+                                   folder:node
+                             browserState:self.browserState];
+    folderEditor.delegate = self;
+    self.folderEditor = folderEditor;
+    editorController = folderEditor;
+  } else {
+    BookmarkEditViewController* controller =
+        [[BookmarkEditViewController alloc] initWithBookmark:node
+                                                browserState:self.browserState];
+    self.editViewController = controller;
+    self.editViewController.delegate = self;
+    editorController = self.editViewController;
+  }
+  DCHECK(editorController);
+  UINavigationController* navController = [[BookmarkNavigationController alloc]
+      initWithRootViewController:editorController];
+  navController.modalPresentationStyle = UIModalPresentationFormSheet;
+  [self presentViewController:navController animated:YES completion:NULL];
+}
+
+#pragma mark - Navigation Bar Callbacks
+
+- (void)navigationBarWantsEditing:(id)sender {
+  DCHECK(self.primaryMenuItem.type == bookmarks::MenuItemFolder);
+  const BookmarkNode* folder = self.primaryMenuItem.folder;
+  BookmarkFolderEditorViewController* folderEditor =
+      [BookmarkFolderEditorViewController
+          folderEditorWithBookmarkModel:self.bookmarks
+                                 folder:folder
+                           browserState:self.browserState];
+  folderEditor.delegate = self;
+  self.folderEditor = folderEditor;
+
+  BookmarkNavigationController* navController =
+      [[BookmarkNavigationController alloc]
+          initWithRootViewController:self.folderEditor];
+  navController.modalPresentationStyle = UIModalPresentationFormSheet;
+  [self presentViewController:navController animated:YES completion:NULL];
+}
+
+#pragma mark - BookmarkFolderViewControllerDelegate
+
+- (void)folderPicker:(BookmarkFolderViewController*)folderPicker
+    didFinishWithFolder:(const BookmarkNode*)folder {
+  DCHECK(folder);
+  DCHECK(!folder->is_url());
+  DCHECK_GE(folderPicker.editedNodes.size(), 1u);
+
+  bookmark_utils_ios::MoveBookmarksWithUndoToast(
+      folderPicker.editedNodes, self.bookmarks, folder, self.browserState);
+
+  [self setEditing:NO animated:NO];
+  [self dismissViewControllerAnimated:YES completion:NULL];
+  self.folderSelector.delegate = nil;
+  self.folderSelector = nil;
+}
+
+- (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker {
+  [self setEditing:NO animated:NO];
+  [self dismissViewControllerAnimated:YES completion:NULL];
+  self.folderSelector.delegate = nil;
+  self.folderSelector = nil;
+}
+
+#pragma mark - BookmarkFolderEditorViewControllerDelegate
+
+- (void)bookmarkFolderEditor:(BookmarkFolderEditorViewController*)folderEditor
+      didFinishEditingFolder:(const BookmarkNode*)folder {
+  DCHECK(folder);
+  [self dismissViewControllerAnimated:YES completion:nil];
+  self.folderEditor.delegate = nil;
+  self.folderEditor = nil;
+}
+
+- (void)bookmarkFolderEditorDidDeleteEditedFolder:
+    (BookmarkFolderEditorViewController*)folderEditor {
+  [self dismissViewControllerAnimated:YES completion:nil];
+  self.folderEditor.delegate = nil;
+  self.folderEditor = nil;
+}
+
+- (void)bookmarkFolderEditorDidCancel:
+    (BookmarkFolderEditorViewController*)folderEditor {
+  [self dismissViewControllerAnimated:YES completion:nil];
+  self.folderEditor.delegate = nil;
+  self.folderEditor = nil;
+}
+
+#pragma mark - BookmarkEditViewControllerDelegate
+
+- (BOOL)bookmarkEditor:(BookmarkEditViewController*)controller
+    shoudDeleteAllOccurencesOfBookmark:(const BookmarkNode*)bookmark {
+  return NO;
+}
+
+- (void)bookmarkEditorWantsDismissal:(BookmarkEditViewController*)controller {
+  self.editViewController.delegate = nil;
+  self.editViewController = nil;
+  [self dismissViewControllerAnimated:YES completion:NULL];
+
+  // The editViewController can be displayed from the menu button, or from the
+  // edit button in edit mode. Either way, after it's dismissed, edit mode
+  // should be off.
+  [self setEditing:NO animated:NO];
 }
 
 @end

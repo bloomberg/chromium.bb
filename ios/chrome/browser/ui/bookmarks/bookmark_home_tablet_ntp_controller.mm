@@ -56,9 +56,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 @interface BookmarkHomeTabletNTPController ()<
     BookmarkCollectionViewDelegate,
-    BookmarkEditViewControllerDelegate,
-    BookmarkFolderEditorViewControllerDelegate,
-    BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
     BookmarkModelBridgeObserver> {
   // Bridge to register for bookmark changes.
@@ -103,14 +100,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 // The action sheet coordinator used when trying to edit a single bookmark.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
-// The view controller used to view and edit a single bookmark.
-@property(nonatomic, strong) BookmarkEditViewController* editViewController;
-// The view controller used to pick a folder in which to move the selected
-// bookmarks.
-@property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
-// The view controller to present when editing the current folder.
-@property(nonatomic, strong)
-    BookmarkFolderEditorViewController* folderEditor;  // FIX
 
 #pragma mark Specific to this class.
 
@@ -169,12 +158,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 // given cell.
 - (void)selectFirstNode:(const BookmarkNode*)node
                withCell:(UICollectionViewCell*)cell;
-// Opens the editor on the given node and cell.
-- (void)editNode:(const BookmarkNode*)node withCell:(UICollectionViewCell*)cell;
-// Opens the folder move editor for the given node.
-- (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes;
-// Deletes the current node.
-- (void)deleteNodes:(const std::set<const BookmarkNode*>&)nodes;
 
 #pragma mark private utility methods
 // Deletes the nodes, and presents a toast with an undo button.
@@ -195,8 +178,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 - (BOOL)shouldShowEditButton;
 // Whether the back button on the navigation bar should be shown.
 - (BOOL)shouldShowBackButton;
-// Called when the edit button is pressed on the navigation bar.
-- (void)navigationBarWantsEditing:(id)sender;
 // Called when the back button is pressed on the navigation bar.
 - (void)navigationBarBack:(id)sender;
 
@@ -214,9 +195,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @synthesize editingBar = _editingBar;
 
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
-@synthesize editViewController = _editViewController;
-@synthesize folderSelector = _folderSelector;
-@synthesize folderEditor = _folderEditor;
 
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -229,11 +207,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
     _editIndexPaths = [[NSMutableArray alloc] init];
   }
   return self;
-}
-
-- (void)dealloc {
-  _editViewController.delegate = nil;
-  _folderSelector.delegate = nil;
 }
 
 #pragma mark - UIViewController method.
@@ -577,18 +550,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 - (void)editingBarEdit {
   DCHECK_EQ(_editNodes.size(), 1u);
   const BookmarkNode* node = *(_editNodes.begin());
-  BookmarkItemCell* itemCell = nil;
-  if (self.editIndexPaths.count > 0) {
-    NSIndexPath* indexPath = [self.editIndexPaths firstObject];
-    if (indexPath && ![indexPath isKindOfClass:[NSNull class]]) {
-      UICollectionViewCell* cell =
-          [[self primaryView].collectionView cellForItemAtIndexPath:indexPath];
-      if ([cell isKindOfClass:[BookmarkItemCell class]]) {
-        itemCell = static_cast<BookmarkItemCell*>(cell);
-      }
-    }
-  }
-  [self editNode:node withCell:itemCell];
+  [self editNode:node];
 }
 
 - (void)toggleMenuAnimated {
@@ -677,10 +639,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_ACTION_EDIT)
                 action:^{
-                  BookmarkItemCell* itemCell = nil;
-                  if ([cell isKindOfClass:[BookmarkItemCell class]])
-                    itemCell = static_cast<BookmarkItemCell*>(cell);
-                  [weakSelf editNode:node withCell:itemCell];
+                  [weakSelf editNode:node];
                   weakSelf.actionSheetCoordinator = nil;
                 }
                  style:UIAlertActionStyleDefault];
@@ -747,62 +706,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   [self setEditing:YES animated:YES];
 }
 
-- (void)editNode:(const BookmarkNode*)node withCell:(BookmarkItemCell*)cell {
-  DCHECK(!self.editViewController);
-  DCHECK(!self.folderEditor);
-  UIViewController* editorController = nil;
-  if (node->is_folder()) {
-    BookmarkFolderEditorViewController* folderEditor =
-        [BookmarkFolderEditorViewController
-            folderEditorWithBookmarkModel:self.bookmarks
-                                   folder:node
-                             browserState:self.browserState];
-    folderEditor.delegate = self;
-    self.folderEditor = folderEditor;
-    editorController = folderEditor;
-  } else {
-    BookmarkEditViewController* controller =
-        [[BookmarkEditViewController alloc] initWithBookmark:node
-                                                browserState:self.browserState];
-    self.editViewController = controller;
-    self.editViewController.delegate = self;
-    editorController = self.editViewController;
-  }
-  DCHECK(editorController);
-  UINavigationController* navController = [[BookmarkNavigationController alloc]
-      initWithRootViewController:editorController];
-  navController.modalPresentationStyle = UIModalPresentationFormSheet;
-  [self.view.window.rootViewController presentViewController:navController
-                                                    animated:YES
-                                                  completion:NULL];
-}
-
-- (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes {
-  DCHECK(!self.folderSelector);
-  DCHECK(nodes.size() > 0);
-  const BookmarkNode* editedNode = *(nodes.begin());
-  const BookmarkNode* selectedFolder = editedNode->parent();
-  self.folderSelector = [[BookmarkFolderViewController alloc]
-      initWithBookmarkModel:self.bookmarks
-           allowsNewFolders:YES
-                editedNodes:nodes
-               allowsCancel:YES
-             selectedFolder:selectedFolder];
-  self.folderSelector.delegate = self;
-  UINavigationController* controller = [[BookmarkNavigationController alloc]
-      initWithRootViewController:self.folderSelector];
-  controller.modalPresentationStyle = UIModalPresentationFormSheet;
-  [self.view.window.rootViewController presentViewController:controller
-                                                    animated:YES
-                                                  completion:NULL];
-}
-
-- (void)deleteNodes:(const std::set<const BookmarkNode*>&)nodes {
-  DCHECK_GE(nodes.size(), 1u);
-  bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarks,
-                                                   self.browserState);
-}
-
 #pragma mark - BookmarkCollectionViewDelegate
 
 - (void)bookmarkCollectionView:(BookmarkCollectionView*)view
@@ -817,77 +720,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
     return;
   }
   [self updatePrimaryMenuItem:menuItem animated:YES];
-}
-
-#pragma mark - BookmarkEditViewControllerDelegate
-
-- (BOOL)bookmarkEditor:(BookmarkEditViewController*)controller
-    shoudDeleteAllOccurencesOfBookmark:(const BookmarkNode*)bookmark {
-  return NO;
-}
-
-- (void)bookmarkEditorWantsDismissal:(BookmarkEditViewController*)controller {
-  self.editViewController.delegate = nil;
-  self.editViewController = nil;
-  [controller dismissViewControllerAnimated:YES completion:NULL];
-
-  // The editViewController can be displayed from the menu button, or from the
-  // edit button in edit mode. Either way, after it's dismissed, edit mode
-  // should be off.
-  [self setEditing:NO animated:NO];
-}
-
-#pragma mark - BookmarkFolderViewControllerDelegate
-
-- (void)folderPicker:(BookmarkFolderViewController*)folderPicker
-    didFinishWithFolder:(const BookmarkNode*)folder {
-  DCHECK(folder);
-  DCHECK(!folder->is_url());
-  DCHECK_GE(folderPicker.editedNodes.size(), 1u);
-
-  bookmark_utils_ios::MoveBookmarksWithUndoToast(
-      folderPicker.editedNodes, self.bookmarks, folder, self.browserState);
-
-  [self setEditing:NO animated:NO];
-  [[folderPicker presentingViewController] dismissViewControllerAnimated:YES
-                                                              completion:nil];
-  self.folderSelector.delegate = nil;
-  self.folderSelector = nil;
-}
-
-- (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker {
-  [self setEditing:NO animated:NO];
-  [[folderPicker presentingViewController] dismissViewControllerAnimated:YES
-                                                              completion:nil];
-  self.folderSelector.delegate = nil;
-  self.folderSelector = nil;
-}
-
-#pragma mark - BookmarkFolderEditorViewControllerDelegate
-
-- (void)bookmarkFolderEditor:(BookmarkFolderEditorViewController*)folderEditor
-      didFinishEditingFolder:(const BookmarkNode*)folder {
-  DCHECK(folder);
-  [[folderEditor presentingViewController] dismissViewControllerAnimated:YES
-                                                              completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
-}
-
-- (void)bookmarkFolderEditorDidDeleteEditedFolder:
-    (BookmarkFolderEditorViewController*)folderEditor {
-  [[folderEditor presentingViewController] dismissViewControllerAnimated:YES
-                                                              completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
-}
-
-- (void)bookmarkFolderEditorDidCancel:
-    (BookmarkFolderEditorViewController*)folderEditor {
-  [[folderEditor presentingViewController] dismissViewControllerAnimated:YES
-                                                              completion:nil];
-  self.folderEditor.delegate = nil;
-  self.folderEditor = nil;
 }
 
 #pragma mark - Internal Utility Methods
@@ -960,26 +792,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 #pragma mark Navigation Bar Callbacks
-
-- (void)navigationBarWantsEditing:(id)sender {
-  DCHECK(self.primaryMenuItem.type == bookmarks::MenuItemFolder);
-  const BookmarkNode* folder = self.primaryMenuItem.folder;
-  BookmarkFolderEditorViewController* folderEditor =
-      [BookmarkFolderEditorViewController
-          folderEditorWithBookmarkModel:self.bookmarks
-                                 folder:folder
-                           browserState:self.browserState];
-  folderEditor.delegate = self;
-  self.folderEditor = folderEditor;
-
-  BookmarkNavigationController* navController =
-      [[BookmarkNavigationController alloc]
-          initWithRootViewController:self.folderEditor];
-  navController.modalPresentationStyle = UIModalPresentationFormSheet;
-  [self.view.window.rootViewController presentViewController:navController
-                                                    animated:YES
-                                                  completion:NULL];
-}
 
 - (void)navigationBarBack:(id)sender {
   DCHECK([self shouldShowBackButton]);
