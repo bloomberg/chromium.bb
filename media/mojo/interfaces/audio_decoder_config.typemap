@@ -24,4 +24,4 @@ deps = [
 ]
 
 # See media_types.typemap for enum mappings.
-type_mappings = [ "media.mojom.AudioDecoderConfig=media::AudioDecoderConfig" ]
+type_mappings = [ "media.mojom.AudioDecoderConfig=::media::AudioDecoderConfig" ]
