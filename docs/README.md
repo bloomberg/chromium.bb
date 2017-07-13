@@ -1,9 +1,10 @@
 # Chromium docs
 
 This directory contains chromium project documentation in
-[Gitiles-flavored Markdown](https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md).
-It is automatically
-[rendered by Gitiles](https://chromium.googlesource.com/chromium/src/+/master/docs/).
+[Gitiles-flavored Markdown].  It is automatically [rendered by Gitiles].
+
+[Gitiles-flavored Markdown]: https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md
+[rendered by Gitiles]: https://chromium.googlesource.com/chromium/src/+/master/docs/
 
 If you add new documents, please also add a link to them in the Document Index
 below.
@@ -12,7 +13,8 @@ below.
 
 ## Style guide
 
-Markdown documents must follow the [style guide](https://github.com/google/styleguide/tree/gh-pages/docguide).
+Markdown documents must follow the
+[style guide](https://github.com/google/styleguide/tree/gh-pages/docguide).
 
 ## Previewing changes
 
