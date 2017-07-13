@@ -54,7 +54,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     // Note that this potentially allows the controller to update in a delayed manner.
     private final AutocompleteState mPreviouslySetState;
 
-    private final SpanController mSpanController;
+    private final SpanCursorController mSpanCursorController;
 
     private AutocompleteInputConnection mInputConnection;
     private boolean mLastEditWasTyping = true;
@@ -73,7 +73,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         mPreviouslyNotifiedState = new AutocompleteState(mCurrentState);
         mPreviouslySetState = new AutocompleteState(mCurrentState);
 
-        mSpanController = new SpanController(delegate);
+        mSpanCursorController = new SpanCursorController(delegate);
     }
 
     @Override
@@ -131,15 +131,15 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         mCurrentState.clearAutocompleteText();
     }
 
-    private void clearAutocompleteTextAndUpdateSpan() {
-        if (DEBUG) Log.i(TAG, "clearAutocompleteAndUpdateSpan");
+    private void clearAutocompleteTextAndUpdateSpanCursor() {
+        if (DEBUG) Log.i(TAG, "clearAutocompleteAndUpdateSpanCursor");
         clearAutocompleteText();
         // Take effect and notify if not already in a batch edit.
         if (mInputConnection != null) {
             mInputConnection.beginBatchEdit();
             mInputConnection.endBatchEdit();
         } else {
-            mSpanController.removeSpan();
+            mSpanCursorController.removeSpan();
             notifyAutocompleteTextStateChanged();
         }
     }
@@ -177,7 +177,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
                 if (mInputConnection != null) mInputConnection.commitAutocomplete();
             } else {
                 if (DEBUG) Log.i(TAG, "Touching before the cursor removes autocomplete.");
-                clearAutocompleteTextAndUpdateSpan();
+                clearAutocompleteTextAndUpdateSpanCursor();
             }
         }
         notifyAutocompleteTextStateChanged();
@@ -192,11 +192,11 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     @Override
     public void onTextChanged(CharSequence text, int start, int beforeLength, int afterLength) {
         if (DEBUG) Log.i(TAG, "onTextChanged: " + text);
-        mSpanController.reflectTextUpdateInState(mCurrentState, text);
+        mSpanCursorController.reflectTextUpdateInState(mCurrentState, text);
         if (mBatchEditNestCount > 0) return; // let endBatchEdit() handles changes from IME.
         // An external change such as text paste occurred.
         mLastEditWasTyping = false;
-        clearAutocompleteTextAndUpdateSpan();
+        clearAutocompleteTextAndUpdateSpanCursor();
     }
 
     @Override
@@ -289,13 +289,14 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
     /**
      * A class to set and remove, or do other operations on Span and SpannableString of autocomplete
-     * text that will be appended to the user text.
+     * text that will be appended to the user text. In addition, cursor will be hidden whenever we
+     * are showing span to the user.
      */
-    private static class SpanController {
+    private static class SpanCursorController {
         private final Delegate mDelegate;
         private BackgroundColorSpan mSpan;
 
-        public SpanController(Delegate delegate) {
+        public SpanCursorController(Delegate delegate) {
             mDelegate = delegate;
         }
 
@@ -311,6 +312,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
             // Keep the original selection before adding spannable string.
             Selection.setSelection(editable, sel, sel);
+            mDelegate.setCursorVisible(false);
             if (DEBUG) Log.i(TAG, "setSpan: " + getEditableDebugString(editable));
         }
 
@@ -320,6 +322,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         }
 
         public boolean removeSpan() {
+            mDelegate.setCursorVisible(true);
             Editable editable = mDelegate.getEditableText();
             int idx = getSpanIndex(editable);
             if (idx == -1) return false;
@@ -328,13 +331,14 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             editable.delete(idx, editable.length());
             mSpan = null;
             if (DEBUG) {
-                Log.i(TAG, "removeSpan - after: " + getEditableDebugString(editable));
+                Log.i(TAG, "removeSpan - after removal: " + getEditableDebugString(editable));
             }
             return true;
         }
 
         public void commitSpan() {
             mDelegate.getEditableText().removeSpan(mSpan);
+            mDelegate.setCursorVisible(true);
         }
 
         public void reflectTextUpdateInState(AutocompleteState state, CharSequence text) {
@@ -385,7 +389,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             mPreviouslySetState.copyFrom(mCurrentState);
             mLastEditWasTyping = false;
             incrementBatchEditCount(); // avoids additional notifyAutocompleteTextStateChanged()
-            mSpanController.commitSpan();
+            mSpanCursorController.commitSpan();
             decrementBatchEditCount();
         }
 
@@ -404,7 +408,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             if (mBatchEditNestCount == 1) {
                 mPreBatchEditState.copyFrom(mCurrentState);
             }
-            mSpanController.removeSpan();
+            mSpanCursorController.removeSpan();
             return retVal;
         }
 
@@ -417,14 +421,14 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         }
 
         private boolean setAutocompleteSpan() {
-            mSpanController.removeSpan();
+            mSpanCursorController.removeSpan();
             if (DEBUG) {
                 Log.i(TAG, "setAutocompleteSpan. %s->%s", mPreviouslySetState, mCurrentState);
             }
             if (!mCurrentState.isCursorAtEndOfUserText()) return false;
 
             if (mCurrentState.reuseAutocompleteTextIfPrefixExtension(mPreviouslySetState)) {
-                mSpanController.setSpan(mCurrentState);
+                mSpanCursorController.setSpan(mCurrentState);
                 return true;
             } else {
                 return false;

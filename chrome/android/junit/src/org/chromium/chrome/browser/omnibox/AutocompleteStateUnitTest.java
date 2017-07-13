@@ -74,5 +74,8 @@ public class AutocompleteStateUnitTest {
         // The new state cannot reuse autocomplete text.
         verifyReuseAutocompleteText(new AutocompleteState("ab", "dc", 2, 2),
                 new AutocompleteState("abc", "a", 3, 3), false, "a");
+        // There is no autocomplete text to start with.
+        verifyReuseAutocompleteText(new AutocompleteState("ab", "", 2, 2),
+                new AutocompleteState("ab", "a", 3, 3), false, "a");
     }
 }

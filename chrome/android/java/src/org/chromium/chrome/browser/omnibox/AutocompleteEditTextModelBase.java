@@ -36,6 +36,8 @@ public interface AutocompleteEditTextModelBase {
         void announceForAccessibility(CharSequence inlineAutocompleteText);
         /** @see TextView#getHighlightColor() */
         int getHighlightColor();
+        /** @see TextView#setCursorVisible(boolean) */
+        void setCursorVisible(boolean visible);
 
         /**
          * Call super.dispatchKeyEvent(KeyEvent).
