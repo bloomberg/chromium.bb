@@ -333,6 +333,10 @@ bool LocalSafeBrowsingDatabaseManager::CanCheckResourceType(
   return true;
 }
 
+bool LocalSafeBrowsingDatabaseManager::CanCheckSubresourceFilter() const {
+  return false;
+}
+
 bool LocalSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIsWSOrWSS();

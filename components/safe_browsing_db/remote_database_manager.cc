@@ -173,6 +173,10 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckResourceType(
   return resource_types_to_check_.count(resource_type) > 0;
 }
 
+bool RemoteSafeBrowsingDatabaseManager::CanCheckSubresourceFilter() const {
+  return true;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIsWSOrWSS();
@@ -240,6 +244,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CanCheckSubresourceFilter());
+
   if (!enabled_ || !CanCheckUrl(url))
     return true;
 
