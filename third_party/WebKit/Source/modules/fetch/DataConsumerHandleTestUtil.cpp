@@ -11,22 +11,22 @@
 
 namespace blink {
 
-using Result = WebDataConsumerHandle::Result;
-
 namespace {
 
 class WaitingHandle final : public WebDataConsumerHandle {
  private:
   class ReaderImpl final : public WebDataConsumerHandle::Reader {
    public:
-    Result BeginRead(const void** buffer,
-                     WebDataConsumerHandle::Flags,
-                     size_t* available) override {
+    WebDataConsumerHandle::Result BeginRead(const void** buffer,
+                                            WebDataConsumerHandle::Flags,
+                                            size_t* available) override {
       *available = 0;
       *buffer = nullptr;
       return kShouldWait;
     }
-    Result EndRead(size_t) override { return kUnexpectedError; }
+    WebDataConsumerHandle::Result EndRead(size_t) override {
+      return kUnexpectedError;
+    }
   };
   std::unique_ptr<Reader> ObtainReader(Client*) override {
     return WTF::WrapUnique(new ReaderImpl);
@@ -105,12 +105,12 @@ class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
   }
   ~ReaderImpl() { context_->DetachReader(); }
 
-  Result BeginRead(const void** buffer,
-                   Flags flags,
-                   size_t* available) override {
+  WebDataConsumerHandle::Result BeginRead(const void** buffer,
+                                          Flags flags,
+                                          size_t* available) override {
     return context_->BeginRead(buffer, flags, available);
   }
-  Result EndRead(size_t read_size) override {
+  WebDataConsumerHandle::Result EndRead(size_t read_size) override {
     return context_->EndRead(read_size);
   }
 
@@ -164,7 +164,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::BeginRead(
     return result_;
 
   const Command& command = Top();
-  Result result = kOk;
+  WebDataConsumerHandle::Result result = kOk;
   switch (command.GetName()) {
     case Command::kData: {
       auto& body = command.Body();
