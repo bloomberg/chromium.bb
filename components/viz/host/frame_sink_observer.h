@@ -15,7 +15,7 @@ class FrameSinkObserver {
  public:
   // Runs when a CompositorFrame is received for the given SurfaceInfo for the
   // first time.
-  virtual void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) = 0;
+  virtual void OnSurfaceCreated(const SurfaceInfo& surface_info) = 0;
 
  protected:
   ~FrameSinkObserver() {}

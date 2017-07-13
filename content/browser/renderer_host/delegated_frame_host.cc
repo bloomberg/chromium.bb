@@ -465,8 +465,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     if (local_surface_id != local_surface_id_ || !has_frame_) {
       // manager must outlive compositors using it.
       viz::SurfaceId surface_id(frame_sink_id_, local_surface_id);
-      cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
-                                   frame_size);
+      viz::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
+                                    frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_info, manager->surface_manager()->reference_factory());
       client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);

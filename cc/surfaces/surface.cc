@@ -24,7 +24,7 @@ namespace {
 constexpr int kFrameIndexStart = 2;
 }  // namespace
 
-Surface::Surface(const SurfaceInfo& surface_info,
+Surface::Surface(const viz::SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
                  BeginFrameSource* begin_frame_source,

@@ -38,7 +38,7 @@ TEST(SurfaceLayerImplTest, OcclusionWithDeviceScaleFactor) {
   surface_layer_impl->SetDrawsContent(true);
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetPrimarySurfaceInfo(
-      SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
+      viz::SurfaceInfo(surface_id, device_scale_factor, scaled_surface_size));
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -104,7 +104,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetDrawsContent(true);
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   surface_layer_impl->SetPrimarySurfaceInfo(
-      SurfaceInfo(surface_id, 1.f, layer_size));
+      viz::SurfaceInfo(surface_id, 1.f, layer_size));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -166,9 +166,9 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   viz::SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId);
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   surface_layer_impl->SetPrimarySurfaceInfo(
-      SurfaceInfo(surface_id, surface_scale, surface_size));
+      viz::SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetFallbackSurfaceInfo(
-      SurfaceInfo(surface_id2, surface_scale, surface_size));
+      viz::SurfaceInfo(surface_id2, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -208,29 +208,31 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
 }
 
 // This test verifies that two SurfaceDrawQuads are emitted if a
-// SurfaceLayerImpl holds both a primary and fallback SurfaceInfo.
+// SurfaceLayerImpl holds both a primary and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
 
-  // Populate the primary SurfaceInfo.
+  // Populate the primary viz::SurfaceInfo.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
   float surface_scale1 = 1.f;
   gfx::Size surface_size1(300, 300);
-  SurfaceInfo primary_surface_info(surface_id1, surface_scale1, surface_size1);
+  viz::SurfaceInfo primary_surface_info(surface_id1, surface_scale1,
+                                        surface_size1);
 
-  // Populate the fallback SurfaceInfo.
+  // Populate the fallback viz::SurfaceInfo.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
       7, base::UnguessableToken::Create());
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   float surface_scale2 = 2.f;
   gfx::Size surface_size2(400, 400);
-  SurfaceInfo fallback_surface_info(surface_id2, surface_scale2, surface_size2);
-  SurfaceInfo fallback_surface_info2(surface_id2, surface_scale1,
-                                     surface_size2);
+  viz::SurfaceInfo fallback_surface_info(surface_id2, surface_scale2,
+                                         surface_size2);
+  viz::SurfaceInfo fallback_surface_info2(surface_id2, surface_scale1,
+                                          surface_size2);
 
   gfx::Size layer_size(400, 100);
 
@@ -248,29 +250,32 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   {
     AppendQuadsData data;
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The the primary SurfaceInfo will be added to activation_dependencies.
-    EXPECT_THAT(data.activation_dependencies,
-                UnorderedElementsAre(surface_id1));
-  }
-
-  // Update the fallback to an invalid SurfaceInfo. The
-  // |activation_dependencies| should still contain the primary SurfaceInfo.
-  {
-    AppendQuadsData data;
-    surface_layer_impl->SetFallbackSurfaceInfo(SurfaceInfo());
-    surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The primary SurfaceInfo should not be added to
+    // The the primary viz::SurfaceInfo will be added to
     // activation_dependencies.
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
   }
 
-  // Update the fallback SurfaceInfo and re-emit DrawQuads.
+  // Update the fallback to an invalid viz::SurfaceInfo. The
+  // |activation_dependencies| should still contain the primary
+  // viz::SurfaceInfo.
+  {
+    AppendQuadsData data;
+    surface_layer_impl->SetFallbackSurfaceInfo(viz::SurfaceInfo());
+    surface_layer_impl->AppendQuads(render_pass.get(), &data);
+    // The primary viz::SurfaceInfo should not be added to
+    // activation_dependencies.
+    EXPECT_THAT(data.activation_dependencies,
+                UnorderedElementsAre(surface_id1));
+  }
+
+  // Update the fallback viz::SurfaceInfo and re-emit DrawQuads.
   {
     AppendQuadsData data;
     surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info2);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
-    // The the primary SurfaceInfo will be added to activation_dependencies.
+    // The the primary viz::SurfaceInfo will be added to
+    // activation_dependencies.
     EXPECT_THAT(data.activation_dependencies,
                 UnorderedElementsAre(surface_id1));
   }
@@ -324,20 +329,21 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
 
 // This test verifies that one SurfaceDrawQuad is emitted if a
 // SurfaceLayerImpl holds the same surface ID for both the primary
-// and fallback SurfaceInfo.
+// and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest,
      SurfaceLayerImplEmitsOneDrawQuadsIfPrimaryMatchesFallback) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
 
-  // Populate the primary SurfaceInfo.
+  // Populate the primary viz::SurfaceInfo.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId1(
       9, base::UnguessableToken::Create());
   viz::SurfaceId surface_id1(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId1);
   float surface_scale1 = 1.f;
   gfx::Size surface_size1(300, 300);
-  SurfaceInfo primary_surface_info(surface_id1, surface_scale1, surface_size1);
+  viz::SurfaceInfo primary_surface_info(surface_id1, surface_scale1,
+                                        surface_size1);
 
   gfx::Size layer_size(400, 100);
 

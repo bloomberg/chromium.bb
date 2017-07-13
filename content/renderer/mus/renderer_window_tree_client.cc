@@ -228,7 +228,7 @@ void RendererWindowTreeClient::OnWindowCursorChanged(ui::Id window_id,
 
 void RendererWindowTreeClient::OnWindowSurfaceChanged(
     ui::Id window_id,
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   NOTIMPLEMENTED();
 }
 

@@ -3553,11 +3553,11 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     child->SetBounds(gfx::Size(1, 1));
     child->SetDrawsContent(true);
     child->SetPrimarySurfaceInfo(
-        SurfaceInfo(primary_surfaces[i], 1.f /* device_scale_factor */,
-                    gfx::Size(10, 10) /* size_in_pixels */));
+        viz::SurfaceInfo(primary_surfaces[i], 1.f /* device_scale_factor */,
+                         gfx::Size(10, 10) /* size_in_pixels */));
     child->SetFallbackSurfaceInfo(
-        SurfaceInfo(fallback_surfaces[i], 1.f /* device_scale_factor */,
-                    gfx::Size(10, 10) /* size_in_pixels */));
+        viz::SurfaceInfo(fallback_surfaces[i], 1.f /* device_scale_factor */,
+                         gfx::Size(10, 10) /* size_in_pixels */));
     root->test_properties()->AddChild(std::move(child));
   }
 

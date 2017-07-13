@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/ws/compositor_frame_sink_client_binding.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -34,7 +34,7 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   void SetHighContrastMode(bool enabled);
 
   // Updates the WindowManager's SurfaceInfo.
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info);
 
   void OnWindowDamaged();
   void OnWindowSizeChanged(const gfx::Size& pixel_size);
@@ -70,7 +70,7 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
   viz::LocalSurfaceIdAllocator id_allocator_;
   float last_device_scale_factor_ = 0.0f;
 
-  cc::SurfaceInfo window_manager_surface_info_;
+  viz::SurfaceInfo window_manager_surface_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameGenerator);
 };

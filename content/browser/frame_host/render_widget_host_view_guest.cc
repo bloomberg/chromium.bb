@@ -282,7 +282,7 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 }
 
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
-    const cc::SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   if (guest_ && !guest_->is_in_destruction())
     guest_->SetChildFrameSurface(surface_info, sequence);

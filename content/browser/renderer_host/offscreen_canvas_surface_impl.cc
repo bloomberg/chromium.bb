@@ -59,7 +59,7 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
 }
 
 void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   if (surface_info.id().frame_sink_id() != frame_sink_id_)
     return;
 

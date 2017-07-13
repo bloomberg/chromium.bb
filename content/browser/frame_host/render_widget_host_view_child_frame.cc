@@ -484,13 +484,13 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
   manager->RequireSequence(surface_id, sequence);
-  cc::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
-                               current_surface_size_);
+  viz::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
+                                current_surface_size_);
   SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
-    const cc::SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   frame_connector_->SetChildFrameSurface(surface_info, sequence);
 }
@@ -512,7 +512,7 @@ void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
 }
 
 void RenderWidgetHostViewChildFrame::OnSurfaceChanged(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   cc::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
   SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
 }

@@ -1411,7 +1411,7 @@ void WindowTreeClient::OnWindowCursorChanged(Id window_id,
 
 void WindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;

@@ -970,7 +970,7 @@ void WindowTree::ProcessTransientWindowRemoved(
 
 void WindowTree::ProcessWindowSurfaceChanged(
     ServerWindow* window,
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   ClientWindowId client_window_id;
   if (!IsWindowKnown(window, &client_window_id))
     return;

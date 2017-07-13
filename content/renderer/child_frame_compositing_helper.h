@@ -24,7 +24,6 @@ namespace cc {
 struct SurfaceSequence;
 
 class Layer;
-class SurfaceInfo;
 }
 
 namespace blink {
@@ -35,6 +34,10 @@ class WebRemoteFrame;
 
 namespace gfx {
 class Size;
+}
+
+namespace viz {
+class SurfaceInfo;
 }
 
 namespace content {
@@ -51,7 +54,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       RenderFrameProxy* render_frame_proxy);
 
   void OnContainerDestroy();
-  void OnSetSurface(const cc::SurfaceInfo& surface_info,
+  void OnSetSurface(const viz::SurfaceInfo& surface_info,
                     const cc::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();

@@ -279,7 +279,7 @@ class WindowTree : public mojom::WindowTree,
                                      const ServerWindow* transient_window,
                                      bool originated_change);
   void ProcessWindowSurfaceChanged(ServerWindow* window,
-                                   const cc::SurfaceInfo& surface_info);
+                                   const viz::SurfaceInfo& surface_info);
 
   // Sends this event to the client if it matches an active pointer watcher.
   // |target_window| is the target of the event, and may be null or not known

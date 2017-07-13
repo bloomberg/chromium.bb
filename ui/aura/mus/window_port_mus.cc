@@ -321,7 +321,7 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
 }
 
 void WindowPortMus::SetFallbackSurfaceInfo(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   if (!frame_sink_id_.is_valid()) {
     // |primary_surface_info_| shold not be valid, since we didn't know the
     // |frame_sink_id_|.
@@ -565,7 +565,7 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
   if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
-  primary_surface_info_ = cc::SurfaceInfo(
+  primary_surface_info_ = viz::SurfaceInfo(
       viz::SurfaceId(frame_sink_id_, local_surface_id_),
       ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
   UpdateClientSurfaceEmbedder();

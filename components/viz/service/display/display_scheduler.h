@@ -64,7 +64,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public cc::BeginFrameObserverBase,
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // SurfaceObserver implementation.
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const cc::BeginFrameAck& ack) override;

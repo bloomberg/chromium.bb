@@ -12,10 +12,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
-class SurfaceInfo;
-}
-
 namespace gfx {
 class Path;
 class Point;
@@ -25,6 +21,10 @@ class Size;
 
 namespace ui {
 class PaintContext;
+}
+
+namespace viz {
+class SurfaceInfo;
 }
 
 namespace aura {
@@ -98,7 +98,7 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const = 0;
 
-  virtual void OnWindowSurfaceChanged(const cc::SurfaceInfo& surface_info) {}
+  virtual void OnWindowSurfaceChanged(const viz::SurfaceInfo& surface_info) {}
 
  protected:
   ~WindowDelegate() override {}

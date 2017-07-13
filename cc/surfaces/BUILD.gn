@@ -6,7 +6,6 @@ import("//cc/cc.gni")
 
 cc_source_set("surface_id") {
   sources = [
-    "surface_info.h",
     "surface_reference.cc",
     "surface_reference.h",
     "surface_reference_factory.h",

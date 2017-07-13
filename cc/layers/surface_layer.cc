@@ -63,13 +63,14 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
-void SurfaceLayer::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
+void SurfaceLayer::SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info) {
   primary_surface_info_ = surface_info;
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }
 
-void SurfaceLayer::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
+void SurfaceLayer::SetFallbackSurfaceInfo(
+    const viz::SurfaceInfo& surface_info) {
   RemoveReference(std::move(fallback_reference_returner_));
   if (layer_tree_host())
     layer_tree_host()->RemoveSurfaceLayerId(fallback_surface_info_.id());

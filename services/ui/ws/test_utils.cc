@@ -439,7 +439,7 @@ void TestWindowTreeClient::OnWindowCursorChanged(uint32_t window_id,
 
 void TestWindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
-    const cc::SurfaceInfo& surface_info) {}
+    const viz::SurfaceInfo& surface_info) {}
 
 void TestWindowTreeClient::OnDragDropStart(
     const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {}

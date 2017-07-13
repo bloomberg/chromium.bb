@@ -358,7 +358,7 @@ class WindowServer : public ServerWindowDelegate,
   void OnGpuServiceInitialized() override;
 
   // cc::mojom::FrameSinkManagerClient:
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
 
   // UserIdTrackerObserver:

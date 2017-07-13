@@ -303,15 +303,15 @@ class COMPOSITOR_EXPORT Layer
 
   // Begins showing content from a surface with a particular ID.
   void SetShowPrimarySurface(
-      const cc::SurfaceInfo& surface_info,
+      const viz::SurfaceInfo& surface_info,
       scoped_refptr<cc::SurfaceReferenceFactory> surface_ref);
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.
-  void SetFallbackSurface(const cc::SurfaceInfo& surface_info);
+  void SetFallbackSurface(const viz::SurfaceInfo& surface_info);
 
   // Returns the fallback SurfaceInfo set by SetFallbackSurface.
-  const cc::SurfaceInfo* GetFallbackSurfaceInfo() const;
+  const viz::SurfaceInfo* GetFallbackSurfaceInfo() const;
 
   bool has_external_content() {
     return texture_layer_.get() || surface_layer_.get();

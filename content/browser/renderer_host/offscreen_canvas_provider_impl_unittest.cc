@@ -49,18 +49,18 @@ class StubOffscreenCanvasSurfaceClient
     return client;
   }
 
-  const cc::SurfaceInfo& GetLastSurfaceInfo() const {
+  const viz::SurfaceInfo& GetLastSurfaceInfo() const {
     return last_surface_info_;
   }
 
  private:
   // blink::mojom::OffscreenCanvasSurfaceClient:
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override {
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override {
     last_surface_info_ = surface_info;
   }
 
   mojo::Binding<blink::mojom::OffscreenCanvasSurfaceClient> binding_;
-  cc::SurfaceInfo last_surface_info_;
+  viz::SurfaceInfo last_surface_info_;
 
   DISALLOW_COPY_AND_ASSIGN(StubOffscreenCanvasSurfaceClient);
 };

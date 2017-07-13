@@ -11,8 +11,8 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_reference.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 
@@ -61,7 +61,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(cc::Surface* surface) {
     seen_first_frame_activation_ = true;
 
     gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
-    surface_manager_->SurfaceCreated(cc::SurfaceInfo(
+    surface_manager_->SurfaceCreated(SurfaceInfo(
         surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
   }
   // Fire cc::SurfaceCreated first so that a temporary reference is added before
@@ -180,10 +180,10 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     SurfaceId surface_id(frame_sink_id_, local_surface_id);
     gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
     float device_scale_factor = frame.metadata.device_scale_factor;
-    cc::SurfaceInfo surface_info(surface_id, device_scale_factor, frame_size);
+    SurfaceInfo surface_info(surface_id, device_scale_factor, frame_size);
 
     if (!surface_info.is_valid()) {
-      TRACE_EVENT_INSTANT0("cc", "Invalid cc::SurfaceInfo",
+      TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
                            TRACE_EVENT_SCOPE_THREAD);
       EvictCurrentSurface();
       std::vector<cc::ReturnedResource> resources =
@@ -347,7 +347,7 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 }
 
 cc::Surface* CompositorFrameSinkSupport::CreateSurface(
-    const cc::SurfaceInfo& surface_info) {
+    const SurfaceInfo& surface_info) {
   seen_first_frame_activation_ = false;
   return surface_manager_->CreateSurface(
       weak_factory_.GetWeakPtr(), surface_info,

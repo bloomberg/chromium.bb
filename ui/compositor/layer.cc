@@ -686,7 +686,7 @@ bool Layer::TextureFlipped() const {
 }
 
 void Layer::SetShowPrimarySurface(
-    const cc::SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     scoped_refptr<cc::SurfaceReferenceFactory> ref_factory) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
@@ -707,7 +707,7 @@ void Layer::SetShowPrimarySurface(
     mirror->dest()->SetShowPrimarySurface(surface_info, ref_factory);
 }
 
-void Layer::SetFallbackSurface(const cc::SurfaceInfo& surface_info) {
+void Layer::SetFallbackSurface(const viz::SurfaceInfo& surface_info) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
   DCHECK(surface_layer_);
 
@@ -718,7 +718,7 @@ void Layer::SetFallbackSurface(const cc::SurfaceInfo& surface_info) {
     mirror->dest()->SetFallbackSurface(surface_info);
 }
 
-const cc::SurfaceInfo* Layer::GetFallbackSurfaceInfo() const {
+const viz::SurfaceInfo* Layer::GetFallbackSurfaceInfo() const {
   if (surface_layer_)
     return &surface_layer_->fallback_surface_info();
   return nullptr;

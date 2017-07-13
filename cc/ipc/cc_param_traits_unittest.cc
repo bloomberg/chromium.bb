@@ -646,14 +646,14 @@ TEST_F(CCParamTraitsTest, SurfaceInfo) {
       viz::LocalSurfaceId(3, base::UnguessableToken::Create()));
   constexpr float kArbitraryDeviceScaleFactor = 0.9f;
   const gfx::Size kArbitrarySize(65, 321);
-  const cc::SurfaceInfo surface_info_in(
+  const viz::SurfaceInfo surface_info_in(
       kArbitrarySurfaceId, kArbitraryDeviceScaleFactor, kArbitrarySize);
-  IPC::ParamTraits<cc::SurfaceInfo>::Write(&msg, surface_info_in);
+  IPC::ParamTraits<viz::SurfaceInfo>::Write(&msg, surface_info_in);
 
-  cc::SurfaceInfo surface_info_out;
+  viz::SurfaceInfo surface_info_out;
   base::PickleIterator iter(msg);
   EXPECT_TRUE(
-      IPC::ParamTraits<cc::SurfaceInfo>::Read(&msg, &iter, &surface_info_out));
+      IPC::ParamTraits<viz::SurfaceInfo>::Read(&msg, &iter, &surface_info_out));
 
   ASSERT_EQ(surface_info_in, surface_info_out);
 }

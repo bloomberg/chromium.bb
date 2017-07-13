@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/resources/returned_resource.h"
-#include "cc/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ui/android/ui_android_export.h"
@@ -98,7 +98,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   cc::ExternalBeginFrameSource begin_frame_source_;
 
-  cc::SurfaceInfo surface_info_;
+  viz::SurfaceInfo surface_info_;
   bool has_transparent_background_ = false;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;

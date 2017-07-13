@@ -80,7 +80,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void DestroyCompositorFrameSink(FrameSinkId frame_sink_id);
 
   // cc::SurfaceObserver implementation.
-  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const cc::BeginFrameAck& ack) override;
   void OnSurfaceDiscarded(const SurfaceId& surface_id) override;

@@ -122,7 +122,7 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
   ~TestBrowserPluginGuest() override {}
 
-  void ResetTestData() { last_surface_info_ = cc::SurfaceInfo(); }
+  void ResetTestData() { last_surface_info_ = viz::SurfaceInfo(); }
 
   void set_has_attached_since_surface_set(bool has_attached_since_surface_set) {
     BrowserPluginGuest::set_has_attached_since_surface_set_for_test(
@@ -133,12 +133,12 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
     BrowserPluginGuest::set_attached_for_test(attached);
   }
 
-  void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                             const cc::SurfaceSequence& sequence) override {
     last_surface_info_ = surface_info;
   }
 
-  cc::SurfaceInfo last_surface_info_;
+  viz::SurfaceInfo last_surface_info_;
 };
 
 // TODO(wjmaclean): we should restructure RenderWidgetHostViewChildFrameTest to
@@ -274,7 +274,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #endif
   // Surface ID should have been passed to BrowserPluginGuest to
   // be sent to the embedding renderer.
-  EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+  EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
             browser_plugin_guest_->last_surface_info_);
 
   browser_plugin_guest_->ResetTestData();
@@ -297,7 +297,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #endif
   // Surface ID should have been passed to BrowserPluginGuest to
   // be sent to the embedding renderer.
-  EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+  EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
             browser_plugin_guest_->last_surface_info_);
 
   browser_plugin_guest_->set_attached(false);

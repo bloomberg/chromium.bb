@@ -18,14 +18,17 @@ class WebGestureEvent;
 }
 
 namespace cc {
-class SurfaceId;
-class SurfaceInfo;
 struct SurfaceSequence;
 }
 
 namespace IPC {
 class Message;
 }
+
+namespace viz {
+class SurfaceId;
+class SurfaceInfo;
+}  // namespace viz
 
 namespace content {
 class RenderFrameProxyHost;
@@ -85,7 +88,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   void RenderProcessGone();
 
-  virtual void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
+  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                                     const cc::SurfaceSequence& sequence);
 
   gfx::Rect ChildFrameRect();

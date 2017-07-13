@@ -7,9 +7,9 @@
 
 #include "base/containers/flat_set.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_observer.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 namespace cc {
 
@@ -30,7 +30,9 @@ class FakeSurfaceObserver : public SurfaceObserver {
     return last_created_surface_id_;
   }
 
-  const SurfaceInfo& last_surface_info() const { return last_surface_info_; }
+  const viz::SurfaceInfo& last_surface_info() const {
+    return last_surface_info_;
+  }
 
   void Reset();
 
@@ -38,7 +40,7 @@ class FakeSurfaceObserver : public SurfaceObserver {
   // SurfaceObserver implementation:
   bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
   void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) override {}
   void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override {}
   void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
@@ -50,7 +52,7 @@ class FakeSurfaceObserver : public SurfaceObserver {
   base::flat_set<viz::SurfaceId> damaged_surfaces_;
   base::flat_set<viz::SurfaceId> will_draw_surfaces_;
   viz::SurfaceId last_created_surface_id_;
-  SurfaceInfo last_surface_info_;
+  viz::SurfaceInfo last_surface_info_;
 };
 
 }  // namespace cc

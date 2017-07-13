@@ -6,25 +6,26 @@
 #define CC_IPC_SURFACE_INFO_STRUCT_TRAITS_H_
 
 #include "cc/ipc/surface_info.mojom-shared.h"
-#include "cc/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::SurfaceInfoDataView, cc::SurfaceInfo> {
-  static const viz::SurfaceId& surface_id(const cc::SurfaceInfo& surface_info) {
+struct StructTraits<cc::mojom::SurfaceInfoDataView, viz::SurfaceInfo> {
+  static const viz::SurfaceId& surface_id(
+      const viz::SurfaceInfo& surface_info) {
     return surface_info.id();
   }
 
-  static float device_scale_factor(const cc::SurfaceInfo& surface_info) {
+  static float device_scale_factor(const viz::SurfaceInfo& surface_info) {
     return surface_info.device_scale_factor();
   }
 
-  static const gfx::Size& size_in_pixels(const cc::SurfaceInfo& surface_info) {
+  static const gfx::Size& size_in_pixels(const viz::SurfaceInfo& surface_info) {
     return surface_info.size_in_pixels();
   }
 
-  static bool Read(cc::mojom::SurfaceInfoDataView data, cc::SurfaceInfo* out) {
+  static bool Read(cc::mojom::SurfaceInfoDataView data, viz::SurfaceInfo* out) {
     out->device_scale_factor_ = data.device_scale_factor();
     return data.ReadSurfaceId(&out->id_) &&
            data.ReadSizeInPixels(&out->size_in_pixels_) && out->is_valid();

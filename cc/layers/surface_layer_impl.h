@@ -12,8 +12,8 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "cc/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 namespace cc {
 
@@ -25,8 +25,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   }
   ~SurfaceLayerImpl() override;
 
-  void SetPrimarySurfaceInfo(const SurfaceInfo& surface_info);
-  const SurfaceInfo& primary_surface_info() const {
+  void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
+  const viz::SurfaceInfo& primary_surface_info() const {
     return primary_surface_info_;
   }
 
@@ -35,8 +35,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   // compositor will use the fallback if the primary surface is unavailable
   // at the time of surface aggregation. If surface synchronization is not
   // enabled, then a fallback surface will not be specified.
-  void SetFallbackSurfaceInfo(const SurfaceInfo& surface_info);
-  const SurfaceInfo& fallback_surface_info() const {
+  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
+  const viz::SurfaceInfo& fallback_surface_info() const {
     return fallback_surface_info_;
   }
 
@@ -55,7 +55,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   SurfaceDrawQuad* CreateSurfaceDrawQuad(
       RenderPass* render_pass,
       SurfaceDrawQuadType surface_draw_quad_type,
-      const SurfaceInfo& surface_info,
+      const viz::SurfaceInfo& surface_info,
       SharedQuadState** common_shared_quad_state);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
@@ -63,8 +63,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 
-  SurfaceInfo primary_surface_info_;
-  SurfaceInfo fallback_surface_info_;
+  viz::SurfaceInfo primary_surface_info_;
+  viz::SurfaceInfo fallback_surface_info_;
 
   bool stretch_content_to_fill_bounds_ = false;
 

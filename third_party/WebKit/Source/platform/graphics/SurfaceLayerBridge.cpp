@@ -8,9 +8,9 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -103,7 +103,8 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
   GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
-void SurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
+void SurfaceLayerBridge::OnSurfaceCreated(
+    const viz::SurfaceInfo& surface_info) {
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received
     current_surface_id_ = surface_info.id();
