@@ -11,8 +11,6 @@ namespace blink {
 {% set dom_template = '%s::domTemplate' % v8_class if not is_array_buffer_or_view else 'nullptr' %}
 {% set parent_wrapper_type_info = '&V8%s::wrapperTypeInfo' % parent_interface
                                   if parent_interface else 'nullptr' %}
-{% set wrapper_type_prototype = 'kWrapperTypeExceptionPrototype' if is_exception else
-                                'kWrapperTypeObjectPrototype' %}
 {% set active_scriptwrappable_inheritance =
     'kInheritFromActiveScriptWrappable'
     if active_scriptwrappable else
@@ -34,7 +32,7 @@ namespace blink {
     {{prepare_prototype_and_interface_object_func or 'nullptr'}},
     "{{interface_name}}",
     {{parent_wrapper_type_info}},
-    WrapperTypeInfo::{{wrapper_type_prototype}},
+    WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::{{wrapper_class_id}},
     WrapperTypeInfo::{{active_scriptwrappable_inheritance}},
     WrapperTypeInfo::{{lifetime}},

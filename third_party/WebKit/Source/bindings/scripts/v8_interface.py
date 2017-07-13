@@ -243,12 +243,6 @@ def interface_context(interface, interfaces):
     # as in the WebIDL spec?
     is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
 
-    # DOMException is defined in WebIDL and is the only object that resembles
-    # the concept of an "exception interface" (which was removed from the spec
-    # in 2014). |is_exception == true| is mostly used to make the prototype
-    # object inherit from %ErrorPrototype% in V8PerContextData.
-    is_exception = interface.name == 'DOMException'
-
     wrapper_class_id = ('kNodeClassId' if inherits_interface(interface.name, 'Node') else 'kObjectClassId')
 
     # [ActiveScriptWrappable] must be accompanied with [DependentLifetime].
@@ -280,7 +274,6 @@ def interface_context(interface, interfaces):
         'is_array_buffer_or_view': is_array_buffer_or_view,
         'is_check_security': is_check_security,
         'is_event_target': is_event_target,
-        'is_exception': is_exception,
         'is_global': is_global,
         'is_immutable_prototype': is_immutable_prototype,
         'is_node': inherits_interface(interface.name, 'Node'),
