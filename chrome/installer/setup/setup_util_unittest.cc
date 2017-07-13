@@ -26,7 +26,6 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -208,10 +207,7 @@ TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
   std::unique_ptr<ScopedPriorityClass> below_normal =
       ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
   ASSERT_TRUE(below_normal);
-  if (base::win::GetVersion() > base::win::VERSION_SERVER_2003)
-    EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
-  else
-    EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
+  EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
 }
 
 TEST(SetupUtilTest, GetInstallAge) {

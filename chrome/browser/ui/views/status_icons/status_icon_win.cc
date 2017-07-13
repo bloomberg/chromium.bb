@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
@@ -128,17 +127,10 @@ void StatusIconWin::DisplayBalloon(
   wcscpy_s(icon_data.szInfo, contents.c_str());
   icon_data.uTimeout = 0;
 
-  base::win::Version win_version = base::win::GetVersion();
-  if (!icon.isNull() && win_version != base::win::VERSION_PRE_XP) {
+  if (!icon.isNull()) {
     balloon_icon_ = IconUtil::CreateHICONFromSkBitmap(*icon.bitmap());
-    if (win_version >= base::win::VERSION_VISTA) {
-      icon_data.hBalloonIcon = balloon_icon_.get();
-      icon_data.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
-    } else {
-      icon_data.hIcon = balloon_icon_.get();
-      icon_data.uFlags |= NIF_ICON;
-      icon_data.dwInfoFlags = NIIF_USER;
-    }
+    icon_data.hBalloonIcon = balloon_icon_.get();
+    icon_data.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
   }
 
   BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
@@ -162,13 +154,8 @@ void StatusIconWin::UpdatePlatformContextMenu(StatusIconMenuModel* menu) {
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    memset(icon_data, 0, sizeof(NOTIFYICONDATA));
-    icon_data->cbSize = sizeof(NOTIFYICONDATA);
-  } else {
-    memset(icon_data, 0, NOTIFYICONDATA_V3_SIZE);
-    icon_data->cbSize = NOTIFYICONDATA_V3_SIZE;
-  }
+  memset(icon_data, 0, sizeof(NOTIFYICONDATA));
+  icon_data->cbSize = sizeof(NOTIFYICONDATA);
 
   icon_data->hWnd = window_;
   icon_data->uID = icon_id_;

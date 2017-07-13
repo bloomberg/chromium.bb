@@ -23,10 +23,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace {
 
 class TestDialog : public views::DialogDelegateView {
@@ -169,12 +165,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabMoveTest) {
 
 // Tests that the dialog closes when the escape key is pressed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, ClosesOnEscape) {
-#if defined(OS_WIN)
-  // TODO(msw): The widget is not made NULL on XP. http://crbug.com/177482
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#endif
-
   std::unique_ptr<TestDialog> dialog =
       ShowModalDialog(browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_TRUE(dialog->GetWidget()->IsVisible());

@@ -39,7 +39,6 @@
 #include <tchar.h>
 #include <winioctl.h>
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -2028,18 +2027,16 @@ TEST_F(FileUtilTest, FileEnumeratorTest) {
     ReparsePoint reparse_point(dir1, dir2);
     EXPECT_TRUE(reparse_point.IsValid());
 
-    if ((win::GetVersion() >= win::VERSION_VISTA)) {
-      // There can be a delay for the enumeration code to see the change on
-      // the file system so skip this test for XP.
-      // Enumerate the reparse point.
-      FileEnumerator f6(dir1, true, FILES_AND_DIRECTORIES);
-      FindResultCollector c6(&f6);
-      FilePath inner2 = dir1.Append(FPL("inner"));
-      EXPECT_TRUE(c6.HasFile(inner2));
-      EXPECT_TRUE(c6.HasFile(inner2.Append(FPL("innerfile.txt"))));
-      EXPECT_TRUE(c6.HasFile(dir1.Append(FPL("dir2file.txt"))));
-      EXPECT_EQ(3, c6.size());
-    }
+    // There can be a delay for the enumeration code to see the change on
+    // the file system so skip this test for XP.
+    // Enumerate the reparse point.
+    FileEnumerator f6(dir1, true, FILES_AND_DIRECTORIES);
+    FindResultCollector c6(&f6);
+    FilePath inner2 = dir1.Append(FPL("inner"));
+    EXPECT_TRUE(c6.HasFile(inner2));
+    EXPECT_TRUE(c6.HasFile(inner2.Append(FPL("innerfile.txt"))));
+    EXPECT_TRUE(c6.HasFile(dir1.Append(FPL("dir2file.txt"))));
+    EXPECT_EQ(3, c6.size());
 
     // No changes for non recursive operation.
     FileEnumerator f7(temp_dir_.GetPath(), false, FILES_AND_DIRECTORIES);

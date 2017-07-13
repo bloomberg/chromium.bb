@@ -28,7 +28,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/shortcut.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -833,7 +832,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     if (remove_all &&
         ShellUtil::QuickIsChromeRegisteredInHKLM(chrome_exe, suffix) &&
         !::IsUserAnAdmin() &&
-        base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
       base::CommandLine new_cmd(base::CommandLine::NO_PROGRAM);
       new_cmd.AppendArguments(cmd_line, true);

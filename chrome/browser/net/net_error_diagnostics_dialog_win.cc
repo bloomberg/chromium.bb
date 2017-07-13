@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
-#include "base/win/windows_version.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog_win.h"
@@ -80,10 +79,7 @@ class NetErrorDiagnosticsDialog : public ui::BaseShellDialogImpl {
 }  // namespace
 
 bool CanShowNetworkDiagnosticsDialog() {
-  // Not present on XP and Windows 2003.
-  // TODO(mmenke): Remove this logic once Chrome requires Vista or later.
-  return base::win::OSInfo::GetInstance()->version() >=
-         base::win::VERSION_VISTA;
+  return true;
 }
 
 void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,

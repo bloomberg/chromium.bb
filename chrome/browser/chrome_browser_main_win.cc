@@ -349,17 +349,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   base::debug::SetCrashKeyValue(
       crash_keys::kCohortName, base::UTF16ToUTF8(details.update_cohort_name()));
 
-  int rv = ChromeBrowserMainParts::PreCreateThreads();
-
-  // TODO(viettrungluu): why don't we run this earlier?
-  if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
-      base::win::GetVersion() < base::win::VERSION_XP) {
-    chrome::ShowWarningMessageBox(
-        NULL, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP));
-  }
-
-  return rv;
+  return ChromeBrowserMainParts::PreCreateThreads();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
@@ -491,16 +481,9 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
 int ChromeBrowserMainPartsWin::HandleIconsCommands(
     const base::CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
-    base::string16 cp_applet;
-    base::win::Version version = base::win::GetVersion();
-    if (version >= base::win::VERSION_VISTA) {
-      cp_applet.assign(L"Programs and Features");  // Windows Vista and later.
-    } else if (version >= base::win::VERSION_XP) {
-      cp_applet.assign(L"Add/Remove Programs");  // Windows XP.
-    } else {
-      return chrome::RESULT_CODE_UNSUPPORTED_PARAM;  // Not supported
-    }
-
+    // TODO(740976): This is not up-to-date and not localized. Figure out if
+    // the --hide-icons and --show-icons switches are still used.
+    base::string16 cp_applet(L"Programs and Features");
     const base::string16 msg =
         l10n_util::GetStringFUTF16(IDS_HIDE_ICONS_NOT_SUPPORTED, cp_applet);
     const base::string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);

@@ -41,7 +41,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1438,8 +1437,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   }
 
   if (system_install && !IsUserAnAdmin()) {
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
-        !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
+    if (!cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
       base::CommandLine new_cmd(base::CommandLine::NO_PROGRAM);
       new_cmd.AppendArguments(cmd_line, true);
       // Append --run-as-admin flag to let the new instance of setup.exe know

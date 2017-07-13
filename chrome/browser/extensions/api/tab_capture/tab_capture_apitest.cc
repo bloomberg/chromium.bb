@@ -28,10 +28,6 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -70,11 +66,6 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
 
  protected:
   bool IsTooIntensiveForThisPlatform() const {
-#if defined(OS_WIN)
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return true;
-#endif
-
     // The tests are too slow to succeed with software GL on the bots.
     if (UsingSoftwareGL())
       return true;
