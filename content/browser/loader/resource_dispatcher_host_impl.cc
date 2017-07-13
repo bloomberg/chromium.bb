@@ -32,6 +32,8 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -1348,7 +1350,9 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       new_request->set_upload(UploadDataStreamBuilder::Build(
           request_data.request_body.get(), blob_context,
           requester_info->file_system_context(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+              .get()));
     }
 
     allow_download = request_data.allow_download &&
@@ -2145,7 +2149,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     }
     new_request->set_upload(UploadDataStreamBuilder::Build(
         body, blob_context, upload_file_system_context,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+            .get()));
   }
 
   PreviewsState previews_state =
