@@ -15,6 +15,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -120,6 +121,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
         root_window, GetMinimumBoundsHeightForAppList(view)));
   }
+  wm::GetWindowState(view->GetWidget()->GetNativeWindow())
+      ->set_ignored_by_shelf(true);
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
