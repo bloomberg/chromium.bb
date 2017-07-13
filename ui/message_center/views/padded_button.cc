@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/padded_button.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center_style.h"

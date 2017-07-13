@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/notification_control_buttons_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
