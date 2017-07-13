@@ -22,7 +22,7 @@ namespace blink {
 
 namespace {
 
-using Command = DataConsumerHandleTestUtil::Command;
+using DataConsumerCommand = DataConsumerHandleTestUtil::Command;
 using PublicState = BytesConsumer::PublicState;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
@@ -144,10 +144,10 @@ TEST_F(BlobBytesConsumerTest, TwoPhaseRead) {
   BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
       &GetDocument(), blob_data_handle, loader);
   std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kDone));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello, "));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kWait));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "world"));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kDone));
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
   EXPECT_FALSE(loader->IsStarted());
@@ -298,8 +298,8 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkBeforeDidFinishLoadingArrives) {
   TestClient* client = new TestClient();
   consumer->SetClient(client);
   std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
-  src->Add(Command(Command::kData, "hello"));
-  src->Add(Command(Command::kDone));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kDone));
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
   EXPECT_FALSE(loader->IsStarted());
@@ -341,8 +341,8 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkAfterDidFinishLoadingArrives) {
   TestClient* client = new TestClient();
   consumer->SetClient(client);
   std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
-  src->Add(Command(Command::kData, "hello"));
-  src->Add(Command(Command::kDone));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kDone));
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
   EXPECT_FALSE(loader->IsStarted());
@@ -495,10 +495,10 @@ TEST_F(BlobBytesConsumerTest, SyncLoading) {
   BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
       &GetDocument(), blob_data_handle, loader);
   std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
-  src->Add(Command(Command::kData, "hello, "));
-  src->Add(Command(Command::kWait));
-  src->Add(Command(Command::kData, "world"));
-  src->Add(Command(Command::kDone));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello, "));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kWait));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kData, "world"));
+  src->Add(DataConsumerCommand(DataConsumerCommand::kDone));
   loader->SetClient(consumer);
   loader->SetHandle(std::move(src));
   TestClient* client = new TestClient();
