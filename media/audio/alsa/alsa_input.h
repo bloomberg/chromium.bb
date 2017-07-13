@@ -27,7 +27,8 @@ class AudioManagerBase;
 // Provides an input stream for audio capture based on the ALSA PCM interface.
 // This object is not thread safe and all methods should be invoked in the
 // thread that created the object.
-class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
+class MEDIA_EXPORT AlsaPcmInputStream
+    : public AgcAudioStream<AudioInputStream> {
  public:
   // Pass this to the constructor if you want to attempt auto-selection
   // of the audio recording device.
