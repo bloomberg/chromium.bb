@@ -67,7 +67,7 @@ struct SaturateFastAsmOp {
           :
           [src] "r"(src), [shift] "n"(std::is_same<uint32_t, Dst>::value
                                           ? IntegerBitsPlusSign<Dst>::value - 1
-                                          : IntegerBitsPlusSign<Dst>::value));
+                                          : std::numeric_limits<Dst>::digits));
     }
     return static_cast<Dst>(result);
   }
