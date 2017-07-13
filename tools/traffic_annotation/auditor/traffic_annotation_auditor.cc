@@ -386,6 +386,11 @@ bool TrafficAnnotationAuditor::IsWhitelisted(
     if (!strncmp(file_path.c_str(), ignore_path.c_str(), ignore_path.length()))
       return true;
   }
+
+  // If the given filepath did not match the rules with the specified type,
+  // check it with rules of type 'ALL' as well.
+  if (whitelist_type != AuditorException::ExceptionType::ALL)
+    return IsWhitelisted(file_path, AuditorException::ExceptionType::ALL);
   return false;
 }
 
