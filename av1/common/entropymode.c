@@ -688,7 +688,7 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES_ALL] = {
 
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
-    default_wedge_interintra_cdf[BLOCK_SIZES][CDF_SIZE(2)] = {
+    default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
       { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
@@ -712,6 +712,10 @@ static const aom_cdf_prob
       { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
 #endif  // CONFIG_EXT_PARTITION
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
@@ -949,7 +953,7 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
 };
 
 #if CONFIG_NEW_MULTISYMBOL
-static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES][CDF_SIZE(2)] = {
+static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
   { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
@@ -973,6 +977,10 @@ static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES][CDF_SIZE(2)] = {
   { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
   { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
 #endif  // CONFIG_EXT_PARTITION
+  { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
+  { AOM_ICDF(208 * 128), AOM_ICDF(32768), 0 },
 };
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif
