@@ -26,8 +26,10 @@ class DOMHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   Response SetFileInputFiles(
-      DOM::NodeId node_id,
-      std::unique_ptr<protocol::Array<std::string>> files) override;
+      std::unique_ptr<protocol::Array<std::string>> files,
+      Maybe<DOM::NodeId> node_id,
+      Maybe<DOM::BackendNodeId> backend_node_id,
+      Maybe<String> in_object_id) override;
 
  private:
   RenderFrameHostImpl* host_;

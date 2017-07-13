@@ -433,20 +433,8 @@ Response InspectorOverlayAgent::highlightNode(
     Maybe<int> backend_node_id,
     Maybe<String> object_id) {
   Node* node = nullptr;
-  Response response;
-  if (node_id.isJust()) {
-    response = dom_agent_->AssertNode(node_id.fromJust(), node);
-  } else if (backend_node_id.isJust()) {
-    node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
-    response = !node ? Response::Error("No node found for given backend id")
-                     : Response::OK();
-  } else if (object_id.isJust()) {
-    response = dom_agent_->NodeForRemoteObjectId(object_id.fromJust(), node);
-  } else {
-    response = Response::Error(
-        "Either nodeId, backendNodeId or objectId must be specified");
-  }
-
+  Response response =
+      dom_agent_->AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
 

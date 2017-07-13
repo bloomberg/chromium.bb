@@ -13,7 +13,7 @@
                 "domain": "DOM",
                 "include": ["setFileInputFiles"],
                 "include_events": [],
-                "include_types": ["NodeId", "RGBA"]
+                "include_types": ["NodeId", "BackendNodeId", "RGBA"]
             },
             {
                 "domain": "Emulation",
