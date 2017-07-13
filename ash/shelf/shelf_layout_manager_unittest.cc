@@ -9,6 +9,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -1559,6 +1560,24 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
       ->set_autohide_shelf_when_maximized_or_fullscreen(false);
   widget_two->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  wm::GetWindowState(window_two)
+      ->set_autohide_shelf_when_maximized_or_fullscreen(true);
+  window_two->SetProperty(aura::client::kAlwaysOnTopKey, true);
+
+  auto* shelf_window = shelf->GetWindow();
+  aura::Window* container = shelf_window->GetRootWindow()->GetChildById(
+      kShellWindowId_AlwaysOnTopContainer);
+  auto iter = std::find(container->children().begin(),
+                        container->children().end(), window_two);
+  EXPECT_NE(iter, container->children().end());
+
+  widget_two->Maximize();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+
+  wm::WorkspaceWindowState window_state =
+      RootWindowController::ForWindow(shelf_window)->GetWorkspaceWindowState();
+  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, window_state);
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {

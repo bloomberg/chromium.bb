@@ -9,8 +9,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/fullscreen_window_finder.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/backdrop_controller.h"
@@ -61,11 +63,11 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
 
   const gfx::Rect shelf_bounds(Shelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
-  // The default container may contain windows that may overlap the launcher
-  // shelf and affect its transparency.
-  aura::Window* container =
-      viewport_->GetRootWindow()->GetChildById(kShellWindowId_DefaultContainer);
-  for (aura::Window* window : container->children()) {
+  auto mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+
+  for (aura::Window* window : mru_list) {
+    if (window->GetRootWindow() != viewport_->GetRootWindow())
+      continue;
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state->ignored_by_shelf() ||
         (window->layer() && !window->layer()->GetTargetVisibility())) {
