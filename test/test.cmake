@@ -35,6 +35,32 @@ set(AOM_UNIT_TEST_COMMON_SOURCES
     "${AOM_ROOT}/test/util.h"
     "${AOM_ROOT}/test/video_source.h")
 
+if (HAVE_NEON)
+  set(AOM_UNIT_TEST_COMMON_SOURCES
+      ${AOM_UNIT_TEST_COMMON_SOURCES}
+      "${AOM_ROOT}/test/simd_neon_test.cc")
+endif ()
+if (HAVE_SSE2)
+  set(AOM_UNIT_TEST_COMMON_SOURCES
+      ${AOM_UNIT_TEST_COMMON_SOURCES}
+      "${AOM_ROOT}/test/simd_sse2_test.cc")
+endif ()
+if (HAVE_SSSE3)
+  set(AOM_UNIT_TEST_COMMON_SOURCES
+      ${AOM_UNIT_TEST_COMMON_SOURCES}
+      "${AOM_ROOT}/test/simd_ssse3_test.cc")
+endif ()
+if (HAVE_SSE4)
+  set(AOM_UNIT_TEST_COMMON_SOURCES
+      ${AOM_UNIT_TEST_COMMON_SOURCES}
+      "${AOM_ROOT}/test/simd_sse4_test.cc")
+endif ()
+if (HAVE_AVX2)
+  set(AOM_UNIT_TEST_COMMON_SOURCES
+      ${AOM_UNIT_TEST_COMMON_SOURCES}
+      "${AOM_ROOT}/test/simd_avx2_test.cc")
+endif ()
+
 if (NOT BUILD_SHARED_LIBS)
   set(AOM_UNIT_TEST_COMMON_SOURCES
       ${AOM_UNIT_TEST_COMMON_SOURCES}
@@ -142,23 +168,18 @@ if (NOT BUILD_SHARED_LIBS)
 
     set(AOM_UNIT_TEST_COMMON_INTRIN_NEON
         ${AOM_UNIT_TEST_COMMON_INTRIN_NEON}
-        "${AOM_ROOT}/test/simd_cmp_neon.cc"
-        "${AOM_ROOT}/test/simd_neon_test.cc")
+        "${AOM_ROOT}/test/simd_cmp_neon.cc")
     set(AOM_UNIT_TEST_COMMON_INTRIN_SSE2
         ${AOM_UNIT_TEST_COMMON_INTRIN_SSE2}
-        "${AOM_ROOT}/test/simd_sse2_test.cc"
         "${AOM_ROOT}/test/simd_cmp_sse2.cc")
     set(AOM_UNIT_TEST_COMMON_INTRIN_SSSE3
         ${AOM_UNIT_TEST_COMMON_INTRIN_SSSE3}
-        "${AOM_ROOT}/test/simd_ssse3_test.cc"
         "${AOM_ROOT}/test/simd_cmp_ssse3.cc")
     set(AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1
         ${AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1}
-        "${AOM_ROOT}/test/simd_sse4_test.cc"
         "${AOM_ROOT}/test/simd_cmp_sse4.cc")
     set(AOM_UNIT_TEST_COMMON_INTRIN_AVX2
         ${AOM_UNIT_TEST_COMMON_INTRIN_AVX2}
-        "${AOM_ROOT}/test/simd_avx2_test.cc"
         "${AOM_ROOT}/test/simd_cmp_avx2.cc")
   endif ()
 endif ()
