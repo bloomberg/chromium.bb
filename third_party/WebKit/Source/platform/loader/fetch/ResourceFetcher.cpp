@@ -215,6 +215,13 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     }
   } else if (FetchParameters::kLazyLoad == defer_option) {
     priority = kResourceLoadPriorityVeryLow;
+  } else if (resource_request.GetRequestContext() ==
+                 WebURLRequest::kRequestContextBeacon ||
+             resource_request.GetRequestContext() ==
+                 WebURLRequest::kRequestContextPing ||
+             resource_request.GetRequestContext() ==
+                 WebURLRequest::kRequestContextCSPReport) {
+    priority = kResourceLoadPriorityVeryLow;
   }
 
   // A manually set priority acts as a floor. This is used to ensure that
