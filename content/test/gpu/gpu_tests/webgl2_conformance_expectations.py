@@ -196,19 +196,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance2/textures/misc/' +
+    self.Fail('conformance2/textures/misc/' +
         'copy-texture-image-webgl-specific.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance/reading/read-pixels-test.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 

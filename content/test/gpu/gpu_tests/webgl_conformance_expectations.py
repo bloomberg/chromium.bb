@@ -114,8 +114,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Passthrough command decoder
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
-    self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
-        ['passthrough'], bug=1639) # angle bug ID
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance/buffers/buffer-uninitialized.html',
