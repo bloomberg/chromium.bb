@@ -15,7 +15,7 @@
 #include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface_observer.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink_delegate.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"

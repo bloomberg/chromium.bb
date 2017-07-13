@@ -5,7 +5,7 @@
 #ifndef CC_SURFACES_SURFACE_INFO_H_
 #define CC_SURFACES_SURFACE_INFO_H_
 
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace IPC {

@@ -11,7 +11,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/surface_hittest_test_helpers.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"

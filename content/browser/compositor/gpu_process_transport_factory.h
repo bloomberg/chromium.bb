@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "cc/output/renderer_settings.h"
-#include "components/viz/common/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"

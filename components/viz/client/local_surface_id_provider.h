@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_VIZ_CLIENT_LOCAL_SURFACE_ID_PROVIDER_H_
 #define COMPONENTS_VIZ_CLIENT_LOCAL_SURFACE_ID_PROVIDER_H_
 
-#include "components/viz/common/local_surface_id.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {

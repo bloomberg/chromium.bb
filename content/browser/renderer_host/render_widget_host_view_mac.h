@@ -22,7 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"

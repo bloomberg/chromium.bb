@@ -9,8 +9,8 @@
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/surfaces/frame_sink_manager.h"
 #include "cc/surfaces/surface.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 
 namespace viz {

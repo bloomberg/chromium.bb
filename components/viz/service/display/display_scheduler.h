@@ -15,7 +15,7 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_observer.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {

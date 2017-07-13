@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/surface_reference_owner.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

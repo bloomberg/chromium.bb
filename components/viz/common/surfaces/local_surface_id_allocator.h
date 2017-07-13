@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_
-#define COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace viz {
 
@@ -30,4 +30,4 @@ class LocalSurfaceIdAllocator {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_LOCAL_SURFACE_ID_ALLOCATOR_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_LOCAL_SURFACE_ID_ALLOCATOR_H_

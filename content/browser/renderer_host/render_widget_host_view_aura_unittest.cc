@@ -33,7 +33,7 @@
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/browser_thread_impl.h"

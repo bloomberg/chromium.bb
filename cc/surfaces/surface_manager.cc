@@ -17,7 +17,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_info.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 

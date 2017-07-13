@@ -8,7 +8,7 @@
 #include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/surface_reference.mojom-shared.h"
 #include "cc/surfaces/surface_reference.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace mojo {
 

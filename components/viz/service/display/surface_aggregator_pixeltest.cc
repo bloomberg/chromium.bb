@@ -13,7 +13,7 @@
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "testing/gtest/include/gtest/gtest.h"

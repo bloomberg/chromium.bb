@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "cc/surfaces/surface_info.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/common/content_export.h"

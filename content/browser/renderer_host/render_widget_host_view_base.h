@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"

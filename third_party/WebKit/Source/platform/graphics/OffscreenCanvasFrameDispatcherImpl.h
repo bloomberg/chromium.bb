@@ -8,9 +8,9 @@
 #include <memory>
 #include "cc/ipc/compositor_frame_sink.mojom-blink.h"
 #include "cc/output/begin_frame_args.h"
-#include "components/viz/common/local_surface_id_allocator.h"
 #include "components/viz/common/quads/shared_bitmap.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"

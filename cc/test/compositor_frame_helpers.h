@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "cc/resources/transferable_resource.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

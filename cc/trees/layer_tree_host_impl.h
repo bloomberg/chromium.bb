@@ -43,8 +43,8 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/task_runner_provider.h"
-#include "components/viz/common/local_surface_id.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {

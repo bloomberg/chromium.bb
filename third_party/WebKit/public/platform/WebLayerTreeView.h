@@ -35,7 +35,7 @@
 #include "WebImageLayer.h"
 #include "WebSize.h"
 #include "base/callback.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

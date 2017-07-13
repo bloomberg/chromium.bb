@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"

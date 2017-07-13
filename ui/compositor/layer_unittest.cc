@@ -30,7 +30,7 @@
 #include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/test/pixel_test_utils.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor_observer.h"

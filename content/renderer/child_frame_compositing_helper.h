@@ -16,7 +16,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_reference_factory.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 

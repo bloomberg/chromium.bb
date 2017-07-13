@@ -24,7 +24,7 @@
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {

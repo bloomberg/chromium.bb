@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_SURFACE_ID_H_
-#define COMPONENTS_VIZ_COMMON_SURFACE_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_ID_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_ID_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 
 #include "base/format_macros.h"
 #include "base/hash.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
@@ -83,4 +83,4 @@ struct SurfaceIdHash {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_SURFACE_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_ID_H_

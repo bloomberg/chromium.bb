@@ -14,7 +14,7 @@
 #include "cc/test/test_image_factory.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "components/viz/common/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/compositor/compositor.h"

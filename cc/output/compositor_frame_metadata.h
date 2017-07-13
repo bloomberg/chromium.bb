@@ -12,7 +12,7 @@
 #include "cc/cc_export.h"
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"

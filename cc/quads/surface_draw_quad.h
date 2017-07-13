@@ -9,7 +9,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/quads/draw_quad.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

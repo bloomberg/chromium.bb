@@ -24,7 +24,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "content/common/android/sync_compositor_messages.h"

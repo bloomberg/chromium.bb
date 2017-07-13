@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

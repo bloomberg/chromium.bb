@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/surface_id.mojom"
-public_headers = [ "//components/viz/common/surface_id.h" ]
+public_headers = [ "//components/viz/common/surfaces/surface_id.h" ]
 deps = [
   "//components/viz/common",
 ]

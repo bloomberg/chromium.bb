@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 
 namespace cc {
 

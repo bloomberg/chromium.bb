@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/file_chooser_params.h"

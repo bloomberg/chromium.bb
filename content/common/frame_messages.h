@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"

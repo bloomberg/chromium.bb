@@ -9,7 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"

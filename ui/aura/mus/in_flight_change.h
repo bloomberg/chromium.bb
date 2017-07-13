@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor_data.h"
 #include "ui/base/ui_base_types.h"

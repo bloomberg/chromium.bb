@@ -15,7 +15,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
 

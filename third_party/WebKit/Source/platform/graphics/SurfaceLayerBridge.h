@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_reference_factory.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/PlatformExport.h"
 #include "public/platform/WebSurfaceLayerBridge.h"

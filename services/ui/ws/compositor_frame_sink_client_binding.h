@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/ipc/frame_sink_manager.mojom.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ui {

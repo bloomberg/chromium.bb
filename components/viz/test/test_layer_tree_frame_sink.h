@@ -11,7 +11,7 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"

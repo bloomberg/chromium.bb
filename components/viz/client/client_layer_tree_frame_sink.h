@@ -11,8 +11,8 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/viz/common/local_surface_id_allocator.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace viz {

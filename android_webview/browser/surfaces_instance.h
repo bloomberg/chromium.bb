@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/frame_sink_id_allocator.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 
