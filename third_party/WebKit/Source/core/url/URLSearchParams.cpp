@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/URLSearchParams.h"
+#include "core/url/URLSearchParams.h"
 
 #include <algorithm>
 #include <utility>
-#include "core/dom/DOMURL.h"
+#include "core/url/DOMURL.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextEncoding.h"

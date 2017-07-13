@@ -26,9 +26,9 @@
 
 #include "core/CoreExport.h"
 #include "core/HTMLNames.h"
-#include "core/dom/DOMURLUtils.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
+#include "core/url/DOMURLUtils.h"
 #include "platform/LinkHash.h"
 
 namespace blink {

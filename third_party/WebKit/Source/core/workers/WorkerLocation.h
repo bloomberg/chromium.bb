@@ -27,7 +27,7 @@
 #ifndef WorkerLocation_h
 #define WorkerLocation_h
 
-#include "core/dom/DOMURLUtilsReadOnly.h"
+#include "core/url/DOMURLUtilsReadOnly.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

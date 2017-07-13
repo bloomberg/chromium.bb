@@ -28,7 +28,7 @@
 #define DOMURLUtils_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMURLUtilsReadOnly.h"
+#include "core/url/DOMURLUtilsReadOnly.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
