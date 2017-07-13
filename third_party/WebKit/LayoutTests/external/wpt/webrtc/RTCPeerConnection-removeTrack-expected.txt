@@ -1,8 +1,12 @@
 This is a testharness.js-based test.
-FAIL Calling removeTrack when connection is closed should throw InvalidStateError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
-FAIL Calling removeTrack on different connection that is closed should throw InvalidStateError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
-FAIL Calling removeTrack on different connection should throw InvalidAccessError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
-FAIL Calling removeTrack with valid sender should set sender.track to null assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
+FAIL addTransceiver - Calling removeTrack when connection is closed should throw InvalidStateError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
+FAIL addTrack - Calling removeTrack when connection is closed should throw InvalidStateError promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL addTransceiver - Calling removeTrack on different connection that is closed should throw InvalidStateError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
+FAIL addTrack - Calling removeTrack on different connection that is closed should throw InvalidStateError promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL addTransceiver - Calling removeTrack on different connection should throw InvalidAccessError assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
+FAIL addTrack - Calling removeTrack on different connection should throw InvalidAccessError promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL addTransceiver - Calling removeTrack with valid sender should set sender.track to null assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
+FAIL addTrack - Calling removeTrack with valid sender should set sender.track to null promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
 FAIL Calling removeTrack with currentDirection sendrecv should set direction to recvonly assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
 FAIL Calling removeTrack with currentDirection sendonly should set direction to inactive assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
 FAIL Calling removeTrack with currentDirection recvonly should not change direction assert_own_property: Expect pc to have addTransceiver() method expected property "addTransceiver" missing
