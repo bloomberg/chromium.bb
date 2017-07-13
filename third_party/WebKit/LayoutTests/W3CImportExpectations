@@ -638,10 +638,6 @@ external/wpt/css/css-writing-modes-3/text-combine-upright-value-digits4-001.html
 external/wpt/css/css-writing-modes-3/text-combine-upright-value-digits4-002.html [ Skip ]
 external/wpt/css/css-writing-modes-3/text-combine-upright-value-digits4-003.html [ Skip ]
 
-# crbug.com/561421: Update meta refresh parsing to match the new spec
-external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/parsing.html [ Skip ]
-external/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/support [ Skip ]
-
 # Untriaged: Tests don't complete.
 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/008.html [ Skip ]
 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Skip ]
