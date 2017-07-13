@@ -15,13 +15,15 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #import "remoting/ios/app/app_view_controller.h"
+#import "remoting/ios/app/first_launch_view_presenter.h"
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/app/user_status_presenter.h"
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
 
-@interface AppDelegate () {
+@interface AppDelegate ()<FirstLaunchViewControllerDelegate> {
   AppViewController* _appViewController;
+  FirstLaunchViewPresenter* _firstLaunchViewPresenter;
 }
 @end
 
@@ -46,7 +48,7 @@ static NSString* const kFAQsUrl =
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
-  [self launchRemotingViewController];
+  [self launchRootViewController];
   return YES;
 }
 
@@ -69,7 +71,7 @@ static NSString* const kFAQsUrl =
   [(RemotingOAuthAuthentication*)RemotingService.instance.authentication
       authenticateWithAuthorizationCode:authorizationCode];
 
-  [self launchRemotingViewController];
+  [self launchRootViewController];
   return YES;
 }
 #endif  // ifndef NDEBUG
@@ -85,11 +87,6 @@ static NSString* const kFAQsUrl =
   [_appViewController hideMenuAnimated:animated];
 }
 
-- (void)presentSignInFlow {
-  DCHECK(_appViewController != nil);
-  [_appViewController presentSignInFlow];
-}
-
 #pragma mark - Properties
 
 + (AppDelegate*)instance {
@@ -100,13 +97,19 @@ static NSString* const kFAQsUrl =
 
 #pragma mark - Private
 
-- (void)launchRemotingViewController {
+- (void)launchRootViewController {
   RemotingViewController* vc = [[RemotingViewController alloc] init];
   UINavigationController* navController =
       [[UINavigationController alloc] initWithRootViewController:vc];
   navController.navigationBarHidden = true;
   _appViewController =
       [[AppViewController alloc] initWithMainViewController:navController];
+  _firstLaunchViewPresenter =
+      [[FirstLaunchViewPresenter alloc] initWithNavController:navController
+                                       viewControllerDelegate:self];
+  if (![RemotingService.instance.authentication.user isAuthenticated]) {
+    [_firstLaunchViewPresenter presentView];
+  }
   self.window.rootViewController = _appViewController;
   [self.window makeKeyAndVisible];
   [UserStatusPresenter.instance start];
@@ -128,6 +131,13 @@ static NSString* const kFAQsUrl =
 
 - (void)presentFeedbackFlowWithContext:(NSString*)context {
   [HelpAndFeedback.instance presentFeedbackFlowWithContext:context];
+}
+
+#pragma mark - FirstLaunchViewPresenterDelegate
+
+- (void)presentSignInFlow {
+  DCHECK(_appViewController);
+  [_appViewController presentSignInFlow];
 }
 
 #pragma mark - Private

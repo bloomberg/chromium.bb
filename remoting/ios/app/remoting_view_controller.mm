@@ -24,7 +24,6 @@
 #import "remoting/ios/app/remoting_menu_view_controller.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/client_session_details.h"
-#import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 
 #include "base/strings/sys_string_conversions.h"
@@ -138,18 +137,14 @@ static CGFloat kHostInset = 5.f;
          selector:@selector(hostListStateDidChangeNotification:)
              name:kHostListStateDidChange
            object:nil];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(userDidUpdateNotification:)
-             name:kUserDidUpdate
-           object:nil];
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  if (!_remotingService.authentication.user.isAuthenticated) {
-    [AppDelegate.instance presentSignInFlow];
-  }
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  // Just in case the view controller misses the host list state event before
+  // the listener is registered.
+  [self refreshContent];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -160,12 +155,6 @@ static CGFloat kHostInset = 5.f;
 
 - (void)hostListStateDidChangeNotification:(NSNotification*)notification {
   [self refreshContent];
-}
-
-- (void)userDidUpdateNotification:(NSNotification*)notification {
-  if (!_remotingService.authentication.user.isAuthenticated) {
-    [AppDelegate.instance presentSignInFlow];
-  }
 }
 
 #pragma mark - HostCollectionViewControllerDelegate
