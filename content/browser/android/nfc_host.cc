@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_unique_id;
+base::AtomicSequenceNumber g_unique_id;
 
 }  // namespace
 

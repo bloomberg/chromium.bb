@@ -69,7 +69,7 @@ int MakeRequestID() {
   // NOTE: The resource_dispatcher_host also needs probably unique
   // request_ids, so they count down from -2 (-1 is a special we're
   // screwed value), while the renderer process counts up.
-  static base::StaticAtomicSequenceNumber sequence;
+  static base::AtomicSequenceNumber sequence;
   return sequence.GetNext();  // We start at zero.
 }
 

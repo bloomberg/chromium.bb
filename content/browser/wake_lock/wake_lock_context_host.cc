@@ -16,7 +16,7 @@ namespace content {
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_unique_id;
+base::AtomicSequenceNumber g_unique_id;
 
 base::LazyInstance<std::map<int, WakeLockContextHost*>>::Leaky
     g_id_to_context_host = LAZY_INSTANCE_INITIALIZER;

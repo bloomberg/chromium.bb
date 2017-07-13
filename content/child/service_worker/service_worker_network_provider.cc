@@ -27,7 +27,7 @@ namespace {
 
 // Must be unique in the child process.
 int GetNextProviderId() {
-  static base::StaticAtomicSequenceNumber sequence;
+  static base::AtomicSequenceNumber sequence;
   return sequence.GetNext();  // We start at zero.
 }
 
