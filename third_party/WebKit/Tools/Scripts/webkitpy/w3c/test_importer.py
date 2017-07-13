@@ -347,6 +347,8 @@ class TestImporter(object):
             '--gerrit',
             '-m',
             description,
+            '--tbrs',
+            'qyearsley@chromium.org',
         ] + self._cc_part(directory_owners))
 
     def _upload_patchset(self, message):
@@ -388,7 +390,6 @@ class TestImporter(object):
 
         if directory_owners:
             description += self._format_directory_owners(directory_owners) + '\n\n'
-        description += 'TBR: qyearsley@chromium.org\n'
 
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')

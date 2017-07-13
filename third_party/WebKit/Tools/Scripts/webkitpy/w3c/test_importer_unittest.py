@@ -199,7 +199,6 @@ class TestImporterTest(LoggingTestCase):
             'lines to TestExpectations rather than reverting. See:\n'
             'https://chromium.googlesource.com'
             '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
-            'TBR: qyearsley@chromium.org\n'
             'No-Export: true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
@@ -222,7 +221,6 @@ class TestImporterTest(LoggingTestCase):
         importer = TestImporter(host)
         description = importer._cl_description(directory_owners={})
         self.assertIn(
-            'TBR: qyearsley@chromium.org\n'
             'No-Export: true',
             description)
 
