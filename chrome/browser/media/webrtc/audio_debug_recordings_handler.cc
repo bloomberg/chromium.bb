@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +37,17 @@ base::FilePath GetAudioDebugRecordingsPrefixPath(
                                base::Int64ToString(audio_debug_recordings_id));
 }
 
+base::FilePath GetLogDirectoryAndEnsureExists(Profile* profile) {
+  base::FilePath log_dir_path =
+      WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile->GetPath());
+  base::File::Error error;
+  if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
+    DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
+    return base::FilePath();
+  }
+  return log_dir_path;
+}
+
 }  // namespace
 
 AudioDebugRecordingsHandler::AudioDebugRecordingsHandler(
@@ -59,10 +71,9 @@ void AudioDebugRecordingsHandler::StartAudioDebugRecordings(
     const RecordingErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AudioDebugRecordingsHandler::GetLogDirectoryAndEnsureExists,
-                 this),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&GetLogDirectoryAndEnsureExists, profile_),
       base::Bind(&AudioDebugRecordingsHandler::DoStartAudioDebugRecordings,
                  this, host, delay, callback, error_callback));
 }
@@ -73,25 +84,12 @@ void AudioDebugRecordingsHandler::StopAudioDebugRecordings(
     const RecordingErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const bool is_manual_stop = true;
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AudioDebugRecordingsHandler::GetLogDirectoryAndEnsureExists,
-                 this),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&GetLogDirectoryAndEnsureExists, profile_),
       base::Bind(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings, this,
                  host, is_manual_stop, current_audio_debug_recordings_id_,
                  callback, error_callback));
-}
-
-base::FilePath AudioDebugRecordingsHandler::GetLogDirectoryAndEnsureExists() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::FilePath log_dir_path =
-      WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath());
-  base::File::Error error;
-  if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
-    DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
-    return base::FilePath();
-  }
-  return log_dir_path;
 }
 
 void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
