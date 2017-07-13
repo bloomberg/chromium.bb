@@ -97,7 +97,7 @@ class CORE_EXPORT EventHandler final
 
   void StopAutoscroll();
 
-  void DispatchFakeMouseMoveEventSoon();
+  void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
   void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
   HitTestResult HitTestResultAtPoint(
@@ -125,6 +125,10 @@ class CORE_EXPORT EventHandler final
   // Return whether a mouse cursor update is currently pending.  Used for
   // testing.
   bool CursorUpdatePending();
+
+  // Return whether sending a fake mouse move is currently pending.  Used for
+  // testing.
+  bool FakeMouseMovePending() const;
 
   void SetResizingFrameSet(HTMLFrameSetElement*);
 

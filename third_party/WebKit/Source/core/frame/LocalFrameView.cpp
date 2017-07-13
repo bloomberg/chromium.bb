@@ -2571,7 +2571,15 @@ void LocalFrameView::PerformPostLayoutTasks() {
   // if there are no RemoteFrame ancestors in the frame tree. Use of
   // localFrameRoot() is discouraged but will change when cursor update
   // scheduling is moved from EventHandler to PageEventHandler.
-  GetFrame().LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
+
+  // Fire a fake a mouse move event to update hover state and mouse cursor, and
+  // send the right mouse out/over events.
+  if (RuntimeEnabledFeatures::UpdateHoverPostLayoutEnabled()) {
+    frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon(
+        MouseEventManager::FakeMouseMoveReason::kPerFrame);
+  } else {
+    GetFrame().LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
+  }
 
   UpdateGeometries();
 
@@ -4084,7 +4092,8 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   Document* document = frame_->GetDocument();
   document->EnqueueScrollEventForNode(document);
 
-  frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon();
+  frame_->GetEventHandler().DispatchFakeMouseMoveEventSoon(
+      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
   if (scroll_type == kUserScroll || scroll_type == kCompositorScroll) {
     Page* page = GetFrame().GetPage();
     if (page)

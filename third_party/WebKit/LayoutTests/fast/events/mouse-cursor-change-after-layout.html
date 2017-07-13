@@ -59,10 +59,10 @@
         shouldBeEqualToString('window.internals.getCurrentCursorInfo()', 'type=IBeam hotSpot=0,0');
         debug('Adding overlay element');
         addOverlay();
-        expectCursorUpdate('type=Wait hotSpot=0,0', function() {
+        expectSendFakeMouseMove('type=Wait hotSpot=0,0', function() {
             debug('Moving overlay element');
             overlay.style.top = "100px";
-            expectCursorUpdate('type=IBeam hotSpot=0,0', function() {
+            expectSendFakeMouseMove('type=IBeam hotSpot=0,0', function() {
                 finishJSTest();
             });
         });

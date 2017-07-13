@@ -43,6 +43,8 @@ class CORE_EXPORT MouseEventManager final
   virtual ~MouseEventManager();
   DECLARE_TRACE();
 
+  enum FakeMouseMoveReason { kDuringScroll, kPerFrame };
+
   WebInputEventResult DispatchMouseEvent(EventTarget*,
                                          const AtomicString&,
                                          const WebMouseEvent&,
@@ -87,7 +89,7 @@ class CORE_EXPORT MouseEventManager final
   void FakeMouseMoveEventTimerFired(TimerBase*);
 
   void CancelFakeMouseMoveEvent();
-  void DispatchFakeMouseMoveEventSoon();
+  void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
   void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
   void SetLastKnownMousePosition(const WebMouseEvent&);
@@ -147,6 +149,8 @@ class CORE_EXPORT MouseEventManager final
   void SetClickCount(int);
 
   bool MouseDownMayStartDrag();
+
+  bool FakeMouseMovePending() const;
 
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {

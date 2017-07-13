@@ -2111,8 +2111,10 @@ void Document::UpdateStyleAndLayoutTree() {
   // have been detached (for example, by setting display:none in the :hover
   // style), schedule another mouseMove event to check if any other elements
   // ended up under the mouse pointer due to re-layout.
-  if (HoverElement() && !HoverElement()->GetLayoutObject() && GetFrame())
-    GetFrame()->GetEventHandler().DispatchFakeMouseMoveEventSoon();
+  if (HoverElement() && !HoverElement()->GetLayoutObject() && GetFrame()) {
+    GetFrame()->GetEventHandler().DispatchFakeMouseMoveEventSoon(
+        MouseEventManager::FakeMouseMoveReason::kPerFrame);
+  }
 
   if (focused_element_ && !focused_element_->IsFocusable())
     ClearFocusedElementSoon();
