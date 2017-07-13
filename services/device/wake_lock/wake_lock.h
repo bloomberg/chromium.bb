@@ -11,10 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "device/power_save_blocker/power_save_blocker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
 #include "services/device/wake_lock/wake_lock_context.h"
 #include "ui/gfx/native_widget_types.h"
 

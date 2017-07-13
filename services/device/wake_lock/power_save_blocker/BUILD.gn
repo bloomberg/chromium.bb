@@ -9,20 +9,26 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-component("power_save_blocker") {
+source_set("power_save_blocker") {
+  visibility = [
+    # //remoting runs in a separate process which is outside of the context of
+    # the ServiceManager-based world. Instead of embedding a Service Manager
+    # environment and Device Service in it, we allow the power save blocker to
+    # be visible to //remoting and directly used. See crbug.com/689423
+    "//remoting/host:*",
+    "//remoting/host/win:*",
+    "//services/device/wake_lock:*",
+  ]
+
   sources = [
     "power_save_blocker.h",
     "power_save_blocker_android.cc",
-    "power_save_blocker_android.h",
     "power_save_blocker_chromeos.cc",
-    "power_save_blocker_export.h",
     "power_save_blocker_mac.cc",
     "power_save_blocker_ozone.cc",
     "power_save_blocker_win.cc",
     "power_save_blocker_x11.cc",
   ]
-
-  defines = [ "DEVICE_POWER_SAVE_BLOCKER_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -79,15 +85,22 @@ if (is_android) {
   java_sources_needing_jni = [ "android/java/src/org/chromium/device/power_save_blocker/PowerSaveBlocker.java" ]
 
   generate_jni("jni_headers") {
+    visibility = [ ":power_save_blocker" ]
     sources = java_sources_needing_jni
     jni_package = "device"
   }
 
   android_library("java") {
+    # Conceptually, this should be visible only to //services/device:java.
+    # However, various generated targets also need to see this target as a
+    # result of //services/device:java depending on it.
+    visibility = [
+      "//services:*",
+      "//services/device:*",
+    ]
     java_files = java_sources_needing_jni
     deps = [
       "//base:base_java",
-      "//ui/android:ui_java",
     ]
   }
 }

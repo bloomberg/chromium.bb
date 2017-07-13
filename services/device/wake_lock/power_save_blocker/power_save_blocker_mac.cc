@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
@@ -84,8 +84,8 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
         base::SysUTF8ToCFStringRef(description_));
     IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
                                                   cf_description, &assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionCreate: "
-                                              << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionCreate: " << result;
   }
 }
 
@@ -95,8 +95,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 
   if (assertion_ != kIOPMNullAssertionID) {
     IOReturn result = IOPMAssertionRelease(assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionRelease: "
-                                              << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionRelease: " << result;
   }
 }
 

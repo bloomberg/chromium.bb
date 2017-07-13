@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
-#define DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
+#ifndef SERVICES_DEVICE_WAKE_LOCK_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
+#define SERVICES_DEVICE_WAKE_LOCK_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "device/power_save_blocker/power_save_blocker_export.h"
+#include "build/build_config.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"
@@ -21,7 +21,7 @@ namespace device {
 
 // A RAII-style class to block the system from entering low-power (sleep) mode.
 // This class is thread-safe; it may be constructed and deleted on any thread.
-class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
+class PowerSaveBlocker {
  public:
   enum PowerSaveBlockerType {
     // Prevent the application from being suspended. On some platforms, apps may
@@ -67,8 +67,7 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
   // removed by the platform. Note that |view_android| is guaranteed to be
   // valid only for the lifetime of this call; hence it should not be cached
   // internally.
-  DEVICE_POWER_SAVE_BLOCKER_EXPORT void InitDisplaySleepBlocker(
-      ui::ViewAndroid* view_android);
+  void InitDisplaySleepBlocker(ui::ViewAndroid* view_android);
 #endif
 
  private:
@@ -101,4 +100,4 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
 
 }  // namespace device
 
-#endif  // DEVICE_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_
+#endif  // SERVICES_DEVICE_WAKE_LOCK_POWER_SAVE_BLOCKER_POWER_SAVE_BLOCKER_H_

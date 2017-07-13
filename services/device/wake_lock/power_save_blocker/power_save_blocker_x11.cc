@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
 
 // Xlib #defines Status, but we can't have that for some of our headers.
 #ifdef Status
