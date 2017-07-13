@@ -558,13 +558,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
                     /**
                      * Starts Safe Browsing initialization. This should only be called once.
-                     * @param context is the activity context the WebView will be used in.
+                     * @param context is the application context the WebView will be used in.
                      * @param callback will be called with the value true if initialization is
                      * successful. The callback will be run on the UI thread.
                      */
                     // TODO(ntfschr): add @Override once next android SDK rolls
                     public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
-                        AwContentsStatics.initSafeBrowsing(context, callback);
+                        AwContentsStatics.initSafeBrowsing(
+                                context.getApplicationContext(), callback);
                     }
 
                     /**
