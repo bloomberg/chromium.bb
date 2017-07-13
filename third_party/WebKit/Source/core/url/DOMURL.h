@@ -28,7 +28,7 @@
 #define DOMURL_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMURLUtils.h"
+#include "core/url/DOMURLUtils.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"

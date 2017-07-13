@@ -24,14 +24,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMURL.h"
+#include "core/url/DOMURL.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/URLSearchParams.h"
 #include "core/html/PublicURLManager.h"
+#include "core/url/URLSearchParams.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/wtf/AutoReset.h"
 

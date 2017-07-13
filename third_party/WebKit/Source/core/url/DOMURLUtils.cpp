@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMURLUtils.h"
+#include "core/url/DOMURLUtils.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "platform/weborigin/KnownPorts.h"
