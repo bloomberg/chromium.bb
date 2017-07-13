@@ -2612,7 +2612,7 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
   }
 }
 
-WebPluginContainerBase* Node::GetWebPluginContainerBase() const {
+WebPluginContainerImpl* Node::GetWebPluginContainer() const {
   if (!isHTMLObjectElement(this) && !isHTMLEmbedElement(this)) {
     return nullptr;
   }
@@ -2621,7 +2621,7 @@ WebPluginContainerBase* Node::GetWebPluginContainerBase() const {
   if (object && object->IsLayoutEmbeddedContent()) {
     PluginView* plugin = ToLayoutEmbeddedContent(object)->Plugin();
     if (plugin) {
-      return plugin->GetWebPluginContainerBase();
+      return plugin->GetWebPluginContainer();
     }
   }
 

@@ -85,7 +85,7 @@ class ResourceRequest;
 class ScriptController;
 class SpellChecker;
 class WebFrameScheduler;
-class WebPluginContainerBase;
+class WebPluginContainerImpl;
 class WebTaskRunner;
 class WebURLLoader;
 
@@ -260,12 +260,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static void RegisterInitializationCallback(FrameInitCallback);
 
   // If the frame hosts a PluginDocument, this method returns the
-  // WebPluginContainerBase that hosts the plugin. If the provided node is a
-  // plugin, then it returns its WebPluginContainerBase. Otherwise, uses the
+  // WebPluginContainerImpl that hosts the plugin. If the provided node is a
+  // plugin, then it returns its WebPluginContainerImpl. Otherwise, uses the
   // currently focused element (if any).
   // TODO(slangley): Refactor this method to extract the logic of looking up
   // focused element or passed node into explicit methods.
-  WebPluginContainerBase* GetWebPluginContainerBase(Node* = nullptr) const;
+  WebPluginContainerImpl* GetWebPluginContainer(Node* = nullptr) const;
 
   // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
   // viewport intersection available that accounts for remote ancestor frames

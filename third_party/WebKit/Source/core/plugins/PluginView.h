@@ -41,7 +41,7 @@ namespace blink {
 class Event;
 class ResourceResponse;
 class WebLayer;
-class WebPluginContainerBase;
+class WebPluginContainerImpl;
 
 // TODO(joelhockey): Remove this class.
 // The only implementation of this class is web/WebPluginContainerImpl.
@@ -72,7 +72,7 @@ class CORE_EXPORT PluginView : public EmbeddedContentView {
 
   virtual void UpdateAllLifecyclePhases() {}
   virtual void InvalidatePaint() {}
-  virtual WebPluginContainerBase* GetWebPluginContainerBase() const {
+  virtual WebPluginContainerImpl* GetWebPluginContainer() const {
     return nullptr;
   }
 };

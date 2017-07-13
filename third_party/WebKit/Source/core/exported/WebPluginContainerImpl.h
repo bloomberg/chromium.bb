@@ -174,7 +174,7 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   void DidFinishLoading() override;
   void DidFailLoading(const ResourceError&) override;
 
-  WebPluginContainerBase* GetWebPluginContainerBase() const override {
+  WebPluginContainerImpl* GetWebPluginContainer() const override {
     return const_cast<WebPluginContainerImpl*>(this);
   }
 
