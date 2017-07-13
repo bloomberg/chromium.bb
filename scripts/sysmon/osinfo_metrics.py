@@ -51,51 +51,17 @@ def _get_osinfo():
   Returns:
     OSInfo instance
   """
-  os_name = platform.system().lower()
-  if 'windows' in os_name:
-    return _get_windows_osinfo()
-  elif 'linux' in os_name:
+  os_name = platform.system()
+  if os_name == 'Linux':
     return _get_linux_osinfo()
-  elif _is_mac():
-    # On mac platform.system() reports 'darwin'.
-    #
-    # TODO(ayatane): I'm not sure how true the above comment is, but I
-    # have no reason to remove it nor change the existing logic right
-    # now.
-    return _get_mac_osinfo()
   else:
     return OSInfo(name='', version='')
-
-
-def _get_windows_osinfo():
-  os_name = 'windows'
-  # release will be something like '7', 'vista', or 'xp'
-  os_version = platform.release()
-  return OSInfo(name=os_name, version=os_version)
 
 
 def _get_linux_osinfo():
   # will return something like ('Ubuntu', '14.04', 'trusty')
   os_name, os_version, _ = platform.dist()
   return OSInfo(name=os_name, version=os_version)
-
-
-def _get_mac_osinfo():
-  return OSInfo(name='mac', version=_get_mac_version())
-
-
-def _is_mac():
-  """Return whether the current system is a Mac."""
-  return bool(_get_mac_version())
-
-
-def _get_mac_version():
-  """Get Mac system version.
-
-  Returns:
-    Version string, which is empty if not a valid Mac system.
-  """
-  return platform.mac_ver()[0]
 
 
 def _get_python_arch():
