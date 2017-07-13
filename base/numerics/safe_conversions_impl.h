@@ -76,32 +76,6 @@ constexpr typename std::make_unsigned<T>::type SafeUnsignedAbs(T value) {
                                 : static_cast<UnsignedT>(value);
 }
 
-// This provides a small optimization that generates more compact code when one
-// of the components in an operation is a compile-time constant.
-template <typename T>
-constexpr bool IsCompileTimeConstant(const T v) {
-#if defined(__clang__) || defined(__GNUC__)
-  return __builtin_constant_p(v);
-#else
-  return false;
-#endif
-}
-
-// Forces a crash, like a CHECK(false). Used for numeric boundary errors.
-// Also used in a constexpr template to trigger a compilation failure on
-// an error condition.
-struct CheckOnFailure {
-  template <typename T>
-  static T HandleFailure() {
-#if defined(__GNUC__) || defined(__clang__)
-    __builtin_trap();
-#else
-    ((void)(*(volatile char*)0 = 0));
-#endif
-    return T();
-  }
-};
-
 enum IntegerRepresentation {
   INTEGER_REPRESENTATION_UNSIGNED,
   INTEGER_REPRESENTATION_SIGNED
@@ -361,13 +335,6 @@ struct DstRangeRelationToSrcRangeImpl<Dst,
             static_cast<Promotion>(value) <=
                 static_cast<Promotion>(DstLimits::max()));
   }
-};
-
-// Simple wrapper for statically checking if a type's range is contained.
-template <typename Dst, typename Src>
-struct IsTypeInRangeForNumericType {
-  static const bool value = StaticDstRangeRelationToSrcRange<Dst, Src>::value ==
-                            NUMERIC_RANGE_CONTAINED;
 };
 
 template <typename Dst,
@@ -636,41 +603,6 @@ struct IsStrictOp {
       !(UnderlyingType<L>::is_checked || UnderlyingType<R>::is_checked) &&
       !(UnderlyingType<L>::is_clamped || UnderlyingType<R>::is_clamped);
 };
-
-// as_signed<> returns the supplied integral value (or integral castable
-// Numeric template) cast as a signed integral of equivalent precision.
-// I.e. it's mostly an alias for: static_cast<std::make_signed<T>::type>(t)
-template <typename Src>
-constexpr typename std::make_signed<
-    typename base::internal::UnderlyingType<Src>::type>::type
-as_signed(const Src value) {
-  static_assert(std::is_integral<decltype(as_signed(value))>::value,
-                "Argument must be a signed or unsigned integer type.");
-  return static_cast<decltype(as_signed(value))>(value);
-}
-
-// as_unsigned<> returns the supplied integral value (or integral castable
-// Numeric template) cast as an unsigned integral of equivalent precision.
-// I.e. it's mostly an alias for: static_cast<std::make_unsigned<T>::type>(t)
-template <typename Src>
-constexpr typename std::make_unsigned<
-    typename base::internal::UnderlyingType<Src>::type>::type
-as_unsigned(const Src value) {
-  static_assert(std::is_integral<decltype(as_unsigned(value))>::value,
-                "Argument must be a signed or unsigned integer type.");
-  return static_cast<decltype(as_unsigned(value))>(value);
-}
-
-// This is a wrapper to generate return the max or min for a supplied type.
-// If the argument is false, the returned value is the maximum. If true the
-// returned value is the minimum.
-template <typename T>
-constexpr T GetMaxOrMin(bool is_min) {
-  // For both signed and unsigned math the bit pattern for minimum is really
-  // just one plus the maximum. However, we have to cast to unsigned to ensure
-  // we get well-defined overflow semantics.
-  return as_unsigned(std::numeric_limits<T>::max()) + is_min;
-}
 
 template <typename L, typename R>
 constexpr bool IsLessImpl(const L lhs,

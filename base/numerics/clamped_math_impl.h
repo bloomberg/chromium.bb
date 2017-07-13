@@ -21,6 +21,28 @@
 namespace base {
 namespace internal {
 
+// This provides a small optimization that generates more compact code when one
+// of the components in an operation is a compile-time constant.
+template <typename T>
+constexpr bool IsCompileTimeConstant(const T v) {
+#if defined(__clang__) || defined(__GNUC__)
+  return __builtin_constant_p(v);
+#else
+  return false;
+#endif
+}
+
+// This is a wrapper to generate return the max or min for a supplied type.
+// If the argument is false, the returned value is the maximum. If true the
+// returned value is the minimum.
+template <typename T>
+constexpr T GetMaxOrMin(bool is_min) {
+  // For both signed and unsigned math the bit pattern for minimum is really
+  // just one plus the maximum. However, we have to cast to unsigned to ensure
+  // we get well-defined overflow semantics.
+  return as_unsigned(std::numeric_limits<T>::max()) + is_min;
+}
+
 template <typename T, typename U, class Enable = void>
 struct ClampedAddOp {};
 
@@ -80,10 +102,6 @@ struct ClampedMulOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static V Do(T x, U y) {
-    // TODO(jschuh) Make this "constexpr if" once we're C++17.
-    if (ClampedMulFastOp<T, U>::is_supported)
-      return ClampedMulFastOp<T, U>::template Do<V>(x, y);
-
     V result;
     return CheckedMulOp<T, U>::Do(x, y, &result)
                ? result
