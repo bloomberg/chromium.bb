@@ -24,20 +24,24 @@
        (__clang_major__ == 3 && __clang_minor__ >= 4))) || \
      (defined(__GNUC__) && __GNUC__ >= 5))
 #include "base/numerics/safe_math_clang_gcc_impl.h"
-
-// These are the placeholder implementations for platforms that don't provide
-// optimized builtin/intrinsic operations.
+#define BASE_HAS_OPTIMIZED_SAFE_MATH (1)
 #else
+#define BASE_HAS_OPTIMIZED_SAFE_MATH (0)
+#endif
+
 namespace base {
 namespace internal {
 
+// These are the non-functioning boilerplate implementations of the optimized
+// safe math routines.
+#if !BASE_HAS_OPTIMIZED_SAFE_MATH
 template <typename T, typename U>
 struct CheckedAddFastOp {
   static const bool is_supported = false;
   template <typename V>
-  static bool Do(T, U, V*) {
-    assert(false);  // Should not be reached.
-    return false;
+  static constexpr bool Do(T, U, V*) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<bool>();
   }
 };
 
@@ -45,9 +49,9 @@ template <typename T, typename U>
 struct CheckedSubFastOp {
   static const bool is_supported = false;
   template <typename V>
-  static bool Do(T, U, V*) {
-    assert(false);  // Should not be reached.
-    return false;
+  static constexpr bool Do(T, U, V*) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<bool>();
   }
 };
 
@@ -55,9 +59,9 @@ template <typename T, typename U>
 struct CheckedMulFastOp {
   static const bool is_supported = false;
   template <typename V>
-  static bool Do(T, U, V*) {
-    assert(false);  // Should not be reached.
-    return false;
+  static constexpr bool Do(T, U, V*) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<bool>();
   }
 };
 
@@ -65,9 +69,9 @@ template <typename T, typename U>
 struct ClampedAddFastOp {
   static const bool is_supported = false;
   template <typename V>
-  static V Do(T, U) {
-    assert(false);  // Should not be reached.
-    return false;
+  static constexpr V Do(T, U) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<V>();
   }
 };
 
@@ -75,18 +79,23 @@ template <typename T, typename U>
 struct ClampedSubFastOp {
   static const bool is_supported = false;
   template <typename V>
-  static V Do(T, U) {
-    assert(false);  // Should not be reached.
-    return false;
+  static constexpr V Do(T, U) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<V>();
   }
 };
 
-}  // namespace internal
-}  // namespace base
-#endif
-
-namespace base {
-namespace internal {
+template <typename T, typename U>
+struct ClampedMulFastOp {
+  static const bool is_supported = false;
+  template <typename V>
+  static constexpr V Do(T, U) {
+    // Force a compile failure if instantiated.
+    return CheckOnFailure::template HandleFailure<V>();
+  }
+};
+#endif  // BASE_HAS_OPTIMIZED_SAFE_MATH
+#undef BASE_HAS_OPTIMIZED_SAFE_MATH
 
 // This is used for UnsignedAbs, where we need to support floating-point
 // template instantiations even though we don't actually support the operations.
