@@ -117,4 +117,5 @@ def _is_apache(proc):
 
 def _is_sysmon(proc):
   """Return whether proc is a sysmon process."""
-  return proc.cmdline()[:3] == ['python', '-m', 'chromite.scripts.sysmon']
+  return (proc.cmdline()[0].endswith('python')
+          and proc.cmdline()[1:3] == ['-m', 'chromite.scripts.sysmon'])
