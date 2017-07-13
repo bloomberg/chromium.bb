@@ -19,7 +19,7 @@ from webkitpy.common.net.git_cl import GitCL, TryJobStatus
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, read_credentials, exportable_commits_over_last_n_commits
+from webkitpy.w3c.common import read_credentials, exportable_commits_over_last_n_commits
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
@@ -48,11 +48,6 @@ class TestImporter(object):
     def main(self, argv=None):
         options = self.parse_args(argv)
 
-        credentials = read_credentials(self.host, options.credentials_json)
-        if self.wpt_github is None:
-            self.wpt_github = WPTGitHub(
-                self.host, credentials.get('GH_USER'), credentials.get('GH_TOKEN'))
-
         self.verbose = options.verbose
         log_level = logging.DEBUG if self.verbose else logging.INFO
         logging.basicConfig(level=log_level, format='%(message)s')
@@ -60,24 +55,21 @@ class TestImporter(object):
         if not self.checkout_is_okay(options.allow_local_commits):
             return 1
 
+        credentials = read_credentials(self.host, options.credentials_json)
+        gh_user = credentials.get('GH_USER')
+        gh_token = credentials.get('GH_TOKEN')
+        self.wpt_github = self.wpt_github or WPTGitHub(self.host, gh_user, gh_token)
+        local_wpt = LocalWPT(self.host, gh_token=gh_token)
         self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 
         _log.debug('Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commit = show_ref_output.split()[0]
 
-        dest_dir_name = WPT_DEST_NAME
-        repo_url = WPT_REPO_URL
-
-        # TODO(qyearsley): Simplify this to use LocalWPT.fetch when csswg-test
-        # is merged into web-platform-tests (crbug.com/706118).
-        temp_repo_path = self.finder.path_from_layout_tests(dest_dir_name)
-        _log.info('Cloning repo: %s', repo_url)
-        _log.info('Local path: %s', temp_repo_path)
-        self.run(['git', 'clone', repo_url, temp_repo_path])
+        local_wpt.fetch()
 
         if not options.ignore_exportable_commits:
-            commits = self.exportable_but_not_exported_commits(temp_repo_path)
+            commits = self.exportable_but_not_exported_commits(local_wpt)
             if commits:
                 _log.info('There were exportable but not-yet-exported commits:')
                 for commit in commits:
@@ -92,12 +84,9 @@ class TestImporter(object):
                     for path in commit.filtered_changed_files():
                         _log.info('  %s', path)
                 _log.info('Aborting import to prevent clobbering commits.')
-                self.clean_up_temp_repo(temp_repo_path)
                 return 0
 
-        import_commit = self.update(dest_dir_name, temp_repo_path, options.revision)
-
-        self.clean_up_temp_repo(temp_repo_path)
+        import_commit = self.update(local_wpt.path, options.revision)
 
         has_changes = self._has_changes()
         if not has_changes:
@@ -148,32 +137,11 @@ class TestImporter(object):
             _log.warning('Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
             return False
 
-        temp_repo_path = self.finder.path_from_layout_tests(WPT_DEST_NAME)
-        if self.fs.exists(temp_repo_path):
-            _log.warning('%s exists; aborting.', temp_repo_path)
-            return False
-
         return True
 
-    def exportable_but_not_exported_commits(self, wpt_path):
-        """Checks for commits that might be overwritten by importing and lists them.
-
-        Args:
-            wpt_path: The path to a local checkout of web-platform-tests.
-
-        Returns:
-            A list of commits in the Chromium repo that are exportable
-            but not yet exported to the web-platform-tests repo.
-        """
-        assert self.host.filesystem.exists(wpt_path)
-        local_wpt = LocalWPT(self.host, path=wpt_path)
-        return exportable_commits_over_last_n_commits(
-            self.host, local_wpt, self.wpt_github)
-
-    def clean_up_temp_repo(self, temp_repo_path):
-        """Removes the temporary copy of the wpt repo that was downloaded."""
-        _log.info('Deleting temp repo directory %s.', temp_repo_path)
-        self.fs.rmtree(temp_repo_path)
+    def exportable_but_not_exported_commits(self, local_wpt):
+        """Returns a list of commits that would be clobbered by importer."""
+        return exportable_commits_over_last_n_commits(self.host, local_wpt, self.wpt_github)
 
     def _generate_manifest(self, dest_path):
         """Generates MANIFEST.json for imported tests.
@@ -193,35 +161,34 @@ class TestImporter(object):
         self.copyfile(manifest_path, manifest_base_path)
         self.run(['git', 'add', manifest_base_path])
 
-    def update(self, dest_dir_name, temp_repo_path, revision):
+    def update(self, local_wpt_path, revision):
         """Updates an imported repository.
 
         Args:
-            dest_dir_name: The destination directory name.
-            temp_repo_path: Path to local checkout of W3C test repo.
-            revision: A W3C test repo commit hash, or None.
+            local_wpt_path: Path to local checkout of wpt.
+            revision: A wpt commit hash to check out, or None.
 
         Returns:
             A string for the commit description "<destination>@<commitish>".
         """
         if revision is not None:
             _log.info('Checking out %s', revision)
-            self.run(['git', 'checkout', revision], cwd=temp_repo_path)
+            self.run(['git', 'checkout', revision], cwd=local_wpt_path)
 
-        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=temp_repo_path)
+        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=local_wpt_path)
 
         _log.info('Noting the revision we are importing.')
-        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
+        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=local_wpt_path)
         master_commitish = show_ref_output.split()[0]
 
-        dest_path = self.finder.path_from_layout_tests('external', dest_dir_name)
+        dest_path = self.finder.path_from_layout_tests('external', 'wpt')
         self._clear_out_dest_path(dest_path)
 
         _log.info('Importing the tests.')
-        test_copier = TestCopier(self.host, temp_repo_path)
+        test_copier = TestCopier(self.host, local_wpt_path)
         test_copier.do_import()
 
-        self.run(['git', 'add', '--all', 'external/%s' % dest_dir_name])
+        self.run(['git', 'add', '--all', 'external/wpt'])
 
         self._delete_orphaned_baselines(dest_path)
 
@@ -237,7 +204,7 @@ class TestImporter(object):
         _log.info('Updating TestExpectations for any removed or renamed tests.')
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
-        return '%s@%s' % (dest_dir_name, master_commitish)
+        return 'wpt@%s' % master_commitish
 
     def _clear_out_dest_path(self, dest_path):
         _log.info('Cleaning out tests from %s.', dest_path)
