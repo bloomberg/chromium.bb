@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_pump_fuchsia.h"
 
+#include <magenta/status.h>
 #include <magenta/syscalls.h>
 
 #include "base/logging.h"
@@ -33,7 +34,8 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::StopWatchingFileDescriptor() {
       static_cast<uint64_t>(reinterpret_cast<uintptr_t>(this));
   int result = mx_port_cancel(port_, handle_, this_as_key);
   DLOG_IF(ERROR, result != MX_OK)
-      << "mx_port_cancel(handle=" << handle_ << ") failed: result=" << result;
+      << "mx_port_cancel(handle=" << handle_
+      << ") failed: " << mx_status_get_string(result);
   handle_ = MX_HANDLE_INVALID;
   return result == MX_OK;
 }
@@ -47,7 +49,7 @@ MessagePumpFuchsia::MessagePumpFuchsia() : keep_running_(true) {
 MessagePumpFuchsia::~MessagePumpFuchsia() {
   mx_status_t status = mx_handle_close(port_);
   if (status != MX_OK) {
-    DLOG(ERROR) << "mx_handle_close failed: " << status;
+    DLOG(ERROR) << "mx_handle_close failed: " << mx_status_get_string(status);
   }
 }
 
@@ -62,9 +64,7 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
   controller->watcher_ = delegate;
   controller->port_ = port_;
 
-  DCHECK(mode == WATCH_READ || mode == WATCH_WRITE || mode == WATCH_READ_WRITE);
-
-  uint32_t events;
+  uint32_t events = 0;
   switch (mode) {
     case WATCH_READ:
       events = MXIO_EVT_READABLE;
@@ -76,7 +76,7 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
       events = MXIO_EVT_READABLE | MXIO_EVT_WRITABLE;
       break;
     default:
-      DLOG(ERROR) << "unexpected mode: " << mode;
+      NOTREACHED() << "unexpected mode: " << mode;
       return false;
   }
 
@@ -107,8 +107,8 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::WaitBegin() {
   mx_status_t status = mx_object_wait_async(handle_, port_, this_as_key,
                                             signals, MX_WAIT_ASYNC_ONCE);
   if (status != MX_OK) {
-    DLOG(ERROR) << "mx_object_wait_async failed: " << status
-                << " (port=" << port_ << ")";
+    DLOG(ERROR) << "mx_object_wait_async failed: "
+                << mx_status_get_string(status) << " (port=" << port_ << ")";
     return false;
   }
   return true;
@@ -155,18 +155,19 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     mx_port_packet_t packet;
     const mx_status_t wait_status = mx_port_wait(port_, deadline, &packet, 0);
     if (wait_status != MX_OK && wait_status != MX_ERR_TIMED_OUT) {
-      NOTREACHED() << "unexpected wait status: " << wait_status;
+      NOTREACHED() << "unexpected wait status: "
+                   << mx_status_get_string(wait_status);
       continue;
     }
 
     if (packet.type == MX_PKT_TYPE_SIGNAL_ONE) {
       // A watched fd caused the wakeup via mx_object_wait_async().
-      DCHECK(packet.status == MX_OK);
+      DCHECK_EQ(MX_OK, packet.status);
       FileDescriptorWatcher* controller =
           reinterpret_cast<FileDescriptorWatcher*>(
               static_cast<uintptr_t>(packet.key));
 
-      DCHECK(packet.signal.trigger & packet.signal.observed);
+      DCHECK_NE(0u, packet.signal.trigger & packet.signal.observed);
 
       uint32_t events = controller->WaitEnd(packet.signal.observed);
 
@@ -189,7 +190,7 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
       }
     } else {
       // Wakeup caused by ScheduleWork().
-      DCHECK(packet.type == MX_PKT_TYPE_USER);
+      DCHECK_EQ(MX_PKT_TYPE_USER, packet.type);
     }
   }
 
