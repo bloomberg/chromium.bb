@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
@@ -25,19 +26,110 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/prefs/active_profile_pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "mash/public/interfaces/launchable.mojom.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 #if defined(USE_OZONE)
-#include "ash/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/runner/common/client_util.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #endif
+
+namespace {
+// Packaged service implementation used to expose miscellaneous application
+// control features. This is a singleton service which runs on the main thread
+// and never stops.
+class ChromeServiceChromeOS : public service_manager::Service,
+                              public mash::mojom::Launchable {
+ public:
+  ChromeServiceChromeOS() {
+#if defined(USE_OZONE)
+    input_device_controller_.AddInterface(&interfaces_);
+#endif
+    interfaces_.AddInterface<mash::mojom::Launchable>(
+        base::Bind(&ChromeServiceChromeOS::Create, base::Unretained(this)));
+  }
+  ~ChromeServiceChromeOS() override {}
+
+  static std::unique_ptr<service_manager::Service> CreateService() {
+    return base::MakeUnique<ChromeServiceChromeOS>();
+  }
+
+ private:
+  void CreateNewWindowImpl(bool is_incognito) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
+                                        : profile);
+  }
+
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
+                       const std::string& name,
+                       mojo::ScopedMessagePipeHandle handle) override {
+    interfaces_.BindInterface(remote_info, name, std::move(handle));
+  }
+
+  // mash::mojom::Launchable:
+  void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
+    bool is_incognito;
+    switch (what) {
+      case mash::mojom::kWindow:
+        is_incognito = false;
+        break;
+      case mash::mojom::kIncognitoWindow:
+        is_incognito = true;
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    bool reuse = how != mash::mojom::LaunchMode::MAKE_NEW;
+    if (reuse) {
+      Profile* profile = ProfileManager::GetActiveUserProfile();
+      Browser* browser = chrome::FindTabbedBrowser(
+          is_incognito ? profile->GetOffTheRecordProfile() : profile, false);
+      if (browser) {
+        browser->window()->Show();
+        return;
+      }
+    }
+
+    CreateNewWindowImpl(is_incognito);
+  }
+
+  void Create(const service_manager::BindSourceInfo& source_info,
+              mash::mojom::LaunchableRequest request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  service_manager::BinderRegistry interfaces_;
+  mojo::BindingSet<mash::mojom::Launchable> bindings_;
+#if defined(USE_OZONE)
+  ui::InputDeviceController input_device_controller_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
+};
+
+}  // namespace
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {}
@@ -154,6 +246,34 @@ std::unique_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
   return std::unique_ptr<policy::BrowserPolicyConnector>(
       new policy::BrowserPolicyConnectorChromeOS());
+}
+
+void BrowserProcessPlatformPart::RegisterInProcessServices(
+    content::ContentBrowserClient::StaticServiceMap* services) {
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&ChromeServiceChromeOS::CreateService);
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->insert(std::make_pair(chromeos::kChromeServiceName, info));
+  }
+
+  if (features::PrefServiceEnabled()) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind([] {
+      return std::unique_ptr<service_manager::Service>(
+          base::MakeUnique<ActiveProfilePrefService>());
+    });
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->insert(std::make_pair(prefs::mojom::kForwarderServiceName, info));
+  }
+
+  if (!ash_util::IsRunningInMash()) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
+                              base::ThreadTaskRunnerHandle::Get());
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->insert(std::make_pair(ash::mojom::kServiceName, info));
+  }
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {

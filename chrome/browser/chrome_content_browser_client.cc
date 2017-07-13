@@ -60,7 +60,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefs/active_profile_pref_service.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -95,10 +94,8 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -209,10 +206,6 @@
 #include "ppapi/features/features.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
@@ -231,7 +224,6 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -250,16 +242,12 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
-#include "mash/public/interfaces/launchable.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
@@ -276,15 +264,12 @@
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
-#endif
-
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
-#include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -510,85 +495,6 @@ enum AppLoadedInTabSource {
 
   APP_LOADED_IN_TAB_SOURCE_MAX
 };
-
-#if defined(OS_CHROMEOS)
-
-// Packaged service implementation used to expose miscellaneous application
-// control features. This is a singleton service which runs on the main thread
-// and never stops.
-class ChromeServiceChromeOS : public service_manager::Service,
-                              public mash::mojom::Launchable {
- public:
-  ChromeServiceChromeOS() {
-#if defined(USE_OZONE)
-    input_device_controller_.AddInterface(&interfaces_);
-#endif
-    interfaces_.AddInterface<mash::mojom::Launchable>(
-        base::Bind(&ChromeServiceChromeOS::Create, base::Unretained(this)));
-  }
-  ~ChromeServiceChromeOS() override {}
-
-  static std::unique_ptr<service_manager::Service> CreateService() {
-    return base::MakeUnique<ChromeServiceChromeOS>();
-  }
-
- private:
-  void CreateNewWindowImpl(bool is_incognito) {
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
-                                        : profile);
-  }
-
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& name,
-                       mojo::ScopedMessagePipeHandle handle) override {
-    interfaces_.BindInterface(remote_info, name, std::move(handle));
-  }
-
-  // mash::mojom::Launchable:
-  void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
-    bool is_incognito;
-    switch (what) {
-      case mash::mojom::kWindow:
-        is_incognito = false;
-        break;
-      case mash::mojom::kIncognitoWindow:
-        is_incognito = true;
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    bool reuse = how != mash::mojom::LaunchMode::MAKE_NEW;
-    if (reuse) {
-      Profile* profile = ProfileManager::GetActiveUserProfile();
-      Browser* browser = chrome::FindTabbedBrowser(
-          is_incognito ? profile->GetOffTheRecordProfile() : profile, false);
-      if (browser) {
-        browser->window()->Show();
-        return;
-      }
-    }
-
-    CreateNewWindowImpl(is_incognito);
-  }
-
-  void Create(const service_manager::BindSourceInfo& source_info,
-              mash::mojom::LaunchableRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
-  service_manager::BinderRegistry interfaces_;
-  mojo::BindingSet<mash::mojom::Launchable> bindings_;
-#if defined(USE_OZONE)
-  ui::InputDeviceController input_device_controller_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceChromeOS);
-};
-
-#endif  // defined(OS_CHROMEOS)
 
 // Returns a copy of the given url with its host set to given host and path set
 // to given path. Other parts of the url will be the same.
@@ -3055,32 +2961,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
   info.factory = base::Bind(&media::CreateMediaService);
   services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
 #endif
-#if defined(OS_CHROMEOS)
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&ChromeServiceChromeOS::CreateService);
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(chromeos::kChromeServiceName, info));
-  }
-
-  if (features::PrefServiceEnabled()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind([] {
-      return std::unique_ptr<service_manager::Service>(
-          base::MakeUnique<ActiveProfilePrefService>());
-    });
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(prefs::mojom::kForwarderServiceName, info));
-  }
-
-  if (!ash_util::IsRunningInMash()) {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::Bind(&ash_util::CreateEmbeddedAshService,
-                              base::ThreadTaskRunnerHandle::Get());
-    info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(ash::mojom::kServiceName, info));
-  }
-#endif  // OS_CHROMEOS
+  g_browser_process->platform_part()->RegisterInProcessServices(services);
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(

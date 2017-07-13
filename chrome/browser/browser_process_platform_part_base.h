@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "content/public/browser/content_browser_client.h"
 
 namespace base {
 class CommandLine;
@@ -40,6 +41,10 @@ class BrowserProcessPlatformPartBase {
 
   virtual std::unique_ptr<policy::BrowserPolicyConnector>
   CreateBrowserPolicyConnector();
+
+  // Called from ChromeContentBrowserClient::RegisterInProcessServices
+  virtual void RegisterInProcessServices(
+      content::ContentBrowserClient::StaticServiceMap* services);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);
