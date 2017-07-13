@@ -267,7 +267,7 @@ void OfflinePageEvaluationBridge::OfflinePageAdded(
     const OfflinePageItem& added_page) {}
 
 void OfflinePageEvaluationBridge::OfflinePageDeleted(
-    const DeletedPageInfo& page_info) {}
+    const OfflinePageModel::DeletedPageInfo& page_info) {}
 
 // Implement RequestCoordinator::Observer
 void OfflinePageEvaluationBridge::OnAdded(const SavePageRequest& request) {
