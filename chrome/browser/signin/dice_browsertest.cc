@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -305,8 +306,14 @@ class DiceBrowserTest : public InProcessBrowserTest,
   int token_revoked_count_;
 };
 
+// This test is flaky on Windows, see https://crbug.com/741652
+#if defined(OS_WIN)
+#define MAYBE_Signin DISABLED_Signin
+#else
+#define MAYBE_Signin Signin
+#endif
 // Checks that signin on Gaia triggers the fetch for a refresh token.
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Signin) {
   // Navigate to Gaia and sign in.
   NavigateToURL(kSigninURL);
 
