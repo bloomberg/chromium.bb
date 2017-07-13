@@ -54,38 +54,6 @@ class WebPresentationClient {
   virtual void TerminatePresentation(const WebURL& presentation_url,
                                      const WebString& presentation_id) = 0;
 
-  // Called when the frame requests to send String message to a presentation
-  // via a presentation connection.
-  // |proxy|: proxy of Blink connection object initiating send String message
-  //          request. Does not pass ownership.
-  virtual void SendString(const WebURL& presentation_url,
-                          const WebString& presentation_id,
-                          const WebString& message,
-                          const WebPresentationConnectionProxy*) = 0;
-
-  // Called when the frame requests to send ArrayBuffer/View data to a
-  // presentation via a presentation connection.
-  // Embedder copies the |data| and the ownership is not transferred.
-  // |proxy|: proxy of Blink connection object initiating send ArrayBuffer
-  //          request. Does not pass ownership.
-  virtual void SendArrayBuffer(const WebURL& presentation_url,
-                               const WebString& presentation_id,
-                               const uint8_t* data,
-                               size_t length,
-                               const WebPresentationConnectionProxy*) = 0;
-
-  // Called when the frame requests to send Blob data to a presentation via a
-  // presentation connection.
-  // TODO(mfoltz): Combine with sendArrayBuffer?
-  // Embedder copies the |data| and the ownership is not transferred.
-  // |proxy|: proxy of blink connection object initiating send Blob data
-  //          request. Does not pass ownership.
-  virtual void SendBlobData(const WebURL& presentation_url,
-                            const WebString& presentation_id,
-                            const uint8_t* data,
-                            size_t length,
-                            const WebPresentationConnectionProxy*) = 0;
-
   // Called when the frame requests to close its connection to the presentation.
   virtual void CloseConnection(const WebURL& presentation_url,
                                const WebString& presentation_id,

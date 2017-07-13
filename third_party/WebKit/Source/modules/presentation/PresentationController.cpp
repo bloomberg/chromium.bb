@@ -116,25 +116,6 @@ void PresentationController::DidCloseConnection(
   connection->DidClose(reason, message);
 }
 
-void PresentationController::DidReceiveConnectionTextMessage(
-    const WebPresentationInfo& presentation_info,
-    const WebString& message) {
-  PresentationConnection* connection = FindConnection(presentation_info);
-  if (!connection)
-    return;
-  connection->DidReceiveTextMessage(message);
-}
-
-void PresentationController::DidReceiveConnectionBinaryMessage(
-    const WebPresentationInfo& presentation_info,
-    const uint8_t* data,
-    size_t length) {
-  PresentationConnection* connection = FindConnection(presentation_info);
-  if (!connection)
-    return;
-  connection->DidReceiveBinaryMessage(data, length);
-}
-
 void PresentationController::SetPresentation(Presentation* presentation) {
   presentation_ = presentation;
 }
