@@ -1400,28 +1400,11 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
 }
 
-// TODO(afergs): Check if ctx can be made constant
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize) {
-  build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0,
-                                    MAX_MB_PLANE - 1);
-#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
-  if (is_interintra_pred(&xd->mi[0]->mbmi)) {
-    BUFFER_SET default_ctx = {
-      { xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
-      { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-        xd->plane[2].dst.stride }
-    };
-    if (!ctx) ctx = &default_ctx;
-    av1_build_interintra_predictors(
-        xd, xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
-        xd->plane[0].dst.stride, xd->plane[1].dst.stride,
-        xd->plane[2].dst.stride, ctx, bsize);
-  }
-#else
-  (void)ctx;
-#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
+  av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
+  av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, ctx, bsize);
 }
 
 void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],

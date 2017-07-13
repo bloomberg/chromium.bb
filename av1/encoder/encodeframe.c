@@ -6020,8 +6020,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     }
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
-    av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, block_size);
-    av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, NULL, block_size);
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, block_size);
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
 #if CONFIG_NCOBMC
