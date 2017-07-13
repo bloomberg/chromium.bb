@@ -23,6 +23,7 @@ class UnitTrieWriter(json5_generator.Writer):
     @template_expander.use_jinja('templates/CSSPrimitiveValueUnitTrie.cpp.tmpl')
     def generate_implementation(self):
         return {
+            'input_files': self._input_files,
             'length_tries': trie_builder.trie_list_by_str_length(self._units)
         }
 

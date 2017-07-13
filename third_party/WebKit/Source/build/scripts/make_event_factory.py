@@ -163,6 +163,7 @@ class EventFactoryWriter(json5_generator.Writer):
         if self.suffix:
             base_header_for_suffix = '\n#include "core/%(namespace)sHeaders.h"\n' % {'namespace': self.namespace}
         return HEADER_TEMPLATE % {
+            'input_files': self._input_files,
             'license': license.license_for_generated_cpp(),
             'namespace': self.namespace,
             'suffix': self.suffix,
@@ -173,6 +174,7 @@ class EventFactoryWriter(json5_generator.Writer):
     @template_expander.use_jinja('templates/EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
+            'input_files': self._input_files,
             'namespace': self.namespace,
             'suffix': self.suffix,
             'events': self.json5_file.name_dictionaries,

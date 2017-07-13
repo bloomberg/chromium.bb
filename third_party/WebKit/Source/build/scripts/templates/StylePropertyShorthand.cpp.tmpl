@@ -19,6 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+
 #include "StylePropertyShorthand.h"
 
 #include "platform/RuntimeEnabledFeatures.h"

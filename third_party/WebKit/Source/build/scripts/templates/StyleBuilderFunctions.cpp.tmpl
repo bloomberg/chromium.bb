@@ -1,4 +1,4 @@
-{% from 'templates/macros.tmpl' import license %}
+{% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
 {#
     This file is for property handlers which use the templating engine to
     reduce (handwritten) code duplication.
@@ -6,6 +6,9 @@
     The `properties' dict can be used to access a property's parameters in
     jinja2 templates (i.e. setter, getter, initial, type_name)
 #}
+
+{{source_files_for_generated_file(template_file, input_files)}}
+
 #include "StyleBuilderFunctions.h"
 
 #include "CSSValueKeywords.h"

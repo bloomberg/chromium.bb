@@ -81,6 +81,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         self._template_context.update({
             'fallback_interface': fallback_interface,
             'fallback_js_interface': fallback_js_interface,
+            'input_files': self._input_files,
         })
 
     @template_expander.use_jinja('templates/ElementFactory.h.tmpl', filters=filters)

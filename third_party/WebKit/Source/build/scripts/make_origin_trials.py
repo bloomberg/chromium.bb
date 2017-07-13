@@ -51,12 +51,14 @@ class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
     def generate_implementation(self):
         return {
             'features': self._features,
+            'input_files': self._input_files,
         }
 
     @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,
+            'input_files': self._input_files,
         }
 
 

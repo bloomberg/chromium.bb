@@ -68,6 +68,7 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         return {
             'features': self._features,
             'feature_sets': self._feature_sets(),
+            'input_files': self._input_files,
             'standard_features': self._standard_features,
         }
 

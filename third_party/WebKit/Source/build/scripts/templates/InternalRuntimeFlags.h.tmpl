@@ -1,5 +1,7 @@
-{% from 'templates/macros.tmpl' import license %}
+{% from 'templates/macros.tmpl' import license, source_files_for_generated_file %}
 {{license()}}
+
+{{source_files_for_generated_file(template_file, input_files)}}
 
 #ifndef InternalRuntimeFlags_h
 #define InternalRuntimeFlags_h

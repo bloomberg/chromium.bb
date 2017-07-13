@@ -29,6 +29,7 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
     @template_expander.use_jinja('templates/CSSPropertyMetadata.cpp.tmpl', filters=filters)
     def generate_css_property_metadata_cpp(self):
         return {
+            'input_files': self._input_files,
             'properties_including_aliases': self._properties_including_aliases,
             'switches': [('is_descriptor', 'IsDescriptor'),
                          ('is_property', 'IsProperty'),
