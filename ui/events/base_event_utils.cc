@@ -28,7 +28,7 @@ const int kSystemKeyModifierMask = EF_ALT_DOWN;
 
 }  // namespace
 
-base::StaticAtomicSequenceNumber g_next_event_id;
+base::AtomicSequenceNumber g_next_event_id;
 
 uint32_t GetNextTouchEventId() {
   // Set the first touch event ID to 1 because we set id to 0 for other types
@@ -68,4 +68,3 @@ base::TimeTicks EventTimeStampFromSeconds(double time_stamp_seconds) {
 }
 
 }  // namespace ui
-
