@@ -123,8 +123,24 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
   return AllocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull);
 }
 
+// This method is used by V8's WebAssembly implementation to reserve a large
+// amount of inaccessible address space. This is used to enforce memory safety
+// in Wasm programs.
+void* ArrayBufferContents::ReserveMemory(size_t size) {
+  void* const hint = nullptr;
+  const size_t align = 64 << 10;  // Wasm page size
+  // TODO(crbug.com/735209): On Windows this commits all the memory, rather than
+  // just reserving it. This is very bad and should be fixed, but we don't use
+  // this feature on Windows at all yet.
+  return base::AllocPages(hint, size, align, base::PageInaccessible);
+}
+
 void ArrayBufferContents::FreeMemory(void* data) {
   PartitionFreeGeneric(Partitions::ArrayBufferPartition(), data);
+}
+
+void ArrayBufferContents::ReleaseReservedMemory(void* data, size_t size) {
+  base::FreePages(data, size);
 }
 
 ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
@@ -145,7 +161,6 @@ ArrayBufferContents::DataHolder::~DataHolder() {
     AdjustAmountOfExternalAllocatedMemory(
         -static_cast<int64_t>(size_in_bytes_));
 
-  data_.reset();
   size_in_bytes_ = 0;
   is_shared_ = kNotShared;
 }
@@ -191,7 +206,7 @@ void ArrayBufferContents::DataHolder::CopyMemoryFrom(const DataHolder& source) {
     return;
 
   size_in_bytes_ = source.SizeInBytes();
-  memcpy(data_.get(), source.Data(), source.SizeInBytes());
+  memcpy(data_.Data(), source.Data(), source.SizeInBytes());
 
   AdjustAmountOfExternalAllocatedMemory(size_in_bytes_);
 }

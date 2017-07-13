@@ -409,6 +409,38 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   void Free(void* data, size_t size) override {
     WTF::ArrayBufferContents::FreeMemory(data);
   }
+
+  void* Reserve(size_t length) override {
+    return WTF::ArrayBufferContents::ReserveMemory(length);
+  }
+
+  void Free(void* data, size_t length, AllocationMode mode) override {
+    switch (mode) {
+      case AllocationMode::kNormal:
+        Free(data, length);
+        return;
+      case AllocationMode::kReservation:
+        WTF::ArrayBufferContents::ReleaseReservedMemory(data, length);
+        return;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void SetProtection(void* data,
+                     size_t length,
+                     Protection protection) override {
+    switch (protection) {
+      case Protection::kNoAccess:
+        WTF::SetSystemPagesInaccessible(data, length);
+        return;
+      case Protection::kReadWrite:
+        (void)WTF::SetSystemPagesAccessible(data, length);
+        return;
+      default:
+        NOTREACHED();
+    }
+  }
 };
 
 }  // namespace

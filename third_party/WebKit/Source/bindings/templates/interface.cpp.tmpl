@@ -890,7 +890,23 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
   // Transfer the ownership of the allocated memory to an {{interface_name}} without
   // copying.
   v8::{{interface_name}}::Contents v8Contents = v8buffer->Externalize();
-  WTF::ArrayBufferContents::DataHandle data(v8Contents.Data(), WTF::ArrayBufferContents::FreeMemory);
+  WTF::ArrayBufferContents::AllocationKind kind = WTF::ArrayBufferContents::AllocationKind::kNormal;
+  switch (v8Contents.AllocationMode()) {
+    case v8::ArrayBuffer::Allocator::AllocationMode::kNormal:
+      kind = WTF::ArrayBufferContents::AllocationKind::kNormal;
+      break;
+    case v8::ArrayBuffer::Allocator::AllocationMode::kReservation:
+      kind = WTF::ArrayBufferContents::AllocationKind::kReservation;
+      break;
+    default:
+      NOTREACHED();
+  };
+  WTF::ArrayBufferContents::DataHandle data(v8Contents.AllocationBase(),
+                                            v8Contents.AllocationLength(),
+                                            v8Contents.Data(),
+                                            v8Contents.ByteLength(),
+                                            kind,
+                                            WTF::ArrayBufferContents::FreeMemory);
   WTF::ArrayBufferContents contents(std::move(data), v8Contents.ByteLength(), WTF::ArrayBufferContents::k{% if interface_name == 'ArrayBuffer' %}Not{% endif %}Shared);
   {{cpp_class}}* buffer = {{cpp_class}}::Create(contents);
   v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
