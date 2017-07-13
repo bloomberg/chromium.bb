@@ -190,15 +190,18 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
   bool w3c_capability = false;
-  if (params.GetDictionary("capabilities.alwaysMatch", &desired_caps)
-      && desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)
-      && w3c_capability) {
+  if (params.GetDictionary("capabilities.alwaysMatch", &desired_caps) &&
+      (desired_caps->GetBoolean("goog:chromeOptions.w3c", &w3c_capability) ||
+       desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)) &&
+      w3c_capability) {
     // TODO(johnchen): Handle capabilities.firstMatch.
     session->w3c_compliant = true;
   } else if (params.GetDictionary("capabilities.desiredCapabilities",
-                                  &desired_caps)
-             && desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)
-             && w3c_capability) {
+                                  &desired_caps) &&
+             (desired_caps->GetBoolean("goog:chromeOptions.w3c",
+                                       &w3c_capability) ||
+              desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)) &&
+             w3c_capability) {
     // TODO(johnchen): Remove when clients stop using this.
     session->w3c_compliant = true;
   } else if (!params.GetDictionary("desiredCapabilities", &desired_caps)) {

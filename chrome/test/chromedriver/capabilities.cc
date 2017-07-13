@@ -646,7 +646,14 @@ bool Capabilities::IsRemoteBrowser() const {
 
 Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   std::map<std::string, Parser> parser_map;
-  parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions);
+  // goog:chromeOptions is the current spec conformance, but chromeOptions is
+  // still supported
+  if (desired_caps.GetDictionary("goog:chromeOptions", nullptr)) {
+    parser_map["goog:chromeOptions"] = base::Bind(&ParseChromeOptions);
+  } else {
+    parser_map["chromeOptions"] = base::Bind(&ParseChromeOptions);
+  }
+
   parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
   parser_map["proxy"] = base::Bind(&ParseProxy);
   parser_map["pageLoadStrategy"] = base::Bind(&ParsePageLoadStrategy);
@@ -654,7 +661,9 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
       base::Bind(&ParseUnexpectedAlertBehaviour);
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
-  if (desired_caps.GetDictionary("chromeOptions.mobileEmulation", nullptr)) {
+  if (desired_caps.GetDictionary("goog:chromeOptions.mobileEmulation",
+                                 nullptr) ||
+      desired_caps.GetDictionary("chromeOptions.mobileEmulation", nullptr)) {
     parser_map["networkConnectionEnabled"] =
         base::Bind(&ParseBoolean, &network_emulation_enabled);
   }
@@ -674,7 +683,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
       WebDriverLog::kPerformanceType);
   if (iter == logging_prefs.end() || iter->second == Log::kOff) {
     const base::DictionaryValue* chrome_options = NULL;
-    if (desired_caps.GetDictionary("chromeOptions", &chrome_options) &&
+    if ((desired_caps.GetDictionary("goog:chromeOptions", &chrome_options) ||
+         desired_caps.GetDictionary("chromeOptions", &chrome_options)) &&
         chrome_options->HasKey("perfLoggingPrefs")) {
       return Status(kUnknownError, "perfLoggingPrefs specified, "
                     "but performance logging was not enabled");
@@ -685,7 +695,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   if (dt_events_logging_iter == logging_prefs.end()
       || dt_events_logging_iter->second == Log::kOff) {
     const base::DictionaryValue* chrome_options = NULL;
-    if (desired_caps.GetDictionary("chromeOptions", &chrome_options) &&
+    if ((desired_caps.GetDictionary("goog:chromeOptions", &chrome_options) ||
+         desired_caps.GetDictionary("chromeOptions", &chrome_options)) &&
         chrome_options->HasKey("devToolsEventsToLog")) {
       return Status(kUnknownError, "devToolsEventsToLog specified, "
                     "but devtools events logging was not enabled");
