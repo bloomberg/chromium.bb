@@ -30,8 +30,9 @@ media::MediaUrlInterceptor* g_media_url_interceptor = nullptr;
 
 }  // namespace
 
-MediaPlayerRenderer::MediaPlayerRenderer(RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host),
+MediaPlayerRenderer::MediaPlayerRenderer(int process_id, int routing_id)
+    : render_process_id_(process_id),
+      routing_id_(routing_id),
       has_error_(false),
       weak_factory_(this) {}
 
@@ -74,6 +75,14 @@ void MediaPlayerRenderer::CreateMediaPlayer(
     const media::MediaUrlParams& url_params,
     const media::PipelineStatusCB& init_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Force the initialization of |media_resource_getter_| first. If it fails,
+  // the RenderFrameHost may have been destroyed already.
+  if (!GetMediaResourceGetter()) {
+    DLOG(ERROR) << "Unable to retreive MediaResourceGetter";
+    init_cb.Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
 
   const std::string user_agent = GetContentClient()->GetUserAgent();
 
@@ -169,14 +178,20 @@ base::TimeDelta MediaPlayerRenderer::GetMediaTime() {
 media::MediaResourceGetter* MediaPlayerRenderer::GetMediaResourceGetter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!media_resource_getter_.get()) {
-    RenderProcessHost* host = render_frame_host_->GetProcess();
+    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+
+    // The RenderFrameHost/RenderProcessHost may have been destroyed already,
+    // as there might be a delay between the frame closing and
+    // MojoRendererService receiving a connection closing error.
+    if (!host)
+      return nullptr;
+
     BrowserContext* context = host->GetBrowserContext();
     StoragePartition* partition = host->GetStoragePartition();
     storage::FileSystemContext* file_system_context =
         partition ? partition->GetFileSystemContext() : nullptr;
-    media_resource_getter_.reset(
-        new MediaResourceGetterImpl(context, file_system_context, host->GetID(),
-                                    render_frame_host_->GetRoutingID()));
+    media_resource_getter_.reset(new MediaResourceGetterImpl(
+        context, file_system_context, render_process_id_, routing_id_));
   }
   return media_resource_getter_.get();
 }

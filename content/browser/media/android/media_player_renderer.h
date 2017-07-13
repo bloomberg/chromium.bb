@@ -42,7 +42,7 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   static void RegisterMediaUrlInterceptor(
       media::MediaUrlInterceptor* media_url_interceptor);
 
-  explicit MediaPlayerRenderer(content::RenderFrameHost* render_frame_host);
+  MediaPlayerRenderer(int process_id, int routing_id);
 
   ~MediaPlayerRenderer() override;
 
@@ -108,7 +108,12 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   // it exists. No-ops otherwise.
   void CancelScopedSurfaceRequest();
 
-  RenderFrameHost* render_frame_host_;
+  // Identifiers to find the RenderFrameHost that created |this|.
+  // NOTE: We store these IDs rather than a RenderFrameHost* because we do not
+  // know when the RenderFrameHost is destroyed.
+  int render_process_id_;
+  int routing_id_;
+
   media::RendererClient* renderer_client_;
 
   std::unique_ptr<media::MediaPlayerBridge> media_player_;
