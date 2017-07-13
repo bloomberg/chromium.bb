@@ -49,6 +49,9 @@ void CreateBundleTargetGenerator::DoRun() {
   if (!FillProductType())
     return;
 
+  if (!FillXcodeTestApplicationName())
+    return;
+
   if (!FillCodeSigningScript())
     return;
 
@@ -131,6 +134,20 @@ bool CreateBundleTargetGenerator::FillProductType() {
     return false;
 
   target_->bundle_data().product_type().assign(value->string_value());
+  return true;
+}
+
+bool CreateBundleTargetGenerator::FillXcodeTestApplicationName() {
+  const Value* value =
+      scope_->GetValue(variables::kXcodeTestApplicationName, true);
+  if (!value)
+    return true;
+
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return false;
+
+  target_->bundle_data().xcode_test_application_name().assign(
+      value->string_value());
   return true;
 }
 

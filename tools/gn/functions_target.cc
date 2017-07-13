@@ -361,7 +361,8 @@ Variables
   bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
   bundle_plugins_dir*, bundle_deps_filter, deps, data_deps, public_deps,
   visibility, product_type, code_signing_args, code_signing_script,
-  code_signing_sources, code_signing_outputs, extra_attributes
+  code_signing_sources, code_signing_outputs, xcode_extra_attributes,
+  xcode_test_application_name
   * = required
 
 Example

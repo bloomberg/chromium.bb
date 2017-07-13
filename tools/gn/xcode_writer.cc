@@ -131,6 +131,8 @@ bool IsXCTestFile(const SourceFile& file) {
                         base::CompareCase::SENSITIVE);
 }
 
+// TODO(crbug.com/741147) Remove this function and switch to use
+// test_application_name once the bug is fixed and GN has rolled past it.
 const Target* FindXCTestApplicationTarget(
     const Target* xctest_module_target,
     const std::vector<const Target*>& targets) {
@@ -151,6 +153,8 @@ const Target* FindXCTestApplicationTarget(
   return nullptr;
 }
 
+// TODO(crbug.com/741147) Remove this function and switch to use
+// test_application_name once the bug is fixed and GN has rolled past it.
 // Given XCTest module targets, find the corresponding application targets and
 // the mappings between them.
 void FindXCTestApplicationTargets(
