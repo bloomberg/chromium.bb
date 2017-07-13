@@ -345,8 +345,7 @@ TEST_F(SurfaceTest, SendsBeginFrameAcks) {
   RunAllPendingInMessageLoop();
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
-  cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number,
-                                 args.sequence_number, true);
+  cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number, true);
   EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
 
   // TODO(eseckler): Add test for DidNotProduceFrame plumbing.

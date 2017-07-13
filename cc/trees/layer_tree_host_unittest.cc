@@ -7760,45 +7760,19 @@ class LayerTreeHostTestContentSourceId : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContentSourceId);
 
-class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
+class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
                                   const BeginFrameArgs& args) override {
-    // First BeginFrame will block activation, second one unblocks.
-    impl->BlockNotifyReadyToActivateForTesting(false);
-
     EXPECT_TRUE(args.IsValid());
     current_begin_frame_args_ = args;
-  }
-
-  void BeginMainFrame(const BeginFrameArgs& args) override {
-    EXPECT_TRUE(args.IsValid());
-    if (!current_begin_main_frame_args_.IsValid())
-      current_begin_main_frame_args_ = args;
-  }
-
-  void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
-    current_begin_main_frame_args_on_impl_ = current_begin_main_frame_args_;
-    // Request another subsequent commit. That way, the first commit's
-    // latest_confirmed_sequence_number should stay at the first BeginFrame's
-    // sequence number.
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void WillCommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    // Defer current commit's activation until second BeginFrame.
-    impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    // We should only draw in second BeginFrame.
-    EXPECT_TRUE(current_begin_main_frame_args_on_impl_.IsValid());
-    EXPECT_LT(current_begin_main_frame_args_on_impl_.sequence_number,
-              current_begin_frame_args_.sequence_number);
     frame_data_ = frame_data;
     return draw_result;
   }
@@ -7809,10 +7783,8 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
       return;
     compositor_frame_submitted_ = true;
 
-    EXPECT_EQ(BeginFrameAck(
-                  current_begin_frame_args_.source_id,
-                  current_begin_frame_args_.sequence_number,
-                  current_begin_main_frame_args_on_impl_.sequence_number, true),
+    EXPECT_EQ(BeginFrameAck(current_begin_frame_args_.source_id,
+                            current_begin_frame_args_.sequence_number, true),
               frame.metadata.begin_frame_ack);
   }
 
@@ -7823,10 +7795,8 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
 
     EXPECT_TRUE(frame_data_);
     EXPECT_TRUE(compositor_frame_submitted_);
-    EXPECT_EQ(BeginFrameAck(
-                  current_begin_frame_args_.source_id,
-                  current_begin_frame_args_.sequence_number,
-                  current_begin_main_frame_args_on_impl_.sequence_number, true),
+    EXPECT_EQ(BeginFrameAck(current_begin_frame_args_.source_id,
+                            current_begin_frame_args_.sequence_number, true),
               frame_data_->begin_frame_ack);
     EndTest();
   }
@@ -7837,12 +7807,10 @@ class LayerTreeHostTestBeginFrameSequenceNumbers : public LayerTreeHostTest {
   bool compositor_frame_submitted_ = false;
   bool layers_drawn_ = false;
   BeginFrameArgs current_begin_frame_args_;
-  BeginFrameArgs current_begin_main_frame_args_;
-  BeginFrameArgs current_begin_main_frame_args_on_impl_;
   LayerTreeHostImpl::FrameData* frame_data_;
 };
 
-MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestBeginFrameSequenceNumbers);
+MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestBeginFrameAcks);
 
 class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
  protected:

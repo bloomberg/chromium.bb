@@ -868,7 +868,7 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
 
   // Check that the support and SurfaceManager forward the BeginFrameAck
   // attached to a CompositorFrame to the SurfaceObserver.
-  cc::BeginFrameAck ack(0, 1, 1, true);
+  cc::BeginFrameAck ack(0, 1, true);
   auto frame = cc::test::MakeCompositorFrame();
   frame.metadata.begin_frame_ack = ack;
   support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
@@ -880,7 +880,7 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
 
   // Check that the support and SurfaceManager forward a DidNotProduceFrame ack
   // to the SurfaceObserver.
-  cc::BeginFrameAck ack2(0, 2, 2, false);
+  cc::BeginFrameAck ack2(0, 2, false);
   support_->DidNotProduceFrame(ack2);
   EXPECT_EQ(ack2, surface_observer_.last_ack());
 

@@ -479,10 +479,8 @@ void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
     const cc::BeginFrameArgs& begin_frame_args) {
   DCHECK(Client());
 
-  // TODO(eseckler): Set correct |latest_confirmed_sequence_number|.
   current_begin_frame_ack_ = cc::BeginFrameAck(
-      begin_frame_args.source_id, begin_frame_args.sequence_number,
-      begin_frame_args.sequence_number, false);
+      begin_frame_args.source_id, begin_frame_args.sequence_number, false);
 
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == cc::BeginFrameArgs::MISSED &&

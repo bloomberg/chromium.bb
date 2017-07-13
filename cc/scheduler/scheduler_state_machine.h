@@ -155,12 +155,6 @@ class CC_EXPORT SchedulerStateMachine {
   // to make progress.
   bool BeginFrameNeeded() const;
 
-  // Indicates that the Scheduler has received a BeginFrame that did not require
-  // a BeginImplFrame, because the Scheduler stopped observing BeginFrames.
-  // Updates the sequence and freshness numbers for the dropped BeginFrame.
-  void OnBeginFrameDroppedNotObserving(uint32_t source_id,
-                                       uint64_t sequence_number);
-
   // Indicates that the system has entered and left a BeginImplFrame callback.
   // The scheduler will not draw more than once in a given BeginImplFrame
   // callback nor send more than one BeginMainFrame message.
@@ -302,14 +296,6 @@ class CC_EXPORT SchedulerStateMachine {
     return previous_pending_tree_was_impl_side_;
   }
 
-  uint32_t begin_frame_source_id() const { return begin_frame_source_id_; }
-  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh() const {
-    return last_begin_frame_sequence_number_active_tree_was_fresh_;
-  }
-  uint64_t last_begin_frame_sequence_number_compositor_frame_was_fresh() const {
-    return last_begin_frame_sequence_number_compositor_frame_was_fresh_;
-  }
-
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameNeededForVideo() const;
@@ -338,10 +324,6 @@ class CC_EXPORT SchedulerStateMachine {
   void WillPerformImplSideInvalidationInternal();
   void DidDrawInternal(DrawResult draw_result);
 
-  void UpdateBeginFrameSequenceNumbersForBeginFrame(uint32_t source_id,
-                                                    uint64_t sequence_number);
-  void UpdateBeginFrameSequenceNumbersForBeginFrameDeadline();
-
   const SchedulerSettings settings_;
 
   LayerTreeFrameSinkState layer_tree_frame_sink_state_ =
@@ -349,21 +331,6 @@ class CC_EXPORT SchedulerStateMachine {
   BeginImplFrameState begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
   BeginMainFrameState begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
   ForcedRedrawOnTimeoutState forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
-
-  // These fields are used to track the freshness of pending updates in the
-  // commit/activate/draw pipeline. The Scheduler uses the CompositorFrame's
-  // freshness to fill the |latest_confirmed_sequence_number| field in
-  // BeginFrameAcks.
-  uint32_t begin_frame_source_id_ = 0;
-  uint64_t begin_frame_sequence_number_ = BeginFrameArgs::kInvalidFrameNumber;
-  uint64_t last_begin_frame_sequence_number_begin_main_frame_sent_ =
-      BeginFrameArgs::kInvalidFrameNumber;
-  uint64_t last_begin_frame_sequence_number_pending_tree_was_fresh_ =
-      BeginFrameArgs::kInvalidFrameNumber;
-  uint64_t last_begin_frame_sequence_number_active_tree_was_fresh_ =
-      BeginFrameArgs::kInvalidFrameNumber;
-  uint64_t last_begin_frame_sequence_number_compositor_frame_was_fresh_ =
-      BeginFrameArgs::kInvalidFrameNumber;
 
   // These are used for tracing only.
   int commit_count_ = 0;

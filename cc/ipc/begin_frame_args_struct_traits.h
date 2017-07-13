@@ -50,11 +50,6 @@ struct StructTraits<cc::mojom::BeginFrameAckDataView, cc::BeginFrameAck> {
     return ack.sequence_number;
   }
 
-  static uint64_t latest_confirmed_sequence_number(
-      const cc::BeginFrameAck& ack) {
-    return ack.latest_confirmed_sequence_number;
-  }
-
   static uint32_t source_id(const cc::BeginFrameAck& ack) {
     return ack.source_id;
   }

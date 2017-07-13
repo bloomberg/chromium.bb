@@ -2402,7 +2402,7 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
                                        gfx::Rect damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, true);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
@@ -3458,7 +3458,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   {
     // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 5, 4, true);
+    cc::BeginFrameAck ack(source_id, 5, true);
     cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
     view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -3468,78 +3468,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   {
     // Explicit ack through OnDidNotProduceFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 6, 4, false);
-    view_->OnDidNotProduceFrame(ack);
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  // Lock the compositor. Now we should drop frames and, thus,
-  // latest_confirmed_sequence_number should not change.
-  view_rect = gfx::Rect(150, 150);
-  view_->SetSize(view_rect.size());
-
-  {
-    // Ack from CompositorFrame is forwarded with old
-    // latest_confirmed_sequence_number and without damage.
-    cc::BeginFrameAck ack(source_id, 7, 7, true);
-    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
-    cc::CompositorFrame frame =
-        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
-    frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    view_->RunOnCompositingDidCommit();
-    ack.latest_confirmed_sequence_number = 4;
-    ack.has_damage = false;
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  // Change source_id known to the view. This should reset the
-  // latest_confirmed_sequence_number tracked by the view.
-  source_id = 20;
-
-  {
-    // Ack from CompositorFrame is forwarded with invalid
-    // latest_confirmed_sequence_number and without damage.
-    cc::BeginFrameAck ack(source_id, 10, 10, true);
-    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
-    cc::CompositorFrame frame =
-        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
-    frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    view_->RunOnCompositingDidCommit();
-    ack.latest_confirmed_sequence_number =
-        cc::BeginFrameArgs::kInvalidFrameNumber;
-    ack.has_damage = false;
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  {
-    // Explicit ack through OnDidNotProduceFrame is forwarded with invalid
-    // latest_confirmed_sequence_number.
-    cc::BeginFrameAck ack(source_id, 11, 11, false);
-    view_->OnDidNotProduceFrame(ack);
-    ack.latest_confirmed_sequence_number =
-        cc::BeginFrameArgs::kInvalidFrameNumber;
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  // Unlock the compositor again with a new CompositorFrame of correct size.
-  frame_size = view_rect.size();
-  local_surface_id = local_surface_id_allocator_.GenerateId();
-
-  {
-    // Ack from CompositorFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 12, 12, true);
-    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
-    frame.metadata.begin_frame_ack = ack;
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    view_->RunOnCompositingDidCommit();
-    EXPECT_EQ(ack, observer.last_ack());
-  }
-
-  {
-    // Explicit ack through OnDidNotProduceFrame is forwarded.
-    cc::BeginFrameAck ack(source_id, 13, 13, false);
+    cc::BeginFrameAck ack(source_id, 6, false);
     view_->OnDidNotProduceFrame(ack);
     EXPECT_EQ(ack, observer.last_ack());
   }

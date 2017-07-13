@@ -247,8 +247,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
 
-  void DidFinishFrame(const cc::BeginFrameAck& ack);
-
   const viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;
@@ -313,9 +311,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   bool needs_begin_frame_ = false;
-  uint32_t latest_confirmed_begin_frame_source_id_ = 0;
-  uint64_t latest_confirmed_begin_frame_sequence_number_ =
-      cc::BeginFrameArgs::kInvalidFrameNumber;
 
   bool has_frame_ = false;
   cc::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
