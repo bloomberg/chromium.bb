@@ -40,6 +40,22 @@ void AuthCallbackDoNothing(
 
 AuthPolicyLoginHelper::AuthPolicyLoginHelper() : weak_factory_(this) {}
 
+// static
+void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
+                                                const std::string& object_guid,
+                                                const std::string& password) {
+  chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
+      username, object_guid, GetDataReadPipe(password).get(),
+      base::BindOnce(&AuthCallbackDoNothing));
+}
+
+// static
+void AuthPolicyLoginHelper::Restart() {
+  chromeos::DBusThreadManager::Get()
+      ->GetUpstartClient()
+      ->RestartAuthPolicyService();
+}
+
 void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
                                          const std::string& username,
                                          const std::string& password,
@@ -62,19 +78,9 @@ void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
-                                                const std::string& object_guid,
-                                                const std::string& password) {
-  chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
-      username, object_guid, GetDataReadPipe(password).get(),
-      base::BindOnce(&AuthCallbackDoNothing));
-}
-
 void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
   weak_factory_.InvalidateWeakPtrs();
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->RestartAuthPolicyService();
+  AuthPolicyLoginHelper::Restart();
 }
 
 void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
