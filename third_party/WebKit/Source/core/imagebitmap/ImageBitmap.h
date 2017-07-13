@@ -82,7 +82,8 @@ class CORE_EXPORT ImageBitmap final
                              uint32_t width,
                              uint32_t height,
                              bool is_image_bitmap_premultiplied,
-                             bool is_image_bitmap_origin_clean);
+                             bool is_image_bitmap_origin_clean,
+                             const CanvasColorParams&);
   static ScriptPromise CreateAsync(
       ImageElementBase*,
       Optional<IntRect>,
@@ -104,9 +105,9 @@ class CORE_EXPORT ImageBitmap final
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
   PassRefPtr<StaticBitmapImage> BitmapImage() const { return image_; }
-  PassRefPtr<Uint8Array> CopyBitmapData(
-      AlphaDisposition = kDontPremultiplyAlpha,
-      DataColorFormat = kRGBAColorType);
+  PassRefPtr<Uint8Array> CopyBitmapData();
+  PassRefPtr<Uint8Array> CopyBitmapData(AlphaDisposition,
+                                        DataColorFormat = kRGBAColorType);
   unsigned long width() const;
   unsigned long height() const;
   IntSize Size() const;
@@ -118,6 +119,8 @@ class CORE_EXPORT ImageBitmap final
   void close();
 
   ~ImageBitmap() override;
+
+  CanvasColorParams GetCanvasColorParams();
 
   // CanvasImageSource implementation
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
@@ -177,7 +180,8 @@ class CORE_EXPORT ImageBitmap final
               uint32_t width,
               uint32_t height,
               bool is_image_bitmap_premultiplied,
-              bool is_image_bitmap_origin_clean);
+              bool is_image_bitmap_origin_clean,
+              const CanvasColorParams&);
   static void ResolvePromiseOnOriginalThread(ScriptPromiseResolver*,
                                              sk_sp<SkImage>,
                                              bool origin_clean,

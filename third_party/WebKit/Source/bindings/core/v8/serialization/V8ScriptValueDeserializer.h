@@ -6,6 +6,7 @@
 #define V8ScriptValueDeserializer_h
 
 #include "bindings/core/v8/serialization/SerializationTag.h"
+#include "bindings/core/v8/serialization/SerializedColorParams.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptState.h"
@@ -64,6 +65,21 @@ class CORE_EXPORT V8ScriptValueDeserializer
     return deserializer_.ReadRawBytes(size, data);
   }
   bool ReadUTF8String(String* string_out);
+
+  template <typename E>
+  bool ReadUint32Enum(E* value) {
+    static_assert(
+        std::is_enum<E>::value &&
+            std::is_same<uint32_t,
+                         typename std::underlying_type<E>::type>::value,
+        "Only enums backed by uint32_t are accepted.");
+    uint32_t tmp;
+    if (ReadUint32(&tmp) && tmp <= static_cast<uint32_t>(E::kLast)) {
+      *value = static_cast<E>(tmp);
+      return true;
+    }
+    return false;
+  }
 
  private:
   V8ScriptValueDeserializer(RefPtr<ScriptState>,

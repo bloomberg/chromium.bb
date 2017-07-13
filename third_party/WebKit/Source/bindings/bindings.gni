@@ -166,6 +166,8 @@ bindings_core_v8_files =
                     "core/v8/WorkerOrWorkletScriptController.cpp",
                     "core/v8/WorkerOrWorkletScriptController.h",
                     "core/v8/WorkerV8Settings.h",
+                    "core/v8/serialization/SerializedColorParams.cpp",
+                    "core/v8/serialization/SerializedColorParams.h",
                     "core/v8/serialization/SerializationTag.h",
                     "core/v8/serialization/SerializedScriptValue.cpp",
                     "core/v8/serialization/SerializedScriptValue.h",
