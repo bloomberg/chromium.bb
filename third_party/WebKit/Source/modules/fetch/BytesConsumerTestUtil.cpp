@@ -195,4 +195,8 @@ BytesConsumerTestUtil::TwoPhaseReader::Run() {
   return std::make_pair(result_, std::move(data_));
 }
 
+String BytesConsumerTestUtil::CharVectorToString(const Vector<char>& v) {
+  return String(v.data(), v.size());
+}
+
 }  // namespace blink

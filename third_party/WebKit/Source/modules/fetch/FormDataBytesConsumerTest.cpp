@@ -29,10 +29,6 @@ using ::testing::Return;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
 
-String ToString(const Vector<char>& v) {
-  return String(v.data(), v.size());
-}
-
 PassRefPtr<EncodedFormData> ComplexFormData() {
   RefPtr<EncodedFormData> data = EncodedFormData::Create();
 
@@ -75,7 +71,8 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
                      new FormDataBytesConsumer("hello, world")))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
-  EXPECT_EQ("hello, world", ToString(result.second));
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
 }
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromStringNonLatin) {
@@ -84,7 +81,8 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromStringNonLatin) {
                      new FormDataBytesConsumer(String(kCs))))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
-  EXPECT_EQ("\xe3\x81\x82", ToString(result.second));
+  EXPECT_EQ("\xe3\x81\x82",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
 }
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromArrayBuffer) {
@@ -128,7 +126,8 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
                      new FormDataBytesConsumer(GetDocument(), data)))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
-  EXPECT_EQ("foohoge", ToString(result.second));
+  EXPECT_EQ("foohoge",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
 }
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
