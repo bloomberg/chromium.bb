@@ -12,11 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
@@ -747,6 +749,48 @@ TEST_F(RenderProcessHostUnitTest, ReuseExpectedSiteURLChanges) {
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+}
+
+class SpareRenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
+ protected:
+  void SetUp() override {
+    SetRenderProcessHostFactory(&rph_factory_);
+    RenderViewHostImplTestHarness::SetUp();
+    SetContents(NULL);  // Start with no renderers.
+    while (!rph_factory_.GetProcesses()->empty()) {
+      rph_factory_.Remove(rph_factory_.GetProcesses()->back().get());
+    }
+  }
+
+  MockRenderProcessHostFactory rph_factory_;
+};
+
+TEST_F(SpareRenderProcessHostUnitTest, TestRendererTaken) {
+  RenderProcessHost::WarmupSpareRenderProcessHost(browser_context());
+  ASSERT_EQ(1U, rph_factory_.GetProcesses()->size());
+  RenderProcessHost* spare_rph =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  EXPECT_EQ(spare_rph, rph_factory_.GetProcesses()->at(0).get());
+
+  const GURL kUrl1("http://foo.com");
+  SetContents(CreateTestWebContents());
+  NavigateAndCommit(kUrl1);
+  EXPECT_EQ(spare_rph, main_test_rfh()->GetProcess());
+  ASSERT_EQ(1U, rph_factory_.GetProcesses()->size());
+}
+
+TEST_F(SpareRenderProcessHostUnitTest, TestRendererNotTaken) {
+  std::unique_ptr<BrowserContext> alternate_context(new TestBrowserContext());
+  RenderProcessHost::WarmupSpareRenderProcessHost(alternate_context.get());
+  ASSERT_EQ(1U, rph_factory_.GetProcesses()->size());
+  RenderProcessHost* spare_rph =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  EXPECT_EQ(spare_rph, rph_factory_.GetProcesses()->at(0).get());
+
+  const GURL kUrl1("http://foo.com");
+  SetContents(CreateTestWebContents());
+  NavigateAndCommit(kUrl1);
+  EXPECT_NE(spare_rph, main_test_rfh()->GetProcess());
 }
 
 }  // namespace content
