@@ -16,6 +16,7 @@
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_services.h"
 #include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/integration_tests/hijack_dlls.h"
 #include "sandbox/win/tests/integration_tests/integration_tests_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +25,10 @@ namespace {
 //------------------------------------------------------------------------------
 // Internal Defines & Functions
 //------------------------------------------------------------------------------
+
+// hijack_shim_dll defines
+using CheckHijackResultFunction = decltype(&hijack_dlls::CheckHijackResult);
+constexpr char g_hijack_shim_func[] = "CheckHijackResult";
 
 //------------------------------------------------------------------------------
 // ImageLoadRemote test helper function.
@@ -121,9 +126,106 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
             runner.RunTest(test.c_str()));
 }
 
+//------------------------------------------------------------------------------
+// ImageLoadPreferSystem32 test helper function.
+//
+// - Acquire the global g_hijack_dlls_mutex mutex before calling
+//   (as we meddle with a shared system resource).
+// - Note: Do not use ASSERTs in this function, as a global mutex is held.
+//
+// 1. Put a copy of the hijack DLL into system32.
+// 2. Trigger test child process (with or without mitigation enabled).  When
+//    the OS resolves the import table for the child process, it will either
+//    choose the version in the local app directory, or the copy in system32.
+//------------------------------------------------------------------------------
+void TestWin10ImageLoadPreferSys32(bool is_success_test) {
+  // Put a copy of the hijack dll into system32.  So there's one in the
+  // local dir, and one in system32.
+  base::FilePath app_path;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &app_path));
+  base::FilePath old_dll_path = app_path.Append(hijack_dlls::g_hijack_dll_file);
+
+  base::FilePath sys_path;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &sys_path));
+  base::FilePath new_dll_path = sys_path.Append(hijack_dlls::g_hijack_dll_file);
+
+  // Note: test requires admin to copy/delete files in system32.
+  EXPECT_TRUE(base::CopyFileW(old_dll_path, new_dll_path));
+  // Do not ASSERT after this point.  Cleanup required.
+
+  sandbox::TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  // ACCESS_DENIED errors loading DLLs without a higher token - AddFsRule
+  // doesn't cut it.
+  policy->SetTokenLevel(sandbox::TokenLevel::USER_RESTRICTED_SAME_ACCESS,
+                        sandbox::TokenLevel::USER_LIMITED);
+
+  if (!is_success_test) {
+    // Enable the PreferSystem32 mitigation.
+    EXPECT_EQ(policy->SetDelayedProcessMitigations(
+                  sandbox::MITIGATION_IMAGE_LOAD_PREFER_SYS32),
+              sandbox::SBOX_ALL_OK);
+  }
+
+  // Get path for the test shim DLL to pass along.
+  base::FilePath shim_dll_path =
+      app_path.Append(hijack_dlls::g_hijack_shim_dll_file);
+
+  // If this is the "success" test, expect a return value of "false" - as the
+  // hijack was successful so the hijack_dll is NOT in system32.
+  // The failure case has the mitigation enabled, so expect the hijack_dll to be
+  // in system32.
+  base::string16 test = base::StringPrintf(
+      L"%ls %ls \"%ls\"", L"TestImageLoadHijack",
+      (!is_success_test) ? L"true" : L"false", shim_dll_path.value().c_str());
+
+  EXPECT_EQ((is_success_test ? sandbox::SBOX_TEST_SUCCEEDED
+                             : sandbox::SBOX_TEST_FAILED),
+            runner.RunTest(test.c_str()));
+
+  EXPECT_TRUE(base::DeleteFileW(new_dll_path, false));
+}
+
 }  // namespace
 
 namespace sandbox {
+
+//------------------------------------------------------------------------------
+// Exported functions called by child test processes.
+//------------------------------------------------------------------------------
+
+// This test loading and using the shim DLL is required.
+// The waterfall bots (test environment/harness) have unique resource
+// access failures if the main sbox_integration_tests executable
+// implicitely links against the hijack DLL (and implicit linking is required
+// to test this mitigation) - regardless of whether this test runs or is
+// disabled.
+//
+// - Arg1: "true" or "false", if the DLL path should be in system32.
+// - Arg2: the full path to the test shim DLL to load.
+SBOX_TESTS_COMMAND int TestImageLoadHijack(int argc, wchar_t** argv) {
+  if (argc < 2 || argv[0] == nullptr || argv[1] == nullptr)
+    return SBOX_TEST_INVALID_PARAMETER;
+
+  bool expect_system = false;
+  if (::wcsicmp(argv[0], L"true") == 0)
+    expect_system = true;
+
+  // Load the shim DLL for this test.
+  base::ScopedNativeLibrary shim_dll((base::FilePath(argv[1])));
+  if (!shim_dll.is_valid())
+    return SBOX_TEST_NOT_FOUND;
+
+  CheckHijackResultFunction check_hijack_result =
+      reinterpret_cast<CheckHijackResultFunction>(
+          shim_dll.GetFunctionPointer(g_hijack_shim_func));
+
+  if (check_hijack_result == nullptr)
+    return SBOX_TEST_NOT_FOUND;
+
+  return check_hijack_result(expect_system);
+}
 
 //------------------------------------------------------------------------------
 // Exported Image Load Tests
@@ -243,6 +345,82 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelFailure) {
     return;
 
   TestWin10ImageLoadLowLabel(false);
+}
+
+//------------------------------------------------------------------------------
+// Prefer system32 directory on image load (MITIGATION_IMAGE_LOAD_PREFER_SYS32).
+// >= Win10_RS1 (Anniversary)
+//------------------------------------------------------------------------------
+
+// This test validates that setting the MITIGATION_IMAGE_LOAD_PREFER_SYS32
+// mitigation enables the setting on a process.
+TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32PolicySuccess) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    return;
+
+  base::string16 test_command = L"CheckPolicy ";
+  test_command += std::to_wstring(TESTPOLICY_LOADPREFERSYS32);
+
+  //---------------------------------
+  // 1) Test setting pre-startup.
+  //---------------------------------
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  EXPECT_EQ(policy->SetProcessMitigations(MITIGATION_IMAGE_LOAD_PREFER_SYS32),
+            SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
+
+  //---------------------------------
+  // 2) Test setting post-startup.
+  //---------------------------------
+  TestRunner runner2;
+  sandbox::TargetPolicy* policy2 = runner2.GetPolicy();
+
+  EXPECT_EQ(
+      policy2->SetDelayedProcessMitigations(MITIGATION_IMAGE_LOAD_PREFER_SYS32),
+      SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner2.RunTest(test_command.c_str()));
+}
+
+// This test validates that import hijacking succeeds, if the
+// MITIGATION_IMAGE_LOAD_PREFER_SYS32 mitigation is NOT set.
+//
+// Must run this test as admin/elevated.
+TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Success) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hijack_dlls::g_hijack_dlls_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect the DLL to be in system32.
+  TestWin10ImageLoadPreferSys32(true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that setting the MITIGATION_IMAGE_LOAD_PREFER_SYS32
+// mitigation prevents import hijacking.
+//
+// Must run this test as admin/elevated.
+TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32_Failure) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hijack_dlls::g_hijack_dlls_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect the DLL to NOT be in system32.
+  TestWin10ImageLoadPreferSys32(false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
 }
 
 }  // namespace sandbox

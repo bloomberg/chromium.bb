@@ -12,15 +12,20 @@ namespace sandbox {
 //------------------------------------------------------------------------------
 // Common - for sharing between source files.
 //------------------------------------------------------------------------------
+
 enum TestPolicy {
   TESTPOLICY_DEP = 1,
   TESTPOLICY_ASLR,
   TESTPOLICY_STRICTHANDLE,
   TESTPOLICY_WIN32K,
   TESTPOLICY_EXTENSIONPOINT,
+  TESTPOLICY_DYNAMICCODE,
   TESTPOLICY_NONSYSFONT,
+  TESTPOLICY_MSSIGNED,
   TESTPOLICY_LOADNOREMOTE,
   TESTPOLICY_LOADNOLOW,
+  TESTPOLICY_DYNAMICCODEOPTOUT,
+  TESTPOLICY_LOADPREFERSYS32
 };
 
 // Timeout for ::WaitForSingleObject synchronization.

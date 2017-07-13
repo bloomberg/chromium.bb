@@ -14,6 +14,7 @@
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/target_services.h"
 #include "sandbox/win/tests/common/controller.h"
+#include "sandbox/win/tests/integration_tests/hooking_dll.h"
 #include "sandbox/win/tests/integration_tests/integration_tests_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,6 +69,54 @@ void TestWin10NonSystemFont(bool is_success_test) {
             runner.RunTest(test_command.c_str()));
 }
 
+//------------------------------------------------------------------------------
+// ForceMsSigned test helper function.
+// - LoadLibrary fails with ERROR_INVALID_IMAGE_HASH if this mitigation is
+//   enabled and the target is not appropriately signed.
+// - Acquire the global g_hooking_dll_mutex mutex before calling
+//   (as we meddle with a shared system resource).
+// - Note: Do not use ASSERTs in this function, as a global mutex is held.
+//
+// Trigger test child process (with or without mitigation enabled).
+//------------------------------------------------------------------------------
+void TestWin10MsSigned(bool expect_success,
+                       bool enable_mitigation,
+                       bool use_ms_signed_binary) {
+  sandbox::TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  if (enable_mitigation) {
+    // Enable the ForceMsSigned mitigation.
+    EXPECT_EQ(policy->SetDelayedProcessMitigations(
+                  sandbox::MITIGATION_FORCE_MS_SIGNED_BINS),
+              sandbox::SBOX_ALL_OK);
+  }
+
+  // Choose the appropriate DLL and make sure the sandbox allows access to it.
+  base::FilePath dll_path;
+  if (use_ms_signed_binary) {
+    EXPECT_TRUE(PathService::Get(base::DIR_SYSTEM, &dll_path));
+    dll_path = dll_path.Append(L"gdi32.dll");
+  } else {
+    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &dll_path));
+    dll_path = dll_path.Append(hooking_dll::g_hook_dll_file);
+  }
+  EXPECT_TRUE(runner.AddFsRule(sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                               dll_path.value().c_str()));
+
+  // Set up test string.
+  base::string16 test = L"TestDllLoad \"";
+  test += dll_path.value().c_str();
+  test += L"\"";
+
+  // Note: ERROR_INVALID_IMAGE_HASH is being displayed in a system pop-up when
+  //       the DLL load is attempted, but the value returned from the test
+  //       process itself is SBOX_TEST_FAILED.
+  EXPECT_EQ((expect_success ? sandbox::SBOX_TEST_SUCCEEDED
+                            : sandbox::SBOX_TEST_FAILED),
+            runner.RunTest(test.c_str()));
+}
+
 }  // namespace
 
 namespace sandbox {
@@ -118,13 +167,13 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
     // MITIGATION_RELOCATE_IMAGE_REQUIRED
     //--------------------------------------------------
     case (TESTPOLICY_ASLR): {
-      PROCESS_MITIGATION_ASLR_POLICY policy2 = {};
+      PROCESS_MITIGATION_ASLR_POLICY policy = {};
       if (!get_process_mitigation_policy(::GetCurrentProcess(),
-                                         ProcessASLRPolicy, &policy2,
-                                         sizeof(policy2))) {
+                                         ProcessASLRPolicy, &policy,
+                                         sizeof(policy))) {
         return SBOX_TEST_NOT_FOUND;
       }
-      if (!policy2.EnableForceRelocateImages || !policy2.DisallowStrippedImages)
+      if (!policy.EnableForceRelocateImages || !policy.DisallowStrippedImages)
         return SBOX_TEST_FAILED;
 
       break;
@@ -133,14 +182,14 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
     // MITIGATION_STRICT_HANDLE_CHECKS
     //--------------------------------------------------
     case (TESTPOLICY_STRICTHANDLE): {
-      PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy3 = {};
+      PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};
       if (!get_process_mitigation_policy(::GetCurrentProcess(),
                                          ProcessStrictHandleCheckPolicy,
-                                         &policy3, sizeof(policy3))) {
+                                         &policy, sizeof(policy))) {
         return SBOX_TEST_NOT_FOUND;
       }
-      if (!policy3.RaiseExceptionOnInvalidHandleReference ||
-          !policy3.HandleExceptionsPermanentlyEnabled) {
+      if (!policy.RaiseExceptionOnInvalidHandleReference ||
+          !policy.HandleExceptionsPermanentlyEnabled) {
         return SBOX_TEST_FAILED;
       }
 
@@ -177,6 +226,21 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
       break;
     }
     //--------------------------------------------------
+    // MITIGATION_DYNAMIC_CODE_DISABLE
+    //--------------------------------------------------
+    case (TESTPOLICY_DYNAMICCODE): {
+      PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
+      if (!get_process_mitigation_policy(::GetCurrentProcess(),
+                                         ProcessDynamicCodePolicy, &policy,
+                                         sizeof(policy))) {
+        return SBOX_TEST_NOT_FOUND;
+      }
+      if (!policy.ProhibitDynamicCode)
+        return SBOX_TEST_FAILED;
+
+      break;
+    }
+    //--------------------------------------------------
     // MITIGATION_NONSYSTEM_FONT_DISABLE
     //--------------------------------------------------
     case (TESTPOLICY_NONSYSFONT): {
@@ -187,6 +251,21 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
         return SBOX_TEST_NOT_FOUND;
       }
       if (!policy.DisableNonSystemFonts)
+        return SBOX_TEST_FAILED;
+
+      break;
+    }
+    //--------------------------------------------------
+    // MITIGATION_FORCE_MS_SIGNED_BINS
+    //--------------------------------------------------
+    case (TESTPOLICY_MSSIGNED): {
+      PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY policy = {};
+      if (!get_process_mitigation_policy(::GetCurrentProcess(),
+                                         ProcessSignaturePolicy, &policy,
+                                         sizeof(policy))) {
+        return SBOX_TEST_NOT_FOUND;
+      }
+      if (!policy.MicrosoftSignedOnly)
         return SBOX_TEST_FAILED;
 
       break;
@@ -217,6 +296,36 @@ SBOX_TESTS_COMMAND int CheckPolicy(int argc, wchar_t** argv) {
         return SBOX_TEST_NOT_FOUND;
       }
       if (!policy.NoLowMandatoryLabelImages)
+        return SBOX_TEST_FAILED;
+
+      break;
+    }
+    //--------------------------------------------------
+    // MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT
+    //--------------------------------------------------
+    case (TESTPOLICY_DYNAMICCODEOPTOUT): {
+      PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
+      if (!get_process_mitigation_policy(::GetCurrentProcess(),
+                                         ProcessDynamicCodePolicy, &policy,
+                                         sizeof(policy))) {
+        return SBOX_TEST_NOT_FOUND;
+      }
+      if (!policy.ProhibitDynamicCode || !policy.AllowThreadOptOut)
+        return SBOX_TEST_FAILED;
+
+      break;
+    }
+    //--------------------------------------------------
+    // MITIGATION_IMAGE_LOAD_PREFER_SYS32
+    //--------------------------------------------------
+    case (TESTPOLICY_LOADPREFERSYS32): {
+      PROCESS_MITIGATION_IMAGE_LOAD_POLICY policy = {};
+      if (!get_process_mitigation_policy(::GetCurrentProcess(),
+                                         ProcessImageLoadPolicy, &policy,
+                                         sizeof(policy))) {
+        return SBOX_TEST_NOT_FOUND;
+      }
+      if (!policy.PreferSystem32Images)
         return SBOX_TEST_FAILED;
 
       break;
@@ -589,6 +698,114 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownLoadFailure) {
     return;
 
   TestWin10NonSystemFont(false);
+}
+
+//------------------------------------------------------------------------------
+// Force MS Signed Binaries (MITIGATION_FORCE_MS_SIGNED_BINS)
+// >= Win10 TH2
+//
+// (Note: the signing options for "MS store-signed" and "MS, store, or WHQL"
+//  are not supported or tested by the sandbox at the moment.)
+//------------------------------------------------------------------------------
+
+// This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
+// mitigation enables the setting on a process.
+TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccess) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+    return;
+
+  base::string16 test_command = L"CheckPolicy ";
+  test_command += std::to_wstring(TESTPOLICY_MSSIGNED);
+
+//---------------------------------
+// 1) Test setting post-startup.
+// **Only test if NOT component build, otherwise component DLLs are not signed
+//   by MS and prevent process setup.
+// **Only test post-startup, otherwise this test executable has dependencies
+//   on DLLs that are not signed by MS and they prevent process startup.
+//---------------------------------
+#if !defined(COMPONENT_BUILD)
+  TestRunner runner2;
+  sandbox::TargetPolicy* policy2 = runner2.GetPolicy();
+
+  EXPECT_EQ(
+      policy2->SetDelayedProcessMitigations(MITIGATION_FORCE_MS_SIGNED_BINS),
+      SBOX_ALL_OK);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner2.RunTest(test_command.c_str()));
+#endif  // !defined(COMPONENT_BUILD)
+}
+
+// This test validates that we can load an unsigned DLL if the
+// MITIGATION_FORCE_MS_SIGNED_BINS mitigation is NOT set.
+TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect success; Do not enable mitigation; Use non MS-signed binary.
+  TestWin10MsSigned(true, false, false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
+// mitigation prevents the loading of an unsigned DLL.
+TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect failure; Enable mitigation; Use non MS-signed binary.
+  TestWin10MsSigned(false, true, false);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that we can load a signed Microsoft DLL if the
+// MITIGATION_FORCE_MS_SIGNED_BINS mitigation is NOT set.  Very basic
+// sanity test.
+TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect success; Do not enable mitigation; Use MS-signed binary.
+  TestWin10MsSigned(true, false, true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
+}
+
+// This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
+// mitigation still allows the load of an MS-signed DLL.
+TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsSuccess) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_TH2)
+    return;
+
+  HANDLE mutex = ::CreateMutexW(NULL, FALSE, hooking_dll::g_hooking_dll_mutex);
+  EXPECT_TRUE(mutex != NULL);
+  EXPECT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(mutex, SboxTestEventTimeout()));
+
+  // Expect success; Enable mitigation; Use MS-signed binary.
+  TestWin10MsSigned(true, true, true);
+
+  EXPECT_TRUE(::ReleaseMutex(mutex));
+  EXPECT_TRUE(::CloseHandle(mutex));
 }
 
 //------------------------------------------------------------------------------

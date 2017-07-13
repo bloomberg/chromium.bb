@@ -182,6 +182,7 @@ test("sbox_integration_tests") {
     "src/lpc_policy_test.cc",
     "src/named_pipe_policy_test.cc",
     "src/policy_target_test.cc",
+    "src/process_mitigations_dyncode_unittest.cc",
     "src/process_mitigations_extensionpoints_unittest.cc",
     "src/process_mitigations_imageload_unittest.cc",
     "src/process_mitigations_unittest.cc",
@@ -210,7 +211,9 @@ test("sbox_integration_tests") {
 
   data_deps = [
     ":cfi_unittest_exe",
-    ":sbox_integration_test_hook_dll",
+    ":sbox_integration_test_hijack_dll",
+    ":sbox_integration_test_hijack_shim_dll",
+    ":sbox_integration_test_hooking_dll",
     ":sbox_integration_test_win_proc",
   ]
 
@@ -228,7 +231,28 @@ executable("cfi_unittest_exe") {
   ]
 }
 
-loadable_module("sbox_integration_test_hook_dll") {
+shared_library("sbox_integration_test_hijack_dll") {
+  sources = [
+    "tests/integration_tests/hijack_dll.cc",
+    "tests/integration_tests/hijack_dll.def",
+    "tests/integration_tests/hijack_dlls.h",
+  ]
+}
+
+loadable_module("sbox_integration_test_hijack_shim_dll") {
+  sources = [
+    "tests/integration_tests/hijack_dlls.h",
+    "tests/integration_tests/hijack_shim_dll.cc",
+  ]
+
+  # Implicitly linking hijack_dll as loader import resolution required.
+  deps = [
+    ":sbox_integration_test_hijack_dll",
+    "//base",
+  ]
+}
+
+loadable_module("sbox_integration_test_hooking_dll") {
   sources = [
     "tests/integration_tests/hooking_dll.cc",
     "tests/integration_tests/hooking_dll.h",
