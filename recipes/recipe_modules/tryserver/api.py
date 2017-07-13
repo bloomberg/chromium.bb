@@ -9,6 +9,10 @@ import hashlib
 from recipe_engine import recipe_api
 
 
+PATCH_STORAGE_RIETVELD = 'rietveld'
+PATCH_STORAGE_GIT = 'git'
+
+
 class TryserverApi(recipe_api.RecipeApi):
   def __init__(self, *args, **kwargs):
     super(TryserverApi, self).__init__(*args, **kwargs)
@@ -39,9 +43,83 @@ class TryserverApi(recipe_api.RecipeApi):
 
   @property
   def is_patch_in_git(self):
-    return (self.m.properties.get('patch_storage') == 'git' and
+    return (self.m.properties.get('patch_storage') == PATCH_STORAGE_GIT and
             self.m.properties.get('patch_repo_url') and
             self.m.properties.get('patch_ref'))
+
+  def _apply_patch_step(self, patch_file=None, patch_content=None, root=None):
+    assert not (patch_file and patch_content), (
+        'Please only specify either patch_file or patch_content, not both!')
+    patch_cmd = [
+        'patch',
+        '--dir', root or self.m.path['checkout'],
+        '--force',
+        '--forward',
+        '--remove-empty-files',
+        '--strip', '0',
+    ]
+    if patch_file:
+      patch_cmd.extend(['--input', patch_file])
+
+    self.m.step('apply patch', patch_cmd,
+                      stdin=patch_content)
+
+  def apply_from_git(self, cwd):
+    """Downloads patch from given git repo and ref and applies it"""
+    # TODO(nodir): accept these properties as parameters
+    patch_repo_url = self.m.properties['patch_repo_url']
+    patch_ref = self.m.properties['patch_ref']
+
+    patch_dir = self.m.path.mkdtemp('patch')
+    try:
+      build_path = self.m.path['build']
+    except KeyError:
+      raise self.m.step.StepFailure(
+          'path["build"] is not defined. '
+          'Possibly this is a LUCI build. '
+          'tryserver.apply_from_git is not supported in LUCI builds.')
+
+    git_setup_py = build_path.join('scripts', 'slave', 'git_setup.py')
+    git_setup_args = ['--path', patch_dir, '--url', patch_repo_url]
+    patch_path = patch_dir.join('patch.diff')
+
+    self.m.python('patch git setup', git_setup_py, git_setup_args)
+    with self.m.context(cwd=patch_dir):
+      self.m.git('fetch', 'origin', patch_ref, name='patch fetch')
+      self.m.git('clean', '-f', '-d', '-x', name='patch clean')
+      self.m.git('checkout', '-f', 'FETCH_HEAD', name='patch git checkout')
+    self._apply_patch_step(patch_file=patch_path, root=cwd)
+    self.m.step('remove patch', ['rm', '-rf', patch_dir])
+
+  def determine_patch_storage(self):
+    """Determines patch_storage automatically based on properties."""
+    storage = self.m.properties.get('patch_storage')
+    if storage:
+      return storage
+
+    if self.can_apply_issue:
+      return PATCH_STORAGE_RIETVELD
+
+  def maybe_apply_issue(self, cwd=None, authentication=None):
+    """If we're a trybot, apply a codereview issue.
+
+    Args:
+      cwd: If specified, apply the patch from the specified directory.
+      authentication: authentication scheme whenever apply_issue.py is called.
+        This is only used if the patch comes from Rietveld. Possible values:
+        None, 'oauth2' (see also api.rietveld.apply_issue.)
+    """
+    storage = self.determine_patch_storage()
+
+    if storage == PATCH_STORAGE_RIETVELD:
+      return self.m.rietveld.apply_issue(
+          self.m.rietveld.calculate_issue_root(),
+          authentication=authentication)
+    elif storage == PATCH_STORAGE_GIT:
+      return self.apply_from_git(cwd)
+    else:
+      # Since this method is "maybe", we don't raise an Exception.
+      pass
 
   def get_files_affected_by_patch(self, patch_root=None, **kwargs):
     """Returns list of paths to files affected by the patch.

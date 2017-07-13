@@ -658,21 +658,29 @@ Returns:
 
 [DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [gerrit](#recipe_modules-gerrit), [git](#recipe_modules-git), [git\_cl](#recipe_modules-git_cl), [rietveld](#recipe_modules-rietveld), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
-#### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#12)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+#### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#16)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [\_\_init\_\_](/recipes/recipe_modules/tryserver/api.py#13)(self, \*args, \*\*kwargs):**
+&mdash; **def [\_\_init\_\_](/recipes/recipe_modules/tryserver/api.py#17)(self, \*args, \*\*kwargs):**
 
-&mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#146)(self, reason):**
+&mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#224)(self, reason):**
 
 Records a more detailed reason why build is failing.
 
 The reason can be any JSON-serializable object.
 
-&emsp; **@property**<br>&mdash; **def [can\_apply\_issue](/recipes/recipe_modules/tryserver/api.py#23)(self):**
+&mdash; **def [apply\_from\_git](/recipes/recipe_modules/tryserver/api.py#67)(self, cwd):**
+
+Downloads patch from given git repo and ref and applies it
+
+&emsp; **@property**<br>&mdash; **def [can\_apply\_issue](/recipes/recipe_modules/tryserver/api.py#27)(self):**
 
 Returns true iff the properties exist to apply_issue from rietveld.
 
-&mdash; **def [get\_files\_affected\_by\_patch](/recipes/recipe_modules/tryserver/api.py#46)(self, patch_root=None, \*\*kwargs):**
+&mdash; **def [determine\_patch\_storage](/recipes/recipe_modules/tryserver/api.py#94)(self):**
+
+Determines patch_storage automatically based on properties.
+
+&mdash; **def [get\_files\_affected\_by\_patch](/recipes/recipe_modules/tryserver/api.py#124)(self, patch_root=None, \*\*kwargs):**
 
 Returns list of paths to files affected by the patch.
 
@@ -686,34 +694,44 @@ TODO(tandrii): remove this doc.
 Unless you use patch_root=None, in which case old behavior is used
 which returns paths relative to checkout aka solution[0].name.
 
-&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#209)(self, tag, patch_text=None):**
+&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#287)(self, tag, patch_text=None):**
 
 Gets a specific tag from a CL description
 
-&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#182)(self, patch_text=None):**
+&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#260)(self, patch_text=None):**
 
 Retrieves footers from the patch description.
 
 footers are machine readable tags embedded in commit messages. See
 git-footers documentation for more information.
 
-&emsp; **@property**<br>&mdash; **def [is\_gerrit\_issue](/recipes/recipe_modules/tryserver/api.py#30)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_gerrit\_issue](/recipes/recipe_modules/tryserver/api.py#34)(self):**
 
 Returns true iff the properties exist to match a Gerrit issue.
 
-&emsp; **@property**<br>&mdash; **def [is\_patch\_in\_git](/recipes/recipe_modules/tryserver/api.py#40)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_patch\_in\_git](/recipes/recipe_modules/tryserver/api.py#44)(self):**
 
-&emsp; **@property**<br>&mdash; **def [is\_tryserver](/recipes/recipe_modules/tryserver/api.py#17)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_tryserver](/recipes/recipe_modules/tryserver/api.py#21)(self):**
 
 Returns true iff we can apply_issue or patch.
 
-&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#213)(self, footer):**
+&mdash; **def [maybe\_apply\_issue](/recipes/recipe_modules/tryserver/api.py#103)(self, cwd=None, authentication=None):**
 
-&mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#125)(self):**
+If we're a trybot, apply a codereview issue.
+
+Args:
+  cwd: If specified, apply the patch from the specified directory.
+  authentication: authentication scheme whenever apply_issue.py is called.
+    This is only used if the patch comes from Rietveld. Possible values:
+    None, 'oauth2' (see also api.rietveld.apply_issue.)
+
+&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#291)(self, footer):**
+
+&mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#203)(self):**
 
 Mark the tryjob result as a compile failure.
 
-&emsp; **@contextlib.contextmanager**<br>&mdash; **def [set\_failure\_hash](/recipes/recipe_modules/tryserver/api.py#155)(self):**
+&emsp; **@contextlib.contextmanager**<br>&mdash; **def [set\_failure\_hash](/recipes/recipe_modules/tryserver/api.py#233)(self):**
 
 Context manager that sets a failure_hash build property on StepFailure.
 
@@ -722,7 +740,7 @@ for the same reason. For example, if a patch is bad (breaks something),
 we'd expect it to always break in the same way. Different failures
 for the same patch are usually a sign of flakiness.
 
-&mdash; **def [set\_invalid\_test\_results\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#137)(self):**
+&mdash; **def [set\_invalid\_test\_results\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#215)(self):**
 
 Mark the tryjob result as having invalid test results.
 
@@ -730,18 +748,18 @@ This means we run some tests, but the results were not valid
 (e.g. no list of specific test cases that failed, or too many
 tests failing, etc).
 
-&mdash; **def [set\_patch\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#121)(self):**
+&mdash; **def [set\_patch\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#199)(self):**
 
 Mark the tryjob result as failure to apply the patch.
 
-&mdash; **def [set\_subproject\_tag](/recipes/recipe_modules/tryserver/api.py#103)(self, subproject_tag):**
+&mdash; **def [set\_subproject\_tag](/recipes/recipe_modules/tryserver/api.py#181)(self, subproject_tag):**
 
 Adds a subproject tag to the build.
 
 This can be used to distinguish between builds that execute different steps
 depending on what was patched, e.g. blink vs. pure chromium patches.
 
-&mdash; **def [set\_test\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#129)(self):**
+&mdash; **def [set\_test\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#207)(self):**
 
 Mark the tryjob result as a test failure.
 

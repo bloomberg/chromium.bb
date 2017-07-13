@@ -28,6 +28,7 @@ def RunSteps(api):
             'Foo', api.properties['patch_text']))])
     return
 
+  api.tryserver.maybe_apply_issue()
   if api.tryserver.can_apply_issue or api.tryserver.is_gerrit_issue:
     api.tryserver.get_footers()
   api.tryserver.get_files_affected_by_patch(
