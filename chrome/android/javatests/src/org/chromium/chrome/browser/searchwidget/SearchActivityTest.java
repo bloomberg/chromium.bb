@@ -98,10 +98,15 @@ public class SearchActivityTest {
                     }
                 });
                 super.showSearchEngineDialogIfNeeded(activity, onSearchEngineFinalized);
-                return;
+            } else {
+                LocaleManager.setInstanceForTest(new LocaleManager() {
+                    @Override
+                    public boolean needToCheckForSearchEnginePromo() {
+                        return false;
+                    }
+                });
+                if (!shouldDelayDeferredInitialization) onSearchEngineFinalized.onResult(true);
             }
-
-            if (!shouldDelayDeferredInitialization) onSearchEngineFinalized.onResult(true);
         }
 
         @Override
@@ -132,6 +137,7 @@ public class SearchActivityTest {
     @After
     public void tearDown() {
         SearchActivity.setDelegateForTests(null);
+        LocaleManager.setInstanceForTest(null);
     }
 
     @Test
@@ -454,6 +460,7 @@ public class SearchActivityTest {
             @Override
             public void run() {
                 UrlBar urlBar = (UrlBar) activity.findViewById(R.id.url_bar);
+                if (!urlBar.hasFocus()) urlBar.requestFocus();
                 urlBar.setText(url);
             }
         });
