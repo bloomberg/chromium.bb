@@ -10,7 +10,11 @@ import "services/identity/public/interfaces/account_state.mojom";
 import "services/identity/public/interfaces/google_service_auth_error.mojom";
 import "services/identity/public/interfaces/scope_set.mojom";
 
-// Gives access to information about the user's Google accounts.
+// Gives access to information about the user's Google accounts. NOTE: The
+// IdentityManager guarantees that it will not respond to requests until its
+// internal state stabilizes after startup (e.g., until all refresh tokens have
+// been loaded). Consumers thus don't have to be concerned with edge cases
+// around startup.
 interface IdentityManager {
   // Returns the AccountInfo for the Google account that serves as the user's
   // primary account, or null if the user has no primary account (e.g., if they

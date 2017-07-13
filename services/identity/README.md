@@ -93,6 +93,17 @@ is an [example CL](https://chromium-review.googlesource.com/c/539637/) illustrat
 If the above guidance does not suffice for your use case, please contact
 blundell@chromium.org.
 
+## Listening for All Refresh Tokens Being Loaded
+
+The Identity Service does not expose the event of all refresh tokens having been
+loaded (i.e., OAuth2TokenService::Observer::OnRefreshTokensLoaded()). Rather,
+the Identity Service guarantees that it does not respond to consumer requests
+until its internal state has stabilized after startup (and in particular, until
+all refresh tokens have been loaded). Thus, if a client queries whether a given
+account has a refresh token available and receives a response that it doesn't,
+there is no need for the client to worry about the edge case where the refresh
+token might be still in the process of being loaded from disk.
+
 ## Observing Signin-Related Events
 
 There are plans to build a unified Observer interface that will supersede the
