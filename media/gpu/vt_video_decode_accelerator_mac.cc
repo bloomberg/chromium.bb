@@ -44,10 +44,10 @@ namespace media {
 namespace {
 
 // A sequence of ids for memory tracing.
-base::StaticAtomicSequenceNumber g_memory_dump_ids;
+base::AtomicSequenceNumber g_memory_dump_ids;
 
 // A sequence of shared memory ids for CVPixelBufferRefs.
-base::StaticAtomicSequenceNumber g_cv_pixel_buffer_ids;
+base::AtomicSequenceNumber g_cv_pixel_buffer_ids;
 
 // Only H.264 with 4:2:0 chroma sampling is supported.
 const VideoCodecProfile kSupportedProfiles[] = {

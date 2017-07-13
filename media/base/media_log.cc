@@ -15,7 +15,7 @@ namespace media {
 
 // A count of all MediaLogs created in the current process. Used to generate
 // unique IDs.
-static base::StaticAtomicSequenceNumber g_media_log_count;
+static base::AtomicSequenceNumber g_media_log_count;
 
 std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
   switch (level) {
