@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions_bridge.h"
+#import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

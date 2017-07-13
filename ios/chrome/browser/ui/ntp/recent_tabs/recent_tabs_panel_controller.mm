@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_bridges.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions_bridge.h"
+#import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
