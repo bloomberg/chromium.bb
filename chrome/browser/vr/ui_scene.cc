@@ -109,14 +109,16 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
     // properties on multiple elements, say.
     element->Animate(current_time);
 
-    // Even if we're not animating, an element may wish to know about the
-    // current frame. It may throttle, for example.
-    element->OnBeginFrame(current_time);
-
     element->set_dirty(true);
   }
   for (auto& element : ui_elements_) {
     ApplyRecursiveTransforms(element.get());
+  }
+}
+
+void UiScene::PrepareToDraw() {
+  for (const auto& element : ui_elements_) {
+    element->PrepareToDraw();
   }
 }
 

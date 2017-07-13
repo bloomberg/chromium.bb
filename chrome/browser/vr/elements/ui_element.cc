@@ -92,7 +92,7 @@ void UiElement::OnButtonDown(const gfx::PointF& position) {}
 
 void UiElement::OnButtonUp(const gfx::PointF& position) {}
 
-void UiElement::OnBeginFrame(const base::TimeTicks& begin_frame_time) {}
+void UiElement::PrepareToDraw() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations_) {

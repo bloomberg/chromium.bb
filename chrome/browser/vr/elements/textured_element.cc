@@ -78,7 +78,7 @@ void TexturedElement::OnSetMode() {
   UpdateTexture();
 }
 
-void TexturedElement::OnBeginFrame(const base::TimeTicks& begin_frame_time) {
+void TexturedElement::PrepareToDraw() {
   UpdateTexture();
 }
 

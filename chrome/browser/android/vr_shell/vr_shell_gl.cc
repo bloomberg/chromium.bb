@@ -853,6 +853,11 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     HandleControllerInput(head_direction);
   }
 
+  // Ensure that all elements are ready before drawing. Eg., elements may have
+  // been dirtied due to animation on input processing and need to regenerate
+  // textures.
+  scene_->PrepareToDraw();
+
   DrawWorldElements(head_pose);
   DrawOverlayElements(head_pose);
 
