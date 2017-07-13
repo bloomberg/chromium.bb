@@ -16,6 +16,8 @@ class ChooseMobileNetworkDialog : public ui::WebDialogDelegate {
  public:
   // Shows the dialog box. The dialog is created as a child of |parent|. If the
   // |parent| is null the dialog is created in the default modal container.
+  // TODO(jamescook): This should not need a |parent|. See similar methods in
+  // NetworkConfigView.
   static void ShowDialog(gfx::NativeWindow parent);
 
   // Shows the dialog in an ash window container (which must be a system modal

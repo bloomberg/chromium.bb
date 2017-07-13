@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
@@ -41,16 +40,13 @@ class NetworkConfigView : public views::DialogDelegateView,
   };
 
   // Shows a network connection dialog if none is currently visible. The dialog
-  // will be a child of |parent| (e.g. the webui settings window) which ensures
-  // it appears on the display the user is looking at. If |parent| is null and
-  // no fallback parent can be found then the dialog will be placed on the
-  // primary display.
-  static void ShowForNetworkId(const std::string& network_id,
-                               gfx::NativeWindow parent);
+  // is placed on the default display for new windows. Returns the dialog or
+  // nullptr on error.
+  static NetworkConfigView* ShowForNetworkId(const std::string& network_id);
 
   // Shows a dialog to configure a new network. |type| must be a valid Shill
-  // 'Type' property value. See above regarding |parent|.
-  static void ShowForType(const std::string& type, gfx::NativeWindow parent);
+  // 'Type' property value. Returns the dialog or nullptr on error.
+  static NetworkConfigView* ShowForType(const std::string& type);
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
@@ -94,7 +90,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   bool InitWithType(const std::string& type);
 
   // Creates and shows a dialog containing this view.
-  void ShowDialog(gfx::NativeWindow parent);
+  void ShowDialog();
 
   // Resets the underlying view to show advanced options.
   void ShowAdvancedView();

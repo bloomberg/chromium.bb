@@ -211,8 +211,8 @@ Widget* SystemTrayClient::CreateUnownedDialogWidget(
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
   } else {
-    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                             container_id);
+    params.parent = ash::Shell::GetContainer(
+        ash::Shell::GetRootWindowForNewWindows(), container_id);
   }
   Widget* widget = new Widget;  // Owned by native widget.
   widget->Init(params);
@@ -370,9 +370,7 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
     return;
   }
 
-  // Dialog will default to the primary display.
-  chromeos::NetworkConfigView::ShowForNetworkId(network_id,
-                                                nullptr /* parent */);
+  chromeos::NetworkConfigView::ShowForNetworkId(network_id);
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
@@ -381,7 +379,7 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     chromeos::ChooseMobileNetworkDialog::ShowDialogInContainer(container_id);
     return;
   }
-  chromeos::NetworkConfigView::ShowForType(type, nullptr /* parent */);
+  chromeos::NetworkConfigView::ShowForType(type);
 }
 
 void SystemTrayClient::ShowThirdPartyVpnCreate(
