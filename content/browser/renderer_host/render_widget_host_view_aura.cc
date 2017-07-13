@@ -1577,7 +1577,7 @@ void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
 void RenderWidgetHostViewAura::OnWindowSurfaceChanged(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   if (!is_guest_view_hack_)
     return;
   host_->GetView()->OnSurfaceChanged(surface_info);

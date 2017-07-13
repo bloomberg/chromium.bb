@@ -5,8 +5,8 @@
 #include "cc/surfaces/surface_dependency_tracker.h"
 
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 namespace cc {
 

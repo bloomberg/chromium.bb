@@ -17,8 +17,11 @@
 
 namespace cc {
 class Layer;
-class SurfaceInfo;
 }  // namespace cc
+
+namespace viz {
+class SurfaceInfo;
+}  // namespace viz
 
 namespace blink {
 
@@ -44,7 +47,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void CreateSolidColorLayer();
 
   // Implementation of blink::mojom::blink::OffscreenCanvasSurfaceClient
-  void OnSurfaceCreated(const cc::SurfaceInfo&) override;
+  void OnSurfaceCreated(const viz::SurfaceInfo&) override;
   void SatisfyCallback(const cc::SurfaceSequence&);
   void RequireCallback(const viz::SurfaceId&, const cc::SurfaceSequence&);
 

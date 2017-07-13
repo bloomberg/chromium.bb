@@ -64,7 +64,7 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
   MockCrossProcessFrameConnector() : CrossProcessFrameConnector(nullptr) {}
   ~MockCrossProcessFrameConnector() override {}
 
-  void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                             const cc::SurfaceSequence& sequence) override {
     last_surface_info_ = surface_info;
   }
@@ -77,7 +77,7 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
     return nullptr;
   }
 
-  cc::SurfaceInfo last_surface_info_;
+  viz::SurfaceInfo last_surface_info_;
 };
 
 class RenderWidgetHostViewChildFrameTest : public testing::Test {
@@ -216,7 +216,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
 
     // Surface ID should have been passed to CrossProcessFrameConnector to
     // be sent to the embedding renderer.
-    EXPECT_EQ(cc::SurfaceInfo(id, scale_factor, view_size),
+    EXPECT_EQ(viz::SurfaceInfo(id, scale_factor, view_size),
               test_frame_connector_->last_surface_info_);
   }
 }

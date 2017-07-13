@@ -21,10 +21,10 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_dependency_deadline.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -43,7 +43,7 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
       base::RepeatingCallback<void(const viz::LocalSurfaceId&,
                                    const gfx::Rect&)>;
 
-  Surface(const SurfaceInfo& surface_info,
+  Surface(const viz::SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
           BeginFrameSource* begin_frame_source,
@@ -204,7 +204,7 @@ class CC_SURFACES_EXPORT Surface : public SurfaceDeadlineObserver {
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
-  SurfaceInfo surface_info_;
+  viz::SurfaceInfo surface_info_;
   viz::SurfaceId previous_frame_surface_id_;
   SurfaceManager* const surface_manager_;
   base::WeakPtr<SurfaceClient> surface_client_;

@@ -26,7 +26,7 @@ namespace {
 
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     cc::SurfaceManager* surface_manager,
-    cc::SurfaceInfo surface_info,
+    viz::SurfaceInfo surface_info,
     bool surface_opaque) {
   // manager must outlive compositors using it.
   auto layer = cc::SurfaceLayer::Create(surface_manager->reference_factory());
@@ -82,7 +82,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 
     cc::RenderPass* root_pass = frame.render_pass_list.back().get();
     gfx::Size frame_size = root_pass->output_rect.size();
-    surface_info_ = cc::SurfaceInfo(
+    surface_info_ = viz::SurfaceInfo(
         viz::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);
     has_transparent_background_ = root_pass->has_transparent_background;
 
@@ -139,7 +139,7 @@ void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
   content_layer_->RemoveFromParent();
   content_layer_ = nullptr;
   support_->EvictCurrentSurface();
-  surface_info_ = cc::SurfaceInfo();
+  surface_info_ = viz::SurfaceInfo();
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {

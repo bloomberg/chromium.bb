@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 namespace viz {
 
@@ -86,8 +86,7 @@ void HostFrameSinkManager::UnregisterFrameSinkHierarchy(
     frame_sink_data_map_.erase(iter);
 }
 
-void HostFrameSinkManager::OnSurfaceCreated(
-    const cc::SurfaceInfo& surface_info) {
+void HostFrameSinkManager::OnSurfaceCreated(const SurfaceInfo& surface_info) {
   for (auto& observer : observers_)
     observer.OnSurfaceCreated(surface_info);
 }

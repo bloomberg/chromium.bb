@@ -10,9 +10,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -12,8 +12,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/surfaces/surface_info.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
@@ -62,7 +62,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     return client_surface_embedder_.get();
   }
 
-  const cc::SurfaceInfo& PrimarySurfaceInfoForTesting() const {
+  const viz::SurfaceInfo& PrimarySurfaceInfoForTesting() const {
     return primary_surface_info_;
   }
 
@@ -236,7 +236,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetFrameSinkIdFromServer(const viz::FrameSinkId& frame_sink_id) override;
   const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
-  void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) override;
+  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -289,8 +289,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   viz::FrameSinkId frame_sink_id_;
 
-  cc::SurfaceInfo primary_surface_info_;
-  cc::SurfaceInfo fallback_surface_info_;
+  viz::SurfaceInfo primary_surface_info_;
+  viz::SurfaceInfo fallback_surface_info_;
 
   viz::LocalSurfaceId local_surface_id_;
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;

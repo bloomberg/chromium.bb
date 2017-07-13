@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SURFACES_SURFACE_INFO_H_
-#define CC_SURFACES_SURFACE_INFO_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_INFO_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_INFO_H_
 
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/size.h"
@@ -17,12 +17,15 @@ namespace cc {
 namespace mojom {
 class SurfaceInfoDataView;
 }
+}  // namespace cc
+
+namespace viz {
 
 // This class contains information about the surface that is being embedded.
 class SurfaceInfo {
  public:
   SurfaceInfo() = default;
-  SurfaceInfo(const viz::SurfaceId& id,
+  SurfaceInfo(const SurfaceId& id,
               float device_scale_factor,
               const gfx::Size& size_in_pixels)
       : id_(id),
@@ -42,19 +45,19 @@ class SurfaceInfo {
 
   bool operator!=(const SurfaceInfo& info) const { return !(*this == info); }
 
-  const viz::SurfaceId& id() const { return id_; }
+  const SurfaceId& id() const { return id_; }
   float device_scale_factor() const { return device_scale_factor_; }
   const gfx::Size& size_in_pixels() const { return size_in_pixels_; }
 
  private:
-  friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
+  friend struct mojo::StructTraits<cc::mojom::SurfaceInfoDataView, SurfaceInfo>;
   friend struct IPC::ParamTraits<SurfaceInfo>;
 
-  viz::SurfaceId id_;
+  SurfaceId id_;
   float device_scale_factor_ = 1.f;
   gfx::Size size_in_pixels_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_SURFACES_SURFACE_INFO_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_SURFACE_INFO_H_

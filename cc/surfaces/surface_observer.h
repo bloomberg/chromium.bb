@@ -7,19 +7,19 @@
 
 namespace viz {
 class SurfaceId;
+class SurfaceInfo;
 }
 
 namespace cc {
 
 struct BeginFrameAck;
 struct BeginFrameArgs;
-class SurfaceInfo;
 
 class SurfaceObserver {
  public:
   // Runs when a CompositorFrame is activated for the given SurfaceInfo for the
   // first time.
-  virtual void OnSurfaceCreated(const SurfaceInfo& surface_info) = 0;
+  virtual void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) = 0;
 
   // Runs when a Surface was marked to be destroyed.
   virtual void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) = 0;

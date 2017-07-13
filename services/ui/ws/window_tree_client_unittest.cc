@@ -399,7 +399,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceInfo& surface_info) override {
+                              const viz::SurfaceInfo& surface_info) override {
     tracker_.OnWindowSurfaceChanged(window_id, surface_info);
   }
 

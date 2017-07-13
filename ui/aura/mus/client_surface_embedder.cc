@@ -32,13 +32,13 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
 void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   surface_layer_->SetShowPrimarySurface(surface_info, ref_factory_);
   surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
 }
 
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
-    const cc::SurfaceInfo& surface_info) {
+    const viz::SurfaceInfo& surface_info) {
   surface_layer_->SetFallbackSurface(surface_info);
   UpdateSizeAndGutters();
 }
@@ -46,7 +46,7 @@ void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
 void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
   surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
   gfx::Size fallback_surface_size_in_dip;
-  const cc::SurfaceInfo* fallback_surface_info =
+  const viz::SurfaceInfo* fallback_surface_info =
       surface_layer_->GetFallbackSurfaceInfo();
   if (fallback_surface_info) {
     float fallback_device_scale_factor =

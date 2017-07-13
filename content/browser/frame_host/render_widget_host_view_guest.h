@@ -137,7 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   friend class RenderWidgetHostView;
 
   void SendSurfaceInfoToEmbedderImpl(
-      const cc::SurfaceInfo& surface_info,
+      const viz::SurfaceInfo& surface_info,
       const cc::SurfaceSequence& sequence) override;
 
   RenderWidgetHostViewGuest(

@@ -26,9 +26,9 @@ constexpr gfx::Size kAnotherArbitrarySize(5, 6);
 const viz::SurfaceId kArbitrarySurfaceId(
     viz::FrameSinkId(1, 1),
     viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
-const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId,
-                                            1.0f,
-                                            gfx::Size(100, 100));
+const viz::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId,
+                                             1.0f,
+                                             gfx::Size(100, 100));
 }
 
 // TestClientBinding Observes a BeginFrame and accepts CompositorFrame submitted

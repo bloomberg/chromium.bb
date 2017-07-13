@@ -860,7 +860,7 @@ void WindowServer::OnGpuServiceInitialized() {
   delegate_->StartDisplayInit();
 }
 
-void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
+void WindowServer::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
   WindowId window_id(
       WindowIdFromTransportId(surface_info.id().frame_sink_id().client_id()));
   ServerWindow* window = GetWindow(window_id);

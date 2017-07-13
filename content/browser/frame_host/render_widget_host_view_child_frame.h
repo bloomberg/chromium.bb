@@ -18,8 +18,8 @@
 #include "build/build_config.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -120,7 +120,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnDidNotProduceFrame(const cc::BeginFrameAck& ack) override;
-  void OnSurfaceChanged(const cc::SurfaceInfo& surface_info) override;
+  void OnSurfaceChanged(const viz::SurfaceInfo& surface_info) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ClearCompositorFrame() override {}
@@ -258,7 +258,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
  private:
   virtual void SendSurfaceInfoToEmbedderImpl(
-      const cc::SurfaceInfo& surface_info,
+      const viz::SurfaceInfo& surface_info,
       const cc::SurfaceSequence& sequence);
 
   void SubmitSurfaceCopyRequest(const gfx::Rect& src_subrect,

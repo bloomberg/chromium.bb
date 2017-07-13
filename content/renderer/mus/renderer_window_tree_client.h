@@ -128,7 +128,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnWindowFocused(ui::Id focused_window_id) override;
   void OnWindowCursorChanged(ui::Id window_id, ui::CursorData cursor) override;
   void OnWindowSurfaceChanged(ui::Id window_id,
-                              const cc::SurfaceInfo& surface_info) override;
+                              const viz::SurfaceInfo& surface_info) override;
   void OnDragDropStart(
       const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
       override;

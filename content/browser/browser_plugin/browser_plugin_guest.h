@@ -52,7 +52,6 @@ struct FrameHostMsg_ShowPopup_Params;
 #endif
 
 namespace cc {
-class SurfaceInfo;
 struct SurfaceSequence;
 }  // namespace cc
 
@@ -62,6 +61,7 @@ class Range;
 
 namespace viz {
 class SurfaceId;
+class SurfaceInfo;
 }  // namespace viz
 
 namespace content {
@@ -241,7 +241,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void PointerLockPermissionResponse(bool allow);
 
   // The next function is virtual for test purposes.
-  virtual void SetChildFrameSurface(const cc::SurfaceInfo& surface_info,
+  virtual void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                                     const cc::SurfaceSequence& sequence);
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);

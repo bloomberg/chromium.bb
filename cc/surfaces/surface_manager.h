@@ -66,7 +66,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // destroyed when DestroySurface is called, all of its destruction
   // dependencies are satisfied, and it is not reachable from the root surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
-                         const SurfaceInfo& surface_info,
+                         const viz::SurfaceInfo& surface_info,
                          BeginFrameSource* begin_frame_source,
                          bool needs_sync_tokens);
 
@@ -95,7 +95,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   // Called when a CompositorFrame is submitted to a SurfaceClient
   // for a given |surface_id| for the first time.
-  void SurfaceCreated(const SurfaceInfo& surface_info);
+  void SurfaceCreated(const viz::SurfaceInfo& surface_info);
 
   // Called when a CompositorFrame within |surface| has activated.
   void SurfaceActivated(Surface* surface);

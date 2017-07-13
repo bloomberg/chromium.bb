@@ -325,7 +325,7 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 }
 
 void RenderFrameProxy::OnSetChildFrameSurface(
-    const cc::SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   // If this WebFrame has already been detached, its parent will be null. This
   // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this

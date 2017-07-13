@@ -16,8 +16,8 @@
 #include "cc/surfaces/stub_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_client.h"
-#include "cc/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/surface_info.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
@@ -71,7 +71,7 @@ void SurfaceManager::RequestSurfaceResolution(
 
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
-    const SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     BeginFrameSource* begin_frame_source,
     bool needs_sync_tokens) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -430,7 +430,7 @@ bool SurfaceManager::SurfaceModified(const viz::SurfaceId& surface_id,
   return changed;
 }
 
-void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
+void SurfaceManager::SurfaceCreated(const viz::SurfaceInfo& surface_info) {
   CHECK(thread_checker_.CalledOnValidThread());
 
   if (lifetime_type_ == LifetimeType::REFERENCES) {

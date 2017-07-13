@@ -26,7 +26,8 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
-void SurfaceLayerImpl::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
+void SurfaceLayerImpl::SetPrimarySurfaceInfo(
+    const viz::SurfaceInfo& surface_info) {
   if (primary_surface_info_ == surface_info)
     return;
 
@@ -34,7 +35,8 @@ void SurfaceLayerImpl::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
   NoteLayerPropertyChanged();
 }
 
-void SurfaceLayerImpl::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
+void SurfaceLayerImpl::SetFallbackSurfaceInfo(
+    const viz::SurfaceInfo& surface_info) {
   if (fallback_surface_info_ == surface_info)
     return;
 
@@ -91,7 +93,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
 SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
-    const SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     SharedQuadState** common_shared_quad_state) {
   DCHECK(surface_info.is_valid());
 

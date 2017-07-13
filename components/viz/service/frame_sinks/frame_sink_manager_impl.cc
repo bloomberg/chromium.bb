@@ -100,8 +100,7 @@ void FrameSinkManagerImpl::DestroyCompositorFrameSink(FrameSinkId sink_id) {
   compositor_frame_sinks_.erase(sink_id);
 }
 
-void FrameSinkManagerImpl::OnSurfaceCreated(
-    const cc::SurfaceInfo& surface_info) {
+void FrameSinkManagerImpl::OnSurfaceCreated(const SurfaceInfo& surface_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
 

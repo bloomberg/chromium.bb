@@ -187,7 +187,7 @@ class TestChangeTracker {
                          mojom::WindowDataPtr window_data,
                          bool drawn);
   void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceInfo& surface_info);
+                              const viz::SurfaceInfo& surface_info);
 
  private:
   void AddChange(const Change& change);

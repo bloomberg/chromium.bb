@@ -249,7 +249,7 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 }
 
 void ChildFrameCompositingHelper::OnSetSurface(
-    const cc::SurfaceInfo& surface_info,
+    const viz::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
   float scale_factor = surface_info.device_scale_factor();
   surface_id_ = surface_info.id();
@@ -274,8 +274,8 @@ void ChildFrameCompositingHelper::OnSetSurface(
         ->AddPendingSequence(sequence);
   }
 
-  cc::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
-                                        surface_info.size_in_pixels());
+  viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
+                                         surface_info.size_in_pixels());
   surface_layer->SetPrimarySurfaceInfo(modified_surface_info);
   surface_layer->SetFallbackSurfaceInfo(modified_surface_info);
   surface_layer->SetMasksToBounds(true);
