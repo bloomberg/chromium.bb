@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "cc/base/base_export.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -330,7 +331,7 @@ class CC_BASE_EXPORT ScopedSubnormalFloatDisabler {
   ~ScopedSubnormalFloatDisabler();
 
  private:
-#ifdef __SSE__
+#if defined(ARCH_CPU_X86_FAMILY)
   unsigned int orig_state_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(ScopedSubnormalFloatDisabler);
