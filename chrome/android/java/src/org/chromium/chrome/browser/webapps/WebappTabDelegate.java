@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -20,11 +23,8 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
  * {@code _blank} links and {@code window.open(url)} calls instead of creating a new tab in Chrome.
  */
 public class WebappTabDelegate extends TabDelegate {
-    private final WebappActivity mActivity;
-
-    public WebappTabDelegate(WebappActivity activity, boolean incognito) {
+    public WebappTabDelegate(boolean incognito) {
         super(incognito);
-        this.mActivity = activity;
     }
 
     @Override
@@ -32,11 +32,12 @@ public class WebappTabDelegate extends TabDelegate {
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
         AsyncTabParamsManager.add(assignedTabId, asyncParams);
 
-        CustomTabsIntent customTabIntent =
-                new CustomTabsIntent.Builder().setShowTitle(true).build();
+        Intent intent = new CustomTabsIntent.Builder().setShowTitle(true).build().intent;
+        intent.setData(Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
+        addAsyncTabExtras(asyncParams, parentId, false /* isChromeUI */, assignedTabId, intent);
 
-        customTabIntent.intent.setPackage(mActivity.getPackageName());
-        addAsyncTabExtras(asyncParams, parentId, true, assignedTabId, customTabIntent.intent);
-        customTabIntent.launchUrl(mActivity, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
+        IntentHandler.startActivityForTrustedIntent(intent);
     }
 }
