@@ -15,10 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class RendererAudioOutputStreamFactoryContext;
@@ -46,23 +42,18 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override;
 
-  void RequestDeviceAuthorizationForOrigin(
-      base::TimeTicks auth_start_time,
-      media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
-      int session_id,
-      const std::string& device_id,
-      RequestDeviceAuthorizationCallback callback,
-      const url::Origin& origin);
-
+  // Here, the |raw_device_id| is used to create the stream, and
+  // |device_id_for_renderer| is nonempty in the case when the renderer
+  // requested a device using a |session_id|, to let it know which device was
+  // chosen. This id is hashed.
   void AuthorizationCompleted(
       base::TimeTicks auth_start_time,
       media::mojom::AudioOutputStreamProviderRequest request,
       RequestDeviceAuthorizationCallback callback,
-      const url::Origin& origin,
       media::OutputDeviceStatus status,
-      bool should_send_id,
       const media::AudioParameters& params,
-      const std::string& raw_device_id);
+      const std::string& raw_device_id,
+      const std::string& device_id_for_renderer);
 
   void RemoveStream(media::mojom::AudioOutputStreamProvider* stream_provider);
 
@@ -84,7 +75,7 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactoryHandle {
   static std::unique_ptr<RenderFrameAudioOutputStreamFactoryHandle,
                          BrowserThread::DeleteOnIOThread>
   CreateFactory(RendererAudioOutputStreamFactoryContext* context,
-                int frame_id,
+                int render_frame_id,
                 mojom::RendererAudioOutputStreamFactoryRequest request);
 
   ~RenderFrameAudioOutputStreamFactoryHandle();
@@ -92,7 +83,7 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactoryHandle {
  private:
   RenderFrameAudioOutputStreamFactoryHandle(
       RendererAudioOutputStreamFactoryContext* context,
-      int frame_id);
+      int render_frame_id);
 
   void Init(mojom::RendererAudioOutputStreamFactoryRequest request);
 

@@ -90,18 +90,10 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
 
   int GetRenderProcessId() const override { return kRenderProcessId; }
 
-  std::string GetHMACForDeviceId(
-      const url::Origin& origin,
-      const std::string& raw_device_id) const override {
-    return MediaStreamManager::GetHMACForMediaDeviceID(salt_, origin,
-                                                       raw_device_id);
-  }
-
   void RequestDeviceAuthorization(
       int render_frame_id,
       int session_id,
       const std::string& device_id,
-      const url::Origin& security_origin,
       AuthorizationCompletedCallback cb) const override {
     EXPECT_EQ(render_frame_id, kRenderFrameId);
     EXPECT_EQ(session_id, 0);
@@ -110,7 +102,7 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
           FROM_HERE,
           base::BindOnce(std::move(cb),
                          media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
-                         false, GetTestAudioParameters(), "default"));
+                         GetTestAudioParameters(), "default", std::string()));
       return;
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -118,8 +110,8 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
         base::BindOnce(std::move(cb),
                        media::OutputDeviceStatus::
                            OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
-                       false, media::AudioParameters::UnavailableDeviceParams(),
-                       ""));
+                       media::AudioParameters::UnavailableDeviceParams(),
+                       std::string(), std::string()));
   }
 
   // The event handler for the delegate will be stored at
