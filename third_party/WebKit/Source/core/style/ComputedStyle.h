@@ -814,6 +814,12 @@ class ComputedStyle : public ComputedStyleBase,
   static TouchAction InitialTouchAction() {
     return TouchAction::kTouchActionAuto;
   }
+  TouchAction GetEffectiveTouchAction() const {
+    return EffectiveTouchActionInternal();
+  }
+  void SetEffectiveTouchAction(TouchAction t) {
+    return SetEffectiveTouchActionInternal(t);
+  }
 
   // vertical-align
   static EVerticalAlign InitialVerticalAlign() {
@@ -1968,6 +1974,36 @@ class ComputedStyle : public ComputedStyleBase,
   bool IsOverflowPaged() const {
     return OverflowY() == EOverflow::kWebkitPagedX ||
            OverflowY() == EOverflow::kWebkitPagedY;
+  }
+
+  bool IsDisplayTableRowOrColumnType() const {
+    return Display() == EDisplay::kTableRow ||
+           Display() == EDisplay::kTableRowGroup ||
+           Display() == EDisplay::kTableColumn ||
+           Display() == EDisplay::kTableColumnGroup;
+  }
+
+  bool HasAutoHorizontalScroll() const {
+    return OverflowX() == EOverflow::kAuto ||
+           OverflowX() == EOverflow::kOverlay;
+  }
+
+  bool HasAutoVerticalScroll() const {
+    return OverflowY() == EOverflow::kAuto ||
+           OverflowY() == EOverflow::kWebkitPagedY ||
+           OverflowY() == EOverflow::kOverlay;
+  }
+
+  bool ScrollsOverflowX() const {
+    return OverflowX() == EOverflow::kScroll || HasAutoHorizontalScroll();
+  }
+
+  bool ScrollsOverflowY() const {
+    return OverflowY() == EOverflow::kScroll || HasAutoVerticalScroll();
+  }
+
+  bool ScrollsOverflow() const {
+    return ScrollsOverflowX() || ScrollsOverflowY();
   }
 
   // Visibility utility functions.

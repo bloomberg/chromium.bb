@@ -1036,17 +1036,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void StopAutoscroll() {}
 
   DISABLE_CFI_PERF bool HasAutoVerticalScrollbar() const {
-    return HasOverflowClip() &&
-           (Style()->OverflowY() == EOverflow::kAuto ||
-            Style()->OverflowY() == EOverflow::kWebkitPagedY ||
-            Style()->OverflowY() == EOverflow::kOverlay);
+    return HasOverflowClip() && Style()->HasAutoVerticalScroll();
   }
   DISABLE_CFI_PERF bool HasAutoHorizontalScrollbar() const {
-    return HasOverflowClip() && (Style()->OverflowX() == EOverflow::kAuto ||
-                                 Style()->OverflowX() == EOverflow::kOverlay);
+    return HasOverflowClip() && Style()->HasAutoHorizontalScroll();
   }
   DISABLE_CFI_PERF bool ScrollsOverflow() const {
-    return ScrollsOverflowX() || ScrollsOverflowY();
+    return HasOverflowClip() && Style()->ScrollsOverflow();
   }
   virtual bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
     return Style()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
@@ -1061,12 +1057,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            PixelSnappedScrollHeight() != PixelSnappedClientHeight();
   }
   virtual bool ScrollsOverflowX() const {
-    return HasOverflowClip() && (Style()->OverflowX() == EOverflow::kScroll ||
-                                 HasAutoHorizontalScrollbar());
+    return HasOverflowClip() && Style()->ScrollsOverflowX();
   }
   virtual bool ScrollsOverflowY() const {
-    return HasOverflowClip() && (Style()->OverflowY() == EOverflow::kScroll ||
-                                 HasAutoVerticalScrollbar());
+    return HasOverflowClip() && Style()->ScrollsOverflowY();
   }
 
   // Elements such as the <input> field override this to specify that they are

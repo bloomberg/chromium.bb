@@ -483,6 +483,16 @@
       field_group: "rare-inherited",
     },
     {
+      name: "EffectiveTouchAction",
+      inherited: true,
+      field_template: "storage_only",
+      include_paths: ["platform/graphics/TouchAction.h"],
+      type_name: "TouchAction",
+      field_size: 6,
+      default_value: "TouchAction::kTouchActionAuto",
+      field_group: "rare-inherited",
+    },
+    {
       name: "TextEmphasisCustomMark",
       inherited: true,
       field_template: "external",
