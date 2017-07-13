@@ -863,6 +863,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
     DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
       visitor->TraceWrappers(extension_);
+      ExtensionTracker::TraceWrappers(visitor);
     }
 
    private:
