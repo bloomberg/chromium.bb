@@ -27,6 +27,7 @@
 #define PropertySetCSSStyleDeclaration_h
 
 #include "core/css/CSSStyleDeclaration.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/HashMap.h"
 
 namespace blink {
@@ -114,6 +115,7 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   void Reattach(MutableStylePropertySet&);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
@@ -127,7 +129,7 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   void DidMutate(MutationType) override;
   PropertyRegistry* GetPropertyRegistry() const final;
 
-  Member<CSSRule> parent_rule_;
+  TraceWrapperMember<CSSRule> parent_rule_;
 };
 
 class InlineCSSStyleDeclaration final

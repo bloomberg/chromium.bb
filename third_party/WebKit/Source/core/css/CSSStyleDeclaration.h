@@ -85,8 +85,6 @@ class CORE_EXPORT CSSStyleDeclaration
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
-
  protected:
   CSSStyleDeclaration() {}
 };

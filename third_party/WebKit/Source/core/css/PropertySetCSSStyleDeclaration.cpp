@@ -354,7 +354,7 @@ StyleRuleCSSStyleDeclaration::StyleRuleCSSStyleDeclaration(
     MutableStylePropertySet& property_set_arg,
     CSSRule* parent_rule)
     : PropertySetCSSStyleDeclaration(property_set_arg),
-      parent_rule_(parent_rule) {}
+      parent_rule_(this, parent_rule) {}
 
 StyleRuleCSSStyleDeclaration::~StyleRuleCSSStyleDeclaration() {}
 
@@ -392,6 +392,11 @@ PropertyRegistry* StyleRuleCSSStyleDeclaration::GetPropertyRegistry() const {
 DEFINE_TRACE(StyleRuleCSSStyleDeclaration) {
   visitor->Trace(parent_rule_);
   PropertySetCSSStyleDeclaration::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(StyleRuleCSSStyleDeclaration) {
+  visitor->TraceWrappers(parent_rule_);
+  PropertySetCSSStyleDeclaration::TraceWrappers(visitor);
 }
 
 MutableStylePropertySet& InlineCSSStyleDeclaration::PropertySet() const {
