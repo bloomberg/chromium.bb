@@ -717,22 +717,29 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_FALSE(window1->GetBaseWindow()->IsMaximized());
 
   // Creating a second window of the same type should change the behavior so
-  // that a click does not change the activation state.
+  // that a click on the shelf item does not change the activation state.
   AppWindow* window1a = CreateAppWindow(browser()->profile(), extension1);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
+
+  // Ensure the same shelf item and delegate are used for |window1a|.
+  EXPECT_EQ(item1.id, GetLastLauncherItem().id);
+  EXPECT_EQ(item1_delegate, GetShelfItemDelegate(GetLastLauncherItem().id));
+
   // The first click does nothing.
   SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
+  EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
   // The second neither.
   SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
-  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
+  EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
 }
 
 // Confirm that ash::ShelfWindowWatcher correctly handles app panels.
