@@ -1085,9 +1085,10 @@ config("default_warnings") {
   } else {
     if (is_mac && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
-      # availability is newer than the deployment target. This is not
-      # required when compiling Chrome for iOS.
-      cflags += [ "-Wpartial-availability" ]
+      # availability is newer than the deployment target.
+      # TODO(thakis): Consider enabling this on iOS too,
+      # https://crbug.com/742498
+      cflags += [ "-Wunguarded-availability" ]
     }
 
     if (is_ios) {
