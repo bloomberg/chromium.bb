@@ -281,6 +281,23 @@ function FileManagerUI(providersModel, element, launchParam) {
   };
 
   /**
+   * The menu button for share options
+   * @type {!cr.ui.MenuButton}
+   * @const
+   */
+  this.shareMenuButton =
+      util.queryDecoratedElement('#share-menu-button', cr.ui.MenuButton);
+  var shareMenuButtonToggleRipple =
+      /** @type {!FilesToggleRipple} */ (
+          queryRequiredElement('files-toggle-ripple', this.shareMenuButton));
+  this.shareMenuButton.addEventListener('menushow', function() {
+    shareMenuButtonToggleRipple.activated = true;
+  });
+  this.shareMenuButton.addEventListener('menuhide', function() {
+    shareMenuButtonToggleRipple.activated = false;
+  });
+
+  /**
    * Banners in the file list.
    * @type {Banners}
    */

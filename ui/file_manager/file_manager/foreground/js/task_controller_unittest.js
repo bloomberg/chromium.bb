@@ -44,8 +44,7 @@ function testExecuteEntryTask(callback) {
   fileSystem.entries['/test.png'] =
       new MockFileEntry(fileSystem, '/test.png', {});
   var controller = new TaskController(
-      DialogType.FULL_PAGE,
-      {
+      DialogType.FULL_PAGE, {
         getDriveConnectionState: function() {
           return VolumeManagerCommon.DriveConnectionType.ONLINE;
         },
@@ -57,14 +56,11 @@ function testExecuteEntryTask(callback) {
       },
       {
         taskMenuButton: document.createElement('button'),
-        fileContextMenu: {
-          defaultActionMenuItem: document.createElement('div')
-        }
+        shareMenuButton: {menu: document.createElement('div')},
+        fileContextMenu:
+            {defaultActionMenuItem: document.createElement('div')}
       },
-      new MockMetadataModel({}),
-      {},
-      new cr.EventTarget(),
-      null);
+      new MockMetadataModel({}), {}, new cr.EventTarget(), null);
 
   controller.executeEntryTask(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
@@ -119,6 +115,7 @@ function createTaskController(selectionHandler) {
   return new TaskController(
       DialogType.FULL_PAGE, {}, {
         taskMenuButton: document.createElement('button'),
+        shareMenuButton: {menu: document.createElement('div')},
         fileContextMenu:
             {defaultActionMenuItem: document.createElement('div')}
       },

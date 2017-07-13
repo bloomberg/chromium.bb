@@ -257,6 +257,19 @@ FileTasks.isInternalTask_ = function(taskId) {
 };
 
 /**
+ * Returns true if the given task is categorized as an OPEN task.
+ *
+ * @param {!Object} task
+ * @return {boolean} True if the given task is an OPEN task.
+ */
+FileTasks.isOpenTask = function(task) {
+  // We consider following types of tasks as OPEN tasks.
+  // - Files app's internal tasks
+  // - file_handler tasks with OPEN_WITH verb
+  return !task.verb || task.verb == chrome.fileManagerPrivate.Verb.OPEN_WITH;
+};
+
+/**
  * Annotates tasks returned from the API.
  *
  * @param {!Array<!Object>} tasks Input tasks from the API.
@@ -658,25 +671,43 @@ FileTasks.prototype.mountArchivesInternal_ = function() {
 };
 
 /**
- * Displays the list of tasks in a task picker combobutton.
+ * Displays the list of tasks in a open task picker combobutton and a share
+ * options menu.
  *
- * @param {cr.ui.ComboButton} combobutton The task picker element.
+ * @param {!cr.ui.ComboButton} openCombobutton The open task picker combobutton.
+ * @param {!cr.ui.MenuButton} shareMenuButton The menu button for share options.
  * @public
  */
-FileTasks.prototype.display = function(combobutton) {
-  // If there does not exist available task, hide combobutton.
-  if (this.tasks_.length === 0) {
-    combobutton.hidden = true;
-    return;
+FileTasks.prototype.display = function(openCombobutton, shareMenuButton) {
+  var openTasks = [];
+  var otherTasks = [];
+  for (var i = 0; i < this.tasks_.length; i++) {
+    var task = this.tasks_[i];
+    if (FileTasks.isOpenTask(task))
+      openTasks.push(task);
+    else
+      otherTasks.push(task);
   }
+  this.updateOpenComboButton_(openCombobutton, openTasks);
+  this.updateShareMenuButton_(shareMenuButton, otherTasks);
+};
+
+/**
+ * Setup a task picker combobutton based on the given tasks.
+ * @param {!cr.ui.ComboButton} combobutton
+ * @param {!Array<!Object>} tasks
+ */
+FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
+  combobutton.hidden = tasks.length == 0;
+  if (tasks.length == 0)
+    return;
 
   combobutton.clear();
-  combobutton.hidden = false;
 
   // If there exist defaultTask show it on the combobutton.
   if (this.defaultTask_) {
-    combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_,
-        str('TASK_OPEN'));
+    combobutton.defaultItem =
+        this.createCombobuttonItem_(this.defaultTask_, str('TASK_OPEN'));
   } else {
     combobutton.defaultItem = {
       type: FileTasks.TaskMenuButtonItemType.ShowMenu,
@@ -687,7 +718,7 @@ FileTasks.prototype.display = function(combobutton) {
   // If there exist 2 or more available tasks, show them in context menu
   // (including defaultTask). If only one generic task is available, we
   // also show it in the context menu.
-  var items = this.createItems_();
+  var items = this.createItems_(tasks);
   if (items.length > 1 || (items.length === 1 && this.defaultTask_ === null)) {
     for (var j = 0; j < items.length; j++) {
       combobutton.addDropDownItem(items[j]);
@@ -707,18 +738,42 @@ FileTasks.prototype.display = function(combobutton) {
 };
 
 /**
+ * Setup a menu button for sharing options based on the given tasks.
+ * @param {!cr.ui.MenuButton} shareMenuButton
+ * @param {!Array<!Object>} tasks
+ */
+FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
+  shareMenuButton.hidden = tasks.length == 0;
+  if (tasks.length == 0)
+    return;
+
+  shareMenuButton.menu.clear();
+  var items = this.createItems_(tasks);
+  for (var i = 0; i < items.length; i++) {
+    var menuitem = shareMenuButton.menu.addMenuItem(items[i]);
+    cr.ui.decorate(menuitem, cr.ui.FilesMenuItem);
+    menuitem.data = items[i];
+    if (items[i].iconType) {
+      menuitem.style.backgroundImage = '';
+      menuitem.setAttribute('file-type-icon', items[i].iconType);
+    }
+  }
+};
+
+/**
  * Creates sorted array of available task descriptions such as title and icon.
  *
+ * @param {!Array<!Object>} tasks Tasks to create items.
  * @return {!Array<!Object>} Created array can be used to feed combobox, menus
  *     and so on.
  * @private
  */
-FileTasks.prototype.createItems_ = function() {
+FileTasks.prototype.createItems_ = function(tasks) {
   var items = [];
 
   // Create items.
-  for (var index = 0; index < this.tasks_.length; index++) {
-    var task = this.tasks_[index];
+  for (var index = 0; index < tasks.length; index++) {
+    var task = tasks[index];
     if (task === this.defaultTask_) {
       var title = task.title + ' ' +
                   loadTimeData.getString('DEFAULT_TASK_LABEL');
@@ -781,16 +836,17 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
  * @param {string} title Title to use.
  * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.
- * @param {boolean=} opt_hideGenericFileHandler Whether to hide generic file
- *     handler or not.
+ * @param {boolean=} opt_forChangeDefault Whether to return items which are for
+ *     change-default dialog.
  */
-FileTasks.prototype.showTaskPicker = function(taskDialog, title, message,
-                                              onSuccess,
-                                              opt_hideGenericFileHandler) {
-  var items = !opt_hideGenericFileHandler ? this.createItems_() :
-      this.createItems_().filter(function(item) {
-        return !item.isGenericFileHandler;
-      });
+FileTasks.prototype.showTaskPicker = function(
+    taskDialog, title, message, onSuccess, opt_forChangeDefault) {
+  var items = !opt_forChangeDefault ?
+      this.createItems_(this.tasks_) :
+      this.createItems_(this.tasks_.filter(FileTasks.isOpenTask))
+          .filter(function(item) {
+            return !item.isGenericFileHandler;
+          });
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {

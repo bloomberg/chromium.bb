@@ -104,6 +104,8 @@ function TaskController(
 
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
+  ui.shareMenuButton.menu.addEventListener(
+      'activate', this.onTaskItemClicked_.bind(this));
   this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE,
       this.onSelectionChanged_.bind(this));
@@ -146,51 +148,54 @@ TaskController.createTemporaryDisabledTaskItem_ = function() {
  * @private
  */
 TaskController.prototype.onTaskItemClicked_ = function(event) {
+  // 'select' event from ComboButton has the item as event.item.
+  // 'activate' event from cr.ui.MenuButton has the item as event.target.data.
+  var item = event.item || event.target.data;
   this.getFileTasks()
-    .then(function(tasks) {
-      switch (event.item.type) {
-        case FileTasks.TaskMenuButtonItemType.ShowMenu:
-          this.ui_.taskMenuButton.showMenu(false);
-          break;
-        case FileTasks.TaskMenuButtonItemType.RunTask:
-          tasks.execute(event.item.task.taskId);
-          break;
-        case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
-          var selection = this.selectionHandler_.selection;
-          var extensions = [];
+      .then(function(tasks) {
+        switch (item.type) {
+          case FileTasks.TaskMenuButtonItemType.ShowMenu:
+            this.ui_.taskMenuButton.showMenu(false);
+            break;
+          case FileTasks.TaskMenuButtonItemType.RunTask:
+            tasks.execute(item.task.taskId);
+            break;
+          case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
+            var selection = this.selectionHandler_.selection;
+            var extensions = [];
 
-          for (var i = 0; i < selection.entries.length; i++) {
-            var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
-            if (match) {
-              var ext = match[1].toUpperCase();
-              if (extensions.indexOf(ext) == -1) {
-                extensions.push(ext);
+            for (var i = 0; i < selection.entries.length; i++) {
+              var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
+              if (match) {
+                var ext = match[1].toUpperCase();
+                if (extensions.indexOf(ext) == -1) {
+                  extensions.push(ext);
+                }
               }
             }
-          }
 
-          var format = '';
+            var format = '';
 
-          if (extensions.length == 1) {
-            format = extensions[0];
-          }
+            if (extensions.length == 1) {
+              format = extensions[0];
+            }
 
-          // Change default was clicked. We should open "change default" dialog.
-          tasks.showTaskPicker(
-              this.ui_.defaultTaskPicker,
-              loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
-              strf('CHANGE_DEFAULT_CAPTION', format),
-              this.changeDefaultTask_.bind(this, selection),
-              true);
-          break;
-        default:
-          assertNotReached('Unknown task.');
-      }
-    }.bind(this))
-    .catch(function(error) {
-      if (error)
-        console.error(error.stack || error);
-    });
+            // Change default was clicked. We should open "change default"
+            // dialog.
+            tasks.showTaskPicker(
+                this.ui_.defaultTaskPicker,
+                loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
+                strf('CHANGE_DEFAULT_CAPTION', format),
+                this.changeDefaultTask_.bind(this, selection), true);
+            break;
+          default:
+            assertNotReached('Unknown task.');
+        }
+      }.bind(this))
+      .catch(function(error) {
+        if (error)
+          console.error(error.stack || error);
+      });
 };
 
 /**
@@ -218,7 +223,7 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
       this.tasks_ = null;
       this.getFileTasks()
           .then(function(tasks) {
-            tasks.display(this.ui_.taskMenuButton);
+            tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
           }.bind(this))
           .catch(function(error) {
             if (error)
@@ -303,7 +308,7 @@ TaskController.prototype.updateTasks_ = function() {
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
     this.getFileTasks()
         .then(function(tasks) {
-          tasks.display(this.ui_.taskMenuButton);
+          tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
           this.updateContextMenuTaskItems_(tasks.getTaskItems());
         }.bind(this))
         .catch(function(error) {
@@ -312,6 +317,7 @@ TaskController.prototype.updateTasks_ = function() {
         });
   } else {
     this.ui_.taskMenuButton.hidden = true;
+    this.ui_.shareMenuButton.hidden = true;
   }
 };
 
