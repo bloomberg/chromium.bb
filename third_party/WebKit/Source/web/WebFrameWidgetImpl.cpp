@@ -43,7 +43,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebPagePopupImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
