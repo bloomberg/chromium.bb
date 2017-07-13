@@ -135,6 +135,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   static ColorSpace CreateSRGB();
   static ColorSpace CreateDisplayP3D65();
   static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
+                                 TransferID transfer_id);
+  static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
                                  const SkColorSpaceTransferFn& fn);
   static ColorSpace CreateXYZD50();
 
