@@ -284,6 +284,7 @@ if (is_android) {
 
     deps = [
       "//base",
+      "//sandbox:sandbox_features",
     ]
 
     if (use_seccomp_bpf) {
