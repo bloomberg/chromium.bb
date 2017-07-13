@@ -115,6 +115,10 @@ bool MessagePumpFuchsia::FileDescriptorWatcher::WaitBegin() {
 }
 
 uint32_t MessagePumpFuchsia::FileDescriptorWatcher::WaitEnd(uint32_t observed) {
+  // Clear |handle_| so that StopWatchingFileDescriptor() is correctly treated
+  // as a no-op. WaitBegin() will refresh |handle_| if the wait is persistent.
+  handle_ = MX_HANDLE_INVALID;
+
   uint32_t events;
   __mxio_wait_end(io_, observed, &events);
   // |observed| can include other spurious things, in particular, that the fd
