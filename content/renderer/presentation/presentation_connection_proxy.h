@@ -76,9 +76,6 @@ class CONTENT_EXPORT PresentationConnectionProxy
 
   ~PresentationConnectionProxy() override;
 
-  virtual void SendConnectionMessage(PresentationConnectionMessage message,
-                                     OnMessageCallback callback) const;
-
   // blink::mojom::PresentationConnection implementation
   void OnMessage(PresentationConnectionMessage message,
                  OnMessageCallback callback) override;
@@ -89,6 +86,8 @@ class CONTENT_EXPORT PresentationConnectionProxy
   void Close() const override;
   void NotifyTargetConnection(
       blink::WebPresentationConnectionState state) override;
+  void SendTextMessage(const blink::WebString& message) override;
+  void SendBinaryMessage(const uint8_t* data, size_t length) override;
 
  protected:
   explicit PresentationConnectionProxy(
@@ -100,6 +99,11 @@ class CONTENT_EXPORT PresentationConnectionProxy
   // Raw pointer to Blink connection object owning this proxy object. Does not
   // take ownership.
   blink::WebPresentationConnection* const source_connection_;
+
+ private:
+  void SendConnectionMessage(PresentationConnectionMessage message) const;
+
+  DISALLOW_COPY_AND_ASSIGN(PresentationConnectionProxy);
 };
 
 // Represents PresentationConnectionProxy object on controlling frame.

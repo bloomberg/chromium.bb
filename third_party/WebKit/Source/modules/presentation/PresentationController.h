@@ -54,11 +54,6 @@ class MODULES_EXPORT PresentationController final
   void DidCloseConnection(const WebPresentationInfo&,
                           WebPresentationConnectionCloseReason,
                           const WebString& message) override;
-  void DidReceiveConnectionTextMessage(const WebPresentationInfo&,
-                                       const WebString&) override;
-  void DidReceiveConnectionBinaryMessage(const WebPresentationInfo&,
-                                         const uint8_t* data,
-                                         size_t length) override;
 
   // Called by the Presentation object to advertize itself to the controller.
   // The Presentation object is kept as a WeakMember in order to avoid keeping

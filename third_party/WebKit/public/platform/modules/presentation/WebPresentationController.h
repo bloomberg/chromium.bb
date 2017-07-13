@@ -44,15 +44,6 @@ class BLINK_PLATFORM_EXPORT WebPresentationController {
   virtual void DidCloseConnection(const WebPresentationInfo&,
                                   WebPresentationConnectionCloseReason,
                                   const WebString& message) = 0;
-
-  // Called when a text message is received from the presentation.
-  virtual void DidReceiveConnectionTextMessage(const WebPresentationInfo&,
-                                               const WebString& message) = 0;
-
-  // Called when a binary message is received from the presentation.
-  virtual void DidReceiveConnectionBinaryMessage(const WebPresentationInfo&,
-                                                 const uint8_t* data,
-                                                 size_t length) = 0;
 };
 
 }  // namespace blink

@@ -113,14 +113,6 @@ class TestPresentationConnectionProxy : public PresentationConnectionProxy {
   TestPresentationConnectionProxy(blink::WebPresentationConnection* connection)
       : PresentationConnectionProxy(connection) {}
 
-  // PresentationConnectionMessage is move-only.
-  void SendConnectionMessage(PresentationConnectionMessage message,
-                             OnMessageCallback cb) const {
-    SendConnectionMessageInternal(message, cb);
-  }
-  MOCK_CONST_METHOD2(SendConnectionMessageInternal,
-                     void(const PresentationConnectionMessage&,
-                          OnMessageCallback&));
   MOCK_CONST_METHOD0(Close, void());
 };
 
@@ -461,76 +453,12 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentationNoConnection) {
   }
 }
 
-TEST_F(PresentationDispatcherTest, TestSendString) {
-  WebString message = WebString::FromUTF8("test message");
-  TestPresentationConnection connection;
-  TestPresentationConnectionProxy connection_proxy(&connection);
-
-  PresentationConnectionMessage expected_message(message.Utf8());
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
-      .WillOnce(Invoke([&expected_message](
-                           const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
-        EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
-      }));
-
-  dispatcher_.SendString(url1_, presentation_id_, message, &connection_proxy);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(PresentationDispatcherTest, TestSendArrayBuffer) {
-  std::vector<uint8_t> data(array_buffer_data(),
-                            array_buffer_data() + array_buffer_.ByteLength());
-  TestPresentationConnection connection;
-  TestPresentationConnectionProxy connection_proxy(&connection);
-  PresentationConnectionMessage expected_message(data);
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
-      .WillOnce(Invoke([&expected_message](
-                           const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
-        EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
-      }));
-  dispatcher_.SendArrayBuffer(url1_, presentation_id_, array_buffer_data(),
-                              array_buffer_.ByteLength(), &connection_proxy);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(PresentationDispatcherTest, TestSendBlobData) {
-  std::vector<uint8_t> data(array_buffer_data(),
-                            array_buffer_data() + array_buffer_.ByteLength());
-  TestPresentationConnection connection;
-  TestPresentationConnectionProxy connection_proxy(&connection);
-  PresentationConnectionMessage expected_message(data);
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
-      .WillOnce(Invoke([&expected_message](
-                           const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
-        EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
-      }));
-  dispatcher_.SendBlobData(url1_, presentation_id_, array_buffer_data(),
-                           array_buffer_.ByteLength(), &connection_proxy);
-  run_loop.RunUntilIdle();
-}
-
 TEST_F(PresentationDispatcherTest, TestOnReceiverConnectionAvailable) {
   PresentationInfo presentation_info(gurl1_, presentation_id_.Utf8());
 
-  blink::mojom::PresentationConnectionPtr controller_connection_ptr;
   TestPresentationConnection controller_connection;
-  TestPresentationConnectionProxy controller_connection_proxy(
-      &controller_connection);
-  mojo::Binding<blink::mojom::PresentationConnection> binding(
-      &controller_connection_proxy,
-      mojo::MakeRequest(&controller_connection_ptr));
+  ControllerConnectionProxy controller_connection_proxy(&controller_connection);
+  auto controller_connection_ptr = controller_connection_proxy.Bind();
 
   blink::mojom::PresentationConnectionPtr receiver_connection_ptr;
 

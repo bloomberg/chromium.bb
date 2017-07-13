@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/presentation_connection_message.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_connection_proxy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -153,26 +152,6 @@ void PresentationDispatcher::ReconnectPresentation(
                  base::Unretained(this), base::Passed(&callback)));
 }
 
-void PresentationDispatcher::SendString(
-    const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId,
-    const blink::WebString& message,
-    const blink::WebPresentationConnectionProxy* connection_proxy) {
-  if (message.Utf8().size() > kMaxPresentationConnectionMessageSize) {
-    // TODO(crbug.com/459008): Limit the size of individual messages to 64k
-    // for now. Consider throwing DOMException or splitting bigger messages
-    // into smaller chunks later.
-    LOG(WARNING) << "message size exceeded limit!";
-    return;
-  }
-
-  message_request_queue_.push_back(CreateSendTextMessageRequest(
-      presentationUrl, presentationId, message, connection_proxy));
-  // Start processing request if only one in the queue.
-  if (message_request_queue_.size() == 1)
-    DoSendMessage(message_request_queue_.front().get());
-}
-
 void PresentationDispatcher::TerminatePresentation(
     const blink::WebURL& presentationUrl,
     const blink::WebString& presentationId) {
@@ -185,96 +164,15 @@ void PresentationDispatcher::TerminatePresentation(
   presentation_service_->Terminate(presentationUrl, presentationId.Utf8());
 }
 
-void PresentationDispatcher::SendArrayBuffer(
-    const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId,
-    const uint8_t* data,
-    size_t length,
-    const blink::WebPresentationConnectionProxy* connection_proxy) {
-  DCHECK(data);
-  if (length > kMaxPresentationConnectionMessageSize) {
-    // TODO(crbug.com/459008): Same as in sendString().
-    LOG(WARNING) << "data size exceeded limit!";
-    return;
-  }
-
-  message_request_queue_.push_back(CreateSendBinaryMessageRequest(
-      presentationUrl, presentationId, data, length, connection_proxy));
-  // Start processing request if only one in the queue.
-  if (message_request_queue_.size() == 1)
-    DoSendMessage(message_request_queue_.front().get());
-}
-
-void PresentationDispatcher::SendBlobData(
-    const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId,
-    const uint8_t* data,
-    size_t length,
-    const blink::WebPresentationConnectionProxy* connection_proxy) {
-  DCHECK(data);
-  if (length > kMaxPresentationConnectionMessageSize) {
-    // TODO(crbug.com/459008): Same as in sendString().
-    LOG(WARNING) << "data size exceeded limit!";
-    return;
-  }
-
-  message_request_queue_.push_back(CreateSendBinaryMessageRequest(
-      presentationUrl, presentationId, data, length, connection_proxy));
-  // Start processing request if only one in the queue.
-  if (message_request_queue_.size() == 1)
-    DoSendMessage(message_request_queue_.front().get());
-}
-
 void PresentationDispatcher::CloseConnection(
     const blink::WebURL& presentationUrl,
     const blink::WebString& presentationId,
     const blink::WebPresentationConnectionProxy* connection_proxy) {
-  message_request_queue_.erase(
-      std::remove_if(message_request_queue_.begin(),
-                     message_request_queue_.end(),
-                     [&connection_proxy](
-                         const std::unique_ptr<SendMessageRequest>& request) {
-                       return request->connection_proxy == connection_proxy;
-                     }),
-      message_request_queue_.end());
-
   connection_proxy->Close();
 
   ConnectToPresentationServiceIfNeeded();
   presentation_service_->CloseConnection(presentationUrl,
                                          presentationId.Utf8());
-}
-
-void PresentationDispatcher::DoSendMessage(SendMessageRequest* request) {
-  DCHECK(request->connection_proxy);
-  // TODO(crbug.com/684116): Remove static_cast after moving message queue logic
-  // from PresentationDispatcher to PresentationConnectionProxy.
-  static_cast<const PresentationConnectionProxy*>(request->connection_proxy)
-      ->SendConnectionMessage(
-          std::move(request->message),
-          base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
-                     base::Unretained(this)));
-}
-
-void PresentationDispatcher::HandleSendMessageRequests(bool success) {
-  // In normal cases, message_request_queue_ should not be empty at this point
-  // of time, but when DidCommitProvisionalLoad() is invoked before receiving
-  // the callback for previous send mojo call, queue would have been emptied.
-  if (message_request_queue_.empty())
-    return;
-
-  if (!success) {
-    // PresentationServiceImpl is informing that Frame has been detached or
-    // navigated away. Invalidate all pending requests.
-    MessageRequestQueue empty;
-    std::swap(message_request_queue_, empty);
-    return;
-  }
-
-  message_request_queue_.pop_front();
-  if (!message_request_queue_.empty()) {
-    DoSendMessage(message_request_queue_.front().get());
-  }
 }
 
 void PresentationDispatcher::SetControllerConnection(
@@ -392,19 +290,6 @@ void PresentationDispatcher::SetReceiver(
       !render_frame()->GetWebFrame()->IsLoading()) {
     ConnectToPresentationServiceIfNeeded();
   }
-}
-
-void PresentationDispatcher::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  // If not top-level navigation.
-  if (frame->Parent() || is_same_document_navigation)
-    return;
-
-  // Remove all pending send message requests.
-  MessageRequestQueue empty;
-  std::swap(message_request_queue_, empty);
 }
 
 void PresentationDispatcher::DidFinishDocumentLoad() {
@@ -689,47 +574,6 @@ blink::mojom::ScreenAvailability PresentationDispatcher::GetScreenAvailability(
   if (has_unavailable)
     return blink::mojom::ScreenAvailability::UNAVAILABLE;
   return blink::mojom::ScreenAvailability::UNKNOWN;
-}
-
-PresentationDispatcher::SendMessageRequest::SendMessageRequest(
-    const PresentationInfo& presentation_info,
-    PresentationConnectionMessage connection_message,
-    const blink::WebPresentationConnectionProxy* connection_proxy)
-    : presentation_info(presentation_info),
-      message(std::move(connection_message)),
-      connection_proxy(connection_proxy) {}
-
-PresentationDispatcher::SendMessageRequest::~SendMessageRequest() {}
-
-// static
-std::unique_ptr<PresentationDispatcher::SendMessageRequest>
-PresentationDispatcher::CreateSendTextMessageRequest(
-    const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId,
-    const blink::WebString& message,
-    const blink::WebPresentationConnectionProxy* connection_proxy) {
-  PresentationInfo presentation_info(GURL(presentationUrl),
-                                     presentationId.Utf8());
-
-  return base::MakeUnique<SendMessageRequest>(
-      presentation_info, PresentationConnectionMessage(message.Utf8()),
-      connection_proxy);
-}
-
-// static
-std::unique_ptr<PresentationDispatcher::SendMessageRequest>
-PresentationDispatcher::CreateSendBinaryMessageRequest(
-    const blink::WebURL& presentationUrl,
-    const blink::WebString& presentationId,
-    const uint8_t* data,
-    size_t length,
-    const blink::WebPresentationConnectionProxy* connection_proxy) {
-  PresentationInfo presentation_info(GURL(presentationUrl),
-                                     presentationId.Utf8());
-  return base::MakeUnique<SendMessageRequest>(
-      presentation_info,
-      PresentationConnectionMessage(std::vector<uint8_t>(data, data + length)),
-      connection_proxy);
 }
 
 PresentationDispatcher::AvailabilityListener::AvailabilityListener(

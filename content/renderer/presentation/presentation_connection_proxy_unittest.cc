@@ -69,10 +69,6 @@ class PresentationConnectionProxyTest : public ::testing::Test {
     receiver_connection_.reset();
   }
 
-  void ExpectSendConnectionMessageCallback(bool success) {
-    EXPECT_TRUE(success);
-  }
-
  protected:
   std::unique_ptr<TestPresentationConnection> controller_connection_;
   std::unique_ptr<TestPresentationConnection> receiver_connection_;
@@ -88,11 +84,7 @@ TEST_F(PresentationConnectionProxyTest, TestSendString) {
   blink::WebString message = blink::WebString::FromUTF8("test message");
   base::RunLoop run_loop;
   EXPECT_CALL(*receiver_connection_, DidReceiveTextMessage(message));
-  controller_connection_proxy_->SendConnectionMessage(
-      PresentationConnectionMessage(message.Utf8()),
-      base::Bind(
-          &PresentationConnectionProxyTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
+  controller_connection_proxy_->SendTextMessage(message);
   run_loop.RunUntilIdle();
 }
 
@@ -109,11 +101,8 @@ TEST_F(PresentationConnectionProxyTest, TestSendArrayBuffer) {
             EXPECT_EQ(expected_data, message_data);
           }));
 
-  controller_connection_proxy_->SendConnectionMessage(
-      PresentationConnectionMessage(expected_data),
-      base::Bind(
-          &PresentationConnectionProxyTest::ExpectSendConnectionMessageCallback,
-          base::Unretained(this)));
+  controller_connection_proxy_->SendBinaryMessage(expected_data.data(),
+                                                  expected_data.size());
   run_loop.RunUntilIdle();
 }
 

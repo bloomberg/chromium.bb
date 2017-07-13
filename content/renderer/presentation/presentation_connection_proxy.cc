@@ -15,6 +15,15 @@
 
 namespace content {
 
+namespace {
+
+void OnMessageSent(bool success) {
+  DLOG_IF(ERROR, !success)
+      << "Target PresentationConnection failed to process message!";
+}
+
+}  // namespace
+
 PresentationConnectionProxy::PresentationConnectionProxy(
     blink::WebPresentationConnection* source_connection)
     : binding_(this),
@@ -24,13 +33,6 @@ PresentationConnectionProxy::PresentationConnectionProxy(
 }
 
 PresentationConnectionProxy::~PresentationConnectionProxy() = default;
-
-void PresentationConnectionProxy::SendConnectionMessage(
-    PresentationConnectionMessage message,
-    OnMessageCallback callback) const {
-  DCHECK(target_connection_ptr_);
-  target_connection_ptr_->OnMessage(std::move(message), std::move(callback));
-}
 
 void PresentationConnectionProxy::OnMessage(
     PresentationConnectionMessage message,
@@ -86,6 +88,37 @@ void PresentationConnectionProxy::NotifyTargetConnection(
     target_connection_ptr_->DidChangeState(
         content::PRESENTATION_CONNECTION_STATE_TERMINATED);
   }
+}
+
+void PresentationConnectionProxy::SendTextMessage(
+    const blink::WebString& message) {
+  auto utf8_string = message.Utf8();
+  if (utf8_string.size() > kMaxPresentationConnectionMessageSize) {
+    // TODO(crbug.com/459008): Limit the size of individual messages to 64k
+    // for now. Consider throwing DOMException or splitting bigger messages
+    // into smaller chunks later.
+    LOG(WARNING) << "message size exceeded limit!";
+    return;
+  }
+  SendConnectionMessage(PresentationConnectionMessage(utf8_string));
+}
+
+void PresentationConnectionProxy::SendBinaryMessage(const uint8_t* data,
+                                                    size_t length) {
+  if (length > kMaxPresentationConnectionMessageSize) {
+    // TODO(crbug.com/459008): Same as in SendTextMessage().
+    LOG(WARNING) << "data size exceeded limit!";
+    return;
+  }
+  SendConnectionMessage(
+      PresentationConnectionMessage(std::vector<uint8_t>(data, data + length)));
+}
+
+void PresentationConnectionProxy::SendConnectionMessage(
+    PresentationConnectionMessage message) const {
+  DCHECK(target_connection_ptr_);
+  target_connection_ptr_->OnMessage(std::move(message),
+                                    base::BindOnce(&OnMessageSent));
 }
 
 ControllerConnectionProxy::ControllerConnectionProxy(
