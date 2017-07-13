@@ -29,6 +29,11 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#endif  // OS_ANDROID
+
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
@@ -301,11 +306,19 @@ bool ChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
 
 bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
 #if defined(OS_ANDROID)
-  // TODO(crbug/739971) On Android, we don't get notifications from TabModel
-  // when incognito tabs are opened, so this won't get re-evaluated reliably
-  // yet.  Assume there always an incognito tab open, which will keep UKM
-  // disabled.
-  return true;
+  // This differs from TabModelList::IsOffTheRecordSessionActive in that it
+  // does not ignore TabModels that have no open tabs, because it may be checked
+  // before tabs get added to the TabModel. This means it may be more
+  // conservative in case unused TabModels are not cleaned up, but it seems to
+  // work correctly.
+  // TODO(crbug/741888): Check if TabModelList's version can be updated safely.
+  for (TabModelList::const_iterator i = TabModelList::begin();
+       i != TabModelList::end(); i++) {
+    if ((*i)->IsOffTheRecord())
+      return true;
+  }
+
+  return false;
 #else
   // Depending directly on BrowserList, since that is the implementation
   // that we get correct notifications for.

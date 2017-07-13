@@ -96,6 +96,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -292,6 +294,25 @@ ukm::UkmService* BindableGetUkmService(
   return weak_ptr->GetUkmService();
 }
 
+#if defined(OS_ANDROID)
+class AndroidIncognitoObserver : public TabModelListObserver {
+ public:
+  explicit AndroidIncognitoObserver(ChromeMetricsServiceClient* parent)
+      : parent_(parent) {
+    TabModelList::AddObserver(this);
+  }
+
+  ~AndroidIncognitoObserver() override { TabModelList::RemoveObserver(this); }
+
+  void OnTabModelAdded() override { parent_->UpdateRunningServices(); }
+
+  void OnTabModelRemoved() override { parent_->UpdateRunningServices(); }
+
+ private:
+  ChromeMetricsServiceClient* parent_;
+};
+#endif
+
 }  // namespace
 
 const char ChromeMetricsServiceClient::kBrowserMetricsName[] = "BrowserMetrics";
@@ -320,6 +341,9 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
   RegisterForNotifications();
+#if defined(OS_ANDROID)
+  incognito_observer_ = base::MakeUnique<AndroidIncognitoObserver>(this);
+#endif
 }
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
@@ -435,7 +459,10 @@ void ChromeMetricsServiceClient::OnLogCleanShutdown() {
 
 void ChromeMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
-  DCHECK(initialize_task_queue_.empty());
+  // TODO(crbug/739895) This DCHECK sometimes fails due to UkmService and
+  // MetricsService both doing this initialization at the same time.  This is
+  // much more likely to happen when metrics are force enabled via command line.
+  // DCHECK(initialize_task_queue_.empty());
 
   // Each provider's initializer takes its own "done_callback" to enable
   // asynchronously chaining. We bind |next_task| to this callback, so
