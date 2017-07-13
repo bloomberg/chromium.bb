@@ -85,6 +85,9 @@ WebParsedFeaturePolicy ParseFeaturePolicy(const String& policy,
 }
 
 bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
+  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
+    return false;
+
   switch (feature) {
     // TODO(loonybear): Re-enabled fullscreen in feature policy once tests have
     // been updated.
@@ -92,6 +95,7 @@ bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
     case WebFeaturePolicyFeature::kFullscreen:
       return false;
     case WebFeaturePolicyFeature::kPayment:
+    case WebFeaturePolicyFeature::kUsb:
       return true;
     case WebFeaturePolicyFeature::kVibrate:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
