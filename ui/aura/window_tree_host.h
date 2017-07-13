@@ -11,7 +11,7 @@
 #include "base/event_types.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"

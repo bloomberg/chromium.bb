@@ -10,7 +10,7 @@
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"

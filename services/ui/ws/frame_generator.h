@@ -11,8 +11,8 @@
 #include "cc/ipc/compositor_frame_sink.mojom.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_info.h"
-#include "components/viz/common/local_surface_id_allocator.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "services/ui/ws/compositor_frame_sink_client_binding.h"
 #include "ui/gfx/geometry/rect.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 
 #include "base/strings/stringprintf.h"
 

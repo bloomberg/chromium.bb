@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/hash.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {

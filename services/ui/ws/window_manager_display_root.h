@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/viz/common/local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 
 namespace ui {
 namespace ws {

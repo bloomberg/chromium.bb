@@ -8,9 +8,9 @@
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/surface_id.mojom-shared.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/local_surface_id.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace mojo {
 

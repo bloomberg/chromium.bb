@@ -59,8 +59,8 @@
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
-#include "components/viz/common/frame_sink_id.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 

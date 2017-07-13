@@ -9,7 +9,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_observer.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

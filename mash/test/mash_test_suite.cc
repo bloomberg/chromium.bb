@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/common/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"

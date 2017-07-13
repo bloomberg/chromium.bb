@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/vector2d.h"

@@ -6,7 +6,7 @@
 #define CC_IPC_FRAME_SINK_ID_STRUCT_TRAITS_H_
 
 #include "cc/ipc/frame_sink_id.mojom-shared.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 
 namespace mojo {
 

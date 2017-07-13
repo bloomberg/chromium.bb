@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_
-#define COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_
+#ifndef COMPONENTS_VIZ_COMMON_SURFACES_FRAME_SINK_ID_H_
+#define COMPONENTS_VIZ_COMMON_SURFACES_FRAME_SINK_ID_H_
 
 #include <stdint.h>
 
@@ -59,4 +59,4 @@ struct FrameSinkIdHash {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_FRAME_SINK_ID_H_
+#endif  // COMPONENTS_VIZ_COMMON_SURFACES_FRAME_SINK_ID_H_

@@ -1,6 +1,6 @@
 specific_include_rules = {
   # DEPS for GLHelper and friends which are in the root common/ directory.
-  ".*\.(cc|h)": [
+  "(yuv_readback|gl_helper).*\.(cc|h)": [
     "+gpu/GLES2",
     "+gpu/command_buffer/client",
     "+gpu/command_buffer/common",

@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface_reference.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

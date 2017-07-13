@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/frame_sink_id.mojom"
-public_headers = [ "//components/viz/common/frame_sink_id.h" ]
+public_headers = [ "//components/viz/common/surfaces/frame_sink_id.h" ]
 deps = [
   "//components/viz/common",
 ]

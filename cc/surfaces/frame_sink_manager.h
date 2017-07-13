@@ -16,7 +16,7 @@
 #include "cc/surfaces/primary_begin_frame_source.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 
 namespace cc {
 class BeginFrameSource;

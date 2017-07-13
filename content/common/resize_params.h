@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_RESIZE_PARAMS_H_
 
 #include "base/optional.h"
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"

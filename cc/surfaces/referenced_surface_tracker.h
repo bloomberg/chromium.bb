@@ -10,7 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "cc/surfaces/surface_reference.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

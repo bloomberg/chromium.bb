@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/class_property.h"
 

@@ -6,7 +6,7 @@
 #define CC_IPC_LOCAL_SURFACE_ID_STRUCT_TRAITS_H_
 
 #include "cc/ipc/local_surface_id.mojom-shared.h"
-#include "components/viz/common/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {

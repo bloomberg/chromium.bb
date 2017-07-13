@@ -25,8 +25,8 @@
 #include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "components/viz/common/frame_sink_id.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 #if DCHECK_IS_ON()
 #include <iosfwd>

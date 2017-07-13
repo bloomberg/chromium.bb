@@ -8,7 +8,7 @@
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 
 namespace cc {
 

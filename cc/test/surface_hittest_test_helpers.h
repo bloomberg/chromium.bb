@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "cc/quads/render_pass.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
-#include "components/viz/common/surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace gfx {

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "cc/output/copy_output_request.h"
-#include "components/viz/common/frame_sink_id.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
