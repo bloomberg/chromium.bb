@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed. assert_own_property: Expect pc to have ontrack event handler attribute expected property "ontrack" missing
+Harness: the test ran to completion.
+
