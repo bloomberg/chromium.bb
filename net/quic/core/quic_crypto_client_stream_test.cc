@@ -314,6 +314,14 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
                                           /*offset=*/0, data->AsStringPiece()));
 }
 
+TEST_F(QuicCryptoClientStreamTest, NoChannelID) {
+  crypto_config_.SetChannelIDSource(nullptr);
+
+  CompleteCryptoHandshake();
+  EXPECT_FALSE(stream()->WasChannelIDSent());
+  EXPECT_FALSE(stream()->WasChannelIDSourceCallbackRun());
+}
+
 TEST_F(QuicCryptoClientStreamTest, TokenBindingNegotiation) {
   server_options_.token_binding_params = QuicTagVector{kTB10, kP256};
   crypto_config_.tb_key_params = QuicTagVector{kTB10};
