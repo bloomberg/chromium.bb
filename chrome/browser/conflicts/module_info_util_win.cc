@@ -221,6 +221,8 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
 
 }  // namespace
 
+const wchar_t kClassIdRegistryKeyFormat[] = L"CLSID\\%ls\\InProcServer32";
+
 // ModuleDatabase::CertificateInfo ---------------------------------------------
 
 CertificateInfo::CertificateInfo() : type(CertificateType::NO_CERTIFICATE) {}

@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 
 class ModuleWatcher;
-class ShellExtensionEnumerator;
 
 namespace base {
 class CommandLine;
@@ -74,10 +73,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
  private:
   // Watches module load events and forwards them to the ModuleDatabase.
   std::unique_ptr<ModuleWatcher> module_watcher_;
-
-  // Enumerates registered shell extensions and forwards them to the
-  // ModuleDatabase.
-  std::unique_ptr<ShellExtensionEnumerator> shell_extension_enumerator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };

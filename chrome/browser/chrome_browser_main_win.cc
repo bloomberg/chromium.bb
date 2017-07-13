@@ -36,9 +36,9 @@
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/enumerate_input_method_editors_win.h"
+#include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
-#include "chrome/browser/conflicts/shell_extension_enumerator_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -206,10 +206,9 @@ void OnModuleEvent(uint32_t process_id,
 }
 
 // Helper function for initializing the module database subsystem. Populates
-// the provided |module_watcher| and |shell_extension_enumerator|.
-void SetupModuleDatabase(
-    std::unique_ptr<ModuleWatcher>* module_watcher,
-    std::unique_ptr<ShellExtensionEnumerator>* shell_extension_enumerator) {
+// the provided |module_watcher|, and starts the enumeration of registered
+// modules in the Windows Registry.
+void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   uint64_t creation_time = 0;
   ModuleEventSinkImpl::GetProcessCreationTime(::GetCurrentProcess(),
                                               &creation_time);
@@ -230,7 +229,7 @@ void SetupModuleDatabase(
 
   // Enumerate shell extensions and input method editors. It is safe to use
   // base::Unretained() here because the ModuleDatabase is never freed.
-  *shell_extension_enumerator = base::MakeUnique<ShellExtensionEnumerator>(
+  EnumerateShellExtensions(
       base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
                           base::Unretained(module_database)));
   EnumerateInputMethodEditors(base::BindRepeating(
@@ -366,7 +365,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // needs to be done before any child processes are initialized as the
   // ModuleDatabase is an endpoint for IPC from child processes.
   if (base::FeatureList::IsEnabled(features::kModuleDatabase))
-    SetupModuleDatabase(&module_watcher_, &shell_extension_enumerator_);
+    SetupModuleDatabase(&module_watcher_);
 }
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {

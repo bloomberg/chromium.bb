@@ -11,6 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
+// A format string for generating paths to COM class in-proc server keys under
+// HKEY_CLASSES_ROOT.
+extern const wchar_t kClassIdRegistryKeyFormat[];
+
 // The type of certificate found for the module.
 enum class CertificateType {
   // The module is not signed.
