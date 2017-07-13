@@ -99,6 +99,20 @@ cr.define('cr_profile_avatar_selector', function() {
 
         MockInteractions.keyDownOn(items[0], 39, 'shift', 'ArrowRight');
         assertTrue(items[0].focused);
+
+        // Test RTL case.
+        selector.dir = 'rtl';
+        MockInteractions.keyDownOn(items[0], 37, [], 'ArrowLeft');
+        assertTrue(items[1].focused);
+
+        MockInteractions.keyDownOn(items[0], 37, [], 'ArrowLeft');
+        assertTrue(items[2].focused);
+
+        MockInteractions.keyDownOn(items[0], 37, [], 'ArrowRight');
+        assertTrue(items[1].focused);
+
+        MockInteractions.keyDownOn(items[0], 37, [], 'ArrowRight');
+        assertTrue(items[0].focused);
       });
     });
   }
