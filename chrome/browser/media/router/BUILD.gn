@@ -95,9 +95,11 @@ static_library("router") {
 static_library("test_support") {
   testonly = true
   deps = [
-    ":router",
     "//chrome/test:test_support",
     "//testing/gmock",
+  ]
+  public_deps = [
+    ":router",
   ]
   sources = [
     "mock_media_router.cc",
@@ -110,8 +112,10 @@ static_library("test_support") {
 
   if (enable_extensions) {
     deps += [
+      "discovery",
       "//chrome/common/media_router/mojo:media_router",
       "//chrome/common/media_router/mojo:media_router_test_interfaces",
+      "//extensions/browser",
       "//extensions/common",
     ]
     sources += [
