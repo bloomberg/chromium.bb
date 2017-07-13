@@ -288,7 +288,10 @@ std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
   base::string16 missing = comp.GetStringForMissingShippingFields(profile);
   if (!missing.empty()) {
     base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+    *accessible_content = l10n_util::GetStringFUTF16(
+        IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR, *accessible_content, missing);
   }
+
   return base_label;
 }
 
@@ -323,6 +326,8 @@ std::unique_ptr<views::View> GetContactInfoLabel(
   base::string16 missing = comp.GetStringForMissingContactFields(profile);
   if (!missing.empty()) {
     base_label->AddChildView(GetLabelForMissingInformation(missing).release());
+    *accessible_content = l10n_util::GetStringFUTF16(
+        IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR, *accessible_content, missing);
   }
   return base_label;
 }
