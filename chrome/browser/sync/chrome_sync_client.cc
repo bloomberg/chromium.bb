@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/extensions/api/storage/backend_task_runner.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -74,6 +73,7 @@
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/features/features.h"
 #include "ui/base/device_form_factor.h"
 

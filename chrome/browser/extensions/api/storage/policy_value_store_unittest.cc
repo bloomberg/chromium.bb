@@ -12,11 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/run_loop.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store_unittest.h"
@@ -111,6 +112,20 @@ class PolicyValueStoreTest : public testing::Test {
   }
 
  protected:
+  void SetCurrentPolicy(const policy::PolicyMap& policies) {
+    GetBackendTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&PolicyValueStoreTest::SetCurrentPolicyOnBackendSequence,
+                   base::Unretained(this), base::Passed(policies.DeepCopy())));
+    content::RunAllBlockingPoolTasksUntilIdle();
+  }
+
+  void SetCurrentPolicyOnBackendSequence(
+      std::unique_ptr<policy::PolicyMap> policies) {
+    DCHECK(IsOnBackendSequence());
+    store_->SetCurrentPolicy(*policies);
+  }
+
   base::ScopedTempDir scoped_temp_dir_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<PolicyValueStore> store_;
@@ -127,7 +142,8 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                base::MakeUnique<base::Value>(456), nullptr);
-  store_->SetCurrentPolicy(policies);
+  SetCurrentPolicy(policies);
+
   ValueStore::ReadResult result = store_->Get();
   ASSERT_TRUE(result->status().ok());
   EXPECT_EQ(1u, result->settings().size());
@@ -169,8 +185,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
-  store_->SetCurrentPolicy(policies);
-  base::RunLoop().RunUntilIdle();
+  SetCurrentPolicy(policies);
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when new policies are added.
@@ -185,8 +200,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
-  store_->SetCurrentPolicy(policies);
-  base::RunLoop().RunUntilIdle();
+  SetCurrentPolicy(policies);
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies change.
@@ -204,8 +218,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD, new_value.CreateDeepCopy(),
                nullptr);
-  store_->SetCurrentPolicy(policies);
-  base::RunLoop().RunUntilIdle();
+  SetCurrentPolicy(policies);
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies are removed.
@@ -220,14 +233,12 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   }
 
   policies.Erase("bbb");
-  store_->SetCurrentPolicy(policies);
-  base::RunLoop().RunUntilIdle();
+  SetCurrentPolicy(policies);
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Don't notify when there aren't any changes.
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
-  store_->SetCurrentPolicy(policies);
-  base::RunLoop().RunUntilIdle();
+  SetCurrentPolicy(policies);
   Mock::VerifyAndClearExpectations(&observer_);
 }
 

@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/extensions/api/storage/backend_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/model/syncable_service.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/extension_system.h"
 
 namespace browser_sync {

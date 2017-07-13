@@ -18,16 +18,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 using base::StringPiece;
-using content::BrowserThread;
 
 namespace {
 
@@ -39,12 +38,14 @@ const char kCannotSerialize[] = "Cannot serialize value to JSON";
 LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
                                      const base::FilePath& db_path)
     : LazyLevelDb(uma_client_name, db_path) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "LeveldbValueStore", base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          this, "LeveldbValueStore", base::SequencedTaskRunnerHandle::Get(),
+          base::trace_event::MemoryDumpProvider::Options());
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
@@ -74,7 +75,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
 
 ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -95,7 +96,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -129,7 +130,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
 ValueStore::WriteResult LeveldbValueStore::Set(WriteOptions options,
                                                const std::string& key,
                                                const base::Value& value) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -149,7 +150,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(WriteOptions options,
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options,
     const base::DictionaryValue& settings) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -172,13 +173,13 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(const std::string& key) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   return Remove(std::vector<std::string>(1, key));
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(
     const std::vector<std::string>& keys) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -208,7 +209,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
@@ -239,7 +240,7 @@ bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
 bool LeveldbValueStore::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Return true so that the provider is not disabled.
   if (!db())

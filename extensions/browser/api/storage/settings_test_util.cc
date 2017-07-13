@@ -8,8 +8,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/values.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system_provider.h"
@@ -50,7 +50,7 @@ ValueStore* GetStorage(scoped_refptr<const Extension> extension,
   ValueStore* storage = NULL;
   frontend->RunWithStorage(
       extension, settings_namespace, base::Bind(&AssignStorage, &storage));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   return storage;
 }
 

@@ -45,9 +45,9 @@ class SyncValueStoreCache : public ValueStoreCache {
   void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
-  void InitOnFileThread(const scoped_refptr<ValueStoreFactory>& factory,
-                        const scoped_refptr<SettingsObserverList>& observers,
-                        const base::FilePath& profile_path);
+  void InitOnBackend(const scoped_refptr<ValueStoreFactory>& factory,
+                     const scoped_refptr<SettingsObserverList>& observers,
+                     const base::FilePath& profile_path);
 
   bool initialized_;
   std::unique_ptr<SyncStorageBackend> app_backend_;
