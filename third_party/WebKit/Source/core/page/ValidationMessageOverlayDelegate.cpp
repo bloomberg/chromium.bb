@@ -21,18 +21,25 @@ namespace blink {
 class ValidationMessageChromeClient : public EmptyChromeClient {
  public:
   explicit ValidationMessageChromeClient(ChromeClient& main_chrome_client,
+                                         LocalFrameView* anchor_view,
                                          PageOverlay& overlay)
-      : main_chrome_client_(main_chrome_client), overlay_(overlay) {}
+      : main_chrome_client_(main_chrome_client),
+        anchor_view_(anchor_view),
+        overlay_(overlay) {}
 
   DEFINE_INLINE_TRACE() {
     visitor->Trace(main_chrome_client_);
+    visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);
   }
 
   void InvalidateRect(const IntRect&) override { overlay_.Update(); }
 
   void ScheduleAnimation(const PlatformFrameView* frame_view) override {
-    main_chrome_client_->ScheduleAnimation(frame_view);
+    // Need to pass LocalFrameView for the anchor element because the Frame for
+    // this overlay doesn't have an associated WebFrameWidget, which schedules
+    // animation.
+    main_chrome_client_->ScheduleAnimation(anchor_view_);
   }
 
   float WindowToViewportScalar(const float scalar_value) const override {
@@ -41,6 +48,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
 
  private:
   Member<ChromeClient> main_chrome_client_;
+  Member<LocalFrameView> anchor_view_;
   PageOverlay& overlay_;
 };
 
@@ -116,7 +124,8 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   chrome_client_ = new ValidationMessageChromeClient(
-      main_page_->GetChromeClient(), const_cast<PageOverlay&>(overlay));
+      main_page_->GetChromeClient(), anchor_->GetDocument().View(),
+      const_cast<PageOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
   page_ = Page::Create(page_clients);
