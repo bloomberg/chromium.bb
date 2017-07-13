@@ -11,7 +11,8 @@
 #endif
 
 namespace {
-const CGFloat kMinimalCellHeight = 44;
+const CGFloat kButtonMargin = 4;
+const CGFloat kButtonPadding = 16;
 }
 
 #pragma mark - ContentSuggestionsFooterItem
@@ -71,10 +72,12 @@ const CGFloat kMinimalCellHeight = 44;
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_button];
-    [_button.heightAnchor
-        constraintGreaterThanOrEqualToConstant:kMinimalCellHeight]
-        .active = YES;
-    AddSameConstraints(self.contentView, _button);
+    _button.contentEdgeInsets =
+        UIEdgeInsetsMake(0, kButtonPadding, 0, kButtonPadding);
+    ApplyVisualConstraintsWithMetrics(
+        @[ @"V:|-(margin)-[button]-(margin)-|", @"H:|-(margin)-[button]" ],
+        @{@"button" : _button},
+        @{ @"margin" : @(kButtonMargin) });
   }
   return self;
 }
