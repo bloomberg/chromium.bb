@@ -214,3 +214,34 @@ source_set("unit_tests") {
     "//ui/base",
   ]
 }
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "payments_accessibility_egtest.mm",
+  ]
+
+  deps = [
+    ":payments_ui",
+    "//base",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
+    "//components/payments/core",
+    "//components/strings",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser/autofill",
+    "//ios/chrome/browser/payments",
+    "//ios/chrome/browser/ui/payments/cells",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/third_party/material_components_ios",
+    "//ios/web/public/test/http_server",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}
