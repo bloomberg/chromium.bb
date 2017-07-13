@@ -53,6 +53,7 @@ class MakeInternalSettingsWriter(json5_generator.Writer):
             ('InternalSettingsGenerated.idl'): self.generate_idl,
         }
         self._template_context = {
+            'input_files': self._input_files,
             'settings': self.json5_file.name_dictionaries,
         }
 

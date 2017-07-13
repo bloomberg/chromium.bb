@@ -81,7 +81,7 @@ class MakeNamesWriter(json5_generator.Writer):
             'suffix': suffix,
             'export': export,
             'entries': self.json5_file.name_dictionaries,
-            'in_files': self.json5_file.file_paths,
+            'input_files': self._input_files,
         }
 
     @template_expander.use_jinja("templates/MakeNames.h.tmpl", filters=filters)

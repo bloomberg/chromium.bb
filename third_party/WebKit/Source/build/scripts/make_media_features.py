@@ -30,6 +30,7 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
         }
         self._template_context = {
             'entries': self.json5_file.name_dictionaries,
+            'input_files': self._input_files,
         }
 
     @template_expander.use_jinja('templates/MediaFeatures.h.tmpl', filters=filters)

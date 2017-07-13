@@ -1,14 +1,11 @@
-{% from "templates/macros.tmpl" import license %}
+{% from "templates/macros.tmpl" import license, source_files_for_generated_file %}
 {{ license() }}
+
+{{source_files_for_generated_file(template_file, input_files)}}
 
 #include "{{namespace}}{{suffix}}Names.h"
 
 #include "platform/wtf/StdLibExtras.h"
-
-// Generated from:
-{% for entry in in_files|sort %}
-// - {{entry}}
-{% endfor %}
 
 namespace blink {
 namespace {{namespace}}Names {

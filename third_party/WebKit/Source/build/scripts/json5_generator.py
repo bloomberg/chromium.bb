@@ -196,6 +196,7 @@ class Writer(object):
     default_parameters = None
 
     def __init__(self, json5_files):
+        self._input_files = copy.copy(json5_files)
         self._outputs = {}  # file_name -> generator
         self.gperf_path = None
         if json5_files:

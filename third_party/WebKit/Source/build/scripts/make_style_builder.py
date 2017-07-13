@@ -82,6 +82,7 @@ class StyleBuilderWriter(css_properties.CSSProperties):
                                  filters=filters)
     def generate_style_builder_functions_h(self):
         return {
+            'input_files': self._input_files,
             'properties': self._properties,
         }
 
@@ -89,12 +90,14 @@ class StyleBuilderWriter(css_properties.CSSProperties):
                                  filters=filters)
     def generate_style_builder_functions_cpp(self):
         return {
+            'input_files': self._input_files,
             'properties': self._properties,
         }
 
     @template_expander.use_jinja('templates/StyleBuilder.cpp.tmpl', filters=filters)
     def generate_style_builder(self):
         return {
+            'input_files': self._input_files,
             'properties': self._properties,
         }
 

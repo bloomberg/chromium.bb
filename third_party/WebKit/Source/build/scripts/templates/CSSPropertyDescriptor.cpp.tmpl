@@ -1,7 +1,10 @@
-{% from 'templates/macros.tmpl' import license, print_if %}
+{% from 'templates/macros.tmpl' import license, print_if, source_files_for_generated_file %}
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+{{source_files_for_generated_file(template_file, input_files)}}
+
 #include "core/css/properties/CSSPropertyDescriptor.h"
 
 {% for api_class in api_classes %}

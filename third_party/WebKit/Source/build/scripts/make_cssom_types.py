@@ -43,12 +43,14 @@ class CSSOMTypesWriter(css_properties.CSSProperties):
     @template_expander.use_jinja('templates/CSSOMTypes.cpp.tmpl')
     def generate_types(self):
         return {
+            'input_files': self._input_files,
             'properties': self._properties,
         }
 
     @template_expander.use_jinja('templates/CSSOMKeywords.cpp.tmpl')
     def generate_keywords(self):
         return {
+            'input_files': self._input_files,
             'properties': self._properties,
         }
 

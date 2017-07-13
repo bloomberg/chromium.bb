@@ -1,8 +1,9 @@
-// This file is generated from {{input_file}}
-
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+{% from 'macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
 
 #ifndef {{file.header_name}}_h
 #define {{file.header_name}}_h
