@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS share with no arguments (same as empty dictionary) 
-FAIL share with an empty dictionary assert_throws: function "function () { throw e }" threw object "SecurityError: Must be handling a user gesture to perform a share request." ("SecurityError") expected object "TypeError" ("TypeError")
-FAIL share with a undefined argument (same as empty dictionary) assert_throws: function "function () { throw e }" threw object "SecurityError: Must be handling a user gesture to perform a share request." ("SecurityError") expected object "TypeError" ("TypeError")
-FAIL share with a null argument (same as empty dictionary) assert_throws: function "function () { throw e }" threw object "SecurityError: Must be handling a user gesture to perform a share request." ("SecurityError") expected object "TypeError" ("TypeError")
-FAIL share with a dictionary containing only surplus fields assert_throws: function "function () { throw e }" threw object "SecurityError: Must be handling a user gesture to perform a share request." ("SecurityError") expected object "TypeError" ("TypeError")
-Harness: the test ran to completion.
-

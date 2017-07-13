@@ -10,16 +10,6 @@ function getAbsoluteUrl(url) {
 }
 
 share_test((t, webshare, mock) => {
-  mock.pushShareResult('', '', '', webshare.ShareError.OK);
-  return callWithKeyDown(() => navigator.share(undefined));
-}, 'share of undefined (expect treated as empty dictionary)');
-
-share_test((t, webshare, mock) => {
-  mock.pushShareResult('', '', '', webshare.ShareError.OK);
-  return callWithKeyDown(() => navigator.share(null));
-}, 'share of null (expect treated as empty dictionary)');
-
-share_test((t, webshare, mock) => {
   mock.pushShareResult('true', 'the object', getAbsoluteUrl('384957'), webshare.ShareError.OK);
 
   const objectWithToString = {toString() { return 'the object'; }};
