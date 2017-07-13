@@ -25,12 +25,14 @@ class PLATFORM_EXPORT ThreadLoadTracker {
 
   ThreadLoadTracker(base::TimeTicks now,
                     const Callback& callback,
-                    base::TimeDelta reporting_interval,
-                    base::TimeDelta waiting_period);
+                    base::TimeDelta reporting_interval);
   ~ThreadLoadTracker();
 
   void Pause(base::TimeTicks now);
   void Resume(base::TimeTicks now);
+
+  // Note: this does not change |thread_state_|.
+  void Reset(base::TimeTicks now);
 
   void RecordTaskTime(base::TimeTicks start_time, base::TimeTicks end_time);
 
@@ -52,15 +54,10 @@ class PLATFORM_EXPORT ThreadLoadTracker {
   // |time_| is the last timestamp LoadTracker knows about.
   base::TimeTicks time_;
   base::TimeTicks next_reporting_time_;
-  // Total period for which this LoadTracker was active. Needed to discard
-  // first |waiting_period_| time.
-  base::TimeDelta total_active_time_;
 
   ThreadState thread_state_;
   base::TimeTicks last_state_change_time_;
 
-  // Start reporting values after |waiting_period_|.
-  base::TimeDelta waiting_period_;
   base::TimeDelta reporting_interval_;
 
   // Recorded run time in window

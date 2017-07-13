@@ -32,34 +32,34 @@ TEST(ThreadLoadTrackerTest, RecordTasks) {
 
   ThreadLoadTracker thread_load_tracker(
       SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
-      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+      base::TimeDelta::FromSeconds(1));
   thread_load_tracker.Resume(SecondsToTime(1));
 
-  // We should discard first ten seconds of information.
   thread_load_tracker.RecordTaskTime(SecondsToTime(1), SecondsToTime(3));
 
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(11300),
-                                     MillisecondsToTime(11400));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(4300),
+                                     MillisecondsToTime(4400));
 
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(12900),
-                                     MillisecondsToTime(13100));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(5900),
+                                     MillisecondsToTime(6100));
 
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(13700),
-                                     MillisecondsToTime(13800));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(6700),
+                                     MillisecondsToTime(6800));
 
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(14500),
-                                     MillisecondsToTime(16500));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(7500),
+                                     MillisecondsToTime(8500));
 
-  thread_load_tracker.RecordIdle(MillisecondsToTime(17500));
+  thread_load_tracker.RecordIdle(MillisecondsToTime(10500));
 
-  // Because of 10-second delay we're getting information starting with 11s.
-  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(11), 0),
-                                  std::make_pair(SecondsToTime(12), 0.1),
-                                  std::make_pair(SecondsToTime(13), 0.1),
-                                  std::make_pair(SecondsToTime(14), 0.2),
-                                  std::make_pair(SecondsToTime(15), 0.5),
-                                  std::make_pair(SecondsToTime(16), 1.0),
-                                  std::make_pair(SecondsToTime(17), 0.5)));
+  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(2), 1.0),
+                                  std::make_pair(SecondsToTime(3), 1.0),
+                                  std::make_pair(SecondsToTime(4), 0),
+                                  std::make_pair(SecondsToTime(5), 0.1),
+                                  std::make_pair(SecondsToTime(6), 0.1),
+                                  std::make_pair(SecondsToTime(7), 0.2),
+                                  std::make_pair(SecondsToTime(8), 0.5),
+                                  std::make_pair(SecondsToTime(9), 0.5),
+                                  std::make_pair(SecondsToTime(10), 0)));
 }
 
 TEST(ThreadLoadTrackerTest, PauseAndResume) {
@@ -67,50 +67,77 @@ TEST(ThreadLoadTrackerTest, PauseAndResume) {
 
   ThreadLoadTracker thread_load_tracker(
       SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
-      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+      base::TimeDelta::FromSeconds(1));
   thread_load_tracker.Resume(SecondsToTime(1));
 
-  thread_load_tracker.RecordTaskTime(SecondsToTime(3), SecondsToTime(4));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(2), SecondsToTime(3));
   thread_load_tracker.Pause(SecondsToTime(5));
-  // This task should be ignored.
-  thread_load_tracker.RecordTaskTime(SecondsToTime(10), SecondsToTime(11));
-  thread_load_tracker.Resume(SecondsToTime(15));
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(20900),
-                                     MillisecondsToTime(21100));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(6), SecondsToTime(7));
+  thread_load_tracker.Resume(SecondsToTime(9));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(10900),
+                                     MillisecondsToTime(11100));
 
-  thread_load_tracker.RecordIdle(MillisecondsToTime(23500));
+  thread_load_tracker.Pause(SecondsToTime(12));
 
-  thread_load_tracker.Pause(MillisecondsToTime(23500));
-  thread_load_tracker.Resume(SecondsToTime(26));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(12100),
+                                     MillisecondsToTime(12200));
 
-  thread_load_tracker.RecordTaskTime(MillisecondsToTime(26100),
-                                     MillisecondsToTime(26200));
-  thread_load_tracker.RecordIdle(MillisecondsToTime(27500));
+  thread_load_tracker.Resume(SecondsToTime(13));
 
-  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(21), 0.1),
-                                  std::make_pair(SecondsToTime(22), 0.1),
-                                  std::make_pair(SecondsToTime(23), 0),
-                                  std::make_pair(SecondsToTime(27), 0.1)));
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(13100),
+                                     MillisecondsToTime(13400));
+
+  thread_load_tracker.RecordIdle(SecondsToTime(14));
+
+  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(2), 0),
+                                  std::make_pair(SecondsToTime(3), 1.0),
+                                  std::make_pair(SecondsToTime(4), 0),
+                                  std::make_pair(SecondsToTime(5), 0),
+                                  std::make_pair(SecondsToTime(10), 0),
+                                  std::make_pair(SecondsToTime(11), 0.1),
+                                  std::make_pair(SecondsToTime(12), 0.1),
+                                  std::make_pair(SecondsToTime(14), 0.3)));
 }
 
 TEST(ThreadLoadTrackerTest, DisabledByDefault) {
   std::vector<std::pair<base::TimeTicks, double>> result;
   ThreadLoadTracker thread_load_tracker(
       SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
-      base::TimeDelta::FromSeconds(1), base::TimeDelta::FromSeconds(10));
+      base::TimeDelta::FromSeconds(1));
 
   // ThreadLoadTracker should be disabled and these tasks should be
   // ignored.
-  thread_load_tracker.RecordTaskTime(SecondsToTime(13), SecondsToTime(14));
-  thread_load_tracker.RecordTaskTime(SecondsToTime(15), SecondsToTime(16));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(1), SecondsToTime(3));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(4), SecondsToTime(7));
 
-  thread_load_tracker.Resume(SecondsToTime(17));
+  thread_load_tracker.Resume(SecondsToTime(8));
 
-  thread_load_tracker.RecordTaskTime(SecondsToTime(28), SecondsToTime(29));
+  thread_load_tracker.RecordTaskTime(SecondsToTime(9), SecondsToTime(10));
 
-  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(27), 0),
-                                  std::make_pair(SecondsToTime(28), 0),
-                                  std::make_pair(SecondsToTime(29), 1)));
+  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(9), 0),
+                                  std::make_pair(SecondsToTime(10), 1)));
+}
+
+TEST(ThreadLoadTrackerTest, Reset) {
+  std::vector<std::pair<base::TimeTicks, double>> result;
+  ThreadLoadTracker thread_load_tracker(
+      SecondsToTime(1), base::Bind(&AddToVector, base::Unretained(&result)),
+      base::TimeDelta::FromSeconds(1));
+
+  thread_load_tracker.Resume(SecondsToTime(1));
+
+  thread_load_tracker.RecordTaskTime(MillisecondsToTime(1500),
+                                     MillisecondsToTime(4500));
+
+  thread_load_tracker.Reset(SecondsToTime(100));
+
+  thread_load_tracker.RecordTaskTime(SecondsToTime(101), SecondsToTime(102));
+
+  EXPECT_THAT(result, ElementsAre(std::make_pair(SecondsToTime(2), 0.5),
+                                  std::make_pair(SecondsToTime(3), 1.0),
+                                  std::make_pair(SecondsToTime(4), 1.0),
+                                  std::make_pair(SecondsToTime(101), 0),
+                                  std::make_pair(SecondsToTime(102), 1)));
 }
 
 }  // namespace scheduler

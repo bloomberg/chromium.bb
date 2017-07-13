@@ -62135,6 +62135,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.BackgroundRendererMainThreadLoad2" units="%">
+  <obsolete>
+    Replaced with
+    RendererScheduler.RendererMainThreadLoad3.Background.AfterFirstMinute as of
+    July 2017.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load when renderer is backgrounded, i.e. percentage of
@@ -62175,6 +62180,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.ForegroundRendererMainThreadLoad2" units="%">
+  <obsolete>
+    Replaced with
+    RendererScheduler.RendererMainThreadLoad3.Foreground.AfterFirstMinute as of
+    July 2017.
+  </obsolete>
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load when renderer is foregrounded, i.e. percentage of
@@ -62243,6 +62253,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the expected queueing time was past some threshold.
 
     Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.RendererMainThreadLoad3" units="%">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load (percentage of time spent in tasks), reported in
+    one second chunks.
+
+    See http://bit.ly/chromium-renderer-main-thread-load-metric for details.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per second per
+    renderer amortized.
   </summary>
 </histogram>
 
@@ -96399,6 +96423,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="Memory.Experimental.Renderer.TotalAllocatedPerRenderView"/>
   <affected-histogram name="Memory.Experimental.Renderer.V8MainThreadIsolate"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="RendererScheduler.MainThreadLoadSplit" separator=".">
+  <suffix name="Background"
+      label="Main thread load when the renderer is backgrounded."/>
+  <suffix name="Background.AfterFirstMinute"
+      label="Main thread load when the renderer is backgrounded for longer
+             than one minute. Most of loading tasks are expected to complete
+             by then."/>
+  <suffix name="Foreground"
+      label="Main thread load when the renderer is foregrounded."/>
+  <suffix name="Foreground.AfterFirstMinute"
+      label="Main thread load when the renderer is foregrounded for longer
+             than one minute. Most of loading tasks are expected to complete
+             by then."/>
+  <affected-histogram name="RendererScheduler.RendererMainThreadLoad3"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.TaskDurationPerQueueTypeSplit"
