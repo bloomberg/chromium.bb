@@ -76,11 +76,14 @@ class XmppConnectionTest : public testing::Test {
  protected:
   XmppConnectionTest()
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()) {
-    std::unique_ptr<base::MessagePump> pump(new base::MessagePumpDefault());
-    message_loop_.reset(new base::MessageLoop(std::move(pump)));
+    // GTest death tests by default execute in a fork()ed but not exec()ed
+    // process. On macOS, a CoreFoundation-backed MessageLoop will exit with a
+    // __THE_PROCESS_HAS_FORKED_AND_YOU_CANNOT_USE_THIS_COREFOUNDATION_FUNCTIONALITY___YOU_MUST_EXEC__
+    // when called. Use the threadsafe mode to avoid this problem.
+    testing::GTEST_FLAG(death_test_style) = "threadsafe";
 
-    url_request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_->task_runner());
+    url_request_context_getter_ =
+        new net::TestURLRequestContextGetter(message_loop_.task_runner());
   }
 
   ~XmppConnectionTest() override {}
@@ -91,7 +94,7 @@ class XmppConnectionTest : public testing::Test {
   }
 
   // Needed by XmppConnection.
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::MessageLoop message_loop_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   std::unique_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
