@@ -13,35 +13,10 @@ import psutil
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
-from infra_libs import ts_mon
 
 logger = logging.getLogger(__name__)
 
 _BOOT_TIME = psutil.boot_time()
-
-_net_up_metric = metrics.CounterMetric(
-    'dev/net/bytes/up', start_time=_BOOT_TIME,
-    description='Number of bytes sent on interface.')
-_net_down_metric = metrics.CounterMetric(
-    'dev/net/bytes/down', start_time=_BOOT_TIME,
-    description='Number of Bytes received on '
-    'interface.')
-_net_err_up_metric = metrics.CounterMetric(
-    'dev/net/err/up', start_time=_BOOT_TIME,
-    description='Total number of errors when '
-    'sending (per interface).')
-_net_err_down_metric = metrics.CounterMetric(
-    'dev/net/err/down', start_time=_BOOT_TIME,
-    description='Total number of errors when '
-    'receiving (per interface).')
-_net_drop_up_metric = metrics.CounterMetric(
-    'dev/net/drop/up', start_time=_BOOT_TIME,
-    description='Total number of outgoing '
-    'packets that have been dropped.')
-_net_drop_down_metric = metrics.CounterMetric(
-    'dev/net/drop/down', start_time=_BOOT_TIME,
-    description='Total number of incoming '
-    'packets that have been dropped.')
 
 _net_bytes_metric = metrics.CounterMetric(
     'dev/net/bytes', start_time=_BOOT_TIME,
@@ -72,7 +47,6 @@ _net_if_mtu_metric = metrics.GaugeMetric(
 
 def collect_net_info():
   """Collect network metrics."""
-  _collect_net_io_counters()
   _collect_net_io_duplex_counters()
   _collect_net_if_stats()
 
@@ -108,30 +82,6 @@ def _collect_net_io_duplex_counters():
         metric.set(getattr(counters, down_counter_name),
                    fields=dict(direction='down', **fields))
       except metrics.MonitoringDecreasingValueError as ex:
-        # This normally shouldn't happen, but might if the network
-        # driver module is reloaded, so log an error and continue
-        # instead of raising an exception.
-        logger.warning(str(ex))
-
-
-_net_io_metrics = (
-    (_net_up_metric, 'bytes_sent'),
-    (_net_down_metric, 'bytes_recv'),
-    (_net_err_up_metric, 'errout'),
-    (_net_err_down_metric, 'errin'),
-    (_net_drop_up_metric, 'dropout'),
-    (_net_drop_down_metric, 'dropin'),
-)
-
-
-def _collect_net_io_counters():
-  """Collect metrics for network IO counters."""
-  for nic, counters in _net_io_iter():
-    fields = {'interface': nic}
-    for metric, counter_name in _net_io_metrics:
-      try:
-        metric.set(getattr(counters, counter_name), fields=fields)
-      except ts_mon.MonitoringDecreasingValueError as ex:
         # This normally shouldn't happen, but might if the network
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.

@@ -47,18 +47,6 @@ class TestNetMetrics(cros_test_lib.TestCase):
 
     setter = self.store.set
     calls = [
-        mock.call('dev/net/bytes/up', ('lo',), None,
-                  17247495681, enforce_ge=mock.ANY),
-        mock.call('dev/net/bytes/down', ('lo',), None,
-                  172474956, enforce_ge=mock.ANY),
-        mock.call('dev/net/err/up', ('lo',), None,
-                  1, enforce_ge=mock.ANY),
-        mock.call('dev/net/err/down', ('lo',), None,
-                  10, enforce_ge=mock.ANY),
-        mock.call('dev/net/drop/up', ('lo',), None,
-                  2, enforce_ge=mock.ANY),
-        mock.call('dev/net/drop/down', ('lo',), None,
-                  20, enforce_ge=mock.ANY),
         mock.call('dev/net/bytes', ('up', 'lo'), None,
                   17247495681, enforce_ge=mock.ANY),
         mock.call('dev/net/bytes', ('down', 'lo'), None,
