@@ -61,18 +61,27 @@ bool IsOutOfSpace(const NGConstraintSpace& space, LayoutUnit content_size) {
          content_size >= space.FragmentainerSpaceAvailable();
 }
 
-bool IsEmptyFragment(NGWritingMode writing_mode,
-                     const NGLayoutResult& layout_result) {
-  if (!layout_result.PhysicalFragment())
-    return true;
+// Returns if the resulting fragment should be considered an "empty block".
+// There is special casing for fragments like this, e.g. margins "collapse
+// through", etc.
+bool IsEmptyBlock(const NGLayoutInputNode child,
+                  const NGLayoutResult& layout_result) {
+  if (child.CreatesNewFormattingContext())
+    return false;
 
-  // TODO(ikilpatrick): This is kinda wrong, we need a bit on the
-  // NGLayoutResult to properly determine if something is empty.
-  NGFragment fragment(writing_mode, layout_result.PhysicalFragment().Get());
-  if (!fragment.BlockSize())
-    return true;
+  if (layout_result.BfcOffset())
+    return false;
 
-  return false;
+#if DCHECK_IS_ON()
+  // This just checks that the fragments block size is actually zero. We can
+  // assume that its in the same writing mode as its parent, as a different
+  // writing mode child will be caught by the CreatesNewFormattingContext check.
+  NGFragment fragment(FromPlatformWritingMode(child.Style().GetWritingMode()),
+                      layout_result.PhysicalFragment().Get());
+  DCHECK_EQ(LayoutUnit(), fragment.BlockSize());
+#endif
+
+  return true;
 }
 
 }  // namespace
@@ -521,10 +530,12 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
                                &child_bfc_offset))
       return WTF::nullopt;
   } else if (container_builder_.BfcOffset()) {
+    DCHECK(IsEmptyBlock(child, *layout_result));
+
     child_bfc_offset =
         PositionWithParentBfc(*child_space, child_data, *layout_result);
   } else
-    DCHECK(IsEmptyFragment(ConstraintSpace().WritingMode(), *layout_result));
+    DCHECK(IsEmptyBlock(child, *layout_result));
 
   // We need to layout a child if we know its BFC offset and:
   //  - It aborted its layout as it resolved its BFC offset.
@@ -549,14 +560,14 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
   NGLogicalOffset logical_offset =
       CalculateLogicalOffset(child_data.margins, child_bfc_offset);
 
-  // Only modify content_size_ if the fragment's BlockSize is not empty. This is
+  // Only modify content_size_ if the fragment is not an empty block. This is
   // needed to prevent the situation when logical_offset is included in
   // content_size_ for empty blocks. Example:
   //   <div style="overflow:hidden">
   //     <div style="margin-top: 8px"></div>
   //     <div style="margin-top: 10px"></div>
   //   </div>
-  if (fragment.BlockSize()) {
+  if (!IsEmptyBlock(child, *layout_result)) {
     content_size_ = std::max(
         content_size_, logical_offset.block_offset + fragment.BlockSize());
   }
@@ -566,7 +577,7 @@ WTF::Optional<NGPreviousInflowPosition> NGBlockLayoutAlgorithm::HandleInflow(
 
   container_builder_.AddChild(layout_result, logical_offset);
 
-  return ComputeInflowPosition(previous_inflow_position, child_data,
+  return ComputeInflowPosition(previous_inflow_position, child, child_data,
                                child_bfc_offset, logical_offset, *layout_result,
                                fragment);
 }
@@ -596,6 +607,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
 
 NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     const NGPreviousInflowPosition& previous_inflow_position,
+    const NGLayoutInputNode child,
     const NGInflowChildData& child_data,
     const WTF::Optional<NGLogicalOffset>& child_bfc_offset,
     const NGLogicalOffset& logical_offset,
@@ -606,22 +618,19 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
   LayoutUnit child_end_bfc_block_offset;
   LayoutUnit logical_block_offset;
 
-  if (child_bfc_offset) {
-    // TODO(crbug.com/716930): I think the layout_result->BfcOffset() condition
-    // here can be removed once we've removed inline splitting.
-    if (fragment.BlockSize() || layout_result.BfcOffset()) {
-      child_end_bfc_block_offset =
-          child_bfc_offset.value().block_offset + fragment.BlockSize();
-      logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
-    } else {
-      DCHECK(IsEmptyFragment(ConstraintSpace().WritingMode(), layout_result));
+  if (IsEmptyBlock(child, layout_result)) {
+    child_end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
+    logical_block_offset = previous_inflow_position.logical_block_offset;
 
-      child_end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
-      logical_block_offset = previous_inflow_position.logical_block_offset;
+    if (!container_builder_.BfcOffset()) {
+      DCHECK_EQ(child_end_bfc_block_offset,
+                ConstraintSpace().BfcOffset().block_offset);
+      DCHECK_EQ(logical_block_offset, LayoutUnit());
     }
   } else {
-    child_end_bfc_block_offset = ConstraintSpace().BfcOffset().block_offset;
-    logical_block_offset = LayoutUnit();
+    child_end_bfc_block_offset =
+        child_bfc_offset.value().block_offset + fragment.BlockSize();
+    logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
   }
 
   NGMarginStrut margin_strut = layout_result.EndMarginStrut();
@@ -725,8 +734,6 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
     const NGLayoutResult& layout_result) {
   // The child must be an in-flow zero-block-size fragment, use its end margin
   // strut for positioning.
-  DCHECK(IsEmptyFragment(ConstraintSpace().WritingMode(), layout_result));
-
   NGLogicalOffset child_bfc_offset = {
       ConstraintSpace().BfcOffset().inline_offset +
           border_scrollbar_padding_.inline_start +

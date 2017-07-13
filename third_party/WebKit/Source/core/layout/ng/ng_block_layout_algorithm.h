@@ -80,6 +80,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   NGPreviousInflowPosition ComputeInflowPosition(
       const NGPreviousInflowPosition& previous_inflow_position,
+      const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const WTF::Optional<NGLogicalOffset>& child_bfc_offset,
       const NGLogicalOffset& logical_offset,
