@@ -44,7 +44,8 @@
 
 namespace blink {
 
-bool IsOnAccessControlResponseHeaderWhitelist(const String& name) {
+bool CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
+    const String& name) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       HTTPHeaderSet, allowed_cross_origin_response_headers,
       ({
@@ -87,7 +88,7 @@ static AtomicString CreateAccessControlRequestHeadersHeader(
   return AtomicString(header_buffer.ToString());
 }
 
-ResourceRequest CreateAccessControlPreflightRequest(
+ResourceRequest CrossOriginAccessControl::CreateAccessControlPreflightRequest(
     const ResourceRequest& request) {
   const KURL& request_url = request.Url();
 
@@ -467,14 +468,16 @@ class HTTPHeaderNameListParser {
   size_t pos_;
 };
 
-void ParseAccessControlExposeHeadersAllowList(const String& header_value,
-                                              HTTPHeaderSet& header_set) {
+void CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+    const String& header_value,
+    HTTPHeaderSet& header_set) {
   HTTPHeaderNameListParser parser(header_value);
   parser.Parse(header_set);
 }
 
-void ExtractCorsExposedHeaderNamesList(const ResourceResponse& response,
-                                       HTTPHeaderSet& header_set) {
+void CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(
+    const ResourceResponse& response,
+    HTTPHeaderSet& header_set) {
   // If a response was fetched via a service worker, it will always have
   // corsExposedHeaderNames set, either from the Access-Control-Expose-Headers
   // header, or explicitly via foreign fetch. For requests that didn't come from
@@ -485,7 +488,7 @@ void ExtractCorsExposedHeaderNamesList(const ResourceResponse& response,
       header_set.insert(header);
     return;
   }
-  ParseAccessControlExposeHeadersAllowList(
+  CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
       response.HttpHeaderField(HTTPNames::Access_Control_Expose_Headers),
       header_set);
 }

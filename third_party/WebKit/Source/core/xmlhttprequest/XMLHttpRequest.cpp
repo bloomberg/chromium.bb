@@ -1349,8 +1349,8 @@ String XMLHttpRequest::getAllResponseHeaders() const {
   StringBuilder string_builder;
 
   HTTPHeaderSet access_control_expose_header_set;
-  ExtractCorsExposedHeaderNamesList(response_,
-                                    access_control_expose_header_set);
+  CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(
+      response_, access_control_expose_header_set);
 
   HTTPHeaderMap::const_iterator end = response_.HttpHeaderFields().end();
   for (HTTPHeaderMap::const_iterator it = response_.HttpHeaderFields().begin();
@@ -1365,7 +1365,8 @@ String XMLHttpRequest::getAllResponseHeaders() const {
       continue;
 
     if (!same_origin_request_ &&
-        !IsOnAccessControlResponseHeaderWhitelist(it->key) &&
+        !CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
+            it->key) &&
         !access_control_expose_header_set.Contains(it->key))
       continue;
 
@@ -1394,11 +1395,12 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
   }
 
   HTTPHeaderSet access_control_expose_header_set;
-  ExtractCorsExposedHeaderNamesList(response_,
-                                    access_control_expose_header_set);
+  CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(
+      response_, access_control_expose_header_set);
 
   if (!same_origin_request_ &&
-      !IsOnAccessControlResponseHeaderWhitelist(name) &&
+      !CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
+          name) &&
       !access_control_expose_header_set.Contains(name)) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to get unsafe header \"" + name + "\"");

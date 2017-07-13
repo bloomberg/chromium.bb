@@ -8,6 +8,7 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
@@ -98,9 +99,10 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
   HTTPHeaderSet access_control_expose_header_set;
   String access_control_expose_headers;
   if (header_list_->Get(HTTPNames::Access_Control_Expose_Headers,
-                        access_control_expose_headers))
-    ParseAccessControlExposeHeadersAllowList(access_control_expose_headers,
-                                             access_control_expose_header_set);
+                        access_control_expose_headers)) {
+    CrossOriginAccessControl::ParseAccessControlExposeHeadersAllowList(
+        access_control_expose_headers, access_control_expose_header_set);
+  }
   return CreateCORSFilteredResponse(access_control_expose_header_set);
 }
 
@@ -120,7 +122,8 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
     const bool explicitly_exposed = exposed_headers.Contains(name);
-    if (IsOnAccessControlResponseHeaderWhitelist(name) ||
+    if (CrossOriginAccessControl::IsOnAccessControlResponseHeaderWhitelist(
+            name) ||
         (explicitly_exposed &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       if (explicitly_exposed)

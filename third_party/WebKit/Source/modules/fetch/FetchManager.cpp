@@ -31,6 +31,7 @@
 #include "platform/HTTPNames.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
+#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -464,7 +465,8 @@ void FetchManager::Loader::DidReceiveResponse(
         break;
       case FetchRequestData::kCORSTainting: {
         HTTPHeaderSet header_names;
-        ExtractCorsExposedHeaderNamesList(response, header_names);
+        CrossOriginAccessControl::ExtractCorsExposedHeaderNamesList(
+            response, header_names);
         tainted_response =
             response_data->CreateCORSFilteredResponse(header_names);
         break;

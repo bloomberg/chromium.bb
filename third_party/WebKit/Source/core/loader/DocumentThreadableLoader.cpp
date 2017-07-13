@@ -343,7 +343,8 @@ void DocumentThreadableLoader::LoadPreflightRequest(
     const ResourceRequest& actual_request,
     const ResourceLoaderOptions& actual_options) {
   ResourceRequest preflight_request =
-      CreateAccessControlPreflightRequest(actual_request);
+      CrossOriginAccessControl::CreateAccessControlPreflightRequest(
+          actual_request);
 
   // TODO(tyoshino): Call prepareCrossOriginRequest(preflightRequest) to
   // also set the referrer header.

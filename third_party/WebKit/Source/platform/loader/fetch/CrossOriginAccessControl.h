@@ -135,19 +135,19 @@ class PLATFORM_EXPORT CrossOriginAccessControl {
                                    PreflightStatus,
                                    const ResourceResponse&);
   static void RedirectErrorString(StringBuilder&, RedirectStatus, const KURL&);
+
+  static bool IsOnAccessControlResponseHeaderWhitelist(const String&);
+
+  static ResourceRequest CreateAccessControlPreflightRequest(
+      const ResourceRequest&);
+
+  static void ParseAccessControlExposeHeadersAllowList(
+      const String& header_value,
+      HTTPHeaderSet&);
+
+  static void ExtractCorsExposedHeaderNamesList(const ResourceResponse&,
+                                                HTTPHeaderSet&);
 };
-
-// TODO: also migrate these into the above static class.
-PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(const String&);
-
-PLATFORM_EXPORT ResourceRequest
-CreateAccessControlPreflightRequest(const ResourceRequest&);
-
-PLATFORM_EXPORT void ParseAccessControlExposeHeadersAllowList(
-    const String& header_value,
-    HTTPHeaderSet&);
-PLATFORM_EXPORT void ExtractCorsExposedHeaderNamesList(const ResourceResponse&,
-                                                       HTTPHeaderSet&);
 
 }  // namespace blink
 
