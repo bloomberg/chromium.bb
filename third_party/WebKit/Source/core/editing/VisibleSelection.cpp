@@ -51,12 +51,10 @@ template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     const SelectionTemplate<Strategy>& selection,
     TextGranularity granularity)
-    : base_(selection.Base()),
-      extent_(selection.Extent()),
-      affinity_(selection.Affinity()),
+    : affinity_(selection.Affinity()),
       selection_type_(kNoSelection),
       is_directional_(selection.IsDirectional()) {
-  Validate(granularity);
+  Validate(selection, granularity);
 }
 
 template <typename Strategy>
@@ -207,29 +205,37 @@ VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::SetBaseAndExtentToDeepEquivalents() {
-  // Move the selection to rendered positions, if possible.
-  bool base_and_extent_equal = base_ == extent_;
-  if (base_.IsNotNull()) {
-    base_ = CreateVisiblePosition(base_, affinity_).DeepEquivalent();
-    if (base_and_extent_equal)
-      extent_ = base_;
+static SelectionTemplate<Strategy> CanonicalizeSelection(
+    const SelectionTemplate<Strategy>& selection) {
+  if (selection.IsNone())
+    return SelectionTemplate<Strategy>();
+  const PositionTemplate<Strategy>& base =
+      CreateVisiblePosition(selection.Base(), selection.Affinity())
+          .DeepEquivalent();
+  if (selection.IsCaret()) {
+    if (base.IsNull())
+      return SelectionTemplate<Strategy>();
+    return
+        typename SelectionTemplate<Strategy>::Builder().Collapse(base).Build();
   }
-  if (extent_.IsNotNull() && !base_and_extent_equal)
-    extent_ = CreateVisiblePosition(extent_, affinity_).DeepEquivalent();
-
-  // Make sure we do not have a dangling base or extent.
-  if (base_.IsNull() && extent_.IsNull()) {
-    base_is_first_ = true;
-  } else if (base_.IsNull()) {
-    base_ = extent_;
-    base_is_first_ = true;
-  } else if (extent_.IsNull()) {
-    extent_ = base_;
-    base_is_first_ = true;
-  } else {
-    base_is_first_ = base_.CompareTo(extent_) <= 0;
+  const PositionTemplate<Strategy>& extent =
+      CreateVisiblePosition(selection.Extent(), selection.Affinity())
+          .DeepEquivalent();
+  if (base.IsNotNull() && extent.IsNotNull()) {
+    return typename SelectionTemplate<Strategy>::Builder()
+        .SetBaseAndExtent(base, extent)
+        .Build();
   }
+  if (base.IsNotNull()) {
+    return
+        typename SelectionTemplate<Strategy>::Builder().Collapse(base).Build();
+  }
+  if (extent.IsNotNull()) {
+    return typename SelectionTemplate<Strategy>::Builder()
+        .Collapse(extent)
+        .Build();
+  }
+  return SelectionTemplate<Strategy>();
 }
 
 template <typename Strategy>
@@ -443,17 +449,26 @@ void VisibleSelectionTemplate<Strategy>::UpdateSelectionType() {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
+void VisibleSelectionTemplate<Strategy>::Validate(
+    const SelectionTemplate<Strategy>& passed_selection,
+    TextGranularity granularity) {
   DCHECK(!NeedsLayoutTreeUpdate(base_));
   DCHECK(!NeedsLayoutTreeUpdate(extent_));
   // TODO(xiaochengh): Add a DocumentLifecycle::DisallowTransitionScope here.
 
-  SetBaseAndExtentToDeepEquivalents();
-  if (base_.IsNull() || extent_.IsNull()) {
+  const SelectionTemplate<Strategy>& canonicalized_selection =
+      CanonicalizeSelection(passed_selection);
+
+  if (canonicalized_selection.IsNone()) {
     base_ = extent_ = start_ = end_ = PositionTemplate<Strategy>();
+    base_is_first_ = true;
     UpdateSelectionType();
     return;
   }
+
+  base_ = canonicalized_selection.Base();
+  extent_ = canonicalized_selection.Extent();
+  base_is_first_ = base_ <= extent_;
 
   const PositionTemplate<Strategy> start = base_is_first_ ? base_ : extent_;
   const PositionTemplate<Strategy> new_start =
