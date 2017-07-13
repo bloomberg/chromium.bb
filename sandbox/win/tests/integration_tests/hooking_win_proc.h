@@ -10,7 +10,7 @@
 namespace hooking_win_proc {
 
 constexpr wchar_t g_winproc_file[] = L"sbox_integration_test_win_proc.exe ";
-constexpr wchar_t g_winproc_event[] = L"ChromeExtensionTestEvent";
+constexpr wchar_t g_winproc_event[] = L"ChromeExtensionTestWinProcEvent";
 
 }  // namespace hooking_win_proc
 

@@ -15,8 +15,12 @@
 
 namespace hooking_dll {
 
-constexpr wchar_t g_hook_dll_file[] = L"sbox_integration_test_hook_dll.dll";
+constexpr wchar_t g_hook_dll_file[] = L"sbox_integration_test_hooking_dll.dll";
 constexpr wchar_t g_hook_event[] = L"ChromeExtensionTestHookEvent";
+
+// System mutex to prevent conflicting tests from running at the same time.
+// This particular mutex is related to the use of the hooking_dll.
+constexpr wchar_t g_hooking_dll_mutex[] = L"ChromeTestHookingDllMutex";
 
 DLL_EXPORT void SetHook(HHOOK hook_handle);
 DLL_EXPORT bool WasHookCalled();

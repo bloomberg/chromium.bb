@@ -102,7 +102,7 @@ class TestRunner {
   // Sets TestRunner to return without waiting for the process to exit.
   void SetAsynchronous(bool is_async) { is_async_ = is_async; }
 
-  // Sets TestRunner to return without waiting for the process to exit.
+  // Sets whether TestRunner sandboxes the child process. ("--no-sandbox")
   void SetUnsandboxed(bool is_no_sandbox) { no_sandbox_ = is_no_sandbox; }
 
   // Sets whether TestRunner should disable CSRSS or not (default true).
