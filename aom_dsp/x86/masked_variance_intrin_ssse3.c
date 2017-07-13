@@ -570,6 +570,7 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
       const uint8_t *msk, int msk_stride, int invert_mask, uint32_t *sse) { \
     uint64_t sse64;                                                         \
     int sum;                                                                \
+    int64_t var;                                                            \
     uint16_t temp[(H + 1) * W];                                             \
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);                        \
     const uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);                        \
@@ -585,7 +586,8 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
                              msk_stride, W, H, &sse64, &sum);               \
     *sse = (uint32_t)ROUND_POWER_OF_TWO(sse64, 4);                          \
     sum = ROUND_POWER_OF_TWO(sum, 2);                                       \
-    return *sse - (uint32_t)(((int64_t)sum * sum) / (W * H));               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));               \
+    return (var >= 0) ? (uint32_t)var : 0;                                  \
   }                                                                         \
   unsigned int aom_highbd_12_masked_sub_pixel_variance##W##x##H##_ssse3(    \
       const uint8_t *src8, int src_stride, int xoffset, int yoffset,        \
@@ -593,6 +595,7 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
       const uint8_t *msk, int msk_stride, int invert_mask, uint32_t *sse) { \
     uint64_t sse64;                                                         \
     int sum;                                                                \
+    int64_t var;                                                            \
     uint16_t temp[(H + 1) * W];                                             \
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);                        \
     const uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);                        \
@@ -608,7 +611,8 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
                              msk_stride, W, H, &sse64, &sum);               \
     *sse = (uint32_t)ROUND_POWER_OF_TWO(sse64, 8);                          \
     sum = ROUND_POWER_OF_TWO(sum, 4);                                       \
-    return *sse - (uint32_t)(((int64_t)sum * sum) / (W * H));               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (W * H));               \
+    return (var >= 0) ? (uint32_t)var : 0;                                  \
   }
 
 #define HIGHBD_MASK_SUBPIX_VAR4XH_SSSE3(H)                                  \
@@ -640,6 +644,7 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
       const uint8_t *msk, int msk_stride, int invert_mask, uint32_t *sse) { \
     int sse_;                                                               \
     int sum;                                                                \
+    int64_t var;                                                            \
     uint16_t temp[(H + 1) * 4];                                             \
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);                        \
     const uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);                        \
@@ -655,7 +660,8 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
                                 msk_stride, H, &sse_, &sum);                \
     *sse = (uint32_t)ROUND_POWER_OF_TWO(sse_, 4);                           \
     sum = ROUND_POWER_OF_TWO(sum, 2);                                       \
-    return *sse - (uint32_t)(((int64_t)sum * sum) / (4 * H));               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (4 * H));               \
+    return (var >= 0) ? (uint32_t)var : 0;                                  \
   }                                                                         \
   unsigned int aom_highbd_12_masked_sub_pixel_variance4x##H##_ssse3(        \
       const uint8_t *src8, int src_stride, int xoffset, int yoffset,        \
@@ -663,6 +669,7 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
       const uint8_t *msk, int msk_stride, int invert_mask, uint32_t *sse) { \
     int sse_;                                                               \
     int sum;                                                                \
+    int64_t var;                                                            \
     uint16_t temp[(H + 1) * 4];                                             \
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);                        \
     const uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);                        \
@@ -678,7 +685,8 @@ static void highbd_masked_variance4xh(const uint16_t *src_ptr, int src_stride,
                                 msk_stride, H, &sse_, &sum);                \
     *sse = (uint32_t)ROUND_POWER_OF_TWO(sse_, 8);                           \
     sum = ROUND_POWER_OF_TWO(sum, 4);                                       \
-    return *sse - (uint32_t)(((int64_t)sum * sum) / (4 * H));               \
+    var = (int64_t)(*sse) - (((int64_t)sum * sum) / (4 * H));               \
+    return (var >= 0) ? (uint32_t)var : 0;                                  \
   }
 
 #if CONFIG_EXT_PARTITION
