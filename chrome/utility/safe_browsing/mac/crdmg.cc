@@ -17,6 +17,7 @@
 
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/mac/availability.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
@@ -53,7 +54,7 @@ class SafeDMG {
   bool EnableSandbox();
 
   // Performs the actual DMG operation.
-  __attribute__((availability(macos, introduced = 10.10))) bool ParseDMG();
+  API_AVAILABLE(macos(10.10)) bool ParseDMG();
 
   base::File dmg_file_;
 

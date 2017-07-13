@@ -1528,14 +1528,14 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
 - (BOOL)application:(NSApplication*)application
     willContinueUserActivityWithType:(NSString*)userActivityType
-    __attribute__((availability(macos, introduced = 10.10))) {
+    API_AVAILABLE(macos(10.10)) {
   return [userActivityType isEqualToString:NSUserActivityTypeBrowsingWeb];
 }
 
 - (BOOL)application:(NSApplication*)application
     continueUserActivity:(NSUserActivity*)userActivity
       restorationHandler:(void (^)(NSArray*))restorationHandler
-    __attribute__((availability(macos, introduced = 10.10))) {
+    API_AVAILABLE(macos(10.10)) {
   if (![userActivity.activityType
           isEqualToString:NSUserActivityTypeBrowsingWeb]) {
     return NO;

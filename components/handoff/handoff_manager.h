@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/mac/availability.h"
 #include "build/build_config.h"
 #include "components/handoff/handoff_utility.h"
 #include "url/gurl.h"
@@ -31,8 +32,7 @@ class PrefRegistrySyncable;
 // The active URL is defined as the URL of the most recently accessed tab. This
 // method should be called any time the active URL might have changed. This
 // method is idempotent.
-- (void)updateActiveURL:(const GURL&)url
-    __attribute__((availability(macos, introduced = 10.10)));
+- (void)updateActiveURL:(const GURL&)url API_AVAILABLE(macos(10.10));
 
 @end
 
