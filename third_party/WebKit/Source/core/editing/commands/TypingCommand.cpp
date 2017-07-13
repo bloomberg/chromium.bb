@@ -718,130 +718,125 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  switch (EndingSelection().GetSelectionType()) {
-    case kRangeSelection:
-      DeleteKeyPressedInternal(EndingSelection(), EndingSelection(), kill_ring,
-                               editing_state);
+  if (EndingSelection().IsRange()) {
+    DeleteKeyPressedInternal(EndingSelection(), EndingSelection(), kill_ring,
+                             editing_state);
+    return;
+  }
+
+  if (!EndingSelection().IsCaret()) {
+    NOTREACHED();
+    return;
+  }
+
+  // After breaking out of an empty mail blockquote, we still want continue
+  // with the deletion so actual content will get deleted, and not just the
+  // quote style.
+  const bool break_out_result =
+      BreakOutOfEmptyMailBlockquotedParagraph(editing_state);
+  if (editing_state->IsAborted())
+    return;
+  if (break_out_result)
+    TypingAddedToOpenCommand(kDeleteKey);
+
+  smart_delete_ = false;
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  SelectionModifier selection_modifier(*frame, EndingSelection());
+  selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                            kDirectionBackward, granularity);
+  if (kill_ring && selection_modifier.Selection().IsCaret() &&
+      granularity != TextGranularity::kCharacter) {
+    selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                              kDirectionBackward, TextGranularity::kCharacter);
+  }
+
+  const VisiblePosition& visible_start(EndingSelection().VisibleStart());
+  const VisiblePosition& previous_position =
+      PreviousPositionOf(visible_start, kCannotCrossEditingBoundary);
+  const Node* enclosing_table_cell =
+      EnclosingNodeOfType(visible_start.DeepEquivalent(), &IsTableCell);
+  const Node* enclosing_table_cell_for_previous_position =
+      EnclosingNodeOfType(previous_position.DeepEquivalent(), &IsTableCell);
+  if (previous_position.IsNull() ||
+      enclosing_table_cell != enclosing_table_cell_for_previous_position) {
+    // When the caret is at the start of the editable area, or cell, in an
+    // empty list item, break out of the list item.
+    const bool break_out_of_empty_list_item_result =
+        BreakOutOfEmptyListItem(editing_state);
+    if (editing_state->IsAborted())
       return;
-    case kCaretSelection: {
-      // After breaking out of an empty mail blockquote, we still want continue
-      // with the deletion so actual content will get deleted, and not just the
-      // quote style.
-      bool break_out_result =
-          BreakOutOfEmptyMailBlockquotedParagraph(editing_state);
-      if (editing_state->IsAborted())
-        return;
-      if (break_out_result)
-        TypingAddedToOpenCommand(kDeleteKey);
-
-      smart_delete_ = false;
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-      SelectionModifier selection_modifier(*frame, EndingSelection());
-      selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                kDirectionBackward, granularity);
-      if (kill_ring && selection_modifier.Selection().IsCaret() &&
-          granularity != TextGranularity::kCharacter) {
-        selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionBackward,
-                                  TextGranularity::kCharacter);
-      }
-
-      const VisiblePosition& visible_start(EndingSelection().VisibleStart());
-      const VisiblePosition& previous_position =
-          PreviousPositionOf(visible_start, kCannotCrossEditingBoundary);
-      const Node* enclosing_table_cell =
-          EnclosingNodeOfType(visible_start.DeepEquivalent(), &IsTableCell);
-      const Node* enclosing_table_cell_for_previous_position =
-          EnclosingNodeOfType(previous_position.DeepEquivalent(), &IsTableCell);
-      if (previous_position.IsNull() ||
-          enclosing_table_cell != enclosing_table_cell_for_previous_position) {
-        // When the caret is at the start of the editable area, or cell, in an
-        // empty list item, break out of the list item.
-        bool break_out_of_empty_list_item_result =
-            BreakOutOfEmptyListItem(editing_state);
-        if (editing_state->IsAborted())
-          return;
-        if (break_out_of_empty_list_item_result) {
-          TypingAddedToOpenCommand(kDeleteKey);
-          return;
-        }
-      }
-      if (previous_position.IsNull()) {
-        // When there are no visible positions in the editing root, delete its
-        // entire contents.
-        if (NextPositionOf(visible_start, kCannotCrossEditingBoundary)
-                .IsNull() &&
-            MakeEditableRootEmpty(editing_state)) {
-          TypingAddedToOpenCommand(kDeleteKey);
-          return;
-        }
-        if (editing_state->IsAborted())
-          return;
-      }
-
-      // If we have a caret selection at the beginning of a cell, we have
-      // nothing to do.
-      if (enclosing_table_cell &&
-          visible_start.DeepEquivalent() ==
-              VisiblePosition::FirstPositionInNode(
-                  *const_cast<Node*>(enclosing_table_cell))
-                  .DeepEquivalent())
-        return;
-
-      // If the caret is at the start of a paragraph after a table, move content
-      // into the last table cell.
-      if (IsStartOfParagraph(visible_start) &&
-          TableElementJustBefore(
-              PreviousPositionOf(visible_start, kCannotCrossEditingBoundary))) {
-        // Unless the caret is just before a table.  We don't want to move a
-        // table into the last table cell.
-        if (TableElementJustAfter(visible_start))
-          return;
-        // Extend the selection backward into the last cell, then deletion will
-        // handle the move.
-        selection_modifier.Modify(FrameSelection::kAlterationExtend,
-                                  kDirectionBackward, granularity);
-        // If the caret is just after a table, select the table and don't delete
-        // anything.
-      } else if (Element* table = TableElementJustBefore(visible_start)) {
-        SetEndingSelection(
-            SelectionInDOMTree::Builder()
-                .Collapse(Position::BeforeNode(*table))
-                .Extend(EndingSelection().Start())
-                .SetIsDirectional(EndingSelection().IsDirectional())
-                .Build());
-        TypingAddedToOpenCommand(kDeleteKey);
-        return;
-      }
-
-      const VisibleSelection& selection_to_delete =
-          granularity == TextGranularity::kCharacter
-              ? AdjustSelectionForBackwardDelete(selection_modifier.Selection())
-              : selection_modifier.Selection();
-
-      if (!StartingSelection().IsRange() ||
-          selection_to_delete.Base() != StartingSelection().Start()) {
-        DeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
-                                 kill_ring, editing_state);
-        return;
-      }
-      // It's a little tricky to compute what the starting selection would
-      // have been in the original document. We can't let the VisibleSelection
-      // class's validation kick in or it'll adjust for us based on the
-      // current state of the document and we'll get the wrong result.
-      const VisibleSelection& selection_after_undo =
-          VisibleSelection::CreateWithoutValidationDeprecated(
-              StartingSelection().End(), selection_to_delete.Extent(),
-              selection_to_delete.Affinity());
-      DeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
-                               kill_ring, editing_state);
+    if (break_out_of_empty_list_item_result) {
+      TypingAddedToOpenCommand(kDeleteKey);
       return;
     }
-    case kNoSelection:
-      NOTREACHED();
-      break;
   }
+  if (previous_position.IsNull()) {
+    // When there are no visible positions in the editing root, delete its
+    // entire contents.
+    if (NextPositionOf(visible_start, kCannotCrossEditingBoundary).IsNull() &&
+        MakeEditableRootEmpty(editing_state)) {
+      TypingAddedToOpenCommand(kDeleteKey);
+      return;
+    }
+    if (editing_state->IsAborted())
+      return;
+  }
+
+  // If we have a caret selection at the beginning of a cell, we have
+  // nothing to do.
+  if (enclosing_table_cell && visible_start.DeepEquivalent() ==
+                                  VisiblePosition::FirstPositionInNode(
+                                      *const_cast<Node*>(enclosing_table_cell))
+                                      .DeepEquivalent())
+    return;
+
+  // If the caret is at the start of a paragraph after a table, move content
+  // into the last table cell.
+  if (IsStartOfParagraph(visible_start) &&
+      TableElementJustBefore(
+          PreviousPositionOf(visible_start, kCannotCrossEditingBoundary))) {
+    // Unless the caret is just before a table.  We don't want to move a
+    // table into the last table cell.
+    if (TableElementJustAfter(visible_start))
+      return;
+    // Extend the selection backward into the last cell, then deletion will
+    // handle the move.
+    selection_modifier.Modify(FrameSelection::kAlterationExtend,
+                              kDirectionBackward, granularity);
+    // If the caret is just after a table, select the table and don't delete
+    // anything.
+  } else if (Element* table = TableElementJustBefore(visible_start)) {
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(Position::BeforeNode(*table))
+                           .Extend(EndingSelection().Start())
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
+    TypingAddedToOpenCommand(kDeleteKey);
+    return;
+  }
+
+  const VisibleSelection& selection_to_delete =
+      granularity == TextGranularity::kCharacter
+          ? AdjustSelectionForBackwardDelete(selection_modifier.Selection())
+          : selection_modifier.Selection();
+
+  if (!StartingSelection().IsRange() ||
+      selection_to_delete.Base() != StartingSelection().Start()) {
+    DeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
+                             kill_ring, editing_state);
+    return;
+  }
+  // It's a little tricky to compute what the starting selection would
+  // have been in the original document. We can't let the VisibleSelection
+  // class's validation kick in or it'll adjust for us based on the
+  // current state of the document and we'll get the wrong result.
+  const VisibleSelection& selection_after_undo =
+      VisibleSelection::CreateWithoutValidationDeprecated(
+          StartingSelection().End(), selection_to_delete.Extent(),
+          selection_to_delete.Affinity());
+  DeleteKeyPressedInternal(selection_to_delete, selection_after_undo, kill_ring,
+                           editing_state);
 }
 
 void TypingCommand::DeleteKeyPressedInternal(
