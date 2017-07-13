@@ -57,7 +57,7 @@ class MockChannelDelegate : public Channel::Delegate {
   }
 
   // Notify that an error has occured and the Channel will cease operation.
-  void OnChannelError() override {}
+  void OnChannelError(Channel::Error error) override {}
 
  private:
   size_t payload_size_ = 0;

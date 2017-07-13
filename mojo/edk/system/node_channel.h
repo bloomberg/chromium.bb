@@ -178,7 +178,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void OnChannelMessage(const void* payload,
                         size_t payload_size,
                         ScopedPlatformHandleVectorPtr handles) override;
-  void OnChannelError() override;
+  void OnChannelError(Channel::Error error) override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // MachPortRelay::Observer:

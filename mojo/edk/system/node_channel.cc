@@ -755,19 +755,28 @@ void NodeChannel::OnChannelMessage(const void* payload,
     }
 
     default:
-      break;
+      // Ignore unrecognized message types, allowing for future extensibility.
+      return;
   }
 
   DLOG(ERROR) << "Received invalid message. Closing channel.";
+  if (process_error_callback_)
+    process_error_callback_.Run("NodeChannel received a malformed message");
   delegate_->OnChannelError(remote_node_name_, this);
 }
 
-void NodeChannel::OnChannelError() {
+void NodeChannel::OnChannelError(Channel::Error error) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
 
   ShutDown();
+
+  if (process_error_callback_ &&
+      error == Channel::Error::kReceivedMalformedData) {
+    process_error_callback_.Run("Channel received a malformed message");
+  }
+
   // |OnChannelError()| may cause |this| to be destroyed, but still need access
   // to the name name after that destruction. So may a copy of
   // |remote_node_name_| so it can be used if |this| becomes destroyed.
