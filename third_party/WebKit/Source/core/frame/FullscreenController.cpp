@@ -31,12 +31,12 @@
 #include "core/frame/FullscreenController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Fullscreen.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/page/Page.h"

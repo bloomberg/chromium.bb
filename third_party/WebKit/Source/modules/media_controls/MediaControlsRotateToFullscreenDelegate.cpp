@@ -5,10 +5,10 @@
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 
 #include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
 #include "modules/media_controls/MediaControlsImpl.h"

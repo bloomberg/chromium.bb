@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -41,6 +40,7 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ChromeClient.h"

@@ -4,8 +4,8 @@
 
 #include "core/html/HTMLMediaElement.h"
 
-#include "core/dom/Fullscreen.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"

@@ -27,7 +27,7 @@
  *
  */
 
-#include "core/dom/Fullscreen.h"
+#include "core/fullscreen/Fullscreen.h"
 
 #include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Document.h"

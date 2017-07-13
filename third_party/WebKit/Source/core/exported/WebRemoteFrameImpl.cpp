@@ -5,7 +5,6 @@
 #include "core/exported/WebRemoteFrameImpl.h"
 
 #include "bindings/core/v8/WindowProxy.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/exported/WebFactory.h"
@@ -16,6 +15,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"
