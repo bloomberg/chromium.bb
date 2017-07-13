@@ -6,7 +6,12 @@
 # as stand-alone projects. If this is ever not the case, these variables
 # can be removed.
 # See https://bugs.chromium.org/p/webrtc/issues/detail?id=5453.
-mac_sdk_min_build_override = "10.10"
+_sdk_min_from_env = getenv("FORCE_MAC_SDK_MIN")
+if (_sdk_min_from_env == "") {
+  mac_sdk_min_build_override = "10.10"
+} else {
+  mac_sdk_min_build_override = _sdk_min_from_env
+}
 
 # Variable that can be used to support multiple build scenarios, like having
 # Chromium specific targets in a client project's GN file etc.
