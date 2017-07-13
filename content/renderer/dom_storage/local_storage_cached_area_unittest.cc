@@ -108,6 +108,8 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
 
   void Flush() { bindings_.FlushForTesting(); }
 
+  void CloseAllBindings() { bindings_.CloseAllBindings(); }
+
   using ResultCallback = base::OnceCallback<void(bool)>;
   std::list<ResultCallback> pending_callbacks_;
   bool observed_get_all_ = false;
@@ -400,6 +402,39 @@ TEST_F(LocalStorageCachedAreaTest, StringEncoding) {
   EXPECT_LT(String16ToUint8Vector(ascii_key).size(), ascii_key.size() * 2);
   EXPECT_GT(String16ToUint8Vector(non_ascii_key).size(),
             non_ascii_key.size() * 2);
+}
+
+TEST_F(LocalStorageCachedAreaTest, BrowserDisconnect) {
+  scoped_refptr<LocalStorageCachedArea> cached_area =
+      cached_areas_.GetCachedArea(kOrigin);
+
+  // GetLength to prime the cache.
+  mock_leveldb_wrapper_.get_all_return_values_[String16ToUint8Vector(kKey)] =
+      String16ToUint8Vector(kValue);
+  EXPECT_EQ(1u, cached_area->GetLength());
+  EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
+  mock_leveldb_wrapper_.CompleteAllPendingCallbacks();
+  mock_leveldb_wrapper_.ResetObservations();
+
+  // Now disconnect the pipe from the browser, simulating situations where the
+  // browser might be forced to destroy the LevelDBWrapperImpl.
+  mock_leveldb_wrapper_.CloseAllBindings();
+
+  // Getters should still function.
+  EXPECT_EQ(1u, cached_area->GetLength());
+  EXPECT_EQ(kValue, cached_area->GetItem(kKey).string());
+
+  // And setters should also still function.
+  cached_area->RemoveItem(kKey, kPageUrl, kStorageAreaId);
+  EXPECT_EQ(0u, cached_area->GetLength());
+  EXPECT_TRUE(cached_area->GetItem(kKey).is_null());
+
+  // Even resetting the cache should still allow class to function properly.
+  ResetCacheOnly(cached_area.get());
+  EXPECT_TRUE(cached_area->GetItem(kKey).is_null());
+  EXPECT_TRUE(cached_area->SetItem(kKey, kValue, kPageUrl, kStorageAreaId));
+  EXPECT_EQ(1u, cached_area->GetLength());
+  EXPECT_EQ(kValue, cached_area->GetItem(kKey).string());
 }
 
 }  // namespace content
