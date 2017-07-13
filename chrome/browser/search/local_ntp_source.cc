@@ -62,6 +62,8 @@ const char kOneGoogleBarInHeadScriptFilename[] = "one-google/in-head.js";
 const char kOneGoogleBarAfterBarScriptFilename[] = "one-google/after-bar.js";
 const char kOneGoogleBarEndOfBodyScriptFilename[] = "one-google/end-of-body.js";
 
+const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
+
 const struct Resource{
   const char* filename;
   int identifier;
@@ -332,15 +334,16 @@ void LocalNtpSource::StartDataRequest(
     std::string html = ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_LOCAL_NTP_HTML)
                            .as_string();
-    std::string config_sha256 =
-        "sha256-" + GetIntegritySha256Value(
-                        GetConfigData(default_search_provider_is_google_));
+    std::string config_integrity = base::StringPrintf(
+        kIntegrityFormat, GetIntegritySha256Value(
+                              GetConfigData(default_search_provider_is_google_))
+                              .c_str());
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{CONFIG_INTEGRITY}}",
-                                           config_sha256);
-    std::string local_ntp_sha256 =
-        std::string("sha256-") + LOCAL_NTP_JS_INTEGRITY;
+                                           config_integrity);
+    std::string local_ntp_integrity =
+        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
-                                           local_ntp_sha256);
+                                           local_ntp_integrity);
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
   }

@@ -28,7 +28,12 @@ namespace {
 const char kBasePath[] = "chrome/browser/resources/local_ntp";
 
 // Matches lines of form '<include src="foo">' and captures 'foo'.
+// TODO(treib): None of the local NTP files use this. Remove it?
 const char kInlineResourceRegex[] = "<include.*?src\\=[\"'](.+?)[\"'].*?>";
+
+// TODO(treib): local_ntp.css contains url(...) references to images, which get
+// inlined by grit's "flattenhtml" feature during regular builds. Find some way
+// to make that work with local files.
 
 void CallbackWithLoadedResource(
     const std::string& origin,
@@ -37,6 +42,13 @@ void CallbackWithLoadedResource(
   std::string output = content;
   if (!origin.empty())
     base::ReplaceFirstSubstringAfterOffset(&output, 0, "{{ORIGIN}}", origin);
+
+  // Strip out the integrity placeholders. CSP is disabled in local-files mode,
+  // so the integrity values aren't required.
+  base::ReplaceFirstSubstringAfterOffset(&output, 0, "{{CONFIG_INTEGRITY}}",
+                                         std::string());
+  base::ReplaceFirstSubstringAfterOffset(&output, 0, "{{LOCAL_NTP_INTEGRITY}}",
+                                         std::string());
 
   callback.Run(base::RefCountedString::TakeString(&output));
 }
