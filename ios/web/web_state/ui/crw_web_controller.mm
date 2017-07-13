@@ -4013,8 +4013,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
         self.navigationManagerImpl->GetVisibleItem();
     const GURL& visibleURL =
         visibleItem ? visibleItem->GetURL() : GURL::EmptyGURL();
-    if (![self shouldLoadURLInNativeView:visibleURL])
+    if (![self shouldLoadURLInNativeView:visibleURL]) {
       [self displayWebView];
+    } else if (base::ios::IsRunningOnIOS11OrLater()) {
+      // On iOS 11 WKWebView load is broken if view is not a part of the
+      // hierarchy. Add view to the hierarchy, but place it offscreen to
+      // workaround iOS bug (rdar://33184203).
+      // TODO(crbug.com/739390): Remove this workaround.
+      CGRect frame = [_webView frame];
+      frame.origin.y = CGRectGetHeight(UIScreen.mainScreen.bounds);
+      [_webView setFrame:frame];
+      [self.view addSubview:_webView];
+    }
   }
 }
 
