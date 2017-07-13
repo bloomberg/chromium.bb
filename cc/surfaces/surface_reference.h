@@ -9,12 +9,8 @@
 
 #include "base/hash.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
-namespace mojom {
-class SurfaceReferenceDataView;
-}
 
 // Hold a reference from an embedding (parent) to embedded (child) surface.
 class SurfaceReference {
@@ -50,9 +46,6 @@ class SurfaceReference {
   std::string ToString() const;
 
  private:
-  friend struct mojo::StructTraits<mojom::SurfaceReferenceDataView,
-                                   SurfaceReference>;
-
   viz::SurfaceId parent_id_;
   viz::SurfaceId child_id_;
 };

@@ -17,7 +17,6 @@ import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/selection.mojom";
 import "cc/ipc/shared_quad_state.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_reference.mojom";
 import "cc/ipc/surface_sequence.mojom";
 import "cc/ipc/texture_mailbox.mojom";
 import "cc/ipc/transferable_resource.mojom";
@@ -64,9 +63,6 @@ interface TraitsTestService {
 
   [Sync]
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
-
-  [Sync]
-  EchoSurfaceReference(SurfaceReference r) => (SurfaceReference pass);
 
   [Sync]
   EchoSurfaceSequence(SurfaceSequence s) => (SurfaceSequence pass);
