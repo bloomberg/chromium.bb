@@ -508,7 +508,9 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
+// Flaky: crbug.com/742503
+TEST_F(IndexedDBDispatcherHostTest,
+       DISABLED_CompactDatabaseWhileDoingTransaction) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;
@@ -573,7 +575,8 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
+// Flaky: crbug.com/742503
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_CompactDatabaseWhileUpgrading) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
 
@@ -693,7 +696,9 @@ TEST_F(IndexedDBDispatcherHostTest,
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
+// Flaky: crbug.com/742503
+TEST_F(IndexedDBDispatcherHostTest,
+       DISABLED_AbortTransactionsWhileDoingTransaction) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;
@@ -758,7 +763,8 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
 }
 
-TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
+// Flaky: crbug.com/742503
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_AbortTransactionsWhileUpgrading) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
 
