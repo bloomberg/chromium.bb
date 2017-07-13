@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.Resources;
-import android.graphics.Color;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -29,7 +28,8 @@ public final class SuggestionsConfig {
      * @return The background color for the suggestions sheet content.
      */
     public static int getBackgroundColor(Resources resources) {
-        return useModern() ? Color.WHITE
-                           : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
+        return useModern()
+                ? ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg)
+                : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
     }
 }
