@@ -306,6 +306,7 @@ TEST_F(DownloadServiceControllerImplTest,
 
 TEST_F(DownloadServiceControllerImplTest, FailedInitWithBadModel) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(0);
+  EXPECT_CALL(*client_, OnServiceUnavailable()).Times(1);
 
   controller_->Initialize();
   store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());

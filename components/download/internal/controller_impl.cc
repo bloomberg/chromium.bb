@@ -437,6 +437,12 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   if (!startup_status_.Ok()) {
     // TODO(dtrainor): Recover here.  Try to clean up any disk state and, if
     // possible, any DownloadDriver data and continue with initialization?
+
+    // If we cannot recover, notify Clients that the service is unavailable.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ControllerImpl::SendOnServiceUnavailable,
+                              weak_ptr_factory_.GetWeakPtr()));
+
     ProcessScheduledTasks();
     return;
   }
@@ -446,6 +452,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   CancelOrphanedRequests();
   CleanupUnknownFiles();
   ResolveInitialRequestStates();
+
   NotifyClientsOfStartup();
 
   initializing_internals_ = false;
@@ -862,6 +869,12 @@ void ControllerImpl::SendOnServiceInitialized(
   auto* client = clients_->GetClient(client_id);
   DCHECK(client);
   client->OnServiceInitialized(guids);
+}
+
+void ControllerImpl::SendOnServiceUnavailable() {
+  for (auto client_id : clients_->GetRegisteredClients()) {
+    clients_->GetClient(client_id)->OnServiceUnavailable();
+  }
 }
 
 void ControllerImpl::SendOnDownloadUpdated(DownloadClient client_id,
