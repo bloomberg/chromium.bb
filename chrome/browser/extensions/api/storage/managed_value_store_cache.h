@@ -67,10 +67,10 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // Returns the policy domain that should be used for the specified profile.
   static policy::PolicyDomain GetPolicyDomain(Profile* profile);
 
-  // Posted by OnPolicyUpdated() to update a PolicyValueStore on the FILE
-  // thread.
-  void UpdatePolicyOnFILE(const std::string& extension_id,
-                          std::unique_ptr<policy::PolicyMap> current_policy);
+  // Posted by OnPolicyUpdated() to update a PolicyValueStore on the backend
+  // sequence.
+  void UpdatePolicyOnBackend(const std::string& extension_id,
+                             std::unique_ptr<policy::PolicyMap> current_policy);
 
   // Returns an existing PolicyValueStore for |extension_id|, or NULL.
   PolicyValueStore* GetStoreFor(const std::string& extension_id);

@@ -10,11 +10,9 @@
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/value_store/value_store_change.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -38,7 +36,7 @@ PolicyValueStore::PolicyValueStore(
 PolicyValueStore::~PolicyValueStore() {}
 
 void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
   // Convert |policy| to a dictionary value. Only include mandatory policies
   // for now.
   base::DictionaryValue current_policy;

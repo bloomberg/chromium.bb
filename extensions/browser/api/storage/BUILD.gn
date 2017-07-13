@@ -9,6 +9,8 @@ assert(enable_extensions,
 
 source_set("storage") {
   sources = [
+    "backend_task_runner.cc",
+    "backend_task_runner.h",
     "local_value_store_cache.cc",
     "local_value_store_cache.h",
     "settings_namespace.cc",

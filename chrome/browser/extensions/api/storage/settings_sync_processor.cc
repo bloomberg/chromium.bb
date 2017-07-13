@@ -7,10 +7,8 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/protocol/extension_setting_specifics.pb.h"
-#include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -22,17 +20,17 @@ SettingsSyncProcessor::SettingsSyncProcessor(
       type_(type),
       sync_processor_(sync_processor),
       initialized_(false) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
   CHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
   CHECK(sync_processor);
 }
 
 SettingsSyncProcessor::~SettingsSyncProcessor() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
 }
 
 void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
   CHECK(!initialized_) << "Init called multiple times";
 
   for (base::DictionaryValue::Iterator i(initial_state); !i.IsAtEnd();
@@ -44,7 +42,7 @@ void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
 
 syncer::SyncError SettingsSyncProcessor::SendChanges(
     const ValueStoreChangeList& changes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
   CHECK(initialized_) << "Init not called";
 
   syncer::SyncChangeList sync_changes;
@@ -96,7 +94,7 @@ syncer::SyncError SettingsSyncProcessor::SendChanges(
 }
 
 void SettingsSyncProcessor::NotifyChanges(const ValueStoreChangeList& changes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(IsOnBackendSequence());
   CHECK(initialized_) << "Init not called";
 
   for (ValueStoreChangeList::const_iterator i = changes.begin();
