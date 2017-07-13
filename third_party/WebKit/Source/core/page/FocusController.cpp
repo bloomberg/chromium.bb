@@ -35,7 +35,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/SlotScopedTraversal.h"
 #include "core/editing/EditingUtilities.h"  // For firstPositionInOrBeforeNode
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
@@ -60,6 +59,7 @@
 #include "core/page/FocusChangedObserver.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/SlotScopedTraversal.h"
 #include "core/page/SpatialNavigation.h"
 
 #include <limits>

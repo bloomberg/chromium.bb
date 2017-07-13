@@ -62,6 +62,8 @@ blink_core_sources("page") {
     "PrintContext.h",
     "ScopedPageSuspender.cpp",
     "ScopedPageSuspender.h",
+    "SlotScopedTraversal.cpp",
+    "SlotScopedTraversal.h",
     "SpatialNavigation.cpp",
     "SpatialNavigation.h",
     "TouchAdjustment.cpp",

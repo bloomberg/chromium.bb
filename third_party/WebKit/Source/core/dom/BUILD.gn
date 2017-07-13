@@ -300,8 +300,6 @@ blink_core_sources("dom") {
     "SinkDocument.h",
     "SlotAssignment.cpp",
     "SlotAssignment.h",
-    "SlotScopedTraversal.cpp",
-    "SlotScopedTraversal.h",
     "SpaceSplitString.cpp",
     "SpaceSplitString.h",
     "StaticNodeList.h",
