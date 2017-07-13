@@ -4,6 +4,7 @@
 
 #include "core/inspector/InspectorDOMSnapshotAgent.h"
 
+#include "core/InputTypeNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/AttributeCollection.h"
@@ -16,8 +17,11 @@
 #include "core/dom/QualifiedName.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLTemplateElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -174,7 +178,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
     value->setAttributes(BuildArrayForElementAttributes(element));
 
     if (node->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+      const HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
       if (LocalFrame* frame =
               frame_owner->ContentFrame() &&
                       frame_owner->ContentFrame()->IsLocalFrame()
@@ -194,7 +198,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
     }
 
     if (isHTMLLinkElement(*element)) {
-      HTMLLinkElement& link_element = toHTMLLinkElement(*element);
+      const HTMLLinkElement& link_element = toHTMLLinkElement(*element);
       if (link_element.IsImport() && link_element.import() &&
           InspectorDOMAgent::InnerParentNode(link_element.import()) ==
               link_element) {
@@ -205,6 +209,26 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
     if (isHTMLTemplateElement(*element)) {
       value->setTemplateContentIndex(
           VisitNode(toHTMLTemplateElement(*element).content()));
+    }
+
+    if (isHTMLTextAreaElement(*element)) {
+      const HTMLTextAreaElement& text_area_element =
+          toHTMLTextAreaElement(*element);
+      value->setTextValue(text_area_element.value());
+    }
+
+    if (isHTMLInputElement(*element)) {
+      const HTMLInputElement& input_element = toHTMLInputElement(*element);
+      value->setInputValue(input_element.value());
+      if ((input_element.type() == InputTypeNames::radio) ||
+          (input_element.type() == InputTypeNames::checkbox)) {
+        value->setInputChecked(input_element.checked());
+      }
+    }
+
+    if (isHTMLOptionElement(*element)) {
+      const HTMLOptionElement& option_element = toHTMLOptionElement(*element);
+      value->setOptionSelected(option_element.Selected());
     }
 
     if (element->GetPseudoId()) {
