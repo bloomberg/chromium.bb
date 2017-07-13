@@ -612,6 +612,7 @@ css_properties("make_core_generated_css_property_apis") {
 
 css_properties("make_core_generated_css_property_names") {
   script = "../build/scripts/make_css_property_names.py"
+  other_inputs = [ "../build/scripts/templates/CSSPropertyNames.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/CSSPropertyNames.cpp",
     "$blink_core_output_dir/CSSPropertyNames.h",
