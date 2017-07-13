@@ -6,6 +6,7 @@
     {
       'target_name': 'clear_browsing_data_browser_proxy',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

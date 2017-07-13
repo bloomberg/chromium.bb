@@ -237,7 +237,7 @@ Polymer({
 
   /** @private */
   onImportantSitesCancelTap_: function() {
-    this.$$('#importantSitesDialog').cancel();
+    /** @type {!CrDialogElement} */ (this.$$('#importantSitesDialog')).cancel();
   },
 
   /**
