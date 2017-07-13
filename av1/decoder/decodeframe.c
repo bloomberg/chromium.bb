@@ -3863,6 +3863,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
 
+      av1_setup_across_tile_boundary_info(cm, &tile_info);
+
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
            mi_row += cm->mib_size) {
         int mi_col;
@@ -3871,7 +3873,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
         for (mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
              mi_col += cm->mib_size) {
-          av1_update_boundary_info(cm, &tile_info, mi_row, mi_col);
           decode_partition(pbi, &td->xd,
 #if CONFIG_SUPERTX
                            0,
@@ -4178,6 +4179,9 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         av1_zero(twd->dqcoeff);
         av1_tile_init(tile_info, cm, tile_row, buf->col);
         av1_tile_init(&twd->xd.tile, cm, tile_row, buf->col);
+
+        av1_setup_across_tile_boundary_info(cm, tile_info);
+
         setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                            &twd->bit_reader,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
@@ -5368,6 +5372,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     av1_frameworker_signal_stats(worker);
     av1_frameworker_unlock_stats(worker);
   }
+
+  av1_setup_frame_boundary_info(cm);
 
   if (pbi->max_threads > 1 && !CONFIG_CB4X4 &&
 #if CONFIG_EXT_TILE

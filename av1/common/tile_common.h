@@ -44,9 +44,9 @@ void av1_tile_set_tg_boundary(TileInfo *tile, const struct AV1Common *const cm,
 void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                          int *max_log2_tile_cols);
 
-void av1_update_boundary_info(const struct AV1Common *cm,
-                              const TileInfo *const tile_info, int mi_row,
-                              int mi_col);
+void av1_setup_frame_boundary_info(const struct AV1Common *const cm);
+void av1_setup_across_tile_boundary_info(const struct AV1Common *const cm,
+                                         const TileInfo *const tile_info);
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 int av1_disable_loopfilter_on_tile_boundary(const struct AV1Common *cm);
