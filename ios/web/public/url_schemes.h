@@ -13,11 +13,11 @@ namespace web {
 // not utilize WebMainRunner and that do not wish to lock the set of
 // standard schemes at init time.
 //
-// Called near the beginning of startup to register URL schemes that
-// should be parsed as "standard" with the src/url/ library. The set
-// of standard scheme is locked if |lock_schemes| is true.
+// Called near the beginning of startup to register URL schemes that should be
+// parsed as "standard" or "secure" with the src/url/ library. The set of
+// schemes is locked if |lock_schemes| is true.
 // The embedder can add additional schemes by overriding the
-// WebClient::AddAditionalSchemes method.
+// WebClient::AddAdditionalSchemes method.
 void RegisterWebSchemes(bool lock_schemes);
 
 }  // namespace web
