@@ -84,7 +84,7 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener {
       // Only NotifyError once.
       // Client::NotifyError() may trigger deletion of |this| (on another
       // thread), so calling it needs to be the last thing done on this stack!
-      JpegDecodeAccelerator::Client* client = nullptr;
+      Client* client = nullptr;
       std::swap(client, client_);
       client->NotifyError(bitstream_buffer_id, error);
     }
@@ -139,8 +139,7 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
   }
 }
 
-bool GpuJpegDecodeAcceleratorHost::Initialize(
-    JpegDecodeAccelerator::Client* client) {
+bool GpuJpegDecodeAcceleratorHost::Initialize(Client* client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool succeeded = false;
@@ -155,6 +154,12 @@ bool GpuJpegDecodeAcceleratorHost::Initialize(
   receiver_.reset(new Receiver(client, io_task_runner_));
 
   return true;
+}
+
+void GpuJpegDecodeAcceleratorHost::InitializeAsync(Client* client,
+                                                   InitCB init_cb) {
+  // TODO(c.padhi): see https://crbug.com/699255.
+  NOTIMPLEMENTED();
 }
 
 void GpuJpegDecodeAcceleratorHost::Decode(

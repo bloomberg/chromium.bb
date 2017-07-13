@@ -44,7 +44,8 @@ class GpuJpegDecodeAcceleratorHost : public JpegDecodeAccelerator {
   // JpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
   // GpuJpegDecodeAcceleratorHost is destroyed.
-  bool Initialize(JpegDecodeAccelerator::Client* client) override;
+  bool Initialize(Client* client) override;
+  void InitializeAsync(Client* client, InitCB init_cb) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
