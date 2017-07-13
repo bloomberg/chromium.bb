@@ -359,22 +359,44 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
-                             NCOBMC_MODE ncobmc_mode[2], aom_reader *r) {
+static void read_ncobmc_mode(MACROBLOCKD *xd, MODE_INFO *mi,
+#ifndef TRAINING_WEIGHTS
+                             NCOBMC_MODE ncobmc_mode[2],
+#else
+                             NCOBMC_MODE ncobmc_mode[][4],
+#endif
+                             aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
   FRAME_COUNTS *counts = xd->counts;
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
   if (mbmi->motion_mode != NCOBMC_ADAPT_WEIGHT) return;
 
-  ncobmc_mode[0] = aom_read_tree(r, av1_ncobmc_mode_tree,
-                                 cm->fc->ncobmc_mode_prob[ao_block], ACCT_STR);
+#ifndef TRAINING_WEIGHTS
+  ncobmc_mode[0] = aom_read_symbol(r, xd->tile_ctx->ncobmc_mode_cdf[ao_block],
+                                   MAX_NCOBMC_MODES, ACCT_STR);
   if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[0]];
 
   if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
-    ncobmc_mode[1] = aom_read_tree(
-        r, av1_ncobmc_mode_tree, cm->fc->ncobmc_mode_prob[ao_block], ACCT_STR);
+    ncobmc_mode[1] = aom_read_symbol(r, xd->tile_ctx->ncobmc_mode_cdf[ao_block],
+                                     MAX_NCOBMC_MODES, ACCT_STR);
     if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[1]];
   }
+#else
+  int i;
+  for (i = 0; i < 4; ++i) {
+    ncobmc_mode[0][i] = aom_read_symbol(
+        r, xd->tile_ctx->ncobmc_mode_cdf[ao_block], MAX_NCOBMC_MODES, ACCT_STR);
+    if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[0][i]];
+  }
+  if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
+    for (i = 0; i < 4; ++i) {
+      ncobmc_mode[1][i] =
+          aom_read_symbol(r, xd->tile_ctx->ncobmc_mode_cdf[ao_block],
+                          MAX_NCOBMC_MODES, ACCT_STR);
+      if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[1][i]];
+    }
+  }
+#endif
 }
 #endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -2659,7 +2681,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-    read_ncobmc_mode(cm, xd, mi, mbmi->ncobmc_mode, r);
+    read_ncobmc_mode(xd, mi, mbmi->ncobmc_mode, r);
 #endif
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF

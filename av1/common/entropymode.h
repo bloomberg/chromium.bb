@@ -222,7 +222,8 @@ typedef struct frame_contexts {
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
   aom_prob ncobmc_mode_prob[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES - 1];
-  aom_cdf_prob ncobmc_mode_cdf[BLOCK_SIZES][CDF_SIZE(MAX_NCOBMC_MODES)];
+  aom_cdf_prob ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]
+                              [CDF_SIZE(MAX_NCOBMC_MODES)];
 #endif
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   aom_prob obmc_prob[BLOCK_SIZES_ALL];
