@@ -53,8 +53,6 @@ const EncodePerfTestVideo kAV1EncodePerfTestVectors[] = {
 const int kEncodePerfTestSpeeds[] = { 5, 6, 7, 8 };
 const int kEncodePerfTestThreads[] = { 1, 2, 4 };
 
-#define NELEMENTS(x) (sizeof((x)) / sizeof((x)[0]))
-
 class AV1EncodePerfTest
     : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
       public ::libaom_test::EncoderTest {

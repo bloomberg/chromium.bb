@@ -145,7 +145,7 @@ class Av1ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
 };
 
 int bsize_ls[] = { 1, 2, 4, 8, 16, 32, 64, 3, 7, 15, 31, 63 };
-int bsize_num = sizeof(bsize_ls) / sizeof(bsize_ls[0]);
+int bsize_num = NELEMENTS(bsize_ls);
 
 TEST_P(Av1ConvolveTest, av1_convolve_vert) {
   const int y_step_q4 = 16;

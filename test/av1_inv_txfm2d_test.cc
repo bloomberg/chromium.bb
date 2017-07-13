@@ -56,7 +56,7 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
 
     for (int ci = 0; ci < count; ci++) {
       int16_t expected[64 * 64] = { 0 };
-      assert(txfm2d_size_ < ARRAY_SIZE(expected));
+      assert(txfm2d_size_ < NELEMENTS(expected));
 
       for (int ni = 0; ni < txfm2d_size_; ++ni) {
         if (ci == 0) {
@@ -68,11 +68,11 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
       }
 
       int32_t coeffs[64 * 64] = { 0 };
-      assert(txfm2d_size_ < ARRAY_SIZE(coeffs));
+      assert(txfm2d_size_ < NELEMENTS(coeffs));
       fwd_txfm_func(expected, coeffs, txfm1d_size_, tx_type_, bd);
 
       uint16_t actual[64 * 64] = { 0 };
-      assert(txfm2d_size_ < ARRAY_SIZE(actual));
+      assert(txfm2d_size_ < NELEMENTS(actual));
       inv_txfm_func(coeffs, actual, txfm1d_size_, tx_type_, bd);
 
       for (int ni = 0; ni < txfm2d_size_; ++ni) {
