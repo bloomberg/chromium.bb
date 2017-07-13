@@ -391,6 +391,17 @@ class BuilderStage(object):
     else:
       return self.GetBuildFailureMessageFromResults()
 
+  def GetJobKeyvals(self):
+    """Get job keyvals for the build stage."""
+    build_id, _ = self._run.GetCIDBHandle()
+    job_keyvals = {
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY:
+            ('Build', build_id, 'BuildStage', self._build_stage_id),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID: build_id,
+        constants.JOB_KEYVAL_CIDB_BUILD_STAGE_ID: self._build_stage_id,
+    }
+    return job_keyvals
+
   def _Print(self, msg):
     """Prints a msg to stderr."""
     sys.stdout.flush()

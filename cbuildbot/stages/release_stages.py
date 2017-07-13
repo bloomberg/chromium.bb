@@ -525,7 +525,8 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     # Schedule the tests to run and wait for the results.
     paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.board,
                                            self.build, self.skip_duts_check,
-                                           self.debug)
+                                           self.debug,
+                                           job_keyvals=self.GetJobKeyvals())
 
     # Mark the build as finished since the payloads were generated, uploaded,
     # and tested by this point.

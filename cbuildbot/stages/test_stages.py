@@ -454,13 +454,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     build_id, db = self._run.GetCIDBHandle()
 
-    job_keyvals = {
-        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY:
-            ('Build', build_id, 'BuildStage', self._build_stage_id),
-        constants.JOB_KEYVAL_CIDB_BUILD_ID: build_id,
-        constants.JOB_KEYVAL_CIDB_BUILD_STAGE_ID: self._build_stage_id,
-    }
-
     cmd_result = commands.RunHWTestSuite(
         build, self.suite_config.suite, self._model,
         pool=self.suite_config.pool, num=self.suite_config.num,
@@ -474,7 +467,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
         debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check,
-        job_keyvals=job_keyvals)
+        job_keyvals=self.GetJobKeyvals())
 
     if config_lib.IsCQType(self._run.config.build_type):
       self.ReportHWTestResults(cmd_result.json_dump_result, build_id, db)

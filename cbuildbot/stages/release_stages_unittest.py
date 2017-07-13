@@ -414,7 +414,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         # with the correct arguments.
         sched_tests.assert_called_once_with(
             'foo-suite-name', 'foo-archive-board', 'foo-archive-build',
-            False, True)
+            False, True, job_keyvals=mock.ANY)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -478,7 +478,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         # as the platform to be tested
         sched_tests.assert_called_once_with(
             'foo-suite-name', 'model1', 'foo-archive-build',
-            False, True)
+            False, True, job_keyvals=mock.ANY)
 
 
 class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
