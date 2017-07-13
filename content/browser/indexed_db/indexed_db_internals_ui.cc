@@ -299,7 +299,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
             "triggered by navigating to the specified URL."
           policy_exception_justification:
             "Not implemented. Indexed DB is Chrome's internal local data "
-            "storage.
+            "storage."
         })");
   std::unique_ptr<DownloadUrlParameters> dl_params(
       DownloadUrlParameters::CreateForWebContentsMainFrame(web_contents, url,

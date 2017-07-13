@@ -26,8 +26,8 @@ net::NetworkTrafficAnnotationTag g_traffic_annotation =
         semantics {
           sender: "Web Payments"
           description:
-            "Chromium downloads payment instrument icons when registering
-             payment instruments."
+            "Chromium downloads payment instrument icons when registering "
+            "payment instruments."
           trigger:
             "When user navigates to a website to register web payment apps."
           data:
@@ -37,8 +37,8 @@ net::NetworkTrafficAnnotationTag g_traffic_annotation =
         policy {
           cookies_allowed: false
           setting:
-            "This feature cannot be disabled in settings. Users can refuse
-             to install web payment apps."
+            "This feature cannot be disabled in settings. Users can refuse to "
+            "install web payment apps."
           policy_exception_justification: "Not implemented."
         })");
 
