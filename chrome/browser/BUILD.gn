@@ -3528,6 +3528,7 @@ split_static_library("browser") {
       ":theme_properties",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
+      "//chrome/browser/search:generated",
       "//chrome/common/importer:interfaces",
       "//components/cryptauth",
       "//components/cryptauth/proto",
