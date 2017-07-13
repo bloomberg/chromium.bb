@@ -269,7 +269,10 @@ float InlineTextBox::NewlineSpaceWidth() const {
   return style_to_use.GetFont().SpaceWidth();
 }
 
-LayoutRect InlineTextBox::LocalSelectionRect(int start_pos, int end_pos) const {
+LayoutRect InlineTextBox::LocalSelectionRect(
+    int start_pos,
+    int end_pos,
+    bool consider_current_selection) const {
   int s_pos = std::max(start_pos - start_, 0);
   int e_pos = std::min(end_pos - start_, (int)len_);
 
@@ -315,7 +318,7 @@ LayoutRect InlineTextBox::LocalSelectionRect(int start_pos, int end_pos) const {
     top_point = LayoutPoint(r.X(), sel_top);
     width = logical_width;
     height = sel_height;
-    if (HasWrappedSelectionNewline()) {
+    if (consider_current_selection && HasWrappedSelectionNewline()) {
       if (!IsLeftToRightDirection())
         top_point.SetX(LayoutUnit(top_point.X() - NewlineSpaceWidth()));
       width += NewlineSpaceWidth();
@@ -326,7 +329,7 @@ LayoutRect InlineTextBox::LocalSelectionRect(int start_pos, int end_pos) const {
     height = logical_width;
     // TODO(wkorman): RTL text embedded in top-to-bottom text can create
     // bottom-to-top situations. Add tests and ensure we handle correctly.
-    if (HasWrappedSelectionNewline())
+    if (consider_current_selection && HasWrappedSelectionNewline())
       height += NewlineSpaceWidth();
   }
 

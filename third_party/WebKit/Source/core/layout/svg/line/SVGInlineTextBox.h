@@ -47,7 +47,8 @@ class SVGInlineTextBox final : public InlineTextBox {
              LayoutUnit line_top,
              LayoutUnit line_bottom) const override;
   LayoutRect LocalSelectionRect(int start_position,
-                                int end_position) const override;
+                                int end_position,
+                                bool = true) const override;
 
   bool MapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&,
                                                    int& start_position,

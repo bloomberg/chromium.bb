@@ -134,8 +134,10 @@ FloatRect SVGInlineTextBox::SelectionRectForTextFragment(
   return selection_rect;
 }
 
-LayoutRect SVGInlineTextBox::LocalSelectionRect(int start_position,
-                                                int end_position) const {
+LayoutRect SVGInlineTextBox::LocalSelectionRect(
+    int start_position,
+    int end_position,
+    bool consider_current_selection) const {
   int box_start = Start();
   start_position = std::max(start_position - box_start, 0);
   end_position = std::min(end_position - box_start, static_cast<int>(Len()));
