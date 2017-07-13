@@ -17,7 +17,7 @@ HTMLImportTreeRoot* HTMLImportTreeRoot::Create(Document* document) {
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     : HTMLImport(HTMLImport::kSync),
-      document_(document),
+      document_(this, document),
       recalc_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document->GetFrame()),
           this,
@@ -85,6 +85,10 @@ DEFINE_TRACE(HTMLImportTreeRoot) {
   visitor->Trace(document_);
   visitor->Trace(imports_);
   HTMLImport::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(HTMLImportTreeRoot) {
+  visitor->TraceWrappers(document_);
 }
 
 }  // namespace blink
