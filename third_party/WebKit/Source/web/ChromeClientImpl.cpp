@@ -40,7 +40,7 @@
 #include "core/dom/Node.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebFileChooserCompletionImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -501,8 +501,8 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
       if (object && object->IsLayoutEmbeddedContent()) {
         PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
         if (plugin_view && plugin_view->IsPluginContainer()) {
-          WebPluginContainerBase* plugin =
-              ToWebPluginContainerBase(plugin_view);
+          WebPluginContainerImpl* plugin =
+              ToWebPluginContainerImpl(plugin_view);
           url = plugin->Plugin()->LinkAtPosition(
               result.RoundedPointInInnerNodeFrame());
         }

@@ -42,7 +42,7 @@
 #include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/exported/WebDataSourceImpl.h"
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
@@ -354,7 +354,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
       PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
       if (plugin_view && plugin_view->IsPluginContainer()) {
         data.media_type = WebContextMenuData::kMediaTypePlugin;
-        WebPluginContainerBase* plugin = ToWebPluginContainerBase(plugin_view);
+        WebPluginContainerImpl* plugin = ToWebPluginContainerImpl(plugin_view);
         WebString text = plugin->Plugin()->SelectionAsText();
         if (!text.IsEmpty()) {
           data.selected_text = text;

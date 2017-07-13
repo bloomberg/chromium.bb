@@ -30,7 +30,7 @@
 
 #include "core/exported/WebHelperPluginImpl.h"
 
-#include "core/exported/WebPluginContainerBase.h"
+#include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLObjectElement.h"
@@ -64,7 +64,7 @@ bool WebHelperPluginImpl::Initialize(const String& plugin_type,
   Vector<String> attribute_values;
   DCHECK(frame->GetFrame()->GetDocument()->Url().IsValid());
   plugin_container_ =
-      ToWebPluginContainerBase(frame->GetFrame()->Client()->CreatePlugin(
+      ToWebPluginContainerImpl(frame->GetFrame()->Client()->CreatePlugin(
           *object_element_, frame->GetFrame()->GetDocument()->Url(),
           attribute_names, attribute_values, plugin_type, false,
           LocalFrameClient::kAllowDetachedPlugin));
