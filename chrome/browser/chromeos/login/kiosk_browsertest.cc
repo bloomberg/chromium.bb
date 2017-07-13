@@ -45,6 +45,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
@@ -55,6 +56,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_observer.h"
@@ -2220,6 +2222,14 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   ASSERT_TRUE(window);
   content::WaitForLoadStop(window->web_contents());
 
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  ASSERT_TRUE(app_profile);
+
+  // Ensure that the token service is initialized, as the below call to the
+  // Identity extension API will otherwise hang forever.
+  ProfileOAuth2TokenServiceFactory::GetForProfile(app_profile)
+      ->LoadCredentials("dummy_primary_account_id");
+
   // Check whether the app can retrieve an OAuth2 access token.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -2232,8 +2242,6 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
 
   // Verify that the session is not considered to be logged in with a GAIA
   // account.
-  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
-  ASSERT_TRUE(app_profile);
   EXPECT_FALSE(
       SigninManagerFactory::GetForProfile(app_profile)->IsAuthenticated());
 
