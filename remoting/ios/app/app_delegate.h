@@ -12,7 +12,6 @@
 
 - (void)showMenuAnimated:(BOOL)animated;
 - (void)hideMenuAnimated:(BOOL)animated;
-- (void)presentSignInFlow;
 
 @property(strong, nonatomic) UIWindow* window;
 @property(class, strong, nonatomic, readonly) AppDelegate* instance;
