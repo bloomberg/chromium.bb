@@ -6,6 +6,8 @@
 
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -243,6 +245,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
+      base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
+      [self.suggestionCommandHandler openPageForItem:item];
+      break;
     case ContentSuggestionTypeArticle:
       [self.suggestionCommandHandler openPageForItem:item];
       break;

@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -59,6 +61,8 @@ class ReadingListObserverBridge;
   const ReadingListEntry* firstEntry = _readingListModel->GetFirstUnreadEntry(
       net::NetworkChangeNotifier::IsOffline());
   DCHECK(firstEntry);
+  base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
+
   web::NavigationManager::WebLoadParams params(firstEntry->URL());
   params.transition_type = ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK;
   webState->GetNavigationManager()->LoadURLWithParams(params);
