@@ -383,6 +383,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
                                        alpha:1.0]];
     [_messageTextView setFont:[[MDCTypography fontLoader]
                                   regularFontOfSize:kMessageTextViewFontSize]];
+    [_messageTextView setUserInteractionEnabled:NO];
   }
   return _messageTextView;
 }
