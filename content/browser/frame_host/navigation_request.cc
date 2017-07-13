@@ -37,6 +37,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/appcache_info.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/request_context_type.h"
@@ -500,6 +501,31 @@ void NavigationRequest::TransferNavigationHandleOwnership(
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRedirectToURL(
+          redirect_info.new_url)) {
+    DVLOG(1) << "Denied redirect for "
+             << redirect_info.new_url.possibly_invalid_spec();
+    // TODO(arthursonzogni): Consider switching to net::ERR_UNSAFE_REDIRECT
+    // when PlzNavigate is launched.
+    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    frame_tree_node_->ResetNavigationRequest(false, true);
+    return;
+  }
+
+  // For renderer-initiated navigations we need to check if the source has
+  // access to the URL. Browser-initiated navigations only rely on the
+  // |CanRedirectToURL| test above.
+  if (!browser_initiated_ && source_site_instance() &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          source_site_instance()->GetProcess()->GetID(),
+          redirect_info.new_url)) {
+    DVLOG(1) << "Denied unauthorized redirect for "
+             << redirect_info.new_url.possibly_invalid_spec();
+    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    frame_tree_node_->ResetNavigationRequest(false, true);
+    return;
+  }
+
   // If a redirect occurs, the original site instance we thought is the
   // destination could change.
   dest_site_instance_ = nullptr;
@@ -536,21 +562,6 @@ void NavigationRequest::OnRequestRedirected(
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
     // destroyed the NavigationRequest.
     return;
-  }
-
-  // For non browser initiated navigations we need to check if the source has
-  // access to the URL. We always allow browser initiated requests.
-  // TODO(clamy): Kill the renderer if FilterURL fails?
-  GURL url = common_params_.url;
-  if (!browser_initiated_ && source_site_instance()) {
-    source_site_instance()->GetProcess()->FilterURL(false, &url);
-    // FilterURL sets the URL to about:blank if the CSP checks prevent the
-    // renderer from accessing it.
-    if ((url == url::kAboutBlankURL) && (url != common_params_.url)) {
-      navigation_handle_->set_net_error_code(net::ERR_ABORTED);
-      frame_tree_node_->ResetNavigationRequest(false, true);
-      return;
-    }
   }
 
   // Compute the SiteInstance to use for the redirect and pass its
