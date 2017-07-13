@@ -38,7 +38,8 @@ class HostListFetcher : public net::URLFetcherDelegate {
 
   // Supplied by the client for each hostlist request and returns a valid,
   // initialized Hostlist object on success.
-  typedef base::Callback<void(const std::vector<remoting::HostInfo>& hostlist)>
+  typedef base::Callback<void(int response_code,
+                              const std::vector<remoting::HostInfo>& hostlist)>
       HostlistCallback;
 
   // Makes a service call to retrieve a hostlist. The

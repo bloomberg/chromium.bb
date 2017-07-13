@@ -12,6 +12,7 @@
 #import <Security/Security.h>
 
 #import "base/mac/bind_objc_block.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/facade/host_info.h"
 #import "remoting/ios/facade/host_list_fetcher.h"
 #import "remoting/ios/facade/ios_client_runtime_delegate.h"
@@ -142,7 +143,10 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
     } else {
       LOG(ERROR) << "Failed to fetch access token from authorization code. ("
                  << status << ")";
-      // TODO(nicholss): Deal with the sad path for a bad auth token.
+      [MDCSnackbarManager
+          showMessage:
+              [MDCSnackbarMessage
+                  messageWithText:@"Authentication Failed. Please try again."]];
     }
   }];
 }
