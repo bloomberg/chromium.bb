@@ -52,6 +52,8 @@ class IconCacherImpl : public IconCacher {
       PopularSites::Site site,
       const base::Closure& icon_available,
       const base::Closure& preliminary_icon_available) override;
+
+  // TODO(jkrcal): Rename all instances of "MostLikely" to "ChromeSuggestions".
   void StartFetchMostLikely(const GURL& page_url,
                             const base::Closure& icon_available) override;
 
