@@ -52,13 +52,13 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   void OnProviderDeactivated() override;
   void OnSuggestionsCleared() override;
   void OnHistoryCleared() override;
-  void RescheduleFetching() override;
+  void OnBrowserUpgraded() override;
   bool AcquireQuotaForInteractiveFetch() override;
   void OnInteractiveFetchFinished(Status fetch_status) override;
   void OnPersistentSchedulerWakeUp() override;
   void OnBrowserForegrounded() override;
   void OnBrowserColdStart() override;
-  void OnNTPOpened() override;
+  void OnSuggestionsSurfaceOpened() override;
 
  private:
   // Abstract description of the fetching schedule. See the enum

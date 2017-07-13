@@ -129,6 +129,8 @@ static_assert(
             arraysize(kFetchingIntervalParamNameActiveSuggestionsConsumer),
     "Fill in all the info for fetching intervals.");
 
+// For backward compatibility "ntp_opened" value is kept and denotes the
+// SURFACE_OPENED trigger type.
 const char* kTriggerTypeNames[] = {"persistent_scheduler_wake_up", "ntp_opened",
                                    "browser_foregrounded",
                                    "browser_cold_start"};
@@ -418,7 +420,7 @@ bool RemoteSuggestionsSchedulerImpl::FetchingSchedule::is_empty() const {
 // |kTriggerTypeNames| above.
 enum class RemoteSuggestionsSchedulerImpl::TriggerType {
   PERSISTENT_SCHEDULER_WAKE_UP = 0,
-  NTP_OPENED = 1,
+  SURFACE_OPENED = 1,
   BROWSER_FOREGROUNDED = 2,
   BROWSER_COLD_START = 3,
   COUNT
@@ -517,8 +519,9 @@ void RemoteSuggestionsSchedulerImpl::OnHistoryCleared() {
   ClearLastFetchAttemptTime();
 }
 
-void RemoteSuggestionsSchedulerImpl::RescheduleFetching() {
-  // Force the reschedule by stopping and starting it again.
+void RemoteSuggestionsSchedulerImpl::OnBrowserUpgraded() {
+  // After browser upgrade, persistent schedule needs to get reset. Force the
+  // reschedule by stopping and starting it again.
   StopScheduling();
   StartScheduling();
 }
@@ -549,10 +552,10 @@ void RemoteSuggestionsSchedulerImpl::OnBrowserColdStart() {
   RefetchInTheBackgroundIfAppropriate(TriggerType::BROWSER_COLD_START);
 }
 
-void RemoteSuggestionsSchedulerImpl::OnNTPOpened() {
+void RemoteSuggestionsSchedulerImpl::OnSuggestionsSurfaceOpened() {
   // TODO(jkrcal): Consider that this is called whenever we open an NTP.
   // Therefore, keep work light for fast start up calls.
-  RefetchInTheBackgroundIfAppropriate(TriggerType::NTP_OPENED);
+  RefetchInTheBackgroundIfAppropriate(TriggerType::SURFACE_OPENED);
 }
 
 void RemoteSuggestionsSchedulerImpl::StartScheduling() {
@@ -666,7 +669,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
   const base::Time last_fetch_attempt_time = base::Time::FromInternalValue(
       profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttempt));
 
-  if (trigger == TriggerType::NTP_OPENED &&
+  if (trigger == TriggerType::SURFACE_OPENED &&
       !time_until_first_shown_trigger_reported_) {
     time_until_first_shown_trigger_reported_ = true;
     ReportTimeUntilFirstShownTrigger(user_classifier_->GetUserClass(),
@@ -695,7 +698,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
     case TriggerType::PERSISTENT_SCHEDULER_WAKE_UP:
       ReportTimeUntilPersistentFetch(user_classifier_->GetUserClass(), diff);
       break;
-    case TriggerType::NTP_OPENED:
+    case TriggerType::SURFACE_OPENED:
       ReportTimeUntilShownFetch(user_classifier_->GetUserClass(), diff);
       break;
     case TriggerType::BROWSER_FOREGROUNDED:
@@ -726,7 +729,7 @@ bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow(
   }
 
   base::Time first_allowed_fetch_time = last_fetch_attempt_time;
-  if (trigger == TriggerType::NTP_OPENED) {
+  if (trigger == TriggerType::SURFACE_OPENED) {
     first_allowed_fetch_time += (wifi ? schedule_.interval_shown_wifi
                                       : schedule_.interval_shown_fallback);
   } else {
@@ -843,8 +846,9 @@ RemoteSuggestionsSchedulerImpl::GetEnabledTriggerTypes() {
 
 std::set<RemoteSuggestionsSchedulerImpl::TriggerType>
 RemoteSuggestionsSchedulerImpl::GetDefaultEnabledTriggerTypes() {
-  return {TriggerType::PERSISTENT_SCHEDULER_WAKE_UP, TriggerType::NTP_OPENED,
-          TriggerType::BROWSER_COLD_START, TriggerType::BROWSER_FOREGROUNDED};
+  return {TriggerType::PERSISTENT_SCHEDULER_WAKE_UP,
+          TriggerType::SURFACE_OPENED, TriggerType::BROWSER_COLD_START,
+          TriggerType::BROWSER_FOREGROUNDED};
 }
 
 }  // namespace ntp_snippets

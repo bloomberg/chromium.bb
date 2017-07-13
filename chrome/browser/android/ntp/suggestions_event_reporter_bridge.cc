@@ -166,7 +166,7 @@ static void OnSurfaceOpened(JNIEnv* env, const JavaParamRef<jclass>& caller) {
     return;
   }
 
-  scheduler->OnNTPOpened();
+  scheduler->OnSuggestionsSurfaceOpened();
 }
 
 static void OnColdStart(JNIEnv* env, const JavaParamRef<jclass>& caller) {

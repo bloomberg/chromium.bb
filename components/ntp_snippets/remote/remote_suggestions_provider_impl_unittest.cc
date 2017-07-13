@@ -396,9 +396,9 @@ class MockScheduler : public RemoteSuggestionsScheduler {
   MOCK_METHOD1(OnInteractiveFetchFinished, void(Status fetch_status));
   MOCK_METHOD0(OnBrowserForegrounded, void());
   MOCK_METHOD0(OnBrowserColdStart, void());
-  MOCK_METHOD0(OnNTPOpened, void());
+  MOCK_METHOD0(OnSuggestionsSurfaceOpened, void());
   MOCK_METHOD0(OnPersistentSchedulerWakeUp, void());
-  MOCK_METHOD0(RescheduleFetching, void());
+  MOCK_METHOD0(OnBrowserUpgraded, void());
 };
 
 class MockRemoteSuggestionsFetcher : public RemoteSuggestionsFetcher {

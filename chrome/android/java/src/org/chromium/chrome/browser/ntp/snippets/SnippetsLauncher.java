@@ -176,8 +176,8 @@ public class SnippetsLauncher {
         return !manager.isActiveNetworkMetered();
     }
 
-    public static boolean shouldRescheduleTasksOnUpgrade() {
-        // Reschedule the periodic tasks if they were enabled previously.
+    public static boolean shouldNotifyOnBrowserUpgraded() {
+        // If there was no schedule previously, we do not need to react to upgrades.
         return ContextUtils.getAppSharedPreferences().getBoolean(PREF_IS_SCHEDULED, false);
     }
 }

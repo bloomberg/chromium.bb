@@ -15,13 +15,8 @@ namespace ntp_snippets {
 // schedule independent of whether Chrome is running at that moment.
 //
 // Once per period, the concrete implementation should call
-// RemoteSuggestionsScheduler::OnFetchDue() where the scheduler object is
-// obtained from ContentSuggestionsService.
-//
-// The implementation may also call
-// RemoteSuggestionsScheduler::RescheduleFetching() when its own current
-// schedule got corrupted for whatever reason and needs to be applied again
-// (in turn, this will result in calling Schedule() on the implementation).
+// RemoteSuggestionsScheduler::OnPersistentSchedulerWakeUp() where the scheduler
+// object is obtained from ContentSuggestionsService.
 class PersistentScheduler {
  public:
   // Schedule periodic fetching of remote suggestions, with different periods

@@ -2303,7 +2303,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="BackgroundFetchTrigger">
   <int value="0" label="Wake-up of the persistent scheduler"/>
-  <int value="1" label="NTP opened"/>
+  <int value="1" label="Suggestions surface opened"/>
   <int value="2" label="Browser foregrounded"/>
   <int value="3" label="Cold start of the browser"/>
 </enum>
