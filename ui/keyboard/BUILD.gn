@@ -189,6 +189,6 @@ test("keyboard_unittests") {
   ]
 
   data_deps = [
-    "//ui/resources:ui_test_pak",
+    "//ui/resources:ui_test_pak_data",
   ]
 }
