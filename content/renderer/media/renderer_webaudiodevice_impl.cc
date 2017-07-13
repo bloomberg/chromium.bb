@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -167,7 +166,6 @@ void RendererWebAudioDeviceImpl::Start() {
       GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
       session_id_, std::string(), security_origin_);
 
-#if defined(OS_ANDROID)
   // Use the media thread instead of the render thread for fake Render() calls
   // since it has special connotations for Blink and garbage collection. Timeout
   // value chosen to be highly unlikely in the normal case.
@@ -175,9 +173,6 @@ void RendererWebAudioDeviceImpl::Start() {
       this, base::TimeDelta::FromSeconds(30), sink_params_, sink_,
       GetMediaTaskRunner()));
   sink_->Initialize(sink_params_, webaudio_suspender_.get());
-#else
-  sink_->Initialize(sink_params_, this);
-#endif
 
   sink_->Start();
   sink_->Play();
@@ -190,9 +185,7 @@ void RendererWebAudioDeviceImpl::Stop() {
     sink_ = nullptr;
   }
 
-#if defined(OS_ANDROID)
   webaudio_suspender_.reset();
-#endif
 }
 
 double RendererWebAudioDeviceImpl::SampleRate() {
