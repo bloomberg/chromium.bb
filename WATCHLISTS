@@ -508,6 +508,9 @@
     'ftp': {
       'filepath': 'ftp',
     },
+    'fuchsia': {
+      'filepath': 'fuchsia',
+    },
     'fuzzing': {
       'filepath': 'fuzz|Fuzz',
     },
@@ -2040,6 +2043,7 @@
                  'yamaguchi+watch@chromium.org'],
     'filesapp_ui': ['mtomasz+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
+    'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gcm': ['johnme+watch@chromium.org',
             'peter@chromium.org',
