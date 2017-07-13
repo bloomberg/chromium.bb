@@ -208,40 +208,6 @@ def _safe_rmtree(path):
   shutil.rmtree(path, onerror=_on_error)
 
 
-@contextlib.contextmanager
-def _tempdir():
-  tdir = None
-  try:
-    tdir = tempfile.mkdtemp()
-    yield tdir
-  finally:
-    _safe_rmtree(tdir)
-
-
-def get_os_bitness():
-  """Returns bitness of operating system as int."""
-  return 64 if platform.machine().endswith('64') else 32
-
-
-def get_target_git_version(args):
-  """Returns git version that should be installed."""
-  if args.bleeding_edge:
-    git_version_file = 'git_version_bleeding_edge.txt'
-  else:
-    git_version_file = 'git_version.txt'
-  with open(os.path.join(THIS_DIR, git_version_file)) as f:
-    return f.read().strip()
-
-
-def clean_up_old_git_installations(git_directory, force):
-  """Removes git installations other than |git_directory|."""
-  for entry in fnmatch.filter(os.listdir(ROOT_DIR), 'git-*_bin'):
-    full_entry = os.path.join(ROOT_DIR, entry)
-    if force or full_entry != git_directory:
-      logging.info('Cleaning up old git installation %r', entry)
-      _safe_rmtree(full_entry)
-
-
 def clean_up_old_installations(skip_dir):
   """Removes Python installations other than |skip_dir|.
 
@@ -262,92 +228,6 @@ def clean_up_old_installations(skip_dir):
         _safe_rmtree(full_entry)
       else:
         logging.info('Toolchain at %r is in-use; skipping', full_entry)
-
-
-def cipd_ensure(args, dest_directory, package, version):
-  """Installs a CIPD package using "ensure"."""
-  logging.info('Installing CIPD package %r @ %r', package, version)
-  manifest_text = '%s %s\n' % (package, version)
-
-  cipd_args = [
-    args.cipd_client,
-    'ensure',
-    '-ensure-file', '-',
-    '-root', dest_directory,
-  ]
-  if args.cipd_cache_directory:
-    cipd_args.extend(['-cache-dir', args.cipd_cache_directory])
-  if args.verbose:
-    cipd_args.append('-verbose')
-  _check_call(cipd_args, stdin_input=manifest_text)
-
-
-def need_to_install_git(args, git_directory):
-  """Returns True if git needs to be installed."""
-  if args.force:
-    return True
-
-  is_cipd_managed = os.path.exists(os.path.join(git_directory, '.cipd'))
-  if not is_cipd_managed:
-    # Converting from legacy to CIPD, need reinstall.
-    return True
-
-  git_exe_path = os.path.join(git_directory, 'bin', 'git.exe')
-  if not os.path.exists(git_exe_path):
-    return True
-  if subprocess.call(
-      [git_exe_path, '--version'],
-      stdout=DEVNULL, stderr=DEVNULL) != 0:
-    return True
-
-  gen_stubs = STUBS.keys()
-  gen_stubs.append('git-bash')
-  for stub in gen_stubs:
-    full_path = os.path.join(ROOT_DIR, stub)
-    if not os.path.exists(full_path):
-      return True
-    with open(full_path) as f:
-      if os.path.relpath(git_directory, ROOT_DIR) not in f.read():
-        return True
-
-  return False
-
-
-def install_git(args, git_version, git_directory):
-  """Installs |git_version| into |git_directory|."""
-  # TODO: Remove legacy version once everyone is on bundled Git.
-  cipd_platform = 'windows-%s' % ('amd64' if args.bits == 64 else '386')
-  # When migrating from legacy, we want to nuke this directory. In other
-  # cases, CIPD will handle the cleanup.
-  if not os.path.isdir(os.path.join(git_directory, '.cipd')):
-    logging.info('Deleting legacy Git directory: %s', git_directory)
-    _safe_rmtree(git_directory)
-
-  cipd_ensure(args, git_directory,
-      package='infra/git/%s' % (cipd_platform,),
-      version=git_version)
-
-
-def ensure_git(args, template):
-  git_version = get_target_git_version(args)
-
-  git_directory_tag = git_version.split(':')
-  git_directory = os.path.join(
-      ROOT_DIR, 'git-%s-%s_bin' % (git_directory_tag[-1], args.bits))
-
-  clean_up_old_git_installations(git_directory, args.force)
-
-  git_bin_dir = os.path.relpath(git_directory, ROOT_DIR)
-  template = template._replace(
-      GIT_BIN_RELDIR=git_bin_dir,
-      GIT_BIN_RELDIR_UNIX=git_bin_dir)
-
-  if need_to_install_git(args, git_directory):
-    install_git(args, git_version, git_directory)
-
-  git_postprocess(template, git_directory)
-
-  return template
 
 
 # Version of "git_postprocess" system configuration (see |git_postprocess|).
@@ -403,50 +283,27 @@ def git_postprocess(template, git_directory):
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--verbose', action='store_true')
-  parser.add_argument('--win-tools-name',
-                      help='The directory of the Python installation. '
-                           '(legacy) If missing, use legacy Windows tools '
-                           'processing')
+  parser.add_argument('--win-tools-name', required=True,
+                      help='The directory of the Python installation.')
   parser.add_argument('--bleeding-edge', action='store_true',
                       help='Force bleeding edge Git.')
-
-  group = parser.add_argument_group('legacy flags')
-  group.add_argument('--force', action='store_true',
-                     help='Always re-install everything.')
-  group.add_argument('--bits', type=int, choices=(32,64),
-                     help='Bitness of the client to install. Default on this'
-                     ' system: %(default)s', default=get_os_bitness())
-  group.add_argument('--cipd-client',
-                     help='Path to CIPD client binary. default: %(default)s',
-                     default=os.path.join(ROOT_DIR, 'cipd'+BAT_EXT))
-  group.add_argument('--cipd-cache-directory',
-                     help='Path to CIPD cache directory.')
   args = parser.parse_args(argv)
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
-  template = Template.empty()
-  if not args.win_tools_name:
-    # Legacy (non-CIPD) support.
-    template = template._replace(
-        PYTHON_RELDIR='python276_bin',
-        PYTHON_BIN_RELDIR='python276_bin',
-        PYTHON_BIN_RELDIR_UNIX='python276_bin')
-    template = ensure_git(args, template)
-  else:
-    template = template._replace(
-        PYTHON_RELDIR=os.path.join(args.win_tools_name, 'python'),
-        PYTHON_BIN_RELDIR=os.path.join(args.win_tools_name, 'python', 'bin'),
-        PYTHON_BIN_RELDIR_UNIX=posixpath.join(
-            args.win_tools_name, 'python', 'bin'),
-        GIT_BIN_RELDIR=os.path.join(args.win_tools_name, 'git'),
-        GIT_BIN_RELDIR_UNIX=posixpath.join(args.win_tools_name, 'git'))
+  template = Template.empty()._replace(
+      PYTHON_RELDIR=os.path.join(args.win_tools_name, 'python'),
+      PYTHON_BIN_RELDIR=os.path.join(args.win_tools_name, 'python', 'bin'),
+      PYTHON_BIN_RELDIR_UNIX=posixpath.join(
+          args.win_tools_name, 'python', 'bin'),
+      GIT_BIN_RELDIR=os.path.join(args.win_tools_name, 'git'),
+      GIT_BIN_RELDIR_UNIX=posixpath.join(args.win_tools_name, 'git'))
 
-    win_tools_dir = os.path.join(ROOT_DIR, args.win_tools_name)
-    git_postprocess(template, os.path.join(win_tools_dir, 'git'))
+  win_tools_dir = os.path.join(ROOT_DIR, args.win_tools_name)
+  git_postprocess(template, os.path.join(win_tools_dir, 'git'))
 
-    # Clean up any old Python installations.
-    clean_up_old_installations(win_tools_dir)
+  # Clean up any old Python and Git installations.
+  clean_up_old_installations(win_tools_dir)
 
   # Emit our Python bin depot-tools-relative directory. This is ready by
   # "python.bat" to identify the path of the current Python installation.
@@ -463,17 +320,11 @@ def main(argv):
       template.PYTHON_BIN_RELDIR,
       os.path.join(ROOT_DIR, 'python_bin_reldir.txt'))
 
-  # Install our "python.bat" shim.
-  # TODO: Move this to generic shim installation once legacy support is
-  # removed and this code path is the only one.
-  template.maybe_install(
-      'python27.new.bat',
-      os.path.join(ROOT_DIR, 'python.bat'))
-
   # Re-evaluate and regenerate our root templated files.
   for src_name, dst_name in (
       ('git-bash.template.sh', 'git-bash'),
       ('pylint.new.bat', 'pylint.bat'),
+      ('python27.new.bat', 'python.bat'),
       ):
     template.maybe_install(src_name, os.path.join(ROOT_DIR, dst_name))
 
