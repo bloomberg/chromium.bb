@@ -56,15 +56,15 @@ class RemoteSuggestionsScheduler {
   // To keep start ups fast, defer any work possible.
   virtual void OnBrowserColdStart() = 0;
 
-  // Called whenever a new NTP is opened. This may be called on cold starts.
-  // So to keep start ups fast, defer heavy work for cold starts.
-  virtual void OnNTPOpened() = 0;
+  // Called whenever a new suggestions surface is opened. This may be called on
+  // cold starts. So to keep start ups fast, defer heavy work for cold starts.
+  virtual void OnSuggestionsSurfaceOpened() = 0;
 
-  // Fetch content suggestions.
+  // Called by PersistentScheduler implementation whenever it wakes up according
+  // to its schedule. Avoid heavy work, Chrome may be running in the background.
   virtual void OnPersistentSchedulerWakeUp() = 0;
 
-  // Force rescheduling of fetching.
-  virtual void RescheduleFetching() = 0;
+  virtual void OnBrowserUpgraded() = 0;
 };
 
 }  // namespace ntp_snippets

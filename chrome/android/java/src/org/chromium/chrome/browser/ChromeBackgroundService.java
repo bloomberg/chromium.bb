@@ -53,7 +53,7 @@ public class ChromeBackgroundService extends GcmTaskService {
 
                     case SnippetsLauncher.TASK_TAG_WIFI:
                     case SnippetsLauncher.TASK_TAG_FALLBACK:
-                        handleFetchSnippets(context, taskTag);
+                        handleSnippetsOnPersistentSchedulerWakeUp(context, taskTag);
                         break;
 
                     case DownloadResumptionScheduler.TASK_TAG:
@@ -83,21 +83,21 @@ public class ChromeBackgroundService extends GcmTaskService {
         }
     }
 
-    private void handleFetchSnippets(Context context, String tag) {
+    private void handleSnippetsOnPersistentSchedulerWakeUp(Context context, String tag) {
         if (!SnippetsLauncher.hasInstance()) {
             launchBrowser(context, tag);
         }
-        fetchSnippets();
+        snippetsOnPersistentSchedulerWakeUp();
     }
 
     @VisibleForTesting
-    protected void fetchSnippets() {
-        SnippetsBridge.fetchRemoteSuggestionsFromBackground();
+    protected void snippetsOnPersistentSchedulerWakeUp() {
+        SnippetsBridge.onPersistentSchedulerWakeUp();
     }
 
     @VisibleForTesting
-    protected void rescheduleFetching() {
-        SnippetsBridge.rescheduleFetching();
+    protected void snippetsOnBrowserUpgraded() {
+        SnippetsBridge.onBrowserUpgraded();
     }
 
     @VisibleForTesting
@@ -119,12 +119,12 @@ public class ChromeBackgroundService extends GcmTaskService {
         BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
     }
 
-    private void rescheduleSnippetsTasksOnUpgrade() {
-        if (SnippetsLauncher.shouldRescheduleTasksOnUpgrade()) {
+    private void handleSnippetsOnBrowserUpgraded() {
+        if (SnippetsLauncher.shouldNotifyOnBrowserUpgraded()) {
             if (!SnippetsLauncher.hasInstance()) {
                 launchBrowser(this, /*tag=*/""); // The |tag| doesn't matter here.
             }
-            rescheduleFetching();
+            snippetsOnBrowserUpgraded();
         }
     }
 
@@ -136,6 +136,6 @@ public class ChromeBackgroundService extends GcmTaskService {
     @Override
     public void onInitializeTasks() {
         rescheduleBackgroundSyncTasksOnUpgrade();
-        rescheduleSnippetsTasksOnUpgrade();
+        handleSnippetsOnBrowserUpgraded();
     }
 }

@@ -92451,8 +92451,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="NavigationType" separator=".">
   <suffix name="NewPageInPageOriginMismatch"
       label="in-document new page navigation with a non-matching origin"/>
-  <suffix name="NewPageInPage"
-      label="in-document new page navigation"/>
+  <suffix name="NewPageInPage" label="in-document new page navigation"/>
   <suffix name="NewPagePendingEntryMatches"
       label="new page navigation which found a pending entry"/>
   <suffix name="NewPageNoMatchingEntry"
@@ -92462,7 +92461,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="ExistingPageDifferentDocumentIntendedAsNew"
       label="existing page navigation which is intended as new"/>
   <suffix name="ExistingPageSameDocumentRestoredBrowserInitiated"
-      label="in-document existing page browser-initiated navigation which is restored"/>
+      label="in-document existing page browser-initiated navigation which is
+             restored"/>
   <suffix name="ExistingPageSameDocumentBrowserInitiated"
       label="in-document existing page browser-initiated navigation"/>
   <suffix name="ExistingPageRestoredBrowserInitiated"
