@@ -31,6 +31,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
@@ -412,6 +413,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
 
+  cursor_manager_.reset(new CursorManager(this));
+
   bool overscroll_enabled = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kOverscrollHistoryNavigation) != "0";
   SetOverscrollControllerEnabled(overscroll_enabled);
@@ -782,11 +785,19 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
+  GetCursorManager()->UpdateCursor(this, cursor);
+}
+
+void RenderWidgetHostViewAura::DisplayCursor(const WebCursor& cursor) {
   current_cursor_ = cursor;
   const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
   current_cursor_.SetDisplayInfo(display);
   UpdateCursorIfOverSelf();
+}
+
+CursorManager* RenderWidgetHostViewAura::GetCursorManager() {
+  return cursor_manager_.get();
 }
 
 void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
@@ -1838,6 +1849,8 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 
   selection_controller_.reset();
   selection_controller_client_.reset();
+
+  GetCursorManager()->ViewBeingDestroyed(this);
 
   delegated_frame_host_.reset();
   window_observer_.reset();
