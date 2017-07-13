@@ -55,6 +55,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // Like DeleteStorage(), but also deletes storage for all sub-origins.
   void DeleteStorageForPhysicalOrigin(const url::Origin& origin);
   void Flush();
+  void FlushOriginForTesting(const url::Origin& origin);
 
   // Used by content settings to alter the behavior around
   // what data to keep and what data to discard at shutdown.
@@ -104,7 +105,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
                             const std::vector<uint8_t>& value);
   void OnConnectionFinished();
-  void DeleteAndRecreateDatabase();
+  void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory,
                      leveldb::mojom::DatabaseError status);
 
@@ -129,6 +130,21 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_wrapper_count);
+  void OnCommitResult(leveldb::mojom::DatabaseError error);
+  void OnReconnectedToDB();
+
+  // These values are written to logs.  New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
+  enum class OpenResult {
+    DIRECTORY_OPEN_FAILED = 0,
+    DATABASE_OPEN_FAILED = 1,
+    INVALID_VERSION = 2,
+    VERSION_READ_ERROR = 3,
+    SUCCESS = 4,
+    MAX
+  };
+
+  void LogDatabaseOpenResult(OpenResult result);
 
   std::unique_ptr<service_manager::Connector> connector_;
   const base::FilePath subdirectory_;
@@ -151,7 +167,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   leveldb::mojom::LevelDBServicePtr leveldb_service_;
   leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
-  bool tried_to_recreate_ = false;
+  bool tried_to_recreate_during_open_ = false;
 
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
 
@@ -164,6 +180,13 @@ class CONTENT_EXPORT LocalStorageContextMojo
   base::FilePath old_localstorage_path_;
 
   bool is_low_end_device_;
+  // Counts consecutive commit errors. If this number reaches a threshold, the
+  // whole database is thrown away.
+  int commit_error_count_ = 0;
+  bool tried_to_recover_from_commit_errors_ = false;
+
+  // Name of an extra histogram to log open results to, if not null.
+  const char* open_result_histogram_ = nullptr;
 
   base::WeakPtrFactory<LocalStorageContextMojo> weak_ptr_factory_;
 };
