@@ -572,6 +572,35 @@ TEST_F(BleAdvertiserTest, SameAdvertisementAdded_FirstHasNotBeenUnregistered) {
                            individual_advertisements_[0]);
 }
 
+TEST_F(BleAdvertiserTest,
+       AdvertisementRegisteredAfterIndividualAdvertisementWasDestroyed) {
+  EXPECT_CALL(*mock_adapter_, AddObserver(_)).Times(1);
+  EXPECT_CALL(*mock_adapter_, RemoveObserver(_)).Times(1);
+  EXPECT_CALL(*mock_adapter_, IsPowered()).Times(1);
+  EXPECT_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_)).Times(1);
+
+  mock_eid_generator_->set_advertisement(
+      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_EQ(1u, individual_advertisements_.size());
+  EXPECT_EQ(1u, register_advertisement_args_.size());
+  VerifyServiceDataMatches(register_advertisement_args_[0],
+                           individual_advertisements_[0]);
+
+  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(individual_advertisements_.empty());
+
+  // Finish advertisement registration, without the IndividualAdvertisement
+  // which registered it existing.
+  InvokeCallback(register_advertisement_args_[0]);
+
+  // Verify that some mechanism recognized that the advertisement is not owned
+  // by any IndividualAdvertisement, and unregistered it. This verification will
+  // crash if Unregister() was not called on the advertisement.
+  InvokeLastUnregisterCallbackAndRemove();
+}
+
 }  // namespace tether
 
 }  // namespace chromeos
