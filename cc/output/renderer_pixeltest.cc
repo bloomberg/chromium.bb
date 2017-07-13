@@ -1048,8 +1048,8 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   blue_recording->add_draw_rect_with_flags(outer_rect, black_flags);
   blue_recording->add_draw_rect_with_flags(inner_rect, blue_flags);
   blue_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> blue_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(blue_recording.get(), false);
+  scoped_refptr<RasterSource> blue_raster_source =
+      blue_recording->CreateRasterSource();
 
   PictureDrawQuad* blue_quad =
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
@@ -1064,8 +1064,8 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   green_recording->add_draw_rect_with_flags(outer_rect, green_flags);
   green_recording->add_draw_rect_with_flags(inner_rect, black_flags);
   green_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> green_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(green_recording.get(), false);
+  scoped_refptr<RasterSource> green_raster_source =
+      green_recording->CreateRasterSource();
 
   PictureDrawQuad* green_quad =
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
@@ -2597,8 +2597,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   blue_recording->add_draw_rect_with_flags(blue_clip_rect, blue_flags);
   blue_recording->Rerecord();
 
-  scoped_refptr<FakeRasterSource> blue_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(blue_recording.get(), false);
+  scoped_refptr<RasterSource> blue_raster_source =
+      blue_recording->CreateRasterSource();
 
   gfx::Vector2d offset(viewport.bottom_right() - blue_rect.bottom_right());
   gfx::Transform blue_quad_to_target_transform;
@@ -2624,8 +2624,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   green_flags.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_flags(viewport, green_flags);
   green_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> green_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(green_recording.get(), false);
+  scoped_refptr<RasterSource> green_raster_source =
+      green_recording->CreateRasterSource();
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -2665,8 +2665,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   green_flags.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_flags(viewport, green_flags);
   green_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> green_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(green_recording.get(), false);
+  scoped_refptr<RasterSource> green_raster_source =
+      green_recording->CreateRasterSource();
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -2686,8 +2686,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   white_flags.setColor(SK_ColorWHITE);
   white_recording->add_draw_rect_with_flags(viewport, white_flags);
   white_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> white_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(white_recording.get(), false);
+  scoped_refptr<RasterSource> white_raster_source =
+      white_recording->CreateRasterSource();
 
   gfx::Transform white_quad_to_target_transform;
   SharedQuadState* white_shared_state = CreateTestSharedQuadState(
@@ -2761,8 +2761,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   recording->add_draw_image_with_flags(surface->makeImageSnapshot(),
                                        gfx::Point(), flags);
   recording->Rerecord();
-  scoped_refptr<FakeRasterSource> raster_source =
-      FakeRasterSource::CreateFromRecordingSource(recording.get(), false);
+  scoped_refptr<RasterSource> raster_source = recording->CreateRasterSource();
 
   gfx::Transform quad_to_target_transform;
   SharedQuadState* shared_state =
@@ -2810,8 +2809,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   recording->add_draw_image_with_flags(surface->makeImageSnapshot(),
                                        gfx::Point(), flags);
   recording->Rerecord();
-  scoped_refptr<FakeRasterSource> raster_source =
-      FakeRasterSource::CreateFromRecordingSource(recording.get(), false);
+  scoped_refptr<RasterSource> raster_source = recording->CreateRasterSource();
 
   gfx::Transform quad_to_target_transform;
   SharedQuadState* shared_state =
@@ -3002,8 +3000,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   green_recording->add_draw_rect_with_flags(green_rect1, green_flags);
   green_recording->add_draw_rect_with_flags(green_rect2, green_flags);
   green_recording->Rerecord();
-  scoped_refptr<FakeRasterSource> green_raster_source =
-      FakeRasterSource::CreateFromRecordingSource(green_recording.get(), false);
+  scoped_refptr<RasterSource> green_raster_source =
+      green_recording->CreateRasterSource();
 
   SharedQuadState* top_right_green_shared_quad_state =
       CreateTestSharedQuadState(green_quad_to_target_transform, viewport,
@@ -3071,8 +3069,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   recording->add_draw_rectf_with_flags(blue_layer_rect1, blue_flags);
   recording->add_draw_rectf_with_flags(blue_layer_rect2, blue_flags);
   recording->Rerecord();
-  scoped_refptr<FakeRasterSource> raster_source =
-      FakeRasterSource::CreateFromRecordingSource(recording.get(), false);
+  scoped_refptr<RasterSource> raster_source = recording->CreateRasterSource();
 
   gfx::Rect content_union_rect(
       gfx::ToEnclosingRect(gfx::ScaleRect(union_layer_rect, contents_scale)));

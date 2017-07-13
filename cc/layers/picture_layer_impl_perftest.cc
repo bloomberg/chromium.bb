@@ -78,8 +78,7 @@ class PictureLayerImplPerfTest : public testing::Test {
                                              int num_tiles,
                                              const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
-    bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
     do {
@@ -107,8 +106,7 @@ class PictureLayerImplPerfTest : public testing::Test {
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
             pending_layer_->element_id(),
             gfx::ScrollOffset(viewport.x(), viewport.y()));
-    bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
     do {
@@ -127,8 +125,7 @@ class PictureLayerImplPerfTest : public testing::Test {
       int num_tiles,
       const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
-    bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
     do {
@@ -157,8 +154,7 @@ class PictureLayerImplPerfTest : public testing::Test {
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
             pending_layer_->element_id(),
             gfx::ScrollOffset(viewport.x(), viewport.y()));
-    bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
     do {

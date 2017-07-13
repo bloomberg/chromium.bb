@@ -188,22 +188,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
   VerifyTilings(nullptr /* pending_twin_set */);
 }
 
-void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
-    scoped_refptr<RasterSource> raster_source,
-    const Region& layer_invalidation) {
-  raster_source_ = raster_source;
-  for (const auto& tiling : tilings_) {
-    tiling->SetRasterSourceAndResize(raster_source);
-    tiling->Invalidate(layer_invalidation);
-    state_since_last_tile_priority_update_.invalidated = true;
-    // Since the invalidation changed, we need to create any missing tiles in
-    // the live tiles rect again.
-    tiling->CreateMissingTilesInLiveTilesRect();
-  }
-}
-
-void PictureLayerTilingSet::UpdateTilingsForImplSideInvalidation(
-    const Region& layer_invalidation) {
+void PictureLayerTilingSet::Invalidate(const Region& layer_invalidation) {
   for (const auto& tiling : tilings_) {
     tiling->Invalidate(layer_invalidation);
     tiling->CreateMissingTilesInLiveTilesRect();

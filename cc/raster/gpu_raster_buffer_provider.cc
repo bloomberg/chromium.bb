@@ -45,7 +45,7 @@ static void RasterizeSource(
 
   ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
       context_provider, resource_lock, async_worker_context_enabled,
-      use_distance_field_text, raster_source->CanUseLCDText(),
+      use_distance_field_text, playback_settings.use_lcd_text,
       msaa_sample_count);
   SkSurface* sk_surface = scoped_surface.sk_surface();
   // Allocating an SkSurface will fail after a lost context.  Pretend we

@@ -52,8 +52,7 @@ class CC_EXPORT RecordingSource {
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
 
   // These functions are virtual for testing.
-  virtual scoped_refptr<RasterSource> CreateRasterSource(
-      bool can_use_lcd_text) const;
+  virtual scoped_refptr<RasterSource> CreateRasterSource() const;
 
   const DisplayItemList* GetDisplayItemList();
   gfx::Rect recorded_viewport() const { return recorded_viewport_; }

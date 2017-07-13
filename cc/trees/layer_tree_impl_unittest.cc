@@ -2199,7 +2199,7 @@ TEST_F(LayerTreeImplTest, NumLayersSmallTree) {
 TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
   host_impl().active_tree()->BuildPropertyTreesForTesting();
   host_impl().active_tree()->SetDeviceScaleFactor(1.f);
-  host_impl().active_tree()->UpdateDrawProperties(false);
+  host_impl().active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
   host_impl().active_tree()->SetDeviceScaleFactor(2.f);
   EXPECT_TRUE(host_impl().active_tree()->needs_update_draw_properties());
@@ -2209,7 +2209,7 @@ TEST_F(LayerTreeImplTest, RasterColorSpaceDoesNotNeedDrawPropertiesUpdate) {
   host_impl().active_tree()->BuildPropertyTreesForTesting();
   host_impl().active_tree()->SetRasterColorSpace(
       gfx::ColorSpace::CreateXYZD50());
-  host_impl().active_tree()->UpdateDrawProperties(false);
+  host_impl().active_tree()->UpdateDrawProperties();
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());
   host_impl().active_tree()->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
   EXPECT_FALSE(host_impl().active_tree()->needs_update_draw_properties());

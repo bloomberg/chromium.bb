@@ -21,7 +21,8 @@ Tile::Tile(TileManager* tile_manager,
            const CreateInfo& info,
            int layer_id,
            int source_frame_number,
-           int flags)
+           int flags,
+           bool can_use_lcd_text)
     : tile_manager_(tile_manager),
       tiling_(info.tiling),
       content_rect_(info.content_rect),
@@ -35,6 +36,7 @@ Tile::Tile(TileManager* tile_manager,
       required_for_activation_(false),
       required_for_draw_(false),
       is_solid_color_analysis_performed_(false),
+      can_use_lcd_text_(can_use_lcd_text),
       id_(tile_manager->GetUniqueTileId()),
       invalidated_id_(0),
       scheduled_priority_(0) {}

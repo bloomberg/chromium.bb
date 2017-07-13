@@ -372,11 +372,17 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   sync_tree()->set_needs_update_draw_properties();
 
   // We need an update immediately post-commit to have the opportunity to create
-  // tilings.  Because invalidations may be coming from the main thread, it's
+  // tilings.
+  sync_tree()->UpdateDrawProperties();
+  // Because invalidations may be coming from the main thread, it's
   // safe to do an update for lcd text at this point and see if lcd text needs
   // to be disabled on any layers.
-  bool update_lcd_text = true;
-  sync_tree()->UpdateDrawProperties(update_lcd_text);
+  // It'd be ideal if this could be done earlier, but when the raster source
+  // is updated from the main thread during push properties, update draw
+  // properties has not occurred yet and so it's not clear whether or not the
+  // layer can or cannot use lcd text.  So, this is the cleanup pass to
+  // determine if lcd state needs to switch due to draw properties.
+  sync_tree()->UpdateCanUseLCDText();
   // Start working on newly created tiles immediately if needed.
   // TODO(vmpstr): Investigate always having PrepareTiles issue
   // NotifyReadyToActivate, instead of handling it here.
@@ -1117,8 +1123,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
         base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
   }
 
-  bool update_lcd_text = false;
-  bool ok = active_tree_->UpdateDrawProperties(update_lcd_text);
+  bool ok = active_tree_->UpdateDrawProperties();
   DCHECK(ok) << "UpdateDrawProperties failed during draw";
 
   // This will cause NotifyTileStateChanged() to be called for any tiles that

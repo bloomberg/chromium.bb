@@ -10,10 +10,9 @@ namespace cc {
 
 FakeRecordingSource::FakeRecordingSource() : playback_allowed_event_(nullptr) {}
 
-scoped_refptr<RasterSource> FakeRecordingSource::CreateRasterSource(
-    bool can_use_lcd) const {
+scoped_refptr<RasterSource> FakeRecordingSource::CreateRasterSource() const {
   return FakeRasterSource::CreateFromRecordingSourceWithWaitable(
-      this, can_use_lcd, playback_allowed_event_);
+      this, playback_allowed_event_);
 }
 
 bool FakeRecordingSource::EqualsTo(const FakeRecordingSource& other) {

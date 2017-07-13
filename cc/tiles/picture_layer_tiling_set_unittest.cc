@@ -992,7 +992,7 @@ TEST(PictureLayerTilingTest, InvalidateAfterComputeTilePriorityRects) {
       tiling_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));
 
   // This will invalidate tilings.
-  tiling_set->UpdateRasterSourceDueToLCDChange(raster_source, Region());
+  tiling_set->Invalidate(Region());
 
   EXPECT_TRUE(
       tiling_set->UpdateTilePriorities(viewport, 1.f, time, Occlusion(), true));

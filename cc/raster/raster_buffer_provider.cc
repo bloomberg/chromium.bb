@@ -120,7 +120,7 @@ void RasterBufferProvider::PlaybackToMemory(
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
-  if (raster_source->CanUseLCDText()) {
+  if (playback_settings.use_lcd_text) {
     // LegacyFontHost will get LCD text and skia figures out what type to use.
     surface_props = SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType);
   }

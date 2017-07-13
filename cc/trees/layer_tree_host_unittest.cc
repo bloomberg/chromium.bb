@@ -3260,25 +3260,25 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
         // The first draw.
         EXPECT_EQ(1, num_tiles_rastered_);
         EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_TRUE(root_layer->RasterSourceUsesLCDText());
+        EXPECT_TRUE(root_layer->RasterSourceUsesLCDTextForTesting());
         break;
       case 1:
         // Nothing changed on the layer.
         EXPECT_EQ(1, num_tiles_rastered_);
         EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_TRUE(root_layer->RasterSourceUsesLCDText());
+        EXPECT_TRUE(root_layer->RasterSourceUsesLCDTextForTesting());
         break;
       case 2:
         // LCD text was disabled; it should be re-rastered with LCD text off.
         EXPECT_EQ(2, num_tiles_rastered_);
         EXPECT_FALSE(can_use_lcd_text);
-        EXPECT_FALSE(root_layer->RasterSourceUsesLCDText());
+        EXPECT_FALSE(root_layer->RasterSourceUsesLCDTextForTesting());
         break;
       case 3:
         // LCD text was enabled, but it's sticky and stays off.
         EXPECT_EQ(2, num_tiles_rastered_);
         EXPECT_TRUE(can_use_lcd_text);
-        EXPECT_FALSE(root_layer->RasterSourceUsesLCDText());
+        EXPECT_FALSE(root_layer->RasterSourceUsesLCDTextForTesting());
         break;
     }
   }
