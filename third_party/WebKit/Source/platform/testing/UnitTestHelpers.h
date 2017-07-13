@@ -52,6 +52,9 @@ void YieldCurrentThread();
 // /src/third_party/WebKit.
 String BlinkRootDir();
 
+// Returns directory containing the current executable as absolute path.
+String ExecutableDir();
+
 // Returns test data absolute path for webkit_unit_tests in core, i.e.
 // <blinkRootDir>/Source/core/testing/data/<relativePath>.
 // It returns the top web test directory if |relativePath| was not specified.

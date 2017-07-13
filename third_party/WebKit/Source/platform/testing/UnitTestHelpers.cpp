@@ -87,6 +87,12 @@ String BlinkRootDir() {
   return FilePathToWebString(BlinkRootFilePath());
 }
 
+String ExecutableDir() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_EXE, &path);
+  return FilePathToWebString(base::MakeAbsoluteFilePath(path));
+}
+
 String CoreTestDataPath(const String& relative_path) {
   return FilePathToWebString(
       BlinkRootFilePath()

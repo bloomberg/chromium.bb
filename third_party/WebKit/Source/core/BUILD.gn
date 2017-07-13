@@ -1577,6 +1577,12 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/WebKit/Source/core/editing:unit_tests",
   ]
+
+  # FIXME: Enable mojo unittests on Android after fixing data dependency.
+  # crbug.com/741925
+  if (!is_android) {
+    deps += [ "//third_party/WebKit/Source/core/mojo:unit_tests" ]
+  }
 }
 
 # Fuzzer for blink::StyleSheetContents
