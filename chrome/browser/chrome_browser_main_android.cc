@@ -80,10 +80,6 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
             crash_dump_dir, kAndroidMinidumpDescriptor));
   }
 
-  // Auto-detect based on en-US whether secondary locale .pak files exist.
-  ui::SetLoadSecondaryLocalePaks(
-      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
-
   return ChromeBrowserMainParts::PreCreateThreads();
 }
 

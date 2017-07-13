@@ -41,8 +41,6 @@ app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 if (enable_resource_whitelist_generation) {
   monochrome_resource_whitelist =
       "$target_gen_dir/monochrome_resource_whitelist.txt"
-  monochrome_locale_whitelist =
-      "$target_gen_dir/monochrome_locale_whitelist.txt"
 }
 
 jinja_template("chrome_public_android_manifest") {
@@ -732,38 +730,9 @@ if (current_toolchain == default_toolchain) {
               "/libmonochrome$shlib_extension.whitelist"
       output = monochrome_resource_whitelist
     }
-    
-    action("monochrome_locale_whitelist") {
-      script = "//tools/resources/filter_resource_whitelist.py"
-      
-      _system_webview_pak_whitelist =
-          "$root_gen_dir/android_webview/system_webview_pak_whitelist.txt"
-      
-      inputs = [
-        monochrome_resource_whitelist,
-        _system_webview_pak_whitelist,
-      ]
-      
-      outputs = [
-        monochrome_locale_whitelist,
-      ]
-      
-      deps = [
-        ":monochrome_resource_whitelist",
-        "//android_webview:system_webview_pak_whitelist",
-      ]
-      
-      args = [
-        "--input",
-        rebase_path(monochrome_resource_whitelist, root_build_dir),
-        "--filter",
-        rebase_path(_system_webview_pak_whitelist, root_build_dir),
-        "--output",
-        rebase_path(monochrome_locale_whitelist, root_build_dir),
-      ]
-    } 
   }
 
+  # This target does not output locale paks.
   chrome_paks("monochrome_paks") {
     output_dir = "$target_gen_dir/$target_name"
 
@@ -772,25 +741,12 @@ if (current_toolchain == default_toolchain) {
       "//android_webview:generate_aw_resources",
     ]
 
+    exclude_locale_paks = true
+
     if (enable_resource_whitelist_generation) {
       repack_whitelist = monochrome_resource_whitelist
       deps += [ ":monochrome_resource_whitelist" ]
-      locale_whitelist = monochrome_locale_whitelist
-      deps += [ ":monochrome_locale_whitelist" ]
     }
-  }
-  
-  # This target is separate from monochrome_pak_assets because it does not
-  # disable compression.
-  android_assets("monochrome_locale_pak_assets") {
-    sources = []
-    foreach(_locale, locales - android_chrome_omitted_locales) {
-      sources += [ "$target_gen_dir/monochrome_paks/locales/$_locale.pak" ]
-    }
-  
-    deps = [
-      ":monochrome_paks",
-    ]
   }
 
   # This target explicitly includes locale paks via deps.
@@ -802,7 +758,7 @@ if (current_toolchain == default_toolchain) {
     disable_compression = true
 
     deps = [
-      ":monochrome_locale_pak_assets",
+      ":chrome_public_locale_pak_assets",
       ":monochrome_paks",
       "//android_webview:locale_pak_assets",
     ]
