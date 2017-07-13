@@ -1381,7 +1381,6 @@ STDMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
   *n_column_header_cells = 0;
   auto* table = GetTable();
   if (!table) {
-    NOTREACHED();
     return S_FALSE;
   }
 
@@ -1438,7 +1437,6 @@ STDMETHODIMP AXPlatformNodeWin::get_rowHeaderCells(IUnknown*** cell_accessibles,
   *n_row_header_cells = 0;
   auto* table = GetTable();
   if (!table) {
-    NOTREACHED();
     return S_FALSE;
   }
 

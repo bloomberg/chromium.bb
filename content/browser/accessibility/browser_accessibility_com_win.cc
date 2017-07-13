@@ -3050,30 +3050,36 @@ HRESULT WINAPI BrowserAccessibilityComWin::InternalQueryInterface(
     void** object) {
   BrowserAccessibilityComWin* accessibility =
       reinterpret_cast<BrowserAccessibilityComWin*>(this_ptr);
+
+  if (!accessibility->owner()) {
+    *object = nullptr;
+    return E_NOINTERFACE;
+  }
+
   int32_t ia_role = accessibility->MSAARole();
   if (iid == IID_IAccessibleImage) {
     if (ia_role != ROLE_SYSTEM_GRAPHIC) {
-      *object = NULL;
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTable || iid == IID_IAccessibleTable2) {
     if (ia_role != ROLE_SYSTEM_TABLE) {
-      *object = NULL;
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTableCell) {
     if (!ui::IsCellOrTableHeaderRole(accessibility->owner()->GetRole())) {
-      *object = NULL;
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleValue) {
     if (!accessibility->IsRangeValueSupported()) {
-      *object = NULL;
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_ISimpleDOMDocument) {
     if (ia_role != ROLE_SYSTEM_DOCUMENT) {
-      *object = NULL;
+      *object = nullptr;
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleHyperlink) {

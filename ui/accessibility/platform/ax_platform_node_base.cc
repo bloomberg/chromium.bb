@@ -18,28 +18,34 @@ void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
 }
 
 const AXNodeData& AXPlatformNodeBase::GetData() const {
-  CHECK(delegate_);
-  return delegate_->GetData();
+  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
+  if (delegate_)
+    return delegate_->GetData();
+  return empty_data;
 }
 
 gfx::Rect AXPlatformNodeBase::GetBoundsInScreen() const {
-  CHECK(delegate_);
-  return delegate_->GetScreenBoundsRect();
+  if (delegate_)
+    return delegate_->GetScreenBoundsRect();
+  return gfx::Rect();
 }
 
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
-  CHECK(delegate_);
-  return delegate_->GetParent();
+  if (delegate_)
+    return delegate_->GetParent();
+  return nullptr;
 }
 
 int AXPlatformNodeBase::GetChildCount() {
-  CHECK(delegate_);
-  return delegate_->GetChildCount();
+  if (delegate_)
+    return delegate_->GetChildCount();
+  return 0;
 }
 
 gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
-  CHECK(delegate_);
-  return delegate_->ChildAtIndex(index);
+  if (delegate_)
+    return delegate_->ChildAtIndex(index);
+  return nullptr;
 }
 
 // AXPlatformNode overrides.
@@ -65,7 +71,8 @@ AXPlatformNodeDelegate* AXPlatformNodeBase::GetDelegate() const {
 // Helpers.
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() {
-  CHECK(delegate_);
+  if (!delegate_)
+    return nullptr;
   gfx::NativeViewAccessible parent_accessible = GetParent();
   AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
   if (!parent)
@@ -80,7 +87,8 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() {
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetNextSibling() {
-  CHECK(delegate_);
+  if (!delegate_)
+    return nullptr;
   gfx::NativeViewAccessible parent_accessible = GetParent();
   AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
   if (!parent)
@@ -93,7 +101,8 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetNextSibling() {
 }
 
 bool AXPlatformNodeBase::IsDescendant(AXPlatformNodeBase* node) {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   if (!node)
     return false;
   if (node == this)
@@ -107,102 +116,124 @@ bool AXPlatformNodeBase::IsDescendant(AXPlatformNodeBase* node) {
 
 bool AXPlatformNodeBase::HasBoolAttribute(
     ui::AXBoolAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().HasBoolAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetBoolAttribute(
     ui::AXBoolAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetBoolAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetBoolAttribute(
     ui::AXBoolAttribute attribute, bool* value) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetBoolAttribute(attribute, value);
 }
 
 bool AXPlatformNodeBase::HasFloatAttribute(
     ui::AXFloatAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().HasFloatAttribute(attribute);
 }
 
 float AXPlatformNodeBase::GetFloatAttribute(
     ui::AXFloatAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetFloatAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetFloatAttribute(
     ui::AXFloatAttribute attribute, float* value) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetFloatAttribute(attribute, value);
 }
 
 bool AXPlatformNodeBase::HasIntAttribute(
     ui::AXIntAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().HasIntAttribute(attribute);
 }
 
 int AXPlatformNodeBase::GetIntAttribute(
     ui::AXIntAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetIntAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetIntAttribute(
     ui::AXIntAttribute attribute, int* value) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetIntAttribute(attribute, value);
 }
 
 bool AXPlatformNodeBase::HasStringAttribute(
     ui::AXStringAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().HasStringAttribute(attribute);
 }
 
 const std::string& AXPlatformNodeBase::GetStringAttribute(
     ui::AXStringAttribute attribute) const {
-  CHECK(delegate_);
+  CR_DEFINE_STATIC_LOCAL(std::string, empty_data, ());
+  if (!delegate_)
+    return empty_data;
   return GetData().GetStringAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetStringAttribute(
     ui::AXStringAttribute attribute, std::string* value) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetStringAttribute(attribute, value);
 }
 
 base::string16 AXPlatformNodeBase::GetString16Attribute(
     ui::AXStringAttribute attribute) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return base::string16();
   return GetData().GetString16Attribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetString16Attribute(
     ui::AXStringAttribute attribute,
     base::string16* value) const {
-  CHECK(delegate_);
+  if (!delegate_)
+    return false;
   return GetData().GetString16Attribute(attribute, value);
 }
 
 bool AXPlatformNodeBase::HasIntListAttribute(
     ui::AXIntListAttribute attribute) const {
+  if (!delegate_)
+    return false;
   return GetData().HasIntListAttribute(attribute);
 }
 
 const std::vector<int32_t>& AXPlatformNodeBase::GetIntListAttribute(
     ui::AXIntListAttribute attribute) const {
+  CR_DEFINE_STATIC_LOCAL(std::vector<int32_t>, empty_data, ());
+  if (!delegate_)
+    return empty_data;
   return GetData().GetIntListAttribute(attribute);
 }
 
 bool AXPlatformNodeBase::GetIntListAttribute(
     ui::AXIntListAttribute attribute,
     std::vector<int32_t>* value) const {
+  if (!delegate_)
+    return false;
   return GetData().GetIntListAttribute(attribute, value);
 }
 
@@ -210,7 +241,6 @@ AXPlatformNodeBase::AXPlatformNodeBase() {
 }
 
 AXPlatformNodeBase::~AXPlatformNodeBase() {
-  CHECK(!delegate_);
 }
 
 // static
@@ -226,7 +256,9 @@ bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
   action_data.anchor_node_id = action_data.focus_node_id = GetData().id;
   action_data.anchor_offset = start_offset;
   action_data.focus_offset = end_offset;
-  DCHECK(delegate_);
+  if (!delegate_)
+    return false;
+
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
@@ -306,6 +338,8 @@ bool AXPlatformNodeBase::IsRangeValueSupported() const {
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
+  if (!delegate_)
+    return nullptr;
   AXPlatformNodeBase* table = const_cast<AXPlatformNodeBase*>(this);
   while (table && !ui::IsTableLikeRole(table->GetData().role)) {
     gfx::NativeViewAccessible parent_accessible = table->GetParent();
@@ -317,8 +351,8 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTable() const {
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
-  DCHECK(delegate_);
-
+  if (!delegate_)
+    return nullptr;
   if (!ui::IsTableLikeRole(GetData().role) &&
       !ui::IsCellOrTableHeaderRole(GetData().role))
     return nullptr;
