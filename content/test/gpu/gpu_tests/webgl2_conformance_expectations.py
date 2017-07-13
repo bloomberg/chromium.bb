@@ -209,6 +209,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
+    self.Fail('deqp/functional/gles3/shaderstruct.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+
     # Mac only.
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
