@@ -135,6 +135,10 @@ PrefService* ShellDelegateMus::GetActiveUserPrefService() const {
   return nullptr;
 }
 
+PrefService* ShellDelegateMus::GetLocalStatePrefService() const {
+  return nullptr;
+}
+
 bool ShellDelegateMus::IsTouchscreenEnabledInPrefs(bool use_local_state) const {
   NOTIMPLEMENTED();
   return true;
