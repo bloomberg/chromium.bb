@@ -557,62 +557,6 @@ void aom_scaled_avg_2d_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
                       filter_y, y_step_q4, w, h);
 }
 
-/*
-void aom_scaled_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                              uint8_t *dst, ptrdiff_t dst_stride,
-                              const int16_t *filter_x, int x_step_qn,
-                              const int16_t *filter_y, int y_step_qn, int w,
-                              int h) {
-  aom_convolve8_horiz_scale_c(src, src_stride, dst, dst_stride, filter_x,
-                              x_step_qn, filter_y, y_step_qn, w, h);
-}
-
-void aom_scaled_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                             uint8_t *dst, ptrdiff_t dst_stride,
-                             const int16_t *filter_x, int x_step_qn,
-                             const int16_t *filter_y, int y_step_qn, int w,
-                             int h) {
-  aom_convolve8_vert_scale_c(src, src_stride, dst, dst_stride, filter_x,
-                             x_step_qn, filter_y, y_step_qn, w, h);
-}
-
-void aom_scaled_2d_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                           uint8_t *dst, ptrdiff_t dst_stride,
-                           const int16_t *filter_x, int x_step_qn,
-                           const int16_t *filter_y, int y_step_qn, int w,
-                           int h) {
-  aom_convolve8_scale_c(src, src_stride, dst, dst_stride, filter_x, x_step_qn,
-                        filter_y, y_step_qn, w, h);
-}
-
-void aom_scaled_avg_horiz_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                  uint8_t *dst, ptrdiff_t dst_stride,
-                                  const int16_t *filter_x, int x_step_qn,
-                                  const int16_t *filter_y, int y_step_qn, int w,
-                                  int h) {
-  aom_convolve8_avg_horiz_scale_c(src, src_stride, dst, dst_stride, filter_x,
-                                  x_step_qn, filter_y, y_step_qn, w, h);
-}
-
-void aom_scaled_avg_vert_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                                 uint8_t *dst, ptrdiff_t dst_stride,
-                                 const int16_t *filter_x, int x_step_qn,
-                                 const int16_t *filter_y, int y_step_qn, int w,
-                                 int h) {
-  aom_convolve8_avg_vert_scale_c(src, src_stride, dst, dst_stride, filter_x,
-                                 x_step_qn, filter_y, y_step_qn, w, h);
-}
-
-void aom_scaled_avg_2d_scale_c(const uint8_t *src, ptrdiff_t src_stride,
-                               uint8_t *dst, ptrdiff_t dst_stride,
-                               const int16_t *filter_x, int x_step_qn,
-                               const int16_t *filter_y, int y_step_qn, int w,
-                               int h) {
-  aom_convolve8_avg_scale_c(src, src_stride, dst, dst_stride, filter_x,
-                            x_step_qn, filter_y, y_step_qn, w, h);
-}
-*/
-
 // TODO(afergs): Make sure this works too
 #if CONFIG_LOOP_RESTORATION
 static void convolve_add_src_horiz(const uint8_t *src, ptrdiff_t src_stride,

@@ -3076,76 +3076,6 @@ void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
 }
 #endif  // OUTPUT_YUV_REC
 
-/*
-#if CONFIG_HIGHBITDEPTH
-static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                   YV12_BUFFER_CONFIG *dst, int planes,
-                                   int bd) {
-#else
-static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                   YV12_BUFFER_CONFIG *dst, int planes) {
-#endif  // CONFIG_HIGHBITDEPTH
-  const int src_w = src->y_crop_width;
-  const int src_h = src->y_crop_height;
-  const int dst_w = dst->y_crop_width;
-  const int dst_h = dst->y_crop_height;
-  const uint8_t *const srcs[3] = { src->y_buffer, src->u_buffer,
-                                   src->v_buffer };
-  const int src_strides[3] = { src->y_stride, src->uv_stride, src->uv_stride };
-  uint8_t *const dsts[3] = { dst->y_buffer, dst->u_buffer, dst->v_buffer };
-  const int dst_strides[3] = { dst->y_stride, dst->uv_stride, dst->uv_stride };
-  const InterpFilterParams interp_filter_params =
-      av1_get_interp_filter_params(EIGHTTAP_REGULAR);
-  const int16_t *kernel = interp_filter_params.filter_ptr;
-  const int taps = interp_filter_params.taps;
-  int x, y, i;
-
-  assert(planes <= 3);
-  assert(src->subsampling_x == dst->subsampling_x);
-  assert(src->subsampling_y == dst->subsampling_y);
-  for (y = 0; y < dst_h; y += 16) {
-    for (x = 0; x < dst_w; x += 16) {
-      for (i = 0; i < planes; ++i) {
-        int ss_x = i == AOM_PLANE_Y ? 0 : src->subsampling_x;
-        int ss_y = i == AOM_PLANE_Y ? 0 : src->subsampling_y;
-        const int x_q4 = x * (16 >> ss_x) * src_w / dst_w;
-        const int y_q4 = y * (16 >> ss_y) * src_h / dst_h;
-        const int src_stride = src_strides[i];
-        const int dst_stride = dst_strides[i];
-        const uint8_t *src_ptr = srcs[i] +
-                                 (y >> ss_y) * src_h / dst_h * src_stride +
-                                 (x >> ss_x) * src_w / dst_w;
-        uint8_t *dst_ptr = dsts[i] + (y >> ss_y) * dst_stride + (x >> ss_x);
-
-#if CONFIG_HIGHBITDEPTH
-        if (src->flags & YV12_FLAG_HIGHBITDEPTH) {
-          aom_highbd_convolve8(src_ptr, src_stride, dst_ptr, dst_stride,
-                               &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
-                               &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                               16 >> ss_x, 16 >> ss_y, bd);
-        } else {
-          aom_scaled_2d(src_ptr, src_stride, dst_ptr, dst_stride,
-                        &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
-                        &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                        16 >> ss_x, 16 >> ss_y);
-        }
-#else
-        aom_scaled_2d(src_ptr, src_stride, dst_ptr, dst_stride,
-                      &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
-                      &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                      16 >> ss_x, 16 >> ss_y);
-#endif  // CONFIG_HIGHBITDEPTH
-      }
-    }
-  }
-
-  if (planes == 1)
-    aom_extend_frame_borders_y(dst);
-  else
-    aom_extend_frame_borders(dst);
-}
-*/
-
 #if CONFIG_GLOBAL_MOTION
 #define GM_RECODE_LOOP_NUM4X4_FACTOR 192
 static int recode_loop_test_global_motion(AV1_COMP *cpi) {
@@ -3590,8 +3520,6 @@ void av1_scale_references(AV1_COMP *cpi) {
                                "Failed to allocate frame buffer");
           av1_resize_and_extend_frame(ref, &new_fb_ptr->buf,
                                       (int)cm->bit_depth);
-          // scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE,
-          //                        (int)cm->bit_depth);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
         }
@@ -3615,7 +3543,6 @@ void av1_scale_references(AV1_COMP *cpi) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
           av1_resize_and_extend_frame(ref, &new_fb_ptr->buf);
-          // scale_and_extend_frame(ref, &new_fb_ptr->buf, MAX_MB_PLANE);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
           alloc_frame_mvs(cm, new_fb);
         }
