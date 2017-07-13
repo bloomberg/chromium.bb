@@ -11,7 +11,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
-#include "core/streams/Stream.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
