@@ -398,7 +398,7 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_AD_MACHINE_NAME_INPUT_LABEL);
   builder->Add("oauthEnrollAdDomainJoinWelcomeMessage",
                IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE);
-  builder->Add("adLoginUsername", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginUsername", IDS_AD_ENROLLMENT_LOGIN_USER);
   builder->Add("adLoginInvalidUsername", IDS_AD_INVALID_USERNAME);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
   builder->Add("adLoginInvalidPassword", IDS_AD_INVALID_PASSWORD);
@@ -557,19 +557,9 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
       ShowEnrollmentSpinnerScreen();
       controller_->OnAdJoined(gaia::ExtractDomainName(user_name));
       return;
-    case authpolicy::ERROR_UNKNOWN:
-    case authpolicy::ERROR_DBUS_FAILURE:
-    case authpolicy::ERROR_NET_FAILED:
-    case authpolicy::ERROR_SMBCLIENT_FAILED:
-    case authpolicy::ERROR_PARSE_FAILED:
-    case authpolicy::ERROR_PARSE_PREG_FAILED:
-    case authpolicy::ERROR_BAD_GPOS:
-    case authpolicy::ERROR_LOCAL_IO:
-    case authpolicy::ERROR_STORE_POLICY_FAILED:
-      ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
-      return;
     case authpolicy::ERROR_NETWORK_PROBLEM:
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_NETWORK_ERROR, true);
+      // Could be a network problem, but could also be a misspelled domain name.
+      ShowError(IDS_AD_AUTH_NETWORK_ERROR, true);
       return;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
@@ -589,21 +579,18 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
       CallJS("invalidateAd", machine_name, user_name,
              static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
       return;
+    case authpolicy::ERROR_PASSWORD_EXPIRED:
+      ShowError(IDS_AD_PASSWORD_EXPIRED, true);
+      return;
     case authpolicy::ERROR_JOIN_ACCESS_DENIED:
       ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
       return;
     case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
       ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
       return;
-    case authpolicy::ERROR_PASSWORD_EXPIRED:
-    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
-    case authpolicy::ERROR_KINIT_FAILED:
-    case authpolicy::ERROR_NOT_JOINED:
-    case authpolicy::ERROR_NOT_LOGGED_IN:
     default:
       LOG(WARNING) << "Unhandled error code: " << code;
-      CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ActiveDirectoryErrorState::NONE));
+      ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
       return;
   }
 }
