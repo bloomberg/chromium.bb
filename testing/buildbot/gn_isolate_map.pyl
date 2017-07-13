@@ -577,6 +577,11 @@
     "type": "raw",
     "args": [],
   },
+  "ios_components_unittests": {
+    "label": "//ios/components:ios_components_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "ios_net_unittests": {
     "label": "//ios/net:ios_net_unittests",
     "type": "raw",

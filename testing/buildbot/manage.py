@@ -159,6 +159,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'ios_chrome_ui_egtests',
   'ios_chrome_unittests',
   'ios_chrome_web_egtests',
+  'ios_components_unittests',
   'ios_net_unittests',
   'ios_showcase_egtests',
   'ios_web_inttests',

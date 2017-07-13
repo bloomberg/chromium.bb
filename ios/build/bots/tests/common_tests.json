@@ -13,6 +13,9 @@
       "app": "google_apis_unittests"
     },
     {
+      "app": "ios_components_unittests"
+    },
+    {
       "app": "ios_net_unittests"
     },
     {
