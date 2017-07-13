@@ -1381,16 +1381,26 @@ void TraceLog::UpdateTraceEventDuration(
   if (!category_group_enabled_local)
     return;
 
+  UpdateTraceEventDurationExplicit(category_group_enabled, name, handle,
+                                   OffsetNow(), ThreadNow());
+}
+
+void TraceLog::UpdateTraceEventDurationExplicit(
+    const unsigned char* category_group_enabled,
+    const char* name,
+    TraceEventHandle handle,
+    const TimeTicks& now,
+    const ThreadTicks& thread_now) {
+  char category_group_enabled_local = *category_group_enabled;
+  if (!category_group_enabled_local)
+    return;
+
   // Avoid re-entrance of AddTraceEvent. This may happen in GPU process when
   // ECHO_TO_CONSOLE is enabled: AddTraceEvent -> LOG(ERROR) ->
   // GpuProcessLogMessageHandler -> PostPendingTask -> TRACE_EVENT ...
   if (thread_is_in_trace_event_.Get())
     return;
-
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
-
-  ThreadTicks thread_now = ThreadNow();
-  TimeTicks now = OffsetNow();
 
 #if defined(OS_WIN)
   // Generate an ETW event that marks the end of a complete event.
