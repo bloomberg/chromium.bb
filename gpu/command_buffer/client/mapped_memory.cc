@@ -26,7 +26,7 @@ namespace {
 
 // Generates process-unique IDs to use for tracing a MappedMemoryManager's
 // chunks.
-base::StaticAtomicSequenceNumber g_next_mapped_memory_manager_tracing_id;
+base::AtomicSequenceNumber g_next_mapped_memory_manager_tracing_id;
 
 }  // namespace
 
