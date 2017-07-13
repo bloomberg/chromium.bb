@@ -146,6 +146,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -1785,6 +1786,11 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       bool user_gesture) {
   content::BrowserContext* context = web_contents->GetBrowserContext();
   if (context->IsOffTheRecord())
+    return;
+
+  // Permission request UI cannot currently be rendered binocularly in VR mode,
+  // so we suppress the UI. crbug.com/736568
+  if (vr::VrTabHelper::IsInVr(web_contents))
     return;
 
   ProtocolHandler handler =

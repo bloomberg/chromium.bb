@@ -14,6 +14,7 @@
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,6 +128,8 @@ PermissionRequestManager::~PermissionRequestManager() {
 }
 
 void PermissionRequestManager::AddRequest(PermissionRequest* request) {
+  DCHECK(!vr::VrTabHelper::IsInVr(web_contents()));
+
   // TODO(tsergeant): change the UMA to no longer mention bubbles.
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
 
