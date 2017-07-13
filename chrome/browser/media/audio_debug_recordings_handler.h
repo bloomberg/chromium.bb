@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
 namespace content {
@@ -65,8 +64,6 @@ class AudioDebugRecordingsHandler
   friend class base::RefCountedThreadSafe<AudioDebugRecordingsHandler>;
 
   virtual ~AudioDebugRecordingsHandler();
-
-  base::FilePath GetLogDirectoryAndEnsureExists();
 
   // Helper for starting audio debug recordings.
   void DoStartAudioDebugRecordings(content::RenderProcessHost* host,
