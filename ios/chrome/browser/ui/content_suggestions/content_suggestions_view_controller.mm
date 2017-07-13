@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -70,6 +71,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc]
         initWithDataSource:dataSource];
+    if (base::ios::IsRunningOnIOS10OrLater()) {
+      self.collectionView.prefetchingEnabled = NO;
+    }
   }
   return self;
 }
