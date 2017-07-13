@@ -84,6 +84,8 @@ DEFINE_TRACE(ResourceLoader) {
 void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
+  loader_ = Context().CreateURLLoader(request);
+
   // Synchronous requests should not work with a throttling. Also, tentatively
   // disables throttling for fetch requests that could keep on holding an active
   // connection until data is read by JavaScript.
@@ -102,7 +104,7 @@ void ResourceLoader::Run() {
 
 void ResourceLoader::StartWith(const ResourceRequest& request) {
   DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
-  DCHECK(!loader_);
+  DCHECK(loader_);
 
   if (resource_->Options().synchronous_policy == kRequestSynchronously &&
       Context().DefersLoading()) {
@@ -110,8 +112,6 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
     return;
   }
 
-  loader_ = Context().CreateURLLoader(request);
-  DCHECK(loader_);
   loader_->SetDefersLoading(Context().DefersLoading());
 
   if (request.GetKeepalive())
@@ -144,15 +144,13 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
   keepalive_.Clear();
-  loader_.reset();
+  loader_ = Context().CreateURLLoader(request);
   StartWith(request);
 }
 
 void ResourceLoader::SetDefersLoading(bool defers) {
-  // TODO(toyoshim): Might be called before creating |loader_| if the request
-  // is throttled.
-  if (loader_)
-    loader_->SetDefersLoading(defers);
+  DCHECK(loader_);
+  loader_->SetDefersLoading(defers);
 }
 
 void ResourceLoader::DidChangePriority(ResourceLoadPriority load_priority,
