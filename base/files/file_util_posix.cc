@@ -438,8 +438,6 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes) {
 }
 
 #if !defined(OS_NACL_NONSFI)
-
-#if !defined(OS_FUCHSIA)
 bool CreateSymbolicLink(const FilePath& target_path,
                         const FilePath& symlink_path) {
   DCHECK(!symlink_path.empty());
@@ -515,8 +513,6 @@ bool ExecutableExistsInPath(Environment* env,
   }
   return false;
 }
-
-#endif  // !OS_FUCHSIA
 
 #if !defined(OS_MACOSX)
 // This is implemented in file_util_mac.mm for Mac.

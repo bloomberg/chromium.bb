@@ -27,7 +27,17 @@
 -FilePersistentMemoryAllocatorTest.ExtendTest
 -FileProxyTest.SetTimes
 -FileUtilProxyTest.Touch
+-FileUtilTest.ChangeDirectoryPermissionsAndEnumerate
+-FileUtilTest.ChangeFilePermissionsAndRead
+-FileUtilTest.ChangeFilePermissionsAndWrite
+-FileUtilTest.CopyDirectoryACL
+-FileUtilTest.CopyFileACL
+-FileUtilTest.CreateAndReadSymlinks
+-FileUtilTest.DeleteSymlinkToExistentFile
+-FileUtilTest.DeleteSymlinkToNonExistentFile
+-FileUtilTest.ExecutableExistsInPath
 -FileUtilTest.FileToFILE
+-FileUtilTest.NormalizeFilePathSymlinks
 -LoggingTest.CheckCausesDistinctBreakpoints
 -MemoryMappedFileTest.ExtendableFile
 -MemoryMappedFileTest.MapLargePartialRegionInTheMiddle
