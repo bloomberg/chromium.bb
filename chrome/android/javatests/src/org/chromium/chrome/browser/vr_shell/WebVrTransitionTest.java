@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.os.Build;
@@ -65,6 +66,22 @@ public class WebVrTransitionTest {
                 PAGE_LOAD_TIMEOUT_S);
         NfcSimUtils.simNfcScan(mVrTestRule.getActivity());
         mVrTestRule.waitOnJavaScriptStep(mVrTestRule.getFirstTabWebContents());
+        mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
+    }
+
+    /**
+     * Tests that the requestPresent promise doesn't resolve if the DON flow is
+     * not completed.
+     */
+    @Test
+    @MediumTest
+    @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
+    public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
+        mVrTestRule.loadUrlAndAwaitInitialization(
+                VrTestRule.getHtmlTestFile("test_presentation_promise_unresolved_during_don"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationAndWait(
+                mVrTestRule.getFirstTabCvc(), mVrTestRule.getFirstTabWebContents());
         mVrTestRule.endTest(mVrTestRule.getFirstTabWebContents());
     }
 }

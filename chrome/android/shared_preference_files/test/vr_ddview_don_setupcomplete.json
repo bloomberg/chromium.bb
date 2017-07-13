@@ -1,0 +1,14 @@
+[
+  {
+    "package": "com.google.vr.vrcore",
+    "filename": "VrCoreSettings.xml",
+    "set": {
+      "VrSkipDon": false,
+      "DaydreamSetupComplete": true,
+      "VrDeviceParams": "CgxHb29nbGUsIEluYy4SDURheWRyZWFtIFZpZXcdCfkgPSUB3oI9KhAAAFxCAABcQgAAXEIAAFxCNd9PDT06CLgexT7Zzhc_WABgAJqRYBoIARIKDQAAAAAV9P3UPBIKDQAAAAAV9P3UvA",
+      "UseAutomatedController": false,
+      "PairedControllerDriver": "DRIVER_P6",
+      "PairedControllerAddress": "AA:AA:AA:AA:AA:AA"
+    }
+  }
+]
