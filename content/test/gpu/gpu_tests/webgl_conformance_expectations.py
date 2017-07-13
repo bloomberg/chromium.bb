@@ -610,6 +610,41 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'android-chromium',
          ('nvidia', 'NVIDIA Tegra')], bug=624621)
 
+    # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
+    self.Fail('conformance/ogles/GL/array/array_001_to_006.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_009_to_016.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_017_to_024.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_025_to_032.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_033_to_040.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_041_to_048.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_049_to_056.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_057_to_064.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_065_to_072.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_073_to_080.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_081_to_088.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_089_to_096.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_097_to_104.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_105_to_112.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_113_to_120.html',
+              ['android', 'nvidia'], bug=740769)
+    self.Fail('conformance/ogles/GL/functions/functions_121_to_126.html',
+              ['android', 'nvidia'], bug=740769)
+
+
     ############
     # ChromeOS #
     ############
