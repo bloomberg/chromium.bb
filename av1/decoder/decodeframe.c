@@ -4892,10 +4892,17 @@ static void read_global_motion_params(WarpedMotionParams *params,
 
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
+  YV12_BUFFER_CONFIG *ref_buf;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    read_global_motion_params(&cm->global_motion[frame],
-                              &cm->prev_frame->global_motion[frame], r,
-                              cm->allow_high_precision_mv);
+    ref_buf = get_ref_frame(cm, frame);
+    if (cm->width == ref_buf->y_crop_width &&
+        cm->height == ref_buf->y_crop_height) {
+      read_global_motion_params(&cm->global_motion[frame],
+                                &cm->prev_frame->global_motion[frame], r,
+                                cm->allow_high_precision_mv);
+    } else {
+      set_default_warp_params(&cm->global_motion[frame]);
+    }
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,
