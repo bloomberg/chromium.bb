@@ -260,6 +260,10 @@
              menu-item-selector="cr-menu-item, hr">
     </cr-menu>
 
+    <cr-menu id="share-menu" class="chrome-menu files-menu"
+             menu-item-selector="cr-menu-item, hr">
+    </cr-menu>
+
     <cr-menu id="add-new-services-menu"
              class="chrome-menu files-menu has-icon-start"
              menu-item-selector="cr-menu-item, hr">
@@ -287,6 +291,14 @@
       <button id="tasks" class="combobutton" menu="#tasks-menu"
               tabindex="10" hidden
               i18n-values="aria-label:TASKS_BUTTON_LABEL">
+      </button>
+      <button id="share-menu-button" class="icon-button" tabindex="11" hidden
+              menu="#share-menu"
+              i18n-values="aria-label:SHARE_BUTTON_TOOLTIP"
+              aria-activedescendant="share-menu"
+              has-tooltip>
+        <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
       </button>
       <button id="share-button" class="icon-button" command="#share"
               tabindex="11" hidden
