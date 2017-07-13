@@ -1638,22 +1638,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestTempFileIncognito) {
-  GURL url("about:blank");
-  ui_test_utils::BrowserAddedObserver window_observer;
-  chrome::NewEmptyWindow(browser()->profile()->GetOffTheRecordProfile());
-  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-  ui_test_utils::NavigateToURL(new_browser, url);
-  DevToolsWindow* window = DevToolsWindowTesting::OpenDevToolsWindowSync(
-      new_browser->tab_strip_model()->GetWebContentsAt(0), false);
-  RunTestFunction(window, "testTempFile");
-  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
-}
-
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestTempFile) {
-  RunTest("testTempFile", kDebuggerTestPage);
-}
-
 // Tests network timing.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkTiming) {
   RunTest("testNetworkTiming", kSlowTestPage);
@@ -2081,9 +2065,4 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
   content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
-}
-
-// Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsSharedWorker) {
-  RunTest("testDevToolsSharedWorker", url::kAboutBlankURL);
 }
