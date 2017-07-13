@@ -114,10 +114,10 @@ LayoutUnit RootInlineBox::PlaceEllipsis(const AtomicString& ellipsis_str,
                                         LayoutUnit block_right_edge,
                                         LayoutUnit ellipsis_width,
                                         LayoutUnit logical_left_offset,
-                                        bool found_box) {
+                                        bool found_box,
+                                        ForceEllipsisOnLine force_ellipsis) {
   // Create an ellipsis box if we don't already have one. If we already have one
-  // we're just
-  // here to blank out (truncate) the text boxes.
+  // we're just here to blank out (truncate) the text boxes.
   if (!found_box) {
     EllipsisBox* ellipsis_box = new EllipsisBox(
         GetLineLayoutItem(), ellipsis_str, this, ellipsis_width,
@@ -131,8 +131,9 @@ LayoutUnit RootInlineBox::PlaceEllipsis(const AtomicString& ellipsis_str,
 
   // FIXME: Do we need an RTL version of this?
   LayoutUnit adjusted_logical_left = logical_left_offset + LogicalLeft();
-  if (ltr && (adjusted_logical_left + LogicalWidth() + ellipsis_width) <=
-                 block_right_edge) {
+  if (force_ellipsis == ForceEllipsis && ltr &&
+      (adjusted_logical_left + LogicalWidth() + ellipsis_width) <=
+          block_right_edge) {
     if (HasEllipsisBox())
       GetEllipsisBox()->SetLogicalLeft(LogicalLeft() + LogicalWidth());
     return LogicalWidth() + ellipsis_width;

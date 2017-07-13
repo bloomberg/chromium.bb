@@ -1202,9 +1202,9 @@ void InlineFlowBox::ComputeOverflow(
   // invalidations for ourselves. Self-painting layers are ignored.
   // Layout overflow is used to determine scrolling extent, so it still includes
   // child layers and also factors in transforms, relative positioning, etc.
-  LayoutRect logical_layout_overflow(
+  LayoutRect logical_layout_overflow;
+  LayoutRect logical_visual_overflow(
       LogicalFrameRectIncludingLineHeight(line_top, line_bottom));
-  LayoutRect logical_visual_overflow(logical_layout_overflow);
 
   AddBoxShadowVisualOverflow(logical_visual_overflow);
   AddBorderOutsetVisualOverflow(logical_visual_overflow);
@@ -1465,6 +1465,9 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
   // If our flow is ltr then iterate over the boxes from left to right,
   // otherwise iterate from right to left. Varying the order allows us to
   // correctly hide the boxes following the ellipsis.
+  LayoutUnit relative_offset =
+      BoxModelObject().RelativePositionLogicalOffset().Width();
+  logical_left_offset += relative_offset;
   InlineBox* box = ltr ? FirstChild() : LastChild();
 
   // NOTE: these will cross after foundBox = true.
@@ -1491,7 +1494,7 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
       box = box->PrevOnLine();
     }
   }
-  return result;
+  return result + relative_offset;
 }
 
 void InlineFlowBox::ClearTruncation() {
