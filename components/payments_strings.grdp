@@ -387,4 +387,7 @@
   <message name="IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT" desc="The format to build the screen reader string for profile labels">
     <ph name="FIRST_LABEL">$1<ex>VISA ****1234</ex></ph> <ph name="SECOND_LABEL">$2<ex>Homer Simpson</ex></ph> <ph name="THIRD_LABEL">$3<ex>123 Fake Street</ex></ph>
   </message>
+  <message name="IDS_PAYMENTS_ACCESSIBLE_LABEL_WITH_ERROR" desc="The format to append an error message to a screen reader string describing a profile or payment method">
+    <ph name="LABEL">$1<ex>Homer Simpson 123 Fake Street</ex></ph> <ph name="ERROR">$2<ex>Phone number required</ex></ph>
+  </message>
 </grit-part>
