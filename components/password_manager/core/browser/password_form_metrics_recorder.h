@@ -36,6 +36,9 @@ constexpr char kUkmSubmissionResult[] = "Submission.SubmissionResult";
 // Note that no metric is recorded for kSubmittedFormTypeUnspecified.
 constexpr char kUkmSubmissionFormType[] = "Submission.SubmittedFormType";
 
+// This metric records attempts to fill a password form. Values correspond to
+// PasswordFormMetricsRecorder::ManagerFillEvent.
+constexpr char kUkmManagerFillEvent[] = "ManagerFill.Action";
 }  // namespace internal
 
 class FormFetcher;
@@ -95,6 +98,19 @@ class PasswordFormMetricsRecorder
     kSubmitResultFailed,
     kSubmitResultPassed,
     kSubmitResultMax
+  };
+
+  // Whether the password manager filled a credential on a form.
+  enum ManagerAutofillEvent {
+    // No credential existed that could be filled into a password form.
+    kManagerFillEventNoCredential = 0,
+    // A credential could have been autofilled into a password form but was not
+    // due to a policy. E.g. incognito mode requires a user interaction before
+    // filling can happen. PSL matches are not autofilled and also on password
+    // change forms we do not autofill.
+    kManagerFillEventBlockedOnInteraction,
+    // A credential was autofilled into a form.
+    kManagerFillEventAutofilled
   };
 
   // Enumerates whether there were `suppressed` credentials. These are stored
@@ -177,6 +193,9 @@ class PasswordFormMetricsRecorder
       bool observed_form_origin_has_cryptographic_scheme,
       const FormFetcher& form_fetcher,
       const autofill::PasswordForm& pending_credentials);
+
+  // Records that the password manager managed or failed to fill a form.
+  void RecordFillEvent(ManagerAutofillEvent event);
 
   // Converts the "ActionsTaken" fields (using ManagerActionNew) into an int so
   // they can be logged to UMA.

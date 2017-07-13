@@ -223,6 +223,10 @@ void PasswordFormMetricsRecorder::RecordHistogramsOnSuppressedAccounts(
   RecordUkmMetric("SuppressedAccount.Manual.SameOrganizationName", best_match);
 }
 
+void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {
+  RecordUkmMetric(internal::kUkmManagerFillEvent, event);
+}
+
 PasswordFormMetricsRecorder::SuppressedAccountExistence
 PasswordFormMetricsRecorder::GetBestMatchingSuppressedAccount(
     const std::vector<const PasswordForm*>& suppressed_forms,
