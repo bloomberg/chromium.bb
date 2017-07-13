@@ -79,6 +79,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGLogicalSize available_size_;
   // Relative to parent_writing_mode_.
   NGLogicalSize percentage_resolution_size_;
+  Optional<NGLogicalSize> parent_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
   LayoutUnit fragmentainer_space_available_;
 
