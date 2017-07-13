@@ -54,7 +54,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   AddChildView(folder_header_view_);
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
-  items_grid_view_ = new AppsGridView(app_list_main_view_);
+  items_grid_view_ = new AppsGridView(app_list_main_view_->contents_view());
   items_grid_view_->set_folder_delegate(this);
   items_grid_view_->SetLayout(
       container_view->apps_grid_view()->cols(),

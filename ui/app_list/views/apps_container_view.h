@@ -27,7 +27,6 @@ class AppListFolderView;
 class AppListMainView;
 class AppListModel;
 class FolderBackgroundView;
-class IndicatorChipView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -107,7 +106,6 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
   void PrepareToShowApps(AppListFolderItem* folder_item);
 
   // The views below are owned by views hierarchy.
-  IndicatorChipView* all_apps_indicator_ = nullptr;
   AppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
   FolderBackgroundView* folder_background_view_ = nullptr;

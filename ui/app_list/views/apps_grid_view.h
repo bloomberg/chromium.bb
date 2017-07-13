@@ -42,8 +42,10 @@ class AppsGridViewTestApi;
 
 class ApplicationDragAndDropHost;
 class AppListItemView;
-class AppsGridViewDelegate;
 class AppsGridViewFolderDelegate;
+class ContentsView;
+class IndicatorChipView;
+class SuggestionsContainerView;
 class PageSwitcher;
 class PaginationController;
 class PulsingBlockView;
@@ -62,9 +64,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     TOUCH,
   };
 
-  // Constructs the app icon grid view. |delegate| is the delegate of this
-  // view, which usually is the hosting AppListView.
-  explicit AppsGridView(AppsGridViewDelegate* delegate);
+  explicit AppsGridView(ContentsView* contents_view);
   ~AppsGridView() override;
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below
@@ -213,6 +213,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   const AppListModel* model() const { return model_; }
 
+  SuggestionsContainerView* suggestions_container_for_test() const {
+    return suggestions_container_;
+  }
+
  private:
   friend class test::AppsGridViewTestApi;
 
@@ -241,7 +245,21 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     int slot;  // Which slot in the page an item view is in.
   };
 
-  int tiles_per_page() const { return cols_ * rows_per_page_; }
+  // Creates indicator based on the indicator text message id.
+  IndicatorChipView* CreateIndicator(int indicator_text_message_id);
+
+  // Updates suggestions from app list model.
+  void UpdateSuggestions();
+
+  // Helper method for layouting indicator based on the given bounds |rect|.
+  void LayoutSuggestedAppsIndicator(gfx::Rect* rect);
+  void LayoutAllAppsIndicator(gfx::Rect* rect);
+
+  // Returns all apps tiles per page based on |page|.
+  int TilesPerPage(int page) const;
+
+  // Returns the last index of |page|.
+  int LastIndexOfPage(int page) const;
 
   // Updates from model.
   void Update();
@@ -275,6 +293,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   Index GetLastViewIndex() const;
 
   void MoveSelected(int page_delta, int slot_x_delta, int slot_y_delta);
+
+  // Returns true if the given moving operation should be handled by
+  // |suggestions_container_|, otherwise false.
+  bool HandleSuggestionsMove(int page_delta,
+                             int slot_x_delta,
+                             int slot_y_delta);
 
   // Calculates the offset for |page_of_view| based on current page and
   // transition target page.
@@ -406,6 +430,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // slot if |point| is outside the page's bounds.
   Index GetNearestTileIndexForPoint(const gfx::Point& point) const;
 
+  // Gets height on top of the all apps tiles. For the first page, that includes
+  // suggested apps indicator, suggested apps tiles, all apps indicator
+  // views; For the non-first pages, that include all apps indicator view only.
+  int GetHeightOnTopOfAllAppsTiles() const;
+
   // Gets the bounds of the tile located at |slot| on the current page.
   gfx::Rect GetExpectedTileBounds(int slot) const;
 
@@ -448,25 +477,32 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the target icon bounds for |drag_item_view| to fly back
   // to its parent |folder_item_view| in animation.
   gfx::Rect GetTargetIconRectInFolder(AppListItemView* drag_item_view,
-      AppListItemView* folder_item_view);
+                                      AppListItemView* folder_item_view);
 
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
-  AppListModel* model_;  // Owned by AppListView.
-  AppListItemList* item_list_;  // Not owned.
-  AppsGridViewDelegate* delegate_;
+  AppListModel* model_ = nullptr;         // Owned by AppListView.
+  AppListItemList* item_list_ = nullptr;  // Not owned.
 
   // This can be NULL. Only grid views inside folders have a folder delegate.
-  AppsGridViewFolderDelegate* folder_delegate_;
+  AppsGridViewFolderDelegate* folder_delegate_ = nullptr;
 
   PaginationModel pagination_model_;
   // Must appear after |pagination_model_|.
   std::unique_ptr<PaginationController> pagination_controller_;
-  PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
+  PageSwitcher* page_switcher_view_ = nullptr;  // Owned by views hierarchy.
 
-  int cols_;
-  int rows_per_page_;
+  // Created by AppListMainView, owned by views hierarchy.
+  ContentsView* contents_view_ = nullptr;
+
+  // Views below are owned by views hierarchy.
+  IndicatorChipView* suggested_apps_indicator_ = nullptr;
+  SuggestionsContainerView* suggestions_container_ = nullptr;
+  IndicatorChipView* all_apps_indicator_ = nullptr;
+
+  int cols_ = 0;
+  int rows_per_page_ = 0;
 
   // List of app item views. There is a view per item in |model_|.
   views::ViewModelT<AppListItemView> view_model_;
@@ -474,9 +510,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // List of pulsing block views.
   views::ViewModelT<PulsingBlockView> pulsing_blocks_model_;
 
-  AppListItemView* selected_view_;
+  AppListItemView* selected_view_ = nullptr;
 
-  AppListItemView* drag_view_;
+  AppListItemView* drag_view_ = nullptr;
 
   // The index of the drag_view_ when the drag starts.
   Index drag_view_init_index_;
@@ -491,9 +527,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   gfx::Point drag_view_start_;
 
   // Page the drag started on.
-  int drag_start_page_;
+  int drag_start_page_ = -1;
 
-  Pointer drag_pointer_;
+  Pointer drag_pointer_ = NONE;
 
   // The most recent reorder drop target.
   Index reorder_drop_target_;
@@ -506,7 +542,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   Index reorder_placeholder_;
 
   // The current action that ending a drag will perform.
-  DropAttempt drop_attempt_;
+  DropAttempt drop_attempt_ = DROP_FOR_NONE;
 
   // Timer for re-ordering the |drop_target_| and |drag_view_|.
   base::OneShotTimer reorder_timer_;
@@ -519,11 +555,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   base::OneShotTimer folder_item_reparent_timer_;
 
   // An application target drag and drop host which accepts dnd operations.
-  ApplicationDragAndDropHost* drag_and_drop_host_;
+  ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;
 
   // The drag operation is currently inside the dnd host and events get
   // forwarded.
-  bool forward_events_to_drag_and_drop_host_;
+  bool forward_events_to_drag_and_drop_host_ = false;
 
   // Last mouse drag location in this view's coordinates.
   gfx::Point last_drag_point_;
@@ -532,7 +568,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   base::OneShotTimer page_flip_timer_;
 
   // Target page to switch to when |page_flip_timer_| fires.
-  int page_flip_target_;
+  int page_flip_target_ = -1;
 
   // Delay in milliseconds of when |page_flip_timer_| should fire after user
   // drags an item near the edges.
@@ -541,14 +577,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   views::BoundsAnimator bounds_animator_;
 
   // The most recent activated folder item view.
-  AppListItemView* activated_folder_item_view_;
+  AppListItemView* activated_folder_item_view_ = nullptr;
 
   // Tracks if drag_view_ is dragged out of the folder container bubble
   // when dragging a item inside a folder.
-  bool drag_out_of_folder_container_;
+  bool drag_out_of_folder_container_ = false;
 
   // True if the drag_view_ item is a folder item being dragged for reparenting.
-  bool dragging_for_reparent_item_;
+  bool dragging_for_reparent_item_ = false;
 
   // True if the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;

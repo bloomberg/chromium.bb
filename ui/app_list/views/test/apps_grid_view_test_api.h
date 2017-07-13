@@ -7,6 +7,10 @@
 
 #include "base/macros.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace views {
 class View;
 }
@@ -26,11 +30,15 @@ class AppsGridViewTestApi {
 
   void LayoutToIdealBounds();
 
+  gfx::Rect GetItemTileRectAt(int row, int col) const;
+
   void SetPageFlipDelay(int page_flip_delay_in_ms);
 
   void PressItemAt(int index);
 
   bool HasPendingPageFlip() const;
+
+  int TilesPerPage(int page) const;
 
  private:
   AppsGridView* view_;
