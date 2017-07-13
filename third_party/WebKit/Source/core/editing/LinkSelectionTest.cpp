@@ -188,6 +188,18 @@ TEST_F(LinkSelectionTest, HandCursorDuringLinkDrag) {
   EXPECT_EQ(Cursor::kHand, cursor.GetType());
 }
 
+TEST_F(LinkSelectionTest, DragOnNothingShowsPointer) {
+  EmulateMouseDrag(IntPoint(100, 500), IntPoint(300, 500), 0, kSendDownEvent);
+  main_frame_->GetFrame()
+      ->LocalFrameRoot()
+      .GetEventHandler()
+      .ScheduleCursorUpdate();
+  testing::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
+  const auto& cursor =
+      main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
+  EXPECT_EQ(Cursor::kPointer, cursor.GetType());
+}
+
 TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
   EmulateMouseDrag(right_point_in_link_, left_point_in_link_,
                    WebInputEvent::kAltKey, kSendDownEvent);
