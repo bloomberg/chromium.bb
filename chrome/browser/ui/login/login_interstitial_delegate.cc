@@ -55,7 +55,6 @@ std::string LoginInterstitialDelegate::GetHTMLContents() {
   return std::string(
       "<!DOCTYPE html>"
       "<html><body><script>"
-      "window.domAutomationController.setAutomationId(1);"
       "window.domAutomationController.send('1');"
       "</script></body></html>");
 }
