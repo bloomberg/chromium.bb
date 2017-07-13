@@ -137,17 +137,8 @@
   <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_GENERIC_ERROR" desc="Title of a generic issue to show when a selected file cannot be cast.">
     Unable to cast file.
   </message>
-  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_FILE_MISSING" desc="Title of an issue to show when a selected file cannot be cast because it does not exist.">
-    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>: File does not exist.
-  </message>
-  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_MEDIA" desc="Title of an issue to show when a selected file cannot be cast because it does not contain compatible media.">
-    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>: File does not contain media.
-  </message>
-  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_SUPPORTED" desc="Title of an issue to show when a selected file cannot be cast because the file type is not supported by the chrome player media player.">
-    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>: File type is not supported.
-  </message>
-  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_READ_ERROR" desc="Title of an issue to show when a selected file cannot be cast because it cannot be read.">
-    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>: Cannot read file.
+  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_ERROR" desc="Title of an issue to show when a selected file cannot be cast, file specified by FILE_NAME.">
+    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>.
   </message>
 
   <!-- Route Details -->

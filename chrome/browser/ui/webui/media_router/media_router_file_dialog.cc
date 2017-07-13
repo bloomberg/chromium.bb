@@ -227,22 +227,11 @@ IssueInfo MediaRouterFileDialog::CreateIssue(
   std::string issue_title;
   switch (validation_result) {
     case MediaRouterFileDialog::FILE_MISSING:
-      issue_title = l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_FILE_MISSING,
-          GetFileName(file_info));
-      break;
     case MediaRouterFileDialog::FILE_EMPTY:
-      issue_title = l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_MEDIA, GetFileName(file_info));
-      break;
     case MediaRouterFileDialog::FILE_TYPE_NOT_SUPPORTED:
-      issue_title = l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_NOT_SUPPORTED,
-          GetFileName(file_info));
-      break;
     case MediaRouterFileDialog::READ_FAILURE:
       issue_title = l10n_util::GetStringFUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_READ_ERROR, GetFileName(file_info));
+          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_ERROR, GetFileName(file_info));
       break;
     case MediaRouterFileDialog::FILE_OK:
       // Create issue shouldn't be called with FILE_OK, but to ensure things
