@@ -435,7 +435,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT);
 
   builder->Add("adAuthWelcomeMessage", IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE);
-  builder->Add("adLoginUser", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginUsername", IDS_AD_AUTH_LOGIN_USER);
   builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
 }
 
@@ -796,7 +796,7 @@ void GaiaScreenHandler::OnCookiesCleared(
 }
 
 void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
-                                                 const std::string& password) {
+                                                const std::string& password) {
   VLOG(2) << "ShowSigninScreenForTest for user " << username
           << ", frame_state=" << frame_state();
 

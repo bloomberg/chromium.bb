@@ -5714,13 +5714,16 @@ All users must sign out to continue.
   <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Welcome message on the AD domain join screen.">
     Join device to domain
   </message>
-  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to">
+  <message name="IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE" desc="Welcome message on the AD Authentication user screen. Include the domain (realm) the machine joined to.">
     Sign in to <ph name="REALM">$1<ex>example.com</ex></ph>
   </message>
-  <message name="IDS_AD_LOGIN_USER" desc="Label for userPrincipalName input field on both AD domain join and AD Authentication user screens. Looks like user@example.com where example.com is realm">
+  <message name="IDS_AD_ENROLLMENT_LOGIN_USER" desc="Label for userPrincipalName input field on the AD domain join user screen. Looks like user@example.com where example.com is the realm.">
     Username (e.g. user@example.com)
   </message>
-  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both AD domain join and AD Authorization user screens..">
+  <message name="IDS_AD_AUTH_LOGIN_USER" desc="Label for userPrincipalName input field on the AD authentication user screen.">
+    Username
+  </message>
+  <message name="IDS_AD_LOGIN_PASSWORD" desc="Label for Password input field on both AD domain join and AD Authorization user screens.">
     Password
   </message>
   <message name="IDS_AD_PASSWORD_CHANGE_OLD_PASSWORD" desc="Old password field hint on the Active Directory password change dialog.">
@@ -5742,13 +5745,16 @@ All users must sign out to continue.
     Passwords do not match.
   </message>
   <message name="IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR" desc="Default error text on the Active Directory join screen">
-    Oops! Something went wrong when trying to join the domain. Please try again.
+    Oops!  Something went wrong when trying to join the domain. Please try again.
   </message>
   <message name="IDS_AD_INVALID_USERNAME" desc="Alert message about invalid username on the Active Directory domain join screen.">
     Please enter a valid username
   </message>
   <message name="IDS_AD_INVALID_PASSWORD" desc="Alert message about mismatching username and password in the Active Directory">
     The username and password you entered do not match
+  </message>
+  <message name="IDS_AD_PASSWORD_EXPIRED" desc="Alert message about expired password in the Active Directory">
+    Oops!  Looks like your password expired. Please renew it on another machine and try again.
   </message>
   <message name="IDS_AD_MACHINENAME_INVALID" desc="Alert message about invalid machine name">
     Invalid machine name
@@ -5761,6 +5767,9 @@ All users must sign out to continue.
   </message>
   <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Alert message that user can't add more machines to the domain">
     Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
+  </message>
+  <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
+    Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
     Optional — enter new or update existing information to be associated with this device.
