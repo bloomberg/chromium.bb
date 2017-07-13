@@ -14,40 +14,11 @@
 
 #include "sandbox/sandbox_export.h"
 
+extern "C" {
 // Declare private types.
-extern "C" {
 typedef struct _xpc_pipe_s* xpc_pipe_t;
-}  // extern "C"
-
-#if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-// Redeclare methods that only exist on 10.7+ to suppress
-// -Wpartial-availability warnings.
-extern "C" {
-void xpc_dictionary_set_int64(xpc_object_t xdict,
-                              const char* key,
-                              int64_t value);
-void xpc_release(xpc_object_t object);
-bool xpc_dictionary_get_bool(xpc_object_t xdict, const char* key);
-int64_t xpc_dictionary_get_int64(xpc_object_t xdict, const char* key);
-const char* xpc_dictionary_get_string(xpc_object_t xdict, const char* key);
-uint64_t xpc_dictionary_get_uint64(xpc_object_t xdict, const char* key);
-void xpc_dictionary_set_uint64(xpc_object_t xdict,
-                               const char* key,
-                               uint64_t value);
-void xpc_dictionary_set_string(xpc_object_t xdict, const char* key,
-                               const char* string);
-xpc_object_t xpc_dictionary_create(const char* const* keys,
-                                   const xpc_object_t* values,
-                                   size_t count);
-xpc_object_t xpc_dictionary_create_reply(xpc_object_t original);
-xpc_object_t xpc_dictionary_get_value(xpc_object_t xdict, const char* key);
-char* xpc_copy_description(xpc_object_t object);
-}  // extern "C"
-#endif
 
 // Signatures for private XPC functions.
-extern "C" {
 // Dictionary manipulation.
 void xpc_dictionary_set_mach_send(xpc_object_t dictionary,
                                   const char* name,
