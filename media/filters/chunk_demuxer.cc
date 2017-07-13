@@ -669,6 +669,14 @@ void ChunkDemuxer::SetTracksWatcher(
   source_state_map_[id]->SetTracksWatcher(tracks_updated_cb);
 }
 
+void ChunkDemuxer::SetParseWarningCallback(
+    const std::string& id,
+    const SourceBufferParseWarningCB& parse_warning_cb) {
+  base::AutoLock auto_lock(lock_);
+  CHECK(IsValidId(id));
+  source_state_map_[id]->SetParseWarningCallback(parse_warning_cb);
+}
+
 void ChunkDemuxer::RemoveId(const std::string& id) {
   DVLOG(1) << __func__ << " id=" << id;
   base::AutoLock auto_lock(lock_);

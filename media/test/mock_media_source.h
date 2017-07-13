@@ -69,6 +69,8 @@ class MockMediaSource {
   void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks);
   MOCK_METHOD1(InitSegmentReceivedMock, void(std::unique_ptr<MediaTracks>&));
 
+  MOCK_METHOD1(OnParseWarningMock, void(const SourceBufferParseWarning));
+
  private:
   MediaLog media_log_;
   scoped_refptr<DecoderBuffer> file_data_;

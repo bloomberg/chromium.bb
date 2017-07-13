@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 #include "third_party/WebKit/public/platform/WebSourceBuffer.h"
 
 namespace media {
@@ -45,6 +46,9 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   // Demuxer callback handler to process an initialization segment received
   // during an append() call.
   void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks);
+
+  // Demuxer callback handler to notify Blink of a non-fatal parse warning.
+  void NotifyParseWarning(const SourceBufferParseWarning warning);
 
   std::string id_;
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

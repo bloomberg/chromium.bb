@@ -18,6 +18,7 @@
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_codecs.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 
 namespace media {
 
@@ -133,6 +134,9 @@ class MEDIA_EXPORT SourceBufferState {
       bool ended);
 
   void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);
+
+  void SetParseWarningCallback(
+      const SourceBufferParseWarningCB& parse_warning_cb);
 
  private:
   // State advances through this list. The intent is to ensure at least one

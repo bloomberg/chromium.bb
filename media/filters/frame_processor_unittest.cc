@@ -43,6 +43,7 @@ class FrameProcessorTestCallbackHelper {
   FrameProcessorTestCallbackHelper() {}
   virtual ~FrameProcessorTestCallbackHelper() {}
 
+  MOCK_METHOD1(OnParseWarning, void(const SourceBufferParseWarning));
   MOCK_METHOD1(PossibleDurationIncrease, void(base::TimeDelta new_duration));
 
   // Helper that calls the mock method as well as does basic sanity checks on
@@ -70,7 +71,11 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
         append_window_end_(kInfiniteDuration),
         frame_duration_(base::TimeDelta::FromMilliseconds(10)),
         audio_id_(1),
-        video_id_(2) {}
+        video_id_(2) {
+    frame_processor_->SetParseWarningCallback(
+        base::Bind(&FrameProcessorTestCallbackHelper::OnParseWarning,
+                   base::Unretained(&callbacks_)));
+  }
 
   enum StreamFlags {
     HAS_AUDIO = 1 << 0,
@@ -541,6 +546,8 @@ TEST_P(FrameProcessorTest, AudioVideo_SequentialProcessFrames) {
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
   if (GetParam()) {
     frame_processor_->SetSequenceMode(true);
+    EXPECT_CALL(callbacks_,
+                OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
   }
 
@@ -573,6 +580,8 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
   bool using_sequence_mode = GetParam();
   if (using_sequence_mode) {
     frame_processor_->SetSequenceMode(true);
+    EXPECT_CALL(callbacks_,
+                OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
   } else {
@@ -609,8 +618,11 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
   bool using_sequence_mode = GetParam();
   frame_processor_->SetSequenceMode(using_sequence_mode);
-  if (using_sequence_mode)
+  if (using_sequence_mode) {
+    EXPECT_CALL(callbacks_,
+                OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
+  }
 
   // Start a coded frame group at time 100ms. Note the jagged start still uses
   // the coded frame group's start time as the range start for both streams.
@@ -730,6 +742,8 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
     // applied to frames beginning at the first frame after the discontinuity
     // caused by the video append at 160K, below.
     SetTimestampOffset(frame_duration_ * 10);
+    EXPECT_CALL(callbacks_,
+                OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
   }
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 14));
@@ -956,8 +970,11 @@ TEST_P(FrameProcessorTest, PartialAppendWindowFilterNoNewMediaSegment) {
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
   frame_processor_->SetSequenceMode(using_sequence_mode);
-  if (using_sequence_mode)
+  if (using_sequence_mode) {
+    EXPECT_CALL(callbacks_,
+                OnParseWarning(SourceBufferParseWarning::kMuxedSequenceMode));
     EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
+  }
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
   ProcessFrames("", "0K");
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
@@ -1063,7 +1080,10 @@ TEST_P(FrameProcessorTest,
   CheckExpectedRangesByTimestamp(video_.get(), "{ [50,70) }");
 
   EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
-  EXPECT_MEDIA_LOG(NonkeyframePrecedesGopStartWarning("0.05", "0.04"));
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.05", "0.04"));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 7));
   ProcessFrames("", "40|70");  // PTS=40, DTS=70
 

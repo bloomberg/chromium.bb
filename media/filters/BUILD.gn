@@ -49,6 +49,7 @@ source_set("filters") {
     "opus_constants.h",
     "pipeline_controller.cc",
     "pipeline_controller.h",
+    "source_buffer_parse_warnings.h",
     "source_buffer_range.cc",
     "source_buffer_range.h",
     "source_buffer_state.cc",
