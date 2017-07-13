@@ -68,13 +68,13 @@ bool RegisterJNI(JNIEnv* env) {
 bool NativeInit() {
   if (!base::android::OnJNIOnLoadInit())
     return false;
+  // Initializes the statistics recorder system. This needs to be done before
+  // emitting histograms to prevent memory leaks (crbug.com/707836).
+  base::StatisticsRecorder::Initialize();
   if (!base::TaskScheduler::GetInstance())
     base::TaskScheduler::CreateAndStartWithDefaultParams("Cronet");
 
   url::Initialize();
-  // Initializes the statistics recorder system. This needs to be done before
-  // emitting histograms to prevent memory leaks (crbug.com/707836).
-  base::StatisticsRecorder::Initialize();
   return true;
 }
 

@@ -131,15 +131,15 @@ void CronetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
+  // Initializes the statistics recorder system. This needs to be done before
+  // emitting histograms to prevent memory leaks (crbug.com/707836).
+  base::StatisticsRecorder::Initialize();
+
   ios_global_state::Create();
   ios_global_state::StartTaskScheduler(/*init_params=*/nullptr);
 
   url::Initialize();
   base::CommandLine::Init(0, nullptr);
-
-  // Without doing this, StatisticsRecorder::FactoryGet() leaks one histogram
-  // per call after the first for a given name.
-  base::StatisticsRecorder::Initialize();
 
   // Create a message loop on the UI thread.
   DCHECK(!base::MessageLoop::current());
