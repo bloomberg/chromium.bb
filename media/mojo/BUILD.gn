@@ -97,7 +97,7 @@ source_set("unit_tests") {
     "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:test_interfaces",
-    "//media/mojo/services:lib",
+    "//media/mojo/services",
     "//services/service_manager/tests:interfaces",
     "//testing/gmock",
     "//testing/gtest",
@@ -113,14 +113,6 @@ source_set("unit_tests") {
 }
 
 test("media_mojo_unittests") {
-  # crbug.com/676418: Suppress symbol import warnings.
-  if (is_win && is_component_build) {
-    ldflags = [
-      "/ignore:4217",
-      "/ignore:4049",
-    ]
-  }
-
   deps = [
     ":unit_tests",
     "//mojo/edk/test:run_all_unittests",

@@ -11,8 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-// TODO(xhwang): Remove this include after http://crbug.com/656706 is fixed.
-#include "media/base/content_decryption_module.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -53,8 +52,8 @@ class MEDIA_EXPORT CdmPromise {
     KEY_STATUS_TYPE
   };
 
-  CdmPromise();
-  virtual ~CdmPromise();
+  CdmPromise() = default;
+  virtual ~CdmPromise() = default;
 
   // Used to indicate that the operation failed. |exception_code| must be
   // specified. |system_code| is a Key System-specific value for the error
@@ -72,30 +71,27 @@ class MEDIA_EXPORT CdmPromise {
   DISALLOW_COPY_AND_ASSIGN(CdmPromise);
 };
 
-// For some reason the Windows compiler is not happy with the implementation
-// of CdmPromiseTemplate being in the .cc file, so moving it here.
 template <typename... T>
 struct CdmPromiseTraits {};
 
 template <>
-struct CdmPromiseTraits<> {
-  static const CdmPromise::ResolveParameterType kType = CdmPromise::VOID_TYPE;
+struct MEDIA_EXPORT CdmPromiseTraits<> {
+  static const CdmPromise::ResolveParameterType kType;
 };
 
 template <>
-struct CdmPromiseTraits<int> {
-  static const CdmPromise::ResolveParameterType kType = CdmPromise::INT_TYPE;
+struct MEDIA_EXPORT CdmPromiseTraits<int> {
+  static const CdmPromise::ResolveParameterType kType;
 };
 
 template <>
-struct CdmPromiseTraits<std::string> {
-  static const CdmPromise::ResolveParameterType kType = CdmPromise::STRING_TYPE;
+struct MEDIA_EXPORT CdmPromiseTraits<std::string> {
+  static const CdmPromise::ResolveParameterType kType;
 };
 
 template <>
-struct CdmPromiseTraits<CdmKeyInformation::KeyStatus> {
-  static const CdmPromise::ResolveParameterType kType =
-      CdmPromise::KEY_STATUS_TYPE;
+struct MEDIA_EXPORT CdmPromiseTraits<CdmKeyInformation::KeyStatus> {
+  static const CdmPromise::ResolveParameterType kType;
 };
 
 // This class adds the resolve(T) method. This class is still an interface, and
@@ -114,9 +110,7 @@ class CdmPromiseTemplate : public CdmPromise {
                       uint32_t system_code,
                       const std::string& error_message) = 0;
 
-  ResolveParameterType GetResolveParameterType() const override {
-    return CdmPromiseTraits<T...>::kType;
-  }
+  ResolveParameterType GetResolveParameterType() const final;
 
  protected:
   bool IsPromiseSettled() const { return is_settled_; }
@@ -146,6 +140,25 @@ class CdmPromiseTemplate : public CdmPromise {
 
   DISALLOW_COPY_AND_ASSIGN(CdmPromiseTemplate);
 };
+
+// Explicitly defining all variants of GetResolveParameterType().
+// Without this component builds on Windows fail due to versions of the same
+// method being generated in multiple DLLs.
+template <>
+MEDIA_EXPORT CdmPromise::ResolveParameterType
+CdmPromiseTemplate<>::GetResolveParameterType() const;
+
+template <>
+MEDIA_EXPORT CdmPromise::ResolveParameterType
+CdmPromiseTemplate<int>::GetResolveParameterType() const;
+
+template <>
+MEDIA_EXPORT CdmPromise::ResolveParameterType
+CdmPromiseTemplate<std::string>::GetResolveParameterType() const;
+
+template <>
+MEDIA_EXPORT CdmPromise::ResolveParameterType CdmPromiseTemplate<
+    CdmKeyInformation::KeyStatus>::GetResolveParameterType() const;
 
 }  // namespace media
 
