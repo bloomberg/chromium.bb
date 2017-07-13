@@ -5,82 +5,9 @@ import sys
 
 import css_properties
 import json5_generator
+import template_expander
 import license
 
-
-HEADER_TEMPLATE = """
-%(license)s
-
-#ifndef %(class_name)s_h
-#define %(class_name)s_h
-
-#include "core/CoreExport.h"
-#include "platform/wtf/Assertions.h"
-#include <stddef.h>
-
-namespace WTF {
-class AtomicString;
-class String;
-}
-
-namespace blink {
-
-enum CSSPropertyID {
-    CSSPropertyInvalid = 0,
-    // This isn't a property, but we need to know the position of @apply rules in style rules
-    CSSPropertyApplyAtRule = 1,
-    CSSPropertyVariable = 2,
-%(property_enums)s
-};
-
-const CSSPropertyID kCSSPropertyAliasList[] = {
-%(property_aliases)s
-};
-
-const int firstCSSProperty = %(first_property_id)s;
-const int numCSSProperties = %(properties_count)s;
-const int lastCSSProperty = %(last_property_id)d;
-const int lastUnresolvedCSSProperty = %(last_unresolved_property_id)d;
-const int numCSSPropertyIDs = lastUnresolvedCSSProperty + 1;
-const size_t maxCSSPropertyNameLength = %(max_name_length)d;
-
-const char* getPropertyName(CSSPropertyID);
-const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
-WTF::String CORE_EXPORT getPropertyNameString(CSSPropertyID);
-WTF::String getJSPropertyName(CSSPropertyID);
-
-inline bool isCSSPropertyIDWithName(int id)
-{
-    return id >= firstCSSProperty && id <= lastUnresolvedCSSProperty;
-}
-
-inline bool isValidCSSPropertyID(CSSPropertyID id)
-{
-    return id != CSSPropertyInvalid;
-}
-
-inline CSSPropertyID convertToCSSPropertyID(int value)
-{
-    DCHECK_GE(value, CSSPropertyInvalid);
-    DCHECK_LE(value, lastCSSProperty);
-    return static_cast<CSSPropertyID>(value);
-}
-
-inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
-{
-    return convertToCSSPropertyID(id & ~512);
-}
-
-inline bool isPropertyAlias(CSSPropertyID id) { return id & 512; }
-
-CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
-
-CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
-
-} // namespace blink
-
-#endif // %(class_name)s_h
-"""
 
 GPERF_TEMPLATE = """
 %%{
@@ -212,9 +139,10 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
     def _array_item(self, property_):
         return "    static_cast<CSSPropertyID>(%(enum_value)s), // %(property_id)s" % property_
 
+    @template_expander.use_jinja('templates/CSSPropertyNames.h.tmpl')
     def generate_header(self):
-        return HEADER_TEMPLATE % {
-            'license': license.license_for_generated_cpp(),
+        return {
+            'alias_offset': self._alias_offset,
             'class_name': self.class_name,
             'property_enums': "\n".join(map(self._enum_declaration, self._properties_including_aliases)),
             'property_aliases': "\n".join(map(self._array_item, self._aliases)),

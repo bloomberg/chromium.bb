@@ -33,6 +33,13 @@ class CSSProperties(json5_generator.Writer):
     def __init__(self, file_paths):
         json5_generator.Writer.__init__(self, file_paths)
 
+        # StylePropertyMetadata assumes that there are at most 1024 properties + aliases.
+        self._alias_offset = 512
+        # 0: CSSPropertyInvalid
+        # 1: CSSPropertyApplyAtRule
+        # 2: CSSPropertyVariable
+        self._first_enum_value = 3
+
         properties = self.json5_file.name_dictionaries
 
         # Sort properties by priority, then alphabetically.
@@ -56,13 +63,8 @@ class CSSProperties(json5_generator.Writer):
         self._aliases = [property for property in properties if property['alias_for']]
         properties = [property for property in properties if not property['alias_for']]
 
-        # 0: CSSPropertyInvalid
-        # 1: CSSPropertyApplyAtRule
-        # 2: CSSPropertyVariable
-        self._first_enum_value = 3
-
-        # StylePropertyMetadata additionally assumes there are under 1024 properties.
-        assert self._first_enum_value + len(properties) < 512, 'Property aliasing expects there are under 512 properties.'
+        assert (self._first_enum_value + len(properties) < self._alias_offset), (
+            'Property aliasing expects there are under %d properties.' % self._alias_offset)
 
         for property in properties:
             assert property['is_descriptor'] or property['is_property'], \
@@ -96,7 +98,7 @@ class CSSProperties(json5_generator.Writer):
             updated_alias['name'] = alias['name']
             updated_alias['alias_for'] = alias['alias_for']
             updated_alias['property_id'] = enum_for_css_property_alias(alias['name'])
-            updated_alias['enum_value'] = aliased_property['enum_value'] + 512
+            updated_alias['enum_value'] = aliased_property['enum_value'] + self._alias_offset
             updated_alias['upper_camel_name'] = upper_camel_case(alias['name'])
             updated_alias['lower_camel_name'] = lower_camel_case(alias['name'])
             self._aliases[i] = updated_alias

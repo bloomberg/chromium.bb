@@ -1,0 +1,72 @@
+{% from 'templates/macros.tmpl' import license %}
+{{license()}}
+
+#ifndef CSSPropertyNames_h
+#define CSSPropertyNames_h
+
+#include "core/CoreExport.h"
+#include "platform/wtf/Assertions.h"
+#include <stddef.h>
+
+namespace WTF {
+class AtomicString;
+class String;
+}
+
+namespace blink {
+
+enum CSSPropertyID {
+    CSSPropertyInvalid = 0,
+    // This isn't a property, but we need to know the position of @apply rules in style rules
+    CSSPropertyApplyAtRule = 1,
+    CSSPropertyVariable = 2,
+{{property_enums}}
+};
+
+const CSSPropertyID kCSSPropertyAliasList[] = {
+{{property_aliases}}
+};
+
+const int firstCSSProperty = {{first_property_id}};
+const int numCSSProperties = {{properties_count}};
+const int lastCSSProperty = {{last_property_id}};
+const int lastUnresolvedCSSProperty = {{last_unresolved_property_id}};
+const int numCSSPropertyIDs = lastUnresolvedCSSProperty + 1;
+const size_t maxCSSPropertyNameLength = {{max_name_length}};
+
+const char* getPropertyName(CSSPropertyID);
+const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
+WTF::String CORE_EXPORT getPropertyNameString(CSSPropertyID);
+WTF::String getJSPropertyName(CSSPropertyID);
+
+inline bool isCSSPropertyIDWithName(int id)
+{
+    return id >= firstCSSProperty && id <= lastUnresolvedCSSProperty;
+}
+
+inline bool isValidCSSPropertyID(CSSPropertyID id)
+{
+    return id != CSSPropertyInvalid;
+}
+
+inline CSSPropertyID convertToCSSPropertyID(int value)
+{
+    DCHECK_GE(value, CSSPropertyInvalid);
+    DCHECK_LE(value, lastCSSProperty);
+    return static_cast<CSSPropertyID>(value);
+}
+
+inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
+{
+    return convertToCSSPropertyID(id & ~{{alias_offset}});
+}
+
+inline bool isPropertyAlias(CSSPropertyID id) { return id & {{alias_offset}}; }
+
+CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
+
+CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
+
+} // namespace blink
+
+#endif // CSSPropertyNames_h
