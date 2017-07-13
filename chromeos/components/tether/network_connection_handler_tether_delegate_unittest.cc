@@ -75,7 +75,8 @@ class MockTetherConnector : public TetherConnector {
                         nullptr /* tether_host_response_recorder */,
                         nullptr /* device_id_tether_network_guid_map */,
                         nullptr /* host_scan_cache */,
-                        nullptr /* notification_presenter */) {}
+                        nullptr /* notification_presenter */,
+                        nullptr /* host_connection_metrics_logger */) {}
   ~MockTetherConnector() override {}
 
   MOCK_METHOD3(
