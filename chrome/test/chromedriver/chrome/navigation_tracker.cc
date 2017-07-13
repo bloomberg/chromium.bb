@@ -277,6 +277,10 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     if (delay > 1)
       return Status(kOk);
     scheduled_frame_set_.insert(frame_id);
+
+    // A normal Page.loadEventFired event isn't expected after a scheduled
+    // navigation, so set load_event_fired_ flag.
+    load_event_fired_ = true;
   } else if (method == "Page.frameClearedScheduledNavigation") {
     std::string frame_id;
     if (!params.GetString("frameId", &frame_id))
