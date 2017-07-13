@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/at_exit.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -19,6 +20,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
+#include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -29,6 +32,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/syslog_logging.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -37,11 +41,205 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
-#include "chrome/common/logging_chrome.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"  // For chrome::DIR_LOGS
+#include "chrome/common/env_vars.h"
+#include "chrome/common/win/eventlog_messages.h"
 #include "chrome/install_static/initialize_from_primary_module.h"
+#include "chrome/install_static/install_details.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/window_hang_monitor_win.h"
+#include "content/public/common/content_switches.h"
+
+namespace logging {
+
+namespace {
+
+ScopedLogAssertHandler* assert_handler_ = nullptr;
+
+// This should be true for exactly the period between the end of
+// InitChromeLogging() and the beginning of CleanupChromeLogging().
+bool chrome_logging_initialized_ = false;
+
+// Set if we called InitChromeLogging() but failed to initialize.
+bool chrome_logging_failed_ = false;
+
+// Assertion handler for logging errors that occur when dialogs are
+// silenced.  To record a new error, pass the log string associated
+// with that error in the str parameter.
+MSVC_DISABLE_OPTIMIZE();
+void SilentRuntimeAssertHandler(const char* file,
+                                int line,
+                                const base::StringPiece message,
+                                const base::StringPiece stack_trace) {
+  base::debug::BreakDebugger();
+}
+MSVC_ENABLE_OPTIMIZE();
+
+// Suppresses error/assertion dialogs and enables the logging of
+// those errors into silenced_errors_.
+void SuppressDialogs() {
+  assert_handler_ =
+      new ScopedLogAssertHandler(base::Bind(SilentRuntimeAssertHandler));
+
+  UINT new_flags =
+      SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX;
+
+  // Preserve existing error mode, as discussed at http://t/dmea
+  UINT existing_flags = SetErrorMode(new_flags);
+  SetErrorMode(existing_flags | new_flags);
+}
+
+}  // namespace
+
+LoggingDestination DetermineLoggingDestination(
+    const base::CommandLine& command_line) {
+// only use OutputDebugString in debug mode
+#ifdef NDEBUG
+  bool enable_logging = false;
+  const char* kInvertLoggingSwitch = switches::kEnableLogging;
+  const LoggingDestination kDefaultLoggingMode = LOG_TO_FILE;
+#else
+  bool enable_logging = true;
+  const char* kInvertLoggingSwitch = switches::kDisableLogging;
+  const LoggingDestination kDefaultLoggingMode = LOG_TO_ALL;
+#endif
+
+  if (command_line.HasSwitch(kInvertLoggingSwitch))
+    enable_logging = !enable_logging;
+
+  LoggingDestination log_mode;
+  if (enable_logging) {
+    // Let --enable-logging=stderr force only stderr, particularly useful for
+    // non-debug builds where otherwise you can't get logs to stderr at all.
+    if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr")
+      log_mode = LOG_TO_SYSTEM_DEBUG_LOG;
+    else
+      log_mode = kDefaultLoggingMode;
+  } else {
+    log_mode = LOG_NONE;
+  }
+  return log_mode;
+}
+
+bool GetLogsPath(base::FilePath* result) {
+#ifdef NDEBUG
+  // Release builds write to the data dir. This is a copy of the Windows
+  // implementation of GetDefaultUserDataDirectory().
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
+    return false;
+  *result = result->Append(install_static::GetChromeInstallSubDirectory());
+  *result = result->Append(chrome::kUserDataDirname);
+  return true;
+
+#else
+  // Debug builds write next to the binary (in the build tree)
+  return PathService::Get(base::DIR_EXE, result);
+#endif  // NDEBUG
+}
+
+base::FilePath GetLogFileName() {
+  std::string filename;
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty())
+    return base::FilePath::FromUTF8Unsafe(filename);
+
+  const base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
+  base::FilePath log_path;
+
+  if (GetLogsPath(&log_path)) {
+    log_path = log_path.Append(log_filename);
+    return log_path;
+  } else {
+    // error with path service, just use some default file somewhere
+    return log_filename;
+  }
+}
+
+// This function was mostly copied from InitChromeLogging(). Copying it was
+// necessary to avoid pulling in a long-tail of unneeded code from
+// //chrome/common.
+void InitChromeWatcherLogging(const base::CommandLine& command_line,
+                              OldFileDeletionState delete_old_log_file) {
+  DCHECK(!chrome_logging_initialized_)
+      << "Attempted to initialize logging when it was already initialized.";
+
+  LoggingDestination logging_dest = DetermineLoggingDestination(command_line);
+  LogLockingState log_locking_state = LOCK_LOG_FILE;
+  base::FilePath log_path;
+
+  // Don't resolve the log path unless we need to. Otherwise we leave an open
+  // ALPC handle after sandbox lockdown on Windows.
+  if ((logging_dest & LOG_TO_FILE) != 0) {
+    log_path = GetLogFileName();
+
+  } else {
+    log_locking_state = DONT_LOCK_LOG_FILE;
+  }
+
+  LoggingSettings settings;
+  settings.logging_dest = logging_dest;
+  settings.log_file = log_path.value().c_str();
+  settings.lock_log = log_locking_state;
+  settings.delete_old = delete_old_log_file;
+  bool success = InitLogging(settings);
+
+  if (!success) {
+    DPLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    chrome_logging_failed_ = true;
+    return;
+  }
+
+  // Default to showing error dialogs.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoErrorDialogs))
+    SetShowErrorDialogs(true);
+
+  // we want process and thread IDs because we have a lot of things running
+  SetLogItems(true,    // enable_process_id
+              true,    // enable_thread_id
+              true,    // enable_timestamp
+              false);  // enable_tickcount
+
+  // We call running in unattended mode "headless", and allow
+  // headless mode to be configured either by the Environment
+  // Variable or by the Command Line Switch.  This is for
+  // automated test purposes.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (env->HasVar(env_vars::kHeadless) ||
+      command_line.HasSwitch(switches::kNoErrorDialogs))
+    SuppressDialogs();
+
+  // Use a minimum log level if the command line asks for one. Ignore this
+  // switch if there's vlog level switch present too (as both of these switches
+  // refer to the same underlying log level, and the vlog level switch has
+  // already been processed inside InitLogging). If there is neither
+  // log level nor vlog level specified, then just leave the default level
+  // (INFO).
+  if (command_line.HasSwitch(switches::kLoggingLevel) &&
+      GetMinLogLevel() >= 0) {
+    std::string log_level =
+        command_line.GetSwitchValueASCII(switches::kLoggingLevel);
+    int level = 0;
+    if (base::StringToInt(log_level, &level) && level >= 0 &&
+        level < LOG_NUM_SEVERITIES) {
+      SetMinLogLevel(level);
+    } else {
+      DLOG(WARNING) << "Bad log level: " << log_level;
+    }
+  }
+
+  // Enable logging to the Windows Event Log.
+  SetEventSource(base::UTF16ToASCII(
+                     install_static::InstallDetails::Get().install_full_name()),
+                 BROWSER_CATEGORY, MSG_LOG_MESSAGE);
+
+  base::StatisticsRecorder::InitLogOnShutdown();
+
+  chrome_logging_initialized_ = true;
+}
+}  // namespace logging
 
 namespace {
 
@@ -201,7 +399,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   base::CommandLine::Init(0, nullptr);
   const base::CommandLine& cmd_line = *base::CommandLine::ForCurrentProcess();
 
-  logging::InitChromeLogging(cmd_line, logging::APPEND_TO_OLD_LOG_FILE);
+  logging::InitChromeWatcherLogging(cmd_line, logging::APPEND_TO_OLD_LOG_FILE);
   logging::LogEventProvider::Initialize(kChromeWatcherTraceProviderName);
 
   // Arrange to be shut down as late as possible, as we want to outlive
