@@ -30,12 +30,6 @@ namespace message_center {
 class Notification;
 class MessageCenterController;
 
-// Individual notifications constants.
-const int kPaddingBetweenItems = 10;
-const int kPaddingHorizontal = 18;
-const int kWebNotificationButtonWidth = 32;
-const int kWebNotificationIconSize = 40;
-
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
 class MESSAGE_CENTER_EXPORT MessageView
