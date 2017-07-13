@@ -18,6 +18,9 @@ class MediaControlDivElement : public HTMLDivElement,
                                public MediaControlElementBase {
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 
+  // Implements MediaControlElementBase.
+  void SetOverflowElementIsWanted(bool) final;
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:

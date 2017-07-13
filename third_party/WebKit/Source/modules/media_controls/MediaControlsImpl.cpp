@@ -1121,26 +1121,29 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   for (MediaControlElementBase* element : elements) {
     if (!element)
       continue;
+
     int width = minimum_width;
     if ((element == timeline_.Get()) || (element == volume_slider_.Get()))
       width += kSliderMargin;
-    element->ShouldShowButtonInOverflowMenu(false);
-    if (element->IsWanted()) {
-      if (used_width + width <= size_.Width()) {
-        element->SetDoesFit(true);
-        used_width += width;
-      } else {
-        element->SetDoesFit(false);
-        element->ShouldShowButtonInOverflowMenu(true);
-        if (element->HasOverflowButton())
-          overflow_elements.push_front(element);
-        // We want a way to access the first media element that was
-        // removed. If we don't end up needing an overflow menu, we can
-        // use the space the overflow menu would have taken up to
-        // instead display that media element.
-        if (!element->HasOverflowButton() && !first_displaced_element)
-          first_displaced_element = element;
-      }
+
+    element->SetOverflowElementIsWanted(false);
+    if (!element->IsWanted())
+      continue;
+
+    if (used_width + width <= size_.Width()) {
+      element->SetDoesFit(true);
+      used_width += width;
+    } else {
+      element->SetDoesFit(false);
+      element->SetOverflowElementIsWanted(true);
+      if (element->HasOverflowButton())
+        overflow_elements.push_front(element);
+      // We want a way to access the first media element that was
+      // removed. If we don't end up needing an overflow menu, we can
+      // use the space the overflow menu would have taken up to
+      // instead display that media element.
+      if (!element->HasOverflowButton() && !first_displaced_element)
+        first_displaced_element = element;
     }
   }
 
