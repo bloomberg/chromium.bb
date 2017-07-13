@@ -18975,19 +18975,47 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="HistogramNameHash">
+  <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
+  <int value="-2021219906"
+      label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
+  <int value="-1620411628"
+      label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
+  <int value="-1607339868"
+      label="DataUse.MessageSize.AllServices.Upstream.Unknown.NotCellular"/>
+  <int value="-1390672863"
+      label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
+  <int value="-1286300074"
+      label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
+  <int value="-847447887"
+      label="DataUse.MessageSize.AllServices.Upstream.Foreground.NotCellular"/>
   <summary>
     These numbers are the lower 32 bits of the hash of the metric name.
   </summary>
-  <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
-  <int value="-1286300074"
-      label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
+  <int value="-742109866" label="Stability.BrowserExitCodes"/>
+  <int value="-657514887" label="DataUse.MessageSize.AllServices"/>
+  <int value="-535820174"
+      label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
+  <int value="-355731177" label="UMA.SamplingRatePerMille"/>
+  <int value="-141990989" label="DataUse.AllServices.Background"/>
   <int value="0" label="Missing hash value"/>
+  <int value="149985012"
+      label="DataUse.MessageSize.AllServices.Upstream.Unknown.Cellular"/>
+  <int value="192918458"
+      label="DataUse.MessageSize.AllServices.Downstream.Unknown.Cellular"/>
   <int value="424952287"
       label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
   <int value="628921860"
       label="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"/>
   <int value="662206917"
       label="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"/>
+  <int value="757405826"
+      label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
+  <int value="1370064090"
+      label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
+  <int value="1753226325"
+      label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
+  <int value="1977321258"
+      label="DataUse.MessageSize.AllServices.Downstream.Background.Cellular"/>
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
