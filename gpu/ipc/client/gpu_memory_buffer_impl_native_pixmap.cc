@@ -55,9 +55,18 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
   // gfx::ClientNativePixmapFactory::ImportFromHandle is expected to take
   // ownership of the FD passed in the handle so we have to dup it here in
   // order to pass a valid FD to the GpuMemoryBufferImpl ctor.
+  base::ScopedFD scoped_native_pixmap_handle_fd;
   base::ScopedFD scoped_fd;
   if (!handle.native_pixmap_handle.fds.empty()) {
-    scoped_fd.reset(HANDLE_EINTR(dup(handle.native_pixmap_handle.fds[0].fd)));
+    // Take ownership of FD at index 0.
+    scoped_native_pixmap_handle_fd.reset(handle.native_pixmap_handle.fds[0].fd);
+
+    // Close all remaining FDs.
+    for (size_t i = 1; i < handle.native_pixmap_handle.fds.size(); ++i)
+      base::ScopedFD scoped_fd(handle.native_pixmap_handle.fds[i].fd);
+
+    // Duplicate FD for GpuMemoryBufferImplNativePixmap ctor.
+    scoped_fd.reset(HANDLE_EINTR(dup(scoped_native_pixmap_handle_fd.get())));
     if (!scoped_fd.is_valid()) {
       PLOG(ERROR) << "dup";
       return nullptr;
@@ -65,9 +74,9 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
   }
 
   gfx::NativePixmapHandle native_pixmap_handle;
-  if (scoped_fd.is_valid()) {
-    native_pixmap_handle.fds.emplace_back(handle.native_pixmap_handle.fds[0].fd,
-                                          true /* auto_close */);
+  if (scoped_native_pixmap_handle_fd.is_valid()) {
+    native_pixmap_handle.fds.emplace_back(
+        scoped_native_pixmap_handle_fd.release(), true /* auto_close */);
   }
   native_pixmap_handle.planes = handle.native_pixmap_handle.planes;
   std::unique_ptr<gfx::ClientNativePixmap> native_pixmap =
