@@ -46,7 +46,8 @@ void DebugPage::StartDataRequest(
   UkmService* ukm_service = service_getter_.Run();
   if (ukm_service) {
     data.append(
-        base::StringPrintf("<p>IsEnabled:%s</p>",
+        // 'id' attribute set so tests can extract this element.
+        base::StringPrintf("<p>IsEnabled:<span id='state'>%s</span></p>",
                            ukm_service->recording_enabled_ ? "True" : "False"));
     data.append(base::StringPrintf("<p>ClientId:%" PRIu64 "</p>",
                                    ukm_service->client_id_));

@@ -7,6 +7,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/web_contents.h"
 
@@ -21,9 +22,16 @@ static TabModelList::TabModelVector& tab_models() {
 
 }  // namespace
 
+// static
+base::LazyInstance<base::ObserverList<TabModelListObserver>>::Leaky
+    TabModelList::observers_ = LAZY_INSTANCE_INITIALIZER;
+
 void TabModelList::AddTabModel(TabModel* tab_model) {
   DCHECK(tab_model);
   tab_models().push_back(tab_model);
+
+  for (TabModelListObserver& observer : observers_.Get())
+    observer.OnTabModelAdded();
 }
 
 void TabModelList::RemoveTabModel(TabModel* tab_model) {
@@ -33,6 +41,17 @@ void TabModelList::RemoveTabModel(TabModel* tab_model) {
 
   if (remove_tab_model != tab_models().end())
     tab_models().erase(remove_tab_model);
+
+  for (TabModelListObserver& observer : observers_.Get())
+    observer.OnTabModelRemoved();
+}
+
+void TabModelList::AddObserver(TabModelListObserver* observer) {
+  observers_.Get().AddObserver(observer);
+}
+
+void TabModelList::RemoveObserver(TabModelListObserver* observer) {
+  observers_.Get().RemoveObserver(observer);
 }
 
 void TabModelList::HandlePopupNavigation(chrome::NavigateParams* params) {
