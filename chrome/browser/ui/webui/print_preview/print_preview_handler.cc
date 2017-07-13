@@ -669,9 +669,6 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
-
-  AllowJavascript();
-
   printer_backend_proxy()->EnumeratePrinters(
       base::Bind(&PrintPreviewHandler::SetupPrinterList,
                  weak_factory_.GetWeakPtr(), callback_id));
@@ -681,9 +678,6 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
-
-  AllowJavascript();
-
   if (!PrivetPrintingEnabled()) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
@@ -712,8 +706,6 @@ void PrintPreviewHandler::StopPrivetLister() {
 
 void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
     const base::ListValue* args) {
-  AllowJavascript();
-
   std::string callback_id;
   std::string printer_name;
   if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
@@ -738,7 +730,6 @@ void PrintPreviewHandler::HandleGetExtensionPrinters(
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
 
-  AllowJavascript();
   EnsureExtensionPrinterHandlerSet();
   // Make sure all in progress requests are canceled before new printer search
   // starts.
@@ -756,7 +747,6 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
             args->GetString(1, &printer_id) && !callback_id.empty();
   DCHECK(ok);
 
-  AllowJavascript();
   EnsureExtensionPrinterHandlerSet();
   extension_printer_handler_->StartGrantPrinterAccess(
       printer_id, base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
@@ -765,8 +755,6 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
 
 void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
     const base::ListValue* args) {
-  AllowJavascript();
-
   std::string callback_id;
   std::string printer_name;
   if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
@@ -878,9 +866,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   // before printing.
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
-
-  AllowJavascript();
-
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
@@ -1127,8 +1112,6 @@ void PrintPreviewHandler::HandleSaveAppState(const base::ListValue* args) {
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
     const base::ListValue* args) {
-  AllowJavascript();
-
   std::string callback_id;
   std::string printer_name;
   if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
@@ -1158,8 +1141,6 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 // |args| is expected to contain a string with representing the callback id
 // followed by a list of arguments the first of which should be the printer id.
 void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
-  AllowJavascript();
-
   std::string callback_id;
   std::string printer_name;
   if (!args->GetString(0, &callback_id) || !args->GetString(1, &printer_name) ||
@@ -1203,7 +1184,6 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
             !callback_id.empty();
   DCHECK(ok);
 
-  AllowJavascript();
   if (!token_service_)
     token_service_ = base::MakeUnique<AccessTokenService>(this);
   token_service_->RequestToken(type, callback_id);
@@ -1904,8 +1884,6 @@ void PrintPreviewHandler::OnGotPrintersForExtension(
     const std::string& callback_id,
     const base::ListValue& printers,
     bool done) {
-  AllowJavascript();
-
   FireWebUIListener("extension-printers-added", printers);
   if (done) {
     ResolveJavascriptCallback(base::Value(callback_id), base::Value());
