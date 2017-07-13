@@ -135,13 +135,6 @@
               <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
                 $i18n{learnMore}
               </a>
-              <template is="dom-if" if="[[getShowEasyUnlockToggle_(
-                  easyUnlockEnabled_, easyUnlockProximityDetectionAllowed_)]]">
-                <settings-toggle-button
-                    pref="{{prefs.easy_unlock.proximity_required}}"
-                    label="$i18n{easyUnlockRequireProximityLabel}">
-                </settings-toggle-button>
-              </template>
             </div>
           </div>
           <div class="separator"></div>

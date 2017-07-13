@@ -1335,10 +1335,6 @@ const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 
-// Whether close proximity between the remote and the local device is required
-// in order to use Easy Unlock.
-const char kEasyUnlockProximityRequired[] = "easy_unlock.proximity_required";
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Used to indicate whether or not the toolbar redesign bubble has been shown
 // and acknowledged, and the last time the bubble was shown.

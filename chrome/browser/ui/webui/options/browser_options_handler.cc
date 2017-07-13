@@ -293,8 +293,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     {"downloadLocationGroupName", IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME},
     {"easyUnlockDescription", IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION,
      device_type_resource_id},
-    {"easyUnlockRequireProximityLabel",
-     IDS_OPTIONS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL, device_type_resource_id},
     {"easyUnlockSectionTitle", IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE},
     {"easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON},
     {"easyUnlockSetupIntro", IDS_OPTIONS_EASY_UNLOCK_SETUP_INTRO,
@@ -762,9 +760,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean(
       "easyUnlockAllowed", EasyUnlockService::Get(profile)->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
-  values->SetBoolean("easyUnlockProximityDetectionAllowed",
-                     base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         proximity_auth::switches::kEnableProximityDetection));
 
 #if defined(OS_CHROMEOS)
   RegisterTitle(values, "thirdPartyImeConfirmOverlay",

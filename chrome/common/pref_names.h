@@ -461,7 +461,6 @@ extern const char kGCMProductCategoryForSubtypes[];
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockPairing[];
-extern const char kEasyUnlockProximityRequired[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];

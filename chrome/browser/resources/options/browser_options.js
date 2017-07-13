@@ -661,8 +661,6 @@ cr.define('options', function() {
           PageManager.showPageByName('easyUnlockTurnOffOverlay');
         };
       }
-      $('easy-unlock-enable-proximity-detection').hidden =
-          !loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
 
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {

@@ -904,10 +904,6 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
     user.logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
     user.data_ready = user.logged_in || service->GetRemoteDevices() != NULL;
 
-    EasyUnlockService::UserSettings user_settings =
-        EasyUnlockService::GetUserSettings(account_id);
-    user.require_close_proximity = user_settings.require_close_proximity;
-
     user.device_user_id = cryptauth::CalculateDeviceUserId(
         EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 

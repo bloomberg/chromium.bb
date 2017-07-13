@@ -19,13 +19,6 @@ extern const char kEnableChromeOSLogin[] =
 // 20) without password entry.
 const char kEnableForcePasswordReauth[] = "force-password-reauth";
 
-// Enables close proximity detection. This allows the user to set a setting to
-// require very close proximity between the remote device and the local device
-// in order to unlock the local device, which trades off convenience for
-// security.
-const char kEnableProximityDetection[] =
-    "enable-proximity-auth-proximity-detection";
-
 // Force easy unlock app loading in test.
 // TODO(xiyuan): Remove this when app could be bundled with Chrome.
 const char kForceLoadEasyUnlockAppInTests[] =
