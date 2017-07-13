@@ -1197,7 +1197,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
         last_visible_line->Y(), kDoNotIndentText);
     last_visible_line->PlaceEllipsis(
         ellipsis_str, left_to_right, block_left_edge, block_right_edge,
-        LayoutUnit(total_width), LayoutUnit(), false);
+        LayoutUnit(total_width), LayoutUnit(), false, ForceEllipsis);
     dest_block.SetHasMarkupTruncation(true);
   }
 }

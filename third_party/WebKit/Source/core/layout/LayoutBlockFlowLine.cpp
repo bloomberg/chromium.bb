@@ -2451,13 +2451,12 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
   ETextAlign text_align = Style()->GetTextAlign();
   IndentTextOrNot indent_text = kIndentText;
   for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
-    LayoutUnit curr_logical_left = curr->LogicalLeft();
     LayoutUnit block_right_edge =
         LogicalRightOffsetForLine(curr->LineTop(), indent_text);
     LayoutUnit block_left_edge =
         LogicalLeftOffsetForLine(curr->LineTop(), indent_text);
-    LayoutUnit line_box_edge =
-        ltr ? curr_logical_left + curr->LogicalWidth() : curr_logical_left;
+    LayoutUnit line_box_edge = ltr ? curr->LogicalRightLayoutOverflow()
+                                   : curr->LogicalLeftLayoutOverflow();
     if ((ltr && line_box_edge > block_right_edge) ||
         (!ltr && line_box_edge < block_left_edge)) {
       // This line spills out of our box in the appropriate direction. Now we
