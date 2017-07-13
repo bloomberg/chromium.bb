@@ -25,7 +25,7 @@ namespace gpu {
 namespace {
 
 // Global atomic to generate unique transfer buffer IDs.
-base::StaticAtomicSequenceNumber g_next_transfer_buffer_id;
+base::AtomicSequenceNumber g_next_transfer_buffer_id;
 
 }  // namespace
 

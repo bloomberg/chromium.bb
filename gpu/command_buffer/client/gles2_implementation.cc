@@ -80,7 +80,7 @@ GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
 
-static base::StaticAtomicSequenceNumber g_flush_id;
+static base::AtomicSequenceNumber g_flush_id;
 
 uint32_t GenerateNextFlushId() {
   return static_cast<uint32_t>(g_flush_id.GetNext());

@@ -64,7 +64,7 @@ namespace gpu {
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_next_command_buffer_id;
+base::AtomicSequenceNumber g_next_command_buffer_id;
 
 template <typename T>
 static void RunTaskWithResult(base::Callback<T(void)> task,
