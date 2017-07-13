@@ -137,7 +137,10 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
     return LayoutRect(X(), Y(), Width(), Height());
   }
 
-  virtual LayoutRect LocalSelectionRect(int start_pos, int end_pos) const;
+  virtual LayoutRect LocalSelectionRect(
+      int start_pos,
+      int end_pos,
+      bool include_newline_space_width = true) const;
   bool IsSelected(int start_pos, int end_pos) const;
   void SelectionStartEnd(int& s_pos, int& e_pos) const;
 

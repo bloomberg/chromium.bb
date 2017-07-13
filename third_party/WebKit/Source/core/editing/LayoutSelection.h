@@ -93,7 +93,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   }
 
   bool HasPendingSelection() const { return has_pending_selection_; }
-  void SetHasPendingSelection() { has_pending_selection_ = true; }
+  void SetHasPendingSelection();
   void Commit();
 
   IntRect SelectionBounds();

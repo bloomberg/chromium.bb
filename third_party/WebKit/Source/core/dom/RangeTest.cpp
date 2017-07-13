@@ -5,11 +5,15 @@
 #include "core/dom/Range.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/css/FontFaceDescriptors.h"
+#include "core/css/FontFaceSet.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
@@ -19,6 +23,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -252,6 +257,43 @@ TEST_F(RangeTest, ToPosition) {
   range.setStart(position, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(position, range.StartPosition());
   EXPECT_EQ(position, range.EndPosition());
+}
+
+static void LoadAhem(DummyPageHolder& page_holder, Document& document) {
+  RefPtr<SharedBuffer> shared_buffer =
+      testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
+  StringOrArrayBufferOrArrayBufferView buffer =
+      StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
+          DOMArrayBuffer::Create(shared_buffer));
+  FontFace* ahem =
+      FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());
+
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(&page_holder.GetFrame());
+  DummyExceptionStateForTesting exception_state;
+  FontFaceSet::From(document)->addForBinding(script_state, ahem,
+                                             exception_state);
+}
+
+TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
+  LoadAhem(GetDummyPageHolder(), GetDocument());
+  GetDocument().body()->setInnerHTML(
+      "<div style='font: Ahem; width: 2em;letter-spacing: 5px;'>xx xx </div>");
+  Node* const div = GetDocument().QuerySelector("div");
+  // "x^x
+  //  x|x "
+  Range* const range =
+      Range::Create(GetDocument(), div->firstChild(), 1, div->firstChild(), 4);
+  const FloatRect rect_before = range->BoundingRect();
+  EXPECT_GT(rect_before.Width(), 0);
+  EXPECT_GT(rect_before.Height(), 0);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent(EphemeralRange(range))
+                               .Build());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(Selection().SelectedText(), "x x");
+  const FloatRect rect_after = range->BoundingRect();
+  EXPECT_EQ(rect_before, rect_after);
 }
 
 }  // namespace blink
