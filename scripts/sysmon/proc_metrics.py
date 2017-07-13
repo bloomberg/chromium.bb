@@ -47,10 +47,10 @@ class _ProcessMetricsCollector(object):
     self._flush()
 
   def _collect_proc(self, proc):
-    collected = []
     for metric in self._metrics:
-      collected.append(metric.add(proc))
-    if not any(collected):
+      if metric.add(proc):
+        break
+    else:
       self._other_metric.add(proc)
 
   def _flush(self):
