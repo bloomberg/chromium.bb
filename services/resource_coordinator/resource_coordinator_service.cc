@@ -21,7 +21,8 @@ std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
   resource_coordinator_service->coordination_unit_manager()->RegisterObserver(
       base::MakeUnique<TabSignalGenerator>());
 
-  return resource_coordinator_service;
+  return std::unique_ptr<service_manager::Service>(
+      resource_coordinator_service.release());
 }
 
 ResourceCoordinatorService::ResourceCoordinatorService()

@@ -242,7 +242,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   String GetIdFromControl(const Element*);
 
   // For OffscreenCanvas that controls this html canvas element
-  SurfaceLayerBridge* SurfaceLayerBridge() const {
+  ::blink::SurfaceLayerBridge* SurfaceLayerBridge() const {
     return surface_layer_bridge_.get();
   }
   void CreateLayer();
