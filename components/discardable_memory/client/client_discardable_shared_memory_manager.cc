@@ -34,7 +34,7 @@ namespace {
 const size_t kAllocationSize = 4 * 1024 * 1024;
 
 // Global atomic to generate unique discardable shared memory IDs.
-base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
+base::AtomicSequenceNumber g_next_discardable_shared_memory_id;
 
 class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:

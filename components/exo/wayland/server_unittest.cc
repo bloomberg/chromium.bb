@@ -23,7 +23,7 @@ namespace exo {
 namespace wayland {
 namespace {
 
-base::StaticAtomicSequenceNumber g_next_socket_id;
+base::AtomicSequenceNumber g_next_socket_id;
 
 std::string GetUniqueSocketName() {
   return base::StringPrintf("wayland-test-%d-%d", base::GetCurrentProcId(),
