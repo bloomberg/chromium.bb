@@ -11917,6 +11917,13 @@
         "test": "ash_unittests"
       },
       {
+        "name": "keyboard_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
+      },
+      {
         "args": [
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
