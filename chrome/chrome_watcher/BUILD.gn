@@ -60,10 +60,11 @@ shared_library("chrome_watcher") {
     "//base",
     "//base:base_static",
     "//build/config:exe_and_shlib_deps",
-    "//chrome/common",
+    "//chrome/common:non_code_constants",
     "//chrome/install_static:secondary_module",
     "//chrome_elf",
     "//components/browser_watcher",
+    "//content/public/common:static_switches",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]
   configs -= [ "//build/config/win:console" ]

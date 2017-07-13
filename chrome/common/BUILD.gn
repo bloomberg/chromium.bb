@@ -519,13 +519,27 @@ process_version("version_header") {
   output = "$target_gen_dir/chrome_version.h"
 }
 
-static_library("constants") {
+# Separate out the constants that aren't intermingled with or dependent on code
+# so that they can be used without adding any binary bloat.
+static_library("non_code_constants") {
   sources = [
     "chrome_constants.cc",
     "chrome_constants.h",
+    "chrome_icon_resources_win.h",
+    "env_vars.cc",
+    "env_vars.h",
+  ]
+
+  deps = [
+    ":version_header",
+    "//base",
+  ]
+}
+
+static_library("constants") {
+  sources = [
     "chrome_features.cc",
     "chrome_features.h",
-    "chrome_icon_resources_win.h",
     "chrome_paths.cc",
     "chrome_paths.h",
     "chrome_paths_android.cc",
@@ -536,8 +550,6 @@ static_library("constants") {
     "chrome_result_codes.h",
     "chrome_switches.cc",
     "chrome_switches.h",
-    "env_vars.cc",
-    "env_vars.h",
     "pref_font_script_names-inl.h",
     "pref_font_webkit_names.h",
     "pref_names.cc",
@@ -546,6 +558,7 @@ static_library("constants") {
 
   public_deps = [
     ":features",
+    ":non_code_constants",
     "//content/public/common:result_codes",
     "//extensions/features",
     "//printing/features",
