@@ -74,6 +74,7 @@ namespace content {
 
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
+class CursorManager;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGestureTarget;
@@ -364,8 +365,17 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // helps to position the full screen widget on the correct monitor.
   virtual void InitAsFullscreen(RenderWidgetHostView* reference_host_view) = 0;
 
-  // Sets the cursor to the one associated with the specified cursor_type
+  // Sets the cursor for this view to the one associated with the specified
+  // cursor_type.
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
+
+  // Changes the cursor that is displayed on screen. This may or may not match
+  // the current cursor's view which was set by UpdateCursor.
+  virtual void DisplayCursor(const WebCursor& cursor);
+
+  // Views that manage cursors for window return a CursorManager. Other views
+  // return nullptr.
+  virtual CursorManager* GetCursorManager();
 
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;

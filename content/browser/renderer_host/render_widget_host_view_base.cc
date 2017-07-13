@@ -320,6 +320,14 @@ void RenderWidgetHostViewBase::SetInsets(const gfx::Insets& insets) {
   NOTIMPLEMENTED();
 }
 
+void RenderWidgetHostViewBase::DisplayCursor(const WebCursor& cursor) {
+  return;
+}
+
+CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
+  return nullptr;
+}
+
 // static
 ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForMobile(
     const display::Display& display) {

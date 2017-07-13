@@ -41,6 +41,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -5550,9 +5551,16 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
-// Fails under TSan.  http://crbug.com/545237
+#if defined(OS_ANDROID)
+// Android does not have mouse cursors.
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  DISABLED_CursorUpdateReceivedFromCrossSiteIframe
+#else
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  CursorUpdateReceivedCrossSiteIframe
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_CursorUpdateFromReceivedFromCrossSiteIframe) {
+                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5563,8 +5571,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             child_node->current_frame_host()->GetSiteInstance());
 
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
+
   scoped_refptr<CursorMessageFilter> filter = new CursorMessageFilter();
   child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHost* rwh_child =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  RenderWidgetHostViewBase* child_view =
+      static_cast<RenderWidgetHostViewBase*>(rwh_child->GetView());
+
+  // This should only return nullptr on Android.
+  EXPECT_TRUE(root_view->GetCursorManager());
+
+  WebCursor cursor;
+  EXPECT_FALSE(
+      root_view->GetCursorManager()->GetCursorForTesting(root_view, cursor));
+  EXPECT_FALSE(
+      root_view->GetCursorManager()->GetCursorForTesting(child_view, cursor));
 
   // Send a MouseMove to the subframe. The frame contains text, and moving the
   // mouse over it should cause the renderer to send a mouse cursor update.
@@ -5572,10 +5598,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                    blink::WebInputEvent::kNoModifiers,
                                    blink::WebInputEvent::kTimeStampForTesting);
   mouse_event.SetPositionInWidget(60, 60);
-  RenderWidgetHost* rwh_child =
-      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
-  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
-      root->current_frame_host()->GetRenderWidgetHost()->GetView());
   web_contents()->GetInputEventRouter()->RouteMouseEvent(
       root_view, &mouse_event, ui::LatencyInfo());
 
@@ -5584,6 +5606,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // does not return otherwise.
   filter->Wait();
   EXPECT_EQ(filter->last_set_cursor_routing_id(), rwh_child->GetRoutingID());
+
+  // Yield to ensure that the SetCursor message is processed by its real
+  // handler.
+  {
+    base::RunLoop loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  loop.QuitClosure());
+    loop.Run();
+  }
+
+  EXPECT_FALSE(
+      root_view->GetCursorManager()->GetCursorForTesting(root_view, cursor));
+  EXPECT_TRUE(
+      root_view->GetCursorManager()->GetCursorForTesting(child_view, cursor));
+  // Since this moused over a text box, this should not be the default cursor.
+  CursorInfo cursor_info;
+  cursor.GetCursorInfo(&cursor_info);
+  EXPECT_EQ(cursor_info.type, blink::WebCursorInfo::kTypeIBeam);
 }
 #endif
 

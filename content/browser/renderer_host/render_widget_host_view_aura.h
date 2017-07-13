@@ -68,6 +68,7 @@ namespace content {
 class LegacyRenderWidgetHostHWND;
 #endif
 
+class CursorManager;
 class DelegatedFrameHost;
 class DelegatedFrameHostClient;
 class RenderFrameHostImpl;
@@ -126,6 +127,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
+  void DisplayCursor(const WebCursor& cursor) override;
+  CursorManager* GetCursorManager() override;
   void SetIsLoading(bool is_loading) override;
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
@@ -606,6 +609,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
+
+  std::unique_ptr<CursorManager> cursor_manager_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 

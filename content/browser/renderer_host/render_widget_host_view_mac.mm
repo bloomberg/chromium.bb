@@ -42,6 +42,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -479,6 +480,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     needs_begin_frames = !rvh->GetDelegate()->IsNeverVisible();
   }
 
+  cursor_manager_.reset(new CursorManager(this));
+
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
 
@@ -881,8 +884,16 @@ gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
 }
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
+  GetCursorManager()->UpdateCursor(this, cursor);
+}
+
+void RenderWidgetHostViewMac::DisplayCursor(const WebCursor& cursor) {
   WebCursor web_cursor = cursor;
   [cocoa_view_ updateCursor:web_cursor.GetNativeCursor()];
+}
+
+CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
+  return cursor_manager_.get();
 }
 
 void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {

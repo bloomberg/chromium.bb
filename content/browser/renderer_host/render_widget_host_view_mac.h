@@ -41,6 +41,7 @@
 #include "ui/display/display_observer.h"
 
 namespace content {
+class CursorManager;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
@@ -302,6 +303,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
+  void DisplayCursor(const WebCursor& cursor) override;
+  CursorManager* GetCursorManager() override;
   void SetIsLoading(bool is_loading) override;
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
@@ -587,6 +590,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // web content is not able to draw in time.
   SkColor background_color_ = SK_ColorTRANSPARENT;
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
+
+  std::unique_ptr<CursorManager> cursor_manager_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

@@ -11,6 +11,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
+#include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
@@ -257,11 +258,15 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
 
   // SendMouseEnterOrLeaveEvents is called with the original event
   // coordinates, which are transformed independently for each view that will
-  // receive an event.
+  // receive an event. Also, since the view under the mouse has changed,
+  // notify the CursorManager that it might need to change the cursor.
   if ((event->GetType() == blink::WebInputEvent::kMouseLeave ||
        event->GetType() == blink::WebInputEvent::kMouseMove) &&
-      target != last_mouse_move_target_)
+      target != last_mouse_move_target_) {
     SendMouseEnterOrLeaveEvents(event, target, root_view);
+    if (root_view->GetCursorManager())
+      root_view->GetCursorManager()->UpdateViewUnderCursor(target);
+  }
 
   event->SetPositionInWidget(transformed_point.x(), transformed_point.y());
   target->ProcessMouseEvent(*event, latency);
