@@ -31,9 +31,19 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
   line_style_ = layout_object->Style(use_first_line_style_);
 
   if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
-    text_indent_ =
-        MinimumValueForLength(line_style_->TextIndent(),
-                              constraint_space.AvailableSize().inline_size);
+    // 'text-indent' applies to block container, and percentage is of its
+    // containing block.
+    // https://drafts.csswg.org/css-text-3/#valdef-text-indent-percentage
+    // In our constraint space tree, parent constraint space is of its
+    // containing block.
+    // TODO(kojii): ComputeMinMaxContentSize does not know parent constraint
+    // space that we cannot compute percent for text-indent.
+    const Length& length = line_style_->TextIndent();
+    LayoutUnit maximum_value;
+    if (length.IsPercentOrCalc() &&
+        constraint_space.ParentPercentageResolutionInlineSize().has_value())
+      maximum_value = *constraint_space.ParentPercentageResolutionInlineSize();
+    text_indent_ = MinimumValueForLength(length, maximum_value);
   } else {
     text_indent_ = LayoutUnit();
   }

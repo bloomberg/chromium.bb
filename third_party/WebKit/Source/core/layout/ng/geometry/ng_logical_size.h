@@ -31,6 +31,8 @@ struct CORE_EXPORT NGLogicalSize {
   bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
+
+  void Flip() { std::swap(inline_size, block_size); }
 };
 
 inline NGLogicalSize& operator-=(NGLogicalSize& a, const NGBoxStrut& b) {

@@ -15,6 +15,7 @@ NGConstraintSpace::NGConstraintSpace(
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
+    Optional<LayoutUnit> parent_percentage_resolution_inline_size,
     NGPhysicalSize initial_containing_block_size,
     LayoutUnit fragmentainer_space_available,
     bool is_fixed_size_inline,
@@ -34,6 +35,8 @@ NGConstraintSpace::NGConstraintSpace(
     Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
+      parent_percentage_resolution_inline_size_(
+          parent_percentage_resolution_inline_size),
       initial_containing_block_size_(initial_containing_block_size),
       fragmentainer_space_available_(fragmentainer_space_available),
       is_fixed_size_inline_(is_fixed_size_inline),
@@ -137,6 +140,16 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
       .ToConstraintSpace(writing_mode);
 }
 
+Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()
+    const {
+  if (!parent_percentage_resolution_inline_size_.has_value())
+    return {};
+  if (*parent_percentage_resolution_inline_size_ != NGSizeIndefinite)
+    return *parent_percentage_resolution_inline_size_;
+  return initial_containing_block_size_.ConvertToLogical(WritingMode())
+      .inline_size;
+}
+
 void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
   exclusions_->Add(exclusion);
 }
@@ -157,6 +170,8 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
 
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
+         parent_percentage_resolution_inline_size_ ==
+             other.parent_percentage_resolution_inline_size_ &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
          fragmentainer_space_available_ ==

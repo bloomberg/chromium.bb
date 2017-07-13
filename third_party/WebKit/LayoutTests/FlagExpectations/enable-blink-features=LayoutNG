@@ -4319,7 +4319,6 @@ crbug.com/591099 external/wpt/css/CSS2/text/text-decoration-applies-to-011.xht [
 crbug.com/591099 external/wpt/css/CSS2/text/text-decoration-applies-to-014.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/text/text-decoration-applies-to-015.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/text/text-indent-012.xht [ Failure ]
-crbug.com/591099 external/wpt/css/CSS2/text/text-indent-percent-001.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/text/text-transform-capitalize-003.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/text/white-space-mixed-002.xht [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/text/white-space-normal-001.xht [ Failure ]

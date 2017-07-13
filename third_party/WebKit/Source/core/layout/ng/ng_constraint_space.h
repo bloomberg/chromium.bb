@@ -60,6 +60,10 @@ class CORE_EXPORT NGConstraintSpace final
     return percentage_resolution_size_;
   }
 
+  // Parent's PercentageResolutionInlineSize().
+  // This is not always available.
+  Optional<LayoutUnit> ParentPercentageResolutionInlineSize() const;
+
   // The available space size.
   // See: https://drafts.csswg.org/css-sizing/#available
   NGLogicalSize AvailableSize() const { return available_size_; }
@@ -168,27 +172,29 @@ class CORE_EXPORT NGConstraintSpace final
  private:
   friend class NGConstraintSpaceBuilder;
   // Default constructor.
-  NGConstraintSpace(NGWritingMode,
-                    TextDirection,
-                    NGLogicalSize available_size,
-                    NGLogicalSize percentage_resolution_size,
-                    NGPhysicalSize initial_containing_block_size,
-                    LayoutUnit fragmentainer_space_available,
-                    bool is_fixed_size_inline,
-                    bool is_fixed_size_block,
-                    bool is_shrink_to_fit,
-                    bool is_inline_direction_triggers_scrollbar,
-                    bool is_block_direction_triggers_scrollbar,
-                    NGFragmentationType block_direction_fragmentation_type,
-                    bool is_new_fc,
-                    bool is_anonymous,
-                    const NGMarginStrut& margin_strut,
-                    const NGLogicalOffset& bfc_offset,
-                    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
-                    const std::shared_ptr<NGExclusions>& exclusions,
-                    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
-                    const WTF::Optional<LayoutUnit>& clearance_offset,
-                    Vector<NGBaselineRequest>& baseline_requests);
+  NGConstraintSpace(
+      NGWritingMode,
+      TextDirection,
+      NGLogicalSize available_size,
+      NGLogicalSize percentage_resolution_size,
+      Optional<LayoutUnit> parent_percentage_resolution_inline_size,
+      NGPhysicalSize initial_containing_block_size,
+      LayoutUnit fragmentainer_space_available,
+      bool is_fixed_size_inline,
+      bool is_fixed_size_block,
+      bool is_shrink_to_fit,
+      bool is_inline_direction_triggers_scrollbar,
+      bool is_block_direction_triggers_scrollbar,
+      NGFragmentationType block_direction_fragmentation_type,
+      bool is_new_fc,
+      bool is_anonymous,
+      const NGMarginStrut& margin_strut,
+      const NGLogicalOffset& bfc_offset,
+      const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
+      const std::shared_ptr<NGExclusions>& exclusions,
+      Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+      const WTF::Optional<LayoutUnit>& clearance_offset,
+      Vector<NGBaselineRequest>& baseline_requests);
 
   NGPhysicalSize InitialContainingBlockSize() const {
     return initial_containing_block_size_;
@@ -196,6 +202,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+  Optional<LayoutUnit> parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
   LayoutUnit fragmentainer_space_available_;
