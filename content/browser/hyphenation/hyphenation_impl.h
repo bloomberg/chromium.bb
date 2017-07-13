@@ -23,6 +23,8 @@ class HyphenationImpl : public blink::mojom::Hyphenation {
   static void Create(const service_manager::BindSourceInfo& source_info,
                      blink::mojom::HyphenationRequest);
 
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+
   // Hyphenation:
   void OpenDictionary(const std::string& locale,
                       OpenDictionaryCallback callback) override;

@@ -465,6 +465,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
                                  IPC::PlatformFileForTransit file_for_transit);
   void SendDisableAecDumpToRenderer();
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
+  base::SequencedTaskRunner& GetAecDumpFileTaskRunner();
 #endif
 
   static void OnMojoError(int render_process_id, const std::string& error);
@@ -655,6 +656,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   WebRtcStopRtpDumpCallback stop_rtp_dump_callback_;
 
   WebRTCEventLogHost webrtc_eventlog_host_;
+
+  scoped_refptr<base::SequencedTaskRunner>
+      audio_debug_recordings_file_task_runner_;
 #endif
 
   // Forwards messages between WebRTCInternals in the browser process
