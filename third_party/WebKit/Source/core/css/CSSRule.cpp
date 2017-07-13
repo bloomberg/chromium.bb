@@ -66,4 +66,11 @@ DEFINE_TRACE(CSSRule) {
     visitor->Trace(parent_style_sheet_);
 }
 
+DEFINE_TRACE_WRAPPERS(CSSRule) {
+  if (parent_is_rule_)
+    visitor->TraceWrappersWithManualWriteBarrier(parent_rule_);
+  else
+    visitor->TraceWrappersWithManualWriteBarrier(parent_style_sheet_);
+}
+
 }  // namespace blink

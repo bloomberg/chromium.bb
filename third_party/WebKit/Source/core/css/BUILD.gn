@@ -139,7 +139,6 @@ blink_core_sources("css") {
     "CSSShadowValue.h",
     "CSSStringValue.cpp",
     "CSSStringValue.h",
-    "CSSStyleDeclaration.cpp",
     "CSSStyleDeclaration.h",
     "CSSStyleRule.cpp",
     "CSSStyleRule.h",
