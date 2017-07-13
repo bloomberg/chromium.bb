@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -49,7 +48,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 
 }  // namespace
 
-@interface ContentSuggestionsMediator ()<ContentSuggestionsImageFetcher,
+@interface ContentSuggestionsMediator ()<ContentSuggestionsItemDelegate,
                                          ContentSuggestionsServiceObserver,
                                          MostVisitedSitesObserving> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
@@ -189,9 +188,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (_notificationPromo->CanShow()) {
       ContentSuggestionsWhatsNewItem* item =
           [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
-      item.image = ios::GetChromeBrowserProvider()
-                       ->GetBrandedImageProvider()
-                       ->GetWhatsNewIconImage(_notificationPromo->icon());
+      item.icon = ios::GetChromeBrowserProvider()
+                      ->GetBrandedImageProvider()
+                      ->GetWhatsNewIconImage(_notificationPromo->icon());
       item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
       [convertedSuggestions addObject:item];
     }
@@ -209,10 +208,6 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   }
 
   return convertedSuggestions;
-}
-
-- (id<ContentSuggestionsImageFetcher>)imageFetcher {
-  return self;
 }
 
 - (void)fetchMoreSuggestionsKnowing:
@@ -352,21 +347,30 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   // Update dataSink.
 }
 
-#pragma mark - ContentSuggestionsImageFetcher
+#pragma mark - SuggestedContentDelegate
 
-- (void)fetchImageForSuggestion:
-            (ContentSuggestionIdentifier*)suggestionIdentifier
-                       callback:(void (^)(UIImage*))callback {
+- (void)loadImageForSuggestedItem:(ContentSuggestionsItem*)suggestedItem {
+  __weak ContentSuggestionsMediator* weakSelf = self;
+  __weak ContentSuggestionsItem* weakItem = suggestedItem;
+
+  ntp_snippets::ContentSuggestion::ID suggestionID = SuggestionIDForSectionID(
+      [self categoryWrapperForSectionInfo:suggestedItem.suggestionIdentifier
+                                              .sectionInfo],
+      suggestedItem.suggestionIdentifier.IDInSection);
   self.contentService->FetchSuggestionImage(
-      SuggestionIDForSectionID(
-          [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo],
-          suggestionIdentifier.IDInSection),
-      base::BindBlockArc(^(const gfx::Image& image) {
-        if (image.IsEmpty() || !callback) {
+      suggestionID, base::BindBlockArc(^(const gfx::Image& image) {
+        if (image.IsEmpty()) {
           return;
         }
 
-        callback([image.ToUIImage() copy]);
+        ContentSuggestionsMediator* strongSelf = weakSelf;
+        ContentSuggestionsItem* strongItem = weakItem;
+        if (!strongSelf || !strongItem) {
+          return;
+        }
+
+        strongItem.image = [image.ToUIImage() copy];
+        [strongSelf.dataSink itemHasChanged:strongItem];
       }));
 }
 
@@ -429,6 +433,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   for (auto& contentSuggestion : suggestions) {
     ContentSuggestionsItem* suggestion =
         ConvertSuggestion(contentSuggestion, sectionInfo, category);
+    suggestion.delegate = self;
     [self.faviconMediator fetchFaviconForSuggestions:suggestion
                                           inCategory:category];
 

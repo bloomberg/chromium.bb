@@ -28,7 +28,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   NSString* publisher = @"publisherName";
   base::Time publishTime = base::Time::Now();
   NSString* date = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
-  id delegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
+  id delegateMock = OCMProtocolMock(@protocol(ContentSuggestionsItemDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title
@@ -60,11 +60,12 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
 
 // Tests that configureCell: does not call the delegate if it fetched the image
 // once.
-TEST(ContentSuggestionsItemTest, DontFetchImageIsImageIsBeingFetched) {
+TEST(ContentSuggestionsItemTest, DontFetchImageIfImageIsBeingFetched) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
-  id niceDelegateMock = OCMProtocolMock(@protocol(SuggestedContentDelegate));
+  id niceDelegateMock =
+      OCMProtocolMock(@protocol(ContentSuggestionsItemDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title
@@ -80,7 +81,7 @@ TEST(ContentSuggestionsItemTest, DontFetchImageIsImageIsBeingFetched) {
   ASSERT_OCMOCK_VERIFY(niceDelegateMock);
 
   id strictDelegateMock =
-      OCMStrictProtocolMock(@protocol(SuggestedContentDelegate));
+      OCMStrictProtocolMock(@protocol(ContentSuggestionsItemDelegate));
   item.delegate = strictDelegateMock;
   id cellMock = OCMPartialMock(cell);
   OCMExpect([cellMock setContentImage:item.image animated:NO]);
@@ -100,7 +101,8 @@ TEST(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
   // Strict mock. Raise exception if the load method is called.
-  id delegateMock = OCMStrictProtocolMock(@protocol(SuggestedContentDelegate));
+  id delegateMock =
+      OCMStrictProtocolMock(@protocol(ContentSuggestionsItemDelegate));
   ContentSuggestionsItem* item =
       [[ContentSuggestionsItem alloc] initWithType:0
                                              title:title

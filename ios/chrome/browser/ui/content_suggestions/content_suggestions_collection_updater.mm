@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
@@ -116,8 +115,7 @@ const CGFloat kNumberOfMostVisitedLines = 2;
 
 }  // namespace
 
-@interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink,
-                                                  SuggestedContentDelegate>
+@interface ContentSuggestionsCollectionUpdater ()<ContentSuggestionsDataSink>
 
 @property(nonatomic, weak) id<ContentSuggestionsDataSource> dataSource;
 @property(nonatomic, strong)
@@ -342,7 +340,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     item.type = type;
     NSIndexPath* addedIndexPath =
         [self addItem:item toSectionWithIdentifier:sectionIdentifier];
-    item.delegate = self;
 
     [indexPaths addObject:addedIndexPath];
   }];
@@ -467,29 +464,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
 - (void)dismissItem:(CSCollectionViewItem*)item {
   [self.dataSource dismissSuggestion:item.suggestionIdentifier];
-}
-
-#pragma mark - SuggestedContentDelegate
-
-- (void)loadImageForSuggestedItem:(CSCollectionViewItem*)suggestedItem {
-  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  __weak CSCollectionViewItem* weakItem = suggestedItem;
-
-  void (^imageFetchedCallback)(UIImage*) = ^(UIImage* image) {
-    ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
-    CSCollectionViewItem* strongItem = weakItem;
-    if (!strongSelf || !strongItem) {
-      return;
-    }
-
-    strongItem.image = image;
-    [strongSelf.collectionViewController
-        reconfigureCellsForItems:@[ strongItem ]];
-  };
-
-  [self.dataSource.imageFetcher
-      fetchImageForSuggestion:suggestedItem.suggestionIdentifier
-                     callback:imageFetchedCallback];
 }
 
 #pragma mark - Private methods

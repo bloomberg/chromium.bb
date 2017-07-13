@@ -15,7 +15,6 @@ source_set("content_suggestions") {
     "content_suggestions_header_synchronizer.h",
     "content_suggestions_header_synchronizer.mm",
     "content_suggestions_header_synchronizing.h",
-    "content_suggestions_image_fetcher.h",
     "content_suggestions_layout.h",
     "content_suggestions_layout.mm",
     "content_suggestions_view_controller.h",

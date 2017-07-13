@@ -8,7 +8,6 @@
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
@@ -26,7 +25,7 @@ namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 }
 
-@interface SCContentSuggestionsDataSource ()<ContentSuggestionsImageFetcher>
+@interface SCContentSuggestionsDataSource ()
 
 // Section Info of type Logo header. Created lazily.
 @property(nonatomic, strong)
@@ -115,10 +114,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   }
 }
 
-- (id<ContentSuggestionsImageFetcher>)imageFetcher {
-  return self;
-}
-
 - (void)fetchMoreSuggestionsKnowing:
             (NSArray<ContentSuggestionIdentifier*>*)knownSuggestions
                     fromSectionInfo:
@@ -131,16 +126,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
 - (UIView*)headerViewForWidth:(CGFloat)width {
   return nil;
-}
-
-#pragma mark - ContentSuggestionsImageFetcher
-
-- (void)fetchImageForSuggestion:
-            (ContentSuggestionIdentifier*)suggestionIdentifier
-                       callback:(void (^)(UIImage*))callback {
-  if (callback) {
-    callback([UIImage imageNamed:@"reading_list_empty_state"]);
-  }
 }
 
 #pragma mark - Property
@@ -232,6 +217,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
   suggestion.title = @"Title";
   suggestion.publisher = @"Publisher of the new";
   suggestion.hasImage = YES;
+  suggestion.image = [UIImage imageNamed:@"reading_list_empty_state"];
   suggestion.publicationDate = [self randomDate];
   suggestion.attributes = [self randomColorFaviconAttributes];
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];

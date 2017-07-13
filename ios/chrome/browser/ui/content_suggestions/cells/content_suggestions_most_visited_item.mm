@@ -20,8 +20,6 @@
 @synthesize attributes = _attributes;
 @synthesize title = _title;
 @synthesize URL = _URL;
-@synthesize delegate = _delegate;
-@synthesize image = _image;
 @synthesize source = _source;
 
 - (instancetype)initWithType:(NSInteger)type {

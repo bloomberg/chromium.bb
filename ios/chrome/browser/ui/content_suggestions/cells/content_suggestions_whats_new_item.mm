@@ -32,8 +32,7 @@ const int kLinkColorRGB = 0x5595FE;
 @implementation ContentSuggestionsWhatsNewItem
 
 @synthesize text = _text;
-@synthesize delegate = _delegate;
-@synthesize image = _image;
+@synthesize icon = _icon;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -46,7 +45,7 @@ const int kLinkColorRGB = 0x5595FE;
 
 - (void)configureCell:(ContentSuggestionsWhatsNewCell*)cell {
   [super configureCell:cell];
-  [cell setIcon:self.image];
+  [cell setIcon:self.icon];
   [cell setText:self.text];
 }
 

@@ -13,9 +13,7 @@
 
 @implementation SCContentSuggestionsMostVisitedItem
 
-@synthesize delegate;
 @synthesize attributes;
-@synthesize image;
 @synthesize suggestionIdentifier;
 @synthesize title;
 
