@@ -1472,7 +1472,7 @@ class Changelist(object):
             codereview_server)
     else:
       desc = self.GetDescription()
-      if git_footers.get_footer_change_id(desc):
+      if desc and git_footers.get_footer_change_id(desc):
         print('WARNING: The change patched into this branch has a Change-Id. '
               'Removing it.')
         RunGit(['commit', '--amend', '-m',
