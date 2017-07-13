@@ -13,6 +13,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -83,11 +84,17 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 void ResourceCoordinatorWebContentsObserver::WasShown() {
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::EventType::kOnWebContentsShown);
+  tab_resource_coordinator_->SetProperty(
+      resource_coordinator::mojom::PropertyType::kVisible,
+      base::MakeUnique<base::Value>(true));
 }
 
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::EventType::kOnWebContentsHidden);
+  tab_resource_coordinator_->SetProperty(
+      resource_coordinator::mojom::PropertyType::kVisible,
+      base::MakeUnique<base::Value>(false));
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
