@@ -114,6 +114,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
 
   // WebSourceBufferClient interface
   bool InitializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
+  void NotifyParseWarning(const ParseWarning) override;
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -24,6 +24,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 #include "media/filters/source_buffer_state.h"
 #include "media/filters/source_buffer_stream.h"
 
@@ -223,6 +224,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // for a given |id| has changed.
   void SetTracksWatcher(const std::string& id,
                         const MediaTracksUpdatedCB& tracks_updated_cb);
+
+  // Notifies a caller via |parse_warning_cb| of a parse warning.
+  void SetParseWarningCallback(
+      const std::string& id,
+      const SourceBufferParseWarningCB& parse_warning_cb);
 
   // Removed an ID & associated resources that were previously added with
   // AddId().

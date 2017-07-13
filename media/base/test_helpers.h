@@ -183,7 +183,7 @@ MATCHER(MuxedSequenceModeWarning, "") {
                          "SourceBuffer with multiple tracks");
 }
 
-MATCHER_P2(NonkeyframePrecedesGopStartWarning,
+MATCHER_P2(KeyframeTimeGreaterThanDependant,
            keyframe_time_string,
            nonkeyframe_time_string,
            "") {

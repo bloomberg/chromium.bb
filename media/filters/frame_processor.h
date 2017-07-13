@@ -15,6 +15,7 @@
 #include "media/base/media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/source_buffer_parse_warnings.h"
 
 namespace media {
 
@@ -29,6 +30,11 @@ class MEDIA_EXPORT FrameProcessor {
   FrameProcessor(const UpdateDurationCB& update_duration_cb,
                  MediaLog* media_log);
   ~FrameProcessor();
+
+  // This must be called exactly once, before doing any track buffer creation or
+  // frame processing.
+  void SetParseWarningCallback(
+      const SourceBufferParseWarningCB& parse_warning_cb);
 
   // Get/set the current append mode, which if true means "sequence" and if
   // false means "segments".
@@ -168,6 +174,10 @@ class MEDIA_EXPORT FrameProcessor {
 
   // MediaLog for reporting messages and properties to debug content and engine.
   MediaLog* media_log_;
+
+  // Callback for reporting problematic conditions that are not necessarily
+  // errors.
+  SourceBufferParseWarningCB parse_warning_cb_;
 
   // Counters that limit spam to |media_log_| for frame processor warnings.
   int num_dropped_preroll_warnings_ = 0;

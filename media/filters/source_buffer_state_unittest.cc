@@ -85,6 +85,13 @@ class SourceBufferStateTest : public ::testing::Test {
 
     sbs->SetTracksWatcher(base::Bind(
         &SourceBufferStateTest::OnMediaTracksUpdated, base::Unretained(this)));
+
+    // These tests are not expected to issue any parse warnings.
+    EXPECT_CALL(*this, OnParseWarningMock(_)).Times(0);
+
+    sbs->SetParseWarningCallback(base::Bind(
+        &SourceBufferStateTest::OnParseWarningMock, base::Unretained(this)));
+
     return sbs;
   }
 
@@ -110,6 +117,7 @@ class SourceBufferStateTest : public ::testing::Test {
     return new_configs_result;
   }
 
+  MOCK_METHOD1(OnParseWarningMock, void(const SourceBufferParseWarning));
   MOCK_METHOD1(OnUpdateDuration, void(base::TimeDelta));
 
   MOCK_METHOD1(SourceInitDone, void(const StreamParser::InitParameters&));

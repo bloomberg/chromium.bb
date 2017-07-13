@@ -197,6 +197,13 @@ void SourceBufferState::SetTracksWatcher(
   init_segment_received_cb_ = tracks_updated_cb;
 }
 
+void SourceBufferState::SetParseWarningCallback(
+    const SourceBufferParseWarningCB& parse_warning_cb) {
+  // Give the callback to |frame_processor_|; none of these warnings are
+  // currently emitted elsewhere.
+  frame_processor_->SetParseWarningCallback(parse_warning_cb);
+}
+
 bool SourceBufferState::Append(const uint8_t* data,
                                size_t length,
                                TimeDelta append_window_start,
