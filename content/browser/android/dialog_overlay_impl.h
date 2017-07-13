@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 
@@ -18,7 +19,8 @@ namespace content {
 // java side.  When the ContentViewCore for the provided token is attached or
 // detached from a WindowAndroid, we get the Android window token and notify the
 // java side.
-class DialogOverlayImpl : public ContentViewCoreImplObserver {
+class DialogOverlayImpl : public ContentViewCoreImplObserver,
+                          public WebContentsObserver {
  public:
   // Registers the JNI methods for DialogOverlayImpl.
   static bool RegisterDialogOverlayImpl(JNIEnv* env);
@@ -26,7 +28,9 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver {
   // This may not call back into |obj| directly, but must post.  This is because
   // |obj| is still being initialized.
   DialogOverlayImpl(const base::android::JavaParamRef<jobject>& obj,
-                    const base::UnguessableToken& token);
+                    RenderFrameHostImpl* rfhi,
+                    WebContents* web_contents,
+                    ContentViewCoreImpl* cvc);
   ~DialogOverlayImpl() override;
 
   // Called when the java side is ready for token / dismissed callbacks.  May
@@ -49,17 +53,26 @@ class DialogOverlayImpl : public ContentViewCoreImplObserver {
   void OnAttachedToWindow() override;
   void OnDetachedFromWindow() override;
 
+  // WebContentsObserver
+  void WasHidden() override;
+  void WebContentsDestroyed() override;
+  void FrameDeleted(RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
+
   // Unregister for tokens if we're registered, and clear |cvc_|.
   void UnregisterForTokensIfNeeded();
 
  private:
-  // Look up the ContentViewCore for |renderer_pid_| and |render_frame_id_|.
-  ContentViewCoreImpl* GetContentViewCore();
+  // Signals the overlay should be cleaned up and no longer used.
+  void Stop();
 
   // Java object that owns us.
   JavaObjectWeakGlobalRef obj_;
 
-  base::UnguessableToken token_;
+  // RenderFrameHostImpl* associated with the given overlay routing token.
+  RenderFrameHostImpl* rfhi_;
 
   // ContentViewCoreImpl instance that we're registered with as an observer.
   ContentViewCoreImpl* cvc_;
