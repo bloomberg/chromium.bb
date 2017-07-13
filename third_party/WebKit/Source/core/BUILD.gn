@@ -1401,7 +1401,6 @@ source_set("unit_tests") {
     "input/TouchActionTest.cpp",
     "inspector/ProtocolParserTest.cpp",
     "layout/CollapsedBorderValueTest.cpp",
-    "layout/ImageQualityControllerTest.cpp",
     "layout/LayoutBlockTest.cpp",
     "layout/LayoutBoxModelObjectTest.cpp",
     "layout/LayoutBoxTest.cpp",

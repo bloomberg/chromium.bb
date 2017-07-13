@@ -47,8 +47,6 @@ blink_core_sources("layout") {
     "HitTestResult.h",
     "HitTestingTransformState.cpp",
     "HitTestingTransformState.h",
-    "ImageQualityController.cpp",
-    "ImageQualityController.h",
     "IntersectionGeometry.cpp",
     "IntersectionGeometry.h",
     "LayoutAnalyzer.cpp",

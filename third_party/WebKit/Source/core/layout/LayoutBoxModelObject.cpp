@@ -28,7 +28,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
@@ -242,8 +241,6 @@ LayoutBoxModelObject::~LayoutBoxModelObject() {
 }
 
 void LayoutBoxModelObject::WillBeDestroyed() {
-  ImageQualityController::Remove(*this);
-
   // A continuation of this LayoutObject should be destroyed at subclasses.
   DCHECK(!Continuation());
 

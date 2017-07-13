@@ -1539,10 +1539,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override {}
   bool WillRenderImage() final;
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
-  void RequestFullPaintInvalidationForImage() const override {
-    GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-        PaintInvalidationReason::kImage);
-  }
 
   std::pair<int, int> SelectionStartEnd() const;
 

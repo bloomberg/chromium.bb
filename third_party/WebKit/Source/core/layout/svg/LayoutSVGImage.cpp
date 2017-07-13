@@ -26,7 +26,6 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 
 #include "core/layout/HitTestResult.h"
-#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/PointerEventsHitRules.h"
@@ -52,7 +51,6 @@ LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
 LayoutSVGImage::~LayoutSVGImage() {}
 
 void LayoutSVGImage::WillBeDestroyed() {
-  ImageQualityController::Remove(*this);
   image_resource_->Shutdown();
   LayoutSVGModelObject::WillBeDestroyed();
 }

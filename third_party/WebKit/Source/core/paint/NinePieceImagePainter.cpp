@@ -4,7 +4,6 @@
 
 #include "core/paint/NinePieceImagePainter.h"
 
-#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -93,12 +92,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   RefPtr<Image> image =
       style_image->GetImage(observer, document, style, image_size);
 
-  double time = document.GetPage()->GetChromeClient().LastFrameTimeMonotonic();
-  InterpolationQuality interpolation_quality =
-      ImageQualityController::GetImageQualityController()
-          ->ChooseInterpolationQuality(observer, style, document.GetSettings(),
-                                       image.Get(), nullptr,
-                                       rect_with_outsets.Size(), time);
+  InterpolationQuality interpolation_quality = style.GetInterpolationQuality();
   InterpolationQuality previous_interpolation_quality =
       graphics_context.ImageInterpolationQuality();
   graphics_context.SetImageInterpolationQuality(interpolation_quality);
