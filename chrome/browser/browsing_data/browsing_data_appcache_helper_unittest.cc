@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,15 +44,19 @@ class TestCompletionCallback {
 class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
  public:
   CannedBrowsingDataAppCacheHelperTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void TearDown() override {
     // Make sure we run all pending tasks on IO thread before testing
     // profile is destructed.
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    scoped_task_environment_.RunUntilIdle();
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
@@ -62,7 +67,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   GURL manifest3("http://example2.com/path2/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile_));
+      new CannedBrowsingDataAppCacheHelper(profile_.GetOffTheRecordProfile()));
   helper->AddAppCache(manifest1);
   helper->AddAppCache(manifest2);
   helper->AddAppCache(manifest3);
@@ -93,7 +98,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
   GURL manifest("http://example.com/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile_));
+      new CannedBrowsingDataAppCacheHelper(profile_.GetOffTheRecordProfile()));
   helper->AddAppCache(manifest);
   helper->AddAppCache(manifest);
 
@@ -115,7 +120,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   GURL manifest("http://example.com/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile_));
+      new CannedBrowsingDataAppCacheHelper(profile_.GetOffTheRecordProfile()));
 
   ASSERT_TRUE(helper->empty());
   helper->AddAppCache(manifest);
@@ -124,20 +129,13 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   ASSERT_TRUE(helper->empty());
 }
 
-// Flaky on linux. See crbug.com/740801.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#define MAYBE_Delete DISABLED_Delete
-#else
-#define MAYBE_Delete Delete
-#endif
-
-TEST_F(CannedBrowsingDataAppCacheHelperTest, MAYBE_Delete) {
+TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
   GURL manifest1("http://example.com/manifest1.xml");
   GURL manifest2("http://foo.example.com/manifest2.xml");
   GURL manifest3("http://bar.example.com/manifest3.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile_));
+      new CannedBrowsingDataAppCacheHelper(profile_.GetOffTheRecordProfile()));
 
   EXPECT_TRUE(helper->empty());
   helper->AddAppCache(manifest1);
@@ -156,7 +154,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {
   GURL manifest2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/manifest.xml");
 
   scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
-      new CannedBrowsingDataAppCacheHelper(&profile_));
+      new CannedBrowsingDataAppCacheHelper(profile_.GetOffTheRecordProfile()));
 
   ASSERT_TRUE(helper->empty());
   helper->AddAppCache(manifest1);
