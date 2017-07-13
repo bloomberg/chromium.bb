@@ -1026,7 +1026,7 @@ void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
   std::set<net::URLRequestContext*> contexts;
   for (const auto& getter : context_getters_)
     contexts.insert(getter->GetURLRequestContext());
-  contexts.insert(io_thread_->globals()->system_request_context.get());
+  contexts.insert(io_thread_->globals()->system_request_context);
 
   // Add entries for ongoing network objects.
   CreateNetLogEntriesForActiveObjects(contexts, this);

@@ -264,9 +264,9 @@ SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_thread_->globals()->system_request_context.get());
+  DCHECK(io_thread_->globals()->system_request_context);
 
-  return io_thread_->globals()->system_request_context.get();
+  return io_thread_->globals()->system_request_context;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -283,12 +283,14 @@ SystemRequestContextLeakChecker::SystemRequestContextLeakChecker(
 
 IOThread::Globals::
 SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
-  if (globals_->system_request_context.get())
+  if (globals_->system_request_context)
     globals_->system_request_context->AssertNoURLRequests();
 }
 
-IOThread::Globals::Globals() : system_request_context_leak_checker(this),
-                               enable_brotli(false) {}
+IOThread::Globals::Globals()
+    : system_request_context(nullptr),
+      system_request_context_leak_checker(this),
+      enable_brotli(false) {}
 
 IOThread::Globals::~Globals() {}
 
@@ -398,6 +400,9 @@ IOThread::IOThread(
       std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
 
   BrowserThread::SetIOThreadDelegate(this);
+
+  SystemNetworkContextManager::SetUp(&network_context_request_,
+                                     &network_context_params_);
 }
 
 IOThread::~IOThread() {
@@ -785,14 +790,15 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
 void IOThread::ConstructSystemRequestContext() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  net::URLRequestContextBuilderMojo builder;
+  std::unique_ptr<net::URLRequestContextBuilderMojo> builder =
+      base::MakeUnique<net::URLRequestContextBuilderMojo>();
 
-  builder.set_network_quality_estimator(
+  builder->set_network_quality_estimator(
       globals_->network_quality_estimator.get());
-  builder.set_enable_brotli(globals_->enable_brotli);
-  builder.set_name("system");
+  builder->set_enable_brotli(globals_->enable_brotli);
+  builder->set_name("system");
 
-  builder.set_user_agent(GetUserAgent());
+  builder->set_user_agent(GetUserAgent());
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_));
@@ -800,26 +806,26 @@ void IOThread::ConstructSystemRequestContext() {
   chrome_network_delegate->set_data_use_aggregator(
       globals_->data_use_aggregator.get(),
       true /* is_data_usage_off_the_record */);
-  builder.set_network_delegate(
+  builder->set_network_delegate(
       globals_->data_use_ascriber->CreateNetworkDelegate(
           std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
-  builder.set_net_log(net_log_);
+  builder->set_net_log(net_log_);
   std::unique_ptr<net::HostResolver> host_resolver(
       CreateGlobalHostResolver(net_log_));
 
-  builder.set_ssl_config_service(GetSSLConfigService());
-  builder.SetHttpAuthHandlerFactory(
+  builder->set_ssl_config_service(GetSSLConfigService());
+  builder->SetHttpAuthHandlerFactory(
       CreateDefaultAuthHandlerFactory(host_resolver.get()));
 
-  builder.set_host_resolver(std::move(host_resolver));
+  builder->set_host_resolver(std::move(host_resolver));
 
 #if defined(OS_CHROMEOS)
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  builder.SetCertVerifier(base::MakeUnique<net::CachingCertVerifier>(
+  builder->SetCertVerifier(base::MakeUnique<net::CachingCertVerifier>(
       base::MakeUnique<net::MultiThreadedCertVerifier>(
           new chromeos::CertVerifyProcChromeOS())));
 #else
-  builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+  builder->SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
       command_line, net::CertVerifier::CreateDefault()));
   UMA_HISTOGRAM_BOOLEAN(
       "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
@@ -834,7 +840,7 @@ void IOThread::ConstructSystemRequestContext() {
   // Register the ct_tree_tracker_ as observer for verified SCTs.
   ct_verifier->SetObserver(ct_tree_tracker_.get());
 
-  builder.set_ct_verifier(std::move(ct_verifier));
+  builder->set_ct_verifier(std::move(ct_verifier));
 
   // TODO(eroman): Figure out why this doesn't work in single-process mode.
   // Should be possible now that a private isolate is used.
@@ -843,40 +849,45 @@ void IOThread::ConstructSystemRequestContext() {
     if (command_line.HasSwitch(switches::kSingleProcess)) {
       LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
     } else {
-      builder.set_mojo_proxy_resolver_factory(
+      builder->set_mojo_proxy_resolver_factory(
           ChromeMojoProxyResolverFactory::GetInstance());
     }
   }
 
-  builder.set_pac_quick_check_enabled(WpadQuickCheckEnabled());
-  builder.set_pac_sanitize_url_policy(
+  builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
+  builder->set_pac_sanitize_url_policy(
       PacHttpsUrlStrippingEnabled()
           ? net::ProxyService::SanitizeUrlPolicy::SAFE
           : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
 #if defined(OS_CHROMEOS)
-  builder.set_dhcp_fetcher_factory(
+  builder->set_dhcp_fetcher_factory(
       base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
 #endif
-  builder.set_proxy_config_service(std::move(system_proxy_config_service_));
+  builder->set_proxy_config_service(std::move(system_proxy_config_service_));
 
-  builder.set_http_network_session_params(session_params_);
+  builder->set_http_network_session_params(session_params_);
 
-  builder.set_data_enabled(true);
-  builder.set_file_enabled(true);
+  builder->set_data_enabled(true);
+  builder->set_file_enabled(true);
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  builder.set_ftp_enabled(true);
+  builder->set_ftp_enabled(true);
 #endif
 
-  builder.DisableHttpCache();
+  builder->DisableHttpCache();
 
-  globals_->system_request_context = builder.Build();
+  globals_->network_service = content::NetworkService::Create();
+  globals_->system_network_context =
+      globals_->network_service->CreateNetworkContextWithBuilder(
+          std::move(network_context_request_),
+          std::move(network_context_params_), std::move(builder),
+          &globals_->system_request_context);
 
 #if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context.get());
+  net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context);
 #endif
 #if defined(OS_ANDROID)
   net::CertVerifyProcAndroid::SetCertNetFetcher(
-      net::CreateCertNetFetcher(globals_->system_request_context.get()));
+      net::CreateCertNetFetcher(globals_->system_request_context));
 #endif
 }
 

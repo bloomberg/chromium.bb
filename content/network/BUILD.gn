@@ -24,6 +24,7 @@ source_set("network_sources") {
     ":network",
     "//content",  # For the component build.
     "//content/app:*",
+    "//content/public/network/*",
     "//content/utility:utility",
   ]
 
@@ -32,8 +33,8 @@ source_set("network_sources") {
     "cache_url_loader.h",
     "network_context.cc",
     "network_context.h",
-    "network_service.cc",
-    "network_service.h",
+    "network_service_impl.cc",
+    "network_service_impl.h",
     "network_service_url_loader_factory_impl.cc",
     "network_service_url_loader_factory_impl.h",
     "url_loader_impl.cc",

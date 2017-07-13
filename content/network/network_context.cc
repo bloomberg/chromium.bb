@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/cache_url_loader.h"
-#include "content/network/network_service.h"
+#include "content/network/network_service_impl.h"
 #include "content/network/network_service_url_loader_factory_impl.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/content_client.h"
@@ -87,7 +87,7 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 
 }  // namespace
 
-NetworkContext::NetworkContext(NetworkService* network_service,
+NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
@@ -98,6 +98,18 @@ NetworkContext::NetworkContext(NetworkService* network_service,
   binding_.set_connection_error_handler(
       base::Bind(&NetworkContext::OnConnectionError, base::Unretained(this)));
 }
+
+// TODO(mmenke): Share URLRequestContextBulder configuration between two
+// constructors. Can only share them once consumer code is ready for its
+// corresponding options to be overwritten.
+NetworkContext::NetworkContext(
+    mojom::NetworkContextRequest request,
+    mojom::NetworkContextParamsPtr params,
+    std::unique_ptr<net::URLRequestContextBuilder> builder)
+    : network_service_(nullptr),
+      url_request_context_(builder->Build()),
+      params_(std::move(params)),
+      binding_(this, std::move(request)) {}
 
 NetworkContext::~NetworkContext() {
   // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the

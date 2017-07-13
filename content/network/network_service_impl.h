@@ -2,30 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_NETWORK_SERVICE_H_
-#define CONTENT_NETWORK_NETWORK_SERVICE_H_
+#ifndef CONTENT_NETWORK_NETWORK_SERVICE_IMPL_H_
+#define CONTENT_NETWORK_NETWORK_SERVICE_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/network_service.mojom.h"
+#include "content/public/network/network_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+
+namespace net {
+class URLRequestContext;
+class URLRequestContextBuilder;
+}  // namespace net
 
 namespace content {
 
 class NetworkContext;
 
-class NetworkService : public service_manager::Service,
-                       public mojom::NetworkService {
+class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
+                                          public NetworkService {
  public:
-  explicit NetworkService(
+  explicit NetworkServiceImpl(
       std::unique_ptr<service_manager::BinderRegistry> registry);
-  ~NetworkService() override;
 
-  CONTENT_EXPORT static std::unique_ptr<NetworkService> CreateForTesting();
+  ~NetworkServiceImpl() override;
+
+  std::unique_ptr<mojom::NetworkContext> CreateNetworkContextWithBuilder(
+      content::mojom::NetworkContextRequest request,
+      content::mojom::NetworkContextParamsPtr params,
+      std::unique_ptr<net::URLRequestContextBuilder> builder,
+      net::URLRequestContext** url_request_context) override;
+
+  static std::unique_ptr<NetworkService> CreateForTesting();
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -38,9 +51,6 @@ class NetworkService : public service_manager::Service,
 
  private:
   class MojoNetLog;
-
-  // Used for tests.
-  NetworkService();
 
   // service_manager::Service implementation.
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -62,9 +72,9 @@ class NetworkService : public service_manager::Service,
   // destroyed first.
   std::set<NetworkContext*> network_contexts_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkService);
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_NETWORK_NETWORK_SERVICE_H_
+#endif  // CONTENT_NETWORK_NETWORK_SERVICE_IMPL_H_

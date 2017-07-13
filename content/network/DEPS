@@ -14,12 +14,13 @@ include_rules = [
   "+content/public/common/url_constants.h",
   "+content/public/common/url_loader.mojom.h",
   "+content/public/common/url_loader_factory.mojom.h",
+  "+content/public/network",
   "+services/service_manager/public",
 ]
 
 specific_include_rules = {
   '.*_[a-z]*test.*': [
-    "+content/browser/loader/test_url_loader_client.h",
     "+content/public/common/content_paths.h",
+    "+content/public/test/test_url_loader_client.h",
   ],
 }

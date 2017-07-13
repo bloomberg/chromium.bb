@@ -23,12 +23,15 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/features.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/prefs/pref_member.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "content/public/common/network_service.mojom.h"
+#include "content/public/network/network_service.h"
 #include "extensions/features/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_session.h"
@@ -127,6 +130,11 @@ class IOThread : public content::BrowserThreadDelegate {
     Globals();
     ~Globals();
 
+    // In-process NetworkService for use in URLRequestContext configuration when
+    // the network service created through the ServiceManager is disabled. See
+    // SystemNetworkContextManager's header comment for more details
+    std::unique_ptr<content::NetworkService> network_service;
+
     // Ascribes all data use in Chrome to a source, such as page loads.
     std::unique_ptr<data_use_measurement::ChromeDataUseAscriber>
         data_use_ascriber;
@@ -140,7 +148,8 @@ class IOThread : public content::BrowserThreadDelegate {
 #endif  // defined(OS_ANDROID)
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
-    std::unique_ptr<net::URLRequestContext> system_request_context;
+    std::unique_ptr<content::mojom::NetworkContext> system_network_context;
+    net::URLRequestContext* system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
@@ -322,6 +331,11 @@ class IOThread : public content::BrowserThreadDelegate {
 #if defined(OS_CHROMEOS)
   bool allow_gssapi_library_load_;
 #endif
+
+  // These are set on the UI thread, and then consumed during initialization on
+  // the IO thread.
+  content::mojom::NetworkContextRequest network_context_request_;
+  content::mojom::NetworkContextParamsPtr network_context_params_;
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.

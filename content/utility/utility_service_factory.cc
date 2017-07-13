@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "content/child/child_process.h"
-#include "content/network/network_service.h"
+#include "content/network/network_service_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -134,7 +134,7 @@ void UtilityServiceFactory::OnLoadFailed() {
 
 std::unique_ptr<service_manager::Service>
 UtilityServiceFactory::CreateNetworkService() {
-  return base::MakeUnique<NetworkService>(std::move(network_registry_));
+  return base::MakeUnique<NetworkServiceImpl>(std::move(network_registry_));
 }
 
 }  // namespace content
