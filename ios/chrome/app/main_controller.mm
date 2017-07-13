@@ -1468,9 +1468,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       }
       break;
     }
-    case IDC_RESET_ALL_WEBVIEWS:
-      [self.currentBVC resetAllWebViews];
-      break;
     case IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS:
       [self showClearBrowsingDataSettingsController];
       break;

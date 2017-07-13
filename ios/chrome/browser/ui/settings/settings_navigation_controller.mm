@@ -483,10 +483,6 @@ initWithRootViewController:(UIViewController*)rootViewController
       [delegate_ closeSettingsAndOpenUrl:sender];
       return;
     }
-    case IDC_CLOSE_SETTINGS_AND_OPEN_NEW_INCOGNITO_TAB: {
-      [delegate_ closeSettingsAndOpenNewIncognitoTab];
-      return;
-    }
     case IDC_SHOW_SIGNIN_IOS:
       // Sign-in actions can only happen on the main browser state (not on
       // incognito browser state), which is unique. The command can just be
@@ -504,10 +500,6 @@ initWithRootViewController:(UIViewController*)rootViewController
       CHECK_EQ(commandBrowserState, [self mainBrowserState]);
       break;
     }
-    case IDC_RESET_ALL_WEBVIEWS:
-      // The command to reset all webview is not related to the browser state so
-      // it can just be forwarded it up the responder chain.
-      break;
     case IDC_SHOW_ACCOUNTS_SETTINGS: {
       UIViewController* controller = [[AccountsCollectionViewController alloc]
                initWithBrowserState:mainBrowserState_

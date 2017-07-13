@@ -4110,9 +4110,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     case IDC_FIND_UPDATE:
       [self searchFindInPage];
       break;
-    case IDC_FULLSCREEN:
-      NOTIMPLEMENTED();
-      break;
     case IDC_HELP_PAGE_VIA_MENU:
       [self showHelpPage];
       break;

@@ -20,8 +20,6 @@ source_set("commands") {
     "open_url_command.mm",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
-    "set_up_for_testing_command.h",
-    "set_up_for_testing_command.mm",
     "show_mail_composer_command.h",
     "show_mail_composer_command.mm",
     "show_signin_command.h",
@@ -33,20 +31,6 @@ source_set("commands") {
     "//components/signin/core/browser",
     "//ios/web",
     "//net",
-    "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "set_up_for_testing_command_unittest.mm",
-  ]
-  deps = [
-    ":commands",
-    "//base",
-    "//testing/gtest",
     "//url",
   ]
 }
