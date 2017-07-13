@@ -4147,6 +4147,31 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, Audio_NoSpliceForBadOverlap) {
+  SetAudioStream();
+  Seek(0);
+
+  // Add 2 frames with matching PTS and ov, where the duration of the first
+  // frame suggests that it overlaps the second frame. The overlap is within a
+  // coded frame group (bad content), so no splicing is expected.
+  NewCodedFrameGroupAppend("0D10K 0D10K");
+  CheckExpectedRangesByTimestamp("{ [0,10) }");
+  CheckExpectedBuffers("0D10K 0D10K");
+  CheckNoNextBuffer();
+
+  Seek(0);
+
+  // Add a new frame in a separate coded frame group that falls into the
+  // overlap of the two existing frames. Splicing should not be performed since
+  // the content is poorly muxed. We can't know which frame to splice when the
+  // content is already messed up.
+  EXPECT_MEDIA_LOG(NoSpliceForBadMux(2, 2000));
+  NewCodedFrameGroupAppend("2D10K");
+  CheckExpectedRangesByTimestamp("{ [0,12) }");
+  CheckExpectedBuffers("0D10K 0D10K 2D10K");
+  CheckNoNextBuffer();
+}
+
 TEST_F(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(4);
   const base::TimeDelta kNoDiscard = base::TimeDelta();
