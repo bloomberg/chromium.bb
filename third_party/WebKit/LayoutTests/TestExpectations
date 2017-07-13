@@ -366,9 +366,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-031.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-114.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-009.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-float-between-001.xht [ Crash ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-crash.html [ Crash ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-from-grand-parents.html [ Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-float-not-removed-writing-mode.xhtml [ Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/005.html [ Failure ]
@@ -414,7 +411,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-tabl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-013.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-015.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-013.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
 
 # Margin collapsing quirks
@@ -566,7 +562,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/025.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/027.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/028.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/029.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/030.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/031.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/032.html [ Failure ]
@@ -630,7 +625,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-float-add-in-sibli
 crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/multiple-float-positioning.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats-with-margin-on-parent.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats.html [ Failure ]
@@ -668,9 +662,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/bfc-beside-float-c
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-creates-block-formatting-context.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
-crbug.com/719646 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/002.html [ Failure ]
-crbug.com/719646 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/003.html [ Failure ]
-crbug.com/719646 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/004.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/006.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/010.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Failure ]
