@@ -6,10 +6,12 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_AFFILIATION_DATABASE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/sql_table_builder.h"
 
 namespace base {
 class FilePath;
@@ -75,9 +77,27 @@ class AffiliationDatabase {
   // database must be closed before calling this.
   static void Delete(const base::FilePath& path);
 
+  // Exposes the version of the underlying database. Should only be used in
+  // tests.
+  int GetDatabaseVersionForTesting();
+
  private:
-  // Creates any tables and indices that do not already exist in the database.
-  bool CreateTablesAndIndicesIfNeeded();
+  // Initializes the passed in table builders and defines the structure of the
+  // tables.
+  static void InitializeTableBuilders(
+      SQLTableBuilder* eq_classes_builder,
+      SQLTableBuilder* eq_class_members_builder);
+
+  // Creates the tables in the database using the provided table builders.
+  // Returns |false| on error, |true| on success.
+  bool CreateTables(const SQLTableBuilder& eq_classes_builder,
+                    const SQLTableBuilder& eq_class_members_builder);
+
+  // Migrates an existing database from an earlier |version| using the provided
+  // table builders. Returns |false| on error, |true| on success.
+  bool MigrateTablesFrom(const SQLTableBuilder& eq_classes_builder,
+                         const SQLTableBuilder& eq_class_members_builder,
+                         unsigned version);
 
   // Called when SQLite encounters an error.
   void SQLErrorCallback(int error_number, sql::Statement* statement);

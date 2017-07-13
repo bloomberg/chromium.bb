@@ -6,8 +6,11 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "sql/connection.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
@@ -17,8 +20,14 @@
 namespace password_manager {
 
 namespace {
-const int kVersion = 1;
+
+// The current version number of the affiliation database schema.
+const int kVersion = 2;
+
+// The oldest version of the schema such that a legacy Chrome client using that
+// version can still read/write the current database.
 const int kCompatibleVersion = 1;
+
 }  // namespace
 
 AffiliationDatabase::AffiliationDatabase() {
@@ -53,9 +62,28 @@ bool AffiliationDatabase::Init(const base::FilePath& path) {
     return false;
   }
 
-  if (!CreateTablesAndIndicesIfNeeded()) {
+  SQLTableBuilder eq_classes_builder("eq_classes");
+  SQLTableBuilder eq_class_members_builder("eq_class_members");
+  InitializeTableBuilders(&eq_classes_builder, &eq_class_members_builder);
+
+  if (!CreateTables(eq_classes_builder, eq_class_members_builder)) {
+    LOG(WARNING) << "Failed to create tables.";
     sql_connection_->Poison();
     return false;
+  }
+
+  int version = metatable.GetVersionNumber();
+  if (version < kVersion) {
+    if (!MigrateTablesFrom(eq_classes_builder, eq_class_members_builder,
+                           version)) {
+      LOG(WARNING) << "Failed to migrate tables from version " << version
+                   << ".";
+      sql_connection_->Poison();
+      return false;
+    }
+
+    // Set the current version number is case of a successful migration.
+    metatable.SetVersionNumber(kVersion);
   }
 
   return true;
@@ -69,16 +97,20 @@ bool AffiliationDatabase::GetAffiliationsForFacetURI(
 
   sql::Statement statement(sql_connection_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT m2.facet_uri, c.last_update_time "
+      "SELECT m2.facet_uri, m2.facet_display_name, m2.facet_icon_url,"
+      "    c.last_update_time "
       "FROM eq_class_members m1, eq_class_members m2, eq_classes c "
       "WHERE m1.facet_uri = ? AND m1.set_id = m2.set_id AND m1.set_id = c.id"));
   statement.BindString(0, facet_uri.canonical_spec());
 
   while (statement.Step()) {
     result->facets.push_back(
-        {FacetURI::FromCanonicalSpec(statement.ColumnString(0))});
+        {FacetURI::FromCanonicalSpec(statement.ColumnString(0)),
+         FacetBrandingInfo{
+             statement.ColumnString(1), GURL(statement.ColumnString(2)),
+         }});
     result->last_update_time =
-        base::Time::FromInternalValue(statement.ColumnInt64(1));
+        base::Time::FromInternalValue(statement.ColumnInt64(3));
   }
 
   return !result->facets.empty();
@@ -91,22 +123,26 @@ void AffiliationDatabase::GetAllAffiliations(
 
   sql::Statement statement(sql_connection_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT m.facet_uri, c.last_update_time, c.id "
+      "SELECT m.facet_uri, m.facet_display_name, m.facet_icon_url,"
+      "    c.last_update_time, c.id "
       "FROM eq_class_members m, eq_classes c "
       "WHERE m.set_id = c.id "
       "ORDER BY c.id"));
 
   int64_t last_eq_class_id = 0;
   while (statement.Step()) {
-    int64_t eq_class_id = statement.ColumnInt64(2);
+    int64_t eq_class_id = statement.ColumnInt64(4);
     if (results->empty() || eq_class_id != last_eq_class_id) {
       results->push_back(AffiliatedFacetsWithUpdateTime());
       last_eq_class_id = eq_class_id;
     }
     results->back().facets.push_back(
-        {FacetURI::FromCanonicalSpec(statement.ColumnString(0))});
+        {FacetURI::FromCanonicalSpec(statement.ColumnString(0)),
+         FacetBrandingInfo{
+             statement.ColumnString(1), GURL(statement.ColumnString(2)),
+         }});
     results->back().last_update_time =
-        base::Time::FromInternalValue(statement.ColumnInt64(1));
+        base::Time::FromInternalValue(statement.ColumnInt64(3));
   }
 }
 
@@ -165,7 +201,9 @@ bool AffiliationDatabase::Store(
 
   sql::Statement statement_child(sql_connection_->GetCachedStatement(
       SQL_FROM_HERE,
-      "INSERT INTO eq_class_members(facet_uri, set_id) VALUES (?, ?)"));
+      "INSERT INTO "
+      "eq_class_members(facet_uri, facet_display_name, facet_icon_url, set_id) "
+      "VALUES (?, ?, ?, ?)"));
 
   sql::Transaction transaction(sql_connection_.get());
   if (!transaction.Begin())
@@ -180,7 +218,10 @@ bool AffiliationDatabase::Store(
   for (const Facet& facet : affiliated_facets.facets) {
     statement_child.Reset(true);
     statement_child.BindString(0, facet.uri.canonical_spec());
-    statement_child.BindInt64(1, eq_class_id);
+    statement_child.BindString(1, facet.branding_info.name);
+    statement_child.BindString(
+        2, facet.branding_info.icon_url.possibly_invalid_spec());
+    statement_child.BindInt64(3, eq_class_id);
     if (!statement_child.Run())
       return false;
   }
@@ -222,29 +263,68 @@ void AffiliationDatabase::Delete(const base::FilePath& path) {
   DCHECK(success);
 }
 
-bool AffiliationDatabase::CreateTablesAndIndicesIfNeeded() {
-  if (!sql_connection_->Execute(
-          "CREATE TABLE IF NOT EXISTS eq_classes("
-          "id INTEGER PRIMARY KEY,"
-          "last_update_time INTEGER)")) {
-    return false;
-  }
+int AffiliationDatabase::GetDatabaseVersionForTesting() {
+  sql::MetaTable metatable;
+  // The second and third parameters to |MetaTable::Init| are ignored, given
+  // that a metatable already exists. Hence they are not influencing the version
+  // of the underlying database.
+  DCHECK(sql::MetaTable::DoesTableExist(sql_connection_.get()));
+  metatable.Init(sql_connection_.get(), 1, 1);
+  return metatable.GetVersionNumber();
+}
 
-  if (!sql_connection_->Execute(
-          "CREATE TABLE IF NOT EXISTS eq_class_members("
-          "id INTEGER PRIMARY KEY,"
-          "facet_uri LONGVARCHAR UNIQUE NOT NULL,"
-          "set_id INTEGER NOT NULL"
-          "    REFERENCES eq_classes(id) ON DELETE CASCADE)")) {
-    return false;
-  }
+// static
+void AffiliationDatabase::InitializeTableBuilders(
+    SQLTableBuilder* eq_classes_builder,
+    SQLTableBuilder* eq_class_members_builder) {
+  // Version 1 of the affiliation database.
+  eq_classes_builder->AddColumnToPrimaryKey("id", "INTEGER");
+  eq_classes_builder->AddColumn("last_update_time", "INTEGER");
+  // The first call to |SealVersion| sets the version to 0, that's why it is
+  // repeated.
+  eq_classes_builder->SealVersion();
+  unsigned eq_classes_version = eq_classes_builder->SealVersion();
+  DCHECK_EQ(1u, eq_classes_version);
 
+  eq_class_members_builder->AddColumnToPrimaryKey("id", "INTEGER");
+  eq_class_members_builder->AddColumnToUniqueKey("facet_uri",
+                                                 "LONGVARCHAR NOT NULL");
+  eq_class_members_builder->AddColumn(
+      "set_id", "INTEGER NOT NULL REFERENCES eq_classes(id) ON DELETE CASCADE");
   // An index on eq_class_members.facet_uri is automatically created due to the
   // UNIQUE constraint, however, we must create one on eq_class_members.set_id
   // manually (to prevent linear scan when joining).
-  return sql_connection_->Execute(
-      "CREATE INDEX IF NOT EXISTS index_on_eq_class_members_set_id ON "
-      "eq_class_members (set_id)");
+  eq_class_members_builder->AddIndex("index_on_eq_class_members_set_id",
+                                     {"set_id"});
+  // The first call to |SealVersion| sets the version to 0, that's why it is
+  // repeated.
+  eq_class_members_builder->SealVersion();
+  unsigned eq_class_members_version = eq_class_members_builder->SealVersion();
+  DCHECK_EQ(1u, eq_class_members_version);
+
+  // Version 2 of the affiliation database.
+  eq_classes_version = eq_classes_builder->SealVersion();
+  DCHECK_EQ(2u, eq_classes_version);
+
+  eq_class_members_builder->AddColumn("facet_display_name", "VARCHAR");
+  eq_class_members_builder->AddColumn("facet_icon_url", "VARCHAR");
+  eq_class_members_version = eq_class_members_builder->SealVersion();
+  DCHECK_EQ(2u, eq_class_members_version);
+}
+
+bool AffiliationDatabase::CreateTables(
+    const SQLTableBuilder& eq_classes_builder,
+    const SQLTableBuilder& eq_class_members_builder) {
+  return eq_classes_builder.CreateTable(sql_connection_.get()) &&
+         eq_class_members_builder.CreateTable(sql_connection_.get());
+}
+
+bool AffiliationDatabase::MigrateTablesFrom(
+    const SQLTableBuilder& eq_classes_builder,
+    const SQLTableBuilder& eq_class_members_builder,
+    unsigned version) {
+  return eq_classes_builder.MigrateFrom(version, sql_connection_.get()) &&
+         eq_class_members_builder.MigrateFrom(version, sql_connection_.get());
 }
 
 void AffiliationDatabase::SQLErrorCallback(int error,
