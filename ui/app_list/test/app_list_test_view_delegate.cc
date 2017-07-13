@@ -89,5 +89,9 @@ void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
   model_->PopulateApps(item_count);
 }
 
+void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
+  model_->SetSearchEngineIsGoogle(is_google);
+}
+
 }  // namespace test
 }  // namespace app_list
