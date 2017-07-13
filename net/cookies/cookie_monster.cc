@@ -196,19 +196,6 @@ bool LRACookieSorter(const CookieMonster::CookieMap::iterator& it1,
   return it1->second->CreationDate() < it2->second->CreationDate();
 }
 
-// Compare cookies using name, domain and path, so that "equivalent" cookies
-// (per RFC 2965) are equal to each other.
-bool PartialDiffCookieSorter(const CanonicalCookie& a,
-                             const CanonicalCookie& b) {
-  return a.PartialCompare(b);
-}
-
-// This is a stricter ordering than PartialDiffCookieOrdering, where all fields
-// are used.
-bool FullDiffCookieSorter(const CanonicalCookie& a, const CanonicalCookie& b) {
-  return a.FullCompare(b);
-}
-
 // Our strategy to find duplicates is:
 // (1) Build a map from (cookiename, cookiepath) to
 //     {list of cookies with this signature, sorted by creation time}.
@@ -1482,46 +1469,18 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 void CookieMonster::SetAllCookies(CookieList list,
                                   SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CookieList positive_diff;
-  CookieList negative_diff;
 
-  CookieList old_cookies;
-  old_cookies.reserve(cookies_.size());
-  for (const auto& cookie : cookies_)
-    old_cookies.push_back(*cookie.second.get());
-
-  ComputeCookieDiff(&old_cookies, &list, &positive_diff, &negative_diff);
-
-  for (const auto& cookie_to_delete : negative_diff) {
-    for (CookieMapItPair its =
-             cookies_.equal_range(GetKey(cookie_to_delete.Domain()));
-         its.first != its.second; ++its.first) {
-      // The creation date acts as the unique index...
-      if (its.first->second->CreationDate() ==
-          cookie_to_delete.CreationDate()) {
-        // TODO(rdsmith): DELETE_COOKIE_CANONICAL is incorrect and should
-        // be changed.
-        InternalDeleteCookie(its.first, true, DELETE_COOKIE_CANONICAL);
-        break;
-      }
-    }
+  // Nuke the existing store.
+  while (!cookies_.empty()) {
+    // TODO(rdsmith): The CANONICAL is a lie.
+    InternalDeleteCookie(cookies_.begin(), true, DELETE_COOKIE_CANONICAL);
   }
 
-  if (positive_diff.size() == 0) {
-    MaybeRunCookieCallback(std::move(callback), true);
-    return;
-  }
-
+  // Set all passed in cookies.
   for (const auto& cookie : list) {
     const std::string key(GetKey(cookie.Domain()));
     Time creation_time = cookie.CreationDate();
-    bool already_expired = cookie.IsExpired(creation_time);
-
-    bool result =
-        DeleteAnyEquivalentCookie(key, cookie, true, false, already_expired);
-    DCHECK(!result);
-
-    if (already_expired)
+    if (cookie.IsExpired(creation_time))
       continue;
 
     if (cookie.IsPersistent()) {
@@ -2052,41 +2011,6 @@ void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
   }
 
   std::move(callback).Run();
-}
-
-void CookieMonster::ComputeCookieDiff(CookieList* old_cookies,
-                                      CookieList* new_cookies,
-                                      CookieList* cookies_to_add,
-                                      CookieList* cookies_to_delete) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  DCHECK(old_cookies);
-  DCHECK(new_cookies);
-  DCHECK(cookies_to_add);
-  DCHECK(cookies_to_delete);
-  DCHECK(cookies_to_add->empty());
-  DCHECK(cookies_to_delete->empty());
-
-  // Sort both lists.
-  // A set ordered by FullDiffCookieSorter is also ordered by
-  // PartialDiffCookieSorter.
-  std::sort(old_cookies->begin(), old_cookies->end(), FullDiffCookieSorter);
-  std::sort(new_cookies->begin(), new_cookies->end(), FullDiffCookieSorter);
-
-  // Select any old cookie for deletion if no new cookie has the same name,
-  // domain, and path.
-  std::set_difference(
-      old_cookies->begin(), old_cookies->end(), new_cookies->begin(),
-      new_cookies->end(),
-      std::inserter(*cookies_to_delete, cookies_to_delete->begin()),
-      PartialDiffCookieSorter);
-
-  // Select any new cookie for addition (or update) if no old cookie is exactly
-  // equivalent.
-  std::set_difference(new_cookies->begin(), new_cookies->end(),
-                      old_cookies->begin(), old_cookies->end(),
-                      std::inserter(*cookies_to_add, cookies_to_add->begin()),
-                      FullDiffCookieSorter);
 }
 
 void CookieMonster::RunCookieChangedCallbacks(const CanonicalCookie& cookie,

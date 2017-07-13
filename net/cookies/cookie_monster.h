@@ -149,8 +149,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   ~CookieMonster() override;
 
-  // Writes all the cookies in |list| into the store, replacing existing
-  // cookies that collide.  Does not affect cookies not listed in |list|.
+  // Writes all the cookies in |list| into the store, replacing all cookies
+  // currently present in store.
   // This method does not flush the backend.
   // TODO(rdsmith, mmenke): Do not use this function; it is deprecated
   // and should be removed.
@@ -254,9 +254,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // For FindCookiesForKey.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ShortLivedSessionCookies);
-
-  // For ComputeCookieDiff.
-  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ComputeCookieDiff);
 
   // For CookieSource histogram enum.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, CookieSourceHistogram);
@@ -637,16 +634,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Runs the callback if, or defers the callback until, the cookies for the
   // given URL are loaded.
   void DoCookieCallbackForURL(base::OnceClosure callback, const GURL& url);
-
-  // Computes the difference between |old_cookies| and |new_cookies|, and writes
-  // the result in |cookies_to_add| and |cookies_to_delete|.
-  // This function has the side effect of changing the order of |old_cookies|
-  // and |new_cookies|. |cookies_to_add| and |cookies_to_delete| must be empty,
-  // and none of the arguments can be null.
-  void ComputeCookieDiff(CookieList* old_cookies,
-                         CookieList* new_cookies,
-                         CookieList* cookies_to_add,
-                         CookieList* cookies_to_delete);
 
   // Run all cookie changed callbacks that are monitoring |cookie|.
   // |removed| is true if the cookie was deleted.
