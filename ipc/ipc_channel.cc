@@ -17,7 +17,7 @@
 namespace {
 
 // Global atomic used to guarantee channel IDs are unique.
-base::StaticAtomicSequenceNumber g_last_id;
+base::AtomicSequenceNumber g_last_id;
 
 }  // namespace
 

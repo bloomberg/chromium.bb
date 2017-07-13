@@ -14,7 +14,7 @@
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_next_id;
+base::AtomicSequenceNumber g_next_id;
 
 }  // namespace
 

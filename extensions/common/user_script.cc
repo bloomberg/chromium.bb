@@ -18,7 +18,7 @@ namespace {
 
 // This cannot be a plain int or int64_t because we need to generate unique IDs
 // from multiple threads.
-base::StaticAtomicSequenceNumber g_user_script_id_generator;
+base::AtomicSequenceNumber g_user_script_id_generator;
 
 bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                      const GURL& url) {

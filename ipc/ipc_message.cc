@@ -21,7 +21,7 @@
 
 namespace {
 
-base::StaticAtomicSequenceNumber g_ref_num;
+base::AtomicSequenceNumber g_ref_num;
 
 // Create a reference number for identifying IPC messages in traces. The return
 // values has the reference number stored in the upper 24 bits, leaving the low
