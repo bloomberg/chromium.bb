@@ -3083,6 +3083,9 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_TOOLBAR" desc="Accessibilty string read when the bottom toolbar, containing the adddress bar and some buttons, is focused. Informs users that they can pull up on the address bar to see their bookmarks and other content.">
         Address bar. Pull up to see bookmarks, downloads, and history.
       </message>
+      <message name="IDS_BOTTOM_SHEET_OPEN_ACCESSIBILITY_TOOLBAR" desc="Accessibilty string read when the bottom toolbar, containing the adddress bar and some buttons, is focused and the Chrome Home navigation panel is open. Informs users that they can pull down on the address bar to close the navigation panel.">
+        Address bar. Pull down to close navigation panel.
+      </message>
       <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content.">
         Tap to see bookmarks and more
       </message>

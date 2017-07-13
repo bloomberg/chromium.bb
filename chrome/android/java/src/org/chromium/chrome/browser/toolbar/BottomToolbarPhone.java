@@ -50,12 +50,21 @@ public class BottomToolbarPhone extends ToolbarPhone {
         @Override
         public void onSheetOpened() {
             onPrimaryColorChanged(true);
+            if (mUseToolbarHandle) {
+                // If the toolbar is focused, switch focus to the bottom sheet before changing the
+                // content description. If the content description is changed while the view is
+                // focused, the new content description is read immediately.
+                if (hasFocus() && !urlHasFocus()) mBottomSheet.requestFocus();
+                updateContentDescription();
+            }
         }
 
         @Override
         public void onSheetClosed() {
             onPrimaryColorChanged(true);
+
             updateMenuButtonClickableState();
+            updateContentDescription();
         }
 
         @Override
@@ -244,6 +253,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
             boolean delayAnimation, boolean animate) {
         super.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, animate);
         if (!mUseToolbarHandle) mExpandButton.setClickable(!inTabSwitcherMode);
+        updateContentDescription();
+    }
+
+    @Override
+    protected void onTabSwitcherTransitionFinished() {
+        super.onTabSwitcherTransitionFinished();
+        updateContentDescription();
     }
 
     @Override
@@ -476,8 +492,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (!mUseToolbarHandle) {
             initExpandButton();
         } else {
-            setContentDescription(
-                    getResources().getString(R.string.bottom_sheet_accessibility_toolbar));
+            updateContentDescription();
         }
     }
 
@@ -862,5 +877,19 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private void updateMenuButtonClickableState() {
         mMenuButton.setClickable(
                 !urlHasFocus() && (!mBottomSheet.isSheetOpen() || mBottomSheet.isShowingNewTab()));
+    }
+
+    private void updateContentDescription() {
+        if (!mUseToolbarHandle) return;
+
+        if (isInTabSwitcherMode()) {
+            setContentDescription(null);
+        } else if (mBottomSheet.isSheetOpen()) {
+            setContentDescription(
+                    getResources().getString(R.string.bottom_sheet_open_accessibility_toolbar));
+        } else {
+            setContentDescription(
+                    getResources().getString(R.string.bottom_sheet_accessibility_toolbar));
+        }
     }
 }
