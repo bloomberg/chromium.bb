@@ -44,8 +44,7 @@ if not exist "%WIN_TOOLS_ROOT_DIR%\.bleeding_edge" (
 :: reduces execution time noticeably.
 ::
 :: See "//cipd.bat" and "//cipd.ps1" for more information.
-set CIPD_EXE=%WIN_TOOLS_ROOT_DIR%\.cipd_client.exe
-if not exist "%CIPD_EXE%" set CIPD_EXE=%WIN_TOOLS_ROOT_DIR%\cipd.bat
+set CIPD_EXE=%WIN_TOOLS_ROOT_DIR%\cipd.bat
 set WIN_TOOLS_EXTRA_ARGS=%WIN_TOOLS_EXTRA_ARGS% --cipd-client "%CIPD_EXE%"
 
 :: TODO: This logic will change when we deprecate legacy mode. For now, we
