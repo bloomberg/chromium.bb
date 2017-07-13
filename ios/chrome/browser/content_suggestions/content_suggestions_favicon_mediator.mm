@@ -65,13 +65,19 @@ const CGFloat kMostVisitedFaviconMinimalSize = 32;
 
 - (instancetype)
 initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
-      largeIconService:(favicon::LargeIconService*)largeIconService {
+      largeIconService:(favicon::LargeIconService*)largeIconService
+        largeIconCache:(LargeIconCache*)largeIconCache {
   self = [super init];
   if (self) {
     _mostVisitedAttributesProvider = [[FaviconAttributesProvider alloc]
         initWithFaviconSize:kMostVisitedFaviconSize
              minFaviconSize:kMostVisitedFaviconMinimalSize
            largeIconService:largeIconService];
+    // Set a cache only for the Most Visited provider, as the cache is
+    // overwritten for every new results and the size of the favicon fetched for
+    // the suggestions is much smaller.
+    _mostVisitedAttributesProvider.cache = largeIconCache;
+
     _suggestionsAttributesProvider = [[FaviconAttributesProvider alloc]
         initWithFaviconSize:kSuggestionsFaviconSize
              minFaviconSize:1

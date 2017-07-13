@@ -12,6 +12,7 @@ source_set("favicon") {
     "//base",
     "//components/favicon/core",
     "//components/favicon_base",
+    "//ios/chrome/browser/favicon",
     "//url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

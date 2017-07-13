@@ -20,6 +20,7 @@ class ContentSuggestionsService;
 @protocol ContentSuggestionsDataSink;
 @class ContentSuggestionsItem;
 @class ContentSuggestionsMostVisitedItem;
+class LargeIconCache;
 
 // Mediator handling the fetching of the favicon for all ContentSuggestions
 // items.
@@ -31,6 +32,7 @@ class ContentSuggestionsService;
 initWithContentService:
     (nonnull ntp_snippets::ContentSuggestionsService*)contentService
       largeIconService:(nonnull favicon::LargeIconService*)largeIconService
+        largeIconCache:(nullable LargeIconCache*)largeIconCache
     NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;

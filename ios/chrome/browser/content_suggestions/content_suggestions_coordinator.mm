@@ -21,7 +21,9 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/favicon/large_icon_cache.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
@@ -120,12 +122,17 @@
                                            dispatcher:self.dispatcher
                                          webStateList:self.webStateList];
 
+  favicon::LargeIconService* largeIconService =
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
+  LargeIconCache* cache =
+      IOSChromeLargeIconCacheFactory::GetForBrowserState(self.browserState);
+  std::unique_ptr<ntp_tiles::MostVisitedSites> mostVisitedFactory =
+      IOSMostVisitedSitesFactory::NewForBrowserState(self.browserState);
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
-            largeIconService:IOSChromeLargeIconServiceFactory::
-                                 GetForBrowserState(self.browserState)
-             mostVisitedSite:IOSMostVisitedSitesFactory::NewForBrowserState(
-                                 self.browserState)];
+            largeIconService:largeIconService
+              largeIconCache:cache
+             mostVisitedSite:std::move(mostVisitedFactory)];
   self.contentSuggestionsMediator.commandHandler = self;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
 
