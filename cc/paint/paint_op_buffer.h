@@ -1179,10 +1179,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   // Record paths for veto-to-msaa for gpu raster.
   int num_slow_paths_ = 0;
-  bool has_non_aa_paint_ = false;
   // Record additional bytes used by referenced sub-records and display lists.
   size_t subrecord_bytes_used_ = 0;
-  bool has_discardable_images_ = false;
+
+  bool has_non_aa_paint_ : 1;
+  bool has_discardable_images_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(PaintOpBuffer);
 };
