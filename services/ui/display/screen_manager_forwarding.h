@@ -33,7 +33,14 @@ class ScreenManagerForwarding : public ScreenManager,
                                 public NativeDisplayObserver,
                                 public mojom::NativeDisplayDelegate {
  public:
-  ScreenManagerForwarding();
+  enum class Mode {
+    IN_WM_PROCESS,
+    OWN_PROCESS,
+  };
+
+  // |in_process|  is true if the UI Service runs inside WM's process, false if
+  // it runs inside its own process.
+  explicit ScreenManagerForwarding(Mode mode);
   ~ScreenManagerForwarding() override;
 
   // ScreenManager:
@@ -91,6 +98,9 @@ class ScreenManagerForwarding : public ScreenManager,
       const mojom::NativeDisplayDelegate::ConfigureCallback& callback,
       bool status);
 
+  // True if the UI Service runs inside WM's process, false if it runs inside
+  // its own process.
+  const bool is_in_process_;
   std::unique_ptr<display::ScreenBase> screen_;
   mojo::Binding<mojom::NativeDisplayDelegate> binding_;
   mojom::NativeDisplayObserverPtr observer_;

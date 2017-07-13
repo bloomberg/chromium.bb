@@ -10,6 +10,8 @@ source_set("mus_common") {
   sources = [
     "accelerator_util.cc",
     "accelerator_util.h",
+    "image_cursors_set.cc",
+    "image_cursors_set.h",
     "switches.cc",
     "switches.h",
     "transient_window_utils.h",

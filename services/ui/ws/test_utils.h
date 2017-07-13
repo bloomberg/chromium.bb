@@ -607,6 +607,7 @@ class TestWindowServerDelegate : public WindowServerDelegate {
   bool IsTestConfig() const override;
   void OnWillCreateTreeForWindowManager(
       bool automatically_create_display_roots) override;
+  ThreadedImageCursorsFactory* GetThreadedImageCursorsFactory() override;
 
  private:
   WindowServer* window_server_ = nullptr;
@@ -614,6 +615,7 @@ class TestWindowServerDelegate : public WindowServerDelegate {
   // All TestWindowTreeBinding objects created via CreateWindowTreeBinding.
   // These are owned by the corresponding WindowTree.
   std::vector<TestWindowTreeBinding*> bindings_;
+  std::unique_ptr<ThreadedImageCursorsFactory> threaded_image_cursors_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowServerDelegate);
 };

@@ -39,17 +39,20 @@ const DisplayMode* GetCorrespondingMode(const DisplaySnapshot& snapshot,
 
 }  // namespace
 
-ScreenManagerForwarding::ScreenManagerForwarding()
-    : screen_(base::MakeUnique<display::ScreenBase>()),
+ScreenManagerForwarding::ScreenManagerForwarding(Mode mode)
+    : is_in_process_(mode == Mode::IN_WM_PROCESS),
+      screen_(base::MakeUnique<display::ScreenBase>()),
       binding_(this),
       test_controller_binding_(this) {
-  Screen::SetScreenInstance(screen_.get());
+  if (!is_in_process_)
+    Screen::SetScreenInstance(screen_.get());
 }
 
 ScreenManagerForwarding::~ScreenManagerForwarding() {
   if (native_display_delegate_)
     native_display_delegate_->RemoveObserver(this);
-  Screen::SetScreenInstance(nullptr);
+  if (!is_in_process_)
+    Screen::SetScreenInstance(nullptr);
 }
 
 void ScreenManagerForwarding::AddInterfaces(

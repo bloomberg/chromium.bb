@@ -27,6 +27,7 @@ class FrameGenerator;
 class PlatformDisplayDelegate;
 class PlatformDisplayFactory;
 class ServerWindow;
+class ThreadedImageCursorsFactory;
 
 // PlatformDisplay is used to connect the root ServerWindow to a display.
 class PlatformDisplay : public ui::EventSource {
@@ -35,7 +36,8 @@ class PlatformDisplay : public ui::EventSource {
 
   static std::unique_ptr<PlatformDisplay> Create(
       ServerWindow* root_window,
-      const display::ViewportMetrics& metrics);
+      const display::ViewportMetrics& metrics,
+      ThreadedImageCursorsFactory* threaded_image_cursors_factory);
 
   virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 

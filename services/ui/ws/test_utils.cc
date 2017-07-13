@@ -11,12 +11,15 @@
 #include "cc/output/copy_output_request.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
+#include "services/ui/common/image_cursors_set.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_sink_manager_client_binding.h"
 #include "services/ui/ws/gpu_host.h"
+#include "services/ui/ws/threaded_image_cursors.h"
+#include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_manager_window_tree_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,6 +91,28 @@ display::ViewportMetrics MakeViewportMetrics(const display::Display& display) {
   metrics.device_scale_factor = display.device_scale_factor();
   return metrics;
 }
+
+class TestThreadedImageCursorsFactory : public ThreadedImageCursorsFactory {
+ public:
+  TestThreadedImageCursorsFactory() {}
+  ~TestThreadedImageCursorsFactory() override {}
+
+  // ThreadedImageCursorsFactory:
+  std::unique_ptr<ThreadedImageCursors> CreateCursors() override {
+    if (!resource_runner_) {
+      resource_runner_ = base::ThreadTaskRunnerHandle::Get();
+      image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
+    }
+    return base::MakeUnique<ws::ThreadedImageCursors>(
+        resource_runner_, image_cursors_set_->GetWeakPtr());
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> resource_runner_;
+  std::unique_ptr<ui::ImageCursorsSet> image_cursors_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestThreadedImageCursorsFactory);
+};
 
 }  // namespace
 
@@ -509,7 +534,9 @@ mojom::WindowTreeClient* TestWindowTreeBinding::CreateClientForShutdown() {
 
 // TestWindowServerDelegate ----------------------------------------------
 
-TestWindowServerDelegate::TestWindowServerDelegate() {}
+TestWindowServerDelegate::TestWindowServerDelegate()
+    : threaded_image_cursors_factory_(
+          base::MakeUnique<TestThreadedImageCursorsFactory>()) {}
 TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
 void TestWindowServerDelegate::StartDisplayInit() {}
@@ -544,6 +571,11 @@ void TestWindowServerDelegate::OnWillCreateTreeForWindowManager(
   window_server_->SetDisplayCreationConfig(
       automatically_create_display_roots ? DisplayCreationConfig::AUTOMATIC
                                          : DisplayCreationConfig::MANUAL);
+}
+
+ThreadedImageCursorsFactory*
+TestWindowServerDelegate::GetThreadedImageCursorsFactory() {
+  return threaded_image_cursors_factory_.get();
 }
 
 // WindowServerTestHelper  ---------------------------------------------------
