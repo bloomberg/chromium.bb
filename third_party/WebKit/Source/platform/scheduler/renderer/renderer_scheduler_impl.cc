@@ -1195,11 +1195,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.timer_queue_policy().is_suspended = true;
   }
 
-  if (GetMainThreadOnly().renderer_backgrounded &&
-      RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled()) {
-    new_policy.timer_queue_policy().is_throttled = true;
-  }
-
   if (GetMainThreadOnly().use_virtual_time) {
     new_policy.compositor_queue_policy().use_virtual_time = true;
     new_policy.default_queue_policy().use_virtual_time = true;
