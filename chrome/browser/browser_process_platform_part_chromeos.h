@@ -96,9 +96,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
-
   std::unique_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
       override;
+  void RegisterInProcessServices(
+      content::ContentBrowserClient::StaticServiceMap* services) override;
 
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();

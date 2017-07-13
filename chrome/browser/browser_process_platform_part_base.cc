@@ -41,3 +41,6 @@ BrowserProcessPlatformPartBase::CreateBrowserPolicyConnector() {
   return std::unique_ptr<policy::BrowserPolicyConnector>(
       new policy::ChromeBrowserPolicyConnector());
 }
+
+void BrowserProcessPlatformPartBase::RegisterInProcessServices(
+    content::ContentBrowserClient::StaticServiceMap* services) {}
