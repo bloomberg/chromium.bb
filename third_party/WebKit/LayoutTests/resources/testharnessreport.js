@@ -23,6 +23,14 @@
         testRunner.setCanOpenWindows();
         testRunner.setCloseRemainingWindowsWhenComplete(true);
         testRunner.setDumpJavaScriptDialogs(false);
+
+        // fetch-event-referrer-policy.https.html intentiontially loads mixed
+        // content in order to test the referrer policy, so
+        // WebKitAllowRunningInsecureContent must be set to true or else the
+        // load would be blocked.
+        if (document.URL.indexOf("service-workers/service-worker/fetch-event-referrer-policy.https.html") >= 0) {
+            testRunner.overridePreference('WebKitAllowRunningInsecureContent', true);
+        }
     }
 
     // Disable the default output of testharness.js.  The default output formats
