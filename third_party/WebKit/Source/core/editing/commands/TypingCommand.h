@@ -176,6 +176,12 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                               bool expand_for_special_elements = true,
                               bool sanitize_markup = true);
 
+  void ForwardDeleteKeyPressedInternal(
+      const VisibleSelection& selection_to_delete,
+      const VisibleSelection& selection_after_undo,
+      bool kill_ring,
+      EditingState*);
+
   ETypingCommand command_type_;
   String text_to_insert_;
   bool open_for_more_typing_;
