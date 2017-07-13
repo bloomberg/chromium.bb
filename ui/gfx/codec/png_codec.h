@@ -27,6 +27,8 @@ class Size;
 // things, partially downloaded data.
 class CODEC_EXPORT PNGCodec {
  public:
+  static constexpr int DEFAULT_ZLIB_COMPRESSION = 6;
+
   enum ColorFormat {
     // 4 bytes per pixel, in RGBA order in memory regardless of endianness.
     FORMAT_RGBA,
@@ -35,10 +37,10 @@ class CODEC_EXPORT PNGCodec {
     // This is the default Windows DIB order.
     FORMAT_BGRA,
 
-    // SkBitmap format. For Encode() kARGB_8888_Config (4 bytes per pixel) and
-    // kA8_Config (1 byte per pixel) formats are supported. kA8_Config gets
-    // encoded into a grayscale PNG treating alpha as the color intensity.
-    // For Decode() kARGB_8888_Config is always used.
+    // SkBitmap format. For Encode() kN32_SkColorType (4 bytes per pixel) and
+    // kAlpha_8_SkColorType (1 byte per pixel) formats are supported.
+    // kAlpha_8_SkColorType gets encoded into a grayscale PNG treating alpha as
+    // the color intensity. For Decode() kN32_SkColorType is always used.
     FORMAT_SkBitmap
   };
 
@@ -76,10 +78,10 @@ class CODEC_EXPORT PNGCodec {
                      const std::vector<Comment>& comments,
                      std::vector<unsigned char>* output);
 
-  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
-  // to be kARGB_8888_Config, 32 bits per pixel. The params
-  // |discard_transparency| and |output| are passed directly to Encode; refer to
-  // Encode for more information.
+  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed to
+  // be kN32_SkColorType, 32 bits per pixel. The params |discard_transparency|
+  // and |output| are passed directly to Encode; refer to Encode for more
+  // information.
   static bool EncodeBGRASkBitmap(const SkBitmap& input,
                                  bool discard_transparency,
                                  std::vector<unsigned char>* output);
@@ -91,10 +93,10 @@ class CODEC_EXPORT PNGCodec {
                                      bool discard_transparency,
                                      std::vector<unsigned char>* output);
 
-  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
-  // to be kA8_Config, 8 bits per pixel. The bitmap is encoded as a grayscale
-  // PNG with alpha used for color intensity. The |output| param is passed
-  // directly to Encode; refer to Encode for more information.
+  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed to
+  // be kAlpha_8_SkColorType, 8 bits per pixel. The bitmap is encoded as a
+  // grayscale PNG with alpha used for color intensity. The |output| param is
+  // passed directly to Encode; refer to Encode for more information.
   static bool EncodeA8SkBitmap(const SkBitmap& input,
                                std::vector<unsigned char>* output);
 

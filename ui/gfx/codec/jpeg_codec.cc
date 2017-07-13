@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
+#include "ui/gfx/codec/vector_wstream.h"
 
 extern "C" {
 #if defined(USE_SYSTEM_LIBJPEG)
@@ -46,29 +46,6 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 }  // namespace
 
 // Encoder ---------------------------------------------------------------------
-
-namespace {
-
-class VectorWStream : public SkWStream {
- public:
-  VectorWStream(std::vector<unsigned char>* dst) : dst_(dst) {
-    DCHECK(dst_);
-    DCHECK_EQ(0UL, dst_->size());
-  }
-
-  bool write(const void* buffer, size_t size) override {
-    const unsigned char* ptr = reinterpret_cast<const unsigned char*>(buffer);
-    dst_->insert(dst_->end(), ptr, ptr + size);
-    return true;
-  }
-
-  size_t bytesWritten() const override { return dst_->size(); }
-
- private:
-  // Does not have ownership.
-  std::vector<unsigned char>* dst_;
-};
-};
 
 bool JPEGCodec::Encode(const SkPixmap& src,
                        int quality,

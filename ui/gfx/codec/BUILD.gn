@@ -11,6 +11,8 @@ component("codec") {
     "jpeg_codec.h",
     "png_codec.cc",
     "png_codec.h",
+    "vector_wstream.cc",
+    "vector_wstream.h",
   ]
 
   deps = [
