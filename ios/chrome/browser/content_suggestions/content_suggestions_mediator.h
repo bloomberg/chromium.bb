@@ -28,6 +28,7 @@ class MostVisitedSites;
 @protocol ContentSuggestionsHeaderProvider;
 @class ContentSuggestionIdentifier;
 class GURL;
+class LargeIconCache;
 class NotificationPromoWhatsNew;
 
 // Mediator for ContentSuggestions. Makes the interface between a
@@ -40,6 +41,7 @@ class NotificationPromoWhatsNew;
 initWithContentService:
     (nonnull ntp_snippets::ContentSuggestionsService*)contentService
       largeIconService:(nonnull favicon::LargeIconService*)largeIconService
+        largeIconCache:(nullable LargeIconCache*)largeIconCache
        mostVisitedSite:
            (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
     NS_DESIGNATED_INITIALIZER;
