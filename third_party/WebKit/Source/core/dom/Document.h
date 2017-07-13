@@ -727,8 +727,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetSequentialFocusNavigationStartingPoint(Node*);
   Element* SequentialFocusNavigationStartingPoint(WebFocusType) const;
 
-  void SetActiveHoverElement(Element*);
-  Element* ActiveHoverElement() const { return active_hover_element_.Get(); }
+  void SetActiveElement(Element*);
+  Element* GetActiveElement() const { return active_element_.Get(); }
 
   Element* HoverElement() const { return hover_element_.Get(); }
 
@@ -1447,6 +1447,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool HaveImportsLoaded() const;
   void ViewportDefiningElementDidChange();
 
+  void UpdateActiveState(const HitTestRequest&, Element*);
+  void UpdateHoverState(const HitTestRequest&, Element*);
+
   DocumentLifecycle lifecycle_;
 
   bool has_nodes_with_placeholder_style_;
@@ -1502,7 +1505,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Element> focused_element_;
   Member<Range> sequential_focus_navigation_starting_point_;
   Member<Element> hover_element_;
-  Member<Element> active_hover_element_;
+  Member<Element> active_element_;
   Member<Element> document_element_;
   UserActionElementSet user_action_elements_;
   Member<RootScrollerController> root_scroller_controller_;
