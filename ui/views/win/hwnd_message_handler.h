@@ -232,7 +232,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) override;
 
   // Overridden from InputMethodObserver
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnFocus() override;
   void OnBlur() override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;

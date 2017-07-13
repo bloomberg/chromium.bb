@@ -182,7 +182,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
   void OnFocus() override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowImeIfNeeded() override;
 

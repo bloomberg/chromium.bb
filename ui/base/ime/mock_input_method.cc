@@ -64,8 +64,6 @@ bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 
 void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
   for (InputMethodObserver& observer : observer_list_)
-    observer.OnTextInputTypeChanged(client);
-  for (InputMethodObserver& observer : observer_list_)
     observer.OnTextInputStateChanged(client);
 }
 

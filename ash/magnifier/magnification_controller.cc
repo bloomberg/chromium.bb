@@ -221,7 +221,6 @@ class MagnificationControllerImpl : public MagnificationController,
   void OnMoveMagnifierTimer();
 
   // ui::InputMethodObserver:
-  void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
   void OnFocus() override {}
   void OnBlur() override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}

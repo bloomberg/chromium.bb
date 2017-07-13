@@ -215,8 +215,6 @@ class TestInputMethodObserver {
 
   virtual ui::TextInputType GetTextInputTypeFromClient() = 0;
 
-  virtual void SetOnTextInputTypeChangedCallback(
-      const base::Closure& callback) = 0;
   virtual void SetOnShowImeIfNeededCallback(const base::Closure& callback) = 0;
 
  protected:
