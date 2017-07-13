@@ -349,6 +349,27 @@ Response InspectorDOMAgent::AssertNode(int node_id, Node*& node) {
   return Response::OK();
 }
 
+Response InspectorDOMAgent::AssertNode(
+    const protocol::Maybe<int>& node_id,
+    const protocol::Maybe<int>& backend_node_id,
+    const protocol::Maybe<String>& object_id,
+    Node*& node) {
+  if (node_id.isJust())
+    return AssertNode(node_id.fromJust(), node);
+
+  if (backend_node_id.isJust()) {
+    node = DOMNodeIds::NodeForId(backend_node_id.fromJust());
+    return !node ? Response::Error("No node found for given backend id")
+                 : Response::OK();
+  }
+
+  if (object_id.isJust())
+    return NodeForRemoteObjectId(object_id.fromJust(), node);
+
+  return Response::Error(
+      "Either nodeId, backendNodeId or objectId must be specified");
+}
+
 Response InspectorDOMAgent::AssertElement(int node_id, Element*& element) {
   Node* node = nullptr;
   Response response = AssertNode(node_id, node);
@@ -1212,12 +1233,16 @@ Response InspectorDOMAgent::markUndoableState() {
   return Response::OK();
 }
 
-Response InspectorDOMAgent::focus(int node_id) {
-  Element* element = nullptr;
-  Response response = AssertElement(node_id, element);
+Response InspectorDOMAgent::focus(Maybe<int> node_id,
+                                  Maybe<int> backend_node_id,
+                                  Maybe<String> object_id) {
+  Node* node = nullptr;
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
-
+  if (!node->IsElementNode())
+    return Response::Error("Node is not an Element");
+  Element* element = ToElement(node);
   element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (!element->IsFocusable())
     return Response::Error("Element is not focusable");
@@ -1226,10 +1251,12 @@ Response InspectorDOMAgent::focus(int node_id) {
 }
 
 Response InspectorDOMAgent::setFileInputFiles(
-    int node_id,
-    std::unique_ptr<protocol::Array<String>> files) {
+    std::unique_ptr<protocol::Array<String>> files,
+    Maybe<int> node_id,
+    Maybe<int> backend_node_id,
+    Maybe<String> object_id) {
   Node* node = nullptr;
-  Response response = AssertNode(node_id, node);
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
   if (!isHTMLInputElement(*node) ||
@@ -1244,10 +1271,12 @@ Response InspectorDOMAgent::setFileInputFiles(
 }
 
 Response InspectorDOMAgent::getBoxModel(
-    int node_id,
+    Maybe<int> node_id,
+    Maybe<int> backend_node_id,
+    Maybe<String> object_id,
     std::unique_ptr<protocol::DOM::BoxModel>* model) {
   Node* node = nullptr;
-  Response response = AssertNode(node_id, node);
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
 
