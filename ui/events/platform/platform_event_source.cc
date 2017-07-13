@@ -6,30 +6,42 @@
 
 #include <algorithm>
 
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_local.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 
 namespace ui {
 
-// static
-PlatformEventSource* PlatformEventSource::instance_ = NULL;
+namespace {
+
+// PlatformEventSource singleton is thread local so that different instances
+// can be used on different threads (e.g. browser thread should be able to
+// access PlatformEventSource owned by the UI Service's thread).
+base::LazyInstance<base::ThreadLocalPointer<PlatformEventSource>>::Leaky
+    lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 PlatformEventSource::PlatformEventSource()
     : overridden_dispatcher_(NULL),
       overridden_dispatcher_restored_(false) {
-  CHECK(!instance_) << "Only one platform event source can be created.";
-  instance_ = this;
+  CHECK(!lazy_tls_ptr.Pointer()->Get())
+      << "Only one platform event source can be created.";
+  lazy_tls_ptr.Pointer()->Set(this);
 }
 
 PlatformEventSource::~PlatformEventSource() {
-  CHECK_EQ(this, instance_);
-  instance_ = NULL;
+  CHECK_EQ(this, lazy_tls_ptr.Pointer()->Get());
+  lazy_tls_ptr.Pointer()->Set(nullptr);
 }
 
-PlatformEventSource* PlatformEventSource::GetInstance() { return instance_; }
+PlatformEventSource* PlatformEventSource::GetInstance() {
+  return lazy_tls_ptr.Pointer()->Get();
+}
 
 void PlatformEventSource::AddPlatformEventDispatcher(
     PlatformEventDispatcher* dispatcher) {

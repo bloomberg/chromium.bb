@@ -96,7 +96,7 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner_;
 
-  base::PowerMonitor power_monitor_;
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
   mojo::Binding<mojom::GpuMain> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMain);
