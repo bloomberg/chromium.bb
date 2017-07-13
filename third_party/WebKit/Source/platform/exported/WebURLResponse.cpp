@@ -47,19 +47,19 @@ namespace blink {
 
 namespace {
 
-class ExtraDataContainer : public ResourceResponse::ExtraData {
+class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
  public:
-  static PassRefPtr<ExtraDataContainer> Create(
+  static PassRefPtr<URLResponseExtraDataContainer> Create(
       WebURLResponse::ExtraData* extra_data) {
-    return AdoptRef(new ExtraDataContainer(extra_data));
+    return AdoptRef(new URLResponseExtraDataContainer(extra_data));
   }
 
-  ~ExtraDataContainer() override {}
+  ~URLResponseExtraDataContainer() override {}
 
   WebURLResponse::ExtraData* GetExtraData() const { return extra_data_.get(); }
 
  private:
-  explicit ExtraDataContainer(WebURLResponse::ExtraData* extra_data)
+  explicit URLResponseExtraDataContainer(WebURLResponse::ExtraData* extra_data)
       : extra_data_(WTF::WrapUnique(extra_data)) {}
 
   std::unique_ptr<WebURLResponse::ExtraData> extra_data_;
@@ -360,12 +360,15 @@ WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
   RefPtr<ResourceResponse::ExtraData> data = resource_response_->GetExtraData();
   if (!data)
     return 0;
-  return static_cast<ExtraDataContainer*>(data.Get())->GetExtraData();
+  return static_cast<URLResponseExtraDataContainer*>(data.Get())
+      ->GetExtraData();
 }
 
 void WebURLResponse::SetExtraData(WebURLResponse::ExtraData* extra_data) {
-  if (extra_data != GetExtraData())
-    resource_response_->SetExtraData(ExtraDataContainer::Create(extra_data));
+  if (extra_data != GetExtraData()) {
+    resource_response_->SetExtraData(
+        URLResponseExtraDataContainer::Create(extra_data));
+  }
 }
 
 void WebURLResponse::AppendRedirectResponse(const WebURLResponse& response) {
