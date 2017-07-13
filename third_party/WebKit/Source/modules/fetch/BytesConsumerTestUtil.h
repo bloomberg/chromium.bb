@@ -164,6 +164,8 @@ class BytesConsumerTestUtil {
     BytesConsumer::Result result_ = BytesConsumer::Result::kShouldWait;
     Vector<char> data_;
   };
+
+  static String CharVectorToString(const Vector<char>&);
 };
 
 }  // namespace blink

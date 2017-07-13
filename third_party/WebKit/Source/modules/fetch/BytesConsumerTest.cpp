@@ -19,10 +19,6 @@ using BytesConsumerCommand = BytesConsumerTestUtil::Command;
 using Result = BytesConsumer::Result;
 using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 
-String ToString(const Vector<char>& v) {
-  return String(v.data(), v.size());
-}
-
 class TestClient final : public GarbageCollectedFinalized<TestClient>,
                          public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(TestClient);
@@ -140,10 +136,12 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
   auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
   EXPECT_EQ(Result::kDone, result1.first);
-  EXPECT_EQ("hello, world", ToString(result1.second));
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result1.second));
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
   EXPECT_EQ(Result::kDone, result2.first);
-  EXPECT_EQ("hello, world", ToString(result2.second));
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result2.second));
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
   EXPECT_FALSE(src->IsCancelled());
 }
@@ -237,7 +235,8 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
   EXPECT_EQ(Result::kDone, result2.first);
-  EXPECT_EQ("hello, world", ToString(result2.second));
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result2.second));
   EXPECT_FALSE(src->IsCancelled());
 }
 

@@ -27,10 +27,6 @@ using PublicState = BytesConsumer::PublicState;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
 
-String ToString(const Vector<char>& v) {
-  return String(v.data(), v.size());
-}
-
 class TestThreadableLoader : public ThreadableLoader {
  public:
   ~TestThreadableLoader() override {
@@ -166,7 +162,8 @@ TEST_F(BlobBytesConsumerTest, TwoPhaseRead) {
 
   auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->Run();
   EXPECT_EQ(Result::kDone, result.first);
-  EXPECT_EQ("hello, world", ToString(result.second));
+  EXPECT_EQ("hello, world",
+            BytesConsumerTestUtil::CharVectorToString(result.second));
 }
 
 TEST_F(BlobBytesConsumerTest, FailLoading) {
