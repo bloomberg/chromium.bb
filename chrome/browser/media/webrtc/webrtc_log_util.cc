@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/webrtc_log_list.h"
@@ -52,7 +53,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFiles(const base::FilePath& log_dir) {
 void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
     const base::FilePath& log_dir,
     const base::Time& delete_begin_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   if (!base::PathExists(log_dir)) {
     // This will happen if no logs have been stored or uploaded.
@@ -116,8 +117,8 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
       g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(
             &DeleteOldWebRtcLogFiles,
             WebRtcLogList::GetWebRtcLogDirectoryForProfile(entry->GetPath())));

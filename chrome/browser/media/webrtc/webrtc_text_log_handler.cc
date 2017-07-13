@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/common/channel_info.h"
@@ -196,8 +197,8 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
   if (!meta_data_)
     meta_data_.reset(new MetaDataMap());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnFileThread, this,
                      callback));
   return true;
@@ -378,8 +379,6 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
 
 void WebRtcTextLogHandler::LogInitialInfoOnFileThread(
     const GenericDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
   net::NetworkInterfaceList network_list;
   net::GetNetworkList(&network_list,
                       net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);

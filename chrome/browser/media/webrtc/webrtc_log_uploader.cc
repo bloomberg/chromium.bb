@@ -14,6 +14,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -82,14 +83,14 @@ WebRtcLogUploadDoneData::WebRtcLogUploadDoneData(
 WebRtcLogUploadDoneData::~WebRtcLogUploadDoneData() {}
 
 WebRtcLogUploader::WebRtcLogUploader()
-    : log_count_(0),
+    : background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
+      log_count_(0),
       post_data_(NULL),
-      shutting_down_(false) {
-  file_thread_checker_.DetachFromThread();
-}
+      shutting_down_(false) {}
 
 WebRtcLogUploader::~WebRtcLogUploader() {
-  DCHECK(create_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(create_thread_checker_);
   DCHECK(upload_done_data_.empty());
   DCHECK(shutting_down_);
 }
@@ -111,7 +112,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     std::unique_ptr<WebRtcLogBuffer> log_buffer,
     std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(log_buffer.get());
   DCHECK(meta_data.get());
   DCHECK(!upload_done_data.log_path.empty());
@@ -146,7 +147,7 @@ void WebRtcLogUploader::PrepareMultipartPostData(
     const std::string& compressed_log,
     std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!compressed_log.empty());
   DCHECK(meta_data.get());
 
@@ -177,7 +178,7 @@ void WebRtcLogUploader::PrepareMultipartPostData(
 
 void WebRtcLogUploader::UploadStoredLog(
     const WebRtcLogUploadDoneData& upload_data) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!upload_data.local_log_id.empty());
   DCHECK(!upload_data.log_path.empty());
 
@@ -231,7 +232,7 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
     std::unique_ptr<WebRtcLogBuffer> log_buffer,
     std::unique_ptr<MetaDataMap> meta_data,
     const WebRtcLoggingHandlerHost::GenericDoneCallback& done_callback) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!log_id.empty());
   DCHECK(log_buffer.get());
   DCHECK(!log_paths.log_path.empty());
@@ -284,7 +285,7 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
 }
 
 void WebRtcLogUploader::StartShutdown() {
-  DCHECK(create_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(create_thread_checker_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(&WebRtcLogUploader::ShutdownOnIOThread,
@@ -308,11 +309,10 @@ void WebRtcLogUploader::OnURLFetchComplete(
       // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
       base::FilePath log_list_path =
           WebRtcLogList::GetWebRtcLogListFileForDirectory(it->second.log_path);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
+      background_task_runner_->PostTask(
+          FROM_HERE,
           base::BindOnce(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
-                         base::Unretained(this), log_list_path,
-                         it->second.local_log_id, report_id));
+                         log_list_path, it->second.local_log_id, report_id));
     }
     NotifyUploadDone(response_code, report_id, it->second);
     upload_done_data_.erase(it);
@@ -524,7 +524,7 @@ void WebRtcLogUploader::ShutdownOnIOThread() {
 void WebRtcLogUploader::WriteCompressedLogToFile(
     const std::string& compressed_log,
     const base::FilePath& log_file_path) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!compressed_log.empty());
   base::WriteFile(log_file_path, &compressed_log[0], compressed_log.size());
 }
@@ -532,7 +532,7 @@ void WebRtcLogUploader::WriteCompressedLogToFile(
 void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
     const base::FilePath& upload_list_path,
     const std::string& local_log_id) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!upload_list_path.empty());
   DCHECK(!local_log_id.empty());
 
@@ -573,11 +573,11 @@ void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
   }
 }
 
+// static
 void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
     const base::FilePath& upload_list_path,
     const std::string& local_log_id,
     const std::string& report_id) {
-  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(!upload_list_path.empty());
   DCHECK(!local_log_id.empty());
   DCHECK(!report_id.empty());
