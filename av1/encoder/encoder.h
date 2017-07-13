@@ -655,12 +655,6 @@ typedef struct AV1_COMP {
 #if CONFIG_SPEED_REFS
   int sb_scanning_pass_idx;
 #endif  // CONFIG_SPEED_REFS
-
-#if CONFIG_PALETTE || CONFIG_INTRABC
-  // Specify if encoder does automatic classification of source video as
-  // screen content or not.
-  int auto_tune_content;
-#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 } AV1_COMP;
 
 void av1_initialize_enc(void);

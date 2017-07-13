@@ -5082,8 +5082,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->coef_counts);
   av1_zero(rdc->comp_pred_diff);
 
-#if CONFIG_PALETTE
-  if (cpi->auto_tune_content && frame_is_intra_only(cm)) {
+#if CONFIG_PALETTE || CONFIG_INTRABC
+  // 'allow_screen_content_tools' is assigned at intra-only frame, and will
+  // remain unchanged till the next intra-only frame.
+  if (frame_is_intra_only(cm)) {
     cm->allow_screen_content_tools = is_screen_content(
         cpi->source->y_buffer,
 #if CONFIG_HIGHBITDEPTH
@@ -5091,7 +5093,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_HIGHBITDEPTH
         cpi->source->y_stride, cpi->source->y_width, cpi->source->y_height);
   }
-#endif  // CONFIG_PALETTE
+#endif  // CONFIG_PALETTE || CONFIG_INTRABC
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(rdc->global_motion_used);
