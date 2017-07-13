@@ -88,7 +88,7 @@ class UiElement : public WorldRectangle {
   UiElement();
   virtual ~UiElement();
 
-  virtual void OnBeginFrame(const base::TimeTicks& begin_frame_time);
+  virtual void PrepareToDraw();
 
   void Animate(const base::TimeTicks& time);
 
