@@ -5029,8 +5029,11 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
 #if CONFIG_PALETTE
 // Estimate if the source frame is screen content, based on the portion of
 // blocks that have no more than 4 (experimentally selected) luma colors.
-static int is_screen_content(const uint8_t *src, int stride, int width,
-                             int height) {
+static int is_screen_content(const uint8_t *src,
+#if CONFIG_HIGHBITDEPTH
+                             int use_hbd, int bd,
+#endif  // CONFIG_HIGHBITDEPTH
+                             int stride, int width, int height) {
   assert(src != NULL);
   int counts = 0;
   const int blk_w = 16;
@@ -5039,7 +5042,12 @@ static int is_screen_content(const uint8_t *src, int stride, int width,
   for (int r = 0; r + blk_h <= height; r += blk_h) {
     for (int c = 0; c + blk_w <= width; c += blk_w) {
       const int n_colors =
-          av1_count_colors(src + r * stride + c, stride, blk_w, blk_h);
+#if CONFIG_HIGHBITDEPTH
+          use_hbd ? av1_count_colors_highbd(src + r * stride + c, stride, blk_w,
+                                            blk_h, bd)
+                  :
+#endif  // CONFIG_HIGHBITDEPTH
+                  av1_count_colors(src + r * stride + c, stride, blk_w, blk_h);
       if (n_colors > 1 && n_colors <= limit) counts++;
     }
   }
@@ -5076,9 +5084,12 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_PALETTE
   if (cpi->auto_tune_content && frame_is_intra_only(cm)) {
-    cm->allow_screen_content_tools =
-        is_screen_content(cpi->source->y_buffer, cpi->source->y_stride,
-                          cpi->source->y_width, cpi->source->y_height);
+    cm->allow_screen_content_tools = is_screen_content(
+        cpi->source->y_buffer,
+#if CONFIG_HIGHBITDEPTH
+        cpi->source->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+#endif  // CONFIG_HIGHBITDEPTH
+        cpi->source->y_stride, cpi->source->y_width, cpi->source->y_height);
   }
 #endif  // CONFIG_PALETTE
 
