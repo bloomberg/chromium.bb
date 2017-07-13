@@ -161,6 +161,24 @@ var SerializedPaymentResponse;
   // been defined.
   __gCrWeb.paymentRequestManager = {};
 
+  /**
+   * Generates a random string identfier resembling a GUID.
+   * @return {string}
+   */
+  __gCrWeb['paymentRequestManager'].guid = function() {
+    /**
+     * Generates a stringified random 4 digit hexadecimal number.
+     * @return {string}
+     */
+    var s4 = function() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1);
+    };
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() +
+        s4() + s4();
+  };
+
   // Store paymentRequestManager namespace object in a global __gCrWeb object
   // referenced by a string, so it does not get renamed by closure compiler
   // during
@@ -203,8 +221,8 @@ var SerializedPaymentResponse;
   __gCrWeb['paymentRequestManager'].parsePaymentResponseData = function(
       paymentResponseData) {
     var response = new window.PaymentResponse(
-        paymentResponseData['paymentRequestID'],
-        paymentResponseData['methodName'], paymentResponseData['details']);
+        paymentResponseData['requestId'], paymentResponseData['methodName'],
+        paymentResponseData['details']);
     if (paymentResponseData['shippingAddress'])
       response.shippingAddress = paymentResponseData['shippingAddress'];
     if (paymentResponseData['shippingOption'])
@@ -377,6 +395,7 @@ var SerializedPaymentResponse;
   __gCrWeb['paymentRequestManager'].serializePaymentRequest = function(
       paymentRequest) {
     var serialized = {
+      'id': paymentRequest.id,
       'methodData': paymentRequest.methodData,
       'details': paymentRequest.details,
     };
@@ -551,10 +570,9 @@ window.PaymentRequest = function(methodData, details, opt_options) {
 
   /**
    * A provided or generated ID for the this Payment Request instance.
-   * TODO(crbug.com/602666): Generate an ID if one is not provided.
-   * @type {?string}
+   * @type {string}
    */
-  this.paymentRequestID = null;
+  this.id = details.id ? details.id : __gCrWeb['paymentRequestManager'].guid();
 
   /**
    * Shipping address selected by the user.
@@ -582,6 +600,13 @@ window.PaymentRequest = function(methodData, details, opt_options) {
       this.shippingType = PaymentShippingType.SHIPPING;
     }
   }
+
+  var message = {
+    'command': 'paymentRequest.createPaymentRequest',
+    'payment_request':
+        __gCrWeb['paymentRequestManager'].serializePaymentRequest(this),
+  };
+  __gCrWeb.message.invokeOnHost(message);
 };
 
 window.PaymentRequest.prototype = {
@@ -675,6 +700,7 @@ window.PaymentCurrencyAmount;
 
 /**
  * @typedef {{
+ *   id: (string|undefined),
  *   total: (window.PaymentItem|undefined),
  *   displayItems: (!Array<!window.PaymentItem>|undefined),
  *   shippingOptions: (!Array<!window.PaymentShippingOption>|undefined),
@@ -761,12 +787,12 @@ window.PaymentShippingOption;
  * @constructor
  * @private
  */
-window.PaymentResponse = function(paymentRequestID, methodName, details) {
+window.PaymentResponse = function(requestId, methodName, details) {
   /**
-   * The same paymentRequestID present in the original window.PaymentRequest.
+   * The same identifier present in the original window.PaymentRequest.
    * @type {string}
    */
-  this.paymentRequestID = paymentRequestID;
+  this.requestId = requestId;
 
   /**
    * The payment method identifier for the payment method that the user selected
@@ -789,7 +815,7 @@ window.PaymentResponse = function(paymentRequestID, methodName, details) {
    * final shipping address chosen by the user.
    * @type {?window.PaymentAddress}
    */
-   this.shippingAddress = null;
+  this.shippingAddress = null;
 
   /**
    * If the requestShipping flag was set to true in the window.PaymentOptions
@@ -797,7 +823,7 @@ window.PaymentResponse = function(paymentRequestID, methodName, details) {
    * attribute of the selected shipping option.
    * @type {?string}
    */
-   this.shippingOption = null;
+  this.shippingOption = null;
 
   /**
    * If the requestPayerName flag was set to true in the window.PaymentOptions
@@ -805,7 +831,7 @@ window.PaymentResponse = function(paymentRequestID, methodName, details) {
    * provided by the user.
    * @type {?string}
    */
-   this.payerName = null;
+  this.payerName = null;
 
   /**
    * If the requestPayerEmail flag was set to true in the window.PaymentOptions
@@ -813,7 +839,7 @@ window.PaymentResponse = function(paymentRequestID, methodName, details) {
    * address chosen by the user.
    * @type {?string}
    */
-   this.payerEmail = null;
+  this.payerEmail = null;
 
   /**
    * If the requestPayerPhone flag was set to true in the window.PaymentOptions
@@ -821,7 +847,7 @@ window.PaymentResponse = function(paymentRequestID, methodName, details) {
    * number chosen by the user.
    * @type {?string}
    */
-   this.payerPhone = null;
+  this.payerPhone = null;
 };
 
 /**

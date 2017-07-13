@@ -127,6 +127,13 @@ PaymentRequest::PaymentRequest(
 
 PaymentRequest::~PaymentRequest() {}
 
+bool PaymentRequest::Compare::operator()(
+    const std::unique_ptr<PaymentRequest>& lhs,
+    const std::unique_ptr<PaymentRequest>& rhs) const {
+  return lhs->web_payment_request().payment_request_id !=
+         rhs->web_payment_request().payment_request_id;
+}
+
 autofill::PersonalDataManager* PaymentRequest::GetPersonalDataManager() {
   return personal_data_manager_;
 }

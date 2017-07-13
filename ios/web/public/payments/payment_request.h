@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_PAYMENTS_PAYMENT_REQUEST_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -152,6 +153,9 @@ class PaymentDetails {
   bool FromDictionaryValue(const base::DictionaryValue& value,
                            bool requires_total);
 
+  // The unique free-form identifier for this payment request.
+  std::string id;
+
   // The total amount of the payment request.
   PaymentItem total;
 
@@ -230,7 +234,7 @@ class PaymentRequest {
 
   // The unique ID for this PaymentRequest. If it is not provided during
   // construction, one is generated.
-  base::string16 payment_request_id;
+  std::string payment_request_id;
 
   // Properties set in order to communicate user choices back to the page.
   payments::PaymentAddress shipping_address;
@@ -257,8 +261,8 @@ class PaymentResponse {
   // Populates |value| with the properties of this PaymentResponse.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
-  // The same paymentRequestID present in the original PaymentRequest.
-  base::string16 payment_request_id;
+  // The same ID present in the original PaymentRequest.
+  std::string payment_request_id;
 
   // The payment method identifier for the payment method that the user selected
   // to fulfil the transaction.

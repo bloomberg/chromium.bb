@@ -252,6 +252,8 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   base::DictionaryValue request_dict;
 
   // Add the expected values to expected_request.
+  expected_request.payment_request_id = "123456789";
+  expected_request.details.id = "12345";
   expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
   expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
   expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
@@ -273,6 +275,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   amount_dict->SetString("value", "6.66");
   total_dict->Set("amount", std::move(amount_dict));
   details_dict->Set("total", std::move(total_dict));
+  details_dict->SetString("id", "12345");
   details_dict->SetString("error", "Error in details");
   request_dict.Set("details", std::move(details_dict));
 
@@ -284,6 +287,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   method_data_dict->Set("supportedMethods", std::move(supported_methods_list));
   method_data_list->Append(std::move(method_data_dict));
   request_dict.Set("methodData", std::move(method_data_list));
+  request_dict.SetString("id", "123456789");
 
   // With the required values present, parsing should succeed.
   EXPECT_TRUE(output_request.FromDictionaryValue(request_dict));
@@ -313,7 +317,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 TEST(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
 
-  expected_value.SetString("paymentRequestID", "");
+  expected_value.SetString("requestId", "");
   expected_value.SetString("methodName", "");
 
   PaymentResponse payment_response;
@@ -337,7 +341,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   billing_address->SetString("postalCode", "90210");
   details->Set("billingAddress", std::move(billing_address));
   expected_value.Set("details", std::move(details));
-  expected_value.SetString("paymentRequestID", "12345");
+  expected_value.SetString("requestId", "12345");
   expected_value.SetString("methodName", "American Express");
   std::unique_ptr<base::DictionaryValue> shipping_address(
       new base::DictionaryValue);
@@ -349,7 +353,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   expected_value.SetString("payerPhone", "1234-567-890");
 
   PaymentResponse payment_response;
-  payment_response.payment_request_id = base::ASCIIToUTF16("12345");
+  payment_response.payment_request_id = "12345";
   payment_response.method_name = base::ASCIIToUTF16("American Express");
 
   payments::BasicCardResponse payment_response_details;
@@ -518,6 +522,13 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   PaymentDetails details2;
   EXPECT_EQ(details1, details2);
 
+  details1.id = "12345";
+  EXPECT_NE(details1, details2);
+  details2.id = "54321";
+  EXPECT_NE(details1, details2);
+  details2.id = details1.id;
+  EXPECT_EQ(details1, details2);
+
   details1.total.label = base::ASCIIToUTF16("Total");
   EXPECT_NE(details1, details2);
   details2.total.label = base::ASCIIToUTF16("Shipping");
@@ -617,6 +628,13 @@ TEST(PaymentRequestTest, PaymentOptionsEquality) {
 TEST(PaymentRequestTest, PaymentRequestEquality) {
   PaymentRequest request1;
   PaymentRequest request2;
+  EXPECT_EQ(request1, request2);
+
+  request1.payment_request_id = "12345";
+  EXPECT_NE(request1, request2);
+  request2.payment_request_id = "54321";
+  EXPECT_NE(request1, request2);
+  request2.payment_request_id = request1.payment_request_id;
   EXPECT_EQ(request1, request2);
 
   payments::PaymentAddress address1;

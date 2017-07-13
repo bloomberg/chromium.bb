@@ -5,9 +5,9 @@
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
@@ -97,7 +97,8 @@ struct PendingPaymentResponse {
   // The of map WebState to the list of payments::PaymentRequest instances
   // maintained for that WebState.
   std::unordered_map<web::WebState*,
-                     std::vector<std::unique_ptr<payments::PaymentRequest>>>
+                     std::set<std::unique_ptr<payments::PaymentRequest>,
+                              payments::PaymentRequest::Compare>>
       _paymentRequests;
 
   // The observer for |_activeWebState|.
@@ -149,6 +150,11 @@ struct PendingPaymentResponse {
 
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
+
+// Handles creation of a PaymentRequest instance. The value of the JavaScript
+// PaymentRequest object should be provided in |message|. Returns YES if the
+// invocation was successful.
+- (BOOL)handleCreatePaymentRequest:(const base::DictionaryValue&)message;
 
 // Handles invocations of PaymentRequest.show(). The value of the JavaScript
 // PaymentRequest object should be provided in |message|. Returns YES if the
@@ -244,7 +250,8 @@ struct PendingPaymentResponse {
     _activeWebState = webState;
     if (_paymentRequests.find(webState) == _paymentRequests.end()) {
       _paymentRequests[webState] =
-          std::vector<std::unique_ptr<payments::PaymentRequest>>();
+          std::set<std::unique_ptr<payments::PaymentRequest>,
+                   payments::PaymentRequest::Compare>();
     }
     _activeWebStateObserver =
         base::MakeUnique<web::WebStateObserverBridge>(webState, self);
@@ -351,6 +358,9 @@ struct PendingPaymentResponse {
     return NO;
   }
 
+  if (command == "paymentRequest.createPaymentRequest") {
+    return [self handleCreatePaymentRequest:JSONCommand];
+  }
   if (command == "paymentRequest.requestShow") {
     return [self handleRequestShow:JSONCommand];
   }
@@ -369,12 +379,11 @@ struct PendingPaymentResponse {
   return NO;
 }
 
-// Extracts a web::PaymentRequest from |message|. Returns the instance of
-// payments::PaymentRequest that corresponds to the extracted
-// web::PaymentRequest object, if one exists. Otherwise, creates and returns a
-// new one which is initialized with the web::PaymentRequest object. Returns
-// nullptr if it cannot extract a web::PaymentRequest from |message|.
-- (payments::PaymentRequest*)getOrCreatePaymentRequestFromMessage:
+// Extracts a web::PaymentRequest from |message|. Creates and returns an
+// instance of payments::PaymentRequest which is initialized with the
+// web::PaymentRequest object. Returns nullptr if it cannot extract a
+// web::PaymentRequest from |message|.
+- (payments::PaymentRequest*)newPaymentRequestFromMessage:
     (const base::DictionaryValue&)message {
   const base::DictionaryValue* paymentRequestData;
   web::PaymentRequest webPaymentRequest;
@@ -389,20 +398,54 @@ struct PendingPaymentResponse {
 
   const auto iterator = _paymentRequests.find(_activeWebState);
   DCHECK(iterator != _paymentRequests.end());
-  const auto found = std::find_if(
-      iterator->second.begin(), iterator->second.end(),
-      [webPaymentRequest](
-          const std::unique_ptr<payments::PaymentRequest>& paymentRequest) {
-        return paymentRequest->web_payment_request() == webPaymentRequest;
-      });
-  if (found != iterator->second.end()) {
-    return (*found).get();
+  const auto result =
+      iterator->second.insert(base::MakeUnique<payments::PaymentRequest>(
+          webPaymentRequest, _browserState, _activeWebState,
+          _personalDataManager, self));
+  DCHECK(result.first != iterator->second.end());
+  return result.first->get();
+}
+
+// Extracts a web::PaymentRequest from |message|. Returns the cached instance of
+// payments::PaymentRequest that corresponds to the extracted
+// web::PaymentRequest object, if one exists. Otherwise, creates and returns a
+// new one which is initialized with the web::PaymentRequest object. Returns
+// nullptr if it cannot extract a web::PaymentRequest from |message| or cannot
+// find the payments::PaymentRequest instance.
+- (payments::PaymentRequest*)paymentRequestFromMessage:
+    (const base::DictionaryValue&)message {
+  const base::DictionaryValue* paymentRequestData;
+  web::PaymentRequest webPaymentRequest;
+  if (!message.GetDictionary("payment_request", &paymentRequestData)) {
+    DLOG(ERROR) << "JS message parameter 'payment_request' is missing";
+    return nullptr;
+  }
+  if (!webPaymentRequest.FromDictionaryValue(*paymentRequestData)) {
+    DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
+    return nullptr;
   }
 
-  iterator->second.push_back(base::MakeUnique<payments::PaymentRequest>(
-      webPaymentRequest, _browserState, _activeWebState, _personalDataManager,
-      self));
-  return iterator->second.back().get();
+  std::unique_ptr<payments::PaymentRequest> temporaryPaymentRequest =
+      base::MakeUnique<payments::PaymentRequest>(webPaymentRequest,
+                                                 _browserState, _activeWebState,
+                                                 _personalDataManager, self);
+  const auto iterator = _paymentRequests.find(_activeWebState);
+  DCHECK(iterator != _paymentRequests.end());
+  const auto found = iterator->second.find(temporaryPaymentRequest);
+  return found != iterator->second.end() ? found->get() : nullptr;
+}
+
+- (BOOL)handleCreatePaymentRequest:(const base::DictionaryValue&)message {
+  payments::PaymentRequest* paymentRequest =
+      [self newPaymentRequestFromMessage:message];
+  if (!paymentRequest) {
+    // TODO(crbug.com/602666): Reject the promise with an error of
+    // "InvalidStateError" type.
+    [_paymentRequestJsManager
+        rejectCanMakePaymentPromiseWithErrorMessage:@"Invalid state error"
+                                  completionHandler:nil];
+  }
+  return YES;
 }
 
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
@@ -412,9 +455,14 @@ struct PendingPaymentResponse {
   //   if the intersection is empty.
 
   payments::PaymentRequest* paymentRequest =
-      [self getOrCreatePaymentRequestFromMessage:message];
+      [self paymentRequestFromMessage:message];
   if (!paymentRequest) {
-    return NO;
+    // TODO(crbug.com/602666): Reject the promise with an error of
+    // "InvalidStateError" type.
+    [_paymentRequestJsManager
+        rejectCanMakePaymentPromiseWithErrorMessage:@"Invalid state error"
+                                  completionHandler:nil];
+    return YES;
   }
 
   UIImage* pageFavicon = nil;
@@ -472,7 +520,7 @@ struct PendingPaymentResponse {
 
 - (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message {
   payments::PaymentRequest* paymentRequest =
-      [self getOrCreatePaymentRequestFromMessage:message];
+      [self paymentRequestFromMessage:message];
   if (!paymentRequest) {
     // TODO(crbug.com/602666): Reject the promise with an error of
     // "InvalidStateError" type.
@@ -722,6 +770,9 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 - (void)paymentRequestAddressNormalizationDidCompleteForPaymentRequest:
     (payments::PaymentRequest*)paymentRequest {
   web::PaymentResponse paymentResponse;
+
+  paymentResponse.payment_request_id =
+      paymentRequest->web_payment_request().payment_request_id;
 
   paymentResponse.method_name =
       base::ASCIIToUTF16(_pendingPaymentResponse.methodName);

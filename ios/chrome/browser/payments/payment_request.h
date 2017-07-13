@@ -75,6 +75,13 @@ class PaymentRequest : public PaymentOptionsProvider,
                  id<PaymentRequestUIDelegate> payment_request_ui_delegate);
   ~PaymentRequest() override;
 
+  // Functor used as a simplified comparison function for unique pointers to
+  // PaymentRequest. Only compares |web_payment_request_.payment_request_id|.
+  struct Compare {
+    bool operator()(const std::unique_ptr<PaymentRequest>& lhs,
+                    const std::unique_ptr<PaymentRequest>& rhs) const;
+  };
+
   // PaymentRequestBaseDelegate:
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
