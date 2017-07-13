@@ -89,7 +89,7 @@ struct ResourceSummary {
     request.before_first_contentful_paint = true;
   }
 
-  ResourcePrefetchPredictor::URLRequestSummary request;
+  URLRequestSummary request;
   // Allows to update HTTP ETag.
   size_t version;
   // True iff "Cache-control: no-store" header is present.
@@ -150,9 +150,6 @@ class BrowsingDataRemoverObserver
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverObserver);
 };
-
-using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
-using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 
 void RemoveDuplicateSubresources(std::vector<URLRequestSummary>* subresources) {
   std::stable_sort(subresources->begin(), subresources->end(),
@@ -240,8 +237,6 @@ GURL GetRequestURL(const net::test_server::HttpRequest& request) {
 // ResourcePrefetchPredictor works as expected.
 class LearningObserver : public TestObserver {
  public:
-  using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
-
   LearningObserver(ResourcePrefetchPredictor* predictor,
                    const size_t expected_url_visit_count,
                    const PageRequestSummary& expected_summary,
@@ -323,7 +318,7 @@ class PrefetchingObserver : public TestLoadingObserver {
 
 class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
  protected:
-  using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
+  using URLRequestSummary = URLRequestSummary;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII("force-fieldtrials", "trial/group");
@@ -475,6 +470,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     resource->request.resource_type = resource_type;
     resource->request.priority = priority;
     resource->request.has_validators = true;
+    resource->request.request_url = resource_url;
     return resource;
   }
 

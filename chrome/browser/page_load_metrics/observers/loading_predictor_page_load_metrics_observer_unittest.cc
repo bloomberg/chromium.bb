@@ -41,7 +41,8 @@ class LoadingPredictorPageLoadMetricsObserverTest
         base::MakeUnique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
-    collector_ = base::MakeUnique<LoadingDataCollector>(predictor_.get());
+    collector_ = base::MakeUnique<LoadingDataCollector>(predictor_.get(),
+                                                        nullptr, config);
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.paint_timing->first_paint = base::TimeDelta::FromSeconds(2);
     timing_.paint_timing->first_contentful_paint =

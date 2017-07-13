@@ -15,8 +15,6 @@
 
 namespace predictors {
 
-using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
-
 LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
                                    Profile* profile)
     : config_(config),
@@ -27,7 +25,9 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
           resource_prefetch_predictor_.get(),
           config)),
       loading_data_collector_(base::MakeUnique<LoadingDataCollector>(
-          resource_prefetch_predictor())),
+          resource_prefetch_predictor_.get(),
+          stats_collector_.get(),
+          config)),
       observer_(nullptr),
       weak_factory_(this) {
   resource_prefetch_predictor_->SetStatsCollector(stats_collector_.get());

@@ -26,10 +26,8 @@ const char kRedirectedUrl[] = "http://www.google.com/dogs";
 const char kRedirectedUrl2[] = "http://www.google.com/raccoons";
 }
 
-using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
 using Prediction = ResourcePrefetchPredictor::Prediction;
 using RedirectStatus = ResourcePrefetchPredictor::RedirectStatus;
-using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
 using PrefetchedRequestStats = ResourcePrefetcher::PrefetchedRequestStats;
 using PrefetcherStats = ResourcePrefetcher::PrefetcherStats;
 

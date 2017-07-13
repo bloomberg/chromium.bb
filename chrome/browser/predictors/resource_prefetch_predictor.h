@@ -34,11 +34,11 @@
 class PredictorsHandler;
 class Profile;
 
-namespace net {
-class URLRequest;
-}
-
 namespace predictors {
+
+struct OriginRequestSummary;
+struct URLRequestSummary;
+struct PageRequestSummary;
 
 namespace internal {
 constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
@@ -95,68 +95,6 @@ struct PreconnectPrediction {
 //   by profile.
 class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
  public:
-  // Data collected for origin-based prediction, for a single origin during a
-  // page load (see PageRequestSummary).
-  struct OriginRequestSummary {
-    OriginRequestSummary();
-    OriginRequestSummary(const OriginRequestSummary& other);
-    ~OriginRequestSummary();
-
-    GURL origin;
-    bool always_access_network;
-    bool accessed_network;
-    int first_occurrence;
-  };
-
-  // Stores the data that we need to get from the URLRequest.
-  struct URLRequestSummary {
-    URLRequestSummary();
-    URLRequestSummary(const URLRequestSummary& other);
-    ~URLRequestSummary();
-
-    NavigationID navigation_id;
-    GURL resource_url;
-    GURL request_url;  // URL after all redirects.
-    content::ResourceType resource_type;
-    net::RequestPriority priority;
-    base::TimeTicks response_time;
-    bool before_first_contentful_paint;
-
-    // Only for responses.
-    std::string mime_type;
-    bool was_cached;
-    GURL redirect_url;  // Empty unless request was redirected to a valid url.
-
-    bool has_validators;
-    bool always_revalidate;
-    bool is_no_store;
-    bool network_accessed;
-
-    // Initializes a |URLRequestSummary| from a |URLRequest| response.
-    // Returns true for success. Note: NavigationID is NOT initialized
-    // by this function.
-    static bool SummarizeResponse(const net::URLRequest& request,
-                                  URLRequestSummary* summary);
-  };
-
-  // Stores the data learned from a single navigation.
-  struct PageRequestSummary {
-    explicit PageRequestSummary(const GURL& main_frame_url);
-    PageRequestSummary(const PageRequestSummary& other);
-    ~PageRequestSummary();
-
-    GURL main_frame_url;
-    GURL initial_url;
-    base::TimeTicks first_contentful_paint;
-
-    // Stores all subresource requests within a single navigation, from initial
-    // main frame request to navigation completion.
-    std::vector<URLRequestSummary> subresource_requests;
-    // Map of origin -> OriginRequestSummary. Only one instance of each origin
-    // is kept per navigation, but the summary is updated several times.
-    std::map<GURL, OriginRequestSummary> origins;
-  };
-
   // Stores a result of prediction. Essentially, |subresource_urls| is main
   // result and other fields are used for diagnosis and histograms reporting.
   struct Prediction {
@@ -200,18 +138,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   virtual void StartInitialization();
   virtual void Shutdown();
 
-  // Determines the resource type from the declared one, falling back to MIME
-  // type detection when it is not explicit.
-  static content::ResourceType GetResourceType(
-      content::ResourceType resource_type,
-      const std::string& mime_type);
-
-  // Determines the ResourceType from the mime type, defaulting to the
-  // |fallback| if the ResourceType could not be determined.
-  static content::ResourceType GetResourceTypeFromMimeType(
-      const std::string& mime_type,
-      content::ResourceType fallback);
-
   // Returns true if prefetching data exists for the |main_frame_url|.
   virtual bool IsUrlPrefetchable(const GURL& main_frame_url) const;
 
@@ -239,22 +165,13 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   virtual bool PredictPreconnectOrigins(const GURL& url,
                                         PreconnectPrediction* prediction) const;
 
+  // Called by the collector after a page has finished loading resources and
+  // assembled a PageRequestSummary.
+  virtual void RecordPageRequestSummary(
+      std::unique_ptr<PageRequestSummary> summary);
+
  private:
-  // 'LoadingPredictorObserver' calls the below functions to inform the
-  // predictor of main frame and resource requests. Should only be called if the
-  // corresponding Should* functions return true.
-  void RecordURLRequest(const URLRequestSummary& request);
-  void RecordURLResponse(const URLRequestSummary& response);
-  void RecordURLRedirect(const URLRequestSummary& response);
-
-  // Called when the main frame of a page completes loading.
-  void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
-
-  // Called after the main frame's first contentful paint.
-  void RecordFirstContentfulPaint(
-      const NavigationID& navigation_id,
-      const base::TimeTicks& first_contentful_paint);
-
+  friend class LoadingPredictor;
   friend class ::PredictorsHandler;
   friend class LoadingDataCollector;
   friend class ResourcePrefetchPredictorTest;
@@ -296,20 +213,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
     INITIALIZING = 1,
     INITIALIZED = 2
   };
-  // Returns true if the request (should have a response in it) is "no-store".
-  static bool IsNoStore(const net::URLRequest& request);
-
-  // Functions called on different network events pertaining to the loading of
-  // main frame resource or sub resources.
-  void OnMainFrameRequest(const URLRequestSummary& request);
-  void OnMainFrameRedirect(const URLRequestSummary& response);
-  void OnSubresourceResponse(const URLRequestSummary& response);
-  void OnSubresourceRedirect(const URLRequestSummary& response);
-
-  // Called when onload completes for a navigation. We treat this point as the
-  // "completion" of the navigation. The resources requested by the page up to
-  // this point are the only ones considered for prefetching.
-  void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
   // Returns true iff one of the following conditions is true
   // * |redirect_data| contains confident redirect endpoint for |entry_point|
@@ -340,11 +243,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // database has been read.
   void OnHistoryAndCacheLoaded();
 
-  // Cleanup inflight_navigations_ and call a cleanup for stats_collector_.
-  void CleanupAbandonedNavigations(const NavigationID& navigation_id);
-
-  // Deletes all URLs from the predictor database, the caches and removes all
-  // inflight navigations.
+  // Deletes all URLs from the predictor database and caches.
   void DeleteAllUrls();
 
   // Deletes data for the input |urls| and their corresponding hosts from the
@@ -406,8 +305,6 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   std::unique_ptr<RedirectDataMap> host_redirect_data_;
   std::unique_ptr<OriginDataMap> origin_data_;
 
-  NavigationMap inflight_navigations_;
-
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
@@ -425,9 +322,8 @@ class TestObserver {
 
   virtual void OnPredictorInitialized() {}
 
-  virtual void OnNavigationLearned(
-      size_t url_visit_count,
-      const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
+  virtual void OnNavigationLearned(size_t url_visit_count,
+                                   const PageRequestSummary& summary) {}
 
  protected:
   // |predictor| must be non-NULL and has to outlive the TestObserver.
