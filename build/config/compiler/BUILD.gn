@@ -1343,7 +1343,7 @@ config("no_incompatible_pointer_warnings") {
   cflags = []
   if (is_clang) {
     cflags += [ "-Wno-incompatible-pointer-types" ]
-  } else if (current_cpu == "mipsel") {
+  } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
     cflags += [ "-w" ]
   } else if (is_chromeos && current_cpu == "arm") {
     cflags += [ "-w" ]
