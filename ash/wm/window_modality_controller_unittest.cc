@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/child_modal_window.h"
 #include "ash/wm/window_util.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -412,6 +413,11 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
   TouchTrackerWindowDelegate d11;
   std::unique_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(
       &d11, -11, gfx::Rect(20, 20, 50, 50)));
+  // Make |w11| non-resizable to avoid touch events inside its transient parent
+  // |w1| from going to |w11| because of EasyResizeWindowTargeter.
+  w11->SetProperty(aura::client::kResizeBehaviorKey,
+                   ui::mojom::kResizeBehaviorCanMaximize |
+                       ui::mojom::kResizeBehaviorCanMinimize);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      gfx::Point(10, 10));
 

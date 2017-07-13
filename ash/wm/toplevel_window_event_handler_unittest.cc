@@ -89,7 +89,7 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerTest);
 };
-}
+}  // namespace
 
 TEST_F(ToplevelWindowEventHandlerTest, Caption) {
   std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
@@ -703,6 +703,38 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
             window_state->GetRestoreBoundsInScreen().ToString());
 }
 
+// Tests that EasyResizeWindowTargeter expands the hit-test area when a
+// window is a transient child of a top-level window and is resizable.
+TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsed) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), -1, gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(
+      new TestWindowDelegate(HTCAPTION), -11, gfx::Rect(20, 20, 50, 50)));
+  ::wm::AddTransientChild(w1.get(), w11.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     gfx::Point(10, 10));
+
+  // Make |w11| non-resizable to avoid touch events inside its transient parent
+  // |w1| from going to |w11| because of EasyResizeWindowTargeter.
+  w11->SetProperty(aura::client::kResizeBehaviorKey,
+                   ui::mojom::kResizeBehaviorCanMaximize |
+                       ui::mojom::kResizeBehaviorCanMinimize);
+  // Clicking a point within w1 should activate that window.
+  generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  // Make |w11| resizable to allow touch events inside its transient parent
+  // |w1| that are close to |w11| border to go to |w11| thanks to
+  // EasyResizeWindowTargeter.
+  w11->SetProperty(aura::client::kResizeBehaviorKey,
+                   ui::mojom::kResizeBehaviorCanMaximize |
+                       ui::mojom::kResizeBehaviorCanMinimize |
+                       ui::mojom::kResizeBehaviorCanResize);
+  // Clicking a point within |w1| but close to |w11| should activate |w11|.
+  generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
+  EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
+}
+
 // Tests that an unresizable window cannot be dragged or snapped using gestures.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
@@ -920,8 +952,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
                                      ::wm::WINDOW_MOVE_SOURCE_TOUCH));
 }
 
-// Tests that dragging a snapped window to another display updates the window's
-// bounds correctly.
+// Tests that dragging a snapped window to another display updates the
+// window's bounds correctly.
 TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
   // http://crbug.com/698043.
@@ -962,8 +994,8 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
       w1->GetBoundsInScreen()));
 }
 
-// Showing the resize shadows when the mouse is over the window edges is tested
-// in resize_shadow_and_cursor_test.cc
+// Showing the resize shadows when the mouse is over the window edges is
+// tested in resize_shadow_and_cursor_test.cc
 
 }  // namespace test
 }  // namespace ash
