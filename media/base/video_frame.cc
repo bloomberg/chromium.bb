@@ -33,8 +33,8 @@ gfx::Rect Intersection(gfx::Rect a, const gfx::Rect& b) {
 
 }  // namespace
 
-// Static POD class for generating unique identifiers for each VideoFrame.
-static base::StaticAtomicSequenceNumber g_unique_id_generator;
+// Static constexpr class for generating unique identifiers for each VideoFrame.
+static base::AtomicSequenceNumber g_unique_id_generator;
 
 static bool IsPowerOfTwo(size_t x) {
   return x != 0 && (x & (x - 1)) == 0;
