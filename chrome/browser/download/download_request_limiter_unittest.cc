@@ -14,6 +14,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -228,7 +229,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 #endif
 };
 
-TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_Allow) {
+TEST_F(DownloadRequestLimiterTest, Allow) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
 
@@ -261,7 +262,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_Allow) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnNavigation) {
+TEST_F(DownloadRequestLimiterTest, ResetOnNavigation) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
 
@@ -321,7 +322,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnNavigation) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
+TEST_F(DownloadRequestLimiterTest, RendererInitiated) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
 
@@ -511,7 +512,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnReload) {
+TEST_F(DownloadRequestLimiterTest, ResetOnReload) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
@@ -561,7 +562,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnReload) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
+TEST_F(DownloadRequestLimiterTest, RawWebContents) {
   std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
 
   GURL url("http://foo.com/bar");
@@ -602,8 +603,7 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
             download_request_limiter_->GetDownloadStatus(web_contents.get()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
-       DownloadRequestLimiter_SetHostContentSetting) {
+TEST_F(DownloadRequestLimiterTest, SetHostContentSetting) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
   SetHostContentSetting(web_contents(), CONTENT_SETTING_ALLOW);
@@ -631,8 +631,7 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 
-TEST_F(DownloadRequestLimiterTest,
-       DownloadRequestLimiter_ContentSettingChanged) {
+TEST_F(DownloadRequestLimiterTest, ContentSettingChanged) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
@@ -684,5 +683,25 @@ TEST_F(DownloadRequestLimiterTest,
   CanDownload();
   ExpectAndResetCounts(0, 0, 1, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+}
+
+TEST_F(DownloadRequestLimiterTest, SuppressRequestsInVRMode) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+
+  EXPECT_FALSE(vr::VrTabHelper::IsInVr(web_contents()));
+  vr::VrTabHelper* vr_tab_helper =
+      vr::VrTabHelper::FromWebContents(web_contents());
+  vr_tab_helper->SetIsInVr(true);
+
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
