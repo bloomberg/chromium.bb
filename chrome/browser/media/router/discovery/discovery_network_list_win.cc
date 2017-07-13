@@ -73,11 +73,10 @@ GetInterfaceGuidMacMap() {
   base::small_map<std::map<GUID, std::string, GuidOperatorLess>> guid_mac_map;
   for (ULONG i = 0; i < interface_table->NumEntries; ++i) {
     const auto* interface_row = &interface_table->Table[i];
-    guid_mac_map.insert(std::make_pair(
-        interface_row->InterfaceGuid,
-        std::string{
-            reinterpret_cast<const char*>(interface_row->PhysicalAddress),
-            interface_row->PhysicalAddressLength}));
+    guid_mac_map.emplace(interface_row->InterfaceGuid,
+                         std::string{reinterpret_cast<const char*>(
+                                         interface_row->PhysicalAddress),
+                                     interface_row->PhysicalAddressLength});
   }
 
   return guid_mac_map;
@@ -153,7 +152,7 @@ base::small_map<std::map<std::string, std::string>> GetMacSsidMap() {
     if (ssid.empty()) {
       continue;
     }
-    mac_ssid_map.insert(std::make_pair(mac_entry->second, std::move(ssid)));
+    mac_ssid_map.emplace(mac_entry->second, std::move(ssid));
   }
   return mac_ssid_map;
 }
