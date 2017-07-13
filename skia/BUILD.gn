@@ -222,6 +222,8 @@ component("skia") {
     "ext/event_tracer_impl.h",
     "ext/fontmgr_default_android.cc",
     "ext/fontmgr_default_android.h",
+    "ext/fontmgr_default_fuchsia.cc",
+    "ext/fontmgr_default_fuchsia.h",
     "ext/fontmgr_default_linux.cc",
     "ext/fontmgr_default_linux.h",
     "ext/fontmgr_default_win.cc",
@@ -264,6 +266,13 @@ component("skia") {
     sources += [
       "ext/convolver_mips_dspr2.cc",
       "ext/convolver_mips_dspr2.h",
+    ]
+  }
+
+  if (!is_fuchsia) {
+    sources -= [
+      "ext/fontmgr_default_fuchsia.cc",
+      "ext/fontmgr_default_fuchsia.h",
     ]
   }
 
