@@ -21,6 +21,12 @@ cr.define('extensions', function() {
       },
 
       filter: String,
+
+      /** @private {Array<!chrome.developerPrivate.ExtensionInfo>} */
+      shownItems_: {
+        type: Array,
+        computed: 'computeShownItems_(items.*, filter)',
+      }
     },
 
     listeners: {
@@ -72,6 +78,15 @@ cr.define('extensions', function() {
       return this.items.filter(function(item) {
         return item.name.toLowerCase().includes(this.filter.toLowerCase());
       }, this);
+    },
+
+    shouldShowEmptyItemsMessage_: function() {
+      return this.items.length === 0;
+    },
+
+    shouldShowEmptySearchMessage_: function() {
+      return !this.shouldShowEmptyItemsMessage_() &&
+          this.shownItems_.length === 0;
     },
   });
 

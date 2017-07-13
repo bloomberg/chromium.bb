@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
@@ -8,7 +9,7 @@
 
 <dom-module id="extensions-item-list">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         @apply(--layout-vertical);
       }
@@ -18,11 +19,29 @@
         margin-top: 18px;
       }
 
+      .empty-list-message {
+        align-items: center;
+        color: #6e6e6e;
+        display: flex;
+        flex: 1;
+        font-weight: 500;
+        justify-content: center;
+      }
+
       .wrapper {
         padding: 6px;
       }
     </style>
-    <iron-list id="list" items="[[computeShownItems_(items.*, filter)]]"
+    <div id="no-items" class="empty-list-message"
+        hidden$="[[!shouldShowEmptyItemsMessage_(items.length)]]">
+      <span>$i18nRaw{noExtensionsOrApps}</span>
+    </div>
+    <div id="no-search-results" class="empty-list-message"
+        hidden$="[[!shouldShowEmptySearchMessage_(shownItems_.length)]]">
+      <span>$i18n{noSearchResults}</span>
+    </div>
+
+    <iron-list id="list" items="[[shownItems_]]"
         as="item" grid>
       <template>
         <div class="wrapper">

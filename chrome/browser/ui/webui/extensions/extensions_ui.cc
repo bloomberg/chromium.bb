@@ -115,6 +115,10 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
   source->AddLocalizedString("sidebarExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS);
+  source->AddLocalizedString("noExtensionsOrApps",
+                             IDS_MD_EXTENSIONS_NO_INSTALLED_ITEMS);
+  source->AddLocalizedString("noSearchResults",
+                             IDS_MD_EXTENSIONS_NO_SEARCH_RESULTS);
   source->AddLocalizedString("dropToInstall",
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
   source->AddLocalizedString("errorsPageHeading",

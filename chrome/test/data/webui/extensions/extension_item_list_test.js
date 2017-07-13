@@ -7,12 +7,15 @@ cr.define('extension_item_list_tests', function() {
   /** @enum {string} */
   var TestNames = {
     ItemListFiltering: 'item list filtering',
+    ItemListNoItemsMsg: 'empty item list',
+    ItemListNoSearchResultsMsg: 'empty item list filtering results',
   };
 
   function registerTests() {
     suite('ExtensionItemListTest', function() {
       /** @type {extensions.ItemList} */
       var itemList;
+      var testVisible;
 
       suiteSetup(function() {
         return PolymerTest.importHtml('chrome://extensions/item-list.html');
@@ -22,6 +25,8 @@ cr.define('extension_item_list_tests', function() {
       setup(function() {
         PolymerTest.clearBody();
         itemList = new extensions.ItemList();
+        testVisible = extension_test_util.testVisible.bind(null, itemList);
+
         var createExt = extension_test_util.createExtensionInfo;
         var items =
             [createExt({name: 'Alpha', id: 'a'.repeat(32)}),
@@ -59,6 +64,24 @@ cr.define('extension_item_list_tests', function() {
         // A filter of '' should reset to show all items.
         itemList.filter = '';
         expectEquals(3, ironList.items.length);
+      });
+
+      test(assert(TestNames.ItemListNoItemsMsg), function() {
+        testVisible('#no-items', false);
+        testVisible('#no-search-results', false);
+
+        itemList.items = [];
+        testVisible('#no-items', true);
+        testVisible('#no-search-results', false);
+      });
+
+      test(assert(TestNames.ItemListNoSearchResultsMsg), function() {
+        testVisible('#no-items', false);
+        testVisible('#no-search-results', false);
+
+        itemList.filter = 'non-existent name';
+        testVisible('#no-items', false);
+        testVisible('#no-search-results', true);
       });
     });
   }
